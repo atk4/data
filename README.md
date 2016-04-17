@@ -1,22 +1,25 @@
 # dataset - Database Access Library
 
-Most performance problems in apps are tend to arise when developers access database "incorrectly". We all tend to apply methods that "worked once" sometimes even when we shouldn't have. Patterns like Active Record, Dependency Traversal and Query Building must work together.
+Most performance problems in apps are tend to arise due to inefficient use of database access patterns. Techniques such as ActiveRecord, ORM, Query Builder use different approaches, but developer must intelligently decide which of the above must be used in which circumstances. 
 
-This library is designed to provide developer with wide variety of Database Access Tools that work well together. We want to give developer a whole toolkit and educate them on the appropriate approach on how to structure their interaction with the database that would achieve beautiful design of business logic and scalable performance. 
+Unfortunately frameworks tend to implement only single database access approach or even if they do include both ORM and Query Builder they are not interoperating very well. For example, you may not easily be able to adjust ORM operation through query builder. 
+
+This library is designed to provide developer with multiple Database Access Tools that work well together. We want to give developer a whole toolkit and educate them how to choose appropriate approach. We believe that user of this library can express their Business Logic in a very structured and clean way yet keep their application performance from decreasing when dealing with large amount of data.
 
 This library will introduce you to the new clean design for fully-integrated:
 
- - Business Models - Implement a clean business logic.
- - Active Record - Use this when you need individual record access.
- - Relation Mapping - Traverse between business data.
- - Persistence - Design and tweak how your Business Models are mapped into tables.
- - Derived Queries - Express your Business Models as SQL queries.
- - Expressions - Use Derived queries to add fields in your Business Models that are calculated in SQL
- - Explicit Loading - Don't rely on framework to do loading magic for you. Load data yourself.
- - Query Building - Build an execute complex multi-row queries mapped from your Business Models.
- - Unit-testing - Business Models can be decoupled from persistence layer for efficient Unit Testing.
+ - [Business Models](https://github.com/atk4/dataset/wiki/Business-Models) - Implement a clean business logic [DM].
+ - [Active Record](https://github.com/atk4/dataset/wiki/Active-Record) - Use this when you need individual record access [DM].
+ - [Explicit Loading and Saving](https://github.com/atk4/dataset/wiki/Explicit-Loading-and-Saving) - Don't rely on framework to do loading magic for you. Load data yourself. [PM]
+ - [Relation Mapping](https://github.com/atk4/dataset/wiki/Relation-Mapping) - Traverse between business data [DM].
+ - [Persistence](https://github.com/atk4/dataset/wiki/Persistence) - Design and tweak how your Business Models are mapped into tables [DM->PM].
+ - [Derived Queries](https://github.com/atk4/dataset/wiki/Derived-Queries) - Express your Business Models as SQL queries [PM].
+ - [Expressions](https://github.com/atk4/dataset/wiki/Expressions) - Use Derived queries to add fields in your Business Models that are calculated in SQL [PM].
+ - [Query Building](https://github.com/atk4/dataset/wiki/Query-Building) - Build an execute complex multi-row queries mapped from your Business Models [PM].
+ - [Unit-testing](https://github.com/atk4/dataset/wiki/Unit-Testing) - Business Models can be decoupled from persistence layer for efficient Unit Testing [DM].
+ - [Aggregation and Reports](https://github.com/atk4/dataset/wiki/Aggregaation-and-Reports) - Support report generation techniques, aggregation and unions for your Business models [DM].
 
-All of the above concepts are designed and delivered in a very simple-to-learn way. Our main goal is to educate new programmers about the right way to write code through intuitive pattern design.
+All of the above concepts are designed and delivered in a very simple-to-learn way. Our main goal is to educate new programmers about the right way to write code through intuitive pattern designs.
 
 We also care about other technicalities, so we will:
 
@@ -32,13 +35,15 @@ We also care about other technicalities, so we will:
 
 The founder and lead developer for this library is: [Romans Malinovskis](https://www.openhub.net/accounts/romaninsh). To get in touch privately, [use my twitter](https://twitter.com/romaninsh).
 
+[Frequently Asked Questions](https://github.com/atk4/dataset/wiki/Frequently-Asked-Questions)
+
 ## Current Status
 
-We are currently working on "Concept Design". Feel free to discuss / contribute or follow. 
+We are currently working on "Concept Design". Feel free to discuss, contribute feedback or follow. 
 
 [Read our Development Wiki](https://github.com/atk4/dataset/wiki).
 
-You can also join me on Gitter to discuss some ideas:
+You can also join us on Gitter to ask questions:
 
 [![Join the chat at https://gitter.im/atk4/dataset](https://badges.gitter.im/atk4/dataset.svg)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
