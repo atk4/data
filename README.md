@@ -1,8 +1,10 @@
 # dataset - Database Access Library
 
-Most performance problems in apps are usually due to incorrect data access design. As developers we tend to apply methods "that worked" in all circumstances. Active Record is a good concept as long as you are not update your records in foreach() loop. ORM is a good concept as long as it separates your business models (DM) from table structure (PM).
+Most performance problems in apps are tend to arise when developers access database "incorrectly". We all tend to apply methods that "worked once" sometimes even when we shouldn't have. Patterns like Active Record, Dependency Traversal and Query Building must work together.
 
-This framework is designed to approach your database access (persistence) with the correct tools and consists of several parts:
+This library is designed to provide developer with wide variety of Database Access Tools that work well together. We want to give developer a whole toolkit and educate them on the appropriate approach on how to structure their interaction with the database that would achieve beautiful design of business logic and scalable performance. 
+
+This library will introduce you to the new clean design for fully-integrated:
 
  - Business Models - Implement a clean business logic.
  - Active Record - Use this when you need individual record access.
@@ -14,11 +16,11 @@ This framework is designed to approach your database access (persistence) with t
  - Query Building - Build an execute complex multi-row queries mapped from your Business Models.
  - Unit-testing - Business Models can be decoupled from persistence layer for efficient Unit Testing.
 
-All of the above concepts are designed and delivered in a very simple-to-learn way. Our main goal is to educate new programmers about the right way to write code through intuitive coding pattern design.
+All of the above concepts are designed and delivered in a very simple-to-learn way. Our main goal is to educate new programmers about the right way to write code through intuitive pattern design.
 
 We also care about other technicalities, so we will:
 
- - work with PHP community and discuss main decisions collaboratively.
+ - work with PHP community and discuss main decisions collaboratively. 
  - write short and easy-to-read, standard-compliant code with high code-climate score.
  - unit-test our own code with minimum of 95% code coverage.
  - never break APIs in minor releases.
@@ -28,9 +30,11 @@ We also care about other technicalities, so we will:
  - do not duplicate the code (e.g. in vendor drivers)
  - use MIT License
 
+The founder and lead developer for this library is: [Romans Malinovskis](https://www.openhub.net/accounts/romaninsh). To get in touch privately, [use my twitter](https://twitter.com/romaninsh).
+
 ## Current Status
 
-We are currently working on "Concept Design". Feel free to discuss / contribute or follow.
+We are currently working on "Concept Design". Feel free to discuss / contribute or follow. 
 
 [Read our Development Wiki](https://github.com/atk4/dataset/wiki).
 
