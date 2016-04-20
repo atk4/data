@@ -194,6 +194,7 @@ To implement Agile Data, we had to start from the very beginning.
 1.0   First Stable Release.
 1.1   Add support for MongoDB.
 1.2   Add support and docs for Validators.
+```
 
 ## Past Updates
 
