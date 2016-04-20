@@ -97,14 +97,14 @@ foreach ($m->ref('Order') as $order) {  // 1-query
 }
 ```
 
-Or the whole data-set:
+or the whole data-set:
 
 ```
 $m = $db->add('Model_User');
 $m->addCondition('isOnline', true);
 
 foreach ($m->ref('Order') as $order) {  // 1-query
-    // iterate through order of user with id=10
+    // iterate through order of all on-line users
 }
 ```
 
@@ -130,7 +130,7 @@ class Model_Client extends Model_User
 }
 ```
 
-And use distinctive logic when using various vendors:
+and use distinctive logic when using various vendors:
 
 ```
 class Model_Order extends atk4\data\Model
