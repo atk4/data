@@ -38,8 +38,9 @@ We also care about other technicalities, so we will:
  - work with PHP community and discuss main decisions collaboratively. 
  - write short and easy-to-read, standard-compliant code with high code-climate score.
  - unit-test our own code with minimum of 95% code coverage.
+ - add code through pull requests and discuss them before merging.
  - never break APIs in minor releases.
- - include minimum dependencies.
+ - support composer but include minimum dependencies.
  - be friendly with all higher-level frameworks.
  - avoid database query latency/overheads, pre-fetching or lazy loading.
  - do not duplicate the code (e.g. in vendor drivers)
@@ -52,7 +53,7 @@ The founder and lead developer for this library is: [Romans Malinovskis](https:/
 
 ## Sample Code
 
-Start by defining your Business Models.
+Usage syntax of Agile data is consise and readable. Start by defining your Business Models.
 
 ```
 class Model_User extends \atk4\data\Model
