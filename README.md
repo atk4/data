@@ -49,6 +49,120 @@ The founder and lead developer for this library is: [Romans Malinovskis](https:/
 
 [Frequently Asked Questions](https://github.com/atk4/dataset/wiki/Frequently-Asked-Questions)
 
+
+## Sample Code
+
+Start by defining your Business Models.
+
+```
+class Model_User extends \atk4\data\Model
+{
+    private $table = 'user';
+    function init() {
+        parent::init();
+
+        $this->addField('name');
+        $this->addField('surname');
+        $this->addField('email');
+
+        $this->addField('type')->enum(['client', 'admin']);
+
+        $this->hasMany('Order');
+    }
+}
+```
+
+Link your business model with persistence layer like this. Once linked you can
+access records individulaly:
+
+```
+$m = $db->add('Model_User');
+$m->load(10); // 1-qurey
+```
+
+or build SQL queries that affect multiple records:
+
+```
+$m->addCondition('email',null)->dsql()->delete(); // 1-query
+```
+
+You can traverse individual records:
+
+```
+$m = $db->add('Model_User');
+$m->load(10); // 1-query
+
+foreach ($m->ref('Order') as $order) {  // 1-query
+    // iterate through order of user with id=10
+}
+```
+
+Or the whole data-set:
+
+```
+$m = $db->add('Model_User');
+$m->addCondition('isOnline', true);
+
+foreach ($m->ref('Order') as $order) {  // 1-query
+    // iterate through order of user with id=10
+}
+```
+
+You can define persistance logic rules for one or multiple databases based on
+supported capabilities:
+
+```
+class Model_Client extends Model_User
+{
+    function init() {
+        parent::init();
+        
+        if ($this->connection->supports('expressions')) {
+            $this->addExpression('completed_orders')->set(
+                $this->ref('Order')
+                    ->addCondition('isCompleted',true)
+                    ->sum('amount')
+            );
+        } else {
+            $this->addField('completed_orders'); // does not support sub-queries
+        }
+    }
+}
+```
+
+And use distinctive logic when using various vendors:
+
+```
+class Model_Order extends atk4\data\Model
+{
+    public $table='order';
+    function init() {
+        parent::init();
+
+        $this->hasMany('Order_Line');
+        $this->hasOne('Client');
+
+        if ($this->connection->supports('expressions')) {
+            $this->addExpression('amount')
+                ->set($this->ref('Order_Line')->sum('amount'));
+        } else {
+            $this->addField('amount');
+        }
+    }
+    function complete() {
+        $this['isCompleted']=true;
+        $this->saveAndUnload();
+
+        if (!$this->connection->supports('expressions')) {
+            $this->ref('Client')->incr('completed_orders', $this['amount']);
+        }
+    }
+}
+```
+
+N.B. (ABOVE EXAMPLES MIGHT CHANGE AS WE IMPLEMEST THE CODE).
+
+
 ## Current Status
 
 We are currently working on "Concept Design". Feel free to discuss, contribute feedback or follow. 
