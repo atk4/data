@@ -6,6 +6,8 @@ Most performance problems in apps are tend to arise due to inefficient use of da
  1. It's hard to implement Domain Model and Persistance separation within reasonable time.
  2. Query Building, ORM and ActiveRecord lack synergy in most frameworks.
  3. Each pattern to access database falls short making you fall back to SQL.
+ 
+## How is Agile Data better?
 
 Agile Data is a unique library that enforces correct design of Business Logic in your PHP
 application and handles persistence (interaction with database) in flexible and scalable way.
@@ -14,6 +16,8 @@ application and handles persistence (interaction with database) in flexible and 
  - Query Builder, Relations and Active Record that work in **great synergy**.
  - Any Query policy. You will **no longer** have excuse to **write raw queries**.
  - Use power of **SQL** with PDO-databases, while also being compatible with **NoSQL** databases.
+ 
+[In-depth Discussion on Differences and Benefits](https://github.com/atk4/dataset/wiki/USP)
 
 ## Concept Explained
 
