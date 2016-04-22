@@ -1,28 +1,28 @@
 # Agile Data - Domain Model and Persistence library
 
 
-Most performance problems in apps are tend to arise due to inefficient use of database access patterns. In practical applications, when you have a strict deadline, developers are forced to make trade-offs that result in poor scalability or poor application design.
+Most performance problems in apps are due to inefficient use of database access patterns. In practical applications, when developers have a strict deadlines, they make trade-offs that result in poor scalability or poor application design. As a consequences your application may exhibit some of the symptoms:
 
- 1. It's hard to implement Domain Model and Persistance separation within reasonable time.
- 2. Query Building, ORM and ActiveRecord lack synergy in most frameworks.
- 3. Each pattern to access database falls short making you fall back to SQL.
+ 1. Your application logic depends on specific table structure (violates SRP). 
+ 2. Switching from SQL to NoSQL would take some major changes.
+ 2. You struggle to perform clean unit testing of your business logic actual database.
+ 3. Your ORM/AR framework uses your database inefficiently producing extra queries or extra data exchange.
+ 4. In some situations you are forced to write full RAW queries.
+ 5. You manage "scopes" manually using where() in your presentation logic.
  
-## How is Agile Data better?
+The framework that you are using may try to solve few of the listed problem, but often this require trade-off elsewhere.
 
-Agile Data is a unique library that enforces correct design of Business Logic in your PHP
-application and handles persistence (interaction with database) in flexible and scalable way.
+**Agile Data is a unique library that enforces correct design of Business Logic in your PHP
+application and handles persistence (interaction with database) in flexible and scalable way.**
 
- - **Full separation** between your Domain Model and Persistence in a **practical way**.
- - Query Builder, Relations and Active Record that work in **great synergy**.
- - Any Query policy. You will **no longer** have excuse to **write raw queries**.
- - Use power of **SQL** with PDO-databases, while also being compatible with **NoSQL** databases.
- 
-[In-depth Discussion on Differences and Benefits](https://github.com/atk4/dataset/wiki/USP)
 
-## Concept Explained
+[More information about benefits and comparisons with other patterns/frameworks](https://github.com/atk4/dataset/wiki/USP)
 
-To learn Agile Data, you need to leave behind your prejudice towards some of the data access
-patterns and read on how we are turning familiar concepts by implementing them correctly:
+
+## Introducing the concept
+
+To learn and use Agile Data efficiently, you need to leave behind your prejudice towards some of the data access
+patterns and read on how we are improving familiar concepts by implementing them correctly:
 
  - [Business Models](https://github.com/atk4/dataset/wiki/Business-Models) - Class for implementing your business logic [DM].
  - [Active Record](https://github.com/atk4/dataset/wiki/Active-Record) - Simplified record-based access to your Model data. [DM].
@@ -35,7 +35,7 @@ patterns and read on how we are turning familiar concepts by implementing them c
  - [Unit-testing](https://github.com/atk4/dataset/wiki/Unit-Testing) - Business Models can be decoupled from persistence layer for efficient Unit Testing [DM].
  - [Aggregation and Reports](https://github.com/atk4/dataset/wiki/Aggregaation-and-Reports) - Support report generation techniques ndaggregations for your Business models [DM].
 
-All of the above concepts are designed and delivered in a very simple-to-learn way. Our main goal is to educate new programmers about the right way to write code through intuitive pattern designs.
+We have designed Agile data in a very simple-to-learn way. We seek to educate developers about the correct way to write code through intuitive pattern designs.
 
 We also care about other technicalities, so we will:
 
@@ -49,8 +49,20 @@ We also care about other technicalities, so we will:
  - avoid database query latency/overheads, pre-fetching or lazy loading.
  - do not duplicate the code (e.g. in vendor drivers)
  - use MIT License
+ 
+## Project Credibility 
 
-The founder and lead developer for this library is: [Romans Malinovskis](https://www.openhub.net/accounts/romaninsh). To get in touch privately, [use my twitter](https://twitter.com/romaninsh).
+A new and "revolutionary" mini-ORM projects come and go every week. Will Agile Data be here in 5 years time?
+
+Yes.
+
+The founder and lead developer for this library is: [Romans Malinovskis](https://www.openhub.net/accounts/romaninsh) who has been a long-time open-source developer and maintainer of Agile Toolkit (PHP UI Framemwork).
+
+Agile Data is inspired by "Model" implementation in Agile Toolkit that Romans [has implemented 2011](https://github.com/atk4/atk4/commit/976ccce73c5c7bf5afbedc70aa3f72158dbf534b#diff-8e1db8ebf3425c345973e98193903012) and has been maintained since. Model implementation of Agile Toolkit has been well received by others and have been used in many production projects for the last 5 years.
+
+This project (Agile Data) is a major rewrite that separates "Models" from the rest of Agile Toolkit. Once stable Agile Toolkit will be refactored to make use of Agile Data ensuring the longevity of this project.
+
+![image](docs/images/agiletoolkit.png)
 
 [Frequently Asked Questions](https://github.com/atk4/dataset/wiki/Frequently-Asked-Questions)
 
