@@ -21,17 +21,7 @@ application and handles persistence (interaction with database) in flexible and 
 
 ## Introducing the concept
 
-<iframe
-src="//www.slideshare.net/slideshow/embed_code/key/AWNpD960SFL6Fq"
-width="595" height="485" frameborder="0" marginwidth="0"
-marginheight="0" scrolling="no" style="border:1px solid #CCC;
-border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen>
-</iframe> <div style="margin-bottom:5px"> <strong> <a
-href="//www.slideshare.net/romaninsh/agile-data-concept-introduction"
-title="Agile Data concept introduction" target="_blank">Agile Data
-concept introduction</a> </strong> from <strong><a
-href="//www.slideshare.net/romaninsh" target="_blank">Romans
-Malinovskis</a></strong> </div>
+<a href="http://www.slideshare.net/romaninsh/agile-data-concept-introduction"><img src="docs/images/presentation.png" width="100%"></a>
 
 To learn and use Agile Data efficiently, you need to leave behind your prejudice towards some of the data access
 patterns and read on how we are improving familiar concepts by implementing them correctly:
