@@ -197,7 +197,8 @@ enough feedback, we'll start implementation.
 To implement Agile Data, we had to start from the very beginning.
 
 ```
-0.1   Finalize concept, api-interface draft and lightweight documentation.
+0.0   Finalize concept, api-interface draft and lightweight documentation.
+0.1   Set up CI, CodeClimate, Docs to keep development consistent.
 0.2   Implement Active Record with Business Model class.
 0.3   Implement SQL persistence mapping - storing and loading records.
 0.4   Add support for Conditions to implement DataSet.
