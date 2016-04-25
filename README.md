@@ -58,11 +58,11 @@ A new and "revolutionary" mini-ORM projects come and go every week. Will Agile D
 
 Yes.
 
-The founder and lead developer for this library is: [Romans Malinovskis](https://www.openhub.net/accounts/romaninsh) who has been a long-time open-source developer and maintainer of Agile Toolkit (PHP UI Framemwork).
+The founder and lead developer for this library is: [Romans Malinovskis](https://www.openhub.net/accounts/romaninsh) who has been a long-time open-source developer and maintainer of Agile Toolkit (PHP UI Framemwork). We have just completed beta of [DSQL - Query Builder for PHP](https://github.com/atk4/dsql) to the similar high standard of quality and it will be integral part of Agile Data.
 
-Agile Data is inspired by "Model" implementation in Agile Toolkit that Romans [has implemented 2011](https://github.com/atk4/atk4/commit/976ccce73c5c7bf5afbedc70aa3f72158dbf534b#diff-8e1db8ebf3425c345973e98193903012) and has been maintained since. Model implementation of Agile Toolkit has been well received by others and have been used in many production projects for the last 5 years.
+This library is inspired by "Model" implementation in Agile Toolkit that Romans [has implemented 2011](https://github.com/atk4/atk4/commit/976ccce73c5c7bf5afbedc70aa3f72158dbf534b#diff-8e1db8ebf3425c345973e98193903012) and has been maintained since. Model implementation of Agile Toolkit has been well received by users and powers many production projects.
 
-This project (Agile Data) is a major rewrite that separates "Models" from the rest of Agile Toolkit. Once stable Agile Toolkit will be refactored to make use of Agile Data ensuring the longevity of this project.
+This project (Agile Data) is a major rewrite that separates "Models" from the rest of Agile Toolkit to make it beneficial for any PHP developer and framework. Once Agile Data is stable the Agile Toolkit will also be updated to depend on Agile Data ensuring the longevity of this project.
 
 ![image](docs/images/agiletoolkit.png)
 
