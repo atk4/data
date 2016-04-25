@@ -3,7 +3,7 @@
 
 Most performance problems in apps are due to inefficient use of database access patterns. In practical applications, when developers have a strict deadlines, they make trade-offs that result in poor scalability or poor application design. As a consequences your application may exhibit some of the symptoms:
 
- 1. Your application logic depends on specific table structure (violates SRP). 
+ 1. Your application logic depends on specific table structure or database vendor (violates SRP). 
  2. Switching from SQL to NoSQL would take some major changes.
  2. You struggle to perform clean unit testing of your business logic actual database.
  3. Your ORM/AR framework uses your database inefficiently producing extra queries or extra data exchange.
