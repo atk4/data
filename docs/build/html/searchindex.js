@@ -1,0 +1,1 @@
+Search.setIndex({envversion:46,filenames:["index"],objects:{},objnames:{},objtypes:{},terms:{content:0,index:0,modul:[],page:0,search:0},titles:["Agile Data Documentation"],titleterms:{agil:0,data:0,document:0,dsql:[],indic:0,tabl:0,welcom:[]}})
