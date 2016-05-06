@@ -9,6 +9,7 @@ Contents:
 
     overview
     quickstart
+    design
     model
     results
     persistence
