@@ -30,8 +30,4 @@ class Model {
     {
     }
 
-    function addCondition()
-    {
-    }
-
 }
