@@ -4,6 +4,11 @@
 **Agile Data is a unique SQL/NoSQL access library that promotes correct Business Logic design in your
 PHP application and implements database access in a flexible and scalable way.**
 
+[![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
+[![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
+[![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
+[![Issue Count](https://codeclimate.com/github/atk4/data/badges/issue_count.svg)](https://codeclimate.com/github/atk4/data)
+
 The key design concepts and the reason why we created Agile Data are:
 
  - Agile Data is simple to learn. We have designed our framework with aim to educate developers with
