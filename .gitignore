@@ -1,2 +1,3 @@
-/docs/build
+docs/build
+/vendor
 .DS_Store

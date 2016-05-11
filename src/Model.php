@@ -1,14 +1,14 @@
 <?php
 
-namespace atk4\dsql;
+namespace atk4\data;
 
 use atk4\core;
 
 class Model {
-    use ContainerTrait;
-    use DebugTrait;
-    use HookTrait;
-    use InitializerTrait;
+//    use ContainerTrait;
+//    use DebugTrait;
+//    use HookTrait;
+//    use InitializerTrait;
 
     /**
      * Persistance driver

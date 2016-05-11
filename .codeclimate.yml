@@ -1,0 +1,51 @@
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - php
+  fixme:
+    enabled: true
+  phpmd:
+    enabled: true
+    exclude_fingerprints:
+    - 9d462b7c90c564bf28007ee399340fad # table() NPath is too complex.
+    - 7c90035f65bb3bdbd2c03c648a705aac # we use static for factory, so it's good
+    - 80ef7f404dd4f054ca51d9ee12d9e9dd # we exit from toStrign() because it can't throw exceptions
+    checks:
+      CyclomaticComplexity:
+        enabled: false
+      Design/TooManyPublicMethods:
+        enabled: false
+      Design/TooManyMethods:
+        enabled: false
+      Design/NpathComplexity:
+        enabled: false
+      Design/WeightedMethodCount:
+        enabled: false
+      Design/LongClass:
+        enabled: false
+      Controversial/CamelCaseMethodName:
+        enabled: false
+      Controversial/CamelCaseParameterName:
+        enabled: false
+      Controversial/CamelCasePropertyName:
+        enabled: false
+      Controversial/CamelCaseVariableName:
+        enabled: false
+      Controversial/CamelCaseClassName:
+        enabled: false
+      Naming/ShortVariable:
+        enabled: false
+      CleanCode/ElseExpression:
+        enabled: false
+
+  radon:
+    enabled: true
+ratings:
+  paths:
+  - src/**
+exclude_paths:
+- docs/**
+- tests/**
+- vendor/**

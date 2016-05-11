@@ -1,9 +1,9 @@
 {
-    "name": "atk4/dsql",
+    "name": "atk4/data",
     "type": "library",
-    "description": "Dynamic SQL Builder in PHP",
-    "keywords": ["framework", "sql", "builder", "orm"],
-    "homepage": "http://agiletoolkit.org/dsql/",
+    "description": "Agile Data - Database access abstraction framework",
+    "keywords": ["framework", "orm", "query", "active record", "sql", "builder", "nosql", "mongodb", "mysql", "postgresql"],
+    "homepage": "https://github.com/atk4/data",
     "license": "MIT",
     "authors": [
         {
@@ -13,16 +13,17 @@
         }
     ],
     "require": {
-        "php": ">=5.5.0"
+        "php": ">=5.5.0",
+        "atk4/dsql": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.0",
         "codeclimate/php-test-reporter": "*"
     },
     "autoload": {
-        "psr-4": {"atk4\\dsql\\":"src/"}
+        "psr-4": {"atk4\\data\\":"src/"}
     },
     "autoload-dev": {
-        "psr-4": {"atk4\\dsql\\tests\\":"tests/"}
+        "psr-4": {"atk4\\data\\tests\\":"tests/"}
     }
 }
