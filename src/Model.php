@@ -17,16 +17,21 @@ class Model {
 
     private $field_class = 'atk4\data\Field';
 
-    
+    function __construct()
+    {
+    }
 
-    function init() {
+    function init() 
+    {
     }
 
 
-    function addField(){
+    function addField()
+    {
     }
 
-    function addCondition() {
+    function addCondition() 
+    {
     }
 
 }
