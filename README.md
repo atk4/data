@@ -206,8 +206,6 @@ enough feedback, we'll start implementation.
 To implement Agile Data, we had to start from the very beginning.
 
 ```
-0.0   Finalize concept, api-interface draft and lightweight documentation.
-0.1   Set up CI, CodeClimate, Docs to keep development consistent.
 0.2   Implement Active Record with Business Model class.
 0.3   Implement SQL persistence mapping - storing and loading records.
 0.4   Add support for Conditions to implement DataSet.
@@ -227,6 +225,8 @@ To implement Agile Data, we had to start from the very beginning.
 
 ## Past Updates
 
+* 11 May: Released 0.1: Implemented code climate, test coverage and travis
+* 06 May: Revamped the concept, updated video and made it simpler
 * 22 Apr: Finalized concept, created presentation slides.
 * 17 Apr: Started working on draft concept (in wiki)
 * 14 Apr: [Posted my concept on Reddit](https://www.reddit.com/r/PHP/comments/4f2epw/reinventing_the_faulty_orm_concept_subqueries/)
