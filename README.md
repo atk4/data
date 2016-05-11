@@ -1,27 +1,36 @@
-# Agile Data - Domain Model and Persistence library
+# Agile Data - Database access abstraction framework.
 
 
-Most performance problems in apps are due to inefficient use of database access patterns. In practical applications, when developers have a strict deadlines, they make trade-offs that result in poor scalability or poor application design. As a consequences your application may exhibit some of the symptoms:
+**Agile Data is a unique SQL/NoSQL access library that promotes correct Business Logic design in your
+PHP application and implements database access in a flexible and scalable way.**
 
- 1. Your application logic depends on specific table structure or database vendor (violates SRP). 
- 2. Switching from SQL to NoSQL would take some major changes.
- 2. You struggle to perform clean unit testing of your business logic actual database.
- 3. Your ORM/AR framework uses your database inefficiently producing extra queries or extra data exchange.
- 4. In some situations you are forced to write full RAW queries.
- 5. You manage "scopes" manually using where() in your presentation logic.
+[![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
+[![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
+[![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
+[![Issue Count](https://codeclimate.com/github/atk4/data/badges/issue_count.svg)](https://codeclimate.com/github/atk4/data)
+
+The key design concepts and the reason why we created Agile Data are:
+
+ - Agile Data is simple to learn. We have designed our framework with aim to educate developers with
+   2+ years of experience on how to properly design application logic.
+
+ - We introduce fresh concepts - DataSet and Action, that result in a more efficient ways to
+   interact with non-trivial databases (databases with some query language support).
  
-The framework that you are using may try to solve few of the listed problem, but often this require trade-off elsewhere.
+ - Separation of Business Logic and Persistence. We do not allow your database schema to dictate your
+   business logic design.
 
-**Agile Data is a unique library that enforces correct design of Business Logic in your PHP
-application and handles persistence (interaction with database) in flexible and scalable way.**
+ - Major Databases are supported (SQL and NoSQL) and our framework will automatically use
+   features of the database (expressions, sub-queries, multi-row operation) if available.
 
+ - Extensibility. Our core concept is extended through with Joins, SQL Expressions and Sub-Selects,
+   Calculated fields, Validation, REST proxies, Caches, etc.
 
-[More information about benefits and comparisons with other patterns/frameworks](https://github.com/atk4/dataset/wiki/USP)
-
+ - Great for UI Frameworks. Agile Data integrates very well with compatible UI layer / widgets.
 
 ## Introducing the concept
 
-<a target="_blank" href="http://www.slideshare.net/romaninsh/agile-data-concept-introduction"><img src="docs/images/presentation.png" width="100%"></a>
+<a target="_blank" href="https://www.youtube.com/watch?v=XUXZI7123B8"><img src="docs/images/presentation.png" width="100%"></a>
 
 To learn and use Agile Data efficiently, you need to leave behind your prejudice towards some of the data access
 patterns and read on how we are improving familiar concepts by implementing them correctly:
@@ -197,8 +206,6 @@ enough feedback, we'll start implementation.
 To implement Agile Data, we had to start from the very beginning.
 
 ```
-0.0   Finalize concept, api-interface draft and lightweight documentation.
-0.1   Set up CI, CodeClimate, Docs to keep development consistent.
 0.2   Implement Active Record with Business Model class.
 0.3   Implement SQL persistence mapping - storing and loading records.
 0.4   Add support for Conditions to implement DataSet.
@@ -218,6 +225,8 @@ To implement Agile Data, we had to start from the very beginning.
 
 ## Past Updates
 
+* 11 May: Released 0.1: Implemented code climate, test coverage and travis
+* 06 May: Revamped the concept, updated video and made it simpler
 * 22 Apr: Finalized concept, created presentation slides.
 * 17 Apr: Started working on draft concept (in wiki)
 * 14 Apr: [Posted my concept on Reddit](https://www.reddit.com/r/PHP/comments/4f2epw/reinventing_the_faulty_orm_concept_subqueries/)
