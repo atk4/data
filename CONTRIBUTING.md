@@ -12,12 +12,12 @@ Do not hesitate to contribute to DSQL. We have made it safe and simple for you t
 ## Planning your change
 
  - if you are renaming internal methods, note your changes into CHANGES.md file
- - if you performing major changes (which may affect developers who use DSQL), discuss in Slack #dsql first.
+ - if you performing major changes (which may affect developers who use Agile Data), discuss on https://gitter.im/atk4/data
 
 ## Creating your own feature or fix
 
  - decide what feature you're working. Use prefix "add-" or "fix-". Use dashes instead of spaces.
- - make sure your branch is consistent with other branches. See [https://github.com/atk4/dsql/branches/all](https://github.com/atk4/dsql/branches/all)
+ - make sure your branch is consistent with other branches. See [https://github.com/atk4/data/branches/all](https://github.com/atk4/data/branches/all)
  - execute `git feature start fix-psr-compatibility`. If you already modified code, `git stash` it.
  - use `git stash pop` to get your un-commited changes back
  - install and execute `phpunit` to make sure your code does not break any tests
@@ -25,35 +25,32 @@ Do not hesitate to contribute to DSQL. We have made it safe and simple for you t
  - update or add documentation section, if you have changed any behavior. RST is like Markdown, but more powerful. [http://docutils.sourceforge.net/docs/user/rst/quickref.html](http://docutils.sourceforge.net/docs/user/rst/quickref.html)
  - see [docs/README.md](docs/README.md) on how to install "sphinx-doc" locally and how to make documentation.
  - open docs/html/index.html in your browser and review documentation changes you have made
- - commit your code. Name your commits consistently. See [https://github.com/atk4/dsql/commits/develop](https://github.com/atk4/dsql/commits/develop)
+ - commit your code. Name your commits consistently. See [https://github.com/atk4/data/commits/develop](https://github.com/atk4/data/commits/develop)
  - use multiple comments if necessary. I recommend you to use "Github Desktop", where you can even perform partial file commits.
  - once commits are done run `git feature publish fix-psr-compatibility`. 
  
 ## Create Pull Request
 
- - Go to [http://github.com/atk4/dsql](http://github.com/atk4/dsql) and create Pull Request
+ - Go to [http://github.com/atk4/data](http://github.com/atk4/data) and create Pull Request
  - In the description of your pull request, use screenshots of new functionality or examples of new code.
- - Go to #dsql on our Slack and ask others to review your PR.
+ - Go to https://gitter.im/atk4/data on our Slack and ask others to review your PR.
  - Allow others to review. Never Merge your own pull requests.
  - If you notice that anything is missing in your pull-request, go back to your code/branch, commit and push. Changes will automatically appear in your pull request.
  - Clean up your repository. Follow this guide: [http://railsware.com/blog/2014/08/11/git-housekeeping-tutorial-clean-up-outdated-branches-in-local-and-remote-repositories/](http://railsware.com/blog/2014/08/11/git-housekeeping-tutorial-clean-up-outdated-branches-in-local-and-remote-repositories/)
 
-## If you do not have access to commit into atk4/dsql
+## If you do not have access to commit into atk4/data
 
- - Fork atk4/dsql repository.
+ - Fork atk4/data repository.
  - Follow same instructions as above, but use your own repository name
  - If you contribute a lot, it would make sense to [set up codeclimate.com for your repo](https://codeclimate.com/github/signup). 
  - You can also enable Travis-CI for your repository easily.
 
 ## Verifying your code
 
- - Once you publish your branch, Travis will start testing it: [https://travis-ci.org/atk4/dsql/branches](https://travis-ci.org/atk4/dsql/branches)
- - When your PR is ready, Travis will run another test, to see if merging your code would cause any failures: [https://travis-ci.org/atk4/dsql/pull_requests](https://travis-ci.org/atk4/dsql/pull_requests)
+ - Once you publish your branch, Travis will start testing it: [https://travis-ci.org/atk4/data/branches](https://travis-ci.org/atk4/data/branches)
+ - When your PR is ready, Travis will run another test, to see if merging your code would cause any failures: [https://travis-ci.org/atk4/data/pull_requests](https://travis-ci.org/atk4/data/pull_requests)
  - It's important that both tests are successful
- - Once your branch is public, you should be able to run Analyze on CodeClimate: [https://codeclimate.com/github/atk4/dsql/branches](https://codeclimate.com/github/atk4/dsql/branches) specifically on your branch.
-
-___
-
+ - Once your branch is public, you should be able to run Analyze on CodeClimate: [https://codeclimate.com/github/atk4/data/branches](https://codeclimate.com/github/atk4/data/branches) specifically on your branch.
 
 ## For UI lovers :)
 
