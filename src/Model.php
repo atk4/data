@@ -2,13 +2,12 @@
 
 namespace atk4\data;
 
-use atk4\core;
-
 class Model {
-//    use ContainerTrait;
+    use \atk4\core\ContainerTrait;
 //    use DebugTrait;
 //    use HookTrait;
 //    use InitializerTrait;
+    protected $field_class = 'atk4\data\Field';
 
     /**
      * Persistance driver
@@ -26,8 +25,22 @@ class Model {
     }
 
 
-    function addField()
+    function addField($name)
     {
+        $c = $this->field_class;
+        $field = new $c($name);
+        $this->add($field, $name);
+        return $field;
+    }
+
+    /**
+     * Generic addition field for popilating fields
+     *
+     * @return Field
+     */
+    function add($name, $options = null)
+    {
+        $this->_add_Container($name, $options);
     }
 
 }
