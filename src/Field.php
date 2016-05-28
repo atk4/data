@@ -6,9 +6,18 @@ class Field {
     use \atk4\core\TrackableTrait;
     use \atk4\core\HookTrait;
 
-    public function getDefault() 
+    public $default = null;
+
+    function __construct($defaults = []) {
+
+        foreach ($defaults as $key => $val) {
+            $this->$key = $val;
+        }
+    }
+
+    public function getDefault()
     {
-        return null;
+        return $this->default;
     }
 }
 

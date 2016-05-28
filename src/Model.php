@@ -6,7 +6,9 @@ class Model implements \ArrayAccess
 {
     use \atk4\core\ContainerTrait;
     use \atk4\core\HookTrait;
-    use \atk4\core\InitializerTrait;
+    use \atk4\core\InitializerTrait {
+        init as _init;
+    }
 
     /**
      * Persistance driver inherited fromr atk4\data\Persistence
@@ -119,7 +121,7 @@ class Model implements \ArrayAccess
      *
      * $m = $db->add(new Model());
      *
-     * or 
+     * or
      *
      * $m = new Model($db);
      *
@@ -139,7 +141,7 @@ class Model implements \ArrayAccess
      */
     public function init()
     {
-        parent::init();
+        $this->_init();
 
         if ($this->id_field) {
             $this->addField($this->id_field, ['system'=>true]);
@@ -158,6 +160,7 @@ class Model implements \ArrayAccess
     public function onlyFields($fields = [])
     {
         $this->hook('onlyFields',[&$fields]);
+        $this->only_fields = $fields;
     }
 
     public function allFields()
@@ -169,8 +172,8 @@ class Model implements \ArrayAccess
     {
         // $m->set($m->getElement('name'), 'John')
         if (
-            is_object($field) 
-            && isset($field->_trackableTrait) 
+            is_object($field)
+            && isset($field->_trackableTrait)
             && $field->owner === $this
         ) {
             $field = $field->short_name;
@@ -185,7 +188,7 @@ class Model implements \ArrayAccess
 
         // $m->onlyFields(['name'])->set('surname', 'Jane');
         if ($this->only_fields) {
-            if (!isset($this->only_fields[$field])) {
+            if (!in_array($field, $this->only_fields)) {
 
                 throw new Exception([
                     'Attempt to use field outside of those set by onlyFields',
@@ -205,10 +208,11 @@ class Model implements \ArrayAccess
                 foreach ($field as $key=>$value) {
                     $this->set($key, $value);
                 }
+                return $this;
             }
 
             throw new Exception([
-                'Single argument set() requires an array argument', 
+                'Single argument set() requires an array argument',
                 'arg'=>$field
             ]);
         }
@@ -217,25 +221,26 @@ class Model implements \ArrayAccess
 
         // $m->addField('datetime', ['type'=>'date']);
         // $m['datetime'] = new DateTime('2000-01-01'); will potentially
-        // convert value into unix timestamp 
+        // convert value into unix timestamp
         $f_object = $this->hasElement($field);
         if ($f_object) {
             $f_object->hook('normalize', [$field, &$value]);
         }
 
+
         // $m['name'] = $m['name'];
-        if (isset($this->data[$field]) && $value === $this->data[$field]) {
+        if (array_key_exists($field, $this->data) && $value === $this->data[$field]) {
             // do nothing, value unchanged
             return $this;
         }
 
-        if (isset($this->dirty[$field]) && $this->dirty[$field] === $value) {
+        if (array_key_exists($field, $this->dirty) && $this->dirty[$field] === $value) {
             unset($this->dirty[$field]);
-            $this->data = $value;
+            $this->data[$field] = $value;
         } else {
-            $this->dirty[$field] = 
-                isset($this->data[$field]) ?
-                $this->data[$field] : 
+            $this->dirty[$field] =
+                array_key_exists($field, $this->data) ?
+                $this->data[$field] :
                 (
                     $f_object ? $f_object->getDefault() : null
                 );
@@ -277,15 +282,14 @@ class Model implements \ArrayAccess
 
         $f_object = $this->hasElement($field);
 
-        $value = 
-            isset($this->data[$field]) ?
+        $value =
+            array_key_exists($field, $this->data) ?
             $this->data[$field] :
             (
                 $f_object ?
                 $f_object->getDefault() :
                 null
             );
-
 
         if ($f_object) {
             $f_object->hook('get', [$field, &$value]);
