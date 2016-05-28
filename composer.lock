@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8ecc4d09068ade331c42af3ab790de9a",
-    "content-hash": "32e31e7a2ed4490275bb64c91f4080a3",
+    "hash": "d05374818001eb10e912c4e5f001cd6f",
+    "content-hash": "7c45cf3cd9120f66a178f4bd496a124e",
     "packages": [
         {
             "name": "atk4/core",
-            "version": "dev-feature/implement-containers",
+            "version": "1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/atk4/core.git",
-                "reference": "d6bba89ed35555149258f57e80b8d14cac5a66be"
+                "reference": "46ff1f16ba9cf66f05d06cae18326efb5b3ad6f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atk4/core/zipball/d6bba89ed35555149258f57e80b8d14cac5a66be",
-                "reference": "d6bba89ed35555149258f57e80b8d14cac5a66be",
+                "url": "https://api.github.com/repos/atk4/core/zipball/46ff1f16ba9cf66f05d06cae18326efb5b3ad6f6",
+                "reference": "46ff1f16ba9cf66f05d06cae18326efb5b3ad6f6",
                 "shasum": ""
             },
             "require": {
@@ -53,7 +53,7 @@
                 "php",
                 "trains"
             ],
-            "time": "2016-05-18 17:55:54"
+            "time": "2016-05-21 17:48:01"
         },
         {
             "name": "atk4/dsql",
@@ -1643,9 +1643,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "atk4/core": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
