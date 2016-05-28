@@ -14,7 +14,7 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
      * Test constructor
      *
      */
-    public function testConstruct()
+    public function testConstructFields()
     {
         $m = new Model();
         $m->addField('name');
@@ -25,6 +25,22 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
         $m->add(new Field(), 'surname');
         $f = $m->getElement('surname');
         $this->assertEquals('surname', $f->short_name);
+    }
+
+    public function testFieldAccess()
+    {
+        $m = new Model();
+        $m->addField('name');
+        $m->addField('surname');
+
+        $m['name'] = 5;
+        $this->assertEquals(5, $m->get('name'));
+
+        $m->set('surname', 'Bilbo');
+        $this->assertEquals(5, $m->get('name'));
+        $this->assertEquals('Bilbo', $m->get('surname'));
+
+        $this->assertEquals(['name'=>5, 'surname'=>'Bilbo'], $m->get());
     }
 
 }

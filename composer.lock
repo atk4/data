@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/atk4/core.git",
-                "reference": "c80ca0a55d281cb57b880b82781eb66138317cd9"
+                "reference": "d6bba89ed35555149258f57e80b8d14cac5a66be"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atk4/core/zipball/c80ca0a55d281cb57b880b82781eb66138317cd9",
-                "reference": "c80ca0a55d281cb57b880b82781eb66138317cd9",
+                "url": "https://api.github.com/repos/atk4/core/zipball/d6bba89ed35555149258f57e80b8d14cac5a66be",
+                "reference": "d6bba89ed35555149258f57e80b8d14cac5a66be",
                 "shasum": ""
             },
             "require": {
@@ -53,7 +53,7 @@
                 "php",
                 "trains"
             ],
-            "time": "2016-05-17 14:42:59"
+            "time": "2016-05-18 17:55:54"
         },
         {
             "name": "atk4/dsql",
@@ -1485,16 +1485,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.1.1",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "1289d16209491b584839022f29257ad859b8532d"
+                "reference": "dff51f72b0706335131b00a7f49606168c582594"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/1289d16209491b584839022f29257ad859b8532d",
-                "reference": "1289d16209491b584839022f29257ad859b8532d",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/dff51f72b0706335131b00a7f49606168c582594",
+                "reference": "dff51f72b0706335131b00a7f49606168c582594",
                 "shasum": ""
             },
             "require": {
@@ -1506,7 +1506,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.1-dev"
+                    "dev-master": "1.2-dev"
                 }
             },
             "autoload": {
@@ -1540,7 +1540,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2016-01-20 09:13:37"
+            "time": "2016-05-18 14:26:46"
         },
         {
             "name": "symfony/stopwatch",
