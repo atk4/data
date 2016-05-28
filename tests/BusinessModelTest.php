@@ -164,4 +164,24 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
         $m = new Model();
         $m->set(4, 5);
     }
+
+    function testClass1()
+    {
+        $p = new Persistence();
+        $c = new Model_Client($p);
+        $this->assertEquals(10, $c['order']);
+    }
+
+    function testHooks()
+    {
+        $p = new Persistence();
+        $c = new Model_Client($p);
+        $c->getElement('name')->addHook('normalize', function($o, $f, &$v){ $v = trim($v); });
+        $c->getElement('name')->addHook('get', function($o, $f, &$v){ $v .= '123'; });
+
+
+        $c['name'] = '  jo hn ';
+        $this->assertEquals(['name'=>'jo hn'], $c->data);
+        $this->assertEquals('jo hn123', $c['name']);
+    }
 }
