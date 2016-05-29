@@ -165,7 +165,7 @@ Full example::
     $m['salary'] = 3000;
 
     echo $m['salary'];          // 3000 (changed)
-    echo isset($m['salary]);    // true
+    echo isset($m['salary']);   // true
     
     unset($m['salary']);        // return to original value
 
@@ -176,7 +176,7 @@ Full example::
     $m->save();
 
     echo $m['salary'];          // 3000 (now in db)
-    echo isset($m['salary]);    // false
+    echo isset($m['salary']);   // false
 
 .. php:method:: protected normalizeFieldName
 
