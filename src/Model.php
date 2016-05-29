@@ -47,9 +47,9 @@ class Model implements \ArrayAccess
     public $table = null;
 
     /**
-     * Persistance driver inherited fromr atk4\data\Persistence
+     * Persistence driver inherited fromr atk4\data\Persistence
      */
-    public $persistence;
+    public $persistence = null;
 
     /**
      * Persistence store some custom information in here that may be useful
@@ -132,10 +132,15 @@ class Model implements \ArrayAccess
      *  - it's shorter
      *  - type hinting will work;
      */
-    function __construct($driver = null, $defaults = [])
+    function __construct($persistence = null, $defaults = [])
     {
-        if ($driver) {
-            $driver->add($this, $defaults);
+
+        if (is_string($defaults)) {
+            $defaults = [$defaults];
+        }
+
+        if ($persistence) {
+            $persistence->add($this, $defaults);
         }
     }
 
@@ -147,7 +152,7 @@ class Model implements \ArrayAccess
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, ['system'=>true]);
+            $this->addField($this->id_field, ['system'=>true, 'type'=>'int']);
         }
     }
 
@@ -325,5 +330,91 @@ class Model implements \ArrayAccess
     }
     // }}}
 
+
+    // {{{ Persistence-related logic
+    public function loaded()
+    {
+        return $this->id!==null;
+    }
+
+    public function unload()
+    {
+        $this->id = null;
+        $this->data = [];
+        $this->dirty = [];
+    }
+
+
+    public function load($id)
+    {
+        if (!$this->persistence) {
+            throw new Exception([
+                'Model is not associated with any database'
+            ]);
+        }
+
+        if ($this->loaded()) {
+            $this->unload();
+        }
+
+        $this->persistence->load($this, $id);
+
+        return $this;
+    }
+
+
+    public function save()
+    {
+        if (!$this->persistence) {
+            throw new Exception([
+                'Model is not associated with any database'
+            ]);
+        }
+
+        $is_update = $this->loaded();
+        if ($is_update) {
+            $data = array();
+            foreach ($this->dirty as $name => $junk) {
+                $data[$name] = $this->get($name);
+            }
+
+            // No save needed, nothing was changed
+            if (!$data) {
+                return $this;
+            }
+
+            $this->persistence->update($this, $this->id, $data);
+
+            //$this->hook('beforeUpdate', array(&$source));
+        } else {
+
+            // Collect all data of a new record
+            $this->persistence->insert($this, $this->get());
+
+            //$this->hook('beforeInsert', array(&$source));
+        }
+
+        //if ($this->controller) {
+            //$this->id = $this->persistence->save($this, $this->id, $source);
+        //}
+
+        /*
+        if ($is_update) {
+            $this->hook('afterUpdate');
+        } else {
+            $this->hook('afterInsert');
+        }
+         */
+
+        if ($this->loaded()) {
+            $this->dirty = [];
+            //$this->hook('afterSave', array($this->id));
+        }
+
+        return $this;
+    }
+
+
+    // }}}
 
 }
