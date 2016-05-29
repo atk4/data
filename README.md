@@ -193,13 +193,12 @@ N.B. (ABOVE EXAMPLES MIGHT CHANGE AS WE IMPLEMEST THE CODE).
 
 ## Current Status
 
-The Design Concept for Agile Data has been complete. Please join us on "Gitter" to discuss
-and give us your feedback. Ask your friends to review and give us feedback. Once we have
-enough feedback, we'll start implementation.
+Currently developing core features of Agile Data.
+
+[![Join the chat at https://gitter.im/atk4/dataset](https://badges.gitter.im/atk4/dataset.svg)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [Read our Development Wiki](https://github.com/atk4/dataset/wiki).
 
-[![Join the chat at https://gitter.im/atk4/dataset](https://badges.gitter.im/atk4/dataset.svg)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Roadmap
 
@@ -225,6 +224,7 @@ To implement Agile Data, we had to start from the very beginning.
 
 ## Past Updates
 
+* 29 May: Finished implementation of core logic for Business Model
 * 11 May: Released 0.1: Implemented code climate, test coverage and travis
 * 06 May: Revamped the concept, updated video and made it simpler
 * 22 Apr: Finalized concept, created presentation slides.
