@@ -1,4 +1,4 @@
-<?php
+<?php // vim:ts=4:sw=4:et:fdm=marker
 
 namespace atk4\data;
 
@@ -10,10 +10,7 @@ class Model implements \ArrayAccess
         init as _init;
     }
 
-    /**
-     * Persistance driver inherited fromr atk4\data\Persistence
-     */
-    public $connection;
+    // {{{ Properties of the class
 
     /**
      * The class used by addField() method
@@ -50,12 +47,17 @@ class Model implements \ArrayAccess
     public $table = null;
 
     /**
+     * Persistance driver inherited fromr atk4\data\Persistence
+     */
+    public $persistence;
+
+    /**
      * Persistence store some custom information in here that may be useful
      * for them. The key is the name of persistence driver.
      *
      * @var array
      */
-    public $persistence = [];
+    public $persistence_data = [];
 
     /**
      * Curretly loaded record data. This record is associative array
@@ -113,6 +115,7 @@ class Model implements \ArrayAccess
      */
     protected $only_fields = false;
 
+    // }}}
 
     // {{{ Basic Functionality, field definition, set() and get()
 
@@ -299,11 +302,10 @@ class Model implements \ArrayAccess
     }
     // }}}
 
-
     // {{{ ArrayAccess support
     public function offsetExists($name)
     {
-        return $this->get($name);
+        return array_key_exists($this->normalizeFieldName($name), $this->dirty);
     }
     public function offsetGet($name)
     {
@@ -315,8 +317,11 @@ class Model implements \ArrayAccess
     }
     public function offsetUnset($name)
     {
-        unset($this->dirty[$name]);
-        unset($this->data[$name]);
+        $name = $this->normalizeFieldName($name);
+        if (array_key_exists($name, $this->dirty)) {
+            $this->data[$name] = $this->dirty[$name];
+            unset($this->dirty[$name]);
+        }
     }
     // }}}
 

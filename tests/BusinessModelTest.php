@@ -184,4 +184,30 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['name'=>'jo hn'], $c->data);
         $this->assertEquals('jo hn123', $c['name']);
     }
+
+    function testExampleFromDoc()
+    {
+        $m = new Model_User();
+
+        $m->addField('salary', ['default'=>1000]);
+
+        $this->assertEquals(false, isset($m['salary']));   // false
+        $this->assertEquals(1000, $m['salary']);           // 1000
+
+        // Next we load record from $db
+        $m->data=['salary'=>2000];
+
+        $this->assertEquals(2000, $m['salary']);           // 2000 (from db)
+        $this->assertEquals(false, isset($m['salary']));   // false, was not changed
+
+        $m['salary'] = 3000;
+
+        $this->assertEquals(3000, $m['salary']);          // 3000 (changed)
+        $this->assertEquals(true, isset($m['salary']));   // true
+
+        unset($m['salary']);        // return to original value
+
+        $this->assertEquals(2000, $m['salary']);          // 2000
+        $this->assertEquals(false, isset($m['salary']));  // false
+    }
 }
