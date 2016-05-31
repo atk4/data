@@ -12,7 +12,7 @@
 [![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
 
 
-The key design concepts and the reason why we created Agile Data are:
+The key of Agile Data are to be:
 
  - Simple - to learn, to read/write code and to extend. Even for beginners.
  
