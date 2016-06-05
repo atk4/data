@@ -59,22 +59,22 @@ A task that would normally require you to write a stored SQL procedure, cache da
   $vip_client_orders = $clients->refSet('Order');
   // This DataSet will contain only orders placed by VIP clients
 
-  $vip_client_orders -> addExpression('item_current_price')-set(function($model, $query){
+  $vip_client_orders->addExpression('item_price')->set(function($model, $query){
       return $model->ref('item_id')->fieldQuery('price');
   });
   // Defines a new field for a model expressed through relation with Item
 
-  $vip_client_orders -> addExpression('payments_made')-set(function($model, $query){
-      return $model->ref('Payment')->sum('amount_paid');
+  $vip_client_orders->addExpression('paid')->set(function($model, $query){
+      return $model->ref('Payment')->sum('amount');
   });
   // Defines another field as sum of related payments
   
-  $vip_client_orders -> addExpression('total_due')->set(function($model, $query){
-      return $query->expr('{item_current_price} * {qty} - {payments_made}');
+  $vip_client_orders->addExpression('due')->set(function($model, $query){
+      return $query->expr('{item_price} * {qty} - {paid}');
   });
-  // Defines third field for calculating total_due
+  // Defines third field for calculating due
 
-  $total_due_payment = $vip_client_orders->sum('total_due')->getOne();
+  $total_due_payment = $vip_client_orders->sum('due')->getOne();
   // Defines and executes "sum" action on our expression across specified data-set
 ```
 
@@ -86,11 +86,23 @@ Only the final `getOne()` will build and execute database query. Depending on wh
  
  - NoSQL: total of 3 or less queries (depending on database capabilities) will be executed and data from separate queries merged together in PHP giving you a total value.
 
+With the current implementation, the SQL query looks like is:
+
+```
+select sum(
+  (select `price` from `item` where `item`.`id` = `order`.`item_id` )
+  * `order`.`qty`
+  - (select sum(`payment`.`amount`) `amount` 
+     from `payment` where `payment`.`order_id` = `order`.`id` )
+) `due` from `order` 
+where `order`.`user_id` in (
+  select `id` from `user` where `user`.`is_client` = 1 and `user`.`is_vip` = 1 
+)
+```
 
 ## Busines Benefits of Agile Data
 
 It makes a lot of sense to have business logic of your application refactored with Agile Data. You will gain the following advantages:
-
 
  - Improve your development team efficiency by 70% without sacrifice of your code performance.
 
