@@ -15,22 +15,18 @@ class Model {
      */
     public $connection;
 
-    private $field_class = 'atk4\data\Field';
+    //private $field_class = 'atk4\data\Field';
 
     function __construct()
     {
     }
 
-    function init() 
+    function init()
     {
     }
 
 
     function addField()
-    {
-    }
-
-    function addCondition() 
     {
     }
 
