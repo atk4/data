@@ -227,3 +227,7 @@ Follow pull-request history and activity of repository to see what's going on.
 
 
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/atk4/data/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
