@@ -236,7 +236,3 @@ Follow pull-request history and activity of repository to see what's going on.
 * 22 Apr: Finalized concept, created presentation slides.
 * 17 Apr: Started working on draft concept (in wiki)
 * 14 Apr: [Posted my concept on Reddit](https://www.reddit.com/r/PHP/comments/4f2epw/reinventing_the_faulty_orm_concept_subqueries/)
-
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/atk4/data/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
