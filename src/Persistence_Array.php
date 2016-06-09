@@ -2,6 +2,11 @@
 
 namespace atk4\data;
 
+/**
+ * Implements persistance driver that can save data into array and load
+ * from array. This basic driver only offers the load/save support based
+ * around ID, you can't use conditions, order or limit.
+ */
 class Persistence_Array extends Persistence {
 
     public $data;
@@ -21,9 +26,7 @@ class Persistence_Array extends Persistence {
             unset($defaults[0]);
         }
 
-        $m = parent::add($m, $defaults);
-        $m->persistence = $this;
-        $m->persistence_data = [];
+        return parent::add($m, $defaults);
     }
 
     public function load(Model $m, $id)

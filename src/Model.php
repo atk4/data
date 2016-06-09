@@ -37,7 +37,7 @@ class Model implements \ArrayAccess
      * model normally lives. The interpretation of the table will be decoded
      * by persistence driver.
      *
-     * You can define this field as associtaive array where "key" is used
+     * You can define this field as associative array where "key" is used
      * as the name of pesistence driver. Here is example for mysql and default:
      *
      * $table = ['user', 'mysql'=>'tbl_user'];
@@ -47,7 +47,7 @@ class Model implements \ArrayAccess
     public $table = null;
 
     /**
-     * Persistence driver inherited fromr atk4\data\Persistence
+     * Persistence driver inherited from atk4\data\Persistence
      */
     public $persistence = null;
 
@@ -58,6 +58,18 @@ class Model implements \ArrayAccess
      * @var array
      */
     public $persistence_data = [];
+
+    /**
+     * Conditions list several conditions that must be met by all the
+     * records in the associated DataSet. Conditions are stored as
+     * elements of array of 1 to 3. Use addCondition() to add new
+     * conditions.
+     */
+    public $conditions = [];
+
+    public $limit;
+
+    public $order;
 
     /**
      * Curretly loaded record data. This record is associative array
@@ -139,8 +151,19 @@ class Model implements \ArrayAccess
             $defaults = [$defaults];
         }
 
+        foreach ($defaults as $key => $val) {
+            $this->$key = $val;
+        }
+
         if ($persistence) {
             $persistence->add($this, $defaults);
+        }
+
+    }
+
+    function setDefaults($defaults){
+        foreach ($defaults as $key => $val) {
+            $this->$key = $val;
         }
     }
 
