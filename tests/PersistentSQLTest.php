@@ -23,7 +23,7 @@ class PersistentSQLTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $p = new Persistence_SQL('sqlite::memory');
+        $p = new Persistence_SQL('sqlite::memory:');
 
         $p->connection->expr('drop table if exists user')->execute();
         $p->connection->expr('create table user(id int, name varchar(255), surname varchar(255))')->execute();
