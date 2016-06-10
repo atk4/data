@@ -17,7 +17,7 @@ class Persistence_SQL extends Persistence {
         if (is_object($connection)) {
             throw new Exception([
                 'You can only use Persistance_SQL with Connection class from atk4\dsql',
-                'connectino'=>$conneciton
+                'connection'=>$connection
             ]);
         }
 
@@ -204,7 +204,7 @@ class Persistence_SQL extends Persistence {
         $insert = $this->action($m, 'insert');
 
         // apply all fields we got from get
-        foreach($m->get ()as $field => $value) {
+        foreach($data as $field => $value) {
             $f = $m->getElement($field);
             $insert->set($f->actual ?: $f->short_name, $value);
         }
@@ -217,29 +217,12 @@ class Persistence_SQL extends Persistence {
         $update = $this->action($m, 'update');
 
         // only apply fields that has been modified
-        foreach($m->dirty as $field => $original_value) {
+        foreach($data as $field => $value) {
             $f = $m->getElement($field);
-            $update->set($f->actual ?: $f->short_name, $m->get($field));
+            $update->set($f->actual ?: $f->short_name, $value);
         }
+        $update->where($m->getElement($m->id_field), $id);
 
         $update->execute();
-    }
-
-    public function generateNewID($m)
-    {
-        $ids = array_keys($this->data[$m->table]);
-
-        $type = $model->getElement($model->id_field)->type;
-
-        if ($type === 'integer') {
-            return count($ids) === 0 ? 1 : (max($ids) + 1);
-        } elseif ($type == 'string') {
-            return uniqid();
-        } else {
-            throw new Exception([
-                'Unknown id type. Array supports type=integer or type=string only',
-                'type'=>$type
-            ]);
-        }
     }
 }
