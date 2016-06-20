@@ -38,6 +38,22 @@ driver. Use it to define fields of your model::
 
         $this->addField('surname', ['default'=>'Smith']);
 
+Populating Data
+===============
+
+.. php:method:: insert($data)
+
+    Inserts a new record into the database and returns $id. It does not
+    affect currently loaded record and in practice would be similar to::
+
+        $m_x = $m;
+        $m_x->unload();
+        $m_x->set($data);
+        $m_x->save();
+        unset($m_x);
+
+The main goal for insert() method is to be as fast as possible, while
+still performing data validation.
 
 Associating Model with Database
 ===============================

@@ -437,6 +437,18 @@ class Model implements \ArrayAccess
         return $this;
     }
 
+    /**
+     * Faster method to add data, that does not modify active record
+     */
+    public function insert($data)
+    {
+        $m = clone $this;
+        $m->unload();
+        $m->set($data);
+        $m->save();
+        return $m->id;
+    }
+
 
     // }}}
 
