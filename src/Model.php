@@ -189,6 +189,17 @@ class Model implements \ArrayAccess
         return $field;
     }
 
+    public function addFields($fields = [])
+    {
+        foreach ($fields as $field) {
+            $name = $field[0];
+            unset($field[0]);
+            $this->addField($name, $field);
+        }
+        return $this;
+    }
+
+
     public function onlyFields($fields = [])
     {
         $this->hook('onlyFields',[&$fields]);
@@ -381,7 +392,34 @@ class Model implements \ArrayAccess
             $this->unload();
         }
 
-        $this->persistence->load($this, $id);
+        $this->data = $this->persistence->load($this, $id);
+        $this->id = $id;
+        $this->hook('afterLoad');
+
+        return $this;
+    }
+
+    public function tryLoad($id)
+    {
+        if (!$this->persistence) {
+            throw new Exception([
+                'Model is not associated with any database'
+            ]);
+        }
+
+        if ($this->loaded()) {
+            $this->unload();
+        }
+
+        $this->data = $this->persistence->tryLoad($this, $id);
+        if($this->data){
+            $this->id = $id;
+            $this->hook('afterLoad');
+        }else{
+            $this->data=[];
+            unset($this->id);
+        }
+
 
         return $this;
     }
@@ -399,7 +437,23 @@ class Model implements \ArrayAccess
         if ($is_update) {
             $data = array();
             foreach ($this->dirty as $name => $junk) {
-                $data[$name] = $this->get($name);
+                $field = $this->hasElement($name);
+                if (!$field) {
+                    continue;
+                }
+
+                // get actual name of the field
+                $actual = $field->actual ?: $name;
+
+                // get the value of the field
+                $value = $this->get($name);
+
+                if ($field->join) {
+                    // storing into a different table join
+                    $field->join->set($actual, $value);
+                } else {
+                    $data[$actual] = $value;
+                }
             }
 
             // No save needed, nothing was changed
@@ -412,8 +466,29 @@ class Model implements \ArrayAccess
             //$this->hook('beforeUpdate', array(&$source));
         } else {
 
+            foreach ($this->get() as $name => $value) {
+
+                $field = $this->hasElement($name);
+                if (!$field) {
+                    continue;
+                }
+
+                // get actual name of the field
+                $actual = $field->actual ?: $name;
+
+                if ($field->join) {
+                    // storing into a different table join
+                    $field->join->set($actual, $value);
+                } else {
+                    $data[$actual] = $value;
+                }
+            }
+
+            $this->hook('beforeInsert',[&$data]);
+
             // Collect all data of a new record
-            $this->persistence->insert($this, $this->get());
+            $this->id = $this->persistence->insert($this, $data);
+            $this->hook('afterInsert',[$this->id]);
 
             //$this->hook('beforeInsert', array(&$source));
         }
