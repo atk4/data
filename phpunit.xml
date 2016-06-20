@@ -16,6 +16,8 @@
     <testsuites>
         <testsuite name="tests">
             <directory>tests</directory>
+            <exclude>tests/smbo</exclude>
+
         </testsuite>
     </testsuites>
     <logging>
