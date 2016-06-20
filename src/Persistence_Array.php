@@ -26,6 +26,10 @@ class Persistence_Array extends Persistence {
             unset($defaults[0]);
         }
 
+        $defaults = array_merge([
+            '_default_class_join' => 'atk4\data\Join_Array',
+        ], $defaults);
+
         return parent::add($m, $defaults);
     }
 

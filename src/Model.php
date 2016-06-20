@@ -32,6 +32,7 @@ class Model implements \ArrayAccess
      */
     protected $_default_class_addExpression = 'atk4\data\Field_Callback';
 
+    protected $_default_class_join = 'atk4\data\Join';
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -365,7 +366,6 @@ class Model implements \ArrayAccess
     }
     // }}}
 
-
     // {{{ Persistence-related logic
     public function loaded()
     {
@@ -528,4 +528,27 @@ class Model implements \ArrayAccess
 
     // }}}
 
+    // {{{ Join support
+    /**
+     * Creates an objects that describes relationship between multiple tables (or collections)
+     *
+     * When object is loaded, then instead of pulling all the data from a single table,
+     * join will also query $foreign table in order to find additional fields. When inserting
+     * the record will be also added inside $foreign_table and relationship will be maintained
+     */
+    public function join($foreign_table, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        } elseif (isset($defaults[0])) {
+            $defaults['master_field'] = $defaults[0];
+            unset($defaults[0]);
+        }
+
+        $defaults[0] = $foreign_table;
+
+        $c = $this->_default_class_join;
+        return $this->add(new $c($defaults));
+    }
+    // }}}
 }
