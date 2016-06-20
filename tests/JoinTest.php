@@ -57,7 +57,7 @@ class JoinTest extends \PHPUnit_Framework_TestCase
 
         // tricky cases to testt
         //
-        $m->join('foo.bar', ['master_field'=>'baz']);
+        //$m->join('foo.bar', ['master_field'=>'baz']);
         // foreign_table = 'foo.bar'
     }
 }
