@@ -448,7 +448,7 @@ class Model implements \ArrayAccess
                 // get the value of the field
                 $value = $this->get($name);
 
-                if ($field->join) {
+                if (isset($field->join)) {
                     // storing into a different table join
                     $field->join->set($actual, $value);
                 } else {
@@ -476,7 +476,7 @@ class Model implements \ArrayAccess
                 // get actual name of the field
                 $actual = $field->actual ?: $name;
 
-                if ($field->join) {
+                if (isset($field->join)) {
                     // storing into a different table join
                     $field->join->set($actual, $value);
                 } else {
