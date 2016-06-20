@@ -416,8 +416,7 @@ class Model implements \ArrayAccess
             $this->id = $id;
             $this->hook('afterLoad');
         }else{
-            $this->data=[];
-            unset($this->id);
+            $this->unload();
         }
 
 
