@@ -1,4 +1,4 @@
-<?php // vim:ts=4:sw=4:et:fdm=marker
+<?php // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
 namespace atk4\data;
 
@@ -20,17 +20,18 @@ class Model implements \ArrayAccess
     /**
      * The class used by hasOne() method
      */
-    protected $_default_class_hasOne = 'data\data\Field_Reference';
+    protected $_default_class_hasOne = 'atk4\data\Field_Reference';
 
     /**
      * The class used by hasMany() method
      */
-    protected $_default_class_hasMany = 'data\data\Field_Many';
+    protected $_default_class_hasMany = 'atk4\data\Field_Many';
 
     /**
      * The class used by addField() method
      */
-    protected $_default_class_addExpression = 'data\data\Field_Callback';
+    protected $_default_class_addExpression = 'atk4\data\Field_Callback';
+
 
     /**
      * Contains name of table, session key, collection or file where this

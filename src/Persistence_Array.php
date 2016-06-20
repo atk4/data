@@ -1,4 +1,4 @@
-<?php
+<?php // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
 namespace atk4\data;
 
@@ -11,9 +11,9 @@ class Persistence_Array extends Persistence {
 
     public $data;
 
-    function __construct($data)
+    function __construct(&$data)
     {
-        $this->data = $data;
+        $this->data =& $data;
     }
 
     /**
@@ -81,7 +81,7 @@ class Persistence_Array extends Persistence {
 
         $type = $model->getElement($model->id_field)->type;
 
-        if ($type === 'integer') {
+        if ($type === 'int') {
             return count($ids) === 0 ? 1 : (max($ids) + 1);
         } elseif ($type == 'string') {
             return uniqid();
