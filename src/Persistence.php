@@ -8,6 +8,32 @@ class Persistence {
     }
     use \atk4\core\HookTrait;
 
+
+    public static function connect($dsn, $user = null, $password = null, $args = [])
+    {
+        if (strpos($dsn,':') === false) {
+            throw new Exception(["Your DSN format is invalid. Must be in 'driver:host:options' format", 'dsn'=>$dsn]);
+        }
+        list($driver, $rest) = explode(':', $dsn, 2);
+
+        switch (strtolower(isset($args['driver']) ?: $driver)) {
+            case 'mysql':
+            case 'sqlite':
+                return new Persistence_SQL($dsn, $user, $password, $args);
+            default:
+                throw new Exception([
+                    'Unable to determine pesistence driver from DSN',
+                    'dsn'=>$dsn
+                ]);
+        }
+    }
+
+
+
+
+
+
+
     /**
      * Associate model with the data driver
      */
