@@ -460,7 +460,11 @@ class Model implements \ArrayAccess
                 return $this;
             }
 
+            $this->hook('beforeModify',[&$data]);
+
             $this->persistence->update($this, $this->id, $data);
+
+            $this->hook('afterModify',[&$data]);
 
             //$this->hook('beforeUpdate', array(&$source));
         } else {

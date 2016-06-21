@@ -240,6 +240,78 @@ class JoinArrayTest extends TestCase
         ], $m_u->get());
     }
 
+    public function testJoinUpdate()
+    {
+        $a = [
+            'user'=>[
+                1=>['id'=>1, 'name'=>'John','contact_id'=>1],
+                2=>['id'=>2, 'name'=>'Peter','contact_id'=>1],
+                3=>['id'=>3, 'name'=>'Joe','contact_id'=>2],
+            ], 'contact'=>[
+                1=>['id'=>1, 'contact_phone'=>'+123'],
+                2=>['id'=>2, 'contact_phone'=>'+321'],
+            ]];
+        $db = new Persistence_Array($a);
+        $m_u = new Model($db, 'user');
+        $m_u->addField('contact_id');
+        $m_u->addField('name');
+        $j = $m_u->join('contact');
+        $j->addField('contact_phone');
+
+        $m_u->load(1);
+        $m_u['name'] = 'John 2';
+        $m_u['contact_phone'] = '+555';
+        $m_u->save();
+
+        $this->assertEquals([
+            'user'=>[
+                1=>['id'=>1, 'name'=>'John 2','contact_id'=>1],
+                2=>['id'=>2, 'name'=>'Peter','contact_id'=>1],
+                3=>['id'=>3, 'name'=>'Joe','contact_id'=>2],
+            ], 'contact'=>[
+                1=>['id'=>1, 'contact_phone'=>'+555'],
+                2=>['id'=>2, 'contact_phone'=>'+321'],
+            ]], $a
+        );
+
+        $m_u->load(3);
+        $m_u['name'] = 'XX';
+        $m_u['contact_phone'] = '+999';
+        $m_u->save();
+
+        $this->assertEquals([
+            'user'=>[
+                1=>['id'=>1, 'name'=>'John 2','contact_id'=>1],
+                2=>['id'=>2, 'name'=>'Peter','contact_id'=>1],
+                3=>['id'=>3, 'name'=>'XX','contact_id'=>2],
+            ], 'contact'=>[
+                1=>['id'=>1, 'contact_phone'=>'+555'],
+                2=>['id'=>2, 'contact_phone'=>'+999'],
+            ]], $a
+        );
+
+        $m_u->tryLoad(4);
+        $m_u['name'] = 'YYY';
+        $m_u['contact_phone'] = '+777';
+        $m_u->save();
+
+        $this->assertEquals([
+            'user'=>[
+                1=>['id'=>1, 'name'=>'John 2','contact_id'=>1],
+                2=>['id'=>2, 'name'=>'Peter','contact_id'=>1],
+                3=>['id'=>3, 'name'=>'XX','contact_id'=>2],
+                4=>['id'=>4, 'name'=>'YYY','contact_id'=>3],
+            ], 'contact'=>[
+                1=>['id'=>1, 'contact_phone'=>'+555'],
+                2=>['id'=>2, 'contact_phone'=>'+999'],
+                3=>['id'=>3, 'contact_phone'=>'+777'],
+            ]], $a
+        );
+    }
+
+
+
+
     public function testReverseJoin()
     {
         $a = [];

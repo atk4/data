@@ -76,11 +76,15 @@ class Persistence_Array extends Persistence {
         return $id;
     }
 
-    public function update(Model $m, $id, $data)
+    public function update(Model $m, $id, $data, $table = null)
     {
-        $this->data[$m->table][$id] =
+        if (!$table) {
+            $table = $m->table;
+        }
+
+        $this->data[$table][$id] =
             array_merge(
-                $this->data[$m->table][$id],
+                $this->data[$table][$id],
                 $data
             );
         return $id;

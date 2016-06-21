@@ -20,11 +20,11 @@ class Join_Array extends Join {
         if ($this->reverse) {
             $this->owner->addHook('afterInsert', $this, null, -5);
             $this->owner->addHook('beforeModify', $this, null, -5);
-            $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
+            //$this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
         } else {
             $this->owner->addHook('beforeInsert', $this);
             $this->owner->addHook('beforeModify', $this);
-            $this->owner->addHook('afterDelete', [$this, 'doDelete']);
+            //$this->owner->addHook('afterDelete', [$this, 'doDelete']);
             $this->owner->addHook('afterLoad', $this);
         }
     }
@@ -39,7 +39,7 @@ class Join_Array extends Join {
         $model->data = array_merge($data, $model->data);
     }
 
-    function afterUnload($model)
+    function afterUnload()
     {
         $this->id = null;
     }
@@ -93,36 +93,22 @@ class Join_Array extends Join {
         );
     }
 
-    function beforeModify($model, $query)
+    function beforeModify($model, &$data)
     {
         if ($this->weak) {
             return;
         }
 
-        if ($this->dsql->args['set']) {
-            $this->dsql->where($this->foreign_field, $this->id)->update();
-        }
-    }
+        $persistence = $this->persistence ?: 
+            $this->owner->persistence;
 
-    function doDelete($model, $id)
-    {
-        if ($this->weak) {
-            return;
-        }
+        $this->id = $persistence->update(
+            $model, 
+            $this->id,
+            $this->save_buffer, 
+            $this->foreign_table
+        );
 
-        $q = $model->dsql()->dsql();
-        $q
-            ->table($this->foreign_table)
-            ->where($this->foreign_field, $this->id)
-            ;
-
-        if ($this->delete_behaivour == 'cascade') {
-            $q->delete();
-        } elseif ($this->delete_behaivour == 'setnull') {
-            $q
-                ->set($this->foreign_field, null)
-                ->update();
-        }
     }
 
 
