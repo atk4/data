@@ -496,21 +496,9 @@ class Model implements \ArrayAccess
             //$this->hook('beforeInsert', array(&$source));
         }
 
-        //if ($this->controller) {
-            //$this->id = $this->persistence->save($this, $this->id, $source);
-        //}
-
-        /*
-        if ($is_update) {
-            $this->hook('afterUpdate');
-        } else {
-            $this->hook('afterInsert');
-        }
-         */
 
         if ($this->loaded()) {
             $this->dirty = [];
-            //$this->hook('afterSave', array($this->id));
         }
 
         return $this;
@@ -526,6 +514,31 @@ class Model implements \ArrayAccess
         $m->set($data);
         $m->save();
         return $m->id;
+    }
+
+    /**
+     * Delete record with a specified id. If no ID is specified
+     * then current record is deleted.
+     */
+    public function delete($id = null)
+    {
+        if ($id == $this->id) {
+            $id = null;
+        }
+
+        if ($id) {
+
+            $this->persistence->delete($this, $id);
+
+        } elseif ($this->loaded()) {
+
+            $this->hook('beforeDelete',[$id]);
+            $this->persistence->delete($this, $this->id);
+            $this->hook('afterDelete',[$id]);
+            $this->unload();
+        } else {
+            throw new Exception(['No active record is set, unable to delete.']);
+        }
     }
 
 

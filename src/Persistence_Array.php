@@ -90,6 +90,15 @@ class Persistence_Array extends Persistence {
         return $id;
     }
 
+    public function delete(Model $m, $id, $table = null)
+    {
+        if (!$table) {
+            $table = $m->table;
+        }
+
+        unset($this->data[$table][$id]);
+    }
+
     public function generateNewID($m, $table = null)
     {
         if (!$table) {

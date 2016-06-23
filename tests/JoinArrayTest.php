@@ -309,8 +309,64 @@ class JoinArrayTest extends TestCase
         );
     }
 
+    public function testJoinDelete()
+    {
+        $a = [
+            'user'=>[
+                1=>['id'=>1, 'name'=>'John 2','contact_id'=>1],
+                2=>['id'=>2, 'name'=>'Peter','contact_id'=>1],
+                3=>['id'=>3, 'name'=>'XX','contact_id'=>2],
+                4=>['id'=>4, 'name'=>'YYY','contact_id'=>3],
+            ], 'contact'=>[
+                1=>['id'=>1, 'contact_phone'=>'+555'],
+                2=>['id'=>2, 'contact_phone'=>'+999'],
+                3=>['id'=>3, 'contact_phone'=>'+777'],
+            ]];
+        $db = new Persistence_Array($a);
+        $m_u = new Model($db, 'user');
+        $m_u->addField('contact_id');
+        $m_u->addField('name');
+        $j = $m_u->join('contact');
+        $j->addField('contact_phone');
 
+        $m_u->load(1);
+        $m_u->delete();
 
+        $this->assertEquals([
+            'user'=>[
+                2=>['id'=>2, 'name'=>'Peter','contact_id'=>1],
+                3=>['id'=>3, 'name'=>'XX','contact_id'=>2],
+                4=>['id'=>4, 'name'=>'YYY','contact_id'=>3],
+            ], 'contact'=>[
+                2=>['id'=>2, 'contact_phone'=>'+999'],
+                3=>['id'=>3, 'contact_phone'=>'+777'],
+            ]], $a
+        );
+
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testLoadMissing()
+    {
+        $a = [
+            'user'=>[
+                2=>['id'=>2, 'name'=>'Peter','contact_id'=>1],
+                3=>['id'=>3, 'name'=>'XX','contact_id'=>2],
+                4=>['id'=>4, 'name'=>'YYY','contact_id'=>3],
+            ], 'contact'=>[
+                2=>['id'=>2, 'contact_phone'=>'+999'],
+                3=>['id'=>3, 'contact_phone'=>'+777'],
+            ]];
+        $db = new Persistence_Array($a);
+        $m_u = new Model($db, 'user');
+        $m_u->addField('contact_id');
+        $m_u->addField('name');
+        $j = $m_u->join('contact');
+        $j->addField('contact_phone');
+        $m_u->load(2);
+    }
 
     public function testReverseJoin()
     {

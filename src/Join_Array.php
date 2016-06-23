@@ -20,11 +20,11 @@ class Join_Array extends Join {
         if ($this->reverse) {
             $this->owner->addHook('afterInsert', $this, null, -5);
             $this->owner->addHook('beforeModify', $this, null, -5);
-            //$this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
+            $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
         } else {
             $this->owner->addHook('beforeInsert', $this);
             $this->owner->addHook('beforeModify', $this);
-            //$this->owner->addHook('afterDelete', [$this, 'doDelete']);
+            $this->owner->addHook('afterDelete', [$this, 'doDelete']);
             $this->owner->addHook('afterLoad', $this);
         }
     }
@@ -35,7 +35,15 @@ class Join_Array extends Join {
         $this->id = $model->data[$this->master_field];
         if (!$this->id) return;
 
-        $data = $model->persistence->load($model, $this->id, $this->foreign_table);
+        try {
+            $data = $model->persistence->load($model, $this->id, $this->foreign_table);
+        } catch(Exception $e) {
+            throw new Exception([
+                'Unable to load joined record',
+                'table'=>$this->foreign_table,
+                'id'=>$this->id
+            ], $e->getCode(), $e);
+        }
         $model->data = array_merge($data, $model->data);
     }
 
@@ -108,7 +116,24 @@ class Join_Array extends Join {
             $this->save_buffer, 
             $this->foreign_table
         );
+    }
 
+    function doDelete($model, $id)
+    {
+        if ($this->weak) {
+            return;
+        }
+
+        $persistence = $this->persistence ?: 
+            $this->owner->persistence;
+
+        $persistence->delete(
+            $model, 
+            $this->id,
+            $this->foreign_table
+        );
+
+        $this->id = null;
     }
 
 
