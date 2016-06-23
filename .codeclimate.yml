@@ -15,6 +15,8 @@ engines:
     checks:
       CyclomaticComplexity:
         enabled: false
+      Naming/LongVariable:
+        enabled: false
       Design/TooManyPublicMethods:
         enabled: false
       Design/TooManyMethods:

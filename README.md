@@ -231,6 +231,7 @@ Follow pull-request history and activity of repository to see what's going on.
 
 ## Past Updates
 
+* 29 May: Finished implementation of core logic for Business Model
 * 11 May: Released 0.1: Implemented code climate, test coverage and travis
 * 06 May: Revamped the concept, updated video and made it simpler
 * 22 Apr: Finalized concept, created presentation slides.
