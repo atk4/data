@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "658155ad9a1de7f5fa4fc24ca675c8fc",
-    "content-hash": "aa7076db7410885b883e85b8793a3a25",
+    "hash": "797ccb981b7d45df9ccc70f00e7ca048",
+    "content-hash": "d852ca9c3a753d989638f6e6b92ad5c2",
     "packages": [
         {
             "name": "atk4/core",
-            "version": "1.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/atk4/core.git",
-                "reference": "46ff1f16ba9cf66f05d06cae18326efb5b3ad6f6"
+                "reference": "4b9ab906279d834b0870c8182e2cf62c8b102aa6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atk4/core/zipball/46ff1f16ba9cf66f05d06cae18326efb5b3ad6f6",
-                "reference": "46ff1f16ba9cf66f05d06cae18326efb5b3ad6f6",
+                "url": "https://api.github.com/repos/atk4/core/zipball/4b9ab906279d834b0870c8182e2cf62c8b102aa6",
+                "reference": "4b9ab906279d834b0870c8182e2cf62c8b102aa6",
                 "shasum": ""
             },
             "require": {
@@ -53,7 +53,7 @@
                 "php",
                 "trains"
             ],
-            "time": "2016-05-21 17:48:01"
+            "time": "2016-06-24 17:25:59"
         },
         {
             "name": "atk4/dsql",
