@@ -121,7 +121,7 @@ class Join_SQL extends Join {
             $query = $this->join->dsql;
         }
 
-        $query->set($this->master_field, $id);
+        $query->set($this->master_field, $this->id);
     }
 
     function afterInsert($model, $id)

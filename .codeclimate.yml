@@ -25,6 +25,8 @@ engines:
         enabled: false
       Design/TooManyMethods:           # because we solve complex stuff
         enabled: false
+      Design/TooManyFields:            # because we solve complex things
+        enabled: false
       Design/NpathComplexity:          # because splitting up complex stuff into methods makes things even more complex
         enabled: false
       Design/WeightedMethodCount:      # because we we solve complex stuff
