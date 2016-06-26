@@ -37,7 +37,7 @@ class Model implements \ArrayAccess
      * model normally lives. The interpretation of the table will be decoded
      * by persistence driver.
      *
-     * You can define this field as associtaive array where "key" is used
+     * You can define this field as associative array where "key" is used
      * as the name of pesistence driver. Here is example for mysql and default:
      *
      * $table = ['user', 'mysql'=>'tbl_user'];
@@ -47,9 +47,9 @@ class Model implements \ArrayAccess
     public $table = null;
 
     /**
-     * Persistance driver inherited fromr atk4\data\Persistence
+     * Persistence driver inherited from atk4\data\Persistence
      */
-    public $persistence;
+    public $persistence = null;
 
     /**
      * Persistence store some custom information in here that may be useful
@@ -58,6 +58,18 @@ class Model implements \ArrayAccess
      * @var array
      */
     public $persistence_data = [];
+
+    /**
+     * Conditions list several conditions that must be met by all the
+     * records in the associated DataSet. Conditions are stored as
+     * elements of array of 1 to 3. Use addCondition() to add new
+     * conditions.
+     */
+    public $conditions = [];
+
+    public $limit;
+
+    public $order;
 
     /**
      * Curretly loaded record data. This record is associative array
@@ -132,10 +144,26 @@ class Model implements \ArrayAccess
      *  - it's shorter
      *  - type hinting will work;
      */
-    function __construct($driver = null, $defaults = [])
+    function __construct($persistence = null, $defaults = [])
     {
-        if ($driver) {
-            $driver->add($this, $defaults);
+
+        if (is_string($defaults)) {
+            $defaults = [$defaults];
+        }
+
+        foreach ($defaults as $key => $val) {
+            $this->$key = $val;
+        }
+
+        if ($persistence) {
+            $persistence->add($this, $defaults);
+        }
+
+    }
+
+    function setDefaults($defaults){
+        foreach ($defaults as $key => $val) {
+            $this->$key = $val;
         }
     }
 
@@ -147,7 +175,7 @@ class Model implements \ArrayAccess
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, ['system'=>true]);
+            $this->addField($this->id_field, ['system'=>true, 'type'=>'int']);
         }
     }
 
@@ -325,5 +353,91 @@ class Model implements \ArrayAccess
     }
     // }}}
 
+
+    // {{{ Persistence-related logic
+    public function loaded()
+    {
+        return $this->id!==null;
+    }
+
+    public function unload()
+    {
+        $this->id = null;
+        $this->data = [];
+        $this->dirty = [];
+    }
+
+
+    public function load($id)
+    {
+        if (!$this->persistence) {
+            throw new Exception([
+                'Model is not associated with any database'
+            ]);
+        }
+
+        if ($this->loaded()) {
+            $this->unload();
+        }
+
+        $this->persistence->load($this, $id);
+
+        return $this;
+    }
+
+
+    public function save()
+    {
+        if (!$this->persistence) {
+            throw new Exception([
+                'Model is not associated with any database'
+            ]);
+        }
+
+        $is_update = $this->loaded();
+        if ($is_update) {
+            $data = array();
+            foreach ($this->dirty as $name => $junk) {
+                $data[$name] = $this->get($name);
+            }
+
+            // No save needed, nothing was changed
+            if (!$data) {
+                return $this;
+            }
+
+            $this->persistence->update($this, $this->id, $data);
+
+            //$this->hook('beforeUpdate', array(&$source));
+        } else {
+
+            // Collect all data of a new record
+            $this->persistence->insert($this, $this->get());
+
+            //$this->hook('beforeInsert', array(&$source));
+        }
+
+        //if ($this->controller) {
+            //$this->id = $this->persistence->save($this, $this->id, $source);
+        //}
+
+        /*
+        if ($is_update) {
+            $this->hook('afterUpdate');
+        } else {
+            $this->hook('afterInsert');
+        }
+         */
+
+        if ($this->loaded()) {
+            $this->dirty = [];
+            //$this->hook('afterSave', array($this->id));
+        }
+
+        return $this;
+    }
+
+
+    // }}}
 
 }

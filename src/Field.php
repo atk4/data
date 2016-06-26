@@ -8,6 +8,8 @@ class Field {
 
     public $default = null;
 
+    public $type = 'string';
+
     function __construct($defaults = []) {
 
         foreach ($defaults as $key => $val) {
