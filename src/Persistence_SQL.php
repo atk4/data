@@ -168,7 +168,7 @@ class Persistence_SQL extends Persistence {
             ]);
         }
 
-        $m->data = $data;
+        return $data;
     }
 
     public function tryLoad(Model $m, $id)
