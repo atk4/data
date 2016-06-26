@@ -14,7 +14,7 @@ class Persistence {
         if (strpos($dsn,':') === false) {
             throw new Exception(["Your DSN format is invalid. Must be in 'driver:host:options' format", 'dsn'=>$dsn]);
         }
-        list($driver, $rest) = explode(':', $dsn, 2);
+        $driver = explode(':', $dsn, 2)[0];
 
         switch (strtolower(isset($args['driver']) ?: $driver)) {
             case 'mysql':
