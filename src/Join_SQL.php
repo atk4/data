@@ -64,14 +64,19 @@ class Join_SQL extends Join {
         // Add necessary hooks
         if ($this->reverse) {
             $this->owner->addHook('afterInsert', $this, null, -5);
-            $this->owner->addHook('beforeModify', $this, null, -5);
+            $this->owner->addHook('beforeUpdateQuery', $this, null, -5);
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
         } else {
             $this->owner->addHook('beforeInsertQuery', $this);
-            $this->owner->addHook('beforeModify', $this);
+            $this->owner->addHook('beforeUpdateQuery', $this);
             $this->owner->addHook('afterDelete', [$this, 'doDelete']);
             $this->owner->addHook('afterLoad', $this);
         }
+    }
+
+    function dsql()
+    {
+        return clone $this->dsql;
     }
 
 
@@ -134,9 +139,9 @@ class Join_SQL extends Join {
             return;
         }
 
-        $this->dsql->set($this->foreign_field, null);
-        $this->dsql->insert();
-        $this->id = $this->dsql->connection->lastInsertID();
+        $insert = $this->dsql()->set($this->foreign_field, null);
+        $insert->insert();
+        $this->id = $insert->connection->lastInsertID();
 
         if (isset($this->join)) {
             $query = $this->join->dsql;
@@ -151,24 +156,27 @@ class Join_SQL extends Join {
             return;
         }
 
-        $this->id = $this->dsql
+        $insert = $this->dsql();
+        $insert
             ->set(
                 $this->foreign_field, 
                 isset($this->join) ? $this->join->id : $id
-            )
-            ->insert();
-
+            );
+        $insert->insert();
+        $this->id = $insert->connection->lastInsertID();
     }
 
-    function beforeModify($model, $query)
+    function beforeUpdateQuery($model, $query)
     {
         if ($this->weak) {
             return;
         }
 
-        if ($this->dsql->args['set']) {
-            $this->dsql->where($this->foreign_field, $this->id)->update();
-        }
+        //if ($this->dsql->args['set']) {
+        $update = $this->dsql();
+        $update->where($this->foreign_field, $this->id);
+        $update->update();
+        //}
     }
 
     function doDelete($model, $id)

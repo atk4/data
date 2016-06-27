@@ -230,6 +230,7 @@ class Persistence_SQL extends Persistence {
         $m->hook('beforeInsertQuery',[$insert]);
 
         $insert->execute();
+        return $insert->connection->lastInsertID();
     }
 
     public function update(Model $m, $id, $data)
@@ -242,6 +243,8 @@ class Persistence_SQL extends Persistence {
             $update->set($f->actual ?: $f->short_name, $value);
         }
         $update->where($m->getElement($m->id_field), $id);
+
+        $m->hook('beforeUpdateQuery',[$update]);
 
         $update->execute();
     }

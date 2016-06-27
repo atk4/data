@@ -8,6 +8,8 @@ class SQLTestCase extends TestCase {
 
     public $db;
 
+    public $tables = null;
+
     function setUp()
     {
         parent::setUp();
@@ -20,6 +22,8 @@ class SQLTestCase extends TestCase {
      */
     function setDB($db_data)
     {
+
+        $this->tables = array_keys($db_data);
 
         // create databases
         foreach ($db_data as $table=>$data) {
@@ -67,7 +71,13 @@ class SQLTestCase extends TestCase {
         }
     }
 
-    function getDB($tables, $noid = false) {
+    function getDB($tables = null, $noid = false) {
+
+        if (!$tables) {
+            $tables = $this->tables;
+        }
+
+
         if (is_string($tables)) {
             $tables = array_map('trim',explode(',', $tables));
         }
