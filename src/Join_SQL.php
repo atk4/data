@@ -189,6 +189,8 @@ class Join_SQL extends Join {
         $delete
             ->reset('table')
             ->table($this->foreign_table)
+            // TODO: remove 2 lines above when DSQL fixes it's delete template
+            // https://github.com/atk4/dsql/commit/32e9e0ceee2c7032d2f7012f612f8718c12e9d10
             ->where($this->foreign_field, $this->id)
             ;
 
