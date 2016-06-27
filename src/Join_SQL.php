@@ -187,6 +187,8 @@ class Join_SQL extends Join {
 
         $delete = $this->dsql();
         $delete
+            ->reset('table')
+            ->table($this->foreign_table)
             ->where($this->foreign_field, $this->id)
             ;
 
