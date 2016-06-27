@@ -127,7 +127,7 @@ class Model implements \ArrayAccess
      * The default behaviour is to return NULL and allow you to set new
      * fields even if addField() was not used to set the field.
      */
-    protected $only_fields = false;
+    public $only_fields = false;
 
     // }}}
 

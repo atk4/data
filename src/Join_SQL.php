@@ -42,7 +42,10 @@ class Join_SQL extends Join {
     {
         parent::init();
 
-        $this->dsql = $this->owner->dsql();
+        $this->dsql = $this->owner->persistence->initQuery($this->owner);
+        $this->dsql->reset('table');
+
+        $this->owner->persistence_data['use_table_prefixes']=true;
 
         // If kind is not specified, figure out join type
         if (!isset($this->kind)) {
@@ -54,15 +57,20 @@ class Join_SQL extends Join {
             $this->foreign_alias = $this->short_name;
         }
 
+        $this->dsql->table($this->foreign_table, $this->foreign_alias);
+
+        $this->owner->addhook('initSelectQuery', $this);
+
         // Add necessary hooks
         if ($this->reverse) {
-            $this->owner->addHook('beforeInsert', $this);
-            $this->owner->addHook('beforeModify', $this);
-            $this->owner->addHook('afterDelete', [$this, 'doDelete']);
-        } else {
             $this->owner->addHook('afterInsert', $this, null, -5);
             $this->owner->addHook('beforeModify', $this, null, -5);
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
+        } else {
+            $this->owner->addHook('beforeInsertQuery', $this);
+            $this->owner->addHook('beforeModify', $this);
+            $this->owner->addHook('afterDelete', [$this, 'doDelete']);
+            $this->owner->addHook('afterLoad', $this);
         }
     }
 
@@ -70,7 +78,7 @@ class Join_SQL extends Join {
     /**
      * Before query is executed, this method will be called. 
      */
-    function updateSelectQuery($query)
+    function initSelectQuery($model, $query)
     {
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
@@ -83,11 +91,23 @@ class Join_SQL extends Join {
             return;
         }
 
-        //if ($this->reverse) {
-            //$query->field([$this->short_name=>($this->join?:($this->owner->table.'.'.$this->master_field]);
-        //} else {
+        $query->join(
+            $this->foreign_table.'.'.$this->foreign_field.(
+                isset($this->foreign_alias)?(' '.$this->foreign_alias):''
+            ),
+            (
+                isset($this->owner->table_alias) ? 
+                $this->owner->table_alias: 
+                ($this->owner->table).'.'.$this->master_field)
+        );
+
+        if ($this->reverse) {
+            $query->field([$this->short_name=>($this->join?:($this->owner->table.'.'.$this->master_field))]);
+        } else {
+
+
             $query->field([$this->short_name=>$this->foreign_alias.'.'.$this->foreign_field]);
-        //}
+        }
     }
 
     function afterLoad($model)
@@ -103,21 +123,22 @@ class Join_SQL extends Join {
     }
 
 
-    function beforeInsert($model, $query)
+    function beforeInsertQuery($model, $query)
     {
         if ($this->weak) {
             return;
         }
 
         // The value for the master_field is set, so we are going to use existing record anyway
-        if ($this->model->hasElement($this->master_field) && $this->model[$this->master_field]) {
+        if ($model->hasElement($this->master_field) && $model[$this->master_field]) {
             return;
         }
 
         $this->dsql->set($this->foreign_field, null);
-        $this->id = $this->dsql->insert();
+        $this->dsql->insert();
+        $this->id = $this->dsql->connection->lastInsertID();
 
-        if ($this->join) {
+        if (isset($this->join)) {
             $query = $this->join->dsql;
         }
 
@@ -133,9 +154,10 @@ class Join_SQL extends Join {
         $this->id = $this->dsql
             ->set(
                 $this->foreign_field, 
-                $this->join ? $this->join->id : $id
+                isset($this->join) ? $this->join->id : $id
             )
             ->insert();
+
     }
 
     function beforeModify($model, $query)

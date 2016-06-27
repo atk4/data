@@ -8,15 +8,18 @@ class SQLTestCase extends TestCase {
 
     public $db;
 
+    function setUp()
+    {
+        parent::setUp();
+        // establish connection
+        $this->db = new Persistence_SQL('sqlite::memory:');
+    }
+
     /**
      * Sets database into a specific test
      */
     function setDB($db_data)
     {
-        // establish connection
-        $this->db = new Persistence_SQL('sqlite::memory:');
-
-
 
         // create databases
         foreach ($db_data as $table=>$data) {
@@ -50,6 +53,8 @@ class SQLTestCase extends TestCase {
 
             foreach ($data as $id=>$row) {
                 $s = new Query(['connection'=>$this->db->connection]);
+                if($id === '_') continue;
+
                 $s->table($table);
                 $s->set($row);
 
@@ -71,16 +76,26 @@ class SQLTestCase extends TestCase {
 
         foreach ($tables as $table) {
 
+            $data2 = [];
+
             $s = new Query(['connection'=>$this->db->connection]);
             $data = $s->table($table)->get();
 
-            if($noid) {
-                foreach($data as &$row) {
+            foreach($data as &$row) {
+
+                foreach($row as &$val) {
+                    if (is_numeric($val)) $val = (int)$val;
+                }
+
+                if($noid) {
                     unset($row['id']);
+                    $data2[] = $row;
+                }else{
+                    $data2[$row['id']] = $row;
                 }
             }
 
-            $ret[$table] = $data;
+            $ret[$table] = $data2;
         }
 
         return $ret;
