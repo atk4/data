@@ -10,6 +10,8 @@ class Field {
 
     public $type = 'string';
 
+    public $actual = null;
+
     function __construct($defaults = []) {
 
         foreach ($defaults as $key => $val) {
@@ -20,6 +22,25 @@ class Field {
     public function getDefault()
     {
         return $this->default;
+    }
+
+    public function __debugInfo()
+    {
+        $object = (array)$this;
+        unset($object['owner']);
+
+        foreach($object as $key=>$val){
+            if ($val === null) {
+                unset($object[$key]);
+                continue;
+            }
+
+            if ($key[0] == '_') {
+                unset($object[$key]);
+            }
+        }
+
+        return $object;
     }
 }
 

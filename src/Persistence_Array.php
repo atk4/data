@@ -1,4 +1,4 @@
-<?php
+<?php // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
 namespace atk4\data;
 
@@ -11,9 +11,9 @@ class Persistence_Array extends Persistence {
 
     public $data;
 
-    function __construct($data)
+    function __construct(&$data)
     {
-        $this->data = $data;
+        $this->data =& $data;
     }
 
     /**
@@ -29,39 +29,46 @@ class Persistence_Array extends Persistence {
         return parent::add($m, $defaults);
     }
 
-    public function load(Model $m, $id)
+    public function load(Model $m, $id, $table = null)
     {
-        if (!isset($this->data[$m->table])) {
+        if (!isset($this->data[$m->table]) && !isset($table)) {
             throw Exception ([
                 'Table was not found in the array data source',
                 'table'=>$m->table
             ]);
         }
-
-        if (!isset($this->data[$m->table][$id])) {
-            throw Exception([
+        if (!isset($this->data[$table ?: $m->table][$id])) {
+            throw new Exception([
                 'Record with specified ID was not found',
                 'id'=>$id
             ], 404);
         }
 
-        return $this->tryLoad($m, $id);
+        return $this->tryLoad($m, $id, $table);
     }
 
-    public function tryLoad(Model $m, $id)
+    public function tryLoad(Model $m, $id, $table = null)
     {
-        if (!isset($this->data[$m->table][$id])) {
+
+        if (!isset($table)) {
+            $table = $m->table;
+        }
+
+        if (!isset($this->data[$table][$id])) {
             return false;
         }
 
-        $m->data = $this->data[$m->table][$id];
-        $m->id = $id;
+        return $this->data[$table][$id];
     }
 
-    public function insert(Model $m, $data)
+    public function insert(Model $m, $data, $table = null)
     {
-        $id = $this->generateNewID($m);
-        $this->data[$m->table][$id] = $data;
+        if (!$table) {
+            $table = $m->table;
+        }
+        $id = $this->generateNewID($m, $table);
+        $data[$m->id_field] = $id;
+        $this->data[$table][$id] = $data;
         return $id;
     }
 
@@ -75,13 +82,17 @@ class Persistence_Array extends Persistence {
         return $id;
     }
 
-    public function generateNewID($m)
+    public function generateNewID($m, $table = null)
     {
-        $ids = array_keys($this->data[$m->table]);
+        if (!$table) {
+            $table = $m->table;
+        }
 
-        $type = $model->getElement($model->id_field)->type;
+        $ids = array_keys($this->data[$table]);
 
-        if ($type === 'integer') {
+        $type = $m->getElement($m->id_field)->type;
+
+        if ($type === 'int') {
             return count($ids) === 0 ? 1 : (max($ids) + 1);
         } elseif ($type == 'string') {
             return uniqid();
