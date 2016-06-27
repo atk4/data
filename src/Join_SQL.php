@@ -185,19 +185,18 @@ class Join_SQL extends Join {
             return;
         }
 
-        $q = $model->dsql()->dsql();
-        $q
-            ->table($this->foreign_table)
+        $delete = $this->dsql();
+        $delete
             ->where($this->foreign_field, $this->id)
             ;
 
-        if ($this->delete_behaivour == 'cascade') {
-            $q->delete();
-        } elseif ($this->delete_behaivour == 'setnull') {
-            $q
-                ->set($this->foreign_field, null)
-                ->update();
-        }
+        //if ($this->delete_behaivour == 'cascade') {
+            $delete->delete();
+        //} elseif ($this->delete_behaivour == 'setnull') {
+            //$delete
+                //->set($this->foreign_field, null)
+                //->update();
+        //}
     }
 
     function set($field, $value)

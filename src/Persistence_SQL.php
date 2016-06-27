@@ -248,4 +248,12 @@ class Persistence_SQL extends Persistence {
 
         $update->execute();
     }
+
+    public function delete(Model $m, $id)
+    {
+        $delete = $this->action($m, 'delete');
+        $delete->where($m->getElement($m->id_field), $id);
+        $m->hook('beforeDeleteQuery', [$delete]);
+        $delete->execute();
+    }
 }
