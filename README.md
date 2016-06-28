@@ -212,16 +212,15 @@ See our Wiki page for additional questions and answers. Click [EDIT] button and 
 Follow pull-request history and activity of repository to see what's going on.
 
 ```
-0.3   Add support for strong and weak join when persisting.
-0.4   Add support for Conditions to implement DataSet.
-0.5   Further integrate with the Query Builder, add Expression support.
-0.6   Add relation traversal support.
-0.7   Add support for hooks (before/after save) in (DM and PM).
-0.8   Add support for dealing with multiple persistences.
-0.9  Add ability to specify meta-information into fields.
-0.10  Add support for derived models (unions).
-0.11  Add support for 3rd party vendor implementations.
-0.12  Achieve our test coverage, code quality and documentation standards.
+0.5   Add support for Conditions to implement DataSet.
+0.6   Further integrate with the Query Builder, add Expression support.
+0.7   Add relation traversal support.
+0.8   Add support for hooks (before/after save) in (DM and PM).
+0.9   Add support for dealing with multiple persistences.
+0.10  Add ability to specify meta-information into fields.
+0.11  Add support for derived models (unions).
+0.12  Add support for 3rd party vendor implementations.
+0.13  Achieve our test coverage, code quality and documentation standards.
 1.0   First Stable Release.
 1.1   Add support for MongoDB.
 1.2   Add support and docs for Validators.
@@ -229,7 +228,9 @@ Follow pull-request history and activity of repository to see what's going on.
 
 ## Past Updates
 
-* 27 Jun: Finally shipping 0.2: With good starting support of SQL and Array 
+* 28 Jun: Released join support for SQL and Array
+* 24 Jun: Released 0.3 with general improvements
+* 17 Jun: Finally shipping 0.2: With good starting support of SQL and Array 
 * 29 May: Finished implementation of core logic for Business Model
 * 11 May: Released 0.1: Implemented code climate, test coverage and travis
 * 06 May: Revamped the concept, updated video and made it simpler
