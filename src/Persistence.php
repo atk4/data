@@ -54,9 +54,9 @@ class Persistence {
             $m->setDefaults($defaults);
         }
 
-        $m = $this->_add($m, $defaults);
         $m->persistence = $this;
         $m->persistence_data = [];
+        $m = $this->_add($m, $defaults);
         return $m;
     }
 
