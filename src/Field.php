@@ -12,6 +12,8 @@ class Field {
 
     public $actual = null;
 
+    public $join = null;
+
     function __construct($defaults = []) {
 
         foreach ($defaults as $key => $val) {

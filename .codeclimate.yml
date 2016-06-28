@@ -15,33 +15,37 @@ engines:
     - ae61f5e0cda0328c140f3b7298dbb8af # don't complain about call to static connection, as it's a fallback
     - e71149b967391adfaf3347a53d3c0023 # don't complain about $junk used in foreach when we only need keys
     checks:
-      CyclomaticComplexity:
+      CyclomaticComplexity:            # because we solve complex stuff
         enabled: false
-      Naming/LongVariable:
+      Naming/LongVariable:             # because we have variable naming patterns
         enabled: false
-      Design/TooManyPublicMethods:
+      UnusedFormalParameter:           # because when we extend methods/hooks we wish to keep unified method call interface
         enabled: false
-      Design/TooManyMethods:
+      Design/TooManyPublicMethods:     # because we follow our internal design patters
         enabled: false
-      Design/NpathComplexity:
+      Design/TooManyMethods:           # because we solve complex stuff
         enabled: false
-      Design/WeightedMethodCount:
+      Design/TooManyFields:            # because we solve complex things
         enabled: false
-      Design/LongClass:
+      Design/NpathComplexity:          # because splitting up complex stuff into methods makes things even more complex
         enabled: false
-      Controversial/CamelCaseMethodName:
+      Design/WeightedMethodCount:      # because we we solve complex stuff
         enabled: false
-      Controversial/CamelCaseParameterName:
+      Design/LongClass:                # because we design carefully what is native and what is extension
         enabled: false
-      Controversial/CamelCasePropertyName:
+      Controversial/CamelCaseMethodName:    # because we need certain method naming patterns, render_blah for rendering [blah]
         enabled: false
-      Controversial/CamelCaseVariableName:
+      Controversial/CamelCaseParameterName: # 
         enabled: false
-      Controversial/CamelCaseClassName:
+      Controversial/CamelCasePropertyName:  # because we use _better_dont_change properties
         enabled: false
-      Naming/ShortVariable:
+      Controversial/CamelCaseVariableName:  # 
         enabled: false
-      CleanCode/ElseExpression:
+      Controversial/CamelCaseClassName:     # Because we use Join_SQL where we specifically include _
+        enabled: false
+      Naming/ShortVariable:             # because sometimes variables should be short
+        enabled: false
+      CleanCode/ElseExpression:         # because following this makes code more complex
         enabled: false
 
   radon:

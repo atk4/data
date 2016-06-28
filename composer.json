@@ -18,13 +18,16 @@
         "atk4/core": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.0",
+        "phpunit/phpunit": "4.*",
         "codeclimate/php-test-reporter": "*"
     },
     "autoload": {
         "psr-4": {"atk4\\data\\":"src/"}
     },
     "autoload-dev": {
-        "psr-4": {"atk4\\data\\tests\\":"tests/"}
+        "psr-4": {
+          "atk4\\data\\tests\\":"tests/",
+          "atk4\\data\\tests\\smbo\\":"tests/smbo"
+        }
     }
 }

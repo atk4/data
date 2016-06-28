@@ -14,15 +14,15 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable {
         if (isset($this->owner->persistence_data['use_table_prefixes'])) {
             if ($this->actual) {
                 return $expression->expr('{}.{} {}', [
-                    $this->relation ? $this->relation->short_name 
+                    $this->join ? $this->join->short_name 
                     : ($this->owner->table_alias ?: $this->owner->table),
                     $this->actual, 
                     $this->short_name
                 ]);
             } else {
                 return $expression->expr('{}.{}', [
-                    $this->relation ? $this->relation->short_name 
-                    : ($this->owner->table_alias ?: $this->owner->table),
+                    $this->join ? $this->join->short_name 
+                    : (isset($this->owner->table_alias) ? $this->owner->table_alias : $this->owner->table),
                     $this->short_name
                 ]);
             }

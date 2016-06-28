@@ -26,6 +26,10 @@ class Persistence_Array extends Persistence {
             unset($defaults[0]);
         }
 
+        $defaults = array_merge([
+            '_default_class_join' => 'atk4\data\Join_Array',
+        ], $defaults);
+
         return parent::add($m, $defaults);
     }
 
@@ -72,14 +76,27 @@ class Persistence_Array extends Persistence {
         return $id;
     }
 
-    public function update(Model $m, $id, $data)
+    public function update(Model $m, $id, $data, $table = null)
     {
-        $this->data[$m->table][$id] =
+        if (!$table) {
+            $table = $m->table;
+        }
+
+        $this->data[$table][$id] =
             array_merge(
-                $this->data[$m->table][$id],
+                $this->data[$table][$id],
                 $data
             );
         return $id;
+    }
+
+    public function delete(Model $m, $id, $table = null)
+    {
+        if (!$table) {
+            $table = $m->table;
+        }
+
+        unset($this->data[$table][$id]);
     }
 
     public function generateNewID($m, $table = null)

@@ -32,6 +32,7 @@ class Model implements \ArrayAccess
      */
     protected $_default_class_addExpression = 'atk4\data\Field_Callback';
 
+    protected $_default_class_join = 'atk4\data\Join';
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -126,7 +127,7 @@ class Model implements \ArrayAccess
      * The default behaviour is to return NULL and allow you to set new
      * fields even if addField() was not used to set the field.
      */
-    protected $only_fields = false;
+    public $only_fields = false;
 
     // }}}
 
@@ -365,7 +366,6 @@ class Model implements \ArrayAccess
     }
     // }}}
 
-
     // {{{ Persistence-related logic
     public function loaded()
     {
@@ -460,7 +460,11 @@ class Model implements \ArrayAccess
                 return $this;
             }
 
+            $this->hook('beforeModify',[&$data]);
+
             $this->persistence->update($this, $this->id, $data);
+
+            $this->hook('afterModify',[&$data]);
 
             //$this->hook('beforeUpdate', array(&$source));
         } else {
@@ -492,21 +496,9 @@ class Model implements \ArrayAccess
             //$this->hook('beforeInsert', array(&$source));
         }
 
-        //if ($this->controller) {
-            //$this->id = $this->persistence->save($this, $this->id, $source);
-        //}
-
-        /*
-        if ($is_update) {
-            $this->hook('afterUpdate');
-        } else {
-            $this->hook('afterInsert');
-        }
-         */
 
         if ($this->loaded()) {
             $this->dirty = [];
-            //$this->hook('afterSave', array($this->id));
         }
 
         return $this;
@@ -524,7 +516,55 @@ class Model implements \ArrayAccess
         return $m->id;
     }
 
+    /**
+     * Delete record with a specified id. If no ID is specified
+     * then current record is deleted.
+     */
+    public function delete($id = null)
+    {
+        if ($id == $this->id) {
+            $id = null;
+        }
+
+        if ($id) {
+
+            $this->persistence->delete($this, $id);
+
+        } elseif ($this->loaded()) {
+
+            $this->hook('beforeDelete',[$id]);
+            $this->persistence->delete($this, $this->id);
+            $this->hook('afterDelete',[$id]);
+            $this->unload();
+        } else {
+            throw new Exception(['No active record is set, unable to delete.']);
+        }
+    }
+
 
     // }}}
 
+    // {{{ Join support
+    /**
+     * Creates an objects that describes relationship between multiple tables (or collections)
+     *
+     * When object is loaded, then instead of pulling all the data from a single table,
+     * join will also query $foreign table in order to find additional fields. When inserting
+     * the record will be also added inside $foreign_table and relationship will be maintained
+     */
+    public function join($foreign_table, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        } elseif (isset($defaults[0])) {
+            $defaults['master_field'] = $defaults[0];
+            unset($defaults[0]);
+        }
+
+        $defaults[0] = $foreign_table;
+
+        $c = $this->_default_class_join;
+        return $this->add(new $c($defaults));
+    }
+    // }}}
 }
