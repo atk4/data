@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "797ccb981b7d45df9ccc70f00e7ca048",
-    "content-hash": "d852ca9c3a753d989638f6e6b92ad5c2",
+    "hash": "f15f54240b2407904125ba014e593f21",
+    "content-hash": "eeea2ec09ddc4632e6f687a27b9c09f2",
     "packages": [
         {
             "name": "atk4/core",
