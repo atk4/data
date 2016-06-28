@@ -1,4 +1,4 @@
-<?php // vim:ts=4:sw=4:et:fdm=marker
+<?php // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
 namespace atk4\data;
 
@@ -20,17 +20,19 @@ class Model implements \ArrayAccess
     /**
      * The class used by hasOne() method
      */
-    protected $_default_class_hasOne = 'data\data\Field_Reference';
+    protected $_default_class_hasOne = 'atk4\data\Field_Reference';
 
     /**
      * The class used by hasMany() method
      */
-    protected $_default_class_hasMany = 'data\data\Field_Many';
+    protected $_default_class_hasMany = 'atk4\data\Field_Many';
 
     /**
      * The class used by addField() method
      */
-    protected $_default_class_addExpression = 'data\data\Field_Callback';
+    protected $_default_class_addExpression = 'atk4\data\Field_Callback';
+
+    protected $_default_class_join = 'atk4\data\Join';
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -125,7 +127,7 @@ class Model implements \ArrayAccess
      * The default behaviour is to return NULL and allow you to set new
      * fields even if addField() was not used to set the field.
      */
-    protected $only_fields = false;
+    public $only_fields = false;
 
     // }}}
 
@@ -187,6 +189,17 @@ class Model implements \ArrayAccess
         $this->add($field, $name);
         return $field;
     }
+
+    public function addFields($fields = [])
+    {
+        foreach ($fields as $field) {
+            $name = $field[0];
+            unset($field[0]);
+            $this->addField($name, $field);
+        }
+        return $this;
+    }
+
 
     public function onlyFields($fields = [])
     {
@@ -353,7 +366,6 @@ class Model implements \ArrayAccess
     }
     // }}}
 
-
     // {{{ Persistence-related logic
     public function loaded()
     {
@@ -380,7 +392,33 @@ class Model implements \ArrayAccess
             $this->unload();
         }
 
-        $this->persistence->load($this, $id);
+        $this->data = $this->persistence->load($this, $id);
+        $this->id = $id;
+        $this->hook('afterLoad');
+
+        return $this;
+    }
+
+    public function tryLoad($id)
+    {
+        if (!$this->persistence) {
+            throw new Exception([
+                'Model is not associated with any database'
+            ]);
+        }
+
+        if ($this->loaded()) {
+            $this->unload();
+        }
+
+        $this->data = $this->persistence->tryLoad($this, $id);
+        if($this->data){
+            $this->id = $id;
+            $this->hook('afterLoad');
+        }else{
+            $this->unload();
+        }
+
 
         return $this;
     }
@@ -398,7 +436,23 @@ class Model implements \ArrayAccess
         if ($is_update) {
             $data = array();
             foreach ($this->dirty as $name => $junk) {
-                $data[$name] = $this->get($name);
+                $field = $this->hasElement($name);
+                if (!$field) {
+                    continue;
+                }
+
+                // get actual name of the field
+                $actual = $field->actual ?: $name;
+
+                // get the value of the field
+                $value = $this->get($name);
+
+                if (isset($field->join)) {
+                    // storing into a different table join
+                    $field->join->set($actual, $value);
+                } else {
+                    $data[$actual] = $value;
+                }
             }
 
             // No save needed, nothing was changed
@@ -406,38 +460,111 @@ class Model implements \ArrayAccess
                 return $this;
             }
 
+            $this->hook('beforeModify',[&$data]);
+
             $this->persistence->update($this, $this->id, $data);
+
+            $this->hook('afterModify',[&$data]);
 
             //$this->hook('beforeUpdate', array(&$source));
         } else {
 
+            foreach ($this->get() as $name => $value) {
+
+                $field = $this->hasElement($name);
+                if (!$field) {
+                    continue;
+                }
+
+                // get actual name of the field
+                $actual = $field->actual ?: $name;
+
+                if (isset($field->join)) {
+                    // storing into a different table join
+                    $field->join->set($actual, $value);
+                } else {
+                    $data[$actual] = $value;
+                }
+            }
+
+            $this->hook('beforeInsert',[&$data]);
+
             // Collect all data of a new record
-            $this->persistence->insert($this, $this->get());
+            $this->id = $this->persistence->insert($this, $data);
+            $this->hook('afterInsert',[$this->id]);
 
             //$this->hook('beforeInsert', array(&$source));
         }
 
-        //if ($this->controller) {
-            //$this->id = $this->persistence->save($this, $this->id, $source);
-        //}
-
-        /*
-        if ($is_update) {
-            $this->hook('afterUpdate');
-        } else {
-            $this->hook('afterInsert');
-        }
-         */
 
         if ($this->loaded()) {
             $this->dirty = [];
-            //$this->hook('afterSave', array($this->id));
         }
 
         return $this;
     }
 
+    /**
+     * Faster method to add data, that does not modify active record
+     */
+    public function insert($data)
+    {
+        $m = clone $this;
+        $m->unload();
+        $m->set($data);
+        $m->save();
+        return $m->id;
+    }
+
+    /**
+     * Delete record with a specified id. If no ID is specified
+     * then current record is deleted.
+     */
+    public function delete($id = null)
+    {
+        if ($id == $this->id) {
+            $id = null;
+        }
+
+        if ($id) {
+
+            $this->persistence->delete($this, $id);
+
+        } elseif ($this->loaded()) {
+
+            $this->hook('beforeDelete',[$id]);
+            $this->persistence->delete($this, $this->id);
+            $this->hook('afterDelete',[$id]);
+            $this->unload();
+        } else {
+            throw new Exception(['No active record is set, unable to delete.']);
+        }
+    }
+
 
     // }}}
 
+    // {{{ Join support
+    /**
+     * Creates an objects that describes relationship between multiple tables (or collections)
+     *
+     * When object is loaded, then instead of pulling all the data from a single table,
+     * join will also query $foreign table in order to find additional fields. When inserting
+     * the record will be also added inside $foreign_table and relationship will be maintained
+     */
+    public function join($foreign_table, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        } elseif (isset($defaults[0])) {
+            $defaults['master_field'] = $defaults[0];
+            unset($defaults[0]);
+        }
+
+        $defaults[0] = $foreign_table;
+
+        $c = $this->_default_class_join;
+        return $this->add(new $c($defaults));
+    }
+    // }}}
 }

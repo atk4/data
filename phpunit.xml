@@ -1,4 +1,4 @@
-<phpunit bootstrap="vendor/autoload.php">
+<phpunit colors="true" bootstrap="vendor/autoload.php" printerClass="atk4\data\tests\AgileResultPrinter">
     <php>
         <var name="DB_DSN" value="sqlite::memory:" />
         <var name="DB_USER" value="travis" />
@@ -14,8 +14,10 @@
         </whitelist>
     </filter>
     <testsuites>
-        <testsuite name="dsql">
+        <testsuite name="tests">
             <directory>tests</directory>
+            <exclude>tests/smbo</exclude>
+
         </testsuite>
     </testsuites>
     <logging>

@@ -38,6 +38,7 @@ class Persistence_SQL extends Persistence {
             '_default_class_addField' => 'atk4\data\Field_SQL',
             '_default_class_hasOne' => 'atk4\data\Field_SQL_Reference',
             '_default_class_addExpression' => 'atk4\data\Field_SQL_Expression',
+            '_default_class_join' => 'atk4\data\Join_SQL',
         ], $defaults);
 
         $m = parent::add($m, $defaults);
@@ -67,6 +68,21 @@ class Persistence_SQL extends Persistence {
         }
 
         return $d;
+    }
+
+    public function initQueryFields($m, $q)
+    {
+        if ($m->only_fields) {
+            foreach($m->only_fields as $field) {
+                $q->field($m->getElement($field));
+            }
+        }else{
+            foreach($m->elements as $field => $f_object) {
+                if ($f_object instanceof Field_SQL) {
+                    $q->field($f_object);
+                }
+            }
+        }
     }
 
     /**
@@ -133,6 +149,8 @@ class Persistence_SQL extends Persistence {
         }
 
         $this->initQueryConditions($m, $q);
+        $this->initQueryFields($m, $q);
+        $m->hook('initSelectQuery', [$q]);
         return $q;
     }
 
@@ -168,7 +186,7 @@ class Persistence_SQL extends Persistence {
             ]);
         }
 
-        $m->data = $data;
+        return $data;
     }
 
     public function tryLoad(Model $m, $id)
@@ -209,7 +227,10 @@ class Persistence_SQL extends Persistence {
             $insert->set($f->actual ?: $f->short_name, $value);
         }
 
+        $m->hook('beforeInsertQuery',[$insert]);
+
         $insert->execute();
+        return $insert->connection->lastInsertID();
     }
 
     public function update(Model $m, $id, $data)
@@ -223,6 +244,16 @@ class Persistence_SQL extends Persistence {
         }
         $update->where($m->getElement($m->id_field), $id);
 
+        $m->hook('beforeUpdateQuery',[$update]);
+
         $update->execute();
+    }
+
+    public function delete(Model $m, $id)
+    {
+        $delete = $this->action($m, 'delete');
+        $delete->where($m->getElement($m->id_field), $id);
+        $m->hook('beforeDeleteQuery', [$delete]);
+        $delete->execute();
     }
 }
