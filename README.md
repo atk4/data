@@ -4,9 +4,9 @@
 **PHP Framework for better Business Logic design and scalable database access.**
 
 [![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Version](https://badge.fury.io/gh/atk4/Fdata.svg)](https://packagist.org/packages/atk4/data)
 [![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=latest)](http://agile-data.readthedocs.io/en/latest/?badge=latest)
 [![License](https://poser.pugx.org/atk4/data/license)](https://packagist.org/packages/atk4/data)
-[![GitHub release](https://img.shields.io/github/release/atk4/data.svg?maxAge=2592000)]()
 [![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 [![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
