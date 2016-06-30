@@ -63,7 +63,7 @@ you create the instance like this::
 
     $m = new Model_User($db);
 
-.. php:attr:: pesristence
+.. php:attr:: persistence
 
     Refers to the persistence driver in use by current model. Calling certain methods
     such as save(), addCondition() or action() will rely on this property.
