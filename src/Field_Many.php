@@ -38,6 +38,7 @@ class Field_Many
      */
     function __construct($defaults = [])
     {
+
         if (isset($defaults[0])) {
             $this->link = $defaults[0];
             unset($defaults[0]);
@@ -95,6 +96,12 @@ class Field_Many
         }
     }
 
+    protected function referenceOurValue()
+    {
+        $this->owner->persistence_data['use_table_prefixes']=true;
+        return $this->owner->getElement($this->our_field ?: $this->owner->id_field);
+    }
+
     /**
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table but
@@ -106,6 +113,18 @@ class Field_Many
             ->addCondition(
                 $this->their_field ?: ($this->owner->table.'_id'),
                 $this->getOurValue()
+            );
+    }
+
+    /**
+     * Creates model that can be used for generating sub-query acitons
+     */
+    public function refLink()
+    {
+        return $this->getModel()
+            ->addCondition(
+                $this->their_field ?: ($this->owner->table.'_id'),
+                $this->referenceOurValue()
             );
     }
 }

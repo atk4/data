@@ -83,7 +83,57 @@ hasMany Relation
 
 .. php:method:: hasMany($link, $model);
 
-There are several ways how to link models with hasMany
+There are several ways how to link models with hasMany::
+
+    $m->hasMany('Orders', new Model_Order());  // using object
+
+    $m->hasMany('Order', function($m, $r) {    // using callback
+        return new Model_Order();
+    });
+
+    $m->hasMany('Order');                      // will use factory new Model_Order
+
+
+Dealing with many-to-many relations
+-----------------------------------
+
+It is possible to perform relation through an 3rd party table::
+
+    $i = new Model_Invoice();
+    $p = new Model_Payment();
+
+    // table invoice_payment has 'invoice_id', 'payment_id' and 'amount_allocated'
+
+    $p
+        ->join('invoice_payment.payment_id')
+        ->addFields(['amount_allocated','invoice_id']);
+
+    $i->hasMany('Payments', $p);
+
+Now you can fetch all the payments associated with the invoice through::
+
+    $payments_for_invoice_1 = $i->load(1)->ref('Payments');
+
+Dealing with NON-ID fields
+--------------------------
+
+Sometimes you have to use non-ID relations. For example we might have two models
+describing list of currencies and for each currency we might have historic rates
+available. Both models will relate throug ``currency.code = exchange.currency_code``::
+
+    $c = new Model_Currency();
+    $e = new Model_ExchangeRate();
+
+    $c->hasMany('Exchanges', [$e, 'their_field'=>'currency_code', 'our_field'=>'code']);
+
+    $c->addCondition('is_convertable',true);
+    $e = $c->ref('Exchanges');
+
+This will produce the following query::
+
+    select * from exchange 
+    where currency_code in 
+        (select code form currency wehre is_convertable=1)
 
 
 hasMany / refLink

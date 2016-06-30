@@ -464,16 +464,39 @@ class Model implements \ArrayAccess
         }
 
         $this->data = $this->persistence->tryLoad($this, $id);
-        if($this->data){
+        if ($this->data) {
             $this->id = $id;
+            $this->hook('afterLoad');
+        } else {
+            $this->unload();
+        }
+
+        return $this;
+    }
+
+    public function tryLoadAny()
+    {
+        if (!$this->persistence) {
+            throw new Exception([
+                'Model is not associated with any database'
+            ]);
+        }
+
+        if ($this->loaded()) {
+            $this->unload();
+        }
+
+        $this->data = $this->persistence->tryLoadAny($this);
+        if($this->data){
+            $this->id = $this->data[$this->id_field];
             $this->hook('afterLoad');
         }else{
             $this->unload();
         }
 
-
         return $this;
     }
+
 
 
     public function save()
@@ -629,6 +652,7 @@ class Model implements \ArrayAccess
     }
     // }}}
 
+    // {{{ relations
     public function hasMany($link, $defaults = [])
     {
         if (!is_array($defaults)) {
@@ -639,6 +663,9 @@ class Model implements \ArrayAccess
                 // TODO - normalize name here through a trait?
                 $defaults = ['model'=>'Model_'.$link];
             }
+        } elseif(isset($defaults[0])) {
+            $defaults['model'] = $defaults[0];
+            unset($defaults[0]);
         }
 
         $defaults[0] = $link;
@@ -649,6 +676,12 @@ class Model implements \ArrayAccess
 
     public function ref($link)
     {
-        return $this->getElement('#ref_'.$link)->ref($this);
+        return $this->getElement('#ref_'.$link)->ref();
     }
+
+    public function refLink($link)
+    {
+        return $this->getElement('#ref_'.$link)->refLink();
+    }
+    // }}}
 }

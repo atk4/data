@@ -177,7 +177,7 @@ class Persistence_SQL extends Persistence {
      */
     public function load(Model $m, $id)
     {
-        $load = $this->action($m, 'select', [$id]);
+        $load = $this->action($m, 'select');
         $load->where($m->getElement($m->id_field), $id);
         $load->limit(1);
 
@@ -209,8 +209,34 @@ class Persistence_SQL extends Persistence {
     public function tryLoad(Model $m, $id)
     {
 
-        $load = $this->action($m, 'select', [$id]);
+        $load = $this->action($m, 'select');
         $load->where($m->getElement($m->id_field), $id);
+        $load->limit(1);
+
+        // execute action
+        $data = $load->getRow();
+
+        if (!$data) {
+            return $m->unload();
+        }
+
+        if (isset($data[$m->id_field])) {
+            $m->id = $data[$m->id_field];
+        } else {
+            throw new Exception([
+                'ID of the record is unavailable. Read-only mode is not supported',
+                'model'=>$m,
+                'id'=>$id,
+                'data'=>$data
+            ]);
+        }
+
+        return $data;
+    }
+
+    public function tryLoadAny(Model $m)
+    {
+        $load = $this->action($m, 'select');
         $load->limit(1);
 
         // execute action
