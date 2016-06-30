@@ -2,19 +2,16 @@
 
 namespace atk4\data;
 
-class Field_Many 
+class Field_Reference
 {
-    use \atk4\core\TrackableTrait {
+    use \atk4\core\InitializerTrait {
         init as _init;
     }
-    use \atk4\core\InitializerTrait;
-
-
+    use \atk4\core\TrackableTrait;
     /**
      * What should we pass into owner->ref() to get
      * through to this reference
      */
-
     protected $link;
 
     /**
@@ -23,15 +20,12 @@ class Field_Many
      */
     protected $model;
 
+    protected $our_field = null;
+
     /**
      * their field will be $table.'_id' by default.
      */
     protected $their_field = null;
-
-    /**
-     * our field will be 'id' by default
-     */
-    protected $our_field = null;
 
     /**
      * default constructor. Will copy argument into properties
@@ -60,6 +54,12 @@ class Field_Many
     public function init()
     {
         $this->_init();
+        if (!$this->our_field) {
+            $this->our_field = $this->link;
+        }
+        if (!$this->owner->hasElement($this->our_field)) {
+            $this->owner->addField($this->our_field, ['system'=>true]);
+        }
     }
 
     protected function getModel()
@@ -70,7 +70,7 @@ class Field_Many
         }
 
         if (is_object($this->model)) {
-            return clone $this->model;
+            return $this->model;
         }
 
         throw new Exception([
@@ -79,27 +79,10 @@ class Field_Many
         ]);
     }
 
-    protected function getOurValue()
-    {
-        if ($this->owner->loaded()) {
-            if ($this->our_field) {
-                return $this->owner[$this->our_field];
-            } else {
-                return $this->owner->id;
-            }
-        } else {
-            // create expression based on exsting conditions
-            return $this->owner->action(
-                'fieldValues', [
-                    $this->our_field ?: $this->owner->id_field
-                ]);
-        }
-    }
-
     protected function referenceOurValue()
     {
         $this->owner->persistence_data['use_table_prefixes']=true;
-        return $this->owner->getElement($this->our_field ?: $this->owner->id_field);
+        return $this->owner->getElement($this->our_field);
     }
 
     /**
@@ -109,11 +92,22 @@ class Field_Many
      */
     public function ref()
     {
-        return $this->getModel()
-            ->addCondition(
-                $this->their_field ?: ($this->owner->table.'_id'),
-                $this->getOurValue()
-            );
+
+        $m = $this->getModel();
+        if ($this->owner->loaded()) {
+            if ($this->their_field) {
+                return $m->loadBy($this->their_field, $this->owner[$this->our_field]);
+            } else {
+                return $m->load($this->owner[$this->our_field]);
+            }
+
+        } else {
+            $m = clone $m; // we will be adding conditions!
+
+            $values = $this->owner->action('fieldValues', [$this->our_field]);
+
+            return $m->addCondition($this->their_field ?: $m->id_field, $values);
+        }
     }
 
     /**
@@ -121,10 +115,10 @@ class Field_Many
      */
     public function refLink()
     {
-        return $this->getModel()
-            ->addCondition(
-                $this->their_field ?: ($this->owner->table.'_id'),
-                $this->referenceOurValue()
+        $m = $this->getModel();
+        $m ->addCondition(
+                $this->their_field ?: ($m->id_field),
+                $this->referenceOurValue($m)
             );
     }
 }

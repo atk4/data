@@ -41,6 +41,12 @@ class RelationSQLTest extends SQLTestCase
         $oo->tryLoad(1); $this->assertEquals(null, $oo['amount']);
         $oo->tryLoad(2); $this->assertEquals(15, $oo['amount']);
         $oo->tryLoad(3); $this->assertEquals(null, $oo['amount']);
+
+        $oo = $u->unload()->addCondition('id','>','1')->ref('Orders');
+        $this->assertEquals(
+            'select `id`,`amount`,`user_id` from `order` where `user_id` in (select `id` from `user` where `id` > :a)',
+            $oo->action('select')->render()
+        );
     }
 
     public function testLink()
@@ -95,6 +101,44 @@ class RelationSQLTest extends SQLTestCase
         $this->assertEquals(
             'select `id`,`code`,`name` from `currency` where `code` = `user`.`currency_code`',
             $u->refLink('cur')->action('select')->render()
+        );
+    }
+
+    public function testBasicOne()
+    {
+        $a = [
+            'user'=>[
+                1=>['id'=>1, 'name'=>'John'],
+                2=>['id'=>2, 'name'=>'Peter'],
+                3=>['id'=>3, 'name'=>'Joe'],
+            ], 'order'=>[
+                ['amount'=>'20', 'user_id'=>1],
+                ['amount'=>'15', 'user_id'=>2],
+                ['amount'=>'5', 'user_id'=>1],
+                ['amount'=>'3', 'user_id'=>1],
+                ['amount'=>'8', 'user_id'=>3],
+            ]];
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $u = (new Model($db, 'user'))->addFields(['name']);
+        $o = (new Model($db, 'order'))->addFields(['amount']);
+
+        $o->hasOne('user_id', $u);
+
+
+        $this->assertEquals('John', $o->load(1)->ref('user_id')['name']); 
+        $this->assertEquals('Peter', $o->load(2)->ref('user_id')['name']); 
+        $this->assertEquals('John', $o->load(3)->ref('user_id')['name']); 
+        $this->assertEquals('Joe', $o->load(5)->ref('user_id')['name']); 
+
+        $o->unload();
+        $o->addCondition('amount', '>', 6);
+        $o->addCondition('amount', '<', 9);
+
+        $this->assertEquals(
+            'select `id`,`name` from `user` where `id` in (select `user_id` from `order` where `amount` > :a and `amount` < :b)',
+            $o->ref('user_id')->action('select')->render()
         );
     }
 }

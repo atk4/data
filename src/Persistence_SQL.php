@@ -139,7 +139,7 @@ class Persistence_SQL extends Persistence {
      * Executing $model->aciton('update') will call
      * this method
      */
-    public function action($m, $type)
+    public function action($m, $type, $args = [])
     {
         $q = $this->initQuery($m);
         switch ($type) {
@@ -157,6 +157,21 @@ class Persistence_SQL extends Persistence {
 
             case 'select':
                 break;
+
+            case 'fieldValues':
+                $this->initQueryConditions($m, $q);
+
+                if (!isset($args[0])) {
+                    throw new Exception([
+                        'This action requires one argument with field name',
+                        'action'=>$type
+                    ]);
+                }
+
+                $field = is_string($args[0]) ? $m->getElement($args[0]): $args[0];
+                $q->field($field);
+                return $q;
+
 
             default:
                 throw new Exception([

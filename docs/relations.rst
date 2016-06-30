@@ -74,10 +74,6 @@ see refLink()
 
 
 
-
-TODO: add hasOne() here
-
-
 hasMany Relation
 ================
 
@@ -136,6 +132,34 @@ This will produce the following query::
         (select code form currency wehre is_convertable=1)
 
 
+Add Aggregate Fields
+--------------------
+
+Relation hasMany makes it a little simpler for you to define an aggregate fields::
+
+    $u = new Model_User($db_array_cache, 'user');
+
+    $u->hasMany('Orders', new Model_Order())
+        ->addField('amount', ['aggregate'=>'sum']);
+
+It's important to define aggregation functions here. This will add another field
+inside ``$m`` that will correspond to the sum of all the orders. Here is another
+example::
+
+    $u->hasMany('PaidOrders', (new Model_Order())->addCondition('is_paid', true))
+        ->addField('paid_amount', ['aggregate'=>'sum', 'field'=>'amount']);
+
+You can also define multiple fields, although you must remember that this will
+keep making your query bigger and bigger::
+
+    $invoice->hasMany('Invoice_Line', new Model_Invoice_Line())
+        ->addFields([
+            ['total_vat', ['aggregate'=>'sum']],
+            ['total_net', ['aggregate'=>'sum']],
+            ['total_gross', ['aggregate'=>'sum']],
+        ]);
+
+
 hasMany / refLink
 =================
 
@@ -163,4 +187,110 @@ then it now makes sense for generating expression::
         (select sum(amount) from `order` where user_id = `user`.id) sum_amount
     from user
     where is_vip = 1
+
+hasOne relation
+===============
+
+.. php:method:: hasOne($link, $model)
+
+    $model can be an array containing options: [$model, ...]
+
+
+This relation allows you to attach a related model to a foreign key::
+
+    $o = new Model_Order($db, 'order');
+    $u = new Model_User($db, 'user');
+
+    $o->hasOne('user_id', $u);
+
+The relation is similar to hasMany, but it does behave slightly different. Also this
+relation will define a system new field ``user_id`` if you haven't done so already.
+
+
+Traversing loaded model
+-----------------------
+
+If your ``$o`` model is loaded, then traversing into user will also load the user,
+because we specifically know the ID of that user. No conditions will be set::
+
+    echo $o->load(3)->ref('user_id')['name'];   // will show name of the user, of order #3
+
+Traversing DataSet
+------------------
+
+If your model is not loaded then using ref() will traverse by conditioning DataSet of the
+user model::
+
+    $o->unload(); // just to be sure!
+    $o->addCondition('status', 'failed');
+    $u = $o->ref('user_id');
+
+
+    $u->loadAny();  // will load some user who has at least one failed order
+
+The important point here is that no additional queries are generated in the process and
+the loadAny() will look like this::
+
+    select * from user where id in 
+        (select user_id from order where status = 'failed')
+
+By passing options to hasOne() you can also differenciate field name::
+
+    $o->addField('user_id');
+    $o->hasOne('User', [$u, 'our_field'=>'user_id']);
+
+    $o->load(1)->ref('User')['name'];
+
+You can also use ``their_field`` if you need non-id matching (see example above for hasMany()).
+    
+Importing Fields
+----------------
+
+You can import some fields from related model. For example if you have list of invoices, and
+each invoice contains "currency_id", but in order to get the currency name you need another
+table, you can use this syntax to easily import the field::
+
+    $i = new Model_Invoice($db)
+    $c = new Model_Currency($db);
+
+    $i->hasOne('currency_id', $c)
+        ->addField('currency_name', ['actual'=>'name']);
+
+You can also import multiple fields but keep in mind that this may make your query much longer::
+
+    $u = new Model_User($db)
+    $a = new Model_Address($db);
+
+    $u->hasOne('address_id', $a)
+        ->addFields([
+            'address_1',
+            'address_2',
+            'address_3',
+            ['notes', 'type'=>'text']
+        ]);
+
+Deep traversal
+==============
+
+When operating with data-sets you can define relations that use deep traversal::
+
+    $o = new Model_Order($db);
+    $o->hasOne('user_id', new Model_User())
+        ->hasOne('address_id', new Model_Address());
+
+    echo $o->load(1)->ref('user_id/address_id')['address_1'];
+
+The above example will actually perform 3 load operations, because as I have explained above,
+ref() loads related model when called on a loaded model. To perform a single query instead,
+you can use::
+
+    echo $o->id(1)->ref('user_id/address_id')->loadAny()['address_1'];
+
+Here ``id()`` will only set a condition without actually loading the record and traversal
+will ecapsulate sub-queries resulting in a query like this::
+
+    select * from address where id in
+        (select address_id from user where id in
+            (select user_id from order where id=1 ))
+
 
