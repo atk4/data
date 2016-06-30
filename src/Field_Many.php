@@ -127,4 +127,34 @@ class Field_Many
                 $this->referenceOurValue()
             );
     }
+
+    /**
+     * Adding field into join will automatically associate that field
+     * with this join. That means it won't be loaded from $table but
+     * form the join instead
+     */
+    public function addField($n, $defaults = [])
+    {
+        if (!isset($defaults['aggregate'])) {
+            throw new Exception([
+                '"aggregate" strategy should be defined for oneToMany field',
+                'field'=>$n,
+                'defaults'=>$defaults
+            ]);
+        }
+
+        $actual = isset($defaults['actual']) ? $defaults['actual']:$n;
+        $action = $this->refLink()->action('fx',[$defaults['aggregate'], $actual]);
+        return $this->owner->addExpression($n, $action);
+    }
+
+    public function addFields($fields = [])
+    {
+        foreach ($fields as $field) {
+            $name = $field[0];
+            unset($field[0]);
+            $this->addField($name, $field);
+        }
+        return $this;
+    }
 }

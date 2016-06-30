@@ -141,4 +141,64 @@ class RelationSQLTest extends SQLTestCase
             $o->ref('user_id')->action('select')->render()
         );
     }
+
+    public function testRelatedExpression()
+    {
+        $vat = 0.23;
+        $a = [
+            'invoice'=>[
+                1=>['id'=>1, 'ref_no'=>'INV203'],
+                2=>['id'=>2, 'ref_no'=>'INV204'],
+                3=>['id'=>3, 'ref_no'=>'INV205'],
+            ], 'invoice_line'=>[
+                ['total_net'=>($n=10), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1)), 'invoice_id'=>1],
+                ['total_net'=>($n=30), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1)), 'invoice_id'=>1],
+                ['total_net'=>($n=100), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1)), 'invoice_id'=>2],
+                ['total_net'=>($n=25), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1)), 'invoice_id'=>3],
+                ['total_net'=>($n=25), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1)), 'invoice_id'=>3],
+            ]];
+
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $i=(new Model($db, 'invoice'))->addFields(['ref_no']);
+        $l=(new Model($db, 'invoice_line'))->addFields(['invoice_id','total_net','total_vat','total_gross']);
+        $i->hasMany('line', $l);
+
+        $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
+
+        $this->assertEquals(
+            'select `invoice`.`id`,`invoice`.`ref_no`,(select sum(`total_net`) from `invoice_line` where `invoice_id` = `invoice`.`id`) `total_net` from `invoice`',
+            $i->action('select')->render()
+        );
+    }
+
+    public function testAggregateHasMany()
+    {
+        $vat = 0.23;
+        $a = [
+            'invoice'=>[
+                1=>['id'=>1, 'ref_no'=>'INV203'],
+                2=>['id'=>2, 'ref_no'=>'INV204'],
+                3=>['id'=>3, 'ref_no'=>'INV205'],
+            ], 'invoice_line'=>[
+                ['total_net'=>($n=10), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1)), 'invoice_id'=>1],
+                ['total_net'=>($n=30), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1)), 'invoice_id'=>1],
+                ['total_net'=>($n=100), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1)), 'invoice_id'=>2],
+                ['total_net'=>($n=25), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1)), 'invoice_id'=>3],
+                ['total_net'=>($n=25), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1)), 'invoice_id'=>3],
+            ]];
+
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $i=(new Model($db, 'invoice'))->addFields(['ref_no']);
+        $l=(new Model($db, 'invoice_line'))->addFields(['invoice_id','total_net','total_vat','total_gross']);
+        $i->hasMany('line', $l)
+            ->addFields([
+                ['total_vat', 'aggregate'=>'sum'],
+                ['total_net', 'aggregate'=>'sum'],
+                ['total_gross', 'aggregate'=>'sum'],
+        ]);
+    }
 }

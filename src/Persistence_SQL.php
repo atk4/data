@@ -87,16 +87,26 @@ class Persistence_SQL extends Persistence {
         return $d;
     }
 
+    public function initField($q, $field)
+    {
+
+        if($field->useAlias()) {
+            $q->field($field, $field->short_name);
+        } else {
+            $q->field($field);
+        }
+    }
+
     public function initQueryFields($m, $q)
     {
         if ($m->only_fields) {
             foreach($m->only_fields as $field) {
-                $q->field($m->getElement($field));
+                $this->initField($q, $m->getElement($field));
             }
         }else{
             foreach($m->elements as $field => $f_object) {
                 if ($f_object instanceof Field_SQL) {
-                    $q->field($f_object);
+                    $this->initField($q, $f_object);
                 }
             }
         }
@@ -170,6 +180,22 @@ class Persistence_SQL extends Persistence {
 
                 $field = is_string($args[0]) ? $m->getElement($args[0]): $args[0];
                 $q->field($field);
+                return $q;
+
+            case 'fx':
+                $this->initQueryConditions($m, $q);
+
+                if (!isset($args[0]) || !isset($args[1])) {
+                    throw new Exception([
+                        'fx action needs 2 argumens, eg: ["sum", "amount"]',
+                        'action'=>$type
+                    ]);
+                }
+
+                $fx = $args[0];
+                $field = is_string($args[1]) ? $m->getElement($args[1]): $args[1];
+
+                $q->field($q->expr("$fx([])", [$field]));
                 return $q;
 
 

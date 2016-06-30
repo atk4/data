@@ -6,10 +6,15 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable {
 
     public $actual = null;
 
+    public function useAlias()
+    {
+        return isset($this->actual);
+    }
+
     /**
      * When field is used as expression, this method will be called
      */
-    function getDSQLExpression($expression)
+    public function getDSQLExpression($expression)
     {
         if (isset($this->owner->persistence_data['use_table_prefixes'])) {
             if ($this->actual) {

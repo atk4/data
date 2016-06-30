@@ -653,7 +653,7 @@ class Model implements \ArrayAccess
     }
     // }}}
 
-    // {{{ relations
+    // {{{ Relations
     protected function _hasSomething($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
@@ -691,6 +691,21 @@ class Model implements \ArrayAccess
     public function refLink($link)
     {
         return $this->getElement('#ref_'.$link)->refLink();
+    }
+    // }}}
+
+    // {{{ Expressions
+    public function addExpression($name, $defaults) {
+
+        if (!is_array($defaults)) {
+            $defaults = ['expr' => $defaults];
+        } elseif (isset($defaults[0])) {
+            $defaults['expr'] = $defaults[0];
+            unset($defaults[0]);
+        }
+
+        $c = $this->_default_class_addExpression;
+        return $this->add(new $c($defaults), $name);
     }
     // }}}
 }
