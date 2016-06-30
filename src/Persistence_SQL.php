@@ -51,7 +51,24 @@ class Persistence_SQL extends Persistence {
             ]);
         }
 
-        //$m->addMethod('action', $this);
+        $m->addMethod('expr', $this);
+    }
+
+    public function expr($m, $expr, $args = [])
+    {
+        preg_replace_callback(
+            '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/',
+            function ($matches) use (&$args, $m) {
+
+                $identifier = substr($matches[0], 1, -1);
+                if ($identifier && !isset($args[$identifier])) {
+                    $args[$identifier] = $m->getElement($identifier);
+                }
+                return $matches[0];
+            },
+            $expr
+        );
+        return $this->connection->expr($expr, $args);
     }
 
     /**
@@ -214,7 +231,7 @@ class Persistence_SQL extends Persistence {
             ]);
         }
 
-        $m->data = $data;
+        return $data;
     }
 
     public function insert(Model $m, $data)
