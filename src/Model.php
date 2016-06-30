@@ -154,6 +154,11 @@ class Model implements \ArrayAccess
             $defaults = [$defaults];
         }
 
+        if (is_array($persistence)) {
+            $defaults = $persistence;
+            $persistence = null;
+        }
+
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
@@ -592,6 +597,10 @@ class Model implements \ArrayAccess
     // {{{ Support for actions
     public function action($mode)
     {
+        if (!$this->persistence) {
+            throw new Exception(['action() requires model to be associated with db']);
+        }
+
         return $this->persistence->action($this, $mode);
     }
     // }}}
@@ -619,4 +628,27 @@ class Model implements \ArrayAccess
         return $this->add(new $c($defaults));
     }
     // }}}
+
+    public function hasMany($link, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+
+            if ($defaults) {
+                $defaults = ['model'=>$defaults];
+            } else {
+                // TODO - normalize name here through a trait?
+                $defaults = ['model'=>'Model_'.$link];
+            }
+        }
+
+        $defaults[0] = $link;
+
+        $c = $this->_default_class_hasMany;
+        return $this->add(new $c($defaults));
+    }
+
+    public function ref($link)
+    {
+        return $this->getElement('#ref_'.$link)->ref($this);
+    }
 }
