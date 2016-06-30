@@ -661,7 +661,6 @@ class Model implements \ArrayAccess
             if ($defaults) {
                 $defaults = ['model'=>$defaults];
             } else {
-                // TODO - normalize name here through a trait?
                 $defaults = ['model'=>'Model_'.$link];
             }
         } elseif(isset($defaults[0])) {
