@@ -654,7 +654,7 @@ class Model implements \ArrayAccess
     // }}}
 
     // {{{ relations
-    public function hasMany($link, $defaults = [])
+    protected function _hasSomething($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
 
@@ -671,29 +671,17 @@ class Model implements \ArrayAccess
 
         $defaults[0] = $link;
 
-        $c = $this->_default_class_hasMany;
         return $this->add(new $c($defaults));
     }
 
     public function hasOne($link, $defaults = [])
     {
-        if (!is_array($defaults)) {
+        return $this->_hasSomething($this->_default_class_hasOne, $link, $defaults);
+    }
 
-            if ($defaults) {
-                $defaults = ['model'=>$defaults];
-            } else {
-                // TODO - normalize name here through a trait?
-                $defaults = ['model'=>'Model_'.$link];
-            }
-        } elseif(isset($defaults[0])) {
-            $defaults['model'] = $defaults[0];
-            unset($defaults[0]);
-        }
-
-        $defaults[0] = $link;
-
-        $c = $this->_default_class_hasOne;
-        return $this->add(new $c($defaults));
+    public function hasMany($link, $defaults = [])
+    {
+        return $this->_hasSomething($this->_default_class_hasMany, $link, $defaults);
     }
 
     public function ref($link)

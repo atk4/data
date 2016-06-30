@@ -268,7 +268,6 @@ class Persistence_SQL extends Persistence {
             throw new Exception([
                 'ID of the record is unavailable. Read-only mode is not supported',
                 'model'=>$m,
-                'id'=>$id,
                 'data'=>$data
             ]);
         }
