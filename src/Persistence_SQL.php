@@ -232,7 +232,8 @@ class Persistence_SQL extends Persistence {
         $data = $load->getRow();
 
         if (!$data) {
-            return $m->unload();
+            $m->unload();
+            return [];
         }
 
         if (isset($data[$m->id_field])) {
