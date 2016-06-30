@@ -30,6 +30,11 @@ class Persistence_SQL extends Persistence {
         );
     }
 
+    public function dsql()
+    {
+        return $this->connection->dsql();
+    }
+
     public function add($m, $defaults = [])
     {
         // Use our own classes for fields, relations and expressions unless
@@ -44,7 +49,7 @@ class Persistence_SQL extends Persistence {
         $m = parent::add($m, $defaults);
 
 
-        if (!$m->table) {
+        if (!isset($m->table)) {
             throw new Exception([
                 'Property $table must be specified for a model',
                 'model'=>$m
@@ -52,6 +57,14 @@ class Persistence_SQL extends Persistence {
         }
 
         $m->addMethod('expr', $this);
+
+        // When we work without table, we can't have any IDs
+        if (!$m->table) {
+            $m->getElement('id')->destroy();
+            $m->addExpression('id','1');
+        }
+
+        return $m;
     }
 
     public function expr($m, $expr, $args = [])
@@ -78,10 +91,12 @@ class Persistence_SQL extends Persistence {
     {
         $d = $m->persistence_data['dsql'] = $this->connection->dsql();
 
-        if (isset($m->table_alias)) {
-            $d->table($m->table, $m->table_alias);
-        } else {
-            $d->table($m->table);
+        if ($m->table) {
+            if (isset($m->table_alias)) {
+                $d->table($m->table, $m->table_alias);
+            } else {
+                $d->table($m->table);
+            }
         }
 
         return $d;
@@ -89,7 +104,6 @@ class Persistence_SQL extends Persistence {
 
     public function initField($q, $field)
     {
-
         if($field->useAlias()) {
             $q->field($field, $field->short_name);
         } else {
@@ -167,6 +181,11 @@ class Persistence_SQL extends Persistence {
 
             case 'select':
                 break;
+
+            case 'count':
+                $this->initQueryConditions($m, $q);
+                $q->field('count()');
+                return $q;
 
             case 'fieldValues':
                 $this->initQueryConditions($m, $q);

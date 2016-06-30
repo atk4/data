@@ -150,7 +150,7 @@ class Model implements \ArrayAccess
     function __construct($persistence = null, $defaults = [])
     {
 
-        if (is_string($defaults)) {
+        if (is_string($defaults) || $defaults == false) {
             $defaults = [$defaults];
         }
 

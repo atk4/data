@@ -16,18 +16,19 @@ class Field_SQL_Expression extends Field_SQL {
      */
     function getDSQLExpression($expression)
     {
-        if (is_string($this->expr)) {
+        $expr = $this->expr;
+        if (is_callable($expr)) {
+            $c = $this->expr;
+            $expr =  $c($this->owner, $expression);
+        }
+
+        if (is_string($expr)) {
             return $expression->expr('([])', [
-                $this->owner->expr($this->expr),
+                $this->owner->expr($expr),
             ]);
         }
 
-        if (is_callable($this->expr)) {
-            $c = $this->expr;
-            return $c($expression);
-        }
-
-        return $this->expr;
+        return $expr;
     }
 }
 
