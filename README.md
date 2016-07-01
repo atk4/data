@@ -1,7 +1,10 @@
 # Agile Data - Database access abstraction framework.
 
+Have you been frustrated with inefficiency of ORM or the bulkiness of Query Builders? Do you think that describing your business logic could be simpler, more consise and take full advantage of SQL an NoSQL features without vendor-specific code? Have you ever had to refactor your application because of database change?
 
-**PHP Framework for better Business Logic design and scalable database access.**
+
+**Agile Data is a framework designed with fresh ideas to solve efficiency, performance, clarity, testability and cross-compatibilty problems.**
+
 
 [![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Version](https://badge.fury.io/gh/atk4%2Fdata.svg)](https://packagist.org/packages/atk4/data)
@@ -10,6 +13,37 @@
 [![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 [![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
+
+## Goals of Agile Data
+
+The amount of features, capabilities and innovation in Agile Data is overwhelming, so I have moved it into a separate wiki pages that will introduce you to various aspects with code examples and links to in-depth documentation:
+
+ - [describe any business logic](https://github.com/atk4/data/wiki/Business-Models)
+ - persist in wide range of SQL an NoSQL databases
+ - take full advantage of database capabilities
+ - reduce number of queries
+ - express aggregation for reports through business logic
+ - take full advantage of SQL features
+
+
+
+
+
+
+
+ - Help you to create in-app data model, no matter how comples though expressive and simple syntax.
+ - Introduce concepts for data safety and access control
+ - 
+ 
+ 
+
+ - expressive and object-oriented way to describe your business logic (domain)
+ - full separation between business logic and database
+ - database-agnostic code design
+
+
+
+
 
 
 The main goals of Agile Data are to be:
