@@ -19,61 +19,20 @@ Have you been frustrated with inefficiency of ORM or the bulkiness of Query Buil
 The amount of features, capabilities and innovation in Agile Data is overwhelming, so I have moved it into a separate wiki pages that will introduce you to various aspects with code examples and links to in-depth documentation:
 
  - [describe any business logic](https://github.com/atk4/data/wiki/Business-Models)
- - persist in wide range of SQL an NoSQL databases
- - take full advantage of database capabilities
- - reduce number of queries
- - express aggregation for reports through business logic
- - take full advantage of SQL features
-
-
-
-
-
-
-
- - Help you to create in-app data model, no matter how comples though expressive and simple syntax.
- - Introduce concepts for data safety and access control
- - 
+ - [persist in wide range of SQL an NoSQL databases](https://github.com/atk4/data/wiki/Persistence)
+ - [take full advantage of database capabilities](https://github.com/atk4/data/wiki/Capabilities)
+ - [reduce number of queries](https://github.com/atk4/data/wiki/Actions)
+ - [express aggregation for reports through business logic](https://github.com/atk4/data/wiki/Derived-Queries)
  
- 
+### What differetiates Agile Data?
 
- - expressive and object-oriented way to describe your business logic (domain)
- - full separation between business logic and database
- - database-agnostic code design
+<a target="_blank" href="https://www.youtube.com/watch?v=XUXZI7123B8"><img src="docs/images/presentation.png" style="float: right" width="30%"></a>
 
+Before developing this framework we researched existing database access patterns and created a whitepaper proposing two new concepts that makes interraction between application and database more efficient. Those concepts allow us to abstract multi-row operations without relying on specific database query language
 
-
-
-
-
-The main goals of Agile Data are to be:
-
- - Simple - to learn, to read/write code and to extend. Even for beginners.
- 
- - Efficient - solves scalability challenges you face with traditional ORM.
- 
- - Database Agnostic - your code will work with SQL, NoSQL vendors or JSON files with optimal efficiency.
- 
- - Enterprise Quality - ideal solution for large teams and complex business projects with DM/PM separation.
-
- - Works Anywhere - uses composer and namespaces and can be used in any PHP project.
- 
- - Agile Toolkit - part of a full-stack PHP Web UI Framework for building your web apps.
-
- - Aggregate Models - build reports and analytics using Domain Models logic (not custom queries).
-
- - Extensible - add new vendor drivers to take full advantage of their query languages and capabilities.
-
- - Full Featured - support for SQL joins, sub-selects, expressions, multi-row updates, hooks, caching, REST proxies, validation, data-type normalization, debugging, profiling, migrators and schema generators.
- 
-
-## Agile Data in Practice
-
-To achieve its goals Agile Data introduces two new concepts into Database Abstraction of your applications:
-
- - DataSet - Represents a scope of records located in one or several tables/collections in your database that can be addressed by a Business Model.
- 
- - Action - Certain operation that will affect all records in a DataSet when executed.
+ - DataSet - Represents a scope of records stored in database and addressable by a Model object. 
+  
+ - Action - Describes operation that can be executed for entirety of DataSet by Database server. 
 
 ### Real-life usage example
  
@@ -85,34 +44,32 @@ A task that would normally require you to write a stored SQL procedure, cache da
 
 ```
   $clients = new Model_Client($db);
-  // Object representing all clients - DataSet
+      // Object representing all clients - DataSet
 
-  $clients -> addCondition('is_vip', true);
-  // Now DataSet is limited to VIP clients only
+  $clients->addCondition('is_vip', true);
+      // Now DataSet is limited to VIP clients only
 
-  $vip_client_orders = $clients->refSet('Order');
-  // This DataSet will contain only orders placed by VIP clients
+  $ref_order = $vip_client_orders = $clients->ref('Order');
+      // This DataSet will contain only orders placed by VIP clients
 
-  $vip_client_orders->addExpression('item_price')->set(function($model, $query){
-      return $model->ref('item_id')->fieldQuery('price');
-  });
-  // Defines a new field for a model expressed through relation with Item
+  $ref_order->addField(
+      'item_price', ['field'=>'price']
+  );
+      // Defines a new expressed through relation with Item (sub-select)
 
-  $vip_client_orders->addExpression('paid')->set(function($model, $query){
-      return $model->ref('Payment')->sum('amount');
-  });
-  // Defines another field as sum of related payments
+  $vip_client_orders->getRef('Payment')->addField(
+      'paid', ['aggregate'=>'sum', 'field'=>'amount']
+  );
+      // Defines another field as sum of related payments
   
-  $vip_client_orders->addExpression('due')->set(function($model, $query){
-      return $query->expr('{item_price} * {qty} - {paid}');
-  });
-  // Defines third field for calculating due
+  $vip_client_orders->addExpression('due', '[item_price]*[qty]-[paid]');
+      // Defines third field for calculating due
 
-  $total_due_payment = $vip_client_orders->sum('due')->getOne();
-  // Defines and executes "sum" action on our expression across specified data-set
+  $total_due_payment = $vip_client_orders->actioun('fx', ['sum', 'due'])->getOne();
+      // Defines and executes "sum" action on our expression across specified data-set
 ```
 
-Only the final `getOne()` will build and execute database query. Depending on which database vendor you use ($db), execution strategy will be different:
+Only the final `getOne()` will execute database query. Depending on which database vendor you use ($db), execution strategy will be different:
 
  - SQL: single standard SELECT (with some sub-queries) is executed. Single field/row is fetched.
  
@@ -120,7 +77,7 @@ Only the final `getOne()` will build and execute database query. Depending on wh
  
  - NoSQL: total of 3 or less queries (depending on database capabilities) will be executed and data from separate queries merged together in PHP giving you a total value.
 
-With the current implementation, the SQL query looks like is:
+With the current implementation, the SQL query will look like this:
 
 ```
 select sum(
@@ -134,112 +91,86 @@ where `order`.`user_id` in (
 )
 ```
 
-## Busines Benefits of Agile Data
+## When to use Agile Data?
 
-It makes a lot of sense to have business logic of your application refactored with Agile Data. You will gain the following advantages:
+**Agile Data can be used in any application and any framework that needs to work with data**
 
- - Improve your development team efficiency by 70% without sacrifice of your code performance.
+For a simple tasks you can use a `inline` features of the framework, but for the bigger applications you can define entirety of their business logic without any exceptions. 
 
- - Express all your business logic in "Domain Model" — your code does not rely on particular database vendor and you can switch from MySQL to MongoDB (or other vendor) with minimum effort.
+### Consistency in Business Logic
 
- - Taking full advantage of your database — Agile Data executes actions server-side such as multi-row updates - when vendor supports it. Your application always uses most-efficient approach.
- 
- - Full support for Unit Tests — Achieve 100% coverage of your business logic by mocking operations with test-$data expressed through array or JSON.
- 
- - Cross-vendor model traversing — Different parts of your business logic may use different databases. Agile Data supports cross-vendor relations.
-  
- - Significantly lower code complexity and total cost of ownership.
- 
- - Full data consistency when you need to build aggregation reports (group by, union, join)
+Your business logic will be clean and well organised if you implement it with Agile Data. Your business entities will map into classes nicely and your existing and new employees will be able to easily locate necessary functionality and change it.
 
- - Reliable foundation - Agile Data is highly tested and super-stable.
- 
- - UI extension - Build your Admin UI within hours with Agile Toolkit once you have Agile Data in place.
- 
- - Commercial Support - Agile Data is developed and backed by London-based tech company.
+If your presentation layer (views or controllers or helpers) currently contain any amount of logic, you certainly need Agile Data.
 
+### Integration with UI layer
 
-## Getting Started with Agile Data
+Agile Data does not offer UI layer, however it's unified design makes it really easy for it to be integrated into the UI layer. Connecting Model with Form or API is simple. Integrating complex PDF generator with Aggregated Model is just as simple.
 
-The following video will introduce you to the basic concepts used by Agile Data:
+If you are enjoying "Agile Data" then you should also wait for "Agile Toolkit 4.4" that will provide fully integrated UI on top of Agile Data, built by the same team and available under MIT License. 
 
-<a target="_blank" href="https://www.youtube.com/watch?v=XUXZI7123B8"><img src="docs/images/presentation.png" width="100%"></a>
+[Sign up for our Beta-tester program for Agile Toolkit 4.4](http://goo.gl/forms/gXTiRrd7SOyENpLs1)
 
-For more in-depth information on the concept itself, see the links:
+### Aggregation for your Reports
 
- - [Business Models](https://github.com/atk4/dataset/wiki/Business-Models) - Class for implementing your business logic [DM].
- - [Active Record](https://github.com/atk4/dataset/wiki/Active-Record) - Simplified record-based access to your Model data. [DM].
- - [Explicit Loading and Saving](https://github.com/atk4/dataset/wiki/Explicit-Loading-and-Saving) - No auto-load/auto-save. Learn how to access your database data [PM].
- - [Relation Mapping](https://github.com/atk4/dataset/wiki/Relation-Mapping) - Traverse between related business data [DM].
- - [Persistence](https://github.com/atk4/dataset/wiki/Persistence) - Design and tweak how your Business Models are mapped into tables [DM->PM].
- - [Derived Queries](https://github.com/atk4/dataset/wiki/Derived-Queries) - Express your Business Models as SQL queries [PM].
- - [Expressions](https://github.com/atk4/dataset/wiki/Expressions) - Use Derived queries to add fields in your Business Models that are calculated in SQL [PM].
- - [Query Building](https://github.com/atk4/dataset/wiki/Query-Building) - Build an execute complex multi-row queries mapped from your Business Models [PM].
- - [Unit-testing](https://github.com/atk4/dataset/wiki/Unit-Testing) - Business Models can be decoupled from persistence layer for efficient Unit Testing [DM].
- - [Aggregation and Reports](https://github.com/atk4/dataset/wiki/Aggregation-and-Reports) - Support report generation techniques ndaggregations for your Business models [DM].
+If you are currently using custom-written queries or stored procedures for generating sophisticated reports, then Agile Data will allow you to replace all of ths with a much more elegant aggregation expressions based around your Business Logic not database.
 
-### Documentation for Agile Data
+This will improve clarity and performance of your report generation.
 
-Read our full documentation at [agile-data.readthedocs.io](http://agile-data.readthedocs.io).
+### Unit-Testing
 
-### Downloading Agile Data
+Agile Data allows you to easily mock your database through Array persistance and therefore your Unit Tests will execute much faster and will not rely on database at all.
 
-You can install Agile Data through composer:
+### Extensibility
+
+There are a lot of ways how to expand Agile Data and we plan to release several extensions:
+
+ - API bridging - bridge your persistence across the RestAPI [late 2016]
+ - External File Storage integration [late 2016]
+ - Node4j integration [early 2017]
+ - MemCache and Redis drivers [early 2017]
+ - Array + [Pramda](https://github.com/kapolos/pramda) - Empower arrays with functional programming [early 2017]
+
+If you are willing to see Agile Data driver for NoSQL database of your choice you can help us write an efficient driver to take on the capabilities of the engine - get in touch.
+
+### Commercial Support
+
+Agile Data is built by experienced developer team and released under open-source license (MIT) and can be used at no cost inside any personal or commercial project. If your company requires commercial support for Agile Data, please contact us throug [http://www.agiletoolkit.org/contact](http://www.agiletoolkit.org/contact) 
+
+## Getting Started
+
+Install Agile Data through composer:
 
 ```
 composer require atk4/data
 ```
 
+Agile Data relies on 2 other projects:
 
-## Quality promise from Agile Toolkit
-
-We also care about your experience while using our toolkit, so we will:
-
- - work with [developer community](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) and discuss main decisions collaboratively. 
- - write short and easy-to-read, standard-compliant code with high code-climate score.
- - unit-test our own code. Achieve a minimum of 95% code coverage for stable releases.
- - add code [through pull requests](https://github.com/atk4/data/pulls?utf8=✓&q=is%3Apr+) and discuss them before merging.
- - never break APIs in minor releases.
- - support composer, include minimum dependencies.
- - be friendly with all higher-level frameworks.
- - do not duplicate the code (e.g. in vendor drivers)
- - use MIT License
-
-See [www.agiletoolkit.org](http://www.agiletoolkit.org/) for more frameworks and libraries that can make your PHP Web Application even more efficient.
+ * [DSQL](http://dsql.readthedocs.io) - Composable Query Builder (MIT, [GitHub](http://github.com/atk4/dsql))
+ * [Agile Core](http://agile-core.readthedocs.io) - useful PHP traits for frameworks (MIT, [Github](https://github.com/atk4/core))
 
  
-## Mini-FAQ
+### Full documentation for Agile Data
 
-### Q: Will Agile Data be here in 5 years time?
+[agile-data.readthedocs.io](http://agile-data.readthedocs.io).
 
-Yes.
+### Getting Started Guides
 
-The founder and lead developer for this library is: [Romans Malinovskis](https://www.openhub.net/accounts/romaninsh) who has been a long-time open-source developer and maintainer of Agile Toolkit (PHP UI Framemwork). Agile Data is developed as part of Agile Toolkit refactoring and will be bundled with Agile Toolkit 4.4.
+ * [Watch the quick video on Youtube](https://youtu.be/HAWrviTSzNM)
+ * (more guides are coming soon)
 
-### Q: Why not improve existing [ORM] project/framework X?
 
-That's exactly what we are doing.
+## Help us make Agile Data better!!
 
-Agile Data is a refactor of "Model" implementation from Agile Toolkit that [was initially released 2011](https://github.com/atk4/atk4/commit/976ccce73c5c7bf5afbedc70aa3f72158dbf534b#diff-8e1db8ebf3425c345973e98193903012). Other projects are often using different "concept" and would not work optimally if we add "DataSet" and "Action" implementation.
+We wish to take on your feedback and improve Agile Data further. Here is how you can connect with developer team:
 
-### Q: When can I use Agile Data in my project?
+ - chat with us on [Gitter](https://gitter.im/atk4/data) and ask your questions directly.
+ - ask or post suggestions on our forum [https://forum.agiletoolkit.org](https://forum.agiletoolkit.org)
+ - **share Agile Data with your friends**, we need more people to use it. Blog. Tweet. Share.
+ - work on some of the tickets marked with [[help wanted](https://github.com/atk4/data/labels/help%20wanted)] tag.
 
-Late July or August 2016.
-
-You will find our road-map as well as recent updates at the bottom of this page. There are already a stable build of the framemwork which you can try, but some features are missing.
-
-### Q: How can I contribute to this Open-Source framework?
-
-First, Go [to our chat room](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) to introduce yourself and tell us what you are willing to do to help.
-
-See also list of issues that are specifically added for contributors to work on (Contains [help wanted](https://github.com/atk4/data/labels/help%20wanted) tag) 
-
-### Q: My question is not answered, where can I ask?
-
-See our Wiki page for additional questions and answers. Click [EDIT] button and add your question at the bottom of the page if it is missing. We will update Wiki with the answer:
-
-[Full FAQ on our WIKI Page](https://github.com/atk4/dataset/wiki/Frequently-Asked-Questions)
-
+See [www.agiletoolkit.org](http://www.agiletoolkit.org/) for more frameworks and libraries that can make your PHP Web Application even more efficient.
 
 ## Roadmap
 
