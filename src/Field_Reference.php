@@ -8,6 +8,8 @@ class Field_Reference
         init as _init;
     }
     use \atk4\core\TrackableTrait;
+
+
     /**
      * What should we pass into owner->ref() to get
      * through to this reference
@@ -72,6 +74,9 @@ class Field_Reference
         if (is_object($this->model)) {
             return $this->model;
         }
+
+        // last effort - try to add model
+        return $this->owner->add($this->owner->normalizeClassName($this->model,'Model'));
 
         throw new Exception([
             'Model is not defined for the relation',
