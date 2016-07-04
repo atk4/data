@@ -76,7 +76,8 @@ class Field_Reference
         }
 
         // last effort - try to add model
-        return $this->owner->add($this->owner->normalizeClassName($this->model,'Model'));
+        $p = $this->owner->persistence;
+        return $p->add($p->normalizeClassName($this->model,'Model'));
 
         throw new Exception([
             'Model is not defined for the relation',
