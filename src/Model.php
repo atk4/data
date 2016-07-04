@@ -412,6 +412,16 @@ class Model implements \ArrayAccess
             return $this;
         }
 
+        // Perform basic validation to see if the field exists
+        if (is_string($field)) {
+            if (!$this->hasElement($field)) {
+                throw new Exception([
+                    'Field does not exist',
+                    'field'=>$field
+                ]);
+            }
+        }
+
         $this->conditions[] = func_get_args();
         return $this;
     }
