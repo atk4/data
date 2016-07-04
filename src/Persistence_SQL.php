@@ -49,7 +49,8 @@ class Persistence_SQL extends Persistence {
         $m = parent::add($m, $defaults);
 
 
-        if (!isset($m->table)) {
+
+        if (!isset($m->table) || (!is_string($m->table) && $m->table !== false)) {
             throw new Exception([
                 'Property $table must be specified for a model',
                 'model'=>$m
@@ -59,7 +60,7 @@ class Persistence_SQL extends Persistence {
         $m->addMethod('expr', $this);
 
         // When we work without table, we can't have any IDs
-        if (!$m->table) {
+        if ($m->table === false) {
             $m->getElement('id')->destroy();
             $m->addExpression('id','1');
         }
