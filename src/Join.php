@@ -197,6 +197,9 @@ class Join
      */
     public function hasOne($model, $defaults = [])
     {
+        if (!is_array($defaults)) {
+            $defaults=['model'=>$defaults];
+        }
         $defaults['join'] = $this;
         return $this->owner->hasOne($model, $defaults);
     }
