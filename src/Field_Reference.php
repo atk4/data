@@ -110,15 +110,4 @@ class Field_Reference
         }
     }
 
-    /**
-     * Creates model that can be used for generating sub-query acitons
-     */
-    public function refLink()
-    {
-        $m = $this->getModel();
-        $m ->addCondition(
-                $this->their_field ?: ($m->id_field),
-                $this->referenceOurValue($m)
-            );
-    }
 }
