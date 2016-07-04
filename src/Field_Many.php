@@ -73,6 +73,9 @@ class Field_Many
             return clone $this->model;
         }
 
+        // last effort - try to add model
+        return $this->factory($this->model);
+
         throw new Exception([
             'Model is not defined for the relation',
             'model'=>$this->model
