@@ -26,18 +26,13 @@ class Field {
         return $this->owner[$this->short_name];
     }
 
-    public function getDefault()
-    {
-        return $this->default;
-    }
-
     function setAttr($attr, $value)
     {
         $this->$attr = $value;
         return $this;
     }
 
-    function getAttr($attr, $value)
+    function getAttr($attr)
     {
         return $this->$attr;
     }
