@@ -79,6 +79,11 @@ class Join
     protected $save_buffer = [];
 
     /**
+     * When join is done on another join
+     */
+    protected $join = null;
+
+    /**
      * default constructor. Will copy argument into properties
      */
     function __construct($defaults = [])
