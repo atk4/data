@@ -7,6 +7,7 @@ class Persistence {
         add as _add;
     }
     use \atk4\core\HookTrait;
+    use \atk4\core\AppScopeTrait;
 
 
     public static function connect($dsn, $user = null, $password = null, $args = [])
