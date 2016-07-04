@@ -412,13 +412,30 @@ class Model implements \ArrayAccess
             return $this;
         }
 
+        $f = null;
+
         // Perform basic validation to see if the field exists
         if (is_string($field)) {
-            if (!$this->hasElement($field)) {
+            $f = $this->hasElement($field);
+            if (!$f) {
                 throw new Exception([
                     'Field does not exist',
-                    'field'=>$field
+                    'model'=>$this,
+                    'field'=>$field,
                 ]);
+            }
+        } elseif ($field instanceof Field) {
+            $f = $field;
+        }
+
+        if ($f) {
+            $f->setAttr('system', true);
+            if ($operator === '=' || func_num_args() == 2) {
+                $v = $operator === '=' ? $value : $operator;
+
+                if (!is_object($v)) {
+                    $f->setAttr('default', $v);
+                }
             }
         }
 
