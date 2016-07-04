@@ -6,6 +6,7 @@ class Persistence {
     use \atk4\core\ContainerTrait {
         add as _add;
     }
+    use \atk4\core\FactoryTrait;
     use \atk4\core\HookTrait;
     use \atk4\core\AppScopeTrait;
 
@@ -43,6 +44,10 @@ class Persistence {
         if (isset($defaults[0])) {
             $m->table = $defaults[0];
             unset($defaults[0]);
+        }
+
+        if (!is_object($m)) {
+            $m = $this->factory($m, $defaults);
         }
 
         if ($m->persistence) {
