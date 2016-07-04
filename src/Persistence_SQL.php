@@ -242,7 +242,14 @@ class Persistence_SQL extends Persistence {
         $load->limit(1);
 
         // execute action
-        $data = $load->getRow();
+        try {
+            $data = $load->getRow();
+        } catch (\Exception $e) {
+            throw new Exception([
+                'Unable to load due to query error',
+                'query'=>$load->render(),
+            ], null, $e);
+        }
 
         if (!$data) {
             throw new Exception([
