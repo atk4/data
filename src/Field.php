@@ -31,6 +31,17 @@ class Field {
         return $this->default;
     }
 
+    function setAttr($attr, $value)
+    {
+        $this->$attr = $value;
+        return $this;
+    }
+
+    function getAttr($attr, $value)
+    {
+        return $this->$attr;
+    }
+
     public function __debugInfo()
     {
         $object = (array)$this;
