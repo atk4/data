@@ -297,7 +297,7 @@ class Model implements \ArrayAccess
                 array_key_exists($field, $this->data) ?
                 $this->data[$field] :
                 (
-                    $f_object ? $f_object->getAttr('default') : null
+                    $f_object ? $f_object->default : null
                 );
 
             $this->data[$field] = $value;
@@ -342,7 +342,7 @@ class Model implements \ArrayAccess
             $this->data[$field] :
             (
                 $f_object ?
-                $f_object->getAttr('default') :
+                $f_object->default :
                 null
             );
 
