@@ -142,6 +142,35 @@ class RelationSQLTest extends SQLTestCase
         );
     }
 
+    public function testAddOneField()
+    {
+        $a = [
+            'user'=>[
+                1=>['id'=>1, 'name'=>'John'],
+                2=>['id'=>2, 'name'=>'Peter'],
+                3=>['id'=>3, 'name'=>'Joe'],
+            ], 'order'=>[
+                ['amount'=>'20', 'user_id'=>1],
+                ['amount'=>'15', 'user_id'=>2],
+                ['amount'=>'5', 'user_id'=>1],
+                ['amount'=>'3', 'user_id'=>1],
+                ['amount'=>'8', 'user_id'=>3],
+            ]];
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $u = (new Model($db, 'user'))->addFields(['name']);
+        $o = (new Model($db, 'order'))->addFields(['amount']);
+
+        $o->hasOne('user_id', $u)->addField('username','name');;
+
+
+        $this->assertEquals('John', $o->load(1)['username']); 
+        $this->assertEquals('Peter', $o->load(2)['username']); 
+        $this->assertEquals('John', $o->load(3)['username']); 
+        $this->assertEquals('Joe', $o->load(5)['username']); 
+    }
+
     public function testRelatedExpression()
     {
         $vat = 0.23;
@@ -200,5 +229,10 @@ class RelationSQLTest extends SQLTestCase
                 ['total_net', 'aggregate'=>'sum'],
                 ['total_gross', 'aggregate'=>'sum'],
         ]);
+        $i->load('1');
+
+        $this->assertEquals(40, $i['total_net']);
+        $this->assertEquals(9.2, $i['total_vat']);
+        $this->assertEquals(49.2, $i['total_gross']);
     }
 }
