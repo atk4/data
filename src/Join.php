@@ -198,7 +198,7 @@ class Join
     public function hasOne($model, $defaults = [])
     {
         $defaults['join'] = $this;
-        return parent::hasOne($model, $defaults);
+        return $this->owner->hasOne($model, $defaults);
     }
 
     /**
