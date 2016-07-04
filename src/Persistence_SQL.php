@@ -166,6 +166,12 @@ class Persistence_SQL extends Persistence {
      */
     public function action($m, $type, $args = [])
     {
+        if (!is_array($args)) {
+            throw new Exception([
+                '$args must be an array',
+                'args'=>$args
+            ]);
+        }
         $q = $this->initQuery($m);
         switch ($type) {
             case 'insert':
@@ -249,6 +255,7 @@ class Persistence_SQL extends Persistence {
             throw new Exception([
                 'Unable to load due to query error',
                 'query'=>$load->render(),
+                'conditions'=>$m->conditions
             ], null, $e);
         }
 
