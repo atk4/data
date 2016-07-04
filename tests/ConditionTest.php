@@ -15,6 +15,7 @@ class ConditionTest extends TestCase
         $m->addField('name');
 
         $m->addField('gender', ['enum'=>['M','F']]);
+        $m->addField('foo');
 
         $m->addCondition('gender','M');
 
