@@ -47,7 +47,7 @@ class Persistence {
         }
 
         if (!is_object($m)) {
-            $m = $this->factory($m, $defaults);
+            $m = $this->factory($this->normalizeClassName($m), $defaults);
         }
 
         if ($m->persistence) {
