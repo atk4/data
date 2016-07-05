@@ -41,7 +41,7 @@ class Persistence_SQL extends Persistence {
         // $defaults specify them otherwise.
         $defaults = array_merge([
             '_default_class_addField' => 'atk4\data\Field_SQL',
-            '_default_class_hasOne' => 'atk4\data\Field_SQL_Reference',
+            '_default_class_hasOne' => 'atk4\data\Field_SQL_One',
             '_default_class_addExpression' => 'atk4\data\Field_SQL_Expression',
             '_default_class_join' => 'atk4\data\Join_SQL',
         ], $defaults);

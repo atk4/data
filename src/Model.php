@@ -21,7 +21,7 @@ class Model implements \ArrayAccess
     /**
      * The class used by hasOne() method
      */
-    protected $_default_class_hasOne = 'atk4\data\Field_Reference';
+    protected $_default_class_hasOne = 'atk4\data\Field_One';
 
     /**
      * The class used by hasMany() method

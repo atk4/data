@@ -2,7 +2,7 @@
 
 namespace atk4\data;
 
-class Field_SQL_Reference extends Field_Reference
+class Field_SQL_One extends Field_One
 {
 
     function addField($field, $their_field)
