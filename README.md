@@ -14,7 +14,6 @@ Have you been frustrated with inefficiency of ORM or the bulkiness of Query Buil
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 [![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
 
-## Goals of Agile Data
 
 The amount of features, capabilities and innovation in Agile Data is overwhelming, so I have moved it into a separate wiki pages that will introduce you to various aspects with code examples and links to in-depth documentation:
 
