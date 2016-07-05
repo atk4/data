@@ -147,8 +147,8 @@ class Field_Many
             ]);
         }
 
-        $actual = isset($defaults['actual']) ? $defaults['actual']:$n;
-        $action = $this->refLink()->action('fx',[$defaults['aggregate'], $actual]);
+        $field = isset($defaults['field']) ? $defaults['field']:$n;
+        $action = $this->refLink()->action('fx',[$defaults['aggregate'], $field]);
         return $this->owner->addExpression($n, $action);
     }
 

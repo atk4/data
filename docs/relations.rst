@@ -254,7 +254,7 @@ table, you can use this syntax to easily import the field::
     $c = new Model_Currency($db);
 
     $i->hasOne('currency_id', $c)
-        ->addField('currency_name', ['actual'=>'name']);
+        ->addField('currency_name', 'name');
 
 You can also import multiple fields but keep in mind that this may make your query much longer::
 
