@@ -74,7 +74,8 @@ class Field_Many
         }
 
         // last effort - try to add model
-        return $this->factory($this->model);
+        $p = $this->owner->persistence;
+        return $p->add($p->normalizeClassName($this->model,'Model'));
 
         throw new Exception([
             'Model is not defined for the relation',
