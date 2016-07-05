@@ -11,8 +11,8 @@ Contents:
     quickstart
     design
     model
-    results
     persistence
+    results
     fields
     conditions
     sql
