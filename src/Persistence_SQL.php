@@ -195,6 +195,7 @@ class Persistence_SQL extends Persistence {
                 $q->field('count(*)');
                 return $q;
 
+            case 'field':
             case 'fieldValues':
                 $this->initQueryConditions($m, $q);
 
