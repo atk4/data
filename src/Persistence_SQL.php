@@ -255,7 +255,7 @@ class Persistence_SQL extends Persistence {
         } catch (\Exception $e) {
             throw new Exception([
                 'Unable to load due to query error',
-                'query'=>$load->render(),
+                'query'=>$load->getDebugQuery(false),
                 'model'=>$m,
                 'conditions'=>$m->conditions
             ], null, $e);
