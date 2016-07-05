@@ -609,6 +609,8 @@ class Model implements \ArrayAccess
 
     /**
      * Faster method to add data, that does not modify active record
+     * 
+     * Will be further optimized in the future
      */
     public function insert($data)
     {
@@ -616,7 +618,7 @@ class Model implements \ArrayAccess
         $m->unload();
         $m->set($data);
         $m->save();
-        return $m->id;
+        return $m;
     }
 
     /**
