@@ -479,6 +479,14 @@ class Model implements \ArrayAccess
         return $this;
     }
 
+    public function reload()
+    {
+        $id = $this->id;
+        $this->unload();
+        $this->load($id);
+        return $this;
+    }
+
     public function tryLoad($id)
     {
         if (!$this->persistence) {
