@@ -5,6 +5,7 @@ namespace atk4\data;
 class Model implements \ArrayAccess
 {
     use \atk4\core\ContainerTrait;
+    use \atk4\core\DynamicMethodTrait;
     use \atk4\core\HookTrait;
     use \atk4\core\InitializerTrait {
         init as _init;
@@ -193,6 +194,11 @@ class Model implements \ArrayAccess
     public function addFields($fields = [])
     {
         foreach ($fields as $field) {
+            if (is_string($field)) {
+                $this->addField($field);
+                continue;
+            }
+
             $name = $field[0];
             unset($field[0]);
             $this->addField($name, $field);
@@ -365,6 +371,47 @@ class Model implements \ArrayAccess
         }
     }
     // }}}
+
+    // {{{ DataSet logic
+    /**
+     * Narrow down data-set of the current model by applying
+     * additional condition. There is no way to remove
+     * condition once added, so if you need - clone model.
+     *
+     * This is the most basic for for defining condition: 
+     *  ->addCondition('my_field', $value);
+     *
+     * This condition will work across all persistence drivers universally.
+     *
+     * In some cases a more complex logic can be used:
+     *  ->addCondition('my_field', '>', $value);
+     *  ->addCondition('my_field', '!=', $value);
+     *  ->addCondition('my_field', 'in', [$value1, $value2]);
+     *
+     * Second argument could be '=', '>', '<', '>=', '<=', '!=' or 'in'.
+     * Those conditons are still supported by most of persistence drivers.
+     *
+     * There are also vendor-specific expression support:
+     *  ->addCondition('my_field', $expr);
+     *  ->addCondition($expr);
+     *
+     * To use those, you should consult with documentation of your
+     * persistence driver. 
+     */
+    public function addCondition($field, $operator = null, $value = null)
+    {
+        if (is_array($field)) {
+            array_map(function($a){
+                call_user_func_array([$this, 'addCondition'], $a);
+            }, $field);
+            return $this;
+        }
+
+        $this->conditions[] = func_get_args();
+        return $this;
+    }
+    // }}}
+
 
     // {{{ Persistence-related logic
     public function loaded()
@@ -540,8 +587,13 @@ class Model implements \ArrayAccess
             throw new Exception(['No active record is set, unable to delete.']);
         }
     }
+    // }}}
 
-
+    // {{{ Support for actions
+    public function action($mode)
+    {
+        return $this->persistence->action($this, $mode);
+    }
     // }}}
 
     // {{{ Join support
