@@ -196,7 +196,6 @@ class Persistence_SQL extends Persistence {
                 return $q;
 
             case 'field':
-            case 'fieldValues':
                 $this->initQueryConditions($m, $q);
 
                 if (!isset($args[0])) {
