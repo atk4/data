@@ -30,6 +30,11 @@ class Persistence_SQL extends Persistence {
         );
     }
 
+    public function dsql()
+    {
+        return $this->connection->dsql();
+    }
+
     public function add($m, $defaults = [])
     {
         // Use our own classes for fields, relations and expressions unless
@@ -44,7 +49,7 @@ class Persistence_SQL extends Persistence {
         $m = parent::add($m, $defaults);
 
 
-        if (!$m->table) {
+        if (!isset($m->table)) {
             throw new Exception([
                 'Property $table must be specified for a model',
                 'model'=>$m
@@ -52,6 +57,14 @@ class Persistence_SQL extends Persistence {
         }
 
         $m->addMethod('expr', $this);
+
+        // When we work without table, we can't have any IDs
+        if (!$m->table) {
+            $m->getElement('id')->destroy();
+            $m->addExpression('id','1');
+        }
+
+        return $m;
     }
 
     public function expr($m, $expr, $args = [])
@@ -78,25 +91,36 @@ class Persistence_SQL extends Persistence {
     {
         $d = $m->persistence_data['dsql'] = $this->connection->dsql();
 
-        if (isset($m->table_alias)) {
-            $d->table($m->table, $m->table_alias);
-        } else {
-            $d->table($m->table);
+        if ($m->table) {
+            if (isset($m->table_alias)) {
+                $d->table($m->table, $m->table_alias);
+            } else {
+                $d->table($m->table);
+            }
         }
 
         return $d;
+    }
+
+    public function initField($q, $field)
+    {
+        if($field->useAlias()) {
+            $q->field($field, $field->short_name);
+        } else {
+            $q->field($field);
+        }
     }
 
     public function initQueryFields($m, $q)
     {
         if ($m->only_fields) {
             foreach($m->only_fields as $field) {
-                $q->field($m->getElement($field));
+                $this->initField($q, $m->getElement($field));
             }
         }else{
             foreach($m->elements as $field => $f_object) {
                 if ($f_object instanceof Field_SQL) {
-                    $q->field($f_object);
+                    $this->initField($q, $f_object);
                 }
             }
         }
@@ -158,6 +182,11 @@ class Persistence_SQL extends Persistence {
             case 'select':
                 break;
 
+            case 'count':
+                $this->initQueryConditions($m, $q);
+                $q->field('count(*)');
+                return $q;
+
             case 'fieldValues':
                 $this->initQueryConditions($m, $q);
 
@@ -170,6 +199,22 @@ class Persistence_SQL extends Persistence {
 
                 $field = is_string($args[0]) ? $m->getElement($args[0]): $args[0];
                 $q->field($field);
+                return $q;
+
+            case 'fx':
+                $this->initQueryConditions($m, $q);
+
+                if (!isset($args[0]) || !isset($args[1])) {
+                    throw new Exception([
+                        'fx action needs 2 argumens, eg: ["sum", "amount"]',
+                        'action'=>$type
+                    ]);
+                }
+
+                $fx = $args[0];
+                $field = is_string($args[1]) ? $m->getElement($args[1]): $args[1];
+
+                $q->field($q->expr("$fx([])", [$field]));
                 return $q;
 
 
