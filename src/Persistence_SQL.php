@@ -139,7 +139,7 @@ class Persistence_SQL extends Persistence {
      * Executing $model->aciton('update') will call
      * this method
      */
-    public function action($m, $type)
+    public function action($m, $type, $args = [])
     {
         $q = $this->initQuery($m);
         switch ($type) {
@@ -157,6 +157,21 @@ class Persistence_SQL extends Persistence {
 
             case 'select':
                 break;
+
+            case 'fieldValues':
+                $this->initQueryConditions($m, $q);
+
+                if (!isset($args[0])) {
+                    throw new Exception([
+                        'This action requires one argument with field name',
+                        'action'=>$type
+                    ]);
+                }
+
+                $field = is_string($args[0]) ? $m->getElement($args[0]): $args[0];
+                $q->field($field);
+                return $q;
+
 
             default:
                 throw new Exception([
@@ -177,7 +192,7 @@ class Persistence_SQL extends Persistence {
      */
     public function load(Model $m, $id)
     {
-        $load = $this->action($m, 'select', [$id]);
+        $load = $this->action($m, 'select');
         $load->where($m->getElement($m->id_field), $id);
         $load->limit(1);
 
@@ -209,8 +224,35 @@ class Persistence_SQL extends Persistence {
     public function tryLoad(Model $m, $id)
     {
 
-        $load = $this->action($m, 'select', [$id]);
+        $load = $this->action($m, 'select');
         $load->where($m->getElement($m->id_field), $id);
+        $load->limit(1);
+
+        // execute action
+        $data = $load->getRow();
+
+        if (!$data) {
+            $m->unload();
+            return [];
+        }
+
+        if (isset($data[$m->id_field])) {
+            $m->id = $data[$m->id_field];
+        } else {
+            throw new Exception([
+                'ID of the record is unavailable. Read-only mode is not supported',
+                'model'=>$m,
+                'id'=>$id,
+                'data'=>$data
+            ]);
+        }
+
+        return $data;
+    }
+
+    public function tryLoadAny(Model $m)
+    {
+        $load = $this->action($m, 'select');
         $load->limit(1);
 
         // execute action
@@ -226,7 +268,6 @@ class Persistence_SQL extends Persistence {
             throw new Exception([
                 'ID of the record is unavailable. Read-only mode is not supported',
                 'model'=>$m,
-                'id'=>$id,
                 'data'=>$data
             ]);
         }

@@ -21,6 +21,11 @@ class Field {
         }
     }
 
+    public function get()
+    {
+        return $this->owner[$this->short_name];
+    }
+
     public function getDefault()
     {
         return $this->default;

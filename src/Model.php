@@ -154,6 +154,11 @@ class Model implements \ArrayAccess
             $defaults = [$defaults];
         }
 
+        if (is_array($persistence)) {
+            $defaults = $persistence;
+            $persistence = null;
+        }
+
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
@@ -424,6 +429,7 @@ class Model implements \ArrayAccess
         $this->id = null;
         $this->data = [];
         $this->dirty = [];
+        return $this;
     }
 
 
@@ -459,16 +465,39 @@ class Model implements \ArrayAccess
         }
 
         $this->data = $this->persistence->tryLoad($this, $id);
-        if($this->data){
+        if ($this->data) {
             $this->id = $id;
+            $this->hook('afterLoad');
+        } else {
+            $this->unload();
+        }
+
+        return $this;
+    }
+
+    public function tryLoadAny()
+    {
+        if (!$this->persistence) {
+            throw new Exception([
+                'Model is not associated with any database'
+            ]);
+        }
+
+        if ($this->loaded()) {
+            $this->unload();
+        }
+
+        $this->data = $this->persistence->tryLoadAny($this);
+        if($this->data){
+            $this->id = $this->data[$this->id_field];
             $this->hook('afterLoad');
         }else{
             $this->unload();
         }
 
-
         return $this;
     }
+
 
 
     public function save()
@@ -590,9 +619,13 @@ class Model implements \ArrayAccess
     // }}}
 
     // {{{ Support for actions
-    public function action($mode)
+    public function action($mode, $args = [])
     {
-        return $this->persistence->action($this, $mode);
+        if (!$this->persistence) {
+            throw new Exception(['action() requires model to be associated with db']);
+        }
+
+        return $this->persistence->action($this, $mode, $args);
     }
     // }}}
 
@@ -617,6 +650,47 @@ class Model implements \ArrayAccess
 
         $c = $this->_default_class_join;
         return $this->add(new $c($defaults));
+    }
+    // }}}
+
+    // {{{ relations
+    protected function _hasSomething($c, $link, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+
+            if ($defaults) {
+                $defaults = ['model'=>$defaults];
+            } else {
+                $defaults = ['model'=>'Model_'.$link];
+            }
+        } elseif(isset($defaults[0])) {
+            $defaults['model'] = $defaults[0];
+            unset($defaults[0]);
+        }
+
+        $defaults[0] = $link;
+
+        return $this->add(new $c($defaults));
+    }
+
+    public function hasOne($link, $defaults = [])
+    {
+        return $this->_hasSomething($this->_default_class_hasOne, $link, $defaults);
+    }
+
+    public function hasMany($link, $defaults = [])
+    {
+        return $this->_hasSomething($this->_default_class_hasMany, $link, $defaults);
+    }
+
+    public function ref($link)
+    {
+        return $this->getElement('#ref_'.$link)->ref();
+    }
+
+    public function refLink($link)
+    {
+        return $this->getElement('#ref_'.$link)->refLink();
     }
     // }}}
 }
