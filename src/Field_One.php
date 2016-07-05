@@ -2,12 +2,14 @@
 
 namespace atk4\data;
 
-class Field_Reference
+class Field_One
 {
     use \atk4\core\InitializerTrait {
         init as _init;
     }
     use \atk4\core\TrackableTrait;
+
+
     /**
      * What should we pass into owner->ref() to get
      * through to this reference
@@ -26,6 +28,11 @@ class Field_Reference
      * their field will be $table.'_id' by default.
      */
     protected $their_field = null;
+
+    /**
+     * points to the join if we are part of one
+     */
+    protected $join = null;
 
     /**
      * default constructor. Will copy argument into properties
@@ -58,7 +65,7 @@ class Field_Reference
             $this->our_field = $this->link;
         }
         if (!$this->owner->hasElement($this->our_field)) {
-            $this->owner->addField($this->our_field, ['system'=>true]);
+            $this->owner->addField($this->our_field, ['system'=>true, 'join'=>$this->join]);
         }
     }
 
@@ -72,6 +79,10 @@ class Field_Reference
         if (is_object($this->model)) {
             return $this->model;
         }
+
+        // last effort - try to add model
+        $p = $this->owner->persistence;
+        return $p->add($p->normalizeClassName($this->model,'Model'));
 
         throw new Exception([
             'Model is not defined for the relation',
@@ -110,15 +121,4 @@ class Field_Reference
         }
     }
 
-    /**
-     * Creates model that can be used for generating sub-query acitons
-     */
-    public function refLink()
-    {
-        $m = $this->getModel();
-        $m ->addCondition(
-                $this->their_field ?: ($m->id_field),
-                $this->referenceOurValue($m)
-            );
-    }
 }

@@ -254,9 +254,14 @@ table, you can use this syntax to easily import the field::
     $c = new Model_Currency($db);
 
     $i->hasOne('currency_id', $c)
-        ->addField('currency_name', ['actual'=>'name']);
+        ->addField('currency_name', 'name');
 
-You can also import multiple fields but keep in mind that this may make your query much longer::
+
+This code also resolves problem with a duplicate 'name' field. Since you might have a 'name' field
+inside 'Invoice' already, you can name the field 'currency_name' which will reference 'name' field inside
+Currency. You can also import multiple fields but keep in mind that this may make your query much longer.
+The argument is associative array and if key is specified, then the field will be renamed, just as we
+did above::
 
     $u = new Model_User($db)
     $a = new Model_Address($db);
@@ -266,8 +271,10 @@ You can also import multiple fields but keep in mind that this may make your que
             'address_1',
             'address_2',
             'address_3',
-            ['notes', 'type'=>'text']
+            'address_notes'=>['notes', 'type'=>'text']
         ]);
+Above, all ``address_`` fields are copied with the same name, however field 'notes' from Address model
+will be called 'address_notes' inside user model. 
 
 Deep traversal
 ==============

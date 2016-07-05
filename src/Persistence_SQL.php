@@ -41,7 +41,7 @@ class Persistence_SQL extends Persistence {
         // $defaults specify them otherwise.
         $defaults = array_merge([
             '_default_class_addField' => 'atk4\data\Field_SQL',
-            '_default_class_hasOne' => 'atk4\data\Field_SQL_Reference',
+            '_default_class_hasOne' => 'atk4\data\Field_SQL_One',
             '_default_class_addExpression' => 'atk4\data\Field_SQL_Expression',
             '_default_class_join' => 'atk4\data\Join_SQL',
         ], $defaults);
@@ -49,7 +49,8 @@ class Persistence_SQL extends Persistence {
         $m = parent::add($m, $defaults);
 
 
-        if (!isset($m->table)) {
+
+        if (!isset($m->table) || (!is_string($m->table) && $m->table !== false)) {
             throw new Exception([
                 'Property $table must be specified for a model',
                 'model'=>$m
@@ -59,7 +60,7 @@ class Persistence_SQL extends Persistence {
         $m->addMethod('expr', $this);
 
         // When we work without table, we can't have any IDs
-        if (!$m->table) {
+        if ($m->table === false) {
             $m->getElement('id')->destroy();
             $m->addExpression('id','1');
         }
@@ -165,6 +166,12 @@ class Persistence_SQL extends Persistence {
      */
     public function action($m, $type, $args = [])
     {
+        if (!is_array($args)) {
+            throw new Exception([
+                '$args must be an array',
+                'args'=>$args
+            ]);
+        }
         $q = $this->initQuery($m);
         switch ($type) {
             case 'insert':
@@ -184,6 +191,7 @@ class Persistence_SQL extends Persistence {
 
             case 'count':
                 $this->initQueryConditions($m, $q);
+                $m->hook('initSelectQuery', [$q]);
                 $q->field('count(*)');
                 return $q;
 
@@ -242,7 +250,16 @@ class Persistence_SQL extends Persistence {
         $load->limit(1);
 
         // execute action
-        $data = $load->getRow();
+        try {
+            $data = $load->getRow();
+        } catch (\Exception $e) {
+            throw new Exception([
+                'Unable to load due to query error',
+                'query'=>$load->getDebugQuery(false),
+                'model'=>$m,
+                'conditions'=>$m->conditions
+            ], null, $e);
+        }
 
         if (!$data) {
             throw new Exception([

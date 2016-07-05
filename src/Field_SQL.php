@@ -18,11 +18,10 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable {
     {
         if (isset($this->owner->persistence_data['use_table_prefixes'])) {
             if ($this->actual) {
-                return $expression->expr('{}.{} {}', [
+                return $expression->expr('{}.{}', [
                     $this->join ? $this->join->short_name 
                     : ($this->owner->table_alias ?: $this->owner->table),
-                    $this->actual, 
-                    $this->short_name
+                    $this->actual
                 ]);
             } else {
                 return $expression->expr('{}.{}', [
@@ -34,9 +33,8 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable {
         } else {
             // relations set flag use_table_prefixes, so no need to check them here
             if ($this->actual) {
-                return $expression->expr('{} {}', [
+                return $expression->expr('{}', [
                     $this->actual, 
-                    $this->short_name
                 ]);
             } else {
                 return $expression->expr('{}', [

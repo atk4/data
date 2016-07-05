@@ -21,7 +21,7 @@ class Model implements \ArrayAccess
     /**
      * The class used by hasOne() method
      */
-    protected $_default_class_hasOne = 'atk4\data\Field_Reference';
+    protected $_default_class_hasOne = 'atk4\data\Field_One';
 
     /**
      * The class used by hasMany() method
@@ -297,7 +297,7 @@ class Model implements \ArrayAccess
                 array_key_exists($field, $this->data) ?
                 $this->data[$field] :
                 (
-                    $f_object ? $f_object->getDefault() : null
+                    $f_object ? $f_object->default : null
                 );
 
             $this->data[$field] = $value;
@@ -342,7 +342,7 @@ class Model implements \ArrayAccess
             $this->data[$field] :
             (
                 $f_object ?
-                $f_object->getDefault() :
+                $f_object->default :
                 null
             );
 
@@ -410,6 +410,33 @@ class Model implements \ArrayAccess
                 call_user_func_array([$this, 'addCondition'], $a);
             }, $field);
             return $this;
+        }
+
+        $f = null;
+
+        // Perform basic validation to see if the field exists
+        if (is_string($field)) {
+            $f = $this->hasElement($field);
+            if (!$f) {
+                throw new Exception([
+                    'Field does not exist',
+                    'model'=>$this,
+                    'field'=>$field,
+                ]);
+            }
+        } elseif ($field instanceof Field) {
+            $f = $field;
+        }
+
+        if ($f) {
+            $f->setAttr('system', true);
+            if ($operator === '=' || func_num_args() == 2) {
+                $v = $operator === '=' ? $value : $operator;
+
+                if (!is_object($v)) {
+                    $f->setAttr('default', $v);
+                }
+            }
         }
 
         $this->conditions[] = func_get_args();
@@ -650,6 +677,16 @@ class Model implements \ArrayAccess
 
         $c = $this->_default_class_join;
         return $this->add(new $c($defaults));
+    }
+
+    public function leftJoin($foreign_table, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        }
+
+        $defaults['weak']=true;
+        return $this->join($foreign_table, $defaults);
     }
     // }}}
 

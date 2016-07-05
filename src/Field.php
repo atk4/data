@@ -26,9 +26,13 @@ class Field {
         return $this->owner[$this->short_name];
     }
 
-    public function getDefault()
+    /**
+     * if you can, use $this->$attr = foo instead of this method. No magic.
+     */
+    function setAttr($attr, $value)
     {
-        return $this->default;
+        $this->$attr = $value;
+        return $this;
     }
 
     public function __debugInfo()
