@@ -20,7 +20,10 @@ after_script:
 
 script:
     - phpunit
-#    - phpunit --configuration phpunit-mysql.xml
+
+cache:
+  directories:
+    - $HOME/.composer/cache
 
 notifications:
     slack:

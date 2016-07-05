@@ -5,6 +5,7 @@ namespace atk4\data;
 class Model implements \ArrayAccess
 {
     use \atk4\core\ContainerTrait;
+    use \atk4\core\DynamicMethodTrait;
     use \atk4\core\HookTrait;
     use \atk4\core\InitializerTrait {
         init as _init;
@@ -20,7 +21,7 @@ class Model implements \ArrayAccess
     /**
      * The class used by hasOne() method
      */
-    protected $_default_class_hasOne = 'atk4\data\Field_Reference';
+    protected $_default_class_hasOne = 'atk4\data\Field_One';
 
     /**
      * The class used by hasMany() method
@@ -149,8 +150,13 @@ class Model implements \ArrayAccess
     function __construct($persistence = null, $defaults = [])
     {
 
-        if (is_string($defaults)) {
+        if (is_string($defaults) || $defaults === false) {
             $defaults = [$defaults];
+        }
+
+        if (is_array($persistence)) {
+            $defaults = $persistence;
+            $persistence = null;
         }
 
         foreach ($defaults as $key => $val) {
@@ -193,6 +199,11 @@ class Model implements \ArrayAccess
     public function addFields($fields = [])
     {
         foreach ($fields as $field) {
+            if (is_string($field)) {
+                $this->addField($field);
+                continue;
+            }
+
             $name = $field[0];
             unset($field[0]);
             $this->addField($name, $field);
@@ -286,7 +297,7 @@ class Model implements \ArrayAccess
                 array_key_exists($field, $this->data) ?
                 $this->data[$field] :
                 (
-                    $f_object ? $f_object->getDefault() : null
+                    $f_object ? $f_object->default : null
                 );
 
             $this->data[$field] = $value;
@@ -331,7 +342,7 @@ class Model implements \ArrayAccess
             $this->data[$field] :
             (
                 $f_object ?
-                $f_object->getDefault() :
+                $f_object->default :
                 null
             );
 
@@ -366,6 +377,74 @@ class Model implements \ArrayAccess
     }
     // }}}
 
+    // {{{ DataSet logic
+    /**
+     * Narrow down data-set of the current model by applying
+     * additional condition. There is no way to remove
+     * condition once added, so if you need - clone model.
+     *
+     * This is the most basic for for defining condition: 
+     *  ->addCondition('my_field', $value);
+     *
+     * This condition will work across all persistence drivers universally.
+     *
+     * In some cases a more complex logic can be used:
+     *  ->addCondition('my_field', '>', $value);
+     *  ->addCondition('my_field', '!=', $value);
+     *  ->addCondition('my_field', 'in', [$value1, $value2]);
+     *
+     * Second argument could be '=', '>', '<', '>=', '<=', '!=' or 'in'.
+     * Those conditons are still supported by most of persistence drivers.
+     *
+     * There are also vendor-specific expression support:
+     *  ->addCondition('my_field', $expr);
+     *  ->addCondition($expr);
+     *
+     * To use those, you should consult with documentation of your
+     * persistence driver. 
+     */
+    public function addCondition($field, $operator = null, $value = null)
+    {
+        if (is_array($field)) {
+            array_map(function($a){
+                call_user_func_array([$this, 'addCondition'], $a);
+            }, $field);
+            return $this;
+        }
+
+        $f = null;
+
+        // Perform basic validation to see if the field exists
+        if (is_string($field)) {
+            $f = $this->hasElement($field);
+            if (!$f) {
+                throw new Exception([
+                    'Field does not exist',
+                    'model'=>$this,
+                    'field'=>$field,
+                ]);
+            }
+        } elseif ($field instanceof Field) {
+            $f = $field;
+        }
+
+        if ($f) {
+            $f->setAttr('system', true);
+            if ($operator === '=' || func_num_args() == 2) {
+                $v = $operator === '=' ? $value : $operator;
+
+                if (!is_object($v)) {
+                    $f->setAttr('default', $v);
+                }
+            }
+        }
+
+        $this->conditions[] = func_get_args();
+        return $this;
+    }
+    // }}}
+
+
     // {{{ Persistence-related logic
     public function loaded()
     {
@@ -377,6 +456,7 @@ class Model implements \ArrayAccess
         $this->id = null;
         $this->data = [];
         $this->dirty = [];
+        return $this;
     }
 
 
@@ -412,16 +492,39 @@ class Model implements \ArrayAccess
         }
 
         $this->data = $this->persistence->tryLoad($this, $id);
-        if($this->data){
+        if ($this->data) {
             $this->id = $id;
+            $this->hook('afterLoad');
+        } else {
+            $this->unload();
+        }
+
+        return $this;
+    }
+
+    public function tryLoadAny()
+    {
+        if (!$this->persistence) {
+            throw new Exception([
+                'Model is not associated with any database'
+            ]);
+        }
+
+        if ($this->loaded()) {
+            $this->unload();
+        }
+
+        $this->data = $this->persistence->tryLoadAny($this);
+        if($this->data){
+            $this->id = $this->data[$this->id_field];
             $this->hook('afterLoad');
         }else{
             $this->unload();
         }
 
-
         return $this;
     }
+
 
 
     public function save()
@@ -540,8 +643,17 @@ class Model implements \ArrayAccess
             throw new Exception(['No active record is set, unable to delete.']);
         }
     }
+    // }}}
 
+    // {{{ Support for actions
+    public function action($mode, $args = [])
+    {
+        if (!$this->persistence) {
+            throw new Exception(['action() requires model to be associated with db']);
+        }
 
+        return $this->persistence->action($this, $mode, $args);
+    }
     // }}}
 
     // {{{ Join support
@@ -565,6 +677,72 @@ class Model implements \ArrayAccess
 
         $c = $this->_default_class_join;
         return $this->add(new $c($defaults));
+    }
+
+    public function leftJoin($foreign_table, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        }
+
+        $defaults['weak']=true;
+        return $this->join($foreign_table, $defaults);
+    }
+    // }}}
+
+    // {{{ Relations
+    protected function _hasSomething($c, $link, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+
+            if ($defaults) {
+                $defaults = ['model'=>$defaults];
+            } else {
+                $defaults = ['model'=>'Model_'.$link];
+            }
+        } elseif(isset($defaults[0])) {
+            $defaults['model'] = $defaults[0];
+            unset($defaults[0]);
+        }
+
+        $defaults[0] = $link;
+
+        return $this->add(new $c($defaults));
+    }
+
+    public function hasOne($link, $defaults = [])
+    {
+        return $this->_hasSomething($this->_default_class_hasOne, $link, $defaults);
+    }
+
+    public function hasMany($link, $defaults = [])
+    {
+        return $this->_hasSomething($this->_default_class_hasMany, $link, $defaults);
+    }
+
+    public function ref($link)
+    {
+        return $this->getElement('#ref_'.$link)->ref();
+    }
+
+    public function refLink($link)
+    {
+        return $this->getElement('#ref_'.$link)->refLink();
+    }
+    // }}}
+
+    // {{{ Expressions
+    public function addExpression($name, $defaults) {
+
+        if (!is_array($defaults)) {
+            $defaults = ['expr' => $defaults];
+        } elseif (isset($defaults[0])) {
+            $defaults['expr'] = $defaults[0];
+            unset($defaults[0]);
+        }
+
+        $c = $this->_default_class_addExpression;
+        return $this->add(new $c($defaults), $name);
     }
     // }}}
 }

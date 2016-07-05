@@ -79,6 +79,11 @@ class Join
     protected $save_buffer = [];
 
     /**
+     * When join is done on another join
+     */
+    protected $join = null;
+
+    /**
      * default constructor. Will copy argument into properties
      */
     function __construct($defaults = [])
@@ -173,13 +178,35 @@ class Join
         return $this;
     }
 
+    public function add($object, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+            $defaults = [$defaults];
+        }
+
+        $defaults['join'] = $this;
+        return $this->owner->add($object, $defaults);
+    }
+
     /**
      * Join will be attached to a current join
      */
     public function join($foreign_table, $defaults = [])
     {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        }
         $defaults['join'] = $this;
         return $this->owner->join($foreign_table, $defaults);
+    }
+
+    public function leftJoin($foreign_table, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        }
+        $defaults['join'] = $this;
+        return $this->owner->leftJoin($foreign_table, $defaults);
     }
 
     /**
@@ -197,8 +224,11 @@ class Join
      */
     public function hasOne($model, $defaults = [])
     {
+        if (!is_array($defaults)) {
+            $defaults=['model'=>$defaults];
+        }
         $defaults['join'] = $this;
-        return parent::hasOne($model, $defaults);
+        return $this->owner->hasOne($model, $defaults);
     }
 
     /**
