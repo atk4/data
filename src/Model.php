@@ -678,6 +678,16 @@ class Model implements \ArrayAccess
         $c = $this->_default_class_join;
         return $this->add(new $c($defaults));
     }
+
+    public function leftJoin($foreign_table, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        }
+
+        $defaults['weak']=true;
+        return $this->join($foreign_table, $defaults);
+    }
     // }}}
 
     // {{{ Relations

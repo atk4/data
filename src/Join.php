@@ -178,13 +178,35 @@ class Join
         return $this;
     }
 
+    public function add($object, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+            $defaults = [$defaults];
+        }
+
+        $defaults['join'] = $this;
+        return $this->owner->add($object, $defaults);
+    }
+
     /**
      * Join will be attached to a current join
      */
     public function join($foreign_table, $defaults = [])
     {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        }
         $defaults['join'] = $this;
         return $this->owner->join($foreign_table, $defaults);
+    }
+
+    public function leftJoin($foreign_table, $defaults = [])
+    {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        }
+        $defaults['join'] = $this;
+        return $this->owner->leftJoin($foreign_table, $defaults);
     }
 
     /**
