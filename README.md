@@ -167,7 +167,7 @@ We wish to take on your feedback and improve Agile Data further. Here is how you
  - chat with us on [Gitter](https://gitter.im/atk4/data) and ask your questions directly.
  - ask or post suggestions on our forum [https://forum.agiletoolkit.org](https://forum.agiletoolkit.org)
  - **share Agile Data with your friends**, we need more people to use it. Blog. Tweet. Share.
- - work on some of the tickets marked with [[help wanted](https://github.com/atk4/data/labels/help%20wanted)] tag.
+ - work on some of the tickets marked with [help wanted](https://github.com/atk4/data/labels/help%20wanted) tag.
 
 See [www.agiletoolkit.org](http://www.agiletoolkit.org/) for more frameworks and libraries that can make your PHP Web Application even more efficient.
 
@@ -176,23 +176,19 @@ See [www.agiletoolkit.org](http://www.agiletoolkit.org/) for more frameworks and
 Follow pull-request history and activity of repository to see what's going on.
 
 ```
-0.5   Add support for Conditions to implement DataSet.
-0.6   Further integrate with the Query Builder, add Expression support.
-0.7   Add relation traversal support.
-0.8   Add support for hooks (before/after save) in (DM and PM).
-0.9   Add support for dealing with multiple persistences.
-0.10  Add ability to specify meta-information into fields.
-0.11  Add support for derived models (unions).
-0.12  Add support for 3rd party vendor implementations.
-0.13  Achieve our test coverage, code quality and documentation standards.
-1.0   First Stable Release.
+0.6   Implement iterator
+0.7   Improve support for dealing with multiple persistences.
+0.8   Add support for derived models (unions).
+0.9   Add support for 3rd party vendor implementations.
+1.0   First stable. Achieve our test coverage, code quality and documentation standards.
 1.1   Add support for MongoDB.
 1.2   Add support and docs for Validators.
 ```
 
 ## Past Updates
 
-* 28 Jun: Released join support for SQL and Array
+* 05 Jul: Released 0.5 Expressions, Conditions, Relations
+* 28 Jun: Released 0.4 join support for SQL and Array
 * 24 Jun: Released 0.3 with general improvements
 * 17 Jun: Finally shipping 0.2: With good starting support of SQL and Array 
 * 29 May: Finished implementation of core logic for Business Model
