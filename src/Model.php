@@ -622,6 +622,24 @@ class Model implements \ArrayAccess
     }
 
     /**
+     * Even more faster method to add adda, does not modify your
+     * current record and will not return anything
+     *
+     * Will be further optimized in the future
+     */
+    function insertRows($rows)
+    {
+        $m = clone $this;
+        foreach ($rows as $row) {
+            $m->unload();
+            $m->set($row);
+            $m->save();
+        }
+        return $this;
+    }
+
+
+    /**
      * Delete record with a specified id. If no ID is specified
      * then current record is deleted.
      */

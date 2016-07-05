@@ -118,6 +118,31 @@ class PersistentSQLTest extends TestCase
 
         $this->assertEquals('Jones', $ms[1]['surname']);
     }
+
+    public function testModelInsertRows()
+    {
+        $a = [
+            'user'=>[
+                1=>['name'=>'John', 'surname'=>'Smith'],
+                2=>['name'=>'Sarah', 'surname'=>'Jones'],
+            ]
+        ];
+
+        $p = new Persistence_SQL('sqlite::memory:');
+
+        $p->connection->expr('drop table if exists user')->execute();
+        $p->connection->expr('create table user(id integer primary key autoincrement, name varchar(255), surname varchar(255))')->execute();
+
+        $m = new Model($p, 'user');
+        $m->addField('name');
+        $m->addField('surname');
+
+
+        $m->insertRows($a['user']);
+
+        $this->assertEquals(2, $m->action('count')->getOne());
+    }
+
     public function testPersistenceDelete()
     {
         $a = [
