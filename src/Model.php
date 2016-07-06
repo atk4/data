@@ -720,7 +720,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     public function getIterator()
     {
-        foreach ($this->persistence->prepareIterator($this) as $id=>$data) {
+        foreach ($this->persistence->prepareIterator($this) as $data) {
             $this->data = $data;
             $this->id = $data[$this->id_field];
             yield $this->id=>$this;
