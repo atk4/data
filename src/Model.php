@@ -478,7 +478,7 @@ class Model implements \ArrayAccess
 
         if (is_null($desc) && is_string($field) && strpos($field, ' ') !== false) {
             // no realistic workaround in PHP for 2nd argument being null
-            @list($field, $desc) = $a = array_map('trim', explode(' ', trim($field), 2));
+            @list($field, $desc) = array_map('trim', explode(' ', trim($field), 2));
         }
 
         $this->order[] = array($field, $desc);

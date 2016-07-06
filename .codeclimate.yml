@@ -25,6 +25,8 @@ engines:
         enabled: false
       Design/TooManyMethods:           # because we solve complex stuff
         enabled: false
+      ExcessivePublicCount:            # because Model has too many public methods
+        enabled: false
       Design/TooManyFields:            # because we solve complex things
         enabled: false
       Design/NpathComplexity:          # because splitting up complex stuff into methods makes things even more complex
