@@ -203,6 +203,17 @@ Here is a way how to intervene with the process::
 The code above uses refLink and also creates expression, but it tweaks the action used.
 
         
+Action Matrix
+--------------
 
+SQL actions apply the following:
+
+- insert: init, mode
+- update: init, mode, conditions, limit, order, hook
+- delete: init, mode, conditions
+- select: init, fields, conditions, limit, order, hook
+- count:  init, field, conditions, hook, 
+- field:  init, field, conditions
+- fx:     init, field, conditions
 
 
