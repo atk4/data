@@ -626,6 +626,25 @@ class Model implements \ArrayAccess
     }
 
     /**
+     * This is a temporary method to avoid code duplication, but insert / import should
+     * be implemented differently
+     */
+    function _rawInsert($m, $row)
+    {
+        $m->unload();
+        if (!is_array($row)) {
+            $m->set($this->title_field, $row);
+        } else {
+            if (isset($row[0]) && $this->title_field) {
+                $row[$this->title_field] = $row[0];
+                unset($row[0]);
+            }
+            $m->set($row);
+        }
+        $m->save();
+    }
+
+    /**
      * Faster method to add data, that does not modify active record
      * 
      * Will be further optimized in the future
@@ -633,17 +652,7 @@ class Model implements \ArrayAccess
     public function insert($row)
     {
         $m = clone $this;
-        $m->unload();
-        if (!is_array($row)) {
-            $m->set($this->title_field, $row);
-        } else {
-            if ($row[0] && $this->title_field) {
-                $row[$this->title_field] = $row[0];
-                unset($row[0]);
-            }
-            $m->set($row);
-        }
-        $m->save();
+        $this->_rawInsert($m, $row);
         return $m;
     }
 
@@ -657,17 +666,7 @@ class Model implements \ArrayAccess
     {
         $m = clone $this;
         foreach ($rows as $row) {
-            $m->unload();
-            if (!is_array($row)) {
-                $m->set($this->title_field, $row);
-            } else {
-                if ($row[0] && $this->title_field) {
-                    $row[$this->title_field] = $row[0];
-                    unset($row[0]);
-                }
-                $m->set($row);
-            }
-            $m->save();
+            $this->_rawInsert($m, $row);
         }
         return $this;
     }
