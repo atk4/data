@@ -56,7 +56,7 @@ Populating Data
     still performing data validation. After inserting method will return
     cloned model.
 
-.. php:method:: insertRows($data)
+.. php:method:: import($data)
 
     Similar to insert() however works across array of rows. This method
     will not return any IDs or models and is optimized for importing large

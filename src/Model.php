@@ -635,7 +635,7 @@ class Model implements \ArrayAccess
      *
      * Will be further optimized in the future
      */
-    function insertRows($rows)
+    function import($rows)
     {
         $m = clone $this;
         foreach ($rows as $row) {

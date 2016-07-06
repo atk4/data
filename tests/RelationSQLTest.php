@@ -235,7 +235,7 @@ class RelationSQLTest extends SQLTestCase
         $this->assertEquals(9.2, $i['total_vat']);
         $this->assertEquals(49.2, $i['total_gross']);
 
-        $i->ref('line')->insertRows([
+        $i->ref('line')->import([
                 ['total_net'=>($n=1), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1))],
                 ['total_net'=>($n=2), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1))],
             ]);

@@ -138,7 +138,7 @@ class PersistentSQLTest extends TestCase
         $m->addField('surname');
 
 
-        $m->insertRows($a['user']);
+        $m->import($a['user']);
 
         $this->assertEquals(2, $m->action('count')->getOne());
     }
