@@ -723,8 +723,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($this->persistence->prepareIterator($this) as $id=>$data) {
             $this->data = $data;
             $this->id = $data[$this->id_field];
-            yield $this;
+            yield $this->id=>$this;
         }
+        $this->unload();
+    }
+
+    public function rawIterator()
+    {
+        return $this->persistence->prepareIterator($this);
     }
 
 
