@@ -115,9 +115,21 @@ class Persistence_SQL extends Persistence {
     public function initQueryFields($m, $q)
     {
         if ($m->only_fields) {
+
+            $added_fields = [];
+
+
             foreach($m->only_fields as $field) {
                 $this->initField($q, $m->getElement($field));
+                $added_fields[$field]=true;
             }
+
+            foreach($m->elements as $field => $f_object) {
+                if ($f_object instanceof Field_SQL && $f_object->system && !isset($added_fields[$field])) {
+                    $this->initField($q, $f_object);
+                }
+            }
+            // now add system fields, if they were not added
         }else{
             foreach($m->elements as $field => $f_object) {
                 if ($f_object instanceof Field_SQL) {
@@ -373,6 +385,12 @@ class Persistence_SQL extends Persistence {
     {
         $export = $this->action($m, 'select');
         return $export->get();
+    }
+
+    public function prepareIterator(Model $m)
+    {
+        $export = $this->action($m, 'select');
+        return $export->execute();
     }
 
     public function update(Model $m, $id, $data)

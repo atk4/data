@@ -23,6 +23,7 @@ class LimitOrderTest extends SQLTestCase
         $db = new Persistence_SQL($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net','total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
+        $i->getElement('id')->system = false;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);
@@ -46,6 +47,7 @@ class LimitOrderTest extends SQLTestCase
         $db = new Persistence_SQL($this->db->connection);
         $ii = (new Model($db, 'invoice'))->addFields(['total_net','total_vat']);
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
+        $ii->getElement('id')->system = false;
 
         $i = clone $ii;
         $i->setOrder('total_net desc, total_gross desc');
@@ -95,6 +97,7 @@ class LimitOrderTest extends SQLTestCase
         $db = new Persistence_SQL($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net','total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
+        $i->getElement('id')->system = false;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);

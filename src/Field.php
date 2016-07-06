@@ -14,6 +14,8 @@ class Field {
 
     public $join = null;
 
+    public $system = false;
+
     function __construct($defaults = []) {
 
         foreach ($defaults as $key => $val) {

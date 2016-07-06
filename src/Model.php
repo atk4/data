@@ -2,7 +2,7 @@
 
 namespace atk4\data;
 
-class Model implements \ArrayAccess
+class Model implements \ArrayAccess, \IteratorAggregate
 {
     use \atk4\core\ContainerTrait;
     use \atk4\core\DynamicMethodTrait;
@@ -716,6 +716,15 @@ class Model implements \ArrayAccess
     public function export()
     {
         return $this->persistence->export($this);
+    }
+
+    public function getIterator()
+    {
+        foreach ($this->persistence->prepareIterator($this) as $id=>$data) {
+            $this->data = $data;
+            $this->id = $data[$this->id_field];
+            yield $this;
+        }
     }
 
 
