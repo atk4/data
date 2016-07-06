@@ -460,7 +460,8 @@ class Model implements \ArrayAccess
     {
         if (is_string($field) && strpos($field, ',') !== false) {
             $field = explode(',', $field);
-        } elseif (is_array($field)) {
+        } 
+        if (is_array($field)) {
             if (!is_null($desc)) {
                 throw new Exception([
                     'If first argument is array, second argument must not be used',
@@ -472,12 +473,12 @@ class Model implements \ArrayAccess
             foreach (array_reverse($field) as $o) {
                 $this->setOrder($o);
             }
-
             return $this;
         }
 
         if (is_null($desc) && is_string($field) && strpos($field, ' ') !== false) {
-            list($field, $desc) = array_map('trim', explode(' ', trim($field), 2));
+            // no realistic workaround in PHP for 2nd argument being null
+            @list($field, $desc) = $a = array_map('trim', explode(' ', trim($field), 2));
         }
 
         $this->order[] = array($field, $desc);
@@ -707,6 +708,14 @@ class Model implements \ArrayAccess
             $this->_rawInsert($m, $row);
         }
         return $this;
+    }
+
+    /**
+     * Export DataSet as array of hashes.
+     */
+    public function export()
+    {
+        return $this->persistence->export($this);
     }
 
 

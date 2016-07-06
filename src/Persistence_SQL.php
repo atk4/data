@@ -129,13 +129,17 @@ class Persistence_SQL extends Persistence {
 
     protected function setLimitOrder($m, $q)
     {
-        if ($m->limit && $m->limit[0]) {
-            $dsql->limit($m->limit[0], $m->limit[1]);
+        if ($m->limit && ($m->limit[0] || $m->limit[1])) {
+            if ($m->limit[0] === null) {
+                // really, SQL?
+                $m->limit[0] = '18446744073709551615';
+            }
+            $q->limit($m->limit[0], $m->limit[1]);
         }
 
         if ($m->order) {
             foreach ($m->order as $o) {
-                $q->order($o[0], $o[1]);
+                $q->order($m->getElement($o[0]), $o[1]);
             }
         }
     }
@@ -363,6 +367,12 @@ class Persistence_SQL extends Persistence {
 
         $insert->execute();
         return $insert->connection->lastInsertID();
+    }
+
+    public function export(Model $m)
+    {
+        $export = $this->action($m, 'select');
+        return $export->get();
     }
 
     public function update(Model $m, $id, $data)
