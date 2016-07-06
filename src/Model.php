@@ -116,6 +116,16 @@ class Model implements \ArrayAccess
     public $id_field = 'id';
 
     /**
+     * Title field has a special meaning in various situations and framework
+     * provides various shortcuts for this field. Although it's not important
+     * to set this property to an existing fields, it would enable several
+     * shortcuts for you such as::
+     *
+     *    $model->importRows(['Bananas','Oranges']); // 2 records imported
+     */
+    public $title_field = 'name';
+
+    /**
      * When using onlyFields() this property will contain list of desired
      * fields.
      *
@@ -620,11 +630,19 @@ class Model implements \ArrayAccess
      * 
      * Will be further optimized in the future
      */
-    public function insert($data)
+    public function insert($row)
     {
         $m = clone $this;
         $m->unload();
-        $m->set($data);
+        if (!is_array($row)) {
+            $m->set($this->title_field, $row);
+        } else {
+            if ($row[0] && $this->title_field) {
+                $row[$this->title_field] = $row[0];
+                unset($row[0]);
+            }
+            $m->set($row);
+        }
         $m->save();
         return $m;
     }
@@ -640,7 +658,15 @@ class Model implements \ArrayAccess
         $m = clone $this;
         foreach ($rows as $row) {
             $m->unload();
-            $m->set($row);
+            if (!is_array($row)) {
+                $m->set($this->title_field, $row);
+            } else {
+                if ($row[0] && $this->title_field) {
+                    $row[$this->title_field] = $row[0];
+                    unset($row[0]);
+                }
+                $m->set($row);
+            }
             $m->save();
         }
         return $this;
