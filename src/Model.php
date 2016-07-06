@@ -179,7 +179,7 @@ class Model implements \ArrayAccess
 
     }
 
-    function setDefaults($defaults){
+    public function setDefaults($defaults){
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
@@ -629,7 +629,7 @@ class Model implements \ArrayAccess
      * This is a temporary method to avoid code duplication, but insert / import should
      * be implemented differently
      */
-    function _rawInsert($m, $row)
+    protected function _rawInsert($m, $row)
     {
         $m->unload();
         if (!is_array($row)) {
@@ -662,7 +662,7 @@ class Model implements \ArrayAccess
      *
      * Will be further optimized in the future
      */
-    function import($rows)
+    public function import($rows)
     {
         $m = clone $this;
         foreach ($rows as $row) {
