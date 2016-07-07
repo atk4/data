@@ -185,7 +185,7 @@ class Join
     public function add($object, $defaults = [])
     {
         if (!is_array($defaults)) {
-            $defaults = [$defaults];
+            $defaults = ['name'=>$defaults];
         }
 
         $defaults['join'] = $this;
