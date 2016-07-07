@@ -733,6 +733,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this->persistence->prepareIterator($this);
     }
 
+    public function each($method)
+    {
+        foreach ($this as $rec) {
+            if (is_string($method)) {
+                $rec->$method();
+            } else {
+                $method($rec);
+            }
+        }
+    }
+
 
     /**
      * Delete record with a specified id. If no ID is specified
