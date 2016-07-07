@@ -116,6 +116,16 @@ class Model implements \ArrayAccess
     public $id_field = 'id';
 
     /**
+     * Title field has a special meaning in various situations and framework
+     * provides various shortcuts for this field. Although it's not important
+     * to set this property to an existing fields, it would enable several
+     * shortcuts for you such as::
+     *
+     *    $model->importRows(['Bananas','Oranges']); // 2 records imported
+     */
+    public $title_field = 'name';
+
+    /**
      * When using onlyFields() this property will contain list of desired
      * fields.
      *
@@ -169,7 +179,7 @@ class Model implements \ArrayAccess
 
     }
 
-    function setDefaults($defaults){
+    public function setDefaults($defaults){
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
@@ -479,6 +489,14 @@ class Model implements \ArrayAccess
         return $this;
     }
 
+    public function reload()
+    {
+        $id = $this->id;
+        $this->unload();
+        $this->load($id);
+        return $this;
+    }
+
     public function tryLoad($id)
     {
         if (!$this->persistence) {
@@ -608,16 +626,51 @@ class Model implements \ArrayAccess
     }
 
     /**
-     * Faster method to add data, that does not modify active record
+     * This is a temporary method to avoid code duplication, but insert / import should
+     * be implemented differently
      */
-    public function insert($data)
+    protected function _rawInsert($m, $row)
+    {
+        $m->unload();
+        if (!is_array($row)) {
+            $m->set($this->title_field, $row);
+        } else {
+            if (isset($row[0]) && $this->title_field) {
+                $row[$this->title_field] = $row[0];
+                unset($row[0]);
+            }
+            $m->set($row);
+        }
+        $m->save();
+    }
+
+    /**
+     * Faster method to add data, that does not modify active record
+     * 
+     * Will be further optimized in the future
+     */
+    public function insert($row)
     {
         $m = clone $this;
-        $m->unload();
-        $m->set($data);
-        $m->save();
-        return $m->id;
+        $this->_rawInsert($m, $row);
+        return $m;
     }
+
+    /**
+     * Even more faster method to add adda, does not modify your
+     * current record and will not return anything
+     *
+     * Will be further optimized in the future
+     */
+    public function import($rows)
+    {
+        $m = clone $this;
+        foreach ($rows as $row) {
+            $this->_rawInsert($m, $row);
+        }
+        return $this;
+    }
+
 
     /**
      * Delete record with a specified id. If no ID is specified

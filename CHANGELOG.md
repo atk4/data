@@ -11,7 +11,7 @@ Agile Data is now being used in production projects, which means we
 start getting all sorts of fixes in. This release aims at cleaning
 thigs up and fixing issues that were not triggered by the unit-tests.
 
-* added more actions, count, fx, fieldValues
+* added more actions, count, fx, field
 * added Model::tryLoadAny()
 
 ## 0.4 Table Joins

@@ -40,6 +40,32 @@ class RandomSQLTests extends SQLTestCase
     }
 
 
+    public function testTitleImport()
+    {
+        $a = [
+            'user'=>[
+                '_'=>['name'=>'John', 'salary'=>29],
+            ]];
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model($db, 'user');
+        $m->addFields(['name',['salary','default'=>10]]);
+
+        $m->import(['Peter',['Steve','salary'=>30]]);
+        $m->insert('Sue');
+        $m->insert(['John','salary'=>40]);
+
+        $this->assertEquals([
+            'user'=>[
+                1=>['id'=>1, 'name'=>'Peter', 'salary'=>10],
+                2=>['id'=>2, 'name'=>'Steve', 'salary'=>30],
+                3=>['id'=>3, 'name'=>'Sue', 'salary'=>10],
+                4=>['id'=>4, 'name'=>'John', 'salary'=>40],
+            ]], $this->getDB());
+    }
+
+
     public function testBasic()
     {
         $this->markTestIncomplete(

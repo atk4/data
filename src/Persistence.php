@@ -63,6 +63,8 @@ class Persistence {
         $m->persistence = $this;
         $m->persistence_data = [];
         $m = $this->_add($m, $defaults);
+
+        $this->hook('afterAdd',[$m]);
         return $m;
     }
 

@@ -8,7 +8,7 @@ class Field_SQL_One extends Field_One
     function addField($field, $their_field)
     {
         $this->owner->addExpression($field, function($m) use ($their_field) {
-            return $m->refLink($this->link)->action('fieldValues', [$their_field]);
+            return $m->refLink($this->link)->action('field', [$their_field]);
         });
     }
 

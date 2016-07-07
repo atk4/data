@@ -171,9 +171,13 @@ class Join
     public function addFields($fields = [])
     {
         foreach ($fields as $field) {
-            $name = $field[0];
-            unset($field[0]);
-            $this->addField($name, $field);
+            if (is_array($field)) {
+                $name = $field[0];
+                unset($field[0]);
+                $this->addField($name, $field);
+            } else {
+                $this->addField($field);
+            }
         }
         return $this;
     }
