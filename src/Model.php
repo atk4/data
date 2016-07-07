@@ -486,6 +486,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $this->order[] = array($field, $desc);
+        return $this;
     }
 
     public function setLimit($count, $offset = null)
