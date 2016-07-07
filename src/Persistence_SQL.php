@@ -7,6 +7,12 @@ class Persistence_SQL extends Persistence {
     // atk4\dsql\Connection
     public $connection;
 
+    public $_default_class_addField = 'atk4\data\Field_SQL';
+    public $_default_class_hasOne = 'atk4\data\Field_SQL_One';
+    public $_default_class_hasMany = null; //'atk4\data\Field_Many';
+    public $_default_class_addExpression = 'atk4\data\Field_SQL_Expression';
+    public $_default_class_join = 'atk4\data\Join_SQL';
+
     function __construct($connection, $user = null, $password = null, $args = [])
     {
         if ($connection instanceof \atk4\dsql\Connection) {
@@ -40,10 +46,11 @@ class Persistence_SQL extends Persistence {
         // Use our own classes for fields, relations and expressions unless
         // $defaults specify them otherwise.
         $defaults = array_merge([
-            '_default_class_addField' => 'atk4\data\Field_SQL',
-            '_default_class_hasOne' => 'atk4\data\Field_SQL_One',
-            '_default_class_addExpression' => 'atk4\data\Field_SQL_Expression',
-            '_default_class_join' => 'atk4\data\Join_SQL',
+            '_default_class_addField' => $this->_default_class_addField,
+            '_default_class_hasOne' => $this->_default_class_hasOne,
+            '_default_class_hasMany' => $this->_default_class_hasMany,
+            '_default_class_addExpression' => $this->_default_class_addExpression,
+            '_default_class_join' => $this->_default_class_join,
         ], $defaults);
 
         $m = parent::add($m, $defaults);
