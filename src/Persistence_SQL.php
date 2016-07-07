@@ -397,8 +397,17 @@ class Persistence_SQL extends Persistence {
 
     public function prepareIterator(Model $m)
     {
-        $export = $this->action($m, 'select');
-        return $export->execute();
+        try {
+            $export = $this->action($m, 'select');
+            return $export->execute();
+        } catch (\Exception $e) {
+            throw new Exception([
+                'Unable to execute iteration query',
+                'query'=>$export->getDebugQuery(false),
+                'model'=>$m,
+                'conditions'=>$m->conditions
+            ], null, $e);
+        }
     }
 
     public function update(Model $m, $id, $data)
@@ -422,6 +431,15 @@ class Persistence_SQL extends Persistence {
         $delete = $this->action($m, 'delete');
         $delete->where($m->getElement($m->id_field), $id);
         $m->hook('beforeDeleteQuery', [$delete]);
-        $delete->execute();
+        try {
+            $delete->execute();
+        } catch (\Exception $e) {
+            throw new Exception([
+                'Unable to load due to query error',
+                'query'=>$delete->getDebugQuery(false),
+                'model'=>$m,
+                'conditions'=>$m->conditions
+            ], null, $e);
+        }
     }
 }
