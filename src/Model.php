@@ -728,6 +728,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($this->persistence->prepareIterator($this) as $data) {
             $this->data = $data;
             $this->id = $data[$this->id_field];
+            $this->hook('afterLoad');
             yield $this->id=>$this;
         }
         $this->unload();
@@ -766,9 +767,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         } elseif ($this->loaded()) {
 
-            $this->hook('beforeDelete',[$id]);
+            $this->hook('beforeDelete',[$this->id]);
             $this->persistence->delete($this, $this->id);
-            $this->hook('afterDelete',[$id]);
+            $this->hook('afterDelete',[$this->id]);
             $this->unload();
         } else {
             throw new Exception(['No active record is set, unable to delete.']);
