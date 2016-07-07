@@ -234,5 +234,15 @@ class RelationSQLTest extends SQLTestCase
         $this->assertEquals(40, $i['total_net']);
         $this->assertEquals(9.2, $i['total_vat']);
         $this->assertEquals(49.2, $i['total_gross']);
+
+        $i->ref('line')->import([
+                ['total_net'=>($n=1), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1))],
+                ['total_net'=>($n=2), 'total_vat'=>($n*$vat), 'total_gross'=>($n*($vat+1))],
+            ]);
+        $i->reload();
+
+        $this->assertEquals($n=43, $i['total_net']);
+        $this->assertEquals($n*$vat, $i['total_vat']);
+        $this->assertEquals($n*($vat+1), $i['total_gross']);
     }
 }

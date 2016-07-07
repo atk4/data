@@ -41,19 +41,30 @@ driver. Use it to define fields of your model::
 Populating Data
 ===============
 
-.. php:method:: insert($data)
+.. php:method:: insert($row)
 
     Inserts a new record into the database and returns $id. It does not
     affect currently loaded record and in practice would be similar to::
 
         $m_x = $m;
         $m_x->unload();
-        $m_x->set($data);
+        $m_x->set($row);
         $m_x->save();
-        unset($m_x);
+        return $m_x;
 
-The main goal for insert() method is to be as fast as possible, while
-still performing data validation.
+    The main goal for insert() method is to be as fast as possible, while
+    still performing data validation. After inserting method will return
+    cloned model.
+
+.. php:method:: import($data)
+
+    Similar to insert() however works across array of rows. This method
+    will not return any IDs or models and is optimized for importing large
+    amounts of data.
+
+    The method will still convert the data needed and operate with joined
+    tables as needed. If you wish to access tables directly, you'll 
+    have to look into Persistence::insert($m, $data, $table);
 
 Associating Model with Database
 ===============================

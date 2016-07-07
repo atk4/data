@@ -1,3 +1,10 @@
+## 0.5.1 Minor Cleanups
+
+* renamed aciton('fieldValues') into action('field');
+* added support for `title_field`
+* minor bugfixes and cleanups
+* added more documentation
+
 ## 0.5 Conditions, Relations, Expressions, Cleanups
 
 With the foundation for Agile Data complete, new features are being
@@ -11,7 +18,7 @@ Agile Data is now being used in production projects, which means we
 start getting all sorts of fixes in. This release aims at cleaning
 thigs up and fixing issues that were not triggered by the unit-tests.
 
-* added more actions, count, fx, fieldValues
+* added more actions, count, fx, field
 * added Model::tryLoadAny()
 
 ## 0.4 Table Joins

@@ -94,7 +94,7 @@ class Field_Many
         } else {
             // create expression based on exsting conditions
             return $this->owner->action(
-                'fieldValues', [
+                'field', [
                     $this->our_field ?: $this->owner->id_field
                 ]);
         }

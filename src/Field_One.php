@@ -115,7 +115,7 @@ class Field_One
         } else {
             $m = clone $m; // we will be adding conditions!
 
-            $values = $this->owner->action('fieldValues', [$this->our_field]);
+            $values = $this->owner->action('field', [$this->our_field]);
 
             return $m->addCondition($this->their_field ?: $m->id_field, $values);
         }
