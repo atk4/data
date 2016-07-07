@@ -47,6 +47,10 @@ class Field_Many
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
+
+        if (!$this->model) {
+            $this->model=$this->link;
+        }
     }
 
     /**
