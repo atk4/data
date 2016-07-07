@@ -66,6 +66,7 @@ class Join_SQL extends Join {
             $this->owner->addHook('afterInsert', $this, null, -5);
             $this->owner->addHook('beforeUpdateQuery', $this, null, -5);
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
+            $this->owner->addHook('afterLoad', $this);
         } else {
             $this->owner->addHook('beforeInsertQuery', $this);
             $this->owner->addHook('beforeUpdateQuery', $this);
@@ -191,7 +192,7 @@ class Join_SQL extends Join {
             ;
 
         //if ($this->delete_behaivour == 'cascade') {
-            $delete->delete();
+            $delete->delete()->execute();
         //} elseif ($this->delete_behaivour == 'setnull') {
             //$delete
                 //->set($this->foreign_field, null)
