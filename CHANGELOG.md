@@ -1,3 +1,10 @@
+## 0.5.1 Minor Cleanups
+
+* renamed aciton('fieldValues') into action('field');
+* added support for `title_field`
+* minor bugfixes and cleanups
+* added more documentation
+
 ## 0.5 Conditions, Relations, Expressions, Cleanups
 
 With the foundation for Agile Data complete, new features are being
