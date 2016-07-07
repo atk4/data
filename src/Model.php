@@ -170,7 +170,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         foreach ($defaults as $key => $val) {
-            $this->$key = $val;
+            if ($val !== null) {
+                $this->$key = $val;
+            }
         }
 
         if ($persistence) {
@@ -181,7 +183,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     public function setDefaults($defaults){
         foreach ($defaults as $key => $val) {
-            $this->$key = $val;
+            if ($val !== null) {
+                $this->$key = $val;
+            }
         }
     }
 
