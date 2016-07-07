@@ -70,9 +70,9 @@ class Model implements \ArrayAccess
      */
     public $conditions = [];
 
-    public $limit;
+    public $limit = [];
 
-    public $order;
+    public $order = [];
 
     /**
      * Curretly loaded record data. This record is associative array
@@ -452,8 +452,47 @@ class Model implements \ArrayAccess
         $this->conditions[] = func_get_args();
         return $this;
     }
-    // }}}
 
+    /**
+     * Set order for model records. Multiple calls.
+     */
+    function setOrder($field, $desc = null)
+    {
+        if (is_string($field) && strpos($field, ',') !== false) {
+            $field = explode(',', $field);
+        } 
+        if (is_array($field)) {
+            if (!is_null($desc)) {
+                throw new Exception([
+                    'If first argument is array, second argument must not be used',
+                    'arg1'=>$field,
+                    'arg2'=>$desc,
+                ]);
+            }
+
+            foreach (array_reverse($field) as $o) {
+                $this->setOrder($o);
+            }
+            return $this;
+        }
+
+        if (is_null($desc) && is_string($field) && strpos($field, ' ') !== false) {
+            // no realistic workaround in PHP for 2nd argument being null
+            @list($field, $desc) = array_map('trim', explode(' ', trim($field), 2));
+        }
+
+        $this->order[] = array($field, $desc);
+    }
+
+    public function setLimit($count, $offset = null)
+    {
+        $this->limit = array($count, $offset);
+
+        return $this;
+    }
+
+
+    // }}}
 
     // {{{ Persistence-related logic
     public function loaded()
@@ -669,6 +708,14 @@ class Model implements \ArrayAccess
             $this->_rawInsert($m, $row);
         }
         return $this;
+    }
+
+    /**
+     * Export DataSet as array of hashes.
+     */
+    public function export()
+    {
+        return $this->persistence->export($this);
     }
 
 

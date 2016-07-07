@@ -127,6 +127,23 @@ class Persistence_SQL extends Persistence {
         }
     }
 
+    protected function setLimitOrder($m, $q)
+    {
+        if ($m->limit && ($m->limit[0] || $m->limit[1])) {
+            if ($m->limit[0] === null) {
+                // really, SQL?
+                $m->limit[0] = '18446744073709551615';
+            }
+            $q->limit($m->limit[0], $m->limit[1]);
+        }
+
+        if ($m->order) {
+            foreach ($m->order as $o) {
+                $q->order($m->getElement($o[0]), $o[1]);
+            }
+        }
+    }
+
     /**
      * Will apply conditions defined inside $m onto query $q
      */
@@ -184,20 +201,20 @@ class Persistence_SQL extends Persistence {
 
             case 'delete':
                 $q->mode('delete');
-                break;
+                $this->initQueryConditions($m, $q);
+                return $q;
 
             case 'select':
+                $this->initQueryFields($m, $q);
                 break;
 
             case 'count':
+                $q->field('count(*)');
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q]);
-                $q->field('count(*)');
                 return $q;
 
             case 'field':
-                $this->initQueryConditions($m, $q);
-
                 if (!isset($args[0])) {
                     throw new Exception([
                         'This action requires one argument with field name',
@@ -207,11 +224,11 @@ class Persistence_SQL extends Persistence {
 
                 $field = is_string($args[0]) ? $m->getElement($args[0]): $args[0];
                 $q->field($field);
+                $this->initQueryConditions($m, $q);
+
                 return $q;
 
             case 'fx':
-                $this->initQueryConditions($m, $q);
-
                 if (!isset($args[0]) || !isset($args[1])) {
                     throw new Exception([
                         'fx action needs 2 argumens, eg: ["sum", "amount"]',
@@ -221,10 +238,9 @@ class Persistence_SQL extends Persistence {
 
                 $fx = $args[0];
                 $field = is_string($args[1]) ? $m->getElement($args[1]): $args[1];
-
                 $q->field($q->expr("$fx([])", [$field]));
+                $this->initQueryConditions($m, $q);
                 return $q;
-
 
             default:
                 throw new Exception([
@@ -234,8 +250,8 @@ class Persistence_SQL extends Persistence {
         }
 
         $this->initQueryConditions($m, $q);
-        $this->initQueryFields($m, $q);
-        $m->hook('initSelectQuery', [$q]);
+        $this->setLimitOrder($m, $q);
+        $m->hook('initSelectQuery', [$q, $type]);
         return $q;
     }
 
@@ -351,6 +367,12 @@ class Persistence_SQL extends Persistence {
 
         $insert->execute();
         return $insert->connection->lastInsertID();
+    }
+
+    public function export(Model $m)
+    {
+        $export = $this->action($m, 'select');
+        return $export->get();
     }
 
     public function update(Model $m, $id, $data)
