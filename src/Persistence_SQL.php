@@ -244,6 +244,7 @@ class Persistence_SQL extends Persistence {
                 $field = is_string($args[0]) ? $m->getElement($args[0]): $args[0];
                 $q->field($field);
                 $this->initQueryConditions($m, $q);
+                $this->setLimitOrder($m, $q);
 
                 return $q;
 
