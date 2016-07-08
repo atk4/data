@@ -877,6 +877,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this->getElement('#ref_'.$link)->refLink($defaults);
     }
 
+    public function getRef($link)
+    {
+        return $this->getElement('#ref_'.$link);
+    }
+
     // }}}
 
     // {{{ Expressions
