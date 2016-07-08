@@ -1,4 +1,6 @@
-<?php // vim:ts=4:sw=4:et:fdm=marker:fdl=0
+<?php
+
+// vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
 namespace atk4\data;
 
@@ -14,22 +16,22 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // {{{ Properties of the class
 
     /**
-     * The class used by addField() method
+     * The class used by addField() method.
      */
     protected $_default_class_addField = 'atk4\data\Field';
 
     /**
-     * The class used by hasOne() method
+     * The class used by hasOne() method.
      */
     protected $_default_class_hasOne = 'atk4\data\Field_One';
 
     /**
-     * The class used by hasMany() method
+     * The class used by hasMany() method.
      */
     protected $_default_class_hasMany = 'atk4\data\Field_Many';
 
     /**
-     * The class used by addField() method
+     * The class used by addField() method.
      */
     protected $_default_class_addExpression = 'atk4\data\Field_Callback';
 
@@ -50,7 +52,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $table = null;
 
     /**
-     * Persistence driver inherited from atk4\data\Persistence
+     * Persistence driver inherited from atk4\data\Persistence.
      */
     public $persistence = null;
 
@@ -83,7 +85,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var array
      */
-    public $data = array();
+    public $data = [];
 
     /**
      * After loading an active record from DataSet it will be stored in
@@ -119,7 +121,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Title field has a special meaning in various situations and framework
      * provides various shortcuts for this field. Although it's not important
      * to set this property to an existing fields, it would enable several
-     * shortcuts for you such as::
+     * shortcuts for you such as::.
      *
      *    $model->importRows(['Bananas','Oranges']); // 2 records imported
      */
@@ -145,7 +147,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // {{{ Basic Functionality, field definition, set() and get()
 
     /**
-     * Creation of the new model can be done in two ways:
+     * Creation of the new model can be done in two ways:.
      *
      * $m = $db->add(new Model());
      *
@@ -157,9 +159,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *  - it's shorter
      *  - type hinting will work;
      */
-    function __construct($persistence = null, $defaults = [])
+    public function __construct($persistence = null, $defaults = [])
     {
-
         if (is_string($defaults) || $defaults === false) {
             $defaults = [$defaults];
         }
@@ -176,33 +177,33 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($persistence) {
             $persistence->add($this, $defaults);
         }
-
     }
 
-    public function setDefaults($defaults){
+    public function setDefaults($defaults)
+    {
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
     }
 
     /**
-     * Extend this method to define fields of your choice
+     * Extend this method to define fields of your choice.
      */
     public function init()
     {
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, ['system'=>true, 'type'=>'int']);
+            $this->addField($this->id_field, ['system' => true, 'type' => 'int']);
         }
     }
-
 
     public function addField($name, $defaults = [])
     {
         $c = $this->_default_class_addField;
         $field = new $c($defaults);
         $this->add($field, $name);
+
         return $field;
     }
 
@@ -218,13 +219,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
             unset($field[0]);
             $this->addField($name, $field);
         }
+
         return $this;
     }
 
-
     public function onlyFields($fields = [])
     {
-        $this->hook('onlyFields',[&$fields]);
+        $this->hook('onlyFields', [&$fields]);
         $this->only_fields = $fields;
     }
 
@@ -247,21 +248,21 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if (!is_string($field)) {
             throw new Exception([
                 'Incorect specification of field name',
-                'arg'=>$field
+                'arg' => $field,
             ]);
         }
 
         // $m->onlyFields(['name'])->set('surname', 'Jane');
         if ($this->only_fields) {
             if (!in_array($field, $this->only_fields)) {
-
                 throw new Exception([
                     'Attempt to use field outside of those set by onlyFields',
-                    'field'=>$field,
-                    'only_fields'=>$this->only_fields
+                    'field'       => $field,
+                    'only_fields' => $this->only_fields,
                 ]);
             }
         }
+
         return $field;
     }
 
@@ -270,15 +271,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
         // set(['foo'=>'bar']) will call itself as set('foo', 'bar');
         if (func_num_args() == 1) {
             if (is_array($field)) {
-                foreach ($field as $key=>$value) {
+                foreach ($field as $key => $value) {
                     $this->set($key, $value);
                 }
+
                 return $this;
             }
 
             throw new Exception([
                 'Single argument set() requires an array argument',
-                'arg'=>$field
+                'arg' => $field,
             ]);
         }
 
@@ -328,17 +330,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $data = [];
             if ($this->only_fields) {
                 // collect data for actual fields
-                foreach($this->only_fields as $field) {
+                foreach ($this->only_fields as $field) {
                     $data[$field] = $this->get($field);
                 }
             } else {
                 // get all field-elements
-                foreach($this->elements as $field => $f_object) {
+                foreach ($this->elements as $field => $f_object) {
                     if ($f_object instanceof Field) {
                         $data[$field] = $this->get($field);
                     }
                 }
             }
+
             return $data;
         }
 
@@ -362,6 +365,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         return $value;
     }
+
     // }}}
 
     // {{{ ArrayAccess support
@@ -369,14 +373,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         return array_key_exists($this->normalizeFieldName($name), $this->dirty);
     }
+
     public function offsetGet($name)
     {
         return $this->get($name);
     }
+
     public function offsetSet($name, $val)
     {
         $this->set($name, $val);
     }
+
     public function offsetUnset($name)
     {
         $name = $this->normalizeFieldName($name);
@@ -385,15 +392,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
             unset($this->dirty[$name]);
         }
     }
+
     // }}}
 
     // {{{ DataSet logic
+
     /**
      * Narrow down data-set of the current model by applying
      * additional condition. There is no way to remove
      * condition once added, so if you need - clone model.
      *
-     * This is the most basic for for defining condition: 
+     * This is the most basic for for defining condition:
      *  ->addCondition('my_field', $value);
      *
      * This condition will work across all persistence drivers universally.
@@ -411,14 +420,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *  ->addCondition($expr);
      *
      * To use those, you should consult with documentation of your
-     * persistence driver. 
+     * persistence driver.
      */
     public function addCondition($field, $operator = null, $value = null)
     {
         if (is_array($field)) {
-            array_map(function($a){
+            array_map(function ($a) {
                 call_user_func_array([$this, 'addCondition'], $a);
             }, $field);
+
             return $this;
         }
 
@@ -430,8 +440,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
             if (!$f) {
                 throw new Exception([
                     'Field does not exist',
-                    'model'=>$this,
-                    'field'=>$field,
+                    'model' => $this,
+                    'field' => $field,
                 ]);
             }
         } elseif ($field instanceof Field) {
@@ -450,29 +460,31 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $this->conditions[] = func_get_args();
+
         return $this;
     }
 
     /**
      * Set order for model records. Multiple calls.
      */
-    function setOrder($field, $desc = null)
+    public function setOrder($field, $desc = null)
     {
         if (is_string($field) && strpos($field, ',') !== false) {
             $field = explode(',', $field);
-        } 
+        }
         if (is_array($field)) {
             if (!is_null($desc)) {
                 throw new Exception([
                     'If first argument is array, second argument must not be used',
-                    'arg1'=>$field,
-                    'arg2'=>$desc,
+                    'arg1' => $field,
+                    'arg2' => $desc,
                 ]);
             }
 
             foreach (array_reverse($field) as $o) {
                 $this->setOrder($o);
             }
+
             return $this;
         }
 
@@ -481,23 +493,22 @@ class Model implements \ArrayAccess, \IteratorAggregate
             @list($field, $desc) = array_map('trim', explode(' ', trim($field), 2));
         }
 
-        $this->order[] = array($field, $desc);
+        $this->order[] = [$field, $desc];
     }
 
     public function setLimit($count, $offset = null)
     {
-        $this->limit = array($count, $offset);
+        $this->limit = [$count, $offset];
 
         return $this;
     }
-
 
     // }}}
 
     // {{{ Persistence-related logic
     public function loaded()
     {
-        return $this->id!==null;
+        return $this->id !== null;
     }
 
     public function unload()
@@ -505,15 +516,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->id = null;
         $this->data = [];
         $this->dirty = [];
+
         return $this;
     }
-
 
     public function load($id)
     {
         if (!$this->persistence) {
             throw new Exception([
-                'Model is not associated with any database'
+                'Model is not associated with any database',
             ]);
         }
 
@@ -533,6 +544,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $id = $this->id;
         $this->unload();
         $this->load($id);
+
         return $this;
     }
 
@@ -540,7 +552,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if (!$this->persistence) {
             throw new Exception([
-                'Model is not associated with any database'
+                'Model is not associated with any database',
             ]);
         }
 
@@ -563,7 +575,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if (!$this->persistence) {
             throw new Exception([
-                'Model is not associated with any database'
+                'Model is not associated with any database',
             ]);
         }
 
@@ -572,29 +584,27 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $this->data = $this->persistence->tryLoadAny($this);
-        if($this->data){
+        if ($this->data) {
             $this->id = $this->data[$this->id_field];
             $this->hook('afterLoad');
-        }else{
+        } else {
             $this->unload();
         }
 
         return $this;
     }
 
-
-
     public function save()
     {
         if (!$this->persistence) {
             throw new Exception([
-                'Model is not associated with any database'
+                'Model is not associated with any database',
             ]);
         }
 
         $is_update = $this->loaded();
         if ($is_update) {
-            $data = array();
+            $data = [];
             foreach ($this->dirty as $name => $junk) {
                 $field = $this->hasElement($name);
                 if (!$field) {
@@ -620,17 +630,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 return $this;
             }
 
-            $this->hook('beforeModify',[&$data]);
+            $this->hook('beforeModify', [&$data]);
 
             $this->persistence->update($this, $this->id, $data);
 
-            $this->hook('afterModify',[&$data]);
+            $this->hook('afterModify', [&$data]);
 
             //$this->hook('beforeUpdate', array(&$source));
         } else {
-
             foreach ($this->get() as $name => $value) {
-
                 $field = $this->hasElement($name);
                 if (!$field) {
                     continue;
@@ -647,11 +655,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
             }
 
-            $this->hook('beforeInsert',[&$data]);
+            $this->hook('beforeInsert', [&$data]);
 
             // Collect all data of a new record
             $this->id = $this->persistence->insert($this, $data);
-            $this->hook('afterInsert',[$this->id]);
+            $this->hook('afterInsert', [$this->id]);
 
             //$this->hook('beforeInsert', array(&$source));
         }
@@ -666,7 +674,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     /**
      * This is a temporary method to avoid code duplication, but insert / import should
-     * be implemented differently
+     * be implemented differently.
      */
     protected function _rawInsert($m, $row)
     {
@@ -684,20 +692,21 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Faster method to add data, that does not modify active record
-     * 
+     * Faster method to add data, that does not modify active record.
+     *
      * Will be further optimized in the future
      */
     public function insert($row)
     {
         $m = clone $this;
         $this->_rawInsert($m, $row);
+
         return $m;
     }
 
     /**
      * Even more faster method to add adda, does not modify your
-     * current record and will not return anything
+     * current record and will not return anything.
      *
      * Will be further optimized in the future
      */
@@ -707,6 +716,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($rows as $row) {
             $this->_rawInsert($m, $row);
         }
+
         return $this;
     }
 
@@ -723,7 +733,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($this->persistence->prepareIterator($this) as $data) {
             $this->data = $data;
             $this->id = $data[$this->id_field];
-            yield $this->id=>$this;
+            yield $this->id => $this;
         }
         $this->unload();
     }
@@ -732,7 +742,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         return $this->persistence->prepareIterator($this);
     }
-
 
     /**
      * Delete record with a specified id. If no ID is specified
@@ -745,19 +754,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($id) {
-
             $this->persistence->delete($this, $id);
-
         } elseif ($this->loaded()) {
-
-            $this->hook('beforeDelete',[$id]);
+            $this->hook('beforeDelete', [$id]);
             $this->persistence->delete($this, $this->id);
-            $this->hook('afterDelete',[$id]);
+            $this->hook('afterDelete', [$id]);
             $this->unload();
         } else {
             throw new Exception(['No active record is set, unable to delete.']);
         }
     }
+
     // }}}
 
     // {{{ Support for actions
@@ -769,11 +776,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         return $this->persistence->action($this, $mode, $args);
     }
+
     // }}}
 
     // {{{ Join support
+
     /**
-     * Creates an objects that describes relationship between multiple tables (or collections)
+     * Creates an objects that describes relationship between multiple tables (or collections).
      *
      * When object is loaded, then instead of pulling all the data from a single table,
      * join will also query $foreign table in order to find additional fields. When inserting
@@ -791,6 +800,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $defaults[0] = $foreign_table;
 
         $c = $this->_default_class_join;
+
         return $this->add(new $c($defaults));
     }
 
@@ -800,22 +810,23 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $defaults = ['master_field' => $defaults];
         }
 
-        $defaults['weak']=true;
+        $defaults['weak'] = true;
+
         return $this->join($foreign_table, $defaults);
     }
+
     // }}}
 
     // {{{ Relations
     protected function _hasSomething($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
-
             if ($defaults) {
-                $defaults = ['model'=>$defaults];
+                $defaults = ['model' => $defaults];
             } else {
-                $defaults = ['model'=>'Model_'.$link];
+                $defaults = ['model' => 'Model_'.$link];
             }
-        } elseif(isset($defaults[0])) {
+        } elseif (isset($defaults[0])) {
             $defaults['model'] = $defaults[0];
             unset($defaults[0]);
         }
@@ -844,11 +855,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         return $this->getElement('#ref_'.$link)->refLink();
     }
+
     // }}}
 
     // {{{ Expressions
-    public function addExpression($name, $defaults) {
-
+    public function addExpression($name, $defaults)
+    {
         if (!is_array($defaults)) {
             $defaults = ['expr' => $defaults];
         } elseif (isset($defaults[0])) {
@@ -857,7 +869,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $c = $this->_default_class_addExpression;
+
         return $this->add(new $c($defaults), $name);
     }
+
     // }}}
 }

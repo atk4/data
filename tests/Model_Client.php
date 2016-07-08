@@ -1,11 +1,13 @@
 <?php
-namespace atk4\data\tests;
-use atk4\data\Model;
 
-class Model_Client extends Model_User {
-    function init() {
+namespace atk4\data\tests;
+
+class Model_Client extends Model_User
+{
+    public function init()
+    {
         parent::init();
 
-        $this->addField('order', ['default'=>'10']);
+        $this->addField('order', ['default' => '10']);
     }
 }

@@ -2,18 +2,18 @@
 
 namespace atk4\data;
 
-class Join_Array extends Join {
-
+class Join_Array extends Join
+{
     /**
-     * This method is to figure out stuff
+     * This method is to figure out stuff.
      */
-    function init()
+    public function init()
     {
         parent::init();
 
         // If kind is not specified, figure out join type
         if (!isset($this->kind)) {
-            $this->kind = $this->weak?'left':'inner';
+            $this->kind = $this->weak ? 'left' : 'inner';
         }
 
         // Add necessary hooks
@@ -29,51 +29,52 @@ class Join_Array extends Join {
         }
     }
 
-    function afterLoad($model)
+    public function afterLoad($model)
     {
         // we need to collect ID
         $this->id = $model->data[$this->master_field];
-        if (!$this->id) return;
+        if (!$this->id) {
+            return;
+        }
 
         try {
             $data = $model->persistence->load($model, $this->id, $this->foreign_table);
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             throw new Exception([
                 'Unable to load joined record',
-                'table'=>$this->foreign_table,
-                'id'=>$this->id
+                'table' => $this->foreign_table,
+                'id'    => $this->id,
             ], $e->getCode(), $e);
         }
         $model->data = array_merge($data, $model->data);
     }
 
-    function afterUnload()
+    public function afterUnload()
     {
         $this->id = null;
     }
 
-
-    function beforeInsert($model, &$data)
+    public function beforeInsert($model, &$data)
     {
         if ($this->weak) {
             return;
         }
 
-        if ($model->hasElement($this->master_field) 
+        if ($model->hasElement($this->master_field)
             && $model[$this->master_field]
         ) {
-            // The value for the master_field is set, 
+            // The value for the master_field is set,
             // we are going to use existing record.
             return;
         }
 
         // Figure out where are we going to save data
-        $persistence = $this->persistence ?: 
+        $persistence = $this->persistence ?:
             $this->owner->persistence;
 
         $this->id = $persistence->insert(
-            $model, 
-            $this->save_buffer, 
+            $model,
+            $this->save_buffer,
             $this->foreign_table
         );
 
@@ -82,60 +83,57 @@ class Join_Array extends Join {
         //$this->owner->set($this->master_field, $this->id);
     }
 
-    function afterInsert($model, $id)
+    public function afterInsert($model, $id)
     {
         if ($this->weak) {
             return;
         }
 
-        $this->save_buffer[$this->foreign_field] = 
+        $this->save_buffer[$this->foreign_field] =
             isset($this->join) ? $this->join->id : $id;
 
-        $persistence = $this->persistence ?: 
+        $persistence = $this->persistence ?:
             $this->owner->persistence;
 
         $this->id = $persistence->insert(
-            $model, 
-            $this->save_buffer, 
+            $model,
+            $this->save_buffer,
             $this->foreign_table
         );
     }
 
-    function beforeModify($model, &$data)
+    public function beforeModify($model, &$data)
     {
         if ($this->weak) {
             return;
         }
 
-        $persistence = $this->persistence ?: 
+        $persistence = $this->persistence ?:
             $this->owner->persistence;
 
         $this->id = $persistence->update(
-            $model, 
+            $model,
             $this->id,
-            $this->save_buffer, 
+            $this->save_buffer,
             $this->foreign_table
         );
     }
 
-    function doDelete($model, $id)
+    public function doDelete($model, $id)
     {
         if ($this->weak) {
             return;
         }
 
-        $persistence = $this->persistence ?: 
+        $persistence = $this->persistence ?:
             $this->owner->persistence;
 
         $persistence->delete(
-            $model, 
+            $model,
             $this->id,
             $this->foreign_table
         );
 
         $this->id = null;
     }
-
-
 }
-

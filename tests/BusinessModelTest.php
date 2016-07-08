@@ -1,19 +1,18 @@
 <?php
+
 namespace atk4\data\tests;
 
+use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\data\Field;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
 class BusinessModelTest extends \PHPUnit_Framework_TestCase
 {
-
     /**
-     * Test constructor
-     *
+     * Test constructor.
      */
     public function testConstructFields()
     {
@@ -41,22 +40,22 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(5, $m->get('name'));
         $this->assertEquals('Bilbo', $m->get('surname'));
 
-        $this->assertEquals(['name'=>5, 'surname'=>'Bilbo'], $m->get());
+        $this->assertEquals(['name' => 5, 'surname' => 'Bilbo'], $m->get());
     }
 
     public function testNull()
     {
         $m = new Model();
-        $m->set(['name'=>5]);
+        $m->set(['name' => 5]);
         $m['name'] = null;
-        $this->assertEquals(['name'=>null], $m->data);
+        $this->assertEquals(['name' => null], $m->data);
     }
 
     public function testFieldAccess2()
     {
         $m = new Model();
         $this->assertEquals(false, isset($m['name']));
-        $m->set(['name'=>5]);
+        $m->set(['name' => 5]);
         $this->assertEquals(true, isset($m['name']));
         $this->assertEquals(5, $m['name']);
 
@@ -75,33 +74,33 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
         $m = new Model();
         $m->addField('name');
         $m->addField('surname');
-        $m->set(['name'=>'john', 'surname'=>'peter', 'foo'=>'bar']);
-        $this->assertEquals(['name'=>'john', 'surname'=>'peter'], $m->get());
+        $m->set(['name' => 'john', 'surname' => 'peter', 'foo' => 'bar']);
+        $this->assertEquals(['name' => 'john', 'surname' => 'peter'], $m->get());
 
         $m->onlyFields(['surname']);
-        $this->assertEquals(['surname'=>'peter'], $m->get());
+        $this->assertEquals(['surname' => 'peter'], $m->get());
     }
 
     public function testDirty()
     {
         $m = new Model();
-        $m->data = ['name'=>5];
+        $m->data = ['name' => 5];
         $m['name'] = 10;
-        $this->assertEquals(['name'=>5], $m->dirty);
+        $this->assertEquals(['name' => 5], $m->dirty);
 
         $m['name'] = 5;
         $this->assertEquals([], $m->dirty);
 
         // now with defaults
         $m = new Model();
-        $f = $m->addField('name', ['default'=>'John']);
+        $f = $m->addField('name', ['default' => 'John']);
         $this->assertEquals('John', $f->default);
 
         $this->assertEquals('John', $m->get('name'));
 
         $m['name'] = null;
-        $this->assertEquals(['name'=>'John'], $m->dirty);
-        $this->assertEquals(['name'=>null], $m->data);
+        $this->assertEquals(['name' => 'John'], $m->dirty);
+        $this->assertEquals(['name' => null], $m->data);
         $this->assertEquals(null, $m['name']);
 
         unset($m['name']);
@@ -130,7 +129,6 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
         $m->onlyFields(['surname']);
 
         $m['name'] = 5;
-
     }
 
     public function testException1fixed()
@@ -143,7 +141,6 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
         $m->allFields();
 
         $m['name'] = 5;
-
     }
 
     /**
@@ -153,7 +150,6 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
     {
         $m = new Model();
         $m->set('foo');
-
     }
 
     /**
@@ -165,37 +161,41 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
         $m->set(4, 5);
     }
 
-    function testClass1()
+    public function testClass1()
     {
         $p = new Persistence();
         $c = new Model_Client($p);
         $this->assertEquals(10, $c['order']);
     }
 
-    function testHooks()
+    public function testHooks()
     {
         $p = new Persistence();
         $c = new Model_Client($p);
-        $c->getElement('name')->addHook('normalize', function($o, $f, &$v){ $v = trim($v); });
-        $c->getElement('name')->addHook('get', function($o, $f, &$v){ $v .= '123'; });
+        $c->getElement('name')->addHook('normalize', function ($o, $f, &$v) {
+            $v = trim($v);
+        });
+        $c->getElement('name')->addHook('get', function ($o, $f, &$v) {
+            $v .= '123';
+        });
 
 
         $c['name'] = '  jo hn ';
-        $this->assertEquals(['name'=>'jo hn'], $c->data);
+        $this->assertEquals(['name' => 'jo hn'], $c->data);
         $this->assertEquals('jo hn123', $c['name']);
     }
 
-    function testExampleFromDoc()
+    public function testExampleFromDoc()
     {
         $m = new Model_User();
 
-        $m->addField('salary', ['default'=>1000]);
+        $m->addField('salary', ['default' => 1000]);
 
         $this->assertEquals(false, isset($m['salary']));   // false
         $this->assertEquals(1000, $m['salary']);           // 1000
 
         // Next we load record from $db
-        $m->data=['salary'=>2000];
+        $m->data = ['salary' => 2000];
 
         $this->assertEquals(2000, $m['salary']);           // 2000 (from db)
         $this->assertEquals(false, isset($m['salary']));   // false, was not changed

@@ -1,4 +1,5 @@
 <?php
+
 namespace atk4\data\tests;
 
 use atk4\data\Model;
@@ -9,7 +10,6 @@ use atk4\data\Persistence_SQL;
  */
 class ExpressionSQLTest extends SQLTestCase
 {
-
     public function testNakedExpression()
     {
         $db = new Persistence_SQL($this->db->connection);
@@ -22,14 +22,14 @@ class ExpressionSQLTest extends SQLTestCase
     public function testBasic()
     {
         $a = [
-            'invoice'=>[
-                ['total_net'=>10, 'total_vat'=>1.23],
-                ['total_net'=>20, 'total_vat'=>2.46],
-            ]];
+            'invoice' => [
+                ['total_net' => 10, 'total_vat' => 1.23],
+                ['total_net' => 20, 'total_vat' => 2.46],
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net','total_vat']);
+        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $this->assertEquals(
@@ -37,13 +37,13 @@ class ExpressionSQLTest extends SQLTestCase
             $i->action('select')->render()
         );
 
-        $i->tryLoad(1); 
+        $i->tryLoad(1);
         $this->assertEquals(10, $i['total_net']);
-        $this->assertEquals($i['total_net']+$i['total_vat'], $i['total_gross']);
+        $this->assertEquals($i['total_net'] + $i['total_vat'], $i['total_gross']);
 
-        $i->tryLoad(2); 
+        $i->tryLoad(2);
         $this->assertEquals(20, $i['total_net']);
-        $this->assertEquals($i['total_net']+$i['total_vat'], $i['total_gross']);
+        $this->assertEquals($i['total_net'] + $i['total_vat'], $i['total_gross']);
 
         $i->addExpression('double_total_gross', '[total_gross]*2');
 
@@ -52,23 +52,22 @@ class ExpressionSQLTest extends SQLTestCase
             $i->action('select')->render()
         );
 
-        $i->tryLoad(1); 
-        $this->assertEquals(($i['total_net']+$i['total_vat'])*2, $i['double_total_gross']);
+        $i->tryLoad(1);
+        $this->assertEquals(($i['total_net'] + $i['total_vat']) * 2, $i['double_total_gross']);
     }
-
 
     public function testBasicCallback()
     {
         $a = [
-            'invoice'=>[
-                ['total_net'=>10, 'total_vat'=>1.23],
-                ['total_net'=>20, 'total_vat'=>2.46],
-            ]];
+            'invoice' => [
+                ['total_net' => 10, 'total_vat' => 1.23],
+                ['total_net' => 20, 'total_vat' => 2.46],
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net','total_vat']);
-        $i->addExpression('total_gross', function($i, $q) {
+        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i->addExpression('total_gross', function ($i, $q) {
             return '[total_net]+[total_vat]';
         });
 
@@ -77,26 +76,26 @@ class ExpressionSQLTest extends SQLTestCase
             $i->action('select')->render()
         );
 
-        $i->tryLoad(1); 
+        $i->tryLoad(1);
         $this->assertEquals(10, $i['total_net']);
-        $this->assertEquals($i['total_net']+$i['total_vat'], $i['total_gross']);
+        $this->assertEquals($i['total_net'] + $i['total_vat'], $i['total_gross']);
 
-        $i->tryLoad(2); 
+        $i->tryLoad(2);
         $this->assertEquals(20, $i['total_net']);
-        $this->assertEquals($i['total_net']+$i['total_vat'], $i['total_gross']);
+        $this->assertEquals($i['total_net'] + $i['total_vat'], $i['total_gross']);
     }
 
     public function testQuery()
     {
         $a = [
-            'invoice'=>[
-                ['total_net'=>10, 'total_vat'=>1.23],
-                ['total_net'=>20, 'total_vat'=>2.46],
-            ]];
+            'invoice' => [
+                ['total_net' => 10, 'total_vat' => 1.23],
+                ['total_net' => 20, 'total_vat' => 2.46],
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net','total_vat']);
+        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('sum_net', $i->action('fx', ['sum', 'total_net']));
 
         $this->assertEquals(
@@ -104,7 +103,7 @@ class ExpressionSQLTest extends SQLTestCase
             $i->action('select')->render()
         );
 
-        $i->tryLoad(1); 
+        $i->tryLoad(1);
         $this->assertEquals(10, $i['total_net']);
         $this->assertEquals(30, $i['sum_net']);
 
@@ -113,24 +112,23 @@ class ExpressionSQLTest extends SQLTestCase
         $q->field($i->action('count'), 'total_orders');
         $q->field($i->action('fx', ['sum', 'total_net']), 'total_net');
         $this->assertEquals(
-            ['total_orders'=>2, 'total_net'=>30], 
+            ['total_orders' => 2, 'total_net' => 30],
             $q->getRow()
         );
-
     }
 
     public function testExpressions()
     {
         $a = [
-            'user'=>[
-                1=>['id'=>1, 'name'=>'John', 'surname'=>'Smith', 'cached_name'=>'John Smith'],
-                2=>['id'=>2, 'name'=>'Sue', 'surname'=>'Sue', 'cached_name'=>'ERROR'],
-            ]];
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'cached_name' => 'John Smith'],
+                2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'cached_name' => 'ERROR'],
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
         $m = new Model($db, 'user');
-        $m->addFields(['name','surname','cached_name']);
+        $m->addFields(['name', 'surname', 'cached_name']);
 
         $m->addExpression('full_name', '[name] || " " || [surname]');
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
@@ -141,8 +139,9 @@ class ExpressionSQLTest extends SQLTestCase
         );
 
 
-        $m->tryLoad(1); $this->assertEquals(null, $m['name']);
-        $m->tryLoad(2); $this->assertEquals('Sue', $m['name']);
-
+        $m->tryLoad(1);
+        $this->assertEquals(null, $m['name']);
+        $m->tryLoad(2);
+        $this->assertEquals('Sue', $m['name']);
     }
 }
