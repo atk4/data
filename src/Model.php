@@ -852,14 +852,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this->_hasSomething($this->_default_class_hasMany, $link, $defaults);
     }
 
-    public function ref($link)
+    public function ref($link, $defaults = [])
     {
-        return $this->getElement('#ref_'.$link)->ref();
+        return $this->getElement('#ref_'.$link)->ref($defaults);
     }
 
-    public function refLink($link)
+    public function refLink($link, $defaults = [])
     {
-        return $this->getElement('#ref_'.$link)->refLink();
+        return $this->getElement('#ref_'.$link)->refLink($defaults);
     }
     // }}}
 

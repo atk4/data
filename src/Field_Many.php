@@ -66,20 +66,24 @@ class Field_Many
         $this->_init();
     }
 
-    protected function getModel()
+    protected function getModel($defaults = [])
     {
         if (is_callable($this->model)) {
             $c = $this->model;
-            return $c($this->owner, $this);
+            return $c($this->owner, $this, $defaults);
         }
 
         if (is_object($this->model)) {
-            return clone $this->model;
+            $m = clone $this->model;
+            if ($defaults) {
+                $m->setDefaults($defaults);
+            }
+            return $m;
         }
 
         // last effort - try to add model
         $p = $this->owner->persistence;
-        return $p->add($p->normalizeClassName($this->model,'Model'));
+        return $p->add($p->normalizeClassName($this->model,'Model'), $defaults);
 
         throw new Exception([
             'Model is not defined for the relation',
@@ -115,9 +119,9 @@ class Field_Many
      * with this join. That means it won't be loaded from $table but
      * form the join instead
      */
-    public function ref()
+    public function ref($defaults = [])
     {
-        return $this->getModel()
+        return $this->getModel($defaults)
             ->addCondition(
                 $this->their_field ?: ($this->owner->table.'_id'),
                 $this->getOurValue()
@@ -127,9 +131,9 @@ class Field_Many
     /**
      * Creates model that can be used for generating sub-query acitons
      */
-    public function refLink()
+    public function refLink($defaults = [])
     {
-        return $this->getModel()
+        return $this->getModel($defaults)
             ->addCondition(
                 $this->their_field ?: ($this->owner->table.'_id'),
                 $this->referenceOurValue()
