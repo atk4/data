@@ -230,9 +230,9 @@ class Persistence_SQL extends Persistence
                 break;
 
             case 'count':
-                $q->field('count(*)');
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q]);
+                $q->reset('field')->field('count(*)');
 
                 return $q;
 
@@ -245,7 +245,8 @@ class Persistence_SQL extends Persistence
                 }
 
                 $field = is_string($args[0]) ? $m->getElement($args[0]) : $args[0];
-                $q->field($field);
+                $m->hook('initSelectQuery', [$q, $type]);
+                $q->reset('field')->field($field);
                 $this->initQueryConditions($m, $q);
                 $this->setLimitOrder($m, $q);
 
@@ -423,10 +424,13 @@ class Persistence_SQL extends Persistence
         $update = $this->action($m, 'update');
 
         // only apply fields that has been modified
+        $cnt = 0;
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
             $update->set($f->actual ?: $f->short_name, $value);
+            $cnt++;
         }
+        if(!$cnt) return;
         $update->where($m->getElement($m->id_field), $id);
 
         $m->hook('beforeUpdateQuery', [$update]);
