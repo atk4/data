@@ -441,6 +441,7 @@ class Persistence_SQL extends Persistence
     public function delete(Model $m, $id)
     {
         $delete = $this->action($m, 'delete');
+        $delete->reset('where'); // because it could have join there..
         $delete->where($m->getElement($m->id_field), $id);
         $m->hook('beforeDeleteQuery', [$delete]);
         try {
