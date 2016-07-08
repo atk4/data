@@ -70,7 +70,7 @@ class Field_One
         }
     }
 
-    protected function getModel()
+    protected function getModel($defaults = [])
     {
         if (is_callable($this->model)) {
             $c = $this->model;
@@ -85,7 +85,7 @@ class Field_One
         // last effort - try to add model
         $p = $this->owner->persistence;
 
-        return $p->add($p->normalizeClassName($this->model, 'Model'));
+        return $p->add($p->normalizeClassName($this->model, 'Model'), $defaults);
 
         throw new Exception([
             'Model is not defined for the relation',
@@ -105,9 +105,9 @@ class Field_One
      * with this join. That means it won't be loaded from $table but
      * form the join instead.
      */
-    public function ref()
+    public function ref($defaults = [])
     {
-        $m = $this->getModel();
+        $m = $this->getModel($defaults);
         if ($this->owner->loaded()) {
             if ($this->their_field) {
                 return $m->loadBy($this->their_field, $this->owner[$this->our_field]);
