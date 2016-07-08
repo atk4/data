@@ -44,7 +44,18 @@ class Field_SQL_One extends Field_One
         return $m;
     }
 
-    public function addTitleField()
+    /**
+     * $order->hasOne('user_id', 'User')->addTitle();
+     *
+     * This will add expression 'user' equal to ref('user_id')['name'];
+     */
+    public function addTitle()
     {
+        $field = str_replace('_id', '', $this->link);
+        $this->owner->addExpression($field, function ($m) use ($their_field) {
+            $mm = $m->refLink($this->link);
+            return $mm->action('field', [$mm->title_field]);
+        });
+        return $this;
     }
 }
