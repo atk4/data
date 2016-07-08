@@ -49,7 +49,7 @@ class Field_Many
         }
 
         if (!$this->model) {
-            $this->model=$this->link;
+            $this->model = $this->link;
         }
     }
 
@@ -79,13 +79,14 @@ class Field_Many
             if ($defaults) {
                 $m->setDefaults($defaults);
             }
+
             return $m;
         }
 
         // last effort - try to add model
         $p = $this->owner->persistence;
 
-        return $p->add($p->normalizeClassName($this->model,'Model'), $defaults);
+        return $p->add($p->normalizeClassName($this->model, 'Model'), $defaults);
 
         throw new Exception([
             'Model is not defined for the relation',

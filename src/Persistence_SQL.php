@@ -47,11 +47,11 @@ class Persistence_SQL extends Persistence
         // Use our own classes for fields, relations and expressions unless
         // $defaults specify them otherwise.
         $defaults = array_merge([
-            '_default_class_addField' => $this->_default_class_addField,
-            '_default_class_hasOne' => $this->_default_class_hasOne,
-            '_default_class_hasMany' => $this->_default_class_hasMany,
+            '_default_class_addField'      => $this->_default_class_addField,
+            '_default_class_hasOne'        => $this->_default_class_hasOne,
+            '_default_class_hasMany'       => $this->_default_class_hasMany,
             '_default_class_addExpression' => $this->_default_class_addExpression,
-            '_default_class_join' => $this->_default_class_join,
+            '_default_class_join'          => $this->_default_class_join,
         ], $defaults);
 
         $m = parent::add($m, $defaults);
@@ -406,13 +406,14 @@ class Persistence_SQL extends Persistence
     {
         try {
             $export = $this->action($m, 'select');
+
             return $export->execute();
         } catch (\Exception $e) {
             throw new Exception([
                 'Unable to execute iteration query',
-                'query'=>$export->getDebugQuery(false),
-                'model'=>$m,
-                'conditions'=>$m->conditions
+                'query'      => $export->getDebugQuery(false),
+                'model'      => $m,
+                'conditions' => $m->conditions,
             ], null, $e);
         }
     }
@@ -443,9 +444,9 @@ class Persistence_SQL extends Persistence
         } catch (\Exception $e) {
             throw new Exception([
                 'Unable to load due to query error',
-                'query'=>$delete->getDebugQuery(false),
-                'model'=>$m,
-                'conditions'=>$m->conditions
+                'query'      => $delete->getDebugQuery(false),
+                'model'      => $m,
+                'conditions' => $m->conditions,
             ], null, $e);
         }
     }
