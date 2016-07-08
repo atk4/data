@@ -1,17 +1,20 @@
 <?php
+
 namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence_SQL;
 
+class Model_Rate extends \atk4\data\Model
+{
+    public $table = 'rate';
 
-class Model_Rate extends \atk4\data\Model {
-    public $table = "rate";
-    function init(){
+    public function init()
+    {
         parent::init();
-        $this->addField("dat");
-        $this->addField("bid");
-        $this->addField("ask");
+        $this->addField('dat');
+        $this->addField('bid');
+        $this->addField('ask');
     }
 }
 
@@ -22,62 +25,58 @@ class Model_Rate extends \atk4\data\Model {
  */
 class RandomSQLTests extends SQLTestCase
 {
-
     public function testRate()
     {
         $a = [
-            'rate'=>[
-                ['dat'=>'18/12/12', 'bid'=>3.4, 'ask'=>9.4],
-                ['dat'=>'12/12/12', 'bid'=>8.3, 'ask'=>9.2]
-            ]];
+            'rate' => [
+                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],
+                ['dat' => '12/12/12', 'bid' => 8.3, 'ask' => 9.2],
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
         $m = new Model_Rate($db);
 
         $this->assertEquals(2, $m->action('count')->getOne());
-
     }
-
 
     public function testTitleImport()
     {
         $a = [
-            'user'=>[
-                '_'=>['name'=>'John', 'salary'=>29],
-            ]];
+            'user' => [
+                '_' => ['name' => 'John', 'salary' => 29],
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
         $m = new Model($db, 'user');
-        $m->addFields(['name',['salary','default'=>10]]);
+        $m->addFields(['name', ['salary', 'default' => 10]]);
 
-        $m->import(['Peter',['Steve','salary'=>30]]);
+        $m->import(['Peter', ['Steve', 'salary' => 30]]);
         $m->insert('Sue');
-        $m->insert(['John','salary'=>40]);
+        $m->insert(['John', 'salary' => 40]);
 
         $this->assertEquals([
-            'user'=>[
-                1=>['id'=>1, 'name'=>'Peter', 'salary'=>10],
-                2=>['id'=>2, 'name'=>'Steve', 'salary'=>30],
-                3=>['id'=>3, 'name'=>'Sue', 'salary'=>10],
-                4=>['id'=>4, 'name'=>'John', 'salary'=>40],
-            ]], $this->getDB());
+            'user' => [
+                1 => ['id' => 1, 'name' => 'Peter', 'salary' => 10],
+                2 => ['id' => 2, 'name' => 'Steve', 'salary' => 30],
+                3 => ['id' => 3, 'name' => 'Sue', 'salary' => 10],
+                4 => ['id' => 4, 'name' => 'John', 'salary' => 40],
+            ], ], $this->getDB());
     }
-
 
     public function testBasic()
     {
         $this->markTestIncomplete(
           'This test has not been implemented yet.'
         );
-        
+
 
         $a = [
-            'user'=>[
-                1=>['id'=>1, 'name'=>'John', 'gender'=>'M'],
-                2=>['id'=>2, 'name'=>'Sue', 'gender'=>'F'],
-            ]];
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
+                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
@@ -85,23 +84,23 @@ class RandomSQLTests extends SQLTestCase
         $clients = new Model_Client($db);
         // Object representing all clients - DataSet
 
-        $clients -> addCondition('is_vip', true);
+        $clients->addCondition('is_vip', true);
         // Now DataSet is limited to VIP clients only
 
         $vip_client_orders = $clients->ref('Order');
         // This DataSet will contain only orders placed by VIP clients
 
-        $vip_client_orders->addExpression('item_price')->set(function($model, $query){
+        $vip_client_orders->addExpression('item_price')->set(function ($model, $query) {
             return $model->ref('item_id')->fieldQuery('price');
         });
         // Defines a new field for a model expressed through relation with Item
 
-        $vip_client_orders->addExpression('paid')->set(function($model, $query){
+        $vip_client_orders->addExpression('paid')->set(function ($model, $query) {
             return $model->ref('Payment')->sum('amount');
         });
         // Defines another field as sum of related payments
 
-        $vip_client_orders->addExpression('due')->set(function($model, $query){
+        $vip_client_orders->addExpression('due')->set(function ($model, $query) {
             return $query->expr('{item_price} * {qty} - {paid}');
         });
         // Defines third field for calculating due
@@ -111,14 +110,14 @@ class RandomSQLTests extends SQLTestCase
 
 
         $m = new Model($db, 'user');
-        $m->addFields(['name','gender']);
+        $m->addFields(['name', 'gender']);
 
         $m->tryLoad(1);
         $this->assertEquals('John', $m['name']);
         $m->tryLoad(2);
         $this->assertEquals('Sue', $m['name']);
 
-        $m->addCondition('gender','M');
+        $m->addCondition('gender', 'M');
         $m->tryLoad(1);
         $this->assertEquals('John', $m['name']);
         $m->tryLoad(2);

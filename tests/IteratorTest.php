@@ -1,4 +1,5 @@
 <?php
+
 namespace atk4\data\tests;
 
 use atk4\data\Model;
@@ -9,19 +10,18 @@ use atk4\data\Persistence_SQL;
  */
 class IteratorTest extends SQLTestCase
 {
-
     public function testBasic()
     {
         $a = [
-            'invoice'=>[
-                ['total_net'=>10],
-                ['total_net'=>20],
-                ['total_net'=>15],
-            ]];
+            'invoice' => [
+                ['total_net' => 10],
+                ['total_net' => 20],
+                ['total_net' => 15],
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net','total_vat']);
+        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -43,30 +43,30 @@ class IteratorTest extends SQLTestCase
 
 
         $this->assertEquals([
-            ['total_net'=>10],
-            ['total_net'=>15],
-            ['total_net'=>20],
+            ['total_net' => 10],
+            ['total_net' => 15],
+            ['total_net' => 20],
 
-            ['total_net'=>10],
-            ['total_net'=>15],
-            ['total_net'=>20],
+            ['total_net' => 10],
+            ['total_net' => 15],
+            ['total_net' => 20],
 
-            ['total_net'=>10], // affected by limit now
-        ],$data);
+            ['total_net' => 10], // affected by limit now
+        ], $data);
     }
 
     public function testRawIterator()
     {
         $a = [
-            'invoice'=>[
-                ['total_net'=>10],
-                ['total_net'=>20],
-                ['total_net'=>15],
-            ]];
+            'invoice' => [
+                ['total_net' => 10],
+                ['total_net' => 20],
+                ['total_net' => 15],
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net','total_vat']);
+        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -89,35 +89,35 @@ class IteratorTest extends SQLTestCase
 
 
         $this->assertEquals([
-            ['total_net'=>10, 'id'=>1],
+            ['total_net' => 10, 'id' => 1],
 
-            ['total_net'=>10, 'id'=>1],
-            ['total_net'=>15, 'id'=>3],
-            ['total_net'=>20, 'id'=>2],
+            ['total_net' => 10, 'id' => 1],
+            ['total_net' => 15, 'id' => 3],
+            ['total_net' => 20, 'id' => 2],
 
-            ['total_net'=>10, 'id'=>1], // affected by limit now
-        ],$data);
+            ['total_net' => 10, 'id' => 1], // affected by limit now
+        ], $data);
     }
 
     public function testBasicID()
     {
         $a = [
-            'invoice'=>[
-                ['total_net'=>10],
-                ['total_net'=>20],
-                ['total_net'=>15],
-            ]];
+            'invoice' => [
+                ['total_net' => 10],
+                ['total_net' => 20],
+                ['total_net' => 15],
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net','total_vat']);
+        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);
 
         $data = [];
-        foreach ($i as $id=>$item) {
+        foreach ($i as $id => $item) {
             $data[$id] = clone $item;
         }
 

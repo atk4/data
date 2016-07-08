@@ -1,8 +1,10 @@
-<?php // vim:ts=4:sw=4:et:fdm=marker:fdl=0
+<?php
+
+// vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
 namespace atk4\data;
 
-class Join 
+class Join
 {
     use \atk4\core\TrackableTrait {
         init as _init;
@@ -17,13 +19,13 @@ class Join
 
     /**
      * If $persistence is set, then it's used for loading
-     * and storing the values, instead $owner->persistence
+     * and storing the values, instead $owner->persistence.
      */
     protected $persistence = null;
 
 
     /**
-     * ID used by a joined table
+     * ID used by a joined table.
      */
     protected $id = null;
 
@@ -36,24 +38,24 @@ class Join
     protected $id_field = 'id';
 
     /**
-     * Is our join weak? Weak join will stop you from touching foreign table
+     * Is our join weak? Weak join will stop you from touching foreign table.
      */
     protected $weak = false;
 
     /**
-     * Normally the foreign table is saved first, then it's ID is used in the 
+     * Normally the foreign table is saved first, then it's ID is used in the
      * primary table. When deleting, the primary table record is deleted first
      * which is followed by the foreign tabel record.
      *
      * If you are using the following syntax:
      *
-     * $user->join('contact','default_contact_id'); 
+     * $user->join('contact','default_contact_id');
      *
      * Then the ID connecting tables is stored in foreign table and the order
      * of saving and delete needs to be reversed. In this case $reverse
      * will be set to `true`. You can specify value of this property.
      */
-    protected $reverse; 
+    protected $reverse;
 
     /**
      * Field to be used for matching inside master field. By default
@@ -63,7 +65,7 @@ class Join
 
     /**
      * Field to be used for matching in a foreign table. By default
-     * it's 'id'
+     * it's 'id'.
      */
     protected $foreign_field;
 
@@ -74,19 +76,19 @@ class Join
     protected $prefix = '';
 
     /**
-     * Data which is populated here as the save/insert progresses
+     * Data which is populated here as the save/insert progresses.
      */
     protected $save_buffer = [];
 
     /**
-     * When join is done on another join
+     * When join is done on another join.
      */
     protected $join = null;
 
     /**
-     * default constructor. Will copy argument into properties
+     * default constructor. Will copy argument into properties.
      */
-    function __construct($defaults = [])
+    public function __construct($defaults = [])
     {
         if (isset($defaults[0])) {
             $this->foreign_table = $defaults[0];
@@ -99,7 +101,7 @@ class Join
     }
 
     /**
-     * Will use either foreign_alias or create #join_<table> 
+     * Will use either foreign_alias or create #join_<table>.
      */
     public function getDesiredName()
     {
@@ -111,7 +113,7 @@ class Join
         $this->_init();
 
         // handle foreign table containing a dot
-        if (is_string($this->foreign_table) 
+        if (is_string($this->foreign_table)
             && strpos($this->foreign_table, '.') !== false
         ) {
             if (!isset($this->reverse)) {
@@ -121,13 +123,13 @@ class Join
 
                     // master_field exists, no we will use that
                     /*
-                    if (!is_object($this->master_field) 
+                    if (!is_object($this->master_field)
                         && !$this->owner->hasElement($this->master_field
                     )) {
                      */
                         throw new Exception([
                             'You are trying to link tables on non-id fields. This is not implemented yet',
-                            'condition'=>$this->owner->table.'.'.$this->master_field.' = '.$this->foreign_table
+                            'condition' => $this->owner->table.'.'.$this->master_field.' = '.$this->foreign_table,
                         ]);
                         /*
                     }
@@ -139,7 +141,7 @@ class Join
                      */
                 }
             }
-            list($this->foreign_table, $this->foreign_field) = 
+            list($this->foreign_table, $this->foreign_field) =
                 explode('.', $this->foreign_table, 2);
             if (!$this->master_field) {
                 $this->master_field = 'id';
@@ -154,17 +156,17 @@ class Join
                 $this->foreign_field = 'id';
             }
         }
-
     }
 
     /**
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table but
-     * form the join instead
+     * form the join instead.
      */
     public function addField($n, $defaults = [])
     {
         $defaults['join'] = $this;
+
         return $this->owner->addField($this->prefix.$n, $defaults);
     }
 
@@ -179,6 +181,7 @@ class Join
                 $this->addField($field);
             }
         }
+
         return $this;
     }
 
@@ -189,11 +192,12 @@ class Join
         }
 
         $defaults['join'] = $this;
+
         return $this->owner->add($object, $defaults);
     }
 
     /**
-     * Join will be attached to a current join
+     * Join will be attached to a current join.
      */
     public function join($foreign_table, $defaults = [])
     {
@@ -201,6 +205,7 @@ class Join
             $defaults = ['master_field' => $defaults];
         }
         $defaults['join'] = $this;
+
         return $this->owner->join($foreign_table, $defaults);
     }
 
@@ -210,46 +215,49 @@ class Join
             $defaults = ['master_field' => $defaults];
         }
         $defaults['join'] = $this;
+
         return $this->owner->leftJoin($foreign_table, $defaults);
     }
 
     /**
-     * weakJoin will be attached to a current join
+     * weakJoin will be attached to a current join.
      */
     public function weakJoin($defaults = [])
     {
         $defaults['join'] = $this;
+
         return $this->owner->weakJoin($defaults);
     }
 
-
     /**
-     * creates relation based on a field from the join
+     * creates relation based on a field from the join.
      */
     public function hasOne($model, $defaults = [])
     {
         if (!is_array($defaults)) {
-            $defaults=['model'=>$defaults];
+            $defaults = ['model' => $defaults];
         }
         $defaults['join'] = $this;
+
         return $this->owner->hasOne($model, $defaults);
     }
 
     /**
-     * creates relation based on the field from the join
+     * creates relation based on the field from the join.
      */
     public function hasMany($model, $defaults = [])
     {
         $defaults = array_merge([
-            'our_field'=>$this->id_field,
-            'their_field'=>$this->table.'_id'
+            'our_field'   => $this->id_field,
+            'their_field' => $this->table.'_id',
         ], $defaults);
+
         return parent::hasMany($model, $defaults);
     }
 
     /**
      * wrapper for containsOne that will associate field
-     * with join
+     * with join.
      */
     public function containsOne($model, $defaults = [])
     {
@@ -258,7 +266,7 @@ class Join
         }
 
         if (is_string($defaults[0])) {
-            $defaults[0] = $this->addField($defaults[0], ['system'=>true]);
+            $defaults[0] = $this->addField($defaults[0], ['system' => true]);
         }
 
         return parent::containsOne($model, $defaults);
@@ -266,7 +274,7 @@ class Join
 
     /**
      * wrapper for containsMany that will associate field
-     * with join
+     * with join.
      */
     public function containsMany($model, $defaults = [])
     {
@@ -275,34 +283,33 @@ class Join
         }
 
         if (is_string($defaults[0])) {
-            $defaults[0] = $this->addField($defaults[0], ['system'=>true]);
+            $defaults[0] = $this->addField($defaults[0], ['system' => true]);
         }
 
         return parent::containsMany($model, $defaults);
     }
 
     /**
-     * Will iterate through this model by pulling 
+     * Will iterate through this model by pulling
      *  - fields
      *  - relations
-     *  - conditions
+     *  - conditions.
      *
      * and then will apply them locally. Any you think that any fields
      * could clash, then use ['prefix'=>'m2'] which will be pre-pended
      * to all the fields. Conditions will me automatically mapped.
      */
-    function importModel($m, $defaults = [])
+    public function importModel($m, $defaults = [])
     {
     }
 
     /**
      * Joins with the primary table of the model and
-     * then import all of the data into our model
+     * then import all of the data into our model.
      */
-    function weakJoinModel($model, $fields = [])
+    public function weakJoinModel($model, $fields = [])
     {
         if (!is_object($model)) {
-
             $model = $this->owner->connection->add($model);
         }
         $j = $this->join($model->table);
@@ -312,7 +319,7 @@ class Join
         return $j;
     }
 
-    function set($field, $value)
+    public function set($field, $value)
     {
         $this->save_buffer[$field] = $value;
     }
