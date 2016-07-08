@@ -308,6 +308,7 @@ class Persistence_SQL extends Persistence
                 'Unable to load record',
                 'model' => $m,
                 'id'    => $id,
+                'query'      => $load->getDebugQuery(false),
             ]);
         }
 
