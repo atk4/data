@@ -2,7 +2,8 @@
 
 namespace atk4\data;
 
-class Field {
+class Field
+{
     use \atk4\core\TrackableTrait;
     use \atk4\core\HookTrait;
 
@@ -16,8 +17,8 @@ class Field {
 
     public $system = false;
 
-    function __construct($defaults = []) {
-
+    public function __construct($defaults = [])
+    {
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
@@ -31,18 +32,19 @@ class Field {
     /**
      * if you can, use $this->$attr = foo instead of this method. No magic.
      */
-    function setAttr($attr, $value)
+    public function setAttr($attr, $value)
     {
         $this->$attr = $value;
+
         return $this;
     }
 
     public function __debugInfo()
     {
-        $object = (array)$this;
+        $object = (array) $this;
         unset($object['owner']);
 
-        foreach($object as $key=>$val){
+        foreach ($object as $key => $val) {
             if ($val === null) {
                 unset($object[$key]);
                 continue;
@@ -56,4 +58,3 @@ class Field {
         return $object;
     }
 }
-

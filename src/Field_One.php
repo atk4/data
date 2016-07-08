@@ -1,4 +1,6 @@
-<?php // vim:ts=4:sw=4:et:fdm=marker:fdl=0
+<?php
+
+// vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
 namespace atk4\data;
 
@@ -12,7 +14,7 @@ class Field_One
 
     /**
      * What should we pass into owner->ref() to get
-     * through to this reference
+     * through to this reference.
      */
     protected $link;
 
@@ -30,16 +32,15 @@ class Field_One
     protected $their_field = null;
 
     /**
-     * points to the join if we are part of one
+     * points to the join if we are part of one.
      */
     protected $join = null;
 
     /**
-     * default constructor. Will copy argument into properties
+     * default constructor. Will copy argument into properties.
      */
-    function __construct($defaults = [])
+    public function __construct($defaults = [])
     {
-
         if (isset($defaults[0])) {
             $this->link = $defaults[0];
             unset($defaults[0]);
@@ -51,7 +52,7 @@ class Field_One
     }
 
     /**
-     * Will use either foreign_alias or create #join_<table> 
+     * Will use either foreign_alias or create #join_<table>.
      */
     public function getDesiredName()
     {
@@ -65,7 +66,7 @@ class Field_One
             $this->our_field = $this->link;
         }
         if (!$this->owner->hasElement($this->our_field)) {
-            $this->owner->addField($this->our_field, ['system'=>true, 'join'=>$this->join]);
+            $this->owner->addField($this->our_field, ['system' => true, 'join' => $this->join]);
         }
     }
 
@@ -73,6 +74,7 @@ class Field_One
     {
         if (is_callable($this->model)) {
             $c = $this->model;
+
             return $c($this->owner, $this);
         }
 
@@ -82,28 +84,29 @@ class Field_One
 
         // last effort - try to add model
         $p = $this->owner->persistence;
-        return $p->add($p->normalizeClassName($this->model,'Model'));
+
+        return $p->add($p->normalizeClassName($this->model, 'Model'));
 
         throw new Exception([
             'Model is not defined for the relation',
-            'model'=>$this->model
+            'model' => $this->model,
         ]);
     }
 
     protected function referenceOurValue()
     {
-        $this->owner->persistence_data['use_table_prefixes']=true;
+        $this->owner->persistence_data['use_table_prefixes'] = true;
+
         return $this->owner->getElement($this->our_field);
     }
 
     /**
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table but
-     * form the join instead
+     * form the join instead.
      */
     public function ref()
     {
-
         $m = $this->getModel();
         if ($this->owner->loaded()) {
             if ($this->their_field) {
@@ -111,7 +114,6 @@ class Field_One
             } else {
                 return $m->load($this->owner[$this->our_field]);
             }
-
         } else {
             $m = clone $m; // we will be adding conditions!
 
@@ -120,5 +122,4 @@ class Field_One
             return $m->addCondition($this->their_field ?: $m->id_field, $values);
         }
     }
-
 }

@@ -1,19 +1,18 @@
 <?php
+
 namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence_Array;
-use atk4\data\Persistence_SQL;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
 class JoinTest extends \PHPUnit_Framework_TestCase
 {
-
     public function testBasicJoin()
     {
-        $a = ['user'=>[], 'contact'=>[]];
+        $a = ['user' => [], 'contact' => []];
         $db = new Persistence_Array($a);
         $m = new Model($db, 'user');
         $m->addField('name');
@@ -41,8 +40,6 @@ class JoinTest extends \PHPUnit_Framework_TestCase
         $db = new Persistence_Array($a);
         $m = new Model($db);
         $m->addField('name');
-
-
     }
 
     public function testMultipleJoins()

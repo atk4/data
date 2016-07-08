@@ -1,4 +1,6 @@
-<?php // vim:ts=4:sw=4:et:fdm=marker:fdl=0
+<?php
+
+// vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
 namespace atk4\data;
 
@@ -7,17 +9,17 @@ namespace atk4\data;
  * from array. This basic driver only offers the load/save support based
  * around ID, you can't use conditions, order or limit.
  */
-class Persistence_Array extends Persistence {
-
+class Persistence_Array extends Persistence
+{
     public $data;
 
-    function __construct(&$data)
+    public function __construct(&$data)
     {
-        $this->data =& $data;
+        $this->data = &$data;
     }
 
     /**
-     * Associate model with the data driver
+     * Associate model with the data driver.
      */
     public function add($m, $defaults = [])
     {
@@ -36,15 +38,15 @@ class Persistence_Array extends Persistence {
     public function load(Model $m, $id, $table = null)
     {
         if (!isset($this->data[$m->table]) && !isset($table)) {
-            throw Exception ([
+            throw Exception([
                 'Table was not found in the array data source',
-                'table'=>$m->table
+                'table' => $m->table,
             ]);
         }
         if (!isset($this->data[$table ?: $m->table][$id])) {
             throw new Exception([
                 'Record with specified ID was not found',
-                'id'=>$id
+                'id' => $id,
             ], 404);
         }
 
@@ -53,7 +55,6 @@ class Persistence_Array extends Persistence {
 
     public function tryLoad(Model $m, $id, $table = null)
     {
-
         if (!isset($table)) {
             $table = $m->table;
         }
@@ -73,6 +74,7 @@ class Persistence_Array extends Persistence {
         $id = $this->generateNewID($m, $table);
         $data[$m->id_field] = $id;
         $this->data[$table][$id] = $data;
+
         return $id;
     }
 
@@ -87,6 +89,7 @@ class Persistence_Array extends Persistence {
                 $this->data[$table][$id],
                 $data
             );
+
         return $id;
     }
 
@@ -116,7 +119,7 @@ class Persistence_Array extends Persistence {
         } else {
             throw new Exception([
                 'Unknown id type. Array supports type=integer or type=string only',
-                'type'=>$type
+                'type' => $type,
             ]);
         }
     }

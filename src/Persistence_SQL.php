@@ -2,8 +2,8 @@
 
 namespace atk4\data;
 
-class Persistence_SQL extends Persistence {
-
+class Persistence_SQL extends Persistence
+{
     // atk4\dsql\Connection
     public $connection;
 
@@ -13,25 +13,26 @@ class Persistence_SQL extends Persistence {
     public $_default_class_addExpression = 'atk4\data\Field_SQL_Expression';
     public $_default_class_join = 'atk4\data\Join_SQL';
 
-    function __construct($connection, $user = null, $password = null, $args = [])
+    public function __construct($connection, $user = null, $password = null, $args = [])
     {
         if ($connection instanceof \atk4\dsql\Connection) {
             $this->connection = $connection;
+
             return;
         }
 
         if (is_object($connection)) {
             throw new Exception([
                 'You can only use Persistance_SQL with Connection class from atk4\dsql',
-                'connection'=>$connection
+                'connection' => $connection,
             ]);
         }
 
         // attempt to connect.
         $this->connection = \atk4\dsql\Connection::connect(
-            $connection, 
-            $user, 
-            $password, 
+            $connection,
+            $user,
+            $password,
             $args
         );
     }
@@ -60,7 +61,7 @@ class Persistence_SQL extends Persistence {
         if (!isset($m->table) || (!is_string($m->table) && $m->table !== false)) {
             throw new Exception([
                 'Property $table must be specified for a model',
-                'model'=>$m
+                'model' => $m,
             ]);
         }
 
@@ -69,7 +70,7 @@ class Persistence_SQL extends Persistence {
         // When we work without table, we can't have any IDs
         if ($m->table === false) {
             $m->getElement('id')->destroy();
-            $m->addExpression('id','1');
+            $m->addExpression('id', '1');
         }
 
         return $m;
@@ -80,20 +81,21 @@ class Persistence_SQL extends Persistence {
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/',
             function ($matches) use (&$args, $m) {
-
                 $identifier = substr($matches[0], 1, -1);
                 if ($identifier && !isset($args[$identifier])) {
                     $args[$identifier] = $m->getElement($identifier);
                 }
+
                 return $matches[0];
             },
             $expr
         );
+
         return $this->connection->expr($expr, $args);
     }
 
     /**
-     * Initializes base query for model $m
+     * Initializes base query for model $m.
      */
     public function initQuery($m)
     {
@@ -112,7 +114,7 @@ class Persistence_SQL extends Persistence {
 
     public function initField($q, $field)
     {
-        if($field->useAlias()) {
+        if ($field->useAlias()) {
             $q->field($field, $field->short_name);
         } else {
             $q->field($field);
@@ -122,23 +124,22 @@ class Persistence_SQL extends Persistence {
     public function initQueryFields($m, $q)
     {
         if ($m->only_fields) {
-
             $added_fields = [];
 
 
-            foreach($m->only_fields as $field) {
+            foreach ($m->only_fields as $field) {
                 $this->initField($q, $m->getElement($field));
-                $added_fields[$field]=true;
+                $added_fields[$field] = true;
             }
 
-            foreach($m->elements as $field => $f_object) {
+            foreach ($m->elements as $field => $f_object) {
                 if ($f_object instanceof Field_SQL && $f_object->system && !isset($added_fields[$field])) {
                     $this->initField($q, $f_object);
                 }
             }
             // now add system fields, if they were not added
-        }else{
-            foreach($m->elements as $field => $f_object) {
+        } else {
+            foreach ($m->elements as $field => $f_object) {
                 if ($f_object instanceof Field_SQL) {
                     $this->initField($q, $f_object);
                 }
@@ -164,7 +165,7 @@ class Persistence_SQL extends Persistence {
     }
 
     /**
-     * Will apply conditions defined inside $m onto query $q
+     * Will apply conditions defined inside $m onto query $q.
      */
     public function initQueryConditions($m, $q)
     {
@@ -198,14 +199,14 @@ class Persistence_SQL extends Persistence {
 
     /**
      * Executing $model->aciton('update') will call
-     * this method
+     * this method.
      */
     public function action($m, $type, $args = [])
     {
         if (!is_array($args)) {
             throw new Exception([
                 '$args must be an array',
-                'args'=>$args
+                'args' => $args,
             ]);
         }
         $q = $this->initQuery($m);
@@ -221,6 +222,7 @@ class Persistence_SQL extends Persistence {
             case 'delete':
                 $q->mode('delete');
                 $this->initQueryConditions($m, $q);
+
                 return $q;
 
             case 'select':
@@ -231,17 +233,18 @@ class Persistence_SQL extends Persistence {
                 $q->field('count(*)');
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q]);
+
                 return $q;
 
             case 'field':
                 if (!isset($args[0])) {
                     throw new Exception([
                         'This action requires one argument with field name',
-                        'action'=>$type
+                        'action' => $type,
                     ]);
                 }
 
-                $field = is_string($args[0]) ? $m->getElement($args[0]): $args[0];
+                $field = is_string($args[0]) ? $m->getElement($args[0]) : $args[0];
                 $q->field($field);
                 $this->initQueryConditions($m, $q);
                 $this->setLimitOrder($m, $q);
@@ -252,32 +255,34 @@ class Persistence_SQL extends Persistence {
                 if (!isset($args[0]) || !isset($args[1])) {
                     throw new Exception([
                         'fx action needs 2 argumens, eg: ["sum", "amount"]',
-                        'action'=>$type
+                        'action' => $type,
                     ]);
                 }
 
                 $fx = $args[0];
-                $field = is_string($args[1]) ? $m->getElement($args[1]): $args[1];
+                $field = is_string($args[1]) ? $m->getElement($args[1]) : $args[1];
                 $q->field($q->expr("$fx([])", [$field]));
                 $this->initQueryConditions($m, $q);
+
                 return $q;
 
             default:
                 throw new Exception([
                     'Unsupported action mode',
-                    'type'=>$type
+                    'type' => $type,
                 ]);
         }
 
         $this->initQueryConditions($m, $q);
         $this->setLimitOrder($m, $q);
         $m->hook('initSelectQuery', [$q, $type]);
+
         return $q;
     }
 
     /**
      * Generates action that performs load of the record $id
-     * and returns requested fields
+     * and returns requested fields.
      */
     public function load(Model $m, $id)
     {
@@ -291,17 +296,17 @@ class Persistence_SQL extends Persistence {
         } catch (\Exception $e) {
             throw new Exception([
                 'Unable to load due to query error',
-                'query'=>$load->getDebugQuery(false),
-                'model'=>$m,
-                'conditions'=>$m->conditions
+                'query'      => $load->getDebugQuery(false),
+                'model'      => $m,
+                'conditions' => $m->conditions,
             ], null, $e);
         }
 
         if (!$data) {
             throw new Exception([
                 'Unable to load record',
-                'model'=>$m,
-                'id'=>$id
+                'model' => $m,
+                'id'    => $id,
             ]);
         }
 
@@ -310,9 +315,9 @@ class Persistence_SQL extends Persistence {
         } else {
             throw new Exception([
                 'ID of the record is unavailable. Read-only mode is not supported',
-                'model'=>$m,
-                'id'=>$id,
-                'data'=>$data
+                'model' => $m,
+                'id'    => $id,
+                'data'  => $data,
             ]);
         }
 
@@ -321,7 +326,6 @@ class Persistence_SQL extends Persistence {
 
     public function tryLoad(Model $m, $id)
     {
-
         $load = $this->action($m, 'select');
         $load->where($m->getElement($m->id_field), $id);
         $load->limit(1);
@@ -331,6 +335,7 @@ class Persistence_SQL extends Persistence {
 
         if (!$data) {
             $m->unload();
+
             return [];
         }
 
@@ -339,9 +344,9 @@ class Persistence_SQL extends Persistence {
         } else {
             throw new Exception([
                 'ID of the record is unavailable. Read-only mode is not supported',
-                'model'=>$m,
-                'id'=>$id,
-                'data'=>$data
+                'model' => $m,
+                'id'    => $id,
+                'data'  => $data,
             ]);
         }
 
@@ -365,8 +370,8 @@ class Persistence_SQL extends Persistence {
         } else {
             throw new Exception([
                 'ID of the record is unavailable. Read-only mode is not supported',
-                'model'=>$m,
-                'data'=>$data
+                'model' => $m,
+                'data'  => $data,
             ]);
         }
 
@@ -378,20 +383,22 @@ class Persistence_SQL extends Persistence {
         $insert = $this->action($m, 'insert');
 
         // apply all fields we got from get
-        foreach($data as $field => $value) {
+        foreach ($data as $field => $value) {
             $f = $m->getElement($field);
             $insert->set($f->actual ?: $f->short_name, $value);
         }
 
-        $m->hook('beforeInsertQuery',[$insert]);
+        $m->hook('beforeInsertQuery', [$insert]);
 
         $insert->execute();
+
         return $insert->connection->lastInsertID();
     }
 
     public function export(Model $m)
     {
         $export = $this->action($m, 'select');
+
         return $export->get();
     }
 
@@ -415,13 +422,13 @@ class Persistence_SQL extends Persistence {
         $update = $this->action($m, 'update');
 
         // only apply fields that has been modified
-        foreach($data as $field => $value) {
+        foreach ($data as $field => $value) {
             $f = $m->getElement($field);
             $update->set($f->actual ?: $f->short_name, $value);
         }
         $update->where($m->getElement($m->id_field), $id);
 
-        $m->hook('beforeUpdateQuery',[$update]);
+        $m->hook('beforeUpdateQuery', [$update]);
 
         $update->execute();
     }

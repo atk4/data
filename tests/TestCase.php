@@ -1,8 +1,10 @@
 <?php
+
 namespace atk4\data\tests;
 
-class TestCase extends \PHPUnit_Framework_TestCase {
-    function runBare() 
+class TestCase extends \PHPUnit_Framework_TestCase
+{
+    public function runBare()
     {
         try {
             return parent::runBare();
@@ -16,6 +18,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
         $class = new \ReflectionClass($obj);
         $method = $class->getMethod($name);
         $method->setAccessible(true);
+
         return $method->invokeArgs($obj, $args);
     }
 
@@ -23,7 +26,8 @@ class TestCase extends \PHPUnit_Framework_TestCase {
     {
         $class = new \ReflectionClass($obj);
         $method = $class->getProperty($name);
-        $method -> setAccessible(true);
+        $method->setAccessible(true);
+
         return $method->getValue($obj);
     }
 }

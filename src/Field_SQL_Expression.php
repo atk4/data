@@ -2,8 +2,8 @@
 
 namespace atk4\data;
 
-class Field_SQL_Expression extends Field_SQL {
-
+class Field_SQL_Expression extends Field_SQL
+{
     public $expr = null;
 
     public function useAlias()
@@ -12,14 +12,14 @@ class Field_SQL_Expression extends Field_SQL {
     }
 
     /**
-     * When field is used as expression, this method will be called
+     * When field is used as expression, this method will be called.
      */
-    function getDSQLExpression($expression)
+    public function getDSQLExpression($expression)
     {
         $expr = $this->expr;
         if (is_callable($expr)) {
             $c = $this->expr;
-            $expr =  $c($this->owner, $expression);
+            $expr = $c($this->owner, $expression);
         }
 
         if (is_string($expr)) {
@@ -31,4 +31,3 @@ class Field_SQL_Expression extends Field_SQL {
         return $expr;
     }
 }
-
