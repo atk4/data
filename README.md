@@ -176,7 +176,7 @@ See [www.agiletoolkit.org](http://www.agiletoolkit.org/) for more frameworks and
 Follow pull-request history and activity of repository to see what's going on.
 
 ```
-0.6   Implement iterator
+0.6   Implement iterator, export, import.
 0.7   Improve support for dealing with multiple persistences.
 0.8   Add support for derived models (unions).
 0.9   Add support for 3rd party vendor implementations.
