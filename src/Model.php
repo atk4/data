@@ -772,7 +772,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($id) {
-            $this->persistence->delete($this, $id);
+            $c = (clone $this)->load($id)->delete();
+            return $this;
         } elseif ($this->loaded()) {
             $this->hook('beforeDelete', [$this->id]);
             $this->persistence->delete($this, $this->id);
