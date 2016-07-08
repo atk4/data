@@ -759,6 +759,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 $method($rec);
             }
         }
+        return $this;
     }
 
     /**
@@ -779,6 +780,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->persistence->delete($this, $this->id);
             $this->hook('afterDelete', [$this->id]);
             $this->unload();
+            return $this;
         } else {
             throw new Exception(['No active record is set, unable to delete.']);
         }
