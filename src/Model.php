@@ -629,6 +629,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->loadAny();
         // undo add condition
         array_pop($this->conditions);
+
         return $this;
     }
 
@@ -638,6 +639,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->tryLoadAny();
         // undo add condition
         array_pop($this->conditions);
+        
         return $this;
     }
 
@@ -816,12 +818,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         if ($id) {
             $c = (clone $this)->load($id)->delete();
+
             return $this;
         } elseif ($this->loaded()) {
             $this->hook('beforeDelete', [$this->id]);
             $this->persistence->delete($this, $this->id);
             $this->hook('afterDelete', [$this->id]);
             $this->unload();
+
             return $this;
         } else {
             throw new Exception(['No active record is set, unable to delete.']);

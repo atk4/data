@@ -23,7 +23,7 @@ class Field_SQL_One extends Field_One
      */
     public function addFields($fields = [])
     {
-        foreach ($fields as $field=>$alias) {
+        foreach ($fields as $field => $alias) {
             $this->addField($field, $alias);
         }
 
@@ -45,6 +45,8 @@ class Field_SQL_One extends Field_One
     }
 
     /**
+     * Add a title of related entity as expression to our field.
+     *
      * $order->hasOne('user_id', 'User')->addTitle();
      *
      * This will add expression 'user' equal to ref('user_id')['name'];

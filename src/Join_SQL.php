@@ -28,7 +28,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
     protected $dsql = null;
 
     /**
-     * calling set() will make this dirty
+     * calling set() will make this dirty.
      */
     protected $dirty = false;
 
@@ -214,7 +214,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
     public function set($field, $value)
     {
-        $this->dirty=true;
+        $this->dirty = true;
         $this->dsql->set($field, $value);
     }
 }
