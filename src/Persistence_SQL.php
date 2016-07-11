@@ -262,8 +262,9 @@ class Persistence_SQL extends Persistence
 
                 $fx = $args[0];
                 $field = is_string($args[1]) ? $m->getElement($args[1]) : $args[1];
-                $q->field($q->expr("$fx([])", [$field]));
                 $this->initQueryConditions($m, $q);
+                $m->hook('initSelectQuery', [$q, $type]);
+                $q->reset('field')->field($q->expr("$fx([])", [$field]));
 
                 return $q;
 
