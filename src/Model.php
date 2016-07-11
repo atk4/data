@@ -529,9 +529,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function load($id)
     {
         if (!$this->persistence) {
-            throw new Exception([
-                'Model is not associated with any database',
-            ]);
+            throw new Exception(['Model is not associated with any database']);
         }
 
         if ($this->loaded()) {
@@ -557,9 +555,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function tryLoad($id)
     {
         if (!$this->persistence) {
-            throw new Exception([
-                'Model is not associated with any database',
-            ]);
+            throw new Exception(['Model is not associated with any database']);
         }
 
         if ($this->loaded()) {
@@ -580,9 +576,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function loadAny()
     {
         if (!$this->persistence) {
-            throw new Exception([
-                'Model is not associated with any database',
-            ]);
+            throw new Exception(['Model is not associated with any database']);
         }
 
         if ($this->loaded()) {
@@ -603,9 +597,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function tryLoadAny()
     {
         if (!$this->persistence) {
-            throw new Exception([
-                'Model is not associated with any database',
-            ]);
+            throw new Exception(['Model is not associated with any database']);
         }
 
         if ($this->loaded()) {
@@ -646,9 +638,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function save()
     {
         if (!$this->persistence) {
-            throw new Exception([
-                'Model is not associated with any database',
-            ]);
+            throw new Exception(['Model is not associated with any database']);
         }
 
         $is_update = $this->loaded();

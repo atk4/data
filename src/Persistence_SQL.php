@@ -368,7 +368,6 @@ class Persistence_SQL extends Persistence
             throw new Exception([
                 'Unable to load record',
                 'model' => $m,
-                'id'    => $id,
                 'query' => $load->getDebugQuery(false),
             ]);
         }
