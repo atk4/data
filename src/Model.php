@@ -643,7 +643,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
-
     public function save()
     {
         if (!$this->persistence) {
@@ -677,7 +676,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             // No save needed, nothing was changed
             if (!$data) {
-
                 return $this;
             }
 
@@ -804,6 +802,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 $method($rec);
             }
         }
+
         return $this;
     }
 

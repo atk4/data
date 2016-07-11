@@ -426,10 +426,8 @@ class Persistence_SQL extends Persistence
 
 
         try {
-
             $m->hook('beforeInsertQuery', [$insert]);
             $insert->execute();
-
         } catch (\Exception $e) {
             throw new Exception([
                 'Unable to execute insert query',
