@@ -17,6 +17,9 @@ class Field
 
     public $system = false;
 
+    // normally you can edit fields
+    public $editable = true;
+
     public function __construct($defaults = [])
     {
         foreach ($defaults as $key => $val) {
