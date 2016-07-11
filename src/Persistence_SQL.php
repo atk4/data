@@ -424,9 +424,20 @@ class Persistence_SQL extends Persistence
             $insert->set($f->actual ?: $f->short_name, $value);
         }
 
-        $m->hook('beforeInsertQuery', [$insert]);
 
-        $insert->execute();
+        try {
+
+            $m->hook('beforeInsertQuery', [$insert]);
+            $insert->execute();
+
+        } catch (\Exception $e) {
+            throw new Exception([
+                'Unable to execute insert query',
+                'query'      => $insert->getDebugQuery(false),
+                'model'      => $m,
+                'conditions' => $m->conditions,
+            ], null, $e);
+        }
 
         return $insert->connection->lastInsertID();
     }
