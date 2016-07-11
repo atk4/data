@@ -59,6 +59,7 @@ class Field_SQL_One extends Field_One
 
             return $mm->action('field', [$mm->title_field]);
         });
+
         return $this;
     }
 }
