@@ -68,7 +68,7 @@ class Field_Many
 
     protected function getModel($defaults = [])
     {
-        if (is_callable($this->model)) {
+        if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
 
             return $c($this->owner, $this, $defaults);
