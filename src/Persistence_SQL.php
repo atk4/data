@@ -355,6 +355,36 @@ class Persistence_SQL extends Persistence
         return $data;
     }
 
+    public function loadAny(Model $m)
+    {
+        $load = $this->action($m, 'select');
+        $load->limit(1);
+
+        // execute action
+        $data = $load->getRow();
+
+        if (!$data) {
+            throw new Exception([
+                'Unable to load record',
+                'model' => $m,
+                'id'    => $id,
+                'query'      => $load->getDebugQuery(false),
+            ]);
+        }
+
+        if (isset($data[$m->id_field])) {
+            $m->id = $data[$m->id_field];
+        } else {
+            throw new Exception([
+                'ID of the record is unavailable. Read-only mode is not supported',
+                'model' => $m,
+                'data'  => $data,
+            ]);
+        }
+
+        return $data;
+    }
+
     public function tryLoadAny(Model $m)
     {
         $load = $this->action($m, 'select');

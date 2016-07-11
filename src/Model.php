@@ -577,6 +577,29 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    public function loadAny()
+    {
+        if (!$this->persistence) {
+            throw new Exception([
+                'Model is not associated with any database',
+            ]);
+        }
+
+        if ($this->loaded()) {
+            $this->unload();
+        }
+
+        $this->data = $this->persistence->loadAny($this);
+        if ($this->data) {
+            $this->id = $this->data[$this->id_field];
+            $this->hook('afterLoad');
+        } else {
+            $this->unload();
+        }
+
+        return $this;
+    }
+
     public function tryLoadAny()
     {
         if (!$this->persistence) {
@@ -599,6 +622,25 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         return $this;
     }
+
+    public function loadBy($field, $value)
+    {
+        $this->addCondition($field, $value);
+        $this->loadAny();
+        // undo add condition
+        array_pop($this->conditions);
+        return $this;
+    }
+
+    public function tryLoadBy($field, $value)
+    {
+        $this->addCondition($field, $value);
+        $this->tryLoadAny();
+        // undo add condition
+        array_pop($this->conditions);
+        return $this;
+    }
+
 
     public function save()
     {
