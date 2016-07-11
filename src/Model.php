@@ -231,11 +231,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $this->hook('onlyFields', [&$fields]);
         $this->only_fields = $fields;
+
+        return $this;
     }
 
     public function allFields()
     {
         $this->only_fields = false;
+
+        return $this;
     }
 
     private function normalizeFieldName($field)
