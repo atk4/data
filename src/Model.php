@@ -639,7 +639,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->tryLoadAny();
         // undo add condition
         array_pop($this->conditions);
-        
+
         return $this;
     }
 
@@ -677,6 +677,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             // No save needed, nothing was changed
             if (!$data) {
+
                 return $this;
             }
 

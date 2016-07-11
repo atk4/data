@@ -43,7 +43,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
     public function getDSQLExpression($q)
     {
         return $q->expr('{}.{}',
-           [$this->foreign_alias,$this->foreign_field]);
+           [$this->foreign_alias, $this->foreign_field]);
     }
 
     /**

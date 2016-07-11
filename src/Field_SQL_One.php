@@ -56,6 +56,7 @@ class Field_SQL_One extends Field_One
         $field = str_replace('_id', '', $this->link);
         $this->owner->addExpression($field, function ($m) use ($their_field) {
             $mm = $m->refLink($this->link);
+
             return $mm->action('field', [$mm->title_field]);
         });
         return $this;

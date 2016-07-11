@@ -309,7 +309,7 @@ class Persistence_SQL extends Persistence
                 'Unable to load record',
                 'model' => $m,
                 'id'    => $id,
-                'query'      => $load->getDebugQuery(false),
+                'query' => $load->getDebugQuery(false),
             ]);
         }
 
@@ -369,7 +369,7 @@ class Persistence_SQL extends Persistence
                 'Unable to load record',
                 'model' => $m,
                 'id'    => $id,
-                'query'      => $load->getDebugQuery(false),
+                'query' => $load->getDebugQuery(false),
             ]);
         }
 
@@ -476,7 +476,9 @@ class Persistence_SQL extends Persistence
             $update->set($f->actual ?: $f->short_name, $value);
             $cnt++;
         }
-        if(!$cnt) return;
+        if (!$cnt) {
+            return;
+        }
         $update->where($m->getElement($m->id_field), $id);
 
         $m->hook('beforeUpdateQuery', [$update]);
