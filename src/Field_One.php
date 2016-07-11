@@ -70,7 +70,7 @@ class Field_One
         }
     }
 
-    protected function getModel($defaults = [])
+    public function getModel($defaults = [])
     {
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
