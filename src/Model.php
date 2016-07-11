@@ -817,7 +817,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($id) {
-            $c = (clone $this)->load($id)->delete();
+            $c = clone $this;
+            $c->load($id)->delete();
 
             return $this;
         } elseif ($this->loaded()) {
