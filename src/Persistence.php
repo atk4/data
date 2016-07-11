@@ -20,6 +20,7 @@ class Persistence
 
         switch (strtolower(isset($args['driver']) ?: $driver)) {
             case 'mysql':
+            case 'dumper':
             case 'sqlite':
                 return new Persistence_SQL($dsn, $user, $password, $args);
             default:
