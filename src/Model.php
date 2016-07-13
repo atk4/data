@@ -923,6 +923,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this->getElement('#ref_'.$link);
     }
 
+    public function getRefs()
+    {
+        $refs = [];
+        foreach ($this->elements as $key=>$val){
+            if (substr($key, 0, 5) == '#ref_') {
+                $refs[substr($key, 5)] = $val;
+            }
+        }
+        return $refs;
+    }
+
     // }}}
 
     // {{{ Expressions
