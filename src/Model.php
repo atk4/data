@@ -952,4 +952,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     // }}}
+
+    // {{{ Debug Methods
+    public function __debugInfo()
+    {
+        $arr = [
+            'id'         => $this->id,
+            'conditions' => $this->conditions
+        ];
+
+        return $arr;
+    }
+    // }}}
 }

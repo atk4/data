@@ -175,4 +175,24 @@ class Field_Many
 
         return $this;
     }
+
+    // {{{ Debug Methods
+    public function __debugInfo()
+    {
+        $arr = [
+            'ref'     => $this->link,
+            'model'   => $this->model,
+        ];
+
+        if ($this->our_field) {
+            $arr['our_field'] = $this->our_field;
+        }
+
+        if ($this->their_field) {
+            $arr['their_field'] = $this->their_field;
+        }
+
+        return $arr;
+    }
+    // }}}
 }
