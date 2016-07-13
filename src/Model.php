@@ -12,6 +12,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use \atk4\core\InitializerTrait {
         init as _init;
     }
+    use \atk4\core\NameTrait;
 
     // {{{ Properties of the class
 
