@@ -1,4 +1,4 @@
-# Agile Data - Database access abstraction framework.
+# Agile Data
 
 **PHP Framework for better Business Logic design and scalable database access.**
 
