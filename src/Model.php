@@ -474,11 +474,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Shortcut for using addConditionn(id_field, $id)
+     * Shortcut for using addConditionn(id_field, $id).
      */
-    function withID($id)
+    public function withID($id)
     {
         $this->addCondition($this->id_field, $id);
+
         return $this;
     }
 

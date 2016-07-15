@@ -130,7 +130,6 @@ class Persistence_SQL extends Persistence
             foreach ($fields as $field) {
                 $this->initField($q, $m->getElement($field));
             }
-
         } elseif ($m->only_fields) {
             $added_fields = [];
 
@@ -234,7 +233,7 @@ class Persistence_SQL extends Persistence
                 return $q;
 
             case 'select':
-                $this->initQueryFields($m, $q, isset($args[0])? $args[0]: null);
+                $this->initQueryFields($m, $q, isset($args[0]) ? $args[0] : null);
                 break;
 
             case 'count':
