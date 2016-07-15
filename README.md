@@ -111,7 +111,7 @@ echo json_encode($c->export(['name','balance']));
 
 Certainly you can also operate with your models on record-by-record basis:
 
-```
+``` php
 $p->onlyFields(['is_paid']);
 $p->loadBy('reference', $ref_id);
 $p['is_paid'] = true;
@@ -163,7 +163,7 @@ Update your `composer.json` with 'require' and 'autoload' sections:
 
 Run `composer update` and create your first business model inside `src/my/Model_User.php`:
 
-```
+``` php
 namespace my;
 class Model_User extends \atk4\data\Model
 {
@@ -179,7 +179,7 @@ class Model_User extends \atk4\data\Model
 
 Use an existing table name and fields. Next create `console.php` file to start exploring Agile Data:
 
-```
+``` php
 <?php
 include'vendor/autoload.php';
 $db = \atk4\data\Persistence::connect(PDO_DSN, USER, PASS);
@@ -195,7 +195,7 @@ $ php console.php
 
 Now you can explore. Try typing:
 
-```
+``` php
 > $m
 > $m->loadBy('email', 'example@example.com')
 > $m->get()
