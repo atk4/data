@@ -23,9 +23,11 @@ Stats:
 [![License](https://poser.pugx.org/atk4/data/license)](https://packagist.org/packages/atk4/data)
 [![Version](https://badge.fury.io/gh/atk4%2Fdata.svg)](https://packagist.org/packages/atk4/data)
 
+## Goals and Features
+
 Agile Data is a comprehensive framework for use in SaaS and Enterprise PHP, that focuses on solving these major goals:
 
-** 1. Object-oriented Business Logic and Persistence mapping **
+### 1. Object-oriented Business Logic and Persistence mapping
 
 Face it. Your SQL architecture does fit your business model map. There are many differences mainly focused on performance optimisation, that can complicate loading/saving data into SQL:
 
@@ -38,7 +40,7 @@ Face it. Your SQL architecture does fit your business model map. There are many 
 
 Agile Data allow you to map your business models with any of the above SQL techniques while using inheritance with very short and simple-to-read code.
 
-** 2. Define your own data patterns and extend **
+### 2. Define your own data patterns and extend
 
  - Soft-delete
  - Record audit log
@@ -47,7 +49,7 @@ Agile Data allow you to map your business models with any of the above SQL techn
  
 Those patterns can significantly complicate declaration of your business logic. Agile Data allows you to deal with them in a very flexible and re-usable way.
 
-** 3. DataSet traversal **
+### 3. DataSet traversal
 
 Traversing relations is not a new concept. Many ORM systems implmented with record-to-record-array. This approach is not very suitable for large data volumes and lazy-loading cerates more problems than it solves.
 
@@ -61,7 +63,7 @@ $p = $clients->ref('Order')->ref('Payment');
 
 In the code snippet above, `$p` will be a a model object with containing all payments of all orders placed by VIP clients in scope. Traversal executes no queries but rather relies on sub-query logic.
 
-** 4. Database Vendor Abstraction and Multi-record Actions **
+### 4. Database Vendor Abstraction and Multi-record Actions
 
 NoSQL databases are rapidly adding options to peform multi-record operations and aggregation. Agile Data introduces unified interface that can be used across all supporting persistence drivers. Consider this as continuation of the example above:
 
@@ -91,7 +93,7 @@ if ($m->verifyPassword($pass)) {
 }
 ```
 
-** 5. Reducing number of queries **
+### 5. Reducing number of queries
 
 When using API of your own business logic, Agile Data gives you ability to perform more operations, such as joins, expressions and more designed to reduce number of queries and make them more efficient. My next example will create export of Clients along with their "account balance" that will be calculated within just a single query:
 
@@ -105,7 +107,7 @@ $c->addExpression('balance', '[purchases]-[payments]');
 echo json_encode($c->export(['name','balance']));
 ```
 
-** 6. Manipulating Records **
+### 6. Manipulating Records
 
 Certainly you can also operate with your models on record-by-record basis:
 
@@ -121,14 +123,14 @@ There are two significant advantages specifically designed to reduce data transf
  - you will only b eable to load records from DataSet
  - with onlyFields() you can specify which model fields you are looking to load
 
-** 7. Business Model Aggregation **
+### 7. Business Model Aggregation
 
 Most database mappers are good for accessing and modifying data only, however Agile Data allows you to build aggregates fromr your business model. Regardless of how many tables you have joined, you can use one model as a source for another model thus embedding (or unioning) query source.
 
 *Note: This feature is not available yet, but is planned for 1.1.0 release.*
 
 
-** 8. Extensions and Customisation **
+### 8. Extensions and Customisation
 
 Agile Data is a great framework but it can be further extended:
 
@@ -140,7 +142,7 @@ Agile Data is a great framework but it can be further extended:
 
 See sectino below to learn more about commercial services and support options.
  
-## Installing
+## Installing and Testing
 
 Update your `composer.json` with 'require' and 'autoload' sections:
 
@@ -175,8 +177,7 @@ class Model_User extends \atk4\data\Model
 }
 ```
 
-
-Next create `console.php` file to start exploring Agile Data:
+Use an existing table name and fields. Next create `console.php` file to start exploring Agile Data:
 
 ```
 <?php
@@ -202,9 +203,16 @@ Now you can explore. Try typing:
 > $m->action('count')->getOne()
 > $m->action('count')->getDebugQuery()
 ```
-
-
 Full documentation is available at [agile-core.readthedocs.io](http://agile-core.readthedocs.io/)
+
+### Full documentation for Agile Data
+
+[agile-data.readthedocs.io](http://agile-data.readthedocs.io).
+
+### Getting Started Guides
+
+ * [Watch the quick video on Youtube](https://youtu.be/ZekgUxdPWwc)
+
 
 ## Agile Toolkit
 
@@ -215,14 +223,6 @@ this project, you should also look into:
  - [Agile Core](https://github.com/atk4/core) - [![GitHub release](https://img.shields.io/github/release/atk4/core.svg?maxAge=2592000)]()
 
  
-### Full documentation for Agile Data
-
-[agile-data.readthedocs.io](http://agile-data.readthedocs.io).
-
-### Getting Started Guides
-
- * [Watch the quick video on Youtube](https://youtu.be/ZekgUxdPWwc)
-
 ## Help us make Agile Data better!!
 
 We wish to take on your feedback and improve Agile Data further. Here is how you can connect with developer team:
