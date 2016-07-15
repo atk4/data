@@ -2,7 +2,7 @@
 
 **PHP Framework for better Business Logic design and scalable database access.**
 
-Use Agile Data inside your existing PHP application (works with most frameworks) to define and map your business logic into your database schema. Agile Data is designed with fresh ideas to solve efficiency, performance, clarity, testability and cross-database compatibilty in medium and large PHP projects.
+Use Agile Data inside your existing PHP application (works with most frameworks) to define and map your business logic into your database schema. Agile Data is designed with fresh ideas to solve efficiency, performance, clarity, testability and cross-database compatibility in medium and large PHP projects.
 
 Code Quality:
 
@@ -51,7 +51,7 @@ Those patterns can significantly complicate declaration of your business logic. 
 
 ### 3. DataSet traversal
 
-Traversing relations is not a new concept. Many ORM systems implmented with record-to-record-array. This approach is not very suitable for large data volumes and lazy-loading cerates more problems than it solves.
+Traversing relations is not a new concept. Many ORM systems implement traversal with record-to-record-array approach and lazy-loading. In practice, that creates some serious scalability problems.
 
 Agile data introduces Set-to-Set traversal allowing you to traverse not just a single record but multiple records at the same time:
 
@@ -61,7 +61,7 @@ $clients->addCondition('is_vip', true);
 $p = $clients->ref('Order')->ref('Payment');
 ```
 
-In the code snippet above, `$p` will be a a model object with containing all payments of all orders placed by VIP clients in scope. Traversal executes no queries but rather relies on sub-query logic.
+In the code snippet above, `$p` will be a model object with containing all payments of all orders placed by VIP clients in scope. Traversal executes no queries but rather relies on sub-query logic.
 
 ### 4. Database Vendor Abstraction and Multi-record Actions
 
@@ -78,9 +78,9 @@ $n->action('delete')->execute();
 
 Actions provide a unified interface for performing aggregation, using expressions inside other model conditions or performing multi-record operations such as deletion. Actions always respect boundaries of defined DataSet.
 
-For data-bases that do not support capabilities, it's possible to provide in-PHP implementation for multi-record operations.
+For databases that do not support capabilities, it's possible to provide an in-PHP implementation for multi-record operations.
 
-Finally your Business Logic will work with a supplied database transparently. You don't have to switch all of the database at once, but you can move individual business entities between databases, cache or session:
+Finally, your Business Logic will work with a supplied database transparently. You don't have to switch all of the databases at once, but you can move individual business entities between databases, cache or session:
 
 ``` php
 $m = new my\Model_User($mysql_db);
@@ -95,7 +95,7 @@ if ($m->verifyPassword($pass)) {
 
 ### 5. Reducing number of queries
 
-When using API of your own business logic, Agile Data gives you ability to perform more operations, such as joins, expressions and more designed to reduce number of queries and make them more efficient. My next example will create export of Clients along with their "account balance" that will be calculated within just a single query:
+When using API of your own business logic, Agile Data gives you the ability to perform more operations, such as joins, expressions and more designed to reduce the number of queries and make them more efficient. My next example will create export of Clients along with their "account balance" that will be calculated within just a single query:
 
 ``` php
 $c = new my\Model_Client($db);
@@ -120,12 +120,12 @@ $p->save();
 
 There are two significant advantages specifically designed to reduce data transfer footprint and improve security:
 
- - you will only b eable to load records from DataSet
+ - you will only be able to load records from DataSet
  - with onlyFields() you can specify which model fields you are looking to load
 
 ### 7. Business Model Aggregation
 
-Most database mappers are good for accessing and modifying data only, however Agile Data allows you to build aggregates fromr your business model. Regardless of how many tables you have joined, you can use one model as a source for another model thus embedding (or unioning) query source.
+Most database mappers are good for accessing and modifying data only, however, Agile Data allows you to build aggregates from your business model. Regardless of how many tables you have joined, you can use one model as a source for another model thus embedding (or unioning) query source.
 
 *Note: This feature is not available yet, but is planned for 1.1.0 release.*
 
@@ -140,7 +140,7 @@ Agile Data is a great framework but it can be further extended:
  - Validation engines
  - ACL engines
 
-See sectino below to learn more about commercial services and support options.
+See section below to learn more about commercial services and support options.
  
 ## Installing and Testing
 
@@ -256,5 +256,5 @@ Follow pull-request history and activity of repository to see what's going on.
 * 11 May: Released 0.1: Implemented code climate, test coverage and travis
 * 06 May: Revamped the concept, updated video and made it simpler
 * 22 Apr: Finalized concept, created presentation slides.
-* 17 Apr: Started working on draft concept (in wiki)
+* 17 Apr: Started working on concept draft (in wiki)
 * 14 Apr: [Posted my concept on Reddit](https://www.reddit.com/r/PHP/comments/4f2epw/reinventing_the_faulty_orm_concept_subqueries/)
