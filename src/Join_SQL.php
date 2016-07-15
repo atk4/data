@@ -2,11 +2,11 @@
 
 namespace atk4\data;
 
-class Join_SQL extends Join {
-
+class Join_SQL extends Join implements \atk4\dsql\Expressionable
+{
     protected $foreign_alias;
     /**
-     * A short symbolic name that will be used as an alias for the joined table
+     * A short symbolic name that will be used as an alias for the joined table.
      */
 
     /**
@@ -23,33 +23,44 @@ class Join_SQL extends Join {
     protected $on = null;
 
     /**
-     * Query we are building
+     * Query we are building.
      */
     protected $dsql = null;
 
     /**
-     * Will use either foreign_alias or create #join_<table> 
+     * calling set() will make this dirty.
+     */
+    protected $dirty = false;
+
+    /**
+     * Will use either foreign_alias or create #join_<table>.
      */
     public function getDesiredName()
     {
         return '_'.($this->foreign_alias ?: $this->foreign_table[0]);
     }
 
+    public function getDSQLExpression($q)
+    {
+        return $q->expr('{}.{}',
+           [$this->foreign_alias, $this->foreign_field]);
+    }
+
     /**
-     * This method is to figure out stuff
+     * This method is to figure out stuff.
      */
-    function init()
+    public function init()
     {
         parent::init();
 
         $this->dsql = $this->owner->persistence->initQuery($this->owner);
         $this->dsql->reset('table');
 
-        $this->owner->persistence_data['use_table_prefixes']=true;
+        $this->owner->persistence_data['use_table_prefixes'] = true;
 
         // If kind is not specified, figure out join type
         if (!isset($this->kind)) {
-            $this->kind = $this->weak?'left':'inner';
+            $this->kind = $this->weak ? 'left' : 'inner';
         }
 
         // Our short name will be unique
@@ -66,6 +77,7 @@ class Join_SQL extends Join {
             $this->owner->addHook('afterInsert', $this, null, -5);
             $this->owner->addHook('beforeUpdateQuery', $this, null, -5);
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
+            $this->owner->addHook('afterLoad', $this);
         } else {
             $this->owner->addHook('beforeInsertQuery', $this);
             $this->owner->addHook('beforeUpdateQuery', $this);
@@ -74,16 +86,15 @@ class Join_SQL extends Join {
         }
     }
 
-    function dsql()
+    public function dsql()
     {
         return clone $this->dsql;
     }
 
-
     /**
-     * Before query is executed, this method will be called. 
+     * Before query is executed, this method will be called.
      */
-    function initSelectQuery($model, $query)
+    public function initSelectQuery($model, $query)
     {
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
@@ -93,42 +104,41 @@ class Join_SQL extends Join {
                 $this->on :
                 $query->expr($this->on)
             );
+
             return;
         }
 
         $query->join(
             $this->foreign_table.'.'.$this->foreign_field.(
-                isset($this->foreign_alias)?(' '.$this->foreign_alias):''
+                isset($this->foreign_alias) ? (' '.$this->foreign_alias) : ''
             ),
             (
-                isset($this->owner->table_alias) ? 
-                $this->owner->table_alias: 
+                isset($this->owner->table_alias) ?
+                $this->owner->table_alias :
                 ($this->owner->table).'.'.$this->master_field)
         );
 
         if ($this->reverse) {
-            $query->field([$this->short_name=>($this->join?:($this->owner->table.'.'.$this->master_field))]);
+            $query->field([$this->short_name => ($this->join ?: ($this->owner->table.'.'.$this->master_field))]);
         } else {
-
-
-            $query->field([$this->short_name=>$this->foreign_alias.'.'.$this->foreign_field]);
+            $query->field([$this->short_name => $this->foreign_alias.'.'.$this->foreign_field]);
         }
     }
 
-    function afterLoad($model)
+    public function afterLoad($model)
     {
         // we need to collect ID
         $this->id = $model->data[$this->short_name];
         unset($model->data[$this->short_name]);
     }
 
-    function afterUnload($model)
+    public function afterUnload($model)
     {
         $this->id = null;
+        $this->dirty = false;
     }
 
-
-    function beforeInsertQuery($model, $query)
+    public function beforeInsertQuery($model, $query)
     {
         if ($this->weak) {
             return;
@@ -150,7 +160,7 @@ class Join_SQL extends Join {
         $query->set($this->master_field, $this->id);
     }
 
-    function afterInsert($model, $id)
+    public function afterInsert($model, $id)
     {
         if ($this->weak) {
             return;
@@ -159,16 +169,20 @@ class Join_SQL extends Join {
         $insert = $this->dsql();
         $insert
             ->set(
-                $this->foreign_field, 
+                $this->foreign_field,
                 isset($this->join) ? $this->join->id : $id
             );
         $insert->insert();
         $this->id = $insert->connection->lastInsertID();
     }
 
-    function beforeUpdateQuery($model, $query)
+    public function beforeUpdateQuery($model, $query)
     {
         if ($this->weak) {
+            return;
+        }
+
+        if (!$this->dirty) {
             return;
         }
 
@@ -179,7 +193,7 @@ class Join_SQL extends Join {
         //}
     }
 
-    function doDelete($model, $id)
+    public function doDelete($model, $id)
     {
         if ($this->weak) {
             return;
@@ -187,11 +201,10 @@ class Join_SQL extends Join {
 
         $delete = $this->dsql();
         $delete
-            ->where($this->foreign_field, $this->id)
-            ;
+            ->where($this->foreign_field, $this->id);
 
         //if ($this->delete_behaivour == 'cascade') {
-            $delete->delete();
+            $delete->delete()->execute();
         //} elseif ($this->delete_behaivour == 'setnull') {
             //$delete
                 //->set($this->foreign_field, null)
@@ -199,11 +212,9 @@ class Join_SQL extends Join {
         //}
     }
 
-    function set($field, $value)
+    public function set($field, $value)
     {
+        $this->dirty = true;
         $this->dsql->set($field, $value);
     }
-
-
 }
-

@@ -1,3 +1,22 @@
+# 1.0 
+
+* added Model::setLimit, setOrder
+* added Model::export([])
+* added Model iterator
+* added Model::each
+* added concise var_dump() support for most objects
+* added Model::getRef() and Model::getRefs()
+* added Field_SQL_One::addFields() and addTitle()
+* added support for nested joins in model
+* added Model::withID
+* added Model::loadAny()
+* added Model::loadBy() and tryLoadBy()
+* added Model::rawIterator()
+* field consistency improvement in action('select') and action('fx')
+* Model::ref() added 2nd argument as model defaults
+* defaults with value of NULL are ignored
+* improved coding style with StyleCI
+
 ## 0.5.1 Minor Cleanups
 
 * renamed aciton('fieldValues') into action('field');

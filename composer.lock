@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f15f54240b2407904125ba014e593f21",
-    "content-hash": "eeea2ec09ddc4632e6f687a27b9c09f2",
+    "hash": "c98cc1e177a03724bfb61c78c5bba481",
+    "content-hash": "0b4b164ed9451f39c82a4cc78714db47",
     "packages": [
         {
             "name": "atk4/core",
-            "version": "1.0.1",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/atk4/core.git",
-                "reference": "4b9ab906279d834b0870c8182e2cf62c8b102aa6"
+                "reference": "7a4ee521c1eccad366f85073fb94efc5ae48dc50"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atk4/core/zipball/4b9ab906279d834b0870c8182e2cf62c8b102aa6",
-                "reference": "4b9ab906279d834b0870c8182e2cf62c8b102aa6",
+                "url": "https://api.github.com/repos/atk4/core/zipball/7a4ee521c1eccad366f85073fb94efc5ae48dc50",
+                "reference": "7a4ee521c1eccad366f85073fb94efc5ae48dc50",
                 "shasum": ""
             },
             "require": {
@@ -53,20 +53,20 @@
                 "php",
                 "trains"
             ],
-            "time": "2016-06-24 17:25:59"
+            "time": "2016-07-13 15:06:59"
         },
         {
             "name": "atk4/dsql",
-            "version": "1.0.3",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/atk4/dsql.git",
-                "reference": "d69ae72b4da4febfff88a755bded4a9d2fae2cc4"
+                "reference": "c74eb46dd2897bd8d0eb5f443bd7d651d5520f10"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atk4/dsql/zipball/d69ae72b4da4febfff88a755bded4a9d2fae2cc4",
-                "reference": "d69ae72b4da4febfff88a755bded4a9d2fae2cc4",
+                "url": "https://api.github.com/repos/atk4/dsql/zipball/c74eb46dd2897bd8d0eb5f443bd7d651d5520f10",
+                "reference": "c74eb46dd2897bd8d0eb5f443bd7d651d5520f10",
                 "shasum": ""
             },
             "require": {
@@ -101,7 +101,7 @@
                 "orm",
                 "sql"
             ],
-            "time": "2016-06-30 23:02:27"
+            "time": "2016-07-05 09:33:17"
         }
     ],
     "packages-dev": [
@@ -310,6 +310,7 @@
                 "rest",
                 "web service"
             ],
+            "abandoned": "guzzlehttp/guzzle",
             "time": "2015-03-18 18:23:50"
         },
         {

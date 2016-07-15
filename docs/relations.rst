@@ -276,8 +276,26 @@ did above::
 Above, all ``address_`` fields are copied with the same name, however field 'notes' from Address model
 will be called 'address_notes' inside user model. 
 
+Relation Discovery
+==================
+
+You can call getRefs() to fetch all the references of a model::
+
+    $refs = $model->getRefs();
+    $ref = $refs['owner_id'];
+
+or if you know the reference you'd like to fetch, you can use getRef()::
+
+    $ref = $model->getRef('owner_id');
+
+While ref() returns a related model, getRef gives you the reference object itself so that you could
+perform some changes on it, such as import more fields with addField()
+
+
 Deep traversal
 ==============
+
+.. warning:: NOT IMPLEMENTED
 
 When operating with data-sets you can define relations that use deep traversal::
 

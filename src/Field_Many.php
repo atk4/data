@@ -1,8 +1,10 @@
-<?php // vim:ts=4:sw=4:et:fdm=marker:fdl=0
+<?php
+
+// vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
 namespace atk4\data;
 
-class Field_Many 
+class Field_Many
 {
     use \atk4\core\TrackableTrait {
         init as _init;
@@ -12,9 +14,8 @@ class Field_Many
 
     /**
      * What should we pass into owner->ref() to get
-     * through to this reference
+     * through to this reference.
      */
-
     protected $link;
 
     /**
@@ -29,16 +30,15 @@ class Field_Many
     protected $their_field = null;
 
     /**
-     * our field will be 'id' by default
+     * our field will be 'id' by default.
      */
     protected $our_field = null;
 
     /**
-     * default constructor. Will copy argument into properties
+     * default constructor. Will copy argument into properties.
      */
-    function __construct($defaults = [])
+    public function __construct($defaults = [])
     {
-
         if (isset($defaults[0])) {
             $this->link = $defaults[0];
             unset($defaults[0]);
@@ -47,10 +47,14 @@ class Field_Many
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
+
+        if (!$this->model) {
+            $this->model = $this->link;
+        }
     }
 
     /**
-     * Will use either foreign_alias or create #join_<table> 
+     * Will use either foreign_alias or create #join_<table>.
      */
     public function getDesiredName()
     {
@@ -62,24 +66,31 @@ class Field_Many
         $this->_init();
     }
 
-    protected function getModel()
+    protected function getModel($defaults = [])
     {
-        if (is_callable($this->model)) {
+        if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
-            return $c($this->owner, $this);
+
+            return $c($this->owner, $this, $defaults);
         }
 
         if (is_object($this->model)) {
-            return clone $this->model;
+            $m = clone $this->model;
+            if ($defaults) {
+                $m->setDefaults($defaults);
+            }
+
+            return $m;
         }
 
         // last effort - try to add model
         $p = $this->owner->persistence;
-        return $p->add($p->normalizeClassName($this->model,'Model'));
+
+        return $p->add($p->normalizeClassName($this->model, 'Model'), $defaults);
 
         throw new Exception([
             'Model is not defined for the relation',
-            'model'=>$this->model
+            'model' => $this->model,
         ]);
     }
 
@@ -95,25 +106,26 @@ class Field_Many
             // create expression based on exsting conditions
             return $this->owner->action(
                 'field', [
-                    $this->our_field ?: $this->owner->id_field
+                    $this->our_field ?: $this->owner->id_field,
                 ]);
         }
     }
 
     protected function referenceOurValue()
     {
-        $this->owner->persistence_data['use_table_prefixes']=true;
+        $this->owner->persistence_data['use_table_prefixes'] = true;
+
         return $this->owner->getElement($this->our_field ?: $this->owner->id_field);
     }
 
     /**
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table but
-     * form the join instead
+     * form the join instead.
      */
-    public function ref()
+    public function ref($defaults = [])
     {
-        return $this->getModel()
+        return $this->getModel($defaults)
             ->addCondition(
                 $this->their_field ?: ($this->owner->table.'_id'),
                 $this->getOurValue()
@@ -121,11 +133,11 @@ class Field_Many
     }
 
     /**
-     * Creates model that can be used for generating sub-query acitons
+     * Creates model that can be used for generating sub-query acitons.
      */
-    public function refLink()
+    public function refLink($defaults = [])
     {
-        return $this->getModel()
+        return $this->getModel($defaults)
             ->addCondition(
                 $this->their_field ?: ($this->owner->table.'_id'),
                 $this->referenceOurValue()
@@ -135,20 +147,21 @@ class Field_Many
     /**
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table but
-     * form the join instead
+     * form the join instead.
      */
     public function addField($n, $defaults = [])
     {
         if (!isset($defaults['aggregate'])) {
             throw new Exception([
                 '"aggregate" strategy should be defined for oneToMany field',
-                'field'=>$n,
-                'defaults'=>$defaults
+                'field'    => $n,
+                'defaults' => $defaults,
             ]);
         }
 
-        $field = isset($defaults['field']) ? $defaults['field']:$n;
-        $action = $this->refLink()->action('fx',[$defaults['aggregate'], $field]);
+        $field = isset($defaults['field']) ? $defaults['field'] : $n;
+        $action = $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
+
         return $this->owner->addExpression($n, $action);
     }
 
@@ -159,6 +172,28 @@ class Field_Many
             unset($field[0]);
             $this->addField($name, $field);
         }
+
         return $this;
     }
+
+    // {{{ Debug Methods
+    public function __debugInfo()
+    {
+        $arr = [
+            'ref'     => $this->link,
+            'model'   => $this->model,
+        ];
+
+        if ($this->our_field) {
+            $arr['our_field'] = $this->our_field;
+        }
+
+        if ($this->their_field) {
+            $arr['their_field'] = $this->their_field;
+        }
+
+        return $arr;
+    }
+
+    // }}}
 }

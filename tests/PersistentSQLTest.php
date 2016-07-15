@@ -1,4 +1,5 @@
 <?php
+
 namespace atk4\data\tests;
 
 use atk4\data\Model;
@@ -9,26 +10,24 @@ use atk4\data\Persistence_SQL;
  */
 class PersistentSQLTest extends TestCase
 {
-
     /**
-     * Test constructor
-     *
+     * Test constructor.
      */
     public function testLoadArray()
     {
         $a = [
-            'user'=>[
-                1=>['name'=>'John', 'surname'=>'Smith'],
-                2=>['name'=>'Sarah', 'surname'=>'Jones'],
-            ]
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
         ];
 
         $p = new Persistence_SQL('sqlite::memory:');
 
         $p->connection->expr('drop table if exists user')->execute();
         $p->connection->expr('create table user(id int, name varchar(255), surname varchar(255))')->execute();
-        foreach($a['user'] as $id=>$row){
-            $row['id']=$id;
+        foreach ($a['user'] as $id => $row) {
+            $row['id'] = $id;
             $p->connection->expr('insert into user values([id], [name], [surname])', $row)->execute();
         }
 
@@ -54,10 +53,10 @@ class PersistentSQLTest extends TestCase
     public function testPersistenceInsert()
     {
         $a = [
-            'user'=>[
-                1=>['name'=>'John', 'surname'=>'Smith'],
-                2=>['name'=>'Sarah', 'surname'=>'Jones'],
-            ]
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
         ];
 
         $p = new Persistence_SQL('sqlite::memory:');
@@ -71,7 +70,7 @@ class PersistentSQLTest extends TestCase
 
 
         $ids = [];
-        foreach($a['user'] as $id=>$row){
+        foreach ($a['user'] as $id => $row) {
             $ids[] = $p->insert($m, $row);
         }
 
@@ -93,10 +92,10 @@ class PersistentSQLTest extends TestCase
     public function testModelInsert()
     {
         $a = [
-            'user'=>[
-                1=>['name'=>'John', 'surname'=>'Smith'],
-                2=>['name'=>'Sarah', 'surname'=>'Jones'],
-            ]
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
         ];
 
         $p = new Persistence_SQL('sqlite::memory:');
@@ -110,7 +109,7 @@ class PersistentSQLTest extends TestCase
 
 
         $ms = [];
-        foreach($a['user'] as $id=>$row){
+        foreach ($a['user'] as $id => $row) {
             $ms[] = $m->insert($row);
         }
 
@@ -122,10 +121,10 @@ class PersistentSQLTest extends TestCase
     public function testModelInsertRows()
     {
         $a = [
-            'user'=>[
-                1=>['name'=>'John', 'surname'=>'Smith'],
-                2=>['name'=>'Sarah', 'surname'=>'Jones'],
-            ]
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
         ];
 
         $p = new Persistence_SQL('sqlite::memory:');
@@ -146,10 +145,10 @@ class PersistentSQLTest extends TestCase
     public function testPersistenceDelete()
     {
         $a = [
-            'user'=>[
-                1=>['name'=>'John', 'surname'=>'Smith'],
-                2=>['name'=>'Sarah', 'surname'=>'Jones'],
-            ]
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
         ];
 
         $p = new Persistence_SQL('sqlite::memory:');
@@ -163,13 +162,13 @@ class PersistentSQLTest extends TestCase
 
 
         $ids = [];
-        foreach($a['user'] as $id=>$row){
+        foreach ($a['user'] as $id => $row) {
             $ids[] = $p->insert($m, $row);
         }
-        $this->assertEquals(false ,$m->loaded());
+        $this->assertEquals(false, $m->loaded());
 
         $m->delete($ids[0]);
-        $this->assertEquals(false ,$m->loaded());
+        $this->assertEquals(false, $m->loaded());
 
         $m->load($ids[1]);
         $this->assertEquals('Jones', $m['surname']);
@@ -177,10 +176,9 @@ class PersistentSQLTest extends TestCase
         $m->save();
 
         $m->tryLoad($ids[0]);
-        $this->assertEquals(false ,$m->loaded());
+        $this->assertEquals(false, $m->loaded());
 
         $m->load($ids[1]);
         $this->assertEquals('Smith', $m['surname']);
     }
-
 }

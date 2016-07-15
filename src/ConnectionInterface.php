@@ -1,8 +1,9 @@
 <?php
+
 namespace atk4\data;
 
-interface ConnectionInterface {
-
+interface ConnectionInterface
+{
     /**
      * Create new instance of the model.
      */

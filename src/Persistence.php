@@ -2,7 +2,8 @@
 
 namespace atk4\data;
 
-class Persistence {
+class Persistence
+{
     use \atk4\core\ContainerTrait {
         add as _add;
     }
@@ -10,34 +11,28 @@ class Persistence {
     use \atk4\core\HookTrait;
     use \atk4\core\AppScopeTrait;
 
-
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {
-        if (strpos($dsn,':') === false) {
-            throw new Exception(["Your DSN format is invalid. Must be in 'driver:host:options' format", 'dsn'=>$dsn]);
+        if (strpos($dsn, ':') === false) {
+            throw new Exception(["Your DSN format is invalid. Must be in 'driver:host:options' format", 'dsn' => $dsn]);
         }
         $driver = explode(':', $dsn, 2)[0];
 
         switch (strtolower(isset($args['driver']) ?: $driver)) {
             case 'mysql':
+            case 'dumper':
             case 'sqlite':
                 return new Persistence_SQL($dsn, $user, $password, $args);
             default:
                 throw new Exception([
                     'Unable to determine pesistence driver from DSN',
-                    'dsn'=>$dsn
+                    'dsn' => $dsn,
                 ]);
         }
     }
 
-
-
-
-
-
-
     /**
-     * Associate model with the data driver
+     * Associate model with the data driver.
      */
     public function add($m, $defaults = [])
     {
@@ -52,7 +47,7 @@ class Persistence {
 
         if ($m->persistence) {
             throw new Exception([
-                'Model already has conditions or is related to persistance'
+                'Model already has conditions or is related to persistance',
             ]);
         }
 
@@ -64,8 +59,8 @@ class Persistence {
         $m->persistence_data = [];
         $m = $this->_add($m, $defaults);
 
-        $this->hook('afterAdd',[$m]);
+        $this->hook('afterAdd', [$m]);
+
         return $m;
     }
-
 }
