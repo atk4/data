@@ -6,6 +6,8 @@ class Field_SQL_Expression extends Field_SQL
 {
     public $expr = null;
 
+    public $editable = false;
+
     public function useAlias()
     {
         return true;

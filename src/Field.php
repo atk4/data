@@ -17,6 +17,9 @@ class Field
 
     public $system = false;
 
+    // normally you can edit fields
+    public $editable = true;
+
     public function __construct($defaults = [])
     {
         foreach ($defaults as $key => $val) {
@@ -39,22 +42,28 @@ class Field
         return $this;
     }
 
+    // {{{ Debug Methods
     public function __debugInfo()
     {
-        $object = (array) $this;
-        unset($object['owner']);
+        $arr = [
+            'short_name' => $this->short_name,
+            'value'      => $this->get(),
+        ];
 
-        foreach ($object as $key => $val) {
-            if ($val === null) {
-                unset($object[$key]);
-                continue;
-            }
-
-            if ($key[0] == '_') {
-                unset($object[$key]);
-            }
+        if ($this->type) {
+            $arr['type'] = $this->type;
         }
 
-        return $object;
+        if ($this->system) {
+            $arr['system'] = $this->system;
+        }
+
+        if ($this->join) {
+            $arr['join'] = $this->join;
+        }
+
+        return $arr;
     }
+
+    // }}}
 }

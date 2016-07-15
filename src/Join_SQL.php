@@ -2,7 +2,7 @@
 
 namespace atk4\data;
 
-class Join_SQL extends Join
+class Join_SQL extends Join implements \atk4\dsql\Expressionable
 {
     protected $foreign_alias;
     /**
@@ -28,11 +28,22 @@ class Join_SQL extends Join
     protected $dsql = null;
 
     /**
+     * calling set() will make this dirty.
+     */
+    protected $dirty = false;
+
+    /**
      * Will use either foreign_alias or create #join_<table>.
      */
     public function getDesiredName()
     {
         return '_'.($this->foreign_alias ?: $this->foreign_table[0]);
+    }
+
+    public function getDSQLExpression($q)
+    {
+        return $q->expr('{}.{}',
+           [$this->foreign_alias, $this->foreign_field]);
     }
 
     /**
@@ -66,6 +77,7 @@ class Join_SQL extends Join
             $this->owner->addHook('afterInsert', $this, null, -5);
             $this->owner->addHook('beforeUpdateQuery', $this, null, -5);
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
+            $this->owner->addHook('afterLoad', $this);
         } else {
             $this->owner->addHook('beforeInsertQuery', $this);
             $this->owner->addHook('beforeUpdateQuery', $this);
@@ -123,6 +135,7 @@ class Join_SQL extends Join
     public function afterUnload($model)
     {
         $this->id = null;
+        $this->dirty = false;
     }
 
     public function beforeInsertQuery($model, $query)
@@ -169,6 +182,10 @@ class Join_SQL extends Join
             return;
         }
 
+        if (!$this->dirty) {
+            return;
+        }
+
         //if ($this->dsql->args['set']) {
         $update = $this->dsql();
         $update->where($this->foreign_field, $this->id);
@@ -187,7 +204,7 @@ class Join_SQL extends Join
             ->where($this->foreign_field, $this->id);
 
         //if ($this->delete_behaivour == 'cascade') {
-            $delete->delete();
+            $delete->delete()->execute();
         //} elseif ($this->delete_behaivour == 'setnull') {
             //$delete
                 //->set($this->foreign_field, null)
@@ -197,6 +214,7 @@ class Join_SQL extends Join
 
     public function set($field, $value)
     {
+        $this->dirty = true;
         $this->dsql->set($field, $value);
     }
 }

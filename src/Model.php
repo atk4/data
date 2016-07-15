@@ -12,6 +12,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use \atk4\core\InitializerTrait {
         init as _init;
     }
+    use \atk4\core\NameTrait;
 
     // {{{ Properties of the class
 
@@ -171,7 +172,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         foreach ($defaults as $key => $val) {
-            $this->$key = $val;
+            if ($val !== null) {
+                $this->$key = $val;
+            }
         }
 
         if ($persistence) {
@@ -182,7 +185,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function setDefaults($defaults)
     {
         foreach ($defaults as $key => $val) {
-            $this->$key = $val;
+            if ($val !== null) {
+                $this->$key = $val;
+            }
         }
     }
 
@@ -227,11 +232,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $this->hook('onlyFields', [&$fields]);
         $this->only_fields = $fields;
+
+        return $this;
     }
 
     public function allFields()
     {
         $this->only_fields = false;
+
+        return $this;
     }
 
     private function normalizeFieldName($field)
@@ -465,6 +474,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Shortcut for using addConditionn(id_field, $id).
+     */
+    public function withID($id)
+    {
+        $this->addCondition($this->id_field, $id);
+
+        return $this;
+    }
+
+    /**
      * Set order for model records. Multiple calls.
      */
     public function setOrder($field, $desc = null)
@@ -494,6 +513,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $this->order[] = [$field, $desc];
+
+        return $this;
     }
 
     public function setLimit($count, $offset = null)
@@ -523,9 +544,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function load($id)
     {
         if (!$this->persistence) {
-            throw new Exception([
-                'Model is not associated with any database',
-            ]);
+            throw new Exception(['Model is not associated with any database']);
         }
 
         if ($this->loaded()) {
@@ -551,9 +570,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function tryLoad($id)
     {
         if (!$this->persistence) {
-            throw new Exception([
-                'Model is not associated with any database',
-            ]);
+            throw new Exception(['Model is not associated with any database']);
         }
 
         if ($this->loaded()) {
@@ -571,12 +588,31 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    public function loadAny()
+    {
+        if (!$this->persistence) {
+            throw new Exception(['Model is not associated with any database']);
+        }
+
+        if ($this->loaded()) {
+            $this->unload();
+        }
+
+        $this->data = $this->persistence->loadAny($this);
+        if ($this->data) {
+            $this->id = $this->data[$this->id_field];
+            $this->hook('afterLoad');
+        } else {
+            $this->unload();
+        }
+
+        return $this;
+    }
+
     public function tryLoadAny()
     {
         if (!$this->persistence) {
-            throw new Exception([
-                'Model is not associated with any database',
-            ]);
+            throw new Exception(['Model is not associated with any database']);
         }
 
         if ($this->loaded()) {
@@ -594,12 +630,38 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    public function loadBy($field, $value)
+    {
+        $this->addCondition($field, $value);
+        try {
+            $this->loadAny();
+        } catch (\Exception $e) {
+            array_pop($this->conditions);
+            throw $e;
+        }
+        array_pop($this->conditions);
+
+        return $this;
+    }
+
+    public function tryLoadBy($field, $value)
+    {
+        $this->addCondition($field, $value);
+        try {
+            $this->tryLoadAny();
+        } catch (\Exception $e) {
+            array_pop($this->conditions);
+            throw $e;
+        }
+        array_pop($this->conditions);
+
+        return $this;
+    }
+
     public function save()
     {
         if (!$this->persistence) {
-            throw new Exception([
-                'Model is not associated with any database',
-            ]);
+            throw new Exception(['Model is not associated with any database']);
         }
 
         $is_update = $this->loaded();
@@ -723,9 +785,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      */
-    public function export()
+    public function export($fields = null)
     {
-        return $this->persistence->export($this);
+        return $this->persistence->export($this, $fields);
     }
 
     public function getIterator()
@@ -733,6 +795,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($this->persistence->prepareIterator($this) as $data) {
             $this->data = $data;
             $this->id = $data[$this->id_field];
+            $this->hook('afterLoad');
             yield $this->id => $this;
         }
         $this->unload();
@@ -741,6 +804,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function rawIterator()
     {
         return $this->persistence->prepareIterator($this);
+    }
+
+    public function each($method)
+    {
+        foreach ($this as $rec) {
+            if (is_string($method)) {
+                $rec->$method();
+            } else {
+                $method($rec);
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -754,12 +830,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($id) {
-            $this->persistence->delete($this, $id);
+            $c = clone $this;
+            $c->load($id)->delete();
+
+            return $this;
         } elseif ($this->loaded()) {
-            $this->hook('beforeDelete', [$id]);
+            $this->hook('beforeDelete', [$this->id]);
             $this->persistence->delete($this, $this->id);
-            $this->hook('afterDelete', [$id]);
+            $this->hook('afterDelete', [$this->id]);
             $this->unload();
+
+            return $this;
         } else {
             throw new Exception(['No active record is set, unable to delete.']);
         }
@@ -846,14 +927,31 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this->_hasSomething($this->_default_class_hasMany, $link, $defaults);
     }
 
-    public function ref($link)
+    public function ref($link, $defaults = [])
     {
-        return $this->getElement('#ref_'.$link)->ref();
+        return $this->getElement('#ref_'.$link)->ref($defaults);
     }
 
-    public function refLink($link)
+    public function refLink($link, $defaults = [])
     {
-        return $this->getElement('#ref_'.$link)->refLink();
+        return $this->getElement('#ref_'.$link)->refLink($defaults);
+    }
+
+    public function getRef($link)
+    {
+        return $this->getElement('#ref_'.$link);
+    }
+
+    public function getRefs()
+    {
+        $refs = [];
+        foreach ($this->elements as $key => $val) {
+            if (substr($key, 0, 5) == '#ref_') {
+                $refs[substr($key, 5)] = $val;
+            }
+        }
+
+        return $refs;
     }
 
     // }}}
@@ -871,6 +969,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $c = $this->_default_class_addExpression;
 
         return $this->add(new $c($defaults), $name);
+    }
+
+    // }}}
+
+    // {{{ Debug Methods
+    public function __debugInfo()
+    {
+        $arr = [
+            'id'         => $this->id,
+            'conditions' => $this->conditions,
+        ];
+
+        return $arr;
     }
 
     // }}}

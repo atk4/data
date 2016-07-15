@@ -25,7 +25,7 @@ The amount of features, capabilities and innovation in Agile Data is overwhelmin
  
 ### What differetiates Agile Data?
 
-<a target="_blank" href="https://www.youtube.com/watch?v=7XUXwg0N0E8"><img src="docs/images/presentation.png" style="float: right" width="30%"></a>
+<a target="_blank" href="https://youtu.be/ZekgUxdPWwc"><img src="docs/images/presentation.png" style="float: right" width="30%"></a>
 
 Before developing this framework we researched existing database access patterns and created a whitepaper proposing two new concepts that makes interraction between application and database more efficient. Those concepts allow us to abstract multi-row operations without relying on specific database query language
 
@@ -156,8 +156,7 @@ Agile Data relies on 2 other projects:
 
 ### Getting Started Guides
 
- * [Watch the quick video on Youtube](https://youtu.be/HAWrviTSzNM)
- * (more guides are coming soon)
+ * [Watch the quick video on Youtube](https://youtu.be/ZekgUxdPWwc)
 
 
 ## Help us make Agile Data better!!
@@ -176,7 +175,7 @@ See [www.agiletoolkit.org](http://www.agiletoolkit.org/) for more frameworks and
 Follow pull-request history and activity of repository to see what's going on.
 
 ```
-0.6   Implement iterator
+0.6   Implement iterator, export, import.
 0.7   Improve support for dealing with multiple persistences.
 0.8   Add support for derived models (unions).
 0.9   Add support for 3rd party vendor implementations.
