@@ -927,11 +927,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function getRefs()
     {
         $refs = [];
-        foreach ($this->elements as $key=>$val){
+        foreach ($this->elements as $key => $val) {
             if (substr($key, 0, 5) == '#ref_') {
                 $refs[substr($key, 5)] = $val;
             }
         }
+
         return $refs;
     }
 
@@ -959,10 +960,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $arr = [
             'id'         => $this->id,
-            'conditions' => $this->conditions
+            'conditions' => $this->conditions,
         ];
 
         return $arr;
     }
+
     // }}}
 }

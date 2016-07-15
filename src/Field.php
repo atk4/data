@@ -47,7 +47,7 @@ class Field
     {
         $arr = [
             'short_name' => $this->short_name,
-            'value'      => $this->get()
+            'value'      => $this->get(),
         ];
 
         if ($this->type) {
@@ -64,5 +64,6 @@ class Field
 
         return $arr;
     }
+
     // }}}
 }
