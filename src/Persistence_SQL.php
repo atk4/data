@@ -121,23 +121,31 @@ class Persistence_SQL extends Persistence
         }
     }
 
-    public function initQueryFields($m, $q)
+    public function initQueryFields($m, $q, $fields = null)
     {
-        if ($m->only_fields) {
+        if ($fields) {
+
+            // Set of fields is strictly defined for purposes of export,
+            // so we will ignore even system fields.
+            foreach ($fields as $field) {
+                $this->initField($q, $m->getElement($field));
+            }
+
+        } elseif ($m->only_fields) {
             $added_fields = [];
 
-
+            // Add requested fields first
             foreach ($m->only_fields as $field) {
                 $this->initField($q, $m->getElement($field));
                 $added_fields[$field] = true;
             }
 
+            // now add system fields, if they were not added
             foreach ($m->elements as $field => $f_object) {
                 if ($f_object instanceof Field_SQL && $f_object->system && !isset($added_fields[$field])) {
                     $this->initField($q, $f_object);
                 }
             }
-            // now add system fields, if they were not added
         } else {
             foreach ($m->elements as $field => $f_object) {
                 if ($f_object instanceof Field_SQL) {
@@ -226,7 +234,7 @@ class Persistence_SQL extends Persistence
                 return $q;
 
             case 'select':
-                $this->initQueryFields($m, $q);
+                $this->initQueryFields($m, $q, isset($args[0])? $args[0]: null);
                 break;
 
             case 'count':
@@ -439,9 +447,9 @@ class Persistence_SQL extends Persistence
         return $insert->connection->lastInsertID();
     }
 
-    public function export(Model $m)
+    public function export(Model $m, $fields = null)
     {
-        $export = $this->action($m, 'select');
+        $export = $this->action($m, 'select', [$fields]);
 
         return $export->get();
     }

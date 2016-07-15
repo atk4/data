@@ -784,9 +784,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      */
-    public function export()
+    public function export($fields = null)
     {
-        return $this->persistence->export($this);
+        return $this->persistence->export($this, $fields);
     }
 
     public function getIterator()
