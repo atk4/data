@@ -632,8 +632,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function loadBy($field, $value)
     {
         $this->addCondition($field, $value);
-        $this->loadAny();
-        // undo add condition
+        try {
+            $this->loadAny();
+        } catch (\Exception $e) {
+            array_pop($this->conditions);
+            throw $e;
+        }
         array_pop($this->conditions);
 
         return $this;
@@ -642,8 +646,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function tryLoadBy($field, $value)
     {
         $this->addCondition($field, $value);
-        $this->tryLoadAny();
-        // undo add condition
+        try {
+            $this->tryLoadAny();
+        } catch (\Exception $e) {
+            array_pop($this->conditions);
+            throw $e;
+        }
         array_pop($this->conditions);
 
         return $this;
