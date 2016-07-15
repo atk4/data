@@ -474,6 +474,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Shortcut for using addConditionn(id_field, $id)
+     */
+    function withID($id)
+    {
+        $this->addCondition($this->id_field, $id);
+        return $this;
+    }
+
+    /**
      * Set order for model records. Multiple calls.
      */
     public function setOrder($field, $desc = null)
