@@ -29,9 +29,9 @@ Agile Data is a comprehensive framework for use in SaaS and Enterprise PHP, that
 
 ### 1. Object-oriented Business Logic and Persistence mapping
 
-Face it. Your SQL architecture does fit your business model map. There are many differences mainly focused on performance optimisation, that can complicate loading/saving data into SQL:
+Face it. Your SQL architecture does NOT fit your business model map precisely. There are many differences mainly focused on structure optimisation, that can complicate loading/saving data into SQL:
 
- - single SQL storing multiple business objects (clients and suppliers)
+ - single SQL table storing multiple business objects (clients and suppliers)
  - multiple SQL tables joined for a single business object (company, company_stats)
  - [data normalization](https://en.wikipedia.org/wiki/Database_normalization)
  - [disjoined subtyping](https://en.wikipedia.org/wiki/Subtyping)
@@ -65,7 +65,7 @@ In the code snippet above, `$p` will be a model object with containing all payme
 
 ### 4. Database Vendor Abstraction and Multi-record Actions
 
-NoSQL databases are rapidly adding options to peform multi-record operations and aggregation. Agile Data introduces unified interface that can be used across all supporting persistence drivers. Consider this as continuation of the example above:
+NoSQL databases are rapidly adding options to peform multi-record operations and aggregation. Agile Data basic operations, such as record manipulation, already works with NoSQL transparently. In addition to that, Actions introduce a unified interface that can be used across all supporting persistence drivers. Consider this as continuation of the example above:
 
 ``` php
 $cnt = $p->action('count')->getOne();
@@ -76,11 +76,9 @@ $n->addCondition('payment_id', $p->action('field', ['id']));
 $n->action('delete')->execute();
 ```
 
-Actions provide a unified interface for performing aggregation, using expressions inside other model conditions or performing multi-record operations such as deletion. Actions always respect boundaries of defined DataSet.
+When Action is executed or embedded, frameworks makes decision on how to best execute the strategy by using server-side capabilities of the database. If database is not capable of sub-select or multi-row operations, then it is still possible for Agile Data to simulate the action inside PHP.
 
-For databases that do not support capabilities, it's possible to provide an in-PHP implementation for multi-record operations.
-
-Finally, your Business Logic will work with a supplied database transparently. You don't have to switch all of the databases at once, but you can move individual business entities between databases, cache or session:
+The same business Model definition can work with multiple database types, making it easy to store your data in caches, session, files or access it through API. The next example shows example of database-agnostic code that will work with either MySQL or MongoDB:
 
 ``` php
 $m = new my\Model_User($mysql_db);
@@ -92,6 +90,8 @@ if ($m->verifyPassword($pass)) {
     $m->action('increment', [$m->id, 'logins']);
 }
 ```
+
+*Note: Support for MongoDB as of 1.0 is quite limited.*
 
 ### 5. Reducing number of queries
 
@@ -127,7 +127,7 @@ There are two significant advantages specifically designed to reduce data transf
 
 Most database mappers are good for accessing and modifying data only, however, Agile Data allows you to build aggregates from your business model. Regardless of how many tables you have joined, you can use one model as a source for another model thus embedding (or unioning) query source.
 
-*Note: This feature is not available yet, but is planned for 1.1.0 release.*
+*Note: This feature is planned for 1.1 release.*
 
 
 ### 8. Extensions and Customisation
