@@ -578,9 +578,13 @@ You can also use more extensive expressions::
 This expression will find a minimum shipping cost of a respective country of client related
 to the invoice and use that cost as a minimum shipping cost.
 
-SQL-specific Features 
-=====================
+Conclusion
+==========
 
-You should now be familiar with all of the basics in Agile Data. To find more information on
-specific topic, use the rest of the documentaiton.
+You should now be familiar with the basics in Agile Data. To find more information on
+specific topics, use the rest of the documentaiton.
+
+Agile Data is designed in an extensive pattern - by adding more objects inside Model a new
+functionality can be introduced. The described functionality is never a limitation
+and 3rd party code or you can add features that Agile Data authors are not even considered.
 
