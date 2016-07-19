@@ -66,6 +66,11 @@ class Persistence_SQL extends Persistence
             ]);
         }
 
+        return $m;
+    }
+
+    protected function initPersistence(Model $m)
+    {
         $m->addMethod('expr', $this);
 
         // When we work without table, we can't have any IDs
