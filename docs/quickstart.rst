@@ -344,11 +344,11 @@ To makes things simple, console has already created persistence
 inside variable `$db`. Load up `console.php` in your editor to look
 at how persistence is set up::
 
-    $app->db = new \atk4\data\Connection::connect($dsn);
+    $app->db = new \atk4\data\Persistence::connect($dsn, $user, pass);
 
     // or
 
-    $app->db = new \atk4\data\Connection_SQL(['pdo' => $pdo]); 
+    $app->db = new \atk4\data\Persistence_SQL($pdo, $user, $pass); 
 
 There are several Persistence classes that that deal with different
 data sources. Lets load up our console and try out a different
