@@ -69,6 +69,8 @@ There are several ways to link your model up with the persistence::
     Remove current record from DataSet. You can optionally pass ID if you wish to delete
     a different record. If you pass ID of a currently loaded record, it will be unloaded.
 
+.. _Action:
+
 Actions
 =======
 
