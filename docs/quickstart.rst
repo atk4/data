@@ -394,7 +394,7 @@ persistence::
 
     $m->save();
 
-    $a; // shows you stored data
+    var_dump($a); // shows you stored data
 
 This time our Model_User logic has worked pretty well with Array-only
 peristence logic.
