@@ -726,6 +726,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
             //$this->hook('beforeInsert', array(&$source));
         }
 
+        $this->hook('afterSave');
+
 
         if ($this->loaded()) {
             $this->dirty = [];
