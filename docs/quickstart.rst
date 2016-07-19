@@ -26,7 +26,7 @@ If you wish to try out some examples in this guide, you will need the following:
 
 - PHP 5.5 or above.
 - MySQL or MariaDB
-- Install '`Agile Data Primer <https://github.com/atk4/data-primer/>`_
+- Install `Agile Data Primer <https://github.com/atk4/data-primer/>`_
 
 .. code-block:: bash
 
