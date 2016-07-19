@@ -142,7 +142,17 @@ Agile Data is a great framework but it can be further extended:
 
 See section below to learn more about commercial services and support options.
  
-## Installing and Testing
+
+### Full documentation for Agile Data
+
+[agile-data.readthedocs.io](http://agile-data.readthedocs.io).
+
+### Getting Started Guides
+
+ * [Follow the Quick Start guides](http://agile-data.readthedocs.io/en/develop/quickstart.html)
+ * [Watch the quick video on Youtube](https://youtu.be/ZekgUxdPWwc)
+
+## Installing into existing project
 
 Update your `composer.json` with 'require' and 'autoload' sections:
 
@@ -204,15 +214,6 @@ Now you can explore. Try typing:
 > $m->action('count')->getDebugQuery()
 ```
 Full documentation is available at [agile-core.readthedocs.io](http://agile-core.readthedocs.io/)
-
-### Full documentation for Agile Data
-
-[agile-data.readthedocs.io](http://agile-data.readthedocs.io).
-
-### Getting Started Guides
-
- * [Watch the quick video on Youtube](https://youtu.be/ZekgUxdPWwc)
-
 
 ## Agile Toolkit
 
