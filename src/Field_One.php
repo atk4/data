@@ -72,6 +72,12 @@ class Field_One
 
     public function getModel($defaults = [])
     {
+        if (!isset($defaults['table_alias'])) {
+            $alias = $this->link;
+            $alias = preg_replace('/_id/','',$alias);
+            $alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/','\1',$alias);
+            $defaults['table_alias']=$alias;
+        }
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
 
