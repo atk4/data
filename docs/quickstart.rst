@@ -507,7 +507,7 @@ The above code is more consise and can be used together with relation declaratio
 this is how it works::
 
     $m = new Model_Client($db);
-    $m->addExpression('max_delivery', $m->refLink('Inovice')->action('fx', ['max', 'shipping']));
+    $m->addExpression('max_delivery', $m->refLink('Invoice')->action('fx', ['max', 'shipping']));
     $m->addExpression('total_paid', $m->refLink('Payment')->action('fx', ['sum', 'amount']));
     $m->export(['name','max_delivery','total_paid']);
 
@@ -546,6 +546,7 @@ away::
 
     $m = new Model_User($db);
     $m->loadBy('username','john');
+    $m->hasMany('System');
     $c = $m->ref('System')->ref('Client');
     $s = $m->ref('System')->ref('Supplier');
 
@@ -576,7 +577,7 @@ you could do this::
     $m = new Model_User($db);
     $m['username'] = 'peter';
     $m['address_1'] = 'street 49';
-    $m['country_id'] = $m->ref('country_id')->addCondition('name','UK')->action('field',['id']);
+    $m['country_id'] = (new Model_Country($db))->addCondition('name','UK')->action('field',['id']);
     $m->save();
 
 This code with $m->ref() will not execute any code, but instead it will provide
@@ -589,26 +590,13 @@ Expressions that are defined based on Actions (such as aggregate or field-refere
 will continue to work even without SQL (although might be more perormance-expensive), however
 if you're stuck with SQL you can use free-form pattern-based expressions::
 
-    $m = new Model_Invoice($db);
-    $m->addExpression('total','[purchase]+[shipping]');
+    $m = new Model_Client($db);
+    $m->getRef('Invoice')->addField('total_purchase', ['aggregate'=>'sum', 'field'=>'total']);
+    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
 
-This can be used with various situations and can use full range of SQL syntax::
+    $m->addExpression('balance','[total_purchase]+[total_paid]);
+    $m->export(['name','balance']);
 
-    $m->addExpression('total','[purchase]+if([shipping] < 2, 2, [shipping])');
-
-You can also use more extensive expressions::
-
-    $m = new Model_Invoice($db);
-    $c = $m->refLink('contact_id');
-    $c->getRef('country_id')->addField('shipping_cost');
-
-    $m->addExpression('total',[
-        '[purchase]+if([shipping] < [min_ship], [min_ship], [shipping])',
-        'min_ship'=>$c->action('field',['shipping_cost'])
-    );
-
-This expression will find a minimum shipping cost of a respective country of client related
-to the invoice and use that cost as a minimum shipping cost.
 
 Conclusion
 ==========
