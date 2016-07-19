@@ -58,6 +58,7 @@ class Persistence_SQL extends Persistence
 
 
 
+
         if (!isset($m->table) || (!is_string($m->table) && $m->table !== false)) {
             throw new Exception([
                 'Property $table must be specified for a model',
@@ -72,9 +73,8 @@ class Persistence_SQL extends Persistence
             $m->getElement('id')->destroy();
             $m->addExpression('id', '1');
         }
-
-        return $m;
     }
+
 
     public function expr($m, $expr, $args = [])
     {
@@ -229,6 +229,7 @@ class Persistence_SQL extends Persistence
             case 'delete':
                 $q->mode('delete');
                 $this->initQueryConditions($m, $q);
+                $m->hook('initSelectQuery', [$q, $type]);
 
                 return $q;
 
@@ -420,6 +421,7 @@ class Persistence_SQL extends Persistence
     public function insert(Model $m, $data)
     {
         $insert = $this->action($m, 'insert');
+        var_export($data);
 
         // apply all fields we got from get
         foreach ($data as $field => $value) {
@@ -428,13 +430,20 @@ class Persistence_SQL extends Persistence
                 continue;
             }
             $insert->set($f->actual ?: $f->short_name, $value);
+            var_dump($insert);
         }
+
+        echo "about to execute\n";
 
 
         try {
+        echo "hooked\n";
             $m->hook('beforeInsertQuery', [$insert]);
+        echo "done\n";
             $insert->execute();
+        echo "executed\n";
         } catch (\Exception $e) {
+        echo "caught exc\n";
             throw new Exception([
                 'Unable to execute insert query',
                 'query'      => $insert->getDebugQuery(false),
@@ -442,6 +451,7 @@ class Persistence_SQL extends Persistence
                 'conditions' => $m->conditions,
             ], null, $e);
         }
+        echo "returning\n";
 
         return $insert->connection->lastInsertID();
     }
@@ -487,7 +497,16 @@ class Persistence_SQL extends Persistence
 
         $m->hook('beforeUpdateQuery', [$update]);
 
-        $update->execute();
+        try {
+            $update->execute();
+        } catch (\Exception $e) {
+            throw new Exception([
+                'Unable to update due to query error',
+                'query'      => $update->getDebugQuery(false),
+                'model'      => $m,
+                'conditions' => $m->conditions,
+            ], null, $e);
+        }
     }
 
     public function delete(Model $m, $id)
