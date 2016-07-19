@@ -66,6 +66,12 @@ class Persistence_SQL extends Persistence
             ]);
         }
 
+        // When we work without table, we can't have any IDs
+        if ($m->table === false) {
+            $m->getElement('id')->destroy();
+            $m->addExpression('id', '1');
+        }
+
         return $m;
     }
 
@@ -73,11 +79,6 @@ class Persistence_SQL extends Persistence
     {
         $m->addMethod('expr', $this);
 
-        // When we work without table, we can't have any IDs
-        if ($m->table === false) {
-            $m->getElement('id')->destroy();
-            $m->addExpression('id', '1');
-        }
     }
 
 
@@ -426,7 +427,6 @@ class Persistence_SQL extends Persistence
     public function insert(Model $m, $data)
     {
         $insert = $this->action($m, 'insert');
-        var_export($data);
 
         // apply all fields we got from get
         foreach ($data as $field => $value) {
@@ -435,20 +435,12 @@ class Persistence_SQL extends Persistence
                 continue;
             }
             $insert->set($f->actual ?: $f->short_name, $value);
-            var_dump($insert);
         }
 
-        echo "about to execute\n";
-
-
         try {
-        echo "hooked\n";
             $m->hook('beforeInsertQuery', [$insert]);
-        echo "done\n";
             $insert->execute();
-        echo "executed\n";
         } catch (\Exception $e) {
-        echo "caught exc\n";
             throw new Exception([
                 'Unable to execute insert query',
                 'query'      => $insert->getDebugQuery(false),
@@ -456,7 +448,6 @@ class Persistence_SQL extends Persistence
                 'conditions' => $m->conditions,
             ], null, $e);
         }
-        echo "returning\n";
 
         return $insert->connection->lastInsertID();
     }
