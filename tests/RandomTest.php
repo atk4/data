@@ -17,6 +17,25 @@ class Model_Rate extends \atk4\data\Model
         $this->addField('ask');
     }
 }
+class Model_Item extends \atk4\data\Model {
+    public $table='item';
+    function init() {
+        parent::init();
+        $this->addField('name');
+        $this->hasOne('parent_item_id', '\atk4\data\tests\Item')
+            ->addTitle();
+    }
+}
+class Model_Item2 extends \atk4\data\Model {
+    public $table='item';
+    function init() {
+        parent::init();
+        $this->addField('name');
+        $i2 = $this->join('item2.item_id');
+        $i2->hasOne('parent_item_id', new Model_Item2())
+            ->addTitle();
+    }
+}
 
 
 
@@ -128,4 +147,51 @@ class RandomSQLTests extends SQLTestCase
             $m->action('select')->render()
         );
     }
+
+    function testSameTable()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'item' => [
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => '1'],
+                2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => '1'],
+                3 => ['id' => 3, 'name' => 'Smith', 'parent_item_id' => '2'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model_Item($db,'item');
+            
+        $this->assertEquals(
+            ['id'=>'3', 'name'=>'Smith', 'parent_item_id'=>'2', 'parent_item'=>'Sue'],
+            $m->load(3)->get()
+        );
+
+    }
+
+    function testSameTable2()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'item' => [
+                1 => ['id' => 1, 'name' => 'John'],
+                2 => ['id' => 2, 'name' => 'Sue'],
+                3 => ['id' => 3, 'name' => 'Smith'],
+            ], 
+            'item2' => [
+                1 => ['id' => 1, 'item_id' => 1, 'parent_item_id' => '1'],
+                2 => ['id' => 2, 'item_id' => 2, 'parent_item_id' => '1'],
+                3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => '2'],
+            ], 
+        ];
+        $this->setDB($a);
+
+        $m = new Model_Item2($db,'item');
+            
+        $this->assertEquals(
+            ['id'=>'3', 'name'=>'Smith', 'parent_item_id'=>'2', 'parent_item'=>'Sue'],
+            $m->load(3)->get()
+        );
+
+    }
 }
+
