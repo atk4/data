@@ -16,7 +16,7 @@ Data.
 In this chapter, I'll only introduce you to the basics. You can use the rest
 of the documentation as a reference.
 
-.. warning:: If any examples in this guide do not work as advertised, this is
+.. warning:: If any examples in this guide do not work as expected, this is
     most probably a bug. Please report it so that our team could look into it.
 
 Requirements
