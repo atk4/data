@@ -1,4 +1,6 @@
 
+.. _Model:
+
 ============================
 Working With Business Models
 ============================
@@ -113,6 +115,8 @@ of fields.
 .. php:attr:: only_fields
 
     Contains list of fields to be loaded / accessed.
+
+.. _Active Record:
 
 Setting and Getting active record data
 ======================================
