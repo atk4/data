@@ -1,4 +1,6 @@
 
+.. _Model:
+
 ============================
 Working With Business Models
 ============================
@@ -114,6 +116,8 @@ of fields.
 
     Contains list of fields to be loaded / accessed.
 
+.. _Active Record:
+
 Setting and Getting active record data
 ======================================
 
@@ -208,3 +212,21 @@ Full example::
 .. php:method:: protected normalizeFieldName
 
     Verify and convert first argument got get / set;
+
+Hooks
+=====
+
+- beforeSave [not currently worknig]
+
+  - beforeInsert [only if insert]
+    - beforeInsertQuery [sql only]
+
+  - beforeUpdate [only ift update]
+    - beforeUpdateQuery [sql only]
+
+
+
+  - afterUpdate [only if existing record]
+  - afterInsert [only if new record]
+
+- afterSave
