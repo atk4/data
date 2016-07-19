@@ -594,7 +594,7 @@ if you're stuck with SQL you can use free-form pattern-based expressions::
     $m->getRef('Invoice')->addField('total_purchase', ['aggregate'=>'sum', 'field'=>'total']);
     $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
 
-    $m->addExpression('balance','[total_purchase]+[total_paid]);
+    $m->addExpression('balance','[total_purchase]+[total_paid]');
     $m->export(['name','balance']);
 
 
