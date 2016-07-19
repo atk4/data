@@ -68,7 +68,7 @@ typically do that inside your application class::
 
     use atk4\data;
     
-    $dsn = 'mysql:host=localhost;dbname=cy1';
+    $dsn = 'mysql:host=localhost;dbname=testdb';
     $username = 'username';
     $password = 'password';
     
