@@ -80,9 +80,9 @@ DataSet (see :ref:`DataSet`)
     to the Business Model.
 
 Active Record (see :ref:`Active Record`)
-    One record from DataSet can be loaded into memory of a model making
-    it an Active Record. You can update values of a value record and save
-    it back into DataSet when you're done.
+    Model can load individual record from DataSet, work with it and save
+    it back into DataSet. While the record is loaded, we call it an Active
+    Record.
 
 Action (see :ref:`Action`)
     Operation that Model performs on all of DataSet record without loading
