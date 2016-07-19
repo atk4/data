@@ -47,6 +47,17 @@ Console is using `Psysh <http://psysh.org>`_ to help you interact with objects l
 
     > exit
 
+.. note:: I recommend that you enter statements into console one-by-one and
+    carefully observe results. You should also experement where possible,
+    try different conditions or no conditions at all.
+
+    You can always create new model object if you mess up. If you change any
+    of the classes, you'll have to restart console.
+
+    There seem to be a bug inside Psysh where it looses MySQL connection,
+    in this case restart the console.
+
+
 Core Concepts
 ==============
 
@@ -188,7 +199,7 @@ conditions is your way to specify which records to operate on::
     $m = new Model_User($db);
     $m->addCondition('country_id', '2');
 
-    myexport($m, ['id','username','country']);
+    myexport($m, ['id','username','country_id']);
 
 If you want to temporarily add conditions, then you can either clone the
 model or use `tryLoadBy`.
