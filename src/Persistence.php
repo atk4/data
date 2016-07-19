@@ -51,16 +51,23 @@ class Persistence
             ]);
         }
 
-        if (is_object($m)) {
-            $m->setDefaults($defaults);
-        }
-
+        $m->setDefaults($defaults);
         $m->persistence = $this;
         $m->persistence_data = [];
+        $this->initPersistence($m);
         $m = $this->_add($m, $defaults);
 
         $this->hook('afterAdd', [$m]);
 
         return $m;
+    }
+
+    /**
+     * Extend this method to enhance model to work with your persistence. Here
+     * you can define additional methods or store additional data. This method
+     * is executed before model's init().
+     */
+    protected function initPersistence(Model $m)
+    {
     }
 }
