@@ -67,8 +67,10 @@ As a second step, we should set up Data :ref:`Source`. You would
 typically do that inside your application class::
 
     use atk4\data;
+    
+    $dsn = 'mysql:host=localhost;dbname=testdb';
 
-    $app->db = new data\Connection\PDO\MySQL(['pdo' => $pdo]); 
+    $app->db = new data\Connection\PDO\MySQL(['pdo' => $dsn]); 
 
 Your presentation logic (page) can now associate Business Model with
 Source::
