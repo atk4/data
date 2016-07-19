@@ -78,9 +78,7 @@ class Persistence_SQL extends Persistence
     protected function initPersistence(Model $m)
     {
         $m->addMethod('expr', $this);
-
     }
-
 
     public function expr($m, $expr, $args = [])
     {
