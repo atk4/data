@@ -68,9 +68,13 @@ typically do that inside your application class::
 
     use atk4\data;
     
-    $dsn = 'mysql:host=localhost;dbname=testdb';
+    $dsn = 'mysql:host=localhost;dbname=cy1';
+    $username = 'username';
+    $password = 'password';
+    
+    $pdo = new PDO($dsn, $username, $password);
 
-    $app->db = new data\Connection\PDO\MySQL(['pdo' => $dsn]); 
+    $app->db = new data\Connection\PDO\MySQL(['pdo' => $pdo]); 
 
 Your presentation logic (page) can now associate Business Model with
 Source::
