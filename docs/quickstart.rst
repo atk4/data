@@ -78,7 +78,7 @@ Action (see :ref:`Action`)
     them individually. Actions have 3 main purposes: data aggregation,
     referencing and multi-record operations.
 
-Persistence Domain vs Business domain
+Persistence Domain vs Business Domain
 -------------------------------------
 
 .. image:: images/bd-vs-pd.png
@@ -94,7 +94,7 @@ code that depend on specific field names or types can break.
 
 More importantly, if you decide to store some data in different database either
 for caching (memcache), unique features (full-text search) or to handle large
-amount sof data (BigData) you suddenly have to carefully consider that in
+amounts of data (BigData) you suddenly have to carefully consider that in
 your application.
 
 Business Domain is a layer that is designed to hide all the logic of data
@@ -124,6 +124,7 @@ inside console::
 
 Next, exit and create file `src/Model_ContactInfo.php`::
 
+    <?php
     class Model_ContactInfo extends \atk4\data\Model
     {
         public $table = 'contact_info';
@@ -136,15 +137,16 @@ Next, exit and create file `src/Model_ContactInfo.php`::
         }
     }
 
-Save, exit and run console again. Now you can just type this::
+Save, exit and run console again. You can now type this::
 
     $m = new Model_ContactInfo($db);
     $m->loadAny();
     $m->get();
 
-You migth reconsider, should the "addCondition' be located inside model
-definition or inside your inline code based on how you are willing to apply
-the model.
+.. note:: Should the "addCondition" be located inside model definition or
+    inside your inline code? To answer this question - think - would
+    Model_ContactInfo have application without the condition? If yes
+    then either use addCondition in-line or create 2 classes.
 
 Model State
 -----------
