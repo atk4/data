@@ -493,8 +493,8 @@ a data-set. SQL persistence implements some of the operations::
 
     $m = new Model_Invoice($db);
     $m->action('count')->getOne();
-    $m->action('sum(total)')->getOne();
-    $m->action('max(delivery)')->getOne();
+    $m->action('sum',['total'])->getOne();
+    $m->action('max',['delivery'])->getOne();
 
 Aggregation actions can be used in Expressions with hasMany relations::
 
