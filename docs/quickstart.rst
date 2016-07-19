@@ -26,7 +26,7 @@ DataSet (see :ref:`DataSet`)
 
 Active Record (see :ref:`Active Record`)
     Model can load individual record from DataSet, work with it and save
-    it back into DataSet. While the record is loaded, we cal it an Active
+    it back into DataSet. While the record is loaded, we call it an Active
     Record.
 
 Action (see :ref:`Action`)
