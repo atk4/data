@@ -360,7 +360,11 @@ As you load or save models you should see actual queries in the console,
 that should give you some idea what kind of information is sent to the
 database.
 
-Adding Fields, Joins creates support objects. This architecture of
+Adding Fields, Joins, Expressions and Relations creates more objects
+and 'adds' them into Model (to better understand how Model can behave
+like a container for these objects, see `documentation on Agile Core
+Containers <http://agile-core.readthedocs.io/en/develop/container.html>`_).
+This architecture of
 Agile Data allows database persistence to implement different logic that
 will properly manipulate features of that specific database engine.
 
