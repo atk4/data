@@ -75,11 +75,22 @@ class Field_One
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
 
-            return $c($this->owner, $this);
+            $c = $c($this->owner, $this);
+            if (!$c->persistence) {
+                $c = $this->owner->persistence->add($c, $defaults);
+            }
+            return $c;
         }
 
         if (is_object($this->model)) {
-            return $this->model;
+            if ($this->model->persistence) {
+                throw new Exception([
+                    'When relating to object, it must not be associated with persistence yet.'
+                    // actually - that in the future we will support it.
+                ]);
+            }
+            $c = clone $this->model;
+            return $this->owner->persistence->add($c, $defaults);
         }
 
         // last effort - try to add model
