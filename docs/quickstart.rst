@@ -24,18 +24,28 @@ Requirements
 
 If you wish to try out some examples in this guide, you will need the following:
 
- - PHP 5.5 or above.
- - MySQL or MariaDB
- - Install 'github.com/atk4/data-primer'
+- PHP 5.5 or above.
+- MySQL or MariaDB
+- Install '`Agile Data Primer <https://github.com/atk4/data-primer/>`_
 
-Please make sure that you can execute console::
+.. code-block:: bash
 
-    $ php console.php
+    git clone https://github.com/atk4/data-primer.git
+    cd data-primer
+    composer update
+    cp config-example.php config.php
 
-    >>> $db
+    # EDIT FILE CONFIG.PHP
+    vim config.hpp
+
+    php console.php
+
+Console is using `Psysh <http://psysh.org>`_ to help you interact with objects like this::
+
+    > $db
     => atk4\data\Persistence_SQL {...}
 
-    >>> exit
+    > exit
 
 Core Concepts
 ==============
