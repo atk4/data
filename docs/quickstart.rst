@@ -61,7 +61,7 @@ Console is using `Psysh <http://psysh.org>`_ to help you interact with objects l
 Core Concepts
 ==============
 
-Business Model (see :ref:`Busines Model`)
+Business Model (see :ref:`Model`)
     You define business logic inside your own classes that extend :php:class:`Model`.
     Each class you create represent one business entity. 
 
@@ -493,23 +493,23 @@ a data-set. SQL persistence implements some of the operations::
 
     $m = new Model_Invoice($db);
     $m->action('count')->getOne();
-    $m->action('sum',['total'])->getOne();
-    $m->action('max',['delivery'])->getOne();
+    $m->action('fx', ['sum', 'total'])->getOne();
+    $m->action('fx', ['max', 'shipping'])->getOne();
 
 Aggregation actions can be used in Expressions with hasMany relations::
 
     $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('max_delivery', ['aggregate'=>'max', 'field'=>'delivery']);
-
+    $m->getRef('Invoice')->addField('max_delivery', ['aggregate'=>'max', 'field'=>'shipping']);
     $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
+    $m->export(['name','max_delivery','total_paid']);
 
 The above code is more consise and can be used together with relation declaration, although
 this is how it works::
 
     $m = new Model_Client($db);
-    $m->addExpression('max_delivery', $m->refLink('Inovice')->action('max', ['delivery']));
-
-    $m->addExpression('total_paid', $m->refLink('Payment')->action('sum', ['amount']));
+    $m->addExpression('max_delivery', $m->refLink('Inovice')->action('fx', ['max', 'shipping']));
+    $m->addExpression('total_paid', $m->refLink('Payment')->action('fx', ['sum', 'amount']));
+    $m->export(['name','max_delivery','total_paid']);
 
 Expression is a special type of read-only Field that uses sub-query instead of a physical field.
 Also, refLink() is a special type of reference transition that is designed for use
