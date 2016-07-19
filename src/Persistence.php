@@ -51,10 +51,7 @@ class Persistence
             ]);
         }
 
-        if (is_object($m)) {
-            $m->setDefaults($defaults);
-        }
-
+        $m->setDefaults($defaults);
         $m->persistence = $this;
         $m->persistence_data = [];
         $this->initPersistence($m);
