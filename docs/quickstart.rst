@@ -160,8 +160,7 @@ Persistence
 
 When you first create model using `new Model_` it will just exist as an
 independent container. By passing `$db` as a parameter you are also
-associating your model with that specific persistence. Multiple model can only
-be associated with one persistence.
+associating your model with that specific persistence. 
 
 Once model is associated with one persistence, you cannot re-associate it.
 Method Model::init() will be executed only after persistence is known, so
@@ -186,11 +185,10 @@ conditions is your way to specify which records to operate on::
         return json_encode($m->export($fields));
     }
     
-
-    $m = new Model_User();
+    $m = new Model_User($db);
     $m->addCondition('country_id', '2');
 
-    myexport($m,['id','username','country']);
+    myexport($m, ['id','username','country']);
 
 If you want to temporarily add conditions, then you can either clone the
 model or use `tryLoadBy`.
@@ -203,7 +201,9 @@ stores. You can load / unload records like this::
 
     $m = new Model_User($db);
     $m->loadAny();
-    $m->get();
+
+    $m->get();     // inisde console, this will show you what's inside your model
+
     $m['email'] = 'test@example.com';
     $m->save();
 
