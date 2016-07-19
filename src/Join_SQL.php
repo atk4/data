@@ -65,7 +65,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         // Our short name will be unique
         if (!$this->foreign_alias) {
-            $this->foreign_alias = $this->short_name;
+            $this->foreign_alias = (isset($this->owner->table_alias)?$this->owner->table_alias:'').$this->short_name;
         }
 
         $this->dsql->table($this->foreign_table, $this->foreign_alias);
@@ -114,7 +114,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             ),
             (
                 isset($this->owner->table_alias) ?
-                $this->owner->table_alias :
+                ($this->owner->table_alias.'.'.$this->master_field) :
                 ($this->owner->table).'.'.$this->master_field)
         );
 
