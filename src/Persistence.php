@@ -64,4 +64,13 @@ class Persistence
 
         return $m;
     }
+
+    /**
+     * Extend this method to enhance model to work with your persistence. Here
+     * you can define additional methods or store additional data. This method
+     * is executed before model's init(). 
+     */
+    protected function initPersistence(Model $m)
+    {
+    }
 }
