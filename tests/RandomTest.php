@@ -229,8 +229,6 @@ class RandomSQLTests extends SQLTestCase
 
         $m = new Model_Item3($db,'item');
 
-        var_dump($m->action('select')->getDebugQuery());
-
         $this->assertEquals(
             ['id'=>'2', 'name'=>'Sue', 'parent_item_id'=>'1', 'parent_item'=>'John', 'age'=>'20', 'child_age'=>24],
             $m->load(2)->get()
