@@ -236,9 +236,6 @@ class RandomSQLTests extends SQLTestCase
 
         $this->assertEquals(1, $m->load(2)->ref('Child',['table_alias'=>'pp'])->action('count')->getOne());
         $this->assertEquals('John', $m->load(2)->ref('parent_item_id',['table_alias'=>'pp'])->get('name'));
-
-        var_dump($m->load(2)->ref('parent_item_id',['table_alias'=>'pp'])->action('select'));
-
     }
 }
 
