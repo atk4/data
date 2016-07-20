@@ -9,16 +9,16 @@
     "packages": [
         {
             "name": "atk4/core",
-            "version": "1.1.2",
+            "version": "1.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/atk4/core.git",
-                "reference": "6a0162a83e4362bb485a64f2bb84d97ad7897145"
+                "reference": "31ac6f5a31a258f24dc0d1e1c5e1980b6a421582"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atk4/core/zipball/6a0162a83e4362bb485a64f2bb84d97ad7897145",
-                "reference": "6a0162a83e4362bb485a64f2bb84d97ad7897145",
+                "url": "https://api.github.com/repos/atk4/core/zipball/31ac6f5a31a258f24dc0d1e1c5e1980b6a421582",
+                "reference": "31ac6f5a31a258f24dc0d1e1c5e1980b6a421582",
                 "shasum": ""
             },
             "require": {
@@ -53,20 +53,20 @@
                 "php",
                 "trains"
             ],
-            "time": "2016-07-16 14:42:25"
+            "time": "2016-07-20 04:15:32"
         },
         {
             "name": "atk4/dsql",
-            "version": "1.0.6",
+            "version": "1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/atk4/dsql.git",
-                "reference": "175ec8936208825e7bf7e89489614a332bbc47b6"
+                "reference": "e7be1fd4ff095786e4e63bba2d8ee3818125f993"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/atk4/dsql/zipball/175ec8936208825e7bf7e89489614a332bbc47b6",
-                "reference": "175ec8936208825e7bf7e89489614a332bbc47b6",
+                "url": "https://api.github.com/repos/atk4/dsql/zipball/e7be1fd4ff095786e4e63bba2d8ee3818125f993",
+                "reference": "e7be1fd4ff095786e4e63bba2d8ee3818125f993",
                 "shasum": ""
             },
             "require": {
@@ -101,7 +101,7 @@
                 "orm",
                 "sql"
             ],
-            "time": "2016-07-18 22:26:30"
+            "time": "2016-07-20 03:50:23"
         }
     ],
     "packages-dev": [
