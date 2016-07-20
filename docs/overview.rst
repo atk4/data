@@ -36,17 +36,18 @@ We educate developer about separating their Domain logic from persistence follow
 best practices of enterprise software. We offer the solution that works really well for
 most people and those who have extreme requirements can extend.
 
-For example you can customize persistence logic of Data Model with your own query logic
+For example, you can customize persistence logic of Data Model with your own query logic
 where necessary.
 
 Major Databases are Supported
 =============================
 
-The classic approach of record mapping puts low requirement on the database but sacrifice
-performance. The abstraction of queries leads to your code being reliant on SQL vendor.
+The classic approach of record mapping puts low requirements on the database, but as
+result acrifice performance. The abstraction of queries leads to your code being reliant
+on SQL vendor.
 
 Agile Data introduces concepts that can be implemented across multiple database vendors
-regardless of their support for SQL.
+regardless of their support for SQL. Agile Data even works with NoSQL databases like MongoDB.
 
 If you use SQL vendor, the standard operations will be more efficient, but if you operate
 with a very basic database such as MemCache, then you can still simulate basic functionality.
@@ -62,9 +63,9 @@ basic functionality that you would normally need, but there are more awesome thi
 that are built as extensions:
 
  - join support - Map your Business Model to multiple tables
- - aggregate models - Build your Report Models on top of Domain models, forget about custom queries
+ - aggregate models - Build your Report Models on top of Domain models and forget about custom queries
  - more vendors - Add support for more vendors and your existing application code will just work
- - validation - Perform validation on Domain level
+ - validation - Perform data validation on Domain level
 
 Great for UI Frameworks
 =======================
