@@ -39,7 +39,7 @@ Agile Data implements a fresh concepts that separates your Domain from persisten
 cleanly yet manages to solve problems mentioned above.
 
 The concepts implemented by Agile Data framework may require some getting used to
-(especially if you used some traditional ORMs or Active Record implementations).
+(especially if you used some traditional ORMs or Active Record implementations before).
 
 Once you learn the concept behind Agile Data, you'll be able to write "Domain objects"
 of your application with ease through a readable code and without impact on your
@@ -87,7 +87,7 @@ Some of your code will focus on working with Domain object without any concern a
 "persistence". A good example is "Validation". When you Validate your Domain object
 you just need to check field values, you would not even care where data came from.
 
-Most of your code, however, will assume existence of SOME "persistence" but will not
+Most of your code, however, will assume existence of SOME "persistence", but will not
 rely on anything specific. Calculating total amount of your shopping basked price
 is such an operation. Basket items are stored somewhere - array, SQL or NoSQL and
 all you need is to calculate sum(amount). You don't even know how "amount" field
@@ -111,9 +111,9 @@ Domain Logic
 
 When dealing with Domain logic, you work with a single object.
 
-When we start a new aapp, we first decide on the Model structure.
+When we start developing a new application, we first decide on the Model structure.
 Think what models your application will use and how they are related. Do not
-think in terms of "tables" but rather think in terms of "objects" and properties
+think in terms of "tables", but rather think in terms of "objects" and properties
 of those objects. 
 
 All of those model properties are "declared".
@@ -147,10 +147,10 @@ about object inheritance.
 
  - User
    - sendPasswordReminder()
- - Client (extends Person)
+ - Client (extends User)
    - register()
    - checkout()
- - Admin (extends Person)
+ - Admin (extends User)
    - showAuditLog()
  - Order
 
@@ -174,23 +174,17 @@ Domain Model Fields
 Our next step is to define object fields (or properties). Remember that inheritance is at play here so you can take advantage of OOP:
 
  - User
-   - name
-   - is_vip
-   - email
-   - password
-   - password_change_date
+   - name, is_vip, email, password, password_change_date
  - Client
    - phone
  - Admin
    - permission_level
  - Order
-   - description
-   - amount
-   - is_paid
+   - description, amount, is_paid
    
-Those fields are not just mere "properties" but have more some "meta" information behind them and that's why we call them "fields" and not "properties". A typical field contain information about field name, caption, type, validation rules, persistence rules, presentation rules and more. Meta information is optional and it can be used by automated processes (such as presentation or persistence).
+Those fields are not just mere "properties", but have more "meta" information behind them and that's why we call them "fields" and not "properties". A typical field contain information about field name, caption, type, validation rules, persistence rules, presentation rules and more. Meta information is optional and it can be used by automated processes (such as presentation or persistence).
 
-For instance is_paid has a `type('boolean')` which means it will be stored as 1/0 in MySQL but will use true/false in MongoDB. It will be displayed as a checkbox. Those decisions are made by the framework and will simplify your life, however if you want to do things differently, you will still be able to override default behaviour.
+For instance, is_paid has a `type('boolean')` which means it will be stored as 1/0 in MySQL, but will use true/false in MongoDB. It will be displayed as a checkbox. Those decisions are made by the framework and will simplify your life, however if you want to do things differently, you will still be able to override default behaviour.
 
 Code to declare fields::
 
@@ -211,7 +205,7 @@ Code to access field values::
 Domain Model Relationship
 -------------------------
 
-Next - relations. Think how those object relate to each-other. Think in terms of "specific object" and not database relations. Client has many Orders. Order has one Client. 
+Next - relations. Think how those objects relate to each-other. Think in terms of "specific object" and not database relations. Client has many Orders. Order has one Client. 
 
  - User
    - hasMany(Client)
@@ -235,7 +229,7 @@ Code (add inside `init()`)::
         function init() {
             parent::init();
 
-            $this->hasOne('User');
+            $this->hasOne('Client');
 
             // addField declarations
         }
@@ -246,7 +240,7 @@ Code (add inside `init()`)::
 Persistence backed Domain Logic
 ===============================
 
-Once we establish that Model objects are stored somewhere, we can start accessing them.
+Once we establish that Model object and set its persistence layer, we can start accessing it.
 Here is the code::
 
     $order = new Model_Order();
@@ -276,13 +270,12 @@ Finally, some code may rely on specific features of your persistence layer.
 Domain Model Expressions
 ------------------------
 
-A final addition to our Domain Model are expressions. Those are the "formulas" where the value cannot be changed directly but is actually derived from other values.
+A final addition to our Domain Model are expressions. Those are the "formulas" where the value cannot be changed directly, but is actually derived from other values.
 
   - User
     - is_password_expired
   - Client
-    - amount_due
-    - total_order_amount
+    - amount_due, total_order_amount
 
 Here field `is_password_expired` is the type of expression that is based on the field `password_change_date` and system date. In other words the value of this expression will be different depending on parameter outside of your app.
 
@@ -380,7 +373,7 @@ You can iterate over the DataSet::
 You must remember that the code above will only create a single object and
 iterating it will simply make it load different values.
 
-At this point, I'll jump a head a bit and will show you an alternative code::
+At this point, I'll jump ahead a bit and will show you an alternative code::
 
     $sum = 0;
     $sum = $db->add('Model_Order')->sum('amount')->getOne();
@@ -413,7 +406,7 @@ Related DataSets
 
 Next, let's look on the orders of specific user. How would you load orders of a specific user.
 Depending on your past experience you might think about "querying" Order table with condition
-on user_id. We cant do that, because "query", "table" and "user_id" are persistence details
+on user_id. We can't do that, because "query", "table" and "user_id" are persistence details
 and we must keep them outside of business logic. Other ORM solution give you something like this::
 
     $array_of_orders = $user->orders();
@@ -431,7 +424,7 @@ Agile Data implements traversal as a simple operation that converts one DataSet 
     
 The implementation of refSet is pretty powerful - $user_dataset can address 3 users in
 the database and only 2 of those users are VIP. Typical ORM would require you to fetch all
-VIP records and of then and perform queries to find their orders. 
+VIP records and then perform additional queries to find their orders.
 
 Agile Data, however, perform traversal without accessing database at all. After `refSet()`
 is executed, you have a new DataSet with a condition based on user sub-query. The actual
@@ -479,7 +472,7 @@ Finally the code above will work even if you use a simple Array as a data source
       ]]
     ]);
 
-So getting back to the operation above, lets look at it in greater details::
+So getting back to the operation above, lets look at it in more details::
 
     $vip_order_count = $vip_orders->count()->getOne();
 
@@ -488,9 +481,9 @@ into persistence layer. However this method is returning a new object called "Ac
 which is then executed when you call getOne().
 
 Even though for a brief moment you had your hands on a "database-vendor specific" object,
-you have immediately converted Action into an actual value - your code is universal and is not
-persistence-specific. In Agile Data we permit code like that in our Domain Model and we call
-it "Domain Model Action".
+you have immediately converted Action into an actual value. As result your code is universal
+and is not persistence-specific. In Agile Data we permit code like that in our Domain Model
+and we call it "Domain Model Action".
 
 Let me define this properly: Domain Model Action is an operation that can be executed
 in your Domain Model layer which assumes existence of SOME Persistence for your model,
