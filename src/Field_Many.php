@@ -87,7 +87,7 @@ class Field_Many
 
         if (is_object($this->model)) {
             if ($this->model->persistence || !$this->owner->persistence) {
-                return $this->model;
+                return clone $this->model;
             }
             $c = clone $this->model;
             return $this->owner->persistence->add($c, $defaults);
