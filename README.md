@@ -247,15 +247,15 @@ See [www.agiletoolkit.org](http://www.agiletoolkit.org/) for more frameworks and
 Follow pull-request history and activity of repository to see what's going on.
 
 ```
-1.0   First stable. Achieve our test coverage, code quality and documentation standards.
-1.x   Add support for derived models (unions).
+1.1   Add support for derived models (unions).
 1.x   Add support for 3rd party vendor implementations.
 1.x   Add support for MongoDB.
 1.x   Add support and docs for Validators.
 ```
 
 ## Past Updates
-* 15 Jul: Rewrote documentation preparing for our first BETA release
+* 20 Jul: Release of 1.0 with a new QuickStart guide
+* 15 Jul: Rewrote README preparing for our first BETA release
 * 05 Jul: Released 0.5 Expressions, Conditions, Relations
 * 28 Jun: Released 0.4 join support for SQL and Array
 * 24 Jun: Released 0.3 with general improvements
