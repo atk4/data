@@ -1,5 +1,13 @@
-# 1.0 
+# 1.0.0
 
+This is our first stable version release for Agile Data. The class and
+method structure has sufficiently matured and will not be changed much
+anymore. Further 1.0.x versions will be focused on increasing stability
+and bugfixes. Versions 1.x will add more notable features, but will
+if any incompatibilities will occur, they will be mentioned in release
+notes and CHAGELOG.md
+
+* Rewrote QuickStart guide and README.md, so everyone should re-read them
 * added Model::setLimit, setOrder
 * added Model::export([])
 * added Model iterator
