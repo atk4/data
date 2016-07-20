@@ -11,6 +11,10 @@ class Field_Many
     }
     use \atk4\core\InitializerTrait;
 
+    /**
+     * Use this alias for related entity by default
+     */
+    protected $table_alias;
 
     /**
      * What should we pass into owner->ref() to get
@@ -69,10 +73,12 @@ class Field_Many
     protected function getModel($defaults = [])
     {
         if (!isset($defaults['table_alias'])) {
-            $alias = $this->link;
-            $alias = preg_replace('/_id/','',$alias);
-            $alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/','\1',$alias);
-            $defaults['table_alias']=$alias;
+            if (!$this->table_alias) {
+                $this->table_alias = $this->link;
+                $this->table_alias = preg_replace('/_id/','',$this->table_alias);
+                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/','\1',$this->table_alias);
+            }
+            $defaults['table_alias']=$this->table_alias;
         }
 
         if (is_object($this->model) && $this->model instanceof \Closure) {

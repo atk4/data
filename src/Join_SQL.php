@@ -119,7 +119,11 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         );
 
         if ($this->reverse) {
-            $query->field([$this->short_name => ($this->join ?: ($this->owner->table.'.'.$this->master_field))]);
+            $query->field([$this->short_name => ($this->join ?: 
+                (
+                    (isset($this->owner->table_alias)?$this->owner->table_alias : $this->owner->table)
+                    .'.'.$this->master_field)
+            )]);
         } else {
             $query->field([$this->short_name => $this->foreign_alias.'.'.$this->foreign_field]);
         }

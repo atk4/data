@@ -46,10 +46,10 @@ class Model_Item3 extends \atk4\data\Model {
         $this->addField('name');
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', $m)
+        $i2->hasOne('parent_item_id', [$m, 'table_alias'=>'parent'])
             ->addTitle();
 
-        $this->hasMany('Child', [$m, 'their_field'=>'parent_item_id'])
+        $this->hasMany('Child', [$m, 'their_field'=>'parent_item_id', 'table_alias'=>'child'])
             ->addField('child_age',['aggregate'=>'sum', 'field'=>'age']);
     }
 }
@@ -233,6 +233,11 @@ class RandomSQLTests extends SQLTestCase
             ['id'=>'2', 'name'=>'Sue', 'parent_item_id'=>'1', 'parent_item'=>'John', 'age'=>'20', 'child_age'=>24],
             $m->load(2)->get()
         );
+
+        $this->assertEquals(1, $m->load(2)->ref('Child',['table_alias'=>'pp'])->action('count')->getOne());
+        $this->assertEquals('John', $m->load(2)->ref('parent_item_id',['table_alias'=>'pp'])->get('name'));
+
+        var_dump($m->load(2)->ref('parent_item_id',['table_alias'=>'pp'])->action('select'));
 
     }
 }
