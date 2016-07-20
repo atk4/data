@@ -36,6 +36,23 @@ class Model_Item2 extends \atk4\data\Model {
             ->addTitle();
     }
 }
+class Model_Item3 extends \atk4\data\Model {
+    public $table='item';
+    function init() {
+        parent::init();
+
+        $m = new Model_Item3();
+
+        $this->addField('name');
+        $this->addField('age');
+        $i2 = $this->join('item2.item_id');
+        $i2->hasOne('parent_item_id', $m)
+            ->addTitle();
+
+        $this->hasMany('Child', [$m, 'their_field'=>'parent_item_id'])
+            ->addField('child_age',['aggregate'=>'sum', 'field'=>'age']);
+    }
+}
 
 
 
@@ -190,6 +207,33 @@ class RandomSQLTests extends SQLTestCase
         $this->assertEquals(
             ['id'=>'3', 'name'=>'Smith', 'parent_item_id'=>'2', 'parent_item'=>'Sue'],
             $m->load(3)->get()
+        );
+
+    }
+    function testSameTable3()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'item' => [
+                1 => ['id' => 1, 'name' => 'John', 'age'=>18],
+                2 => ['id' => 2, 'name' => 'Sue', 'age'=>20],
+                3 => ['id' => 3, 'name' => 'Smith', 'age'=>24],
+            ], 
+            'item2' => [
+                1 => ['id' => 1, 'item_id' => 1, 'parent_item_id' => '1'],
+                2 => ['id' => 2, 'item_id' => 2, 'parent_item_id' => '1'],
+                3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => '2'],
+            ], 
+        ];
+        $this->setDB($a);
+
+        $m = new Model_Item3($db,'item');
+
+        var_dump($m->action('select')->getDebugQuery());
+
+        $this->assertEquals(
+            ['id'=>'2', 'name'=>'Sue', 'parent_item_id'=>'1', 'parent_item'=>'John', 'age'=>'20', 'child_age'=>24],
+            $m->load(2)->get()
         );
 
     }

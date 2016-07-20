@@ -68,19 +68,32 @@ class Field_Many
 
     protected function getModel($defaults = [])
     {
+        if (!isset($defaults['table_alias'])) {
+            $alias = $this->link;
+            $alias = preg_replace('/_id/','',$alias);
+            $alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/','\1',$alias);
+            $defaults['table_alias']=$alias;
+        }
+
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
 
-            return $c($this->owner, $this, $defaults);
+            $c = $c($this->owner, $this);
+            if (!$c->persistence) {
+                $c = $this->owner->persistence->add($c, $defaults);
+            }
+            return $c;
         }
 
         if (is_object($this->model)) {
-            $m = clone $this->model;
-            if ($defaults) {
-                $m->setDefaults($defaults);
+            if ($this->model->persistence) {
+                throw new Exception([
+                    'When relating to object, it must not be associated with persistence yet.'
+                    // actually - that in the future we will support it.
+                ]);
             }
-
-            return $m;
+            $c = clone $this->model;
+            return $this->owner->persistence->add($c, $defaults);
         }
 
         // last effort - try to add model
@@ -137,6 +150,7 @@ class Field_Many
      */
     public function refLink($defaults = [])
     {
+        var_Dump($this->their_field);
         return $this->getModel($defaults)
             ->addCondition(
                 $this->their_field ?: ($this->owner->table.'_id'),
@@ -160,9 +174,10 @@ class Field_Many
         }
 
         $field = isset($defaults['field']) ? $defaults['field'] : $n;
-        $action = $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
 
-        return $this->owner->addExpression($n, $action);
+        return $this->owner->addExpression($n, function($m) use ($defaults, $field) {
+            return $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
+        });
     }
 
     public function addFields($fields = [])
