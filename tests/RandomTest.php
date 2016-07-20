@@ -17,40 +17,49 @@ class Model_Rate extends \atk4\data\Model
         $this->addField('ask');
     }
 }
-class Model_Item extends \atk4\data\Model {
-    public $table='item';
-    function init() {
+class Model_Item extends \atk4\data\Model
+{
+    public $table = 'item';
+
+    public function init()
+    {
         parent::init();
         $this->addField('name');
         $this->hasOne('parent_item_id', '\atk4\data\tests\Item')
             ->addTitle();
     }
 }
-class Model_Item2 extends \atk4\data\Model {
-    public $table='item';
-    function init() {
+class Model_Item2 extends \atk4\data\Model
+{
+    public $table = 'item';
+
+    public function init()
+    {
         parent::init();
         $this->addField('name');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', new Model_Item2())
+        $i2->hasOne('parent_item_id', new self())
             ->addTitle();
     }
 }
-class Model_Item3 extends \atk4\data\Model {
-    public $table='item';
-    function init() {
+class Model_Item3 extends \atk4\data\Model
+{
+    public $table = 'item';
+
+    public function init()
+    {
         parent::init();
 
-        $m = new Model_Item3();
+        $m = new self();
 
         $this->addField('name');
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', [$m, 'table_alias'=>'parent'])
+        $i2->hasOne('parent_item_id', [$m, 'table_alias' => 'parent'])
             ->addTitle();
 
-        $this->hasMany('Child', [$m, 'their_field'=>'parent_item_id', 'table_alias'=>'child'])
-            ->addField('child_age',['aggregate'=>'sum', 'field'=>'age']);
+        $this->hasMany('Child', [$m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
+            ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
     }
 }
 
@@ -165,7 +174,7 @@ class RandomSQLTests extends SQLTestCase
         );
     }
 
-    function testSameTable()
+    public function testSameTable()
     {
         $db = new Persistence_SQL($this->db->connection);
         $a = [
@@ -176,16 +185,15 @@ class RandomSQLTests extends SQLTestCase
             ], ];
         $this->setDB($a);
 
-        $m = new Model_Item($db,'item');
-            
+        $m = new Model_Item($db, 'item');
+
         $this->assertEquals(
-            ['id'=>'3', 'name'=>'Smith', 'parent_item_id'=>'2', 'parent_item'=>'Sue'],
+            ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
-
     }
 
-    function testSameTable2()
+    public function testSameTable2()
     {
         $db = new Persistence_SQL($this->db->connection);
         $a = [
@@ -193,49 +201,48 @@ class RandomSQLTests extends SQLTestCase
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Sue'],
                 3 => ['id' => 3, 'name' => 'Smith'],
-            ], 
+            ],
             'item2' => [
                 1 => ['id' => 1, 'item_id' => 1, 'parent_item_id' => '1'],
                 2 => ['id' => 2, 'item_id' => 2, 'parent_item_id' => '1'],
                 3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => '2'],
-            ], 
+            ],
         ];
         $this->setDB($a);
 
-        $m = new Model_Item2($db,'item');
-            
+        $m = new Model_Item2($db, 'item');
+
         $this->assertEquals(
-            ['id'=>'3', 'name'=>'Smith', 'parent_item_id'=>'2', 'parent_item'=>'Sue'],
+            ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
-
     }
-    function testSameTable3()
+
+    public function testSameTable3()
     {
         $db = new Persistence_SQL($this->db->connection);
         $a = [
             'item' => [
-                1 => ['id' => 1, 'name' => 'John', 'age'=>18],
-                2 => ['id' => 2, 'name' => 'Sue', 'age'=>20],
-                3 => ['id' => 3, 'name' => 'Smith', 'age'=>24],
-            ], 
+                1 => ['id' => 1, 'name' => 'John', 'age' => 18],
+                2 => ['id' => 2, 'name' => 'Sue', 'age' => 20],
+                3 => ['id' => 3, 'name' => 'Smith', 'age' => 24],
+            ],
             'item2' => [
                 1 => ['id' => 1, 'item_id' => 1, 'parent_item_id' => '1'],
                 2 => ['id' => 2, 'item_id' => 2, 'parent_item_id' => '1'],
                 3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => '2'],
-            ], 
+            ],
         ];
         $this->setDB($a);
 
-        $m = new Model_Item3($db,'item');
+        $m = new Model_Item3($db, 'item');
 
         $this->assertEquals(
-            ['id'=>'2', 'name'=>'Sue', 'parent_item_id'=>'1', 'parent_item'=>'John', 'age'=>'20', 'child_age'=>24],
+            ['id' => '2', 'name' => 'Sue', 'parent_item_id' => '1', 'parent_item' => 'John', 'age' => '20', 'child_age' => 24],
             $m->load(2)->get()
         );
 
-        $this->assertEquals(1, $m->load(2)->ref('Child',['table_alias'=>'pp'])->action('count')->getOne());
-        $this->assertEquals('John', $m->load(2)->ref('parent_item_id',['table_alias'=>'pp'])->get('name'));
+        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->action('count')->getOne());
+        $this->assertEquals('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 }
-
