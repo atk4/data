@@ -2,7 +2,7 @@
 
 **PHP Framework for better Business Logic design and scalable database access.**
 
-Use Agile Data inside your existing PHP application (works with most frameworks) to define and map your business logic into your database schema. Agile Data is designed with fresh ideas to solve efficiency, performance, clarity, testability and cross-database compatibility in medium and large PHP projects.
+Use Agile Data inside your existing PHP application (works with most frameworks) to define and map your business logic into your database schema. Agile Data is designed with fresh ideas how to solve efficiency, performance, clarity, testability and cross-database compatibility in medium and large PHP projects.
 
 Code Quality:
 
@@ -25,13 +25,13 @@ Stats:
 
 ## Goals and Features
 
-Agile Data is a comprehensive framework for use in SaaS and Enterprise PHP, that focuses on solving these major goals:
+Agile Data is a comprehensive framework for use in SaaS and Enterprise PHP projects, that focuses on solving these major goals:
 
 ### 1. Object-oriented Business Logic and Persistence mapping
 
-Face it. Your SQL architecture does fit your business model map. There are many differences mainly focused on performance optimisation, that can complicate loading/saving data into SQL:
+Face it. Your SQL architecture does NOT fit your business model map precisely. There are many differences mainly focused on structure optimisation, that can complicate loading/saving data into SQL:
 
- - single SQL storing multiple business objects (clients and suppliers)
+ - single SQL table storing multiple business objects (clients and suppliers)
  - multiple SQL tables joined for a single business object (company, company_stats)
  - [data normalization](https://en.wikipedia.org/wiki/Database_normalization)
  - [disjoined subtyping](https://en.wikipedia.org/wiki/Subtyping)
@@ -61,26 +61,26 @@ $clients->addCondition('is_vip', true);
 $p = $clients->ref('Order')->ref('Payment');
 ```
 
-In the code snippet above, `$p` will be a model object with containing all payments of all orders placed by VIP clients in scope. Traversal executes no queries but rather relies on sub-query logic.
+In the code snippet above, `$p` will be a model object containing all payments of all orders placed by VIP clients in scope. Traversal executes no queries but rather relies on sub-query logic.
 
 ### 4. Database Vendor Abstraction and Multi-record Actions
 
-NoSQL databases are rapidly adding options to peform multi-record operations and aggregation. Agile Data introduces unified interface that can be used across all supporting persistence drivers. Consider this as continuation of the example above:
+NoSQL databases are rapidly adding options to peform multi-record operations and aggregation. Agile Data basic operations, such as record manipulation, already works with NoSQL transparently. In addition to that, Actions introduce a unified interface that can be used across all supporting persistence drivers. Consider this as continuation of the example above:
 
 ``` php
+// get count of all payments (see previous example for scope)
 $cnt = $p->action('count')->getOne();
 
+// delete all notifications for these payments
 $n = new my\Model_Notification($db);
 $n->addCondition('payment_id', $p->action('field', ['id']));
 
 $n->action('delete')->execute();
 ```
 
-Actions provide a unified interface for performing aggregation, using expressions inside other model conditions or performing multi-record operations such as deletion. Actions always respect boundaries of defined DataSet.
+When Action is executed or embedded, framework makes decision on how to best execute the strategy by using server-side capabilities of the database. If database is not capable of sub-select or multi-row operations, then it is still possible for Agile Data to simulate the action inside PHP.
 
-For databases that do not support capabilities, it's possible to provide an in-PHP implementation for multi-record operations.
-
-Finally, your Business Logic will work with a supplied database transparently. You don't have to switch all of the databases at once, but you can move individual business entities between databases, cache or session:
+The same business Model definition can work with multiple database types, making it easy to store your data in caches, session, files or access it through API. The next example shows example of database-agnostic code that will work with either MySQL or MongoDB:
 
 ``` php
 $m = new my\Model_User($mysql_db);
@@ -93,9 +93,12 @@ if ($m->verifyPassword($pass)) {
 }
 ```
 
+*Note: Support for MongoDB as of 1.0 is quite limited.*
+
 ### 5. Reducing number of queries
 
-When using API of your own business logic, Agile Data gives you the ability to perform more operations, such as joins, expressions and more designed to reduce the number of queries and make them more efficient. My next example will create export of Clients along with their "account balance" that will be calculated within just a single query:
+Business Logic designed with Agile Data can natively perform complex data operations such as joins, sub-selects, expressions which skilled developer can use to reduce total number of SQL queries per application request.
+My next example will create export of Clients along with their "account balance" that will be calculated by just a single query:
 
 ``` php
 $c = new my\Model_Client($db);
@@ -105,6 +108,10 @@ $c->getRef('Payment')->addField('payments', ['aggregate'=>'sum', 'field'=>'paid'
 $c->addExpression('balance', '[purchases]-[payments]');
 
 echo json_encode($c->export(['name','balance']));
+
+// purchases = sum(order.total) for specific client
+// payments = sum(payment.paid) for specific client
+// balance = sum(order.total) - sum(payment.paid)
 ```
 
 ### 6. Manipulating Records
@@ -121,20 +128,20 @@ $p->save();
 There are two significant advantages specifically designed to reduce data transfer footprint and improve security:
 
  - you will only be able to load records from DataSet
- - with onlyFields() you can specify which model fields you are looking to load
+ - with onlyFields() you can specify which model fields you are going to load
 
 ### 7. Business Model Aggregation
 
 Most database mappers are good for accessing and modifying data only, however, Agile Data allows you to build aggregates from your business model. Regardless of how many tables you have joined, you can use one model as a source for another model thus embedding (or unioning) query source.
 
-*Note: This feature is not available yet, but is planned for 1.1.0 release.*
+*Note: This feature is planned for 1.1 release.*
 
 
 ### 8. Extensions and Customisation
 
-Agile Data is a great framework but it can be further extended:
+Agile Data already is a great framework, but it can be further extended:
 
- - Add new database support, including NoSQL and custom RestAPI.
+ - Add new database driver support, including NoSQL and custom RestAPI
  - Add new field types
  - Add new relation types, including cross-database relations
  - Validation engines
@@ -142,7 +149,17 @@ Agile Data is a great framework but it can be further extended:
 
 See section below to learn more about commercial services and support options.
  
-## Installing and Testing
+
+### Full documentation for Agile Data
+
+[agile-data.readthedocs.io](http://agile-data.readthedocs.io).
+
+### Getting Started Guides
+
+ * [Follow the Quick Start guides](http://agile-data.readthedocs.io/en/develop/quickstart.html)
+ * [Watch short introduction video on Youtube](https://youtu.be/ZekgUxdPWwc)
+
+## Installing into existing project
 
 Update your `composer.json` with 'require' and 'autoload' sections:
 
@@ -205,18 +222,9 @@ Now you can explore. Try typing:
 ```
 Full documentation is available at [agile-core.readthedocs.io](http://agile-core.readthedocs.io/)
 
-### Full documentation for Agile Data
-
-[agile-data.readthedocs.io](http://agile-data.readthedocs.io).
-
-### Getting Started Guides
-
- * [Watch the quick video on Youtube](https://youtu.be/ZekgUxdPWwc)
-
-
 ## Agile Toolkit
 
-Agile Core is part of [Agile Toolkit - PHP UI Framework](http://agiletoolkit.org). If you like
+Agile Data is part of [Agile Toolkit - PHP UI Framework](http://agiletoolkit.org). If you like
 this project, you should also look into:
 
  - [DSQL](https://github.com/atk4/dsql) - [![GitHub release](https://img.shields.io/github/release/atk4/dsql.svg?maxAge=2592000)]()
@@ -239,15 +247,15 @@ See [www.agiletoolkit.org](http://www.agiletoolkit.org/) for more frameworks and
 Follow pull-request history and activity of repository to see what's going on.
 
 ```
-1.0   First stable. Achieve our test coverage, code quality and documentation standards.
-1.x   Add support for derived models (unions).
+1.1   Add support for derived models (unions).
 1.x   Add support for 3rd party vendor implementations.
 1.x   Add support for MongoDB.
 1.x   Add support and docs for Validators.
 ```
 
 ## Past Updates
-* 15 Jul: Rewrote documentation preparing for our first BETA release
+* 20 Jul: Release of 1.0 with a new QuickStart guide
+* 15 Jul: Rewrote README preparing for our first BETA release
 * 05 Jul: Released 0.5 Expressions, Conditions, Relations
 * 28 Jun: Released 0.4 join support for SQL and Array
 * 24 Jun: Released 0.3 with general improvements

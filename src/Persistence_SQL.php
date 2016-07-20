@@ -58,14 +58,13 @@ class Persistence_SQL extends Persistence
 
 
 
+
         if (!isset($m->table) || (!is_string($m->table) && $m->table !== false)) {
             throw new Exception([
                 'Property $table must be specified for a model',
                 'model' => $m,
             ]);
         }
-
-        $m->addMethod('expr', $this);
 
         // When we work without table, we can't have any IDs
         if ($m->table === false) {
@@ -74,6 +73,11 @@ class Persistence_SQL extends Persistence
         }
 
         return $m;
+    }
+
+    protected function initPersistence(Model $m)
+    {
+        $m->addMethod('expr', $this);
     }
 
     public function expr($m, $expr, $args = [])
@@ -229,6 +233,7 @@ class Persistence_SQL extends Persistence
             case 'delete':
                 $q->mode('delete');
                 $this->initQueryConditions($m, $q);
+                $m->hook('initSelectQuery', [$q, $type]);
 
                 return $q;
 
@@ -430,7 +435,6 @@ class Persistence_SQL extends Persistence
             $insert->set($f->actual ?: $f->short_name, $value);
         }
 
-
         try {
             $m->hook('beforeInsertQuery', [$insert]);
             $insert->execute();
@@ -487,7 +491,16 @@ class Persistence_SQL extends Persistence
 
         $m->hook('beforeUpdateQuery', [$update]);
 
-        $update->execute();
+        try {
+            $update->execute();
+        } catch (\Exception $e) {
+            throw new Exception([
+                'Unable to update due to query error',
+                'query'      => $update->getDebugQuery(false),
+                'model'      => $m,
+                'conditions' => $m->conditions,
+            ], null, $e);
+        }
     }
 
     public function delete(Model $m, $id)

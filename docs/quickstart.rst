@@ -4,429 +4,634 @@
 Quickstart
 ==========
 
-Before starting the code with Agile Data, I need to introduce a few important
-concepts:
+Agile Data Framework is built around some unique concepts. Your knowledge
+of other ORM, ActiveRecord and QueryBuilder tools could be helpful, but
+you should carefully go through the basics if you want to know how to use
+Agile Data efficiently.
+
+Documentation for Agile Data is organised into chapters where each chapter
+is dedicated to provide full documentation on all functionality of Agile
+Data.
+
+In this chapter, I'll only introduce you to the basics. You can use the rest
+of the documentation as a reference.
+
+.. warning:: If any examples in this guide do not work as expected, this is
+    most probably a bug. Please report it so that our team could look into it.
+
+Requirements
+============
+
+If you wish to try out some examples in this guide, you will need the following:
+
+- PHP 5.5 or above.
+- MySQL or MariaDB
+- Install `Agile Data Primer <https://github.com/atk4/data-primer/>`_
+
+.. code-block:: bash
+
+    git clone https://github.com/atk4/data-primer.git
+    cd data-primer
+    composer update
+    cp config-example.php config.php
+
+    # EDIT FILE CONFIG.PHP
+    vim config.hpp
+
+    php console.php
+
+Console is using `Psysh <http://psysh.org>`_ to help you interact with objects like this::
+
+    > $db
+    => atk4\data\Persistence_SQL {...}
+
+    > exit
+
+.. note:: I recommend that you enter statements into console one-by-one and
+    carefully observe results. You should also experiment where possible,
+    try different conditions or no conditions at all.
+
+    You can always create new model object if you mess up. If you change any
+    of the classes, you'll have to restart console.
+
+    There seem to be a bug inside Psysh where it looses MySQL connection,
+    in this case restart the console.
 
 
-Basic Concepts
+Core Concepts
 ==============
 
-Business Model (see :ref:`Busines Model`)
-    A class you create (extended from :php:class:`Model`) that represents
-    a business entity for your application. Instance of a business model
-    class has three characteristic: DataSet, Active Record and Source
+Business Model (see :ref:`Model`)
+    You define business logic inside your own classes that extend :php:class:`Model`.
+    Each class you create represent one business entity. 
 
-Source (see :ref:`Source`)
-    Object representing a database connection. Linking your business model
-    to a source allows it to load/save (persist) and also to define DataSet
+    Model has 3 major characteristic: Business Logic definition, DataSet mapping
+    and Active Record.
+
+    See: :php:class:`Model`
+
+Persistence (see :ref:`Persistence`)
+    Object representing a connection to database. Linking your Business Model
+    to a persistence allows you to load/save individual records as well as
+    execute multi-record operations (Actions)
 
 DataSet (see :ref:`DataSet`)
-    Logical set of entities defined through conditions (scope) that your
-    Business Model object can access inside the Source. 
+    A set of physical records stored on your database server that correspond
+    to the Business Model.
 
 Active Record (see :ref:`Active Record`)
     Model can load individual record from DataSet, work with it and save
-    it back into DataSet. While the record is loaded, we cal it an Active
+    it back into DataSet. While the record is loaded, we call it an Active
     Record.
 
 Action (see :ref:`Action`)
-    Operation that Model performs on all of DataSet (such as delete all
-    records). Action can be implemented through a single query or multiple
-    atomic operations (if database does not support multi-record queries)
+    Operation that Model performs on all of DataSet records without loading
+    them individually. Actions have 3 main purposes: data aggregation,
+    referencing and multi-record operations.
+
+Persistence Domain vs Business Domain
+-------------------------------------
+
+.. image:: images/bd-vs-pd.png
+
+It is very important to understand that there are two "domains" when it comes
+to your data. If you have used ORM, ActiveRecord or QueryBuilders, you will be
+thinking in terms of "Persistence Domain". That means that you think in terms
+of "tables", "fields", "foreign keys" and "group by" operations.
+
+In larger application developers does not necesserily have to know the
+details of your database structure. In fact - structure can often change and
+code that depend on specific field names or types can break. 
+
+More importantly, if you decide to store some data in different database either
+for caching (memcache), unique features (full-text search) or to handle large
+amounts of data (BigData) you suddenly have to carefully consider that in
+your application.
+
+Business Domain is a layer that is designed to hide all the logic of data
+storage and focus on representing your business model in great detail. In other
+words - Business Logic is an API you and the rest of your developer team
+can use without concerning about data storage.
+
+Agile Data has a rich set of features to define how Business Domain maps
+into Persistance Domain. It also allows you to perform most actions with
+only knowledge of Business Domain, keeping the rest of your application
+independent from your database choice, structure or patterns.
+
+Class vs In-Line definition
+---------------------------
+Business model entity in Agile Data is represented through PHP object.
+While it is advisable to create each entity in its own class, you do not have
+to do so. 
+
+It might be handy to use in-line definition of a model. Try the following
+inside console::
+
+    $m = new \atk4\data\Model($db, 'contact_info');
+    $m->addFields(['address_1','address_2']);
+    $m->addCondition('address_1', 'not', null);
+    $m->loadAny();
+    $m->get();
+    $m->action('count')->getOne();
+
+Next, exit and create file `src/Model_ContactInfo.php`::
+
+    <?php
+    class Model_ContactInfo extends \atk4\data\Model
+    {
+        public $table = 'contact_info';
+        function init() 
+        {
+            parent::init();
+
+            $this->addFields(['address_1','address_2']);
+            $this->addCondition('address_1','not', null);
+        }
+    }
+
+Save, exit and run console again. You can now type this::
+
+    $m = new Model_ContactInfo($db);
+    $m->loadAny();
+    $m->get();
+
+.. note:: Should the "addCondition" be located inside model definition or
+    inside your inline code? To answer this question - think - would
+    Model_ContactInfo have application without the condition? If yes
+    then either use addCondition in-line or create 2 classes.
+
+Model State
+-----------
+
+When you create a new model object, you can change its state to perform
+various operations on your data. The state can be broken down into the
+following categories:
+
+Persistence
+^^^^^^^^^^^
+
+When you first create model using `new Model` it will just exist as an
+independent container. By passing `$db` as a parameter you are also
+associating your model with that specific persistence. 
+
+Once model is associated with one persistence, you cannot re-associate it.
+Method :php:meth:`Model::init()` will be executed only after persistence is
+known, so that method may make some decisions based on chosen persistence.
+If you need to store model inside a different persistence, this is achieved
+by creating another instance of the same class and copying data over.
+You must however remember that any fields that you have added in-line will
+not be recreated.
+
+
+DataSet (Conditions)
+^^^^^^^^^^^^^^^^^^^^
+
+Model object may have one or several conditions applied. Conditions will
+limit which records model can load (make active) and save. Once the condition
+is added, it cannot be removed for safety reasons.
+
+Suppose you have a method that converts DataSet into JSON. Ability to add
+conditions is your way to specify which records to operate on::
+
+    function myexport(\atk4\data\Model $m, $fields)
+    {
+        return json_encode($m->export($fields));
+    }
+    
+    $m = new Model_User($db);
+    $m->addCondition('country_id', '2');
+
+    myexport($m, ['id','username','country_id']);
+
+If you want to temporarily add conditions, then you can either clone the
+model or use :php:meth:`Model::tryLoadBy`.
+
+Active Record
+^^^^^^^^^^^^^
+
+Active Record is a third essential piece of information that your model
+stores. You can load / unload records like this::
+
+    $m = new Model_User($db);
+    $m->loadAny();
+
+    $m->get();     // inside console, this will show you what's inside your model
+
+    $m['email'] = 'test@example.com';
+    $m->save();
+
+You can call `$m->loaded()` to see if there is active record and `$m->id`
+will store the ID of active record. You can also un-load the record with
+`$m->unload()`. 
+
+By default no records are loaded and if you modify some field and attempt
+to save unloaded model, it will create a new record.
+
+Model may use some default values in order to make sure that your record
+will be saved inside DataSet::
+
+    $m = new Model_User($db);
+    $m->addCondition('country_id', 2);
+    $m['username'] = 'peter';
+    $m->save();
+
+    $m->get(); // will show country_id as 2
+    $m['country_id'] = 3;
+    $m->save();  // will generate exception because model you try to save doesn't match conditions set
+
+
+Other Parameters
+^^^^^^^^^^^^^^^^
+
+Apart from the main 3 pieces of "state" your Model holds there can also be
+some other paramaters such as:
+
+ - order
+ - limit
+ - only_fields
+
+You can also define your own parameters like this::
+
+    $m = new Model_User($db, ['audit'=>false]);
+
+    $m->audit
+
+This can be used internally for all sorts of decisions for model behaviour.
 
 
 Getting Started
 ===============
 
-When planning your application, your "Business Model" design comes first.
-Try not to think about tables, collections, joins but instead think in
-terms of "Business" logic only.
+It's time to create the first Model. Open `src/Model_User.php` which
+should look like this::
 
-Create a simple class like this::
-
-    use atk4\data\Model;
-
-    class Model_User extends Model {
+    class Model_User extends \atk4\data\Model
+    {
         public $table = 'user';
 
-        function init()
-        {
+        function init() {
             parent::init();
 
-            $this->addField('name');
+            $this->addField('username');
             $this->addField('email');
-            $this->addField('is_email_confirmed')->type('boolean');
-            $this->addField('type')->enum(['client','admin']);
+
+            $j = $this->join('contact_info', 'contact_info_id');
+            $j->addField('address_1');
+            $j->addField('address_2');
+            $j->addField('address_3');
+            $j->hasOne('country_id', 'Country');
+
         }
     }
 
-In this example I have added few regular :ref:`Field` and defined
-:ref:`Meta-data` for them.
+Extend either the base Model class or one of your existing classes
+(like Model_Client). Define $table property unless it is already defined by
+parent class. All the properties defined inside your model class are
+considered "default" you can re-define them when you create model
+instances::
 
-As a second step, we should set up Data :ref:`Source`. You would
-typically do that inside your application class::
+    $m = new Model_User($db, 'user2'); // will use a different table
 
-    use atk4\data;
+    $m = new Model_User($db, ['table'=>'user2']); // same
 
-    $app->db = new data\Connection\PDO\MySQL(['pdo' => $pdo]); 
-
-Your presentation logic (page) can now associate Business Model with
-Source::
-
-    $data_set = new Model_User($app->db);
-
-Now you can perform operations on a full data-set::
-
-    $data_set->action('update')
-        ->set('is_email_confirmed', false)
-        ->execute();
-
-Or you can set Active Record and perform operations on it directly::
-
-    $data_set->load(1);
-    $data_set['name'] = 'John';
-    $data_set->save();
-
-Those are the basic examples of the fundamental concepts.
-
-Add More Business Objects
-=========================
-
-Your application normally uses multiple business entities, so I am going
-to define them now. I will use inheritance to define Client class::
-
-    class Model_Client extends Model_User {
-        function init()
-        {
-            parent::init();
-
-            $this->hasMany('Order');
-
-            $this->addCondition('type', 'client');
-        }
-    }
-
-    class Model_Order extends Model {
-        public $table = 'order';
-
-        function init()
-        {
-            parent::init();
-
-            $this->hasOne('Client');
-            $this->addField('description')->type('text');
-            $this->addField('price')->type('money');
-        }
-    }
-
-Now our business logic consists of 3 entity types. Note that "Client" model extends "User"
-model and also re-uses same table. To distinguish "Client" from "Admin" we define scope by
-adding condition "type=client".
-
-The relation is defined between Client and Order. As per our design, Admin may not have
-Orders and Order cannot belong to Admin.
-
-Scope of Business Model
-=======================
-
-Your Business Model is associated with DataSet. When you create a client model, you will
-now operate on a sub-set of a User DataSet::
-
-    $client = new Model_Client($app->db);
-
-Lets create a few clients::
-
-    $client
-        ->set(['name'=>'John', 'email'=>'john@google.com'])
-        ->saveAndUnload();
-
-    $client
-        ->set(['name'=>'Peter', 'email'=>'peter@google.com'])
-        ->saveAndUnload();
-
-This adds records by setting the values of the Active Record then saving it into the
-database. After save is completed Active Record will be un-loaded so the next set()
-will initialize new record.
-
-The database mapper will also automatically set type of those records in the database
-to "client" because that's a condition which must be met by all members of Client DataSet.
-
-Loading and Saving Active Record
-================================
-
-There are various ways how you can load the record::
-
-    $client->load(1);                 // by ID
-    $client->loadBy('name', 'John');  // by field
-    $client->loadAny();               // first matching record
-
-When Active Record is loaded, you can work with it's fields::
-
-    if ($client->loaded()) {
-        $client['is_email_confirmed'] = false;
-        $client->save();
-    }
-
-You can also use "tryLoad" methods. Those will silently fail if record is not found::
-
-    // Tighten our scope
-    $client->addCondition('name', 'John');
-    $client->tryLoadAny();
-
-    $client['email'] = 'john@google.com';
-    $client->save();
-
-This code will insert a new record with name=John and email=john@google.com unless
-it already exist, in which case only email will be updated.
-
-Using addCondition() outside of the init() method is permitted and it will tighten
-scope of your model even further. 
-
-For further information read :ref:`Active Record`
-
-Traversing Relations
-====================
-
-Business Model relates to other models in various ways. Traversing this relation will
-return another Business Model with tightened scope::
-
-    $client = new Model_Client($app->db);
-    $client->load(1);
-    $orders = $client->ref('Order');
-
-    // similar to
-
-    $orders = new Model_Order($app->db);
-    $orders->addCondition('user_id', 1);
+.. note:: If you're trying those lines, you will also have to
+    create this new table inside your MySQL database::
     
-Although the code above is similar, there are two differences. First code will actually
-retrieve the client from the database. If the client cannot be found load() will
-throw exception. Additionally if type of user_id=1 is "admin" exception will be thrown.
+        create table user2 as select * from user:
 
-The second section will not perform any queries, but potentially this can cause some
-business logic issues (for example if you attempt to add new $order next).
+As I mentioned - :php:meth:`Model::init` is called when model is associated
+with persistence. You could create model and associate it with persistence
+later::
 
-There is a way how to address this correctly::
+    $m = new Model_User();
 
-    $client = new Model_Client($app->db);
-    $client->withID(1);
-    $orders = $client->refSet('Order');
+    $db->add($m); // calls $m->init()
 
-This type of traversal is different, becasue it traverses DataSet into DataSet. Perhaps
-a more interesting example would be::
+You cannot add conditions just yet, although you can pass in some
+of the defaults::
 
-    $clients = new Model_Client($app->db);
-    $clients->addCondition('is_email_confirmed', false);
-    $orders = $clients->refSet('Order');
+    $m = new Model_User(['table'=>'user2']);
 
-This gives you a sub-set of orders that contains all the records by the users who 
-are clients and have not confirmed their email yet.
+    $db->add($m); // will use table user2
 
-For further information read :ref:`Traversal`
+Adding Fields
+-------------
 
-DataSet Basic and Vendor-specific Actions
-=========================================
+Methods :php:meth:`Model::addField()` and :php:meth:`Model::addFields()` can
+declare model fields. You need to declare them before you are able to use.
+You might think that some SQL reverse-engineering could be good at this point,
+but this would mimic your business logic after your presentation logic, while
+the whole point of Agile Data is to separate them, so you should, at least
+initially, avoid using generators.
 
-There are various actions you can easily perform on the DataSet. In the previous
-examples we used Client DataSet to perform multi-row update setting "is_email_confirmed"
-to false, but there are many different actions you can perform. There are actions
-that retrieve data and some that change data:
+In practice, :php:meth:`Model::addField()` creates a new 'Field' object and then
+links it up to your model. This object is used to store some information about
+your field, but it also participates in some field-related acitivity.
 
-* Read / Query (sum, count, average, get, etc)
-* Update, Delete, etc
+Table Joins
+-----------
 
-Model does not handle actions on it's own, but the logic of building actions reside
-in `$db` data source class. All the candidates for Data Source agree on standard
-set of "actions" that is possible to implement in the database query language or
-simulate in PHP:
+Similarly, :php:meth:`Model::join()` creates a Join object and stores it in
+$j. The Join object defines a relationship between the master
+:php:attr:`Model::table` and some other table inside persistence domain. It
+makes sure relationship is maintained when objects are saved / loaded::
 
-* Standard Actions
-  * sum, count, min, max, avg
-  * update
-    * set(value|action), incr(amount|action)
-  * insert
-    * set([ id=>[], id=>[] ]
-  * delete
+    $j = $this->join('contact_info', 'contact_info_id');
+    $j->addField('address_1');
+    $j->addField('address_2');
 
-For a full list: :ref:`Standard Actions`
+That means that your business model will contain 'address_1' and 'address_2'
+fields, but when it comes to storing those values, they will be sent
+into a different database table and the records will be automatically linked.
 
-Other actions can be made available but your busines code gets a chance to
-confirm support of a specific feature::
+Lets once again load up the console for some excercises::
 
-    $client = new Model_Client($app->db);
+    $m = new Model_User($db);
 
-    if ($client->supports('sql')) {
+    $m->loadBy('username','john');
+    $m->get();
 
-        $act = $client->action();
-        $act->set('is_vip', $act->expr(
-            'IF ({} like "%john%", 1, 0)', 
-            [$client->getElement('name')]
-        )->execute();
+At this point you'll see that address has also been loaded for the user.
+Agile Data makes management of related records transparent. In fact
+you can introduce additional joins depending on class. See classes
+Model_Invoice and Model_Payment that join table `document` with either
+`payment` or `invoice`.
 
-    } else {
+As you load or save models you should see actual queries in the console,
+that should give you some idea what kind of information is sent to the
+database.
 
-        foreach ($client as $row) {
-            $row['is_vip'] = preg_match('/john/i',$row['name']);
-            $row->save();
-        }
-    }
+Adding Fields, Joins, Expressions and Relations creates more objects
+and 'adds' them into Model (to better understand how Model can behave
+like a container for these objects, see `documentation on Agile Core
+Containers <http://agile-core.readthedocs.io/en/develop/container.html>`_).
+This architecture of
+Agile Data allows database persistence to implement different logic that
+will properly manipulate features of that specific database engine.
 
-If you never plan to support NoSQL in your application, then you can simply declare::
 
-    $client->require('sql');
+Understanding Persistence
+-------------------------
 
-And this will produce exception demanding model to be used only with SQL Data Source.
+To make things simple, console has already created persistence 
+inside variable `$db`. Load up `console.php` in your editor to look
+at how persistence is set up::
 
-Gradually more features may be standartised and all of the database drivers will
-have to either provide native support or emulate the support::
+    $app->db = new \atk4\data\Persistence::connect($dsn, $user, pass);
 
-    $client = new Model_Client($app->db);
+    // or
 
-    if ($client->supports('sql')) {
+    $app->db = new \atk4\data\Persistence_SQL($pdo, $user, $pass); 
 
-        $act = $client->action();
-        $act->set('is_vip', $act->expr(
-            'IF ({} like "%john%", 1, 0)', 
-            [$client->getElement('name')]
-        )->execute();
+There are several Persistence classes that deal with different
+data sources. Lets load up our console and try out a different
+persistence::
 
-    } elseif ($client->supports('match')) {
+    $a=['user'=>[],'contact_info'=>[]];
+    $ar = new \atk4\data\Persistence_Array($a);
+    $m = new Model_User($ar);
+    $m['username']='test';
+    $m['address_1']='street'
 
-        $johns = clone $client;
-        $johns->action('update')
-            ->match('name', 'john')
-            ->set('is_vip', true)
-            ->execute();
+    $m->save();
 
-        $others = clone $client;
-        $others->action('update')
-            ->noMatch('name', 'john')
-            ->set('is_vip', true)
-            ->execute();
+    var_dump($a); // shows you stored data
 
-    } else {
+This time our Model_User logic has worked pretty well with Array-only
+peristence logic.
 
-        foreach ($client as $row) {
-            $row['is_vip'] = preg_match('/john/i',$row['name']);
-            $row->save();
-        }
-    }
+.. note:: Persisting into Array or MongoDB are not fully functional as of 1.0
+    version. We plan to expand this functionality soon, see our development
+    `roadmap <https://github.com/atk4/data#roadmap>`_.
 
 
+Relations between Models
+========================
 
+Your application normally uses multiple business entities and they can be related
+to each-other.
 
-Refactoring Database and Expressions
-====================================
+.. warning:: Do not mix-up business model relations with database relations (foreign
+    keys). 
 
-So far our database has been rather trivial. We had "user" table and "order" table.
-Now it is time to change our database structure by adding "order_item" table.
-We need to move "price" field from "order" into "order_item".
+Relations are defined by calling :php:meth:`Model::hasOne()` or
+:php:meth:`Model::hasMany()`. You always specify destination model and you can
+optionally specify which fields are used for conditioning.
 
-However, our application already relies on $order['price'] too much and we
-do not wish to refactor application now.
+One to Many
+-----------
 
-We can take advantage of the fact that $order['price'] can be expressed
-through standard Action (sum) and rewrite our business logic like this::
+Launch up console again and let's create relationship between 'User' and 'System'.
+As per our database design - one user can have multiple 'system' records::
 
-    class Model_Order extends Model {
-        public $table = 'order';
+    $m = new Model_User($db);
+    $m->hasMany('System');
 
-        function init()
-        {
-            parent::init();
+Next you can load a specific user and traverse into System model::
 
-            $this->hasOne('Client');
-            $this->addField('description')->type('text');
+    $m->loadBy('username', 'john');
+    $s = $m->ref('System');
 
-            $this->hasMany('OrderLine');
+Unlike most ORM and ActiveRecord implementations today - instead of returning
+array of objects, :php:meth:`Model::ref()` actually returns another Model to
+you, however it will add one extra Condition. This type of reference traversal
+is called "Active Record to DataSet" or One to Many.
 
-            $this->addExpression('price')->type('money')
-                ->set($this->ref('OrderLine')->sum('price'));
-        }
-    }
+Your Active Record was user john and after traversal you get a model with DataSet corresponding
+to all Systems that belong to user john. You can use the following to see number of records
+in DataSet or export DataSet::
 
-    class Model_OrderLine extends Model {
-        public $table = 'order_line';
+    $s->loaded();
+    $s->action('count')->getOne();
+    $s->export();
+    $s->action('count')->getDebugQuery();
 
-        function init()
-        {
-            parent::init();
+Many to Many
+------------
 
-            $this->hasOne('Order');
-            $this->addField('item');
-            $this->addField('price');
-        }
-    }
+Agile Data also supports another type of traversal - 'DataSet to DataSet' or Many to Many::
 
-Now, desptie the fact that the physical "price" is gone from the "order",
-the following code will still work correctly::
+    $c = $m->ref('System')->ref('Client');
 
-    foreach($client->ref('Order') as $order) {
-        echo "Order: {$order['description']} for the price of {$order['price']}\n";
-    }
+This will create a Model_Client instance with a DataSet corresponding to all the Clients that
+are contained in all of the Systems that belong to user john. You can examine the this
+model further::
 
-The implementation will use sub-query support if database supports it to fetch
-the price on all the items. Alternatively, the action will be executed when
-field is actually accessed providing you with consistent code.
+    $c->loaded();
+    $c->action('count')->getOne();
+    $c->export();
+    $c->action('count')->getDebugQuery();
 
-Read more about :ref:`Expressions`
+By looking at the code - both MtM and OtM relations are defined with 'hasMany'. The only
+difference is the loaded() state of the source model.
 
-SQL-specific Features 
-=====================
+Calling ref()->ref() is also called Deep Traversal.
 
-So far the code has been vendor-agnostic and would work with any standard Data Source.
-If you are only interested in SQL DataSources you can do a lot of interesting things
-in your code:
+One to One
+----------
 
-Use DSQL
---------
+The third and final reference traversal type is "Active Record to Active Record"::
 
-`DSQL <http://github.com/atk4/dsql>`_ is a Query Bulider library used by SQL drivers. It is very powerful and can
-perform any query. By calling :php:meth:`Model::action` of SQL database you get back an instance
-of DSQL Query class and can perform a lot of interesting things with it::
+    $cc = $m->ref('country_id');
 
-    $client->requires('sql');
-    $dsql = $client->action();
+This results in an instance of Model_Country with Active Record set to the country of
+user john::
 
-    $dsql->where('name', 'like', '%john%');               // name = surname
-    $dsql->group('is_vip');                               // group results
+    $cc->loaded();
+    $cc->id;
+    $cc->get();
 
-    $data = $dsql->get();
+Implementation of Relations
+---------------------------
 
-`DSQL Documentation <http://dsql.readthedocs.io/en/develop/>`_ will give you further information.
+When relation is added using getOne or getMany, the new object is created and added
+into Model of class Field_Many or Field_One (or Field_SQL_One). The object itself
+is quite simple and you can fetch it form the model if you keep the return value
+of hasOne() / hasMany() or call getRef() with the same identifier later on.
 
-Advanced examples
------------------
+Calling ref() will proxy into the ref() method of relation object which will
+in turn figure out what to do. 
 
-Fields of a model automatically can become parts of the query. This is true for regular
-fields and expressions. Same can be said for actions::
+Additionally you can call addField() on the reference model that will bring
+one or several fields from related model into your current model.
 
-    $client->requires('sql');
-    $dsql = $client->action();
+Finally this reference object contains method getModel() which will produce
+a (possibly) fresh copy of related entity and will either adjust it's
+DataSet or set the active record.
 
-    $dsql->where('name', $client->getField('surname'));   // name = surname
+Actions
+=======
 
-    $paid_orders = $client->ref('Order')->addCondition('is_paid', true)->sum();
-    $due_orders = $client->ref('Order')->addCondition('is_paid', false)->sum();
+Since NoSQL databases will always have some specific features, Agile Data uses the
+concept of 'action' to map into vendor-specific operations.
 
-    $dsql->where($dsql->expr('[] > [] * 2', [$paid_orders, $due_orders]));
+Aggregation actions
+-------------------
 
-    $data = $dsql->get();
+SQL implements methods such as sum(), count() or max() that can offer you some basic
+aggregation without grouping. This type of aggregation provides some specific value from
+a data-set. SQL persistence implements some of the operations::
 
-You can also use addCondition() too::
+    $m = new Model_Invoice($db);
+    $m->action('count')->getOne();
+    $m->action('fx', ['sum', 'total'])->getOne();
+    $m->action('fx', ['max', 'shipping'])->getOne();
 
-    $client->requires('sql');
+Aggregation actions can be used in Expressions with hasMany relations and they can
+be brought into the original model as fields::
 
-    $client->addCondition('name', $client->getField('surname'));   // name = surname
+    $m = new Model_Client($db);
+    $m->getRef('Invoice')->addField('max_delivery', ['aggregate'=>'max', 'field'=>'shipping']);
+    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
+    $m->export(['name','max_delivery','total_paid']);
 
-    $paid_orders = $client->ref('Order')->addCondition('is_paid', true)->sum();
-    $due_orders = $client->ref('Order')->addCondition('is_paid', false)->sum();
+The above code is more consise and can be used together with relation declaration, although
+this is how it works::
 
-    $client->addCondition($dsql->expr('[] > [] * 2', [$paid_orders, $due_orders]));
+    $m = new Model_Client($db);
+    $m->addExpression('max_delivery', $m->refLink('Invoice')->action('fx', ['max', 'shipping']));
+    $m->addExpression('total_paid', $m->refLink('Payment')->action('fx', ['sum', 'amount']));
+    $m->export(['name','max_delivery','total_paid']);
 
-Actually addCondition is quite smilar to dsql->where(), but if name of the first
-argument ('name' in example above) is actually an expression, addCondition will
-handle that correctly, while where() will have no knowledge of model fields and
-will add condition as-is.
+In this example calling refLink is similar to traversing reference but instead of calculating
+DataSet based on Active Record or DataSet it references the actual field, making it ideal for
+placing into sub-query which SQL action is using. So when calling like above, action() will
+produce expression for calculating max/sum for the specific record of Client and those calculation
+are used inside an Expression().
 
+Expression is a special type of read-only Field that uses sub-query or a more complex SQL expression
+instead of a physical field. (See :ref:`Expressions` and :ref:`Relations`)
+
+Field-reference actions
+-----------------------
+
+Field referencing allows you to fetch a specific field from related model::
+
+    $m = new Model_Country($db);
+    $m->action('field', ['name'])->get();
+    $m->action('field', ['name'])->getDebugQuery();
+
+This is useful with hasMany relations::
+
+    $m = new Model_User($db);
+    $m->getRef('country_id')->addField('country', 'name');
+    $m->loadAny();
+    $m->get();  // look for 'country' field
+
+hasMany::addField() again is a short-cut for creating expression, which you can also build
+manually::
+
+    $m->addExpression('country', $m->refLink('country_id')->action('field',['name']));
+
+Multi-record actions
+--------------------
+
+Actions also allow you to perform operations on multiple records. This can be very
+handy with some deep traversal to improve query efficiency. Suppose you need to change
+Client/Supplier status to 'suspended' for a specific user. Fire up a concole once
+away::
+
+    $m = new Model_User($db);
+    $m->loadBy('username','john');
+    $m->hasMany('System');
+    $c = $m->ref('System')->ref('Client');
+    $s = $m->ref('System')->ref('Supplier');
+
+    $c->action('update')->set('status', 'suspended')->execute();
+    $s->action('update')->set('status', 'suspended')->execute();
+
+Note that I had to perform 2 updates here, because Agile Data considers Client and
+Supplier as separate models. In our implementation they happened to be in a same
+table, but technically that could also be implemented differently by persistence
+layer. 
+
+Advanced Use of Actions
+-----------------------
+
+Actions prove to be very useful in various situations. For instance, if
+you are looking to add a new user::
+
+    $m = new Model_User($db);
+    $m['username'] = 'peter';
+    $m['address_1'] = 'street 49';
+    $m['country'] = 'UK';
+    $m->save();
+
+Normally this would not work, because country is read-only expression, however
+if you wish to avoid creating an intermediate select to determine ID for 'UK',
+you could do this::
+
+    $m = new Model_User($db);
+    $m['username'] = 'peter';
+    $m['address_1'] = 'street 49';
+    $m['country_id'] = (new Model_Country($db))->addCondition('name','UK')->action('field',['id']);
+    $m->save();
+
+This way it will not execute any code, but instead it will provide expression
+that will then be used to lookup ID of 'UK' when inserting data into SQL table.
+
+Expressions
+===========
+
+Expressions that are defined based on Actions (such as aggregate or field-reference)
+will continue to work even without SQL (although might be more performance-expensive), however
+if you're stuck with SQL you can use free-form pattern-based expressions::
+
+    $m = new Model_Client($db);
+    $m->getRef('Invoice')->addField('total_purchase', ['aggregate'=>'sum', 'field'=>'total']);
+    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
+
+    $m->addExpression('balance','[total_purchase]+[total_paid]');
+    $m->export(['name','balance']);
+
+
+Conclusion
+==========
+
+You should now be familiar with the basics of Agile Data. To find more information on
+specific topics, use the rest of the documentation.
+
+Agile Data is designed in an extensive pattern - by adding more objects inside Model a new
+functionality can be introduced. The described functionality is never a limitation
+and 3rd party code or you can add features that Agile Data authors are not even considered.
 

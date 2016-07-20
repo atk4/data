@@ -664,6 +664,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             throw new Exception(['Model is not associated with any database']);
         }
 
+        if ($this->hook('beforeSave') === false) {
+            return $this;
+        }
+
         $is_update = $this->loaded();
         if ($is_update) {
             $data = [];
@@ -725,6 +729,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             //$this->hook('beforeInsert', array(&$source));
         }
+
+        $this->hook('afterSave');
 
 
         if ($this->loaded()) {
