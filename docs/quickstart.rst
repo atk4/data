@@ -481,6 +481,24 @@ user john::
     $cc->id;
     $cc->get();
 
+Implementation of Relations
+---------------------------
+
+When relation is added using getOne or getMany, the new object is created and added
+into Model of class Field_Many or Field_One (or Field_SQL_One). The object itself
+is quite simple and you can fetch it form the model if you keep the return value
+of hasOne() / hasMany() or call getRef() with the same identifier later on.
+
+Calling ref() will proxy into the ref() method of relation object which will
+in turn figure out what to do. 
+
+Additionally you can call addField() on the reference model that will bring
+one or several fields from related model into your current model.
+
+Finally this reference object contains method getModel() which will produce
+a (possibly) fresh copy of related entity and will either adjust it's
+DataSet or set the active record.
+
 Actions
 =======
 
@@ -499,7 +517,8 @@ a data-set. SQL persistence implements some of the operations::
     $m->action('fx', ['sum', 'total'])->getOne();
     $m->action('fx', ['max', 'shipping'])->getOne();
 
-Aggregation actions can be used in Expressions with hasMany relations::
+Aggregation actions can be used in Expressions with hasMany relations and they can
+be brought into the original model as fields::
 
     $m = new Model_Client($db);
     $m->getRef('Invoice')->addField('max_delivery', ['aggregate'=>'max', 'field'=>'shipping']);
@@ -514,9 +533,14 @@ this is how it works::
     $m->addExpression('total_paid', $m->refLink('Payment')->action('fx', ['sum', 'amount']));
     $m->export(['name','max_delivery','total_paid']);
 
-Expression is a special type of read-only Field that uses sub-query instead of a physical field.
-Also, refLink() is a special type of reference transition that is designed for use
-in sub-queries only.
+In this example calling refLink is similar to traversing reference but instead of calculating
+DataSet based on Active Record or DataSet it references the actual field, making it ideal for
+placing into sub-query which SQL action is using. So when calling like above, action() will
+produce expression for calculating max/sum for the specific record of Client and those calculation
+are used inside an Expression().
+
+Expression is a special type of read-only Field that uses sub-query or a more complex SQL expression
+instead of a physical field. (See :ref:`Expressions` and :ref:`Relations`)
 
 Field-reference actions
 -----------------------
