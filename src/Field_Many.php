@@ -79,18 +79,15 @@ class Field_Many
             $c = $this->model;
 
             $c = $c($this->owner, $this);
-            if (!$c->persistence) {
+            if (!$c->persistence && $this->owner->persistence) {
                 $c = $this->owner->persistence->add($c, $defaults);
             }
             return $c;
         }
 
         if (is_object($this->model)) {
-            if ($this->model->persistence) {
-                throw new Exception([
-                    'When relating to object, it must not be associated with persistence yet.'
-                    // actually - that in the future we will support it.
-                ]);
+            if ($this->model->persistence || !$this->owner->persistence) {
+                return $this->model;
             }
             $c = clone $this->model;
             return $this->owner->persistence->add($c, $defaults);
@@ -150,7 +147,6 @@ class Field_Many
      */
     public function refLink($defaults = [])
     {
-        var_Dump($this->their_field);
         return $this->getModel($defaults)
             ->addCondition(
                 $this->their_field ?: ($this->owner->table.'_id'),
