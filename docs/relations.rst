@@ -7,6 +7,8 @@ Relations
 
 .. php:class:: Model
 
+.. php:method:: ref($link, $defailts = []);
+
 Models can relate one to another. The logic of traversing relations, however, is
 slightly different to the traditional ORM implementation, because in Agile Data
 traversing also imposes :ref:`conditions`
@@ -40,6 +42,10 @@ order will look like this::
     select * from order where user_id in (
         select id from user where is_vip = 1
     ) limit 1
+
+Argument $defaults will be passed to the new model that will be used for
+relation. This will not work if you have specified relation as existing
+model that has a persistence set.
 
 Persistence
 -----------
