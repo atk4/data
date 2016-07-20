@@ -1,3 +1,7 @@
+# 1.0.1
+
+Updated to latest version in dependencies
+
 # 1.0.0
 
 This is our first stable version release for Agile Data. The class and
