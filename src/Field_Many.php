@@ -12,7 +12,7 @@ class Field_Many
     use \atk4\core\InitializerTrait;
 
     /**
-     * Use this alias for related entity by default
+     * Use this alias for related entity by default.
      */
     protected $table_alias;
 
@@ -75,10 +75,10 @@ class Field_Many
         if (!isset($defaults['table_alias'])) {
             if (!$this->table_alias) {
                 $this->table_alias = $this->link;
-                $this->table_alias = preg_replace('/_id/','',$this->table_alias);
-                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/','\1',$this->table_alias);
+                $this->table_alias = preg_replace('/_id/', '', $this->table_alias);
+                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
             }
-            $defaults['table_alias']=$this->table_alias;
+            $defaults['table_alias'] = $this->table_alias;
         }
 
         if (is_object($this->model) && $this->model instanceof \Closure) {
@@ -88,6 +88,7 @@ class Field_Many
             if (!$c->persistence && $this->owner->persistence) {
                 $c = $this->owner->persistence->add($c, $defaults);
             }
+
             return $c;
         }
 
@@ -96,6 +97,7 @@ class Field_Many
                 return clone $this->model;
             }
             $c = clone $this->model;
+
             return $this->owner->persistence->add($c, $defaults);
         }
 
@@ -177,7 +179,7 @@ class Field_Many
 
         $field = isset($defaults['field']) ? $defaults['field'] : $n;
 
-        return $this->owner->addExpression($n, function($m) use ($defaults, $field) {
+        return $this->owner->addExpression($n, function ($m) use ($defaults, $field) {
             return $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
         });
     }

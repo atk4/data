@@ -12,7 +12,7 @@ class Field_One
     use \atk4\core\TrackableTrait;
 
     /**
-     * Use this alias for related entity by default
+     * Use this alias for related entity by default.
      */
     protected $table_alias;
 
@@ -79,10 +79,10 @@ class Field_One
         if (!isset($defaults['table_alias'])) {
             if (!$this->table_alias) {
                 $this->table_alias = $this->link;
-                $this->table_alias = preg_replace('/_id/','',$this->table_alias);
-                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/','\1',$this->table_alias);
+                $this->table_alias = preg_replace('/_id/', '', $this->table_alias);
+                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
             }
-            $defaults['table_alias']=$this->table_alias;
+            $defaults['table_alias'] = $this->table_alias;
         }
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
@@ -91,6 +91,7 @@ class Field_One
             if (!$c->persistence) {
                 $c = $this->owner->persistence->add($c, $defaults);
             }
+
             return $c;
         }
 
@@ -99,6 +100,7 @@ class Field_One
             if (!$this->model->persistence && $this->owner->persistence) {
                 $this->owner->persistence->add($c, $defaults);
             }
+
             return $c;
         }
 
