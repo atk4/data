@@ -564,6 +564,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->unload();
         }
 
+        if ($this->hook('beforeLoad', [$id]) === false) {
+            return $this;
+        }
+
         $this->data = $this->persistence->load($this, $id);
         $this->id = $id;
         $this->hook('afterLoad');
@@ -739,7 +743,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
             }
 
-            $this->hook('beforeInsert', [&$data]);
+            if ($this->hook('beforeInsert', [&$data]) === false) {
+                return $this;
+            }
 
             // Collect all data of a new record
             $this->id = $this->persistence->insert($this, $data);
@@ -854,7 +860,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             return $this;
         } elseif ($this->loaded()) {
-            $this->hook('beforeDelete', [$this->id]);
+            if ($this->hook('beforeDelete', [$this->id]) === false) {
+                return $this;
+            }
             $this->persistence->delete($this, $this->id);
             $this->hook('afterDelete', [$this->id]);
             $this->unload();

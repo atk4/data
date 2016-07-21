@@ -110,70 +110,6 @@ class RandomSQLTests extends SQLTestCase
             ], ], $this->getDB());
     }
 
-    public function testBasic()
-    {
-        $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-        );
-
-
-        $a = [
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
-                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-            ], ];
-        $this->setDB($a);
-
-        $db = new Persistence_SQL($this->db->connection);
-
-        $clients = new Model_Client($db);
-        // Object representing all clients - DataSet
-
-        $clients->addCondition('is_vip', true);
-        // Now DataSet is limited to VIP clients only
-
-        $vip_client_orders = $clients->ref('Order');
-        // This DataSet will contain only orders placed by VIP clients
-
-        $vip_client_orders->addExpression('item_price')->set(function ($model, $query) {
-            return $model->ref('item_id')->fieldQuery('price');
-        });
-        // Defines a new field for a model expressed through relation with Item
-
-        $vip_client_orders->addExpression('paid')->set(function ($model, $query) {
-            return $model->ref('Payment')->sum('amount');
-        });
-        // Defines another field as sum of related payments
-
-        $vip_client_orders->addExpression('due')->set(function ($model, $query) {
-            return $query->expr('{item_price} * {qty} - {paid}');
-        });
-        // Defines third field for calculating due
-
-        $total_due_payment = $vip_client_orders->sum('due')->getOne();
-        // Defines and executes "sum" action on our expression across specified data-set
-
-
-        $m = new Model($db, 'user');
-        $m->addFields(['name', 'gender']);
-
-        $m->tryLoad(1);
-        $this->assertEquals('John', $m['name']);
-        $m->tryLoad(2);
-        $this->assertEquals('Sue', $m['name']);
-
-        $m->addCondition('gender', 'M');
-        $m->tryLoad(1);
-        $this->assertEquals('John', $m['name']);
-        $m->tryLoad(2);
-        $this->assertEquals(null, $m['name']);
-
-        $this->assertEquals(
-            'select `id`,`name`,`gender` from `user` where `gender` = :a',
-            $m->action('select')->render()
-        );
-    }
-
     public function testSameTable()
     {
         $db = new Persistence_SQL($this->db->connection);
@@ -244,5 +180,91 @@ class RandomSQLTests extends SQLTestCase
 
         $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->action('count')->getOne());
         $this->assertEquals('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
+    }
+
+    public function testUpdateCondition()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'item' => [
+                ['name' => 'John'],
+                ['name' => 'Sue'],
+                ['name' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'item');
+        $m->addField('name');
+        $m->load(2);
+
+        $m->addHook('afterUpdateQuery', function ($m, $update, $st) {
+
+            // we can use afterUpdate to make sure that record was updated
+
+            if (!$st->rowCount()) {
+                throw new \atk4\core\Exception([
+                    'Update didn\'t affect any records',
+                    'query'      => $update->getDebugQuery(false),
+                    'statement'  => $st,
+                    'model'      => $m,
+                    'conditions' => $m->conditions,
+                ]);
+            }
+        });
+
+        $this->assertEquals('Sue', $m['name']);
+
+        $a = [
+            'item' => [
+                1 => ['id' => 1, 'name' => 'John'],
+            ], ];
+        $this->setDB($a);
+
+        $m['name'] = 'Peter';
+        try {
+            $m->save();
+            $e = null;
+        } catch (\Exception $e) {
+        }
+
+        $this->assertNotNull($e);
+        $this->assertEquals($a, $this->getDB());
+    }
+
+    public function testHookBreakers()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'item' => [
+                ['name' => 'John'],
+                ['name' => 'Sue'],
+                ['name' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'user');
+        $m->addField('name');
+
+        $m->addHook('beforeSave', function ($m) {
+            $m->breakHook(false);
+        });
+
+        $m->addHook('beforeLoad', function ($m, $id) {
+            $m->data = ['name' => 'rec #'.$id];
+            $m->id = $id;
+            $m->breakHook(false);
+        });
+
+        $m->addHook('beforeDelete', function ($m, $id) {
+            $m->unload();
+            $m->breakHook(false);
+        });
+
+        $m->set('john');
+        $m->save();
+
+        $this->assertEquals('rec #3', $m->load(3)['name']);
+
+        $m->delete();
     }
 }

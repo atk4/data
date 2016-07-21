@@ -216,17 +216,69 @@ Full example::
 Hooks
 =====
 
-- beforeSave [not currently worknig]
+- beforeSave [not currently working]
 
   - beforeInsert [only if insert]
-    - beforeInsertQuery [sql only]
+    - beforeInsertQuery [sql only] (query)
+    - afterInsertQuery (query, statement)
 
   - beforeUpdate [only ift update]
-    - beforeUpdateQuery [sql only]
-
+    - beforeUpdateQuery [sql only] (query)
+    - afterUpdateQuery (query, statement)
 
 
   - afterUpdate [only if existing record]
   - afterInsert [only if new record]
 
 - afterSave
+
+How to verify Updates
+---------------------
+
+The model is only being saved if any fields have been changed (dirty).
+Sometimes it's possible that the record in the database is no longer
+available and your update() may not actually update anything. This
+does not normally generate an error, however if you want to actually
+make sure that update() was effective, you can implement this through
+a hook::
+
+    $m->addHook('afterUpdateQuery',function($m, $update, $st) {
+        if (!$st->rowCount()) {
+            throw new \atk4\core\Exception([
+                'Update didn\'t affect any records',
+                'query'      => $update->getDebugQuery(false),
+                'statement'  => $st,
+                'model'      => $m,
+                'conditions' => $m->conditions,
+            ]);
+        }
+    });
+
+
+How to prevent actions
+----------------------
+
+In some cases you want to prevent default actions from executing.
+Suppose you want to check 'memcache' before actually loading the
+record from the database. Here is how you can implement this
+functionality::
+
+    $m->addHook('beforeLoad',function($m, $id) {
+        $data = $m->app->cacheFetch($m->table, $id);
+        if ($data) {
+            $m->data = $data;
+            $m->id = $id;
+            $m->breakHook(false);
+        }
+    });
+
+$app property is injected through your $db object and is passed
+around to all the models. This hook, if successful, will prevent
+further execution of other beforeLoad hooks and by specifying
+argument as 'false' it will also prevent call to $persistence
+for actual loading of the data.
+
+Similarly you can prevent deletion if you wish to implement 
+:ref:`soft-delete` or stop insert/modify from occuring.
+
+
