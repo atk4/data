@@ -494,7 +494,7 @@ class Persistence_SQL extends Persistence
 
 
         $st = null;
-        
+
         try {
             $m->hook('beforeUpdateQuery', [$update]);
             $st = $update->execute();

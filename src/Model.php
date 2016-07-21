@@ -845,7 +845,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             return $this;
         } elseif ($this->loaded()) {
-            if ($this->hook('beforeDelete', [$this->id])===false) {
+            if ($this->hook('beforeDelete', [$this->id]) === false) {
                 return $this;
             }
             $this->persistence->delete($this, $this->id);
