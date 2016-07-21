@@ -144,4 +144,42 @@ class ExpressionSQLTest extends SQLTestCase
         $m->tryLoad(2);
         $this->assertEquals('Sue', $m['name']);
     }
+
+    public function testReloading()
+    {
+        $a = [
+            'math' => [
+                ['a' => 2, 'b' => 2]
+            ], ];
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model($db, 'math');
+        $m->addFields(['a', 'b']);
+
+        $m->addExpression('sum', '[a] + [b]');
+
+        $m->load(1);
+        $this->assertEquals(4, $m['sum']);
+
+        $m->save(['a' => 3]);
+        $this->assertEquals(5, $m['sum']);
+
+        $this->assertEquals(9, $m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
+
+
+        $this->setDB($a);
+        $m = new Model($db, ['math', 'reload_after_save'=>false]);
+        $m->addFields(['a', 'b']);
+
+        $m->addExpression('sum', '[a] + [b]');
+
+        $m->load(1);
+        $this->assertEquals(4, $m['sum']);
+
+        $m->save(['a' => 3]);
+        $this->assertEquals(4, $m['sum']);
+
+        $this->assertEquals(null, $m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
+    }
 }

@@ -143,6 +143,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public $only_fields = false;
 
+
+    /**
+     * Models that contain expressions will automatically reload after save.
+     * This is to ensure that any SQL-based calculation are executed and
+     * updated correctly after you have performed any modifications to
+     * the fields. 
+     *
+     * You can set this property to "true" or "false" if you want to explicitly
+     * enable ro disable reloading.
+     */
+    public $reload_after_save = null;
+
     // }}}
 
     // {{{ Basic Functionality, field definition, set() and get()
@@ -659,7 +671,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
-    public function save($data = [])
+    public function save($data = [], $no_reload = false)
     {
         if (!$this->persistence) {
             throw new Exception(['Model is not associated with any database']);
@@ -733,7 +745,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->id = $this->persistence->insert($this, $data);
             $this->hook('afterInsert', [$this->id]);
 
-            //$this->hook('beforeInsert', array(&$source));
+            if (!$no_reload && $this->reload_after_save !== false) {
+                $this->reload();
+            }
+
         }
 
         $this->hook('afterSave');
@@ -753,7 +768,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     protected function _rawInsert($m, $row)
     {
         $m->unload();
-        $m->save($row);
+        $m->save($row, true);
         $m->data[$m->id_field] = $m->id;
     }
 
