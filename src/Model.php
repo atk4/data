@@ -151,7 +151,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * the fields.
      *
      * You can set this property to "true" or "false" if you want to explicitly
-     * enable ro disable reloading.
+     * enable or disable reloading.
      */
     public $reload_after_save = null;
 
