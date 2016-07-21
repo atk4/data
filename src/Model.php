@@ -671,7 +671,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
-    public function save($data = [], $no_reload = false)
+    public function save($data = [])
     {
         if (!$this->persistence) {
             throw new Exception(['Model is not associated with any database']);
@@ -745,7 +745,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->id = $this->persistence->insert($this, $data);
             $this->hook('afterInsert', [$this->id]);
 
-            if (!$no_reload && $this->reload_after_save !== false) {
+            if ($this->reload_after_save !== false) {
                 $this->reload();
             }
 
@@ -767,8 +767,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     protected function _rawInsert($m, $row)
     {
+        $m->reload_after_save = false;
         $m->unload();
-        $m->save($row, true);
+        $m->save($row);
         $m->data[$m->id_field] = $m->id;
     }
 
