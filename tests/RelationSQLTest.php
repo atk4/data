@@ -253,4 +253,51 @@ class RelationSQLTest extends SQLTestCase
         $this->assertEquals($n * $vat, $i['total_vat']);
         $this->assertEquals($n * ($vat + 1), $i['total_gross']);
     }
+
+    public function testRelationHook()
+    {
+        $a = [
+            'user' => [
+                ['name'=>'John', 'contact_id' => 2],
+                ['name'=>'Peter', 'contact_id' => null],
+                ['name'=>'Joe', 'contact_id' => 3],
+            ], 'contact' => [
+                ['address'=> 'Sue contact'],
+                ['address'=> 'John contact'],
+                ['address'=> 'Joe contact'],
+            ], ];
+
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $u = (new Model($db, 'user'))->addFields(['name']);
+        $c = (new Model($db, 'contact'))->addFields(['address']);
+
+        $u->hasOne('contact_id', $c)
+            ->addField('address');
+        ;
+
+        $u->load(1);
+        $this->assertEquals('John contact', $u['address']);
+        $this->assertEquals('John contact', $u->ref('contact_id')['address']);
+
+        $u->load(2);
+        $this->assertEquals(null, $u['address']);
+        $this->assertEquals(null, $u['contact_id']);
+        $this->assertEquals(null, $u->ref('contact_id')['address']);
+
+        $u->load(3);
+        $this->assertEquals('Joe contact', $u['address']);
+        $this->assertEquals('Joe contact', $u->ref('contact_id')['address']);
+
+        $u->load(2);
+        $u->ref('contact_id')->save(['address'=>'Peters new contact']);
+
+        $this->assertNotEquals(null, $u['contact_id']);
+        $this->assertEquals('Peters new contact', $u->ref('contact_id')['address']);
+
+        $u->save()->reload();
+        $this->assertEquals('Peters new contact', $u->ref('contact_id')['address']);
+        $this->assertEquals('Peters new contact', $u['address']);
+    }
 }
