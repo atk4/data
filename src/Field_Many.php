@@ -179,7 +179,7 @@ class Field_Many
 
         $field = isset($defaults['field']) ? $defaults['field'] : $n;
 
-        return $this->owner->addExpression($n, function ($m) use ($defaults, $field) {
+        return $this->owner->addExpression($n, function () use ($defaults, $field) {
             return $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
         });
     }
