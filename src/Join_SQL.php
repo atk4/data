@@ -4,7 +4,7 @@ namespace atk4\data;
 
 class Join_SQL extends Join implements \atk4\dsql\Expressionable
 {
-    protected $foreign_alias;
+    public $foreign_alias;
     /**
      * A short symbolic name that will be used as an alias for the joined table.
      */
@@ -65,7 +65,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         // Our short name will be unique
         if (!$this->foreign_alias) {
-            $this->foreign_alias = $this->short_name;
+            $this->foreign_alias = (isset($this->owner->table_alias) ? $this->owner->table_alias : '').$this->short_name;
         }
 
         $this->dsql->table($this->foreign_table, $this->foreign_alias);
@@ -114,12 +114,16 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             ),
             (
                 isset($this->owner->table_alias) ?
-                $this->owner->table_alias :
+                ($this->owner->table_alias.'.'.$this->master_field) :
                 ($this->owner->table).'.'.$this->master_field)
         );
 
         if ($this->reverse) {
-            $query->field([$this->short_name => ($this->join ?: ($this->owner->table.'.'.$this->master_field))]);
+            $query->field([$this->short_name => ($this->join ?:
+                (
+                    (isset($this->owner->table_alias) ? $this->owner->table_alias : $this->owner->table)
+                    .'.'.$this->master_field)
+            )]);
         } else {
             $query->field([$this->short_name => $this->foreign_alias.'.'.$this->foreign_field]);
         }

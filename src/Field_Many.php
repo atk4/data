@@ -11,6 +11,10 @@ class Field_Many
     }
     use \atk4\core\InitializerTrait;
 
+    /**
+     * Use this alias for related entity by default.
+     */
+    protected $table_alias;
 
     /**
      * What should we pass into owner->ref() to get
@@ -68,19 +72,33 @@ class Field_Many
 
     protected function getModel($defaults = [])
     {
+        if (!isset($defaults['table_alias'])) {
+            if (!$this->table_alias) {
+                $this->table_alias = $this->link;
+                $this->table_alias = preg_replace('/_id/', '', $this->table_alias);
+                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
+            }
+            $defaults['table_alias'] = $this->table_alias;
+        }
+
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
 
-            return $c($this->owner, $this, $defaults);
+            $c = $c($this->owner, $this);
+            if (!$c->persistence && $this->owner->persistence) {
+                $c = $this->owner->persistence->add($c, $defaults);
+            }
+
+            return $c;
         }
 
         if (is_object($this->model)) {
-            $m = clone $this->model;
-            if ($defaults) {
-                $m->setDefaults($defaults);
+            if ($this->model->persistence || !$this->owner->persistence) {
+                return clone $this->model;
             }
+            $c = clone $this->model;
 
-            return $m;
+            return $this->owner->persistence->add($c, $defaults);
         }
 
         // last effort - try to add model
@@ -160,9 +178,10 @@ class Field_Many
         }
 
         $field = isset($defaults['field']) ? $defaults['field'] : $n;
-        $action = $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
 
-        return $this->owner->addExpression($n, $action);
+        return $this->owner->addExpression($n, function () use ($defaults, $field) {
+            return $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
+        });
     }
 
     public function addFields($fields = [])

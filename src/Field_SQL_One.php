@@ -54,7 +54,7 @@ class Field_SQL_One extends Field_One
     public function addTitle()
     {
         $field = str_replace('_id', '', $this->link);
-        $this->owner->addExpression($field, function ($m) use ($their_field) {
+        $this->owner->addExpression($field, function ($m) {
             $mm = $m->refLink($this->link);
 
             return $mm->action('field', [$mm->title_field]);

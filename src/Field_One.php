@@ -11,6 +11,10 @@ class Field_One
     }
     use \atk4\core\TrackableTrait;
 
+    /**
+     * Use this alias for related entity by default.
+     */
+    protected $table_alias;
 
     /**
      * What should we pass into owner->ref() to get
@@ -72,14 +76,32 @@ class Field_One
 
     public function getModel($defaults = [])
     {
+        if (!isset($defaults['table_alias'])) {
+            if (!$this->table_alias) {
+                $this->table_alias = $this->link;
+                $this->table_alias = preg_replace('/_id/', '', $this->table_alias);
+                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
+            }
+            $defaults['table_alias'] = $this->table_alias;
+        }
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
 
-            return $c($this->owner, $this);
+            $c = $c($this->owner, $this);
+            if (!$c->persistence) {
+                $c = $this->owner->persistence->add($c, $defaults);
+            }
+
+            return $c;
         }
 
         if (is_object($this->model)) {
-            return $this->model;
+            $c = clone $this->model;
+            if (!$this->model->persistence && $this->owner->persistence) {
+                $this->owner->persistence->add($c, $defaults);
+            }
+
+            return $c;
         }
 
         // last effort - try to add model
