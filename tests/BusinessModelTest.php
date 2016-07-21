@@ -144,7 +144,7 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Sets title field
+     * Sets title field.
      */
     public function testSetTitle()
     {
