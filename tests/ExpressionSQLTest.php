@@ -149,7 +149,7 @@ class ExpressionSQLTest extends SQLTestCase
     {
         $a = [
             'math' => [
-                ['a' => 2, 'b' => 2]
+                ['a' => 2, 'b' => 2],
             ], ];
         $this->setDB($a);
 
@@ -169,7 +169,7 @@ class ExpressionSQLTest extends SQLTestCase
 
 
         $this->setDB($a);
-        $m = new Model($db, ['math', 'reload_after_save'=>false]);
+        $m = new Model($db, ['math', 'reload_after_save' => false]);
         $m->addFields(['a', 'b']);
 
         $m->addExpression('sum', '[a] + [b]');
