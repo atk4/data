@@ -277,20 +277,22 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     public function set($field, $value = null)
     {
-        // set(['foo'=>'bar']) will call itself as set('foo', 'bar');
         if (func_num_args() == 1) {
             if (is_array($field)) {
                 foreach ($field as $key => $value) {
-                    $this->set($key, $value);
+                    if($key === "0" || $key === 0) {
+                        $this->set($value);
+                    }else{
+                        $this->set($key, $value);
+                    }
                 }
 
                 return $this;
+            }else{
+                $value = $field;
+                $field = $this->title_field;
             }
 
-            throw new Exception([
-                'Single argument set() requires an array argument',
-                'arg' => $field,
-            ]);
         }
 
         $field = $this->normalizeFieldName($field);
