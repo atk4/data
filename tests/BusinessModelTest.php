@@ -184,6 +184,28 @@ class BusinessModelTest extends TestCase
 
     /**
      * @expectedException Exception
+     *
+     * fields can't be numeric
+     */
+    public function testException2b()
+    {
+        $m = new Model();
+        $m->set("3b", 'foo');
+    }
+
+    /**
+     * @expectedException Exception
+     *
+     * fields can't be numeric
+     */
+    public function testException2c()
+    {
+        $m = new Model();
+        $m->set("", 'foo');
+    }
+
+    /**
+     * @expectedException Exception
      */
     public function testException3()
     {
