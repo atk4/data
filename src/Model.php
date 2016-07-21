@@ -552,6 +552,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->unload();
         }
 
+        if ($this->hook('beforeLoad', [$id]) === false) {
+            return $this;
+        }
+
         $this->data = $this->persistence->load($this, $id);
         $this->id = $id;
         $this->hook('afterLoad');

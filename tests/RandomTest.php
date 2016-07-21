@@ -295,4 +295,41 @@ class RandomSQLTests extends SQLTestCase
         $this->assertEquals($a, $this->getDB());
 
     }
+
+    public function testHookBreakers()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'item' => [
+                ['name' => 'John'],
+                ['name' => 'Sue'],
+                ['name' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'user');
+        $m->addField('name');
+
+        $m->addHook('beforeSave', function($m) {
+            $m->breakHook(false);
+        });
+
+        $m->addHook('beforeLoad', function($m, $id) {
+            $m->data = ['name'=>'rec #'.$id];
+            $m->id = $id;
+            $m->breakHook(false);
+        });
+
+        $m->addHook('beforeDelete', function($m, $id) {
+            $m->unload();
+            $m->breakHook(false);
+        });
+
+        $m->set('john');
+        $m->save();
+
+        $this->assertEquals('rec #3', $m->load(3)['name']);
+
+        $m->delete();
+    }
 }
