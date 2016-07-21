@@ -754,16 +754,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     protected function _rawInsert($m, $row)
     {
         $m->unload();
-        if (!is_array($row)) {
-            $m->set($this->title_field, $row);
-        } else {
-            if (isset($row[0]) && $this->title_field) {
-                $row[$this->title_field] = $row[0];
-                unset($row[0]);
-            }
-            $m->set($row);
-        }
-        $m->save();
+        $m->save($row);
+        $m->data[$m->id_field] = $m->id;
     }
 
     /**
