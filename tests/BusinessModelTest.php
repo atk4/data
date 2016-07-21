@@ -212,7 +212,7 @@ class BusinessModelTest extends TestCase
     public function testException2d()
     {
         $m = new Model();
-        $m->set(['foo','bar']);
+        $m->set(['foo', 'bar']);
     }
 
     /**
