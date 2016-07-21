@@ -508,6 +508,11 @@ class Persistence_SQL extends Persistence
         }
 
         $m->hook('afterUpdateQuery', [$update, $st]);
+
+        // if any rows were updated in database, and we had expressions, reload
+        if ($m->reload_after_save === true && $st->rowCount()) {
+            $m->reload();
+        }
     }
 
     public function delete(Model $m, $id)
