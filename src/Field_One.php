@@ -133,14 +133,20 @@ class Field_One
         if ($this->owner->loaded()) {
             if ($this->their_field) {
                 return $m->tryLoadBy($this->their_field, $this->owner[$this->our_field])
-                    ->addHook('afterSave', function($m){ $this->owner[$this->our_field] = $m[$this->their_field]; })
-                    ->addHook('afterDelete', function($m){ $this->owner[$this->our_field] = null; })
-                    ;
+                    ->addHook('afterSave', function ($m) {
+                        $this->owner[$this->our_field] = $m[$this->their_field];
+                    })
+                    ->addHook('afterDelete', function ($m) {
+                        $this->owner[$this->our_field] = null;
+                    });
             } else {
                 return $m->tryLoad($this->owner[$this->our_field])
-                    ->addHook('afterSave', function($m){ $this->owner[$this->our_field] = $m->id; })
-                    ->addHook('afterDelete', function($m){ $this->owner[$this->our_field] = null; })
-                    ;
+                    ->addHook('afterSave', function ($m) {
+                        $this->owner[$this->our_field] = $m->id;
+                    })
+                    ->addHook('afterDelete', function ($m) {
+                        $this->owner[$this->our_field] = null;
+                    });
             }
         } else {
             $m = clone $m; // we will be adding conditions!

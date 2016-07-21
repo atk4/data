@@ -258,13 +258,13 @@ class RelationSQLTest extends SQLTestCase
     {
         $a = [
             'user' => [
-                ['name'=>'John', 'contact_id' => 2],
-                ['name'=>'Peter', 'contact_id' => null],
-                ['name'=>'Joe', 'contact_id' => 3],
+                ['name' => 'John', 'contact_id' => 2],
+                ['name' => 'Peter', 'contact_id' => null],
+                ['name' => 'Joe', 'contact_id' => 3],
             ], 'contact' => [
-                ['address'=> 'Sue contact'],
-                ['address'=> 'John contact'],
-                ['address'=> 'Joe contact'],
+                ['address' => 'Sue contact'],
+                ['address' => 'John contact'],
+                ['address' => 'Joe contact'],
             ], ];
 
         $this->setDB($a);
@@ -275,7 +275,7 @@ class RelationSQLTest extends SQLTestCase
 
         $u->hasOne('contact_id', $c)
             ->addField('address');
-        ;
+
 
         $u->load(1);
         $this->assertEquals('John contact', $u['address']);
@@ -291,7 +291,7 @@ class RelationSQLTest extends SQLTestCase
         $this->assertEquals('Joe contact', $u->ref('contact_id')['address']);
 
         $u->load(2);
-        $u->ref('contact_id')->save(['address'=>'Peters new contact']);
+        $u->ref('contact_id')->save(['address' => 'Peters new contact']);
 
         $this->assertNotEquals(null, $u['contact_id']);
         $this->assertEquals('Peters new contact', $u->ref('contact_id')['address']);
