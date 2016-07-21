@@ -768,7 +768,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $m = clone $this;
         $this->_rawInsert($m, $row);
 
-        return $m;
+        return $m->id;
     }
 
     /**
