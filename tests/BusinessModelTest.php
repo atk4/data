@@ -9,7 +9,7 @@ use atk4\data\Persistence;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class BusinessModelTest extends \PHPUnit_Framework_TestCase
+class BusinessModelTest extends TestCase
 {
     /**
      * Test constructor.
@@ -169,6 +169,17 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
     {
         $m = new Model();
         $m->set(0, 'foo');
+    }
+
+    /**
+     * @expectedException Exception
+     *
+     * fields can't be numeric
+     */
+    public function testException2a()
+    {
+        $m = new Model();
+        $m->set("3", 'foo');
     }
 
     /**
