@@ -660,10 +660,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
-    public function save()
+    public function save($data = [])
     {
         if (!$this->persistence) {
             throw new Exception(['Model is not associated with any database']);
+        }
+
+        if($data) {
+            $this->set($data);
         }
 
         if ($this->hook('beforeSave') === false) {
@@ -706,6 +710,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             //$this->hook('beforeUpdate', array(&$source));
         } else {
+            $data = [];
             foreach ($this->get() as $name => $value) {
                 $field = $this->hasElement($name);
                 if (!$field) {
