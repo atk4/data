@@ -144,12 +144,25 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Sets title field
+     */
+    public function testSetTitle()
+    {
+        $m = new Model();
+        $m->addField('name');
+        $m->set('foo');
+        $this->assertEquals($m['name'], 'foo');
+    }
+
+    /**
      * @expectedException Exception
+     *
+     * fields can't be numeric
      */
     public function testException2()
     {
         $m = new Model();
-        $m->set('foo');
+        $m->set(0, 'foo');
     }
 
     /**
