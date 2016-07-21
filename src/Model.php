@@ -148,7 +148,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Models that contain expressions will automatically reload after save.
      * This is to ensure that any SQL-based calculation are executed and
      * updated correctly after you have performed any modifications to
-     * the fields. 
+     * the fields.
      *
      * You can set this property to "true" or "false" if you want to explicitly
      * enable ro disable reloading.
@@ -748,7 +748,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             if ($this->reload_after_save !== false) {
                 $this->reload();
             }
-
         }
 
         $this->hook('afterSave');

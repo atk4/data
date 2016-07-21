@@ -4,7 +4,6 @@ namespace atk4\data;
 
 class Field_SQL_Expression extends Field_SQL
 {
-
     use \atk4\core\InitializerTrait {
         init as _init;
     }
@@ -13,15 +12,14 @@ class Field_SQL_Expression extends Field_SQL
 
     public $editable = false;
 
-    public function init() {
+    public function init()
+    {
         $this->_init();
 
         if ($this->owner->reload_after_save === null) {
             $this->owner->reload_after_save = true;
         }
     }
-
-
 
     public function useAlias()
     {
