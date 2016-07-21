@@ -254,7 +254,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $field = $field->short_name;
         }
 
-        if (!is_string($field) || $field === "" || is_numeric($field[0])) {
+        if (!is_string($field) || $field === '' || is_numeric($field[0])) {
             throw new Exception([
                 'Incorect specification of field name',
                 'arg' => $field,

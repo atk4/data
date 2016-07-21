@@ -179,7 +179,7 @@ class BusinessModelTest extends TestCase
     public function testException2a()
     {
         $m = new Model();
-        $m->set("3", 'foo');
+        $m->set('3', 'foo');
     }
 
     /**
@@ -190,7 +190,7 @@ class BusinessModelTest extends TestCase
     public function testException2b()
     {
         $m = new Model();
-        $m->set("3b", 'foo');
+        $m->set('3b', 'foo');
     }
 
     /**
@@ -201,7 +201,7 @@ class BusinessModelTest extends TestCase
     public function testException2c()
     {
         $m = new Model();
-        $m->set("", 'foo');
+        $m->set('', 'foo');
     }
 
     /**
