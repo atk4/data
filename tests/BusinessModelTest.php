@@ -156,7 +156,7 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
         $m->set(['bar']);
         $this->assertEquals($m['name'], 'bar');
 
-        $m->set(['name'=>'baz']);
+        $m->set(['name' => 'baz']);
         $this->assertEquals($m['name'], 'baz');
     }
 
