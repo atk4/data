@@ -152,6 +152,12 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
         $m->addField('name');
         $m->set('foo');
         $this->assertEquals($m['name'], 'foo');
+
+        $m->set(['bar']);
+        $this->assertEquals($m['name'], 'bar');
+
+        $m->set(['name'=>'baz']);
+        $this->assertEquals($m['name'], 'baz');
     }
 
     /**
