@@ -9,7 +9,7 @@ use atk4\data\Persistence;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class BusinessModelTest extends \PHPUnit_Framework_TestCase
+class BusinessModelTest extends TestCase
 {
     /**
      * Test constructor.
@@ -144,12 +144,75 @@ class BusinessModelTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Sets title field.
+     */
+    public function testSetTitle()
+    {
+        $m = new Model();
+        $m->addField('name');
+        $m->set('foo');
+        $this->assertEquals($m['name'], 'foo');
+
+        $m->set(['bar']);
+        $this->assertEquals($m['name'], 'bar');
+
+        $m->set(['name' => 'baz']);
+        $this->assertEquals($m['name'], 'baz');
+    }
+
+    /**
      * @expectedException Exception
+     *
+     * fields can't be numeric
      */
     public function testException2()
     {
         $m = new Model();
-        $m->set('foo');
+        $m->set(0, 'foo');
+    }
+
+    /**
+     * @expectedException Exception
+     *
+     * fields can't be numeric
+     */
+    public function testException2a()
+    {
+        $m = new Model();
+        $m->set('3', 'foo');
+    }
+
+    /**
+     * @expectedException Exception
+     *
+     * fields can't be numeric
+     */
+    public function testException2b()
+    {
+        $m = new Model();
+        $m->set('3b', 'foo');
+    }
+
+    /**
+     * @expectedException Exception
+     *
+     * fields can't be numeric
+     */
+    public function testException2c()
+    {
+        $m = new Model();
+        $m->set('', 'foo');
+    }
+
+    /**
+     * @expectedException Exception
+     *
+     * fields can't be numeric
+     */
+    public function testException2d()
+    {
+        $m = new Model();
+        $m->set(['foo', 'bar']);
     }
 
     /**

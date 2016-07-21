@@ -84,7 +84,7 @@ class Field_Many
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
 
-            $c = $c($this->owner, $this);
+            $c = $c($this->owner, $this, $defaults);
             if (!$c->persistence && $this->owner->persistence) {
                 $c = $this->owner->persistence->add($c, $defaults);
             }

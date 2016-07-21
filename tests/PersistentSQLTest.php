@@ -113,9 +113,9 @@ class PersistentSQLTest extends TestCase
             $ms[] = $m->insert($row);
         }
 
-        $this->assertEquals('John', $ms[0]['name']);
+        $this->assertEquals('John', $m->load($ms[0])['name']);
 
-        $this->assertEquals('Jones', $ms[1]['surname']);
+        $this->assertEquals('Jones', $m->load($ms[1])['surname']);
     }
 
     public function testModelInsertRows()

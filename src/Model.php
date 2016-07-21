@@ -254,7 +254,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $field = $field->short_name;
         }
 
-        if (!is_string($field)) {
+        if (!is_string($field) || $field === '' || is_numeric($field[0])) {
             throw new Exception([
                 'Incorect specification of field name',
                 'arg' => $field,
@@ -277,20 +277,21 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     public function set($field, $value = null)
     {
-        // set(['foo'=>'bar']) will call itself as set('foo', 'bar');
         if (func_num_args() == 1) {
             if (is_array($field)) {
                 foreach ($field as $key => $value) {
-                    $this->set($key, $value);
+                    if ($key === '0' || $key === 0) {
+                        $this->set($value);
+                    } else {
+                        $this->set($key, $value);
+                    }
                 }
 
                 return $this;
+            } else {
+                $value = $field;
+                $field = $this->title_field;
             }
-
-            throw new Exception([
-                'Single argument set() requires an array argument',
-                'arg' => $field,
-            ]);
         }
 
         $field = $this->normalizeFieldName($field);
@@ -658,10 +659,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
-    public function save()
+    public function save($data = [])
     {
         if (!$this->persistence) {
             throw new Exception(['Model is not associated with any database']);
+        }
+
+        if ($data) {
+            $this->set($data);
         }
 
         if ($this->hook('beforeSave') === false) {
@@ -704,6 +709,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             //$this->hook('beforeUpdate', array(&$source));
         } else {
+            $data = [];
             foreach ($this->get() as $name => $value) {
                 $field = $this->hasElement($name);
                 if (!$field) {
@@ -747,16 +753,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     protected function _rawInsert($m, $row)
     {
         $m->unload();
-        if (!is_array($row)) {
-            $m->set($this->title_field, $row);
-        } else {
-            if (isset($row[0]) && $this->title_field) {
-                $row[$this->title_field] = $row[0];
-                unset($row[0]);
-            }
-            $m->set($row);
-        }
-        $m->save();
+        $m->save($row);
+        $m->data[$m->id_field] = $m->id;
     }
 
     /**
@@ -769,7 +767,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $m = clone $this;
         $this->_rawInsert($m, $row);
 
-        return $m;
+        return $m->id;
     }
 
     /**
