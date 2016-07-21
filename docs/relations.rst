@@ -388,3 +388,52 @@ Loading model like that can produce a pretty sophisticated query
         ) `child_age`,`pp`.`id` `_i` 
     from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
 
+Relations with New Records
+==========================
+
+Agile Data takes extra care to help you link your new records with new related entities.
+Consider the following two models::
+
+    class Model_User extends \atk4\data\Model {
+        public $table = 'user';
+        function init() {
+            parent::init();
+            $this->addField('name');
+
+            $this->hasOne('contact_id', new Model_Contact());
+        }
+    }
+
+    class Model_Contact extends \atk4\data\Model {
+        public $table = 'contact';
+        function init() {
+            parent::init();
+
+            $this->addField('address');
+        }
+    }
+
+This is a classic one to one relation, but let's look what happens when you are working with
+a new model::
+
+    $m = new Model_User($db);
+
+    $m['name'] = 'John';
+    $m->save();
+
+In this scenario, a new record will be added into 'user' with 'contact_id' equal to null. The
+next example will traverse into the contact to set it up::
+
+    $m = new Model_User($db);
+
+    $m['name'] = 'John';
+    $m->ref('address_id')->save(['address'=>'street']);
+    $m->save();
+
+When entity which you have referenced through ref() is saved, it will automatically populate
+$m['contact_id'] field and the final $m->save() will also store the reference. 
+
+ID setting is implemented through a basic hook. Related model will have afterSave
+hook, which will update address_id field of the $m.
+
+

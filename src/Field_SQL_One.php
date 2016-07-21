@@ -11,8 +11,12 @@ class Field_SQL_One extends Field_One
      *
      * Returns Expression in case you want to do something else with it.
      */
-    public function addField($field, $their_field)
+    public function addField($field, $their_field = null)
     {
+        if ($their_field === null) {
+            $their_field = $field;
+        }
+
         return $this->owner->addExpression($field, function ($m) use ($their_field) {
             return $m->refLink($this->link)->action('field', [$their_field]);
         });
