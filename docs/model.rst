@@ -216,7 +216,7 @@ Full example::
 Hooks
 =====
 
-- beforeSave [not currently worknig]
+- beforeSave [not currently working]
 
   - beforeInsert [only if insert]
     - beforeInsertQuery [sql only] (query)
@@ -235,7 +235,7 @@ Hooks
 How to verify Updates
 ---------------------
 
-The model is only beind saved if any fields have been changed (dirty).
+The model is only being saved if any fields have been changed (dirty).
 Sometimes it's possible that the record in the database is no longer
 available and your update() may not actually update anything. This
 does not normally generate an error, however if you want to actually
