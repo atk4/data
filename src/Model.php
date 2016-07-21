@@ -325,9 +325,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->data[$field] = $value;
         }
 
-        if ($field === $this->id_field) {
-            $this->id = $value;
-        }
+        //if ($field === $this->id_field) {
+            //$this->id = $value;
+        //}
 
         return $this;
     }

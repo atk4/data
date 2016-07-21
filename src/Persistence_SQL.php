@@ -481,7 +481,7 @@ class Persistence_SQL extends Persistence
         $cnt = 0;
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
-            $update->set($f->actual ?: $f->short_name, $value);
+            $update->set($f, $value);
             $cnt++;
         }
         if (!$cnt) {
@@ -500,6 +500,11 @@ class Persistence_SQL extends Persistence
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
+        }
+
+        if ($m->dirty[$m->id_field] && isset($data[$m->id_field])) {
+            // ID was changed
+            $m->id = $data[$m->id_field];
         }
     }
 
