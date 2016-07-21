@@ -101,3 +101,92 @@ You can use a callback method when defining expression::
     $m->addExpression('total_gross', function($m, $q) {
         return '[total_net]+[total_vat]';
     });
+
+Model Reloading after Save
+--------------------------
+
+When you add SQL Expressions into your model, that means that some of the fields
+might be out of sync and you might need your SQL to recalculate those expressions.
+
+To simplify your life, Agile Data implements smart model reloading. Consider
+the following model::
+
+    class Model_Math extends \atk4\data\Model 
+    {
+        public $table = 'math';
+        function init()
+        {
+            parent::init();
+
+            $this->addFields(['a', 'b']);
+
+            $this->addExpression('sum', '[a]+[b]');
+        }
+    }
+
+    $m = new Model_Math($db);
+    $m['a'] = 4;
+    $m['b'] = 6;
+
+    $m->save();
+
+    echo $m['sum'];
+
+When $m->save() is executed, Agile Data will perform reloading of the model. 
+This is to ensure that expression 'sum' would be re-calculated for the values of
+4 and 6 so the final line will output a desired result - 10;
+
+Reload after save will only be executed if you have defined any expressions
+inside your model, however you can affect this behaviour::
+
+    $m = new Model_Math($db, ['reload_after_save' => false]);
+    $m['a'] = 4;
+    $m['b'] = 6;
+
+    $m->save();
+
+    echo $m['sum'];   // outputs null
+
+    $m->reload();
+    echo $m['sum'];   // outputs 10
+
+Now it requires an explicit reload for your model to fetch the result. There
+is another scenario when your database defines default fields:
+
+.. code-block:: sql
+
+    alter table math change b b int default 10;
+
+Then try the following code::
+
+    class Model_Math extends \atk4\data\Model 
+    {
+        public $table = 'math';
+        function init()
+        {
+            parent::init();
+
+            $this->addFields(['a', 'b']);
+        }
+    }
+
+    $m = new Model_Math($db);
+    $m['a'] = 4;
+
+    $m->save();
+
+    echo $m['a']+$m['b'];
+
+This will output 4, because model didn't reload itself due to lack of any
+expressions. This time you can explicitly enable reload after save::
+
+    $m = new Model_Math($db, ['reload_after_save' => true]);
+    $m['a'] = 4;
+
+    $m->save();
+
+    echo $m['a']+$m['b']; // outputs 14
+
+.. note:: If your model is using reload_after_save, but you wish to insert
+    data without additional query - use :php:meth:`Model::insert()` or 
+    :php:meth:`Model::import()`.

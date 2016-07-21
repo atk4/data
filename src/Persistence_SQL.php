@@ -492,7 +492,7 @@ class Persistence_SQL extends Persistence
         $m->hook('beforeUpdateQuery', [$update]);
 
         try {
-            $update->execute();
+            $st = $update->execute();
         } catch (\Exception $e) {
             throw new Exception([
                 'Unable to update due to query error',
@@ -500,6 +500,13 @@ class Persistence_SQL extends Persistence
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
+        }
+
+        $m->hook('afterUpdateQuery', [$update, $st]);
+
+        // if any rows were updated in database, and we had expressions, reload
+        if ($m->reload_after_save === true && $st->rowCount()) {
+            $m->reload();
         }
     }
 
