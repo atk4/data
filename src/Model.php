@@ -280,19 +280,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if (func_num_args() == 1) {
             if (is_array($field)) {
                 foreach ($field as $key => $value) {
-                    if($key === "0" || $key === 0) {
+                    if ($key === '0' || $key === 0) {
                         $this->set($value);
-                    }else{
+                    } else {
                         $this->set($key, $value);
                     }
                 }
 
                 return $this;
-            }else{
+            } else {
                 $value = $field;
                 $field = $this->title_field;
             }
-
         }
 
         $field = $this->normalizeFieldName($field);
@@ -666,7 +665,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             throw new Exception(['Model is not associated with any database']);
         }
 
-        if($data) {
+        if ($data) {
             $this->set($data);
         }
 
