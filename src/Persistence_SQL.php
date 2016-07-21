@@ -435,9 +435,10 @@ class Persistence_SQL extends Persistence
             $insert->set($f->actual ?: $f->short_name, $value);
         }
 
+        $st = null;
         try {
             $m->hook('beforeInsertQuery', [$insert]);
-            $insert->execute();
+            $st = $insert->execute();
         } catch (\Exception $e) {
             throw new Exception([
                 'Unable to execute insert query',
@@ -446,6 +447,8 @@ class Persistence_SQL extends Persistence
                 'conditions' => $m->conditions,
             ], null, $e);
         }
+
+        $m->hook('afterInsertQuery', [$insert, $st]);
 
         return $insert->connection->lastInsertID();
     }
@@ -489,10 +492,12 @@ class Persistence_SQL extends Persistence
         }
         $update->where($m->getElement($m->id_field), $id);
 
-        $m->hook('beforeUpdateQuery', [$update]);
 
+        $st = null;
+        
         try {
-            $update->execute();
+            $m->hook('beforeUpdateQuery', [$update]);
+            $st = $update->execute();
         } catch (\Exception $e) {
             throw new Exception([
                 'Unable to update due to query error',
@@ -501,6 +506,8 @@ class Persistence_SQL extends Persistence
                 'conditions' => $m->conditions,
             ], null, $e);
         }
+
+        $m->hook('afterUpdateQuery', [$update, $st]);
     }
 
     public function delete(Model $m, $id)

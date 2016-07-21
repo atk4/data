@@ -245,4 +245,54 @@ class RandomSQLTests extends SQLTestCase
         $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->action('count')->getOne());
         $this->assertEquals('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
+
+    public function testUpdateCondition()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'item' => [
+                ['name' => 'John'],
+                ['name' => 'Sue'],
+                ['name' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'item');
+        $m->addField('name');
+        $m->load(2);
+
+        $m->addHook('afterUpdateQuery',function($m, $update, $st) {
+
+            // we can use afterUpdate to make sure that record was updated
+
+            if (!$st->rowCount()) {
+                throw new \atk4\core\Exception([
+                    'Update didn\'t affect any records',
+                    'query'      => $update->getDebugQuery(false),
+                    'statement'  => $st,
+                    'model'      => $m,
+                    'conditions' => $m->conditions,
+                ]);
+            }
+        });
+
+        $this->assertEquals('Sue', $m['name']);
+
+        $a = [
+            'item' => [
+                1=>['id'=>1, 'name' => 'John'],
+            ], ];
+        $this->setDB($a);
+
+        $m['name'] = 'Peter';
+        try {
+            $m->save();
+            $e = null;
+        } catch (\Exception $e) {
+        }
+
+        $this->assertNotNull($e);
+        $this->assertEquals($a, $this->getDB());
+
+    }
 }
