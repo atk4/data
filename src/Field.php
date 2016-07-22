@@ -43,14 +43,14 @@ class Field
     /**
      * Is it system field?
      *
-     * @var boolean
+     * @var bool
      */
     public $system = false;
 
     /**
      * Is field editable? Normally you can edit fields.
      *
-     * @var boolean
+     * @var bool
      */
     public $editable = true;
 
@@ -94,6 +94,7 @@ class Field
     }
 
     // {{{ Debug Methods
+
     /**
      * Returns array with useful debug info for var_dump.
      *

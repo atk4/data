@@ -559,8 +559,8 @@ class Persistence_SQL extends Persistence
     /**
      * Inserts record in database and returns new record ID.
      *
-     * @param Model  $m
-     * @param array  $data
+     * @param Model $m
+     * @param array $data
      *
      * @return mixed
      */
@@ -691,7 +691,7 @@ class Persistence_SQL extends Persistence
         $delete->reset('where'); // because it could have join there..
         $delete->where($m->id_field, $id);
         $m->hook('beforeDeleteQuery', [$delete]);
-        
+
         try {
             $delete->execute();
         } catch (\Exception $e) {

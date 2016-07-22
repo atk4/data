@@ -14,7 +14,7 @@ class Field_SQL_Expression extends Field_SQL
     }
 
     /**
-     * Used expression
+     * Used expression.
      *
      * @var mixed
      */
@@ -24,7 +24,7 @@ class Field_SQL_Expression extends Field_SQL
      * Is field editable?
      * Expression fields can't be editable.
      *
-     * @var boolean
+     * @var bool
      */
     public $editable = false;
 
@@ -44,7 +44,7 @@ class Field_SQL_Expression extends Field_SQL
      * Should this field use alias?
      * Expression fields always need alias.
      *
-     * @return boolean
+     * @return bool
      */
     public function useAlias()
     {

@@ -238,6 +238,7 @@ class Field_Many
 
     /**
      * Adds multiple fields.
+     *
      * @see addField()
      *
      * @param array $fields Array of fields
@@ -256,6 +257,7 @@ class Field_Many
     }
 
     // {{{ Debug Methods
+
     /**
      * Returns array with useful debug info for var_dump.
      *

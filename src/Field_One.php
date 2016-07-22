@@ -201,6 +201,7 @@ class Field_One
     }
 
     // {{{ Debug Methods
+
     /**
      * Returns array with useful debug info for var_dump.
      *

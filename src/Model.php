@@ -489,12 +489,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ ArrayAccess support
+
     /**
      * Do field exist?
      *
      * @param string $name
      *
-     * @return boolean
+     * @return bool
      */
     public function offsetExists($name)
     {
@@ -630,8 +631,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Set order for model records. Multiple calls.
      *
-     * @param mixed        $field
-     * @param boolean|null $desc
+     * @param mixed     $field
+     * @param bool|null $desc
      *
      * @return $this
      */
@@ -684,10 +685,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ Persistence-related logic
+
     /**
      * Is model loaded?
      *
-     * @return boolean
+     * @return bool
      */
     public function loaded()
     {
@@ -1121,6 +1123,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ Support for actions
+
     /**
      * Execute action.
      *
@@ -1190,6 +1193,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ Relations
+
     /**
      * Private method.
      *
@@ -1301,6 +1305,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ Expressions
+
     /**
      * Add expression field.
      *
@@ -1326,6 +1331,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ Debug Methods
+
     /**
      * Returns array with useful debug info for var_dump.
      *

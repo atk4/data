@@ -12,7 +12,7 @@ namespace atk4\data;
 class Persistence_Array extends Persistence
 {
     /**
-     * Array of data
+     * Array of data.
      *
      * @var array
      */

@@ -10,7 +10,7 @@ namespace atk4\data;
 class Field_SQL extends Field implements \atk4\dsql\Expressionable
 {
     /**
-     * Actual field name
+     * Actual field name.
      *
      * @var string|null
      */
