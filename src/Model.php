@@ -21,24 +21,37 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     /**
      * The class used by addField() method.
+     *
+     * @var string
      */
     protected $_default_class_addField = 'atk4\data\Field';
 
     /**
      * The class used by hasOne() method.
+     *
+     * @var string
      */
     protected $_default_class_hasOne = 'atk4\data\Field_One';
 
     /**
      * The class used by hasMany() method.
+     *
+     * @var string
      */
     protected $_default_class_hasMany = 'atk4\data\Field_Many';
 
     /**
      * The class used by addField() method.
+     *
+     * @var string
      */
     protected $_default_class_addExpression = 'atk4\data\Field_Callback';
 
+    /**
+     * The class used by join() method.
+     *
+     * @var string
+     */
     protected $_default_class_join = 'atk4\data\Join';
 
     /**
@@ -57,6 +70,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     /**
      * Persistence driver inherited from atk4\data\Persistence.
+     *
+     * @var Persistence
      */
     public $persistence = null;
 
@@ -73,15 +88,27 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * records in the associated DataSet. Conditions are stored as
      * elements of array of 1 to 3. Use addCondition() to add new
      * conditions.
+     *
+     * @var array
      */
     public $conditions = [];
 
+    /**
+     * Array of limit set.
+     *
+     * @var array
+     */
     public $limit = [];
 
+    /**
+     * Array of set order by.
+     *
+     * @var array
+     */
     public $order = [];
 
     /**
-     * Curretly loaded record data. This record is associative array
+     * Currently loaded record data. This record is associative array
      * that contain field=>data pairs. It may contain data for un-defined
      * fields only if $_onlyFieldsMode is false.
      *
@@ -111,6 +138,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Contains ID of the curent record. If the value is null then the record
      * is considered to be new.
+     *
+     * @var mixed
      */
     public $id = null;
 
@@ -118,6 +147,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * While in most cases your id field will be called 'id', sometimes
      * you would want to use a different one or maybe don't create field
      * at all.
+     *
+     * @var string
      */
     public $id_field = 'id';
 
@@ -128,6 +159,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * shortcuts for you such as::.
      *
      *    $model->importRows(['Bananas','Oranges']); // 2 records imported
+     *
+     * @var string
      */
     public $title_field = 'name';
 
@@ -143,6 +176,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * The default behaviour is to return NULL and allow you to set new
      * fields even if addField() was not used to set the field.
+     *
+     * @var false|array
      */
     public $only_fields = false;
 
@@ -155,6 +190,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * You can set this property to "true" or "false" if you want to explicitly
      * enable or disable reloading.
+     *
+     * @var bool|null
      */
     public $reload_after_save = null;
 
@@ -174,6 +211,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * The second use actually calls add() but is prefered usage because:
      *  - it's shorter
      *  - type hinting will work;
+     *
+     * @param Persistence|array $persistence
+     * @param array             $defaults
      */
     public function __construct($persistence = null, $defaults = [])
     {
@@ -197,6 +237,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
     }
 
+    /**
+     * Set default properties of model.
+     *
+     * @param array $defaults
+     */
     public function setDefaults($defaults)
     {
         foreach ($defaults as $key => $val) {
@@ -218,6 +263,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
     }
 
+    /**
+     * Adds new field into model.
+     *
+     * @param string $name
+     * @param array  $defaults
+     *
+     * @return Field
+     */
     public function addField($name, $defaults = [])
     {
         $c = $this->_default_class_addField;
@@ -227,6 +280,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $field;
     }
 
+    /**
+     * Adds multiple fields into model.
+     *
+     * @param array $fields
+     *
+     * @return $this
+     */
     public function addFields($fields = [])
     {
         foreach ($fields as $field) {
@@ -243,6 +303,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Sets which fields we will select.
+     *
+     * @param array $fields
+     *
+     * @return $this
+     */
     public function onlyFields($fields = [])
     {
         $this->hook('onlyFields', [&$fields]);
@@ -251,6 +318,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Sets that we should select all available fields.
+     *
+     * @return $this
+     */
     public function allFields()
     {
         $this->only_fields = false;
@@ -258,6 +330,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Normalize field name.
+     *
+     * @param mixed $field
+     *
+     * @return string
+     */
     private function normalizeFieldName($field)
     {
         // $m->set($m->getElement('name'), 'John')
@@ -290,6 +369,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $field;
     }
 
+    /**
+     * Set field value.
+     *
+     * @param string|array $field
+     * @param mixed        $value
+     *
+     * @return $this
+     */
     public function set($field, $value = null)
     {
         if (func_num_args() == 1) {
@@ -347,6 +434,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Returns field value.
+     * If no field is passed, then returns array of all field values.
+     *
+     * @param mixed $field
+     *
+     * @return mixed
+     */
     public function get($field = null)
     {
         if ($field === null) {
@@ -394,21 +489,46 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ ArrayAccess support
+    /**
+     * Do field exist?
+     *
+     * @param string $name
+     *
+     * @return boolean
+     */
     public function offsetExists($name)
     {
         return array_key_exists($this->normalizeFieldName($name), $this->dirty);
     }
 
+    /**
+     * Returns field value.
+     *
+     * @param string $name
+     *
+     * @return mixed
+     */
     public function offsetGet($name)
     {
         return $this->get($name);
     }
 
+    /**
+     * Set field value.
+     *
+     * @param string $name
+     * @param mixed  $val
+     */
     public function offsetSet($name, $val)
     {
         $this->set($name, $val);
     }
 
+    /**
+     * Redo field value.
+     *
+     * @param string $name
+     */
     public function offsetUnset($name)
     {
         $name = $this->normalizeFieldName($name);
@@ -427,7 +547,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * additional condition. There is no way to remove
      * condition once added, so if you need - clone model.
      *
-     * This is the most basic for for defining condition:
+     * This is the most basic for defining condition:
      *  ->addCondition('my_field', $value);
      *
      * This condition will work across all persistence drivers universally.
@@ -446,6 +566,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * To use those, you should consult with documentation of your
      * persistence driver.
+     *
+     * @param mixed $field
+     * @param mixed $operator
+     * @param mixed $value
+     *
+     * @return $this
      */
     public function addCondition($field, $operator = null, $value = null)
     {
@@ -491,16 +617,23 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     /**
      * Shortcut for using addConditionn(id_field, $id).
+     *
+     * @param mixed $id
+     *
+     * @return $this
      */
     public function withID($id)
     {
-        $this->addCondition($this->id_field, $id);
-
-        return $this;
+        return $this->addCondition($this->id_field, $id);
     }
 
     /**
      * Set order for model records. Multiple calls.
+     *
+     * @param mixed        $field
+     * @param boolean|null $desc
+     *
+     * @return $this
      */
     public function setOrder($field, $desc = null)
     {
@@ -533,6 +666,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Set limit of DataSet.
+     *
+     * @param int      $count
+     * @param int|null $offset
+     *
+     * @return $this
+     */
     public function setLimit($count, $offset = null)
     {
         $this->limit = [$count, $offset];
@@ -543,11 +684,21 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ Persistence-related logic
+    /**
+     * Is model loaded?
+     *
+     * @return boolean
+     */
     public function loaded()
     {
         return $this->id !== null;
     }
 
+    /**
+     * Unload model.
+     *
+     * @return $this
+     */
     public function unload()
     {
         $this->id = null;
@@ -557,6 +708,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Load model.
+     *
+     * @param mixed $id
+     *
+     * @return $this
+     */
     public function load($id)
     {
         if (!$this->persistence) {
@@ -578,6 +736,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Reload model.
+     *
+     * @return $this
+     */
     public function reload()
     {
         $id = $this->id;
@@ -587,6 +750,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Try to load record.
+     * Will not throw exception if record doesn't exist.
+     *
+     * @param mixed $id
+     *
+     * @return $this
+     */
     public function tryLoad($id)
     {
         if (!$this->persistence) {
@@ -608,6 +779,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Load any record.
+     *
+     * @return $this
+     */
     public function loadAny()
     {
         if (!$this->persistence) {
@@ -629,6 +805,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Try to load any record.
+     * Will not throw exception if record doesn't exist.
+     *
+     * @return $this
+     */
     public function tryLoadAny()
     {
         if (!$this->persistence) {
@@ -650,6 +832,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Load record by condition.
+     *
+     * @param mixed $field
+     * @param mixed $value
+     *
+     * @return $this
+     */
     public function loadBy($field, $value)
     {
         $this->addCondition($field, $value);
@@ -664,6 +854,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Try to load record by condition.
+     * Will not throw exception if record doesn't exist.
+     *
+     * @param mixed $field
+     * @param mixed $value
+     *
+     * @return $this
+     */
     public function tryLoadBy($field, $value)
     {
         $this->addCondition($field, $value);
@@ -678,6 +877,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Save record.
+     *
+     * @param array $data
+     *
+     * @return $this
+     */
     public function save($data = [])
     {
         if (!$this->persistence) {
@@ -772,6 +978,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * This is a temporary method to avoid code duplication, but insert / import should
      * be implemented differently.
+     *
+     * @param Model $m
+     * @param array $row
      */
     protected function _rawInsert($m, $row)
     {
@@ -784,7 +993,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Faster method to add data, that does not modify active record.
      *
-     * Will be further optimized in the future
+     * Will be further optimized in the future.
+     *
+     * @param array $row
+     *
+     * @return mixed
      */
     public function insert($row)
     {
@@ -798,7 +1011,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Even more faster method to add adda, does not modify your
      * current record and will not return anything.
      *
-     * Will be further optimized in the future
+     * Will be further optimized in the future.
+     *
+     * @param array $row
+     *
+     * @return $this
      */
     public function import($rows)
     {
@@ -812,12 +1029,21 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     /**
      * Export DataSet as array of hashes.
+     *
+     * @param array|null $fields
+     *
+     * @return array
      */
     public function export($fields = null)
     {
         return $this->persistence->export($this, $fields);
     }
 
+    /**
+     * Returns iterator (yield values).
+     *
+     * @return mixed
+     */
     public function getIterator()
     {
         foreach ($this->persistence->prepareIterator($this) as $data) {
@@ -829,18 +1055,30 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->unload();
     }
 
+    /**
+     * Returns iterator.
+     *
+     * @return Iterator
+     */
     public function rawIterator()
     {
         return $this->persistence->prepareIterator($this);
     }
 
+    /**
+     * Executes specified method or callback for each record in DataSet.
+     *
+     * @param string|callable $method
+     *
+     * @return $this
+     */
     public function each($method)
     {
         foreach ($this as $rec) {
             if (is_string($method)) {
                 $rec->$method();
-            } else {
-                $method($rec);
+            } elseif (is_callable($method)) {
+                call_user_func($method, $rec);
             }
         }
 
@@ -850,6 +1088,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Delete record with a specified id. If no ID is specified
      * then current record is deleted.
+     *
+     * @param mixed $id
+     *
+     * @return $this
      */
     public function delete($id = null)
     {
@@ -879,6 +1121,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ Support for actions
+    /**
+     * Execute action.
+     *
+     * @param string $mode
+     * @param array  $args
+     *
+     * @return \atk4\dsql\Query
+     */
     public function action($mode, $args = [])
     {
         if (!$this->persistence) {
@@ -896,8 +1146,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Creates an objects that describes relationship between multiple tables (or collections).
      *
      * When object is loaded, then instead of pulling all the data from a single table,
-     * join will also query $foreign table in order to find additional fields. When inserting
-     * the record will be also added inside $foreign_table and relationship will be maintained
+     * join will also query $foreign_table in order to find additional fields. When inserting
+     * the record will be also added inside $foreign_table and relationship will be maintained.
+     *
+     * @param string $foreign_table
+     * @param array  $defaults
+     *
+     * @return Join
      */
     public function join($foreign_table, $defaults = [])
     {
@@ -915,12 +1170,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this->add(new $c($defaults));
     }
 
+    /**
+     * Left Join support.
+     *
+     * @see join()
+     *
+     * @param string $foreign_table
+     * @param array  $defaults
+     *
+     * @return Join
+     */
     public function leftJoin($foreign_table, $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        }
-
         $defaults['weak'] = true;
 
         return $this->join($foreign_table, $defaults);
@@ -929,6 +1190,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ Relations
+    /**
+     * Private method.
+     *
+     * @param string $c        Class name
+     * @param string $link     Link
+     * @param array  $defaults Properties
+     *
+     * @return object
+     */
     protected function _hasSomething($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
@@ -947,31 +1217,75 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this->add(new $c($defaults));
     }
 
+    /**
+     * Add hasOne field.
+     *
+     * @param string $link
+     * @param array  $defaults
+     *
+     * @return Field_One
+     */
     public function hasOne($link, $defaults = [])
     {
         return $this->_hasSomething($this->_default_class_hasOne, $link, $defaults);
     }
 
+    /**
+     * Add hasMany field.
+     *
+     * @param string $link
+     * @param array  $defaults
+     *
+     * @return Field_Many
+     */
     public function hasMany($link, $defaults = [])
     {
         return $this->_hasSomething($this->_default_class_hasMany, $link, $defaults);
     }
 
+    /**
+     * Traverse to related model.
+     *
+     * @param string $link
+     * @param array  $defaults
+     *
+     * @return Model
+     */
     public function ref($link, $defaults = [])
     {
         return $this->getElement('#ref_'.$link)->ref($defaults);
     }
 
+    /**
+     * Returns model that can be used for generating sub-query actions.
+     *
+     * @param string $link
+     * @param array  $defaults
+     *
+     * @return Model
+     */
     public function refLink($link, $defaults = [])
     {
         return $this->getElement('#ref_'.$link)->refLink($defaults);
     }
 
+    /**
+     * Return reference field.
+     *
+     * @param string $link
+     *
+     * @return Field
+     */
     public function getRef($link)
     {
         return $this->getElement('#ref_'.$link);
     }
 
+    /**
+     * Returns ll reference fields.
+     *
+     * @return array
+     */
     public function getRefs()
     {
         $refs = [];
@@ -987,6 +1301,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ Expressions
+    /**
+     * Add expression field.
+     *
+     * @param string $name
+     * @param array  $defaults
+     *
+     * @return Field_Callback
+     */
     public function addExpression($name, $defaults)
     {
         if (!is_array($defaults)) {
@@ -1004,6 +1326,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     // }}}
 
     // {{{ Debug Methods
+    /**
+     * Returns array with useful debug info for var_dump.
+     *
+     * @return array
+     */
     public function __debugInfo()
     {
         $arr = [

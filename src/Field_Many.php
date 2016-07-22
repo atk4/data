@@ -257,7 +257,7 @@ class Field_Many
 
     // {{{ Debug Methods
     /**
-     * Returns array with useful info for debugging.
+     * Returns array with useful debug info for var_dump.
      *
      * @return array
      */
