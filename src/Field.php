@@ -9,17 +9,41 @@ class Field
 
     public $default = null;
 
+    /**
+     * Field type, for example, 'string', 'boolean', 'numeric' etc.
+     *
+     * @var string
+     */
     public $type = 'string';
 
+    /**
+     * Actual field name
+     *
+     * @var string|null
+     */
     public $actual = null;
 
     public $join = null;
 
+    /**
+     * Is it system field?
+     *
+     * @var boolean
+     */
     public $system = false;
 
-    // normally you can edit fields
+    /**
+     * Is field editable? Normally you can edit fields.
+     *
+     * @var boolean
+     */
     public $editable = true;
 
+    /**
+     * Constructor. You can pass field properties as array.
+     *
+     * @param array $defaults
+     */
     public function __construct($defaults = [])
     {
         foreach ($defaults as $key => $val) {
@@ -27,13 +51,25 @@ class Field
         }
     }
 
+    /**
+     * Returns this field object.
+     *
+     * @return Field
+     */
     public function get()
     {
         return $this->owner[$this->short_name];
     }
 
     /**
-     * if you can, use $this->$attr = foo instead of this method. No magic.
+     * Sets field attribute value.
+     *
+     * If you can, use $this->$attr = foo instead of this method. No magic.
+     *
+     * @param string $attr  Attribute name
+     * @param mixed  $value Attribute value
+     *
+     * @return $this
      */
     public function setAttr($attr, $value)
     {
@@ -43,6 +79,11 @@ class Field
     }
 
     // {{{ Debug Methods
+    /**
+     * Returns array with useful info for debugging.
+     *
+     * @return array
+     */
     public function __debugInfo()
     {
         $arr = [

@@ -8,10 +8,24 @@ class Field_SQL_Expression extends Field_SQL
         init as _init;
     }
 
+    /**
+     * Used expression
+     *
+     * @var mixed
+     */
     public $expr = null;
 
+    /**
+     * Is field editable?
+     * Expression fields can't be editable.
+     *
+     * @var boolean
+     */
     public $editable = false;
 
+    /**
+     * Initialization.
+     */
     public function init()
     {
         $this->_init();
@@ -21,6 +35,12 @@ class Field_SQL_Expression extends Field_SQL
         }
     }
 
+    /**
+     * Should this field use alias?
+     * Expression fields always need alias.
+     *
+     * @return boolean
+     */
     public function useAlias()
     {
         return true;
@@ -28,6 +48,10 @@ class Field_SQL_Expression extends Field_SQL
 
     /**
      * When field is used as expression, this method will be called.
+     *
+     * @param \atk\dsql\Expression $expression
+     *
+     * @return \atk\dsql\Expression
      */
     public function getDSQLExpression($expression)
     {

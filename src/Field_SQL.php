@@ -4,8 +4,18 @@ namespace atk4\data;
 
 class Field_SQL extends Field implements \atk4\dsql\Expressionable
 {
+    /**
+     * Actual field name
+     *
+     * @var string|null
+     */
     public $actual = null;
 
+    /**
+     * Should this field use alias?
+     *
+     * @return boolean
+     */
     public function useAlias()
     {
         return isset($this->actual);
@@ -13,6 +23,10 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable
 
     /**
      * When field is used as expression, this method will be called.
+     *
+     * @param \atk\dsql\Expression $expression
+     *
+     * @return \atk\dsql\Expression
      */
     public function getDSQLExpression($expression)
     {
