@@ -41,7 +41,7 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable
                     ? (isset($this->join->foreign_alias)
                         ? $this->join->foreign_alias
                         : $this->join->short_name)
-                    : ($this->owner->table_alias ?: $this->owner->table),
+                    : (isset($this->owner->table_alias) ? $this->owner->table_alias : $this->owner->table),
                 $this->actual ?: $this->short_name,
             ]);
         } else {
