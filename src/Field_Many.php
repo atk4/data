@@ -88,7 +88,7 @@ class Field_Many
     }
 
     /**
-     * Returns model.
+     * Returns field model.
      *
      * @param array Array of properties
      *
