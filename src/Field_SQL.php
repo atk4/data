@@ -19,7 +19,7 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable
     /**
      * Should this field use alias?
      *
-     * @return boolean
+     * @return bool
      */
     public function useAlias()
     {
