@@ -9,15 +9,56 @@ namespace atk4\data;
  */
 class Persistence_SQL extends Persistence
 {
-    // atk4\dsql\Connection
+    /**
+     * Connection object.
+     *
+     * @var \atk4\dsql\Connection
+     */
     public $connection;
 
+    /**
+     * Default class when adding new field.
+     *
+     * @var string
+     */
     public $_default_class_addField = 'atk4\data\Field_SQL';
+
+    /**
+     * Default class when adding hasOne field.
+     *
+     * @var string
+     */
     public $_default_class_hasOne = 'atk4\data\Field_SQL_One';
+
+    /**
+     * Default class when adding hasMany field.
+     *
+     * @var string
+     */
     public $_default_class_hasMany = null; //'atk4\data\Field_Many';
+
+    /**
+     * Default class when adding Expression field.
+     *
+     * @var string
+     */
     public $_default_class_addExpression = 'atk4\data\Field_SQL_Expression';
+
+    /**
+     * Default class when adding join.
+     *
+     * @var string
+     */
     public $_default_class_join = 'atk4\data\Join_SQL';
 
+    /**
+     * Constructor.
+     *
+     * @param \atk4\dsql\Connection|string $connection
+     * @param string                       $user
+     * @param string                       $password
+     * @param array                        $args
+     */
     public function __construct($connection, $user = null, $password = null, $args = [])
     {
         if ($connection instanceof \atk4\dsql\Connection) {
@@ -42,11 +83,24 @@ class Persistence_SQL extends Persistence
         );
     }
 
+    /**
+     * Returns Query instance.
+     *
+     * @return \atk4\dsql\Query
+     */
     public function dsql()
     {
         return $this->connection->dsql();
     }
 
+    /**
+     * Associate model with the data driver.
+     *
+     * @param Model|string $m        Model which will use this persistence
+     * @param array        $defaults Properties
+     *
+     * @return Model
+     */
     public function add($m, $defaults = [])
     {
         // Use our own classes for fields, relations and expressions unless
@@ -60,8 +114,6 @@ class Persistence_SQL extends Persistence
         ], $defaults);
 
         $m = parent::add($m, $defaults);
-
-
 
 
         if (!isset($m->table) || (!is_string($m->table) && $m->table !== false)) {
@@ -80,11 +132,25 @@ class Persistence_SQL extends Persistence
         return $m;
     }
 
+    /**
+     * Initialize persistance.
+     *
+     * @param Model $m
+     */
     protected function initPersistence(Model $m)
     {
         $m->addMethod('expr', $this);
     }
 
+    /**
+     * Creates new Expression object from expression.
+     *
+     * @param Model  $m
+     * @param string $expr
+     * @param array  $args
+     *
+     * @return \atk4\dsql\Expression
+     */
     public function expr($m, $expr, $args = [])
     {
         preg_replace_callback(
@@ -105,6 +171,10 @@ class Persistence_SQL extends Persistence
 
     /**
      * Initializes base query for model $m.
+     *
+     * @param Model $m
+     *
+     * @return \atk4\dsql\Query
      */
     public function initQuery($m)
     {
@@ -121,6 +191,12 @@ class Persistence_SQL extends Persistence
         return $d;
     }
 
+    /**
+     * Adds Field in Query.
+     *
+     * @param \atk4\dsql\Query $q
+     * @param Field            $field
+     */
     public function initField($q, $field)
     {
         if ($field->useAlias()) {
@@ -130,6 +206,13 @@ class Persistence_SQL extends Persistence
         }
     }
 
+    /**
+     * Adds model fields in Query.
+     *
+     * @param Model            $m
+     * @param \atk4\dsql\Query $q
+     * @param array|null       $fields
+     */
     public function initQueryFields($m, $q, $fields = null)
     {
         if ($fields) {
@@ -163,6 +246,12 @@ class Persistence_SQL extends Persistence
         }
     }
 
+    /**
+     * Will set limit defined inside $m onto query $q.
+     *
+     * @param Model            $m
+     * @param \atk4\dsql\Query $q
+     */
     protected function setLimitOrder($m, $q)
     {
         if ($m->limit && ($m->limit[0] || $m->limit[1])) {
@@ -182,6 +271,11 @@ class Persistence_SQL extends Persistence
 
     /**
      * Will apply conditions defined inside $m onto query $q.
+     *
+     * @param Model            $m
+     * @param \atk4\dsql\Query $q
+     *
+     * @return \atk4\dsql\Query
      */
     public function initQueryConditions($m, $q)
     {
@@ -211,11 +305,18 @@ class Persistence_SQL extends Persistence
                 $q->where($cond[0], $cond[1], $cond[2]);
             }
         }
+
+        return $q;
     }
 
     /**
-     * Executing $model->aciton('update') will call
-     * this method.
+     * Executing $model->action('update') will call this method.
+     *
+     * @param Model  $m
+     * @param string $type
+     * @param array  $args
+     *
+     * @return \atk4\dsql\Query
      */
     public function action($m, $type, $args = [])
     {
@@ -225,6 +326,7 @@ class Persistence_SQL extends Persistence
                 'args' => $args,
             ]);
         }
+
         $q = $this->initQuery($m);
         switch ($type) {
             case 'insert':
@@ -270,7 +372,7 @@ class Persistence_SQL extends Persistence
                 return $q;
 
             case 'fx':
-                if (!isset($args[0]) || !isset($args[1])) {
+                if (!isset($args[0], $args[1])) {
                     throw new Exception([
                         'fx action needs 2 argumens, eg: ["sum", "amount"]',
                         'action' => $type,
@@ -302,6 +404,11 @@ class Persistence_SQL extends Persistence
     /**
      * Generates action that performs load of the record $id
      * and returns requested fields.
+     *
+     * @param Model $m
+     * @param mixed $id
+     *
+     * @return array
      */
     public function load(Model $m, $id)
     {
@@ -344,6 +451,14 @@ class Persistence_SQL extends Persistence
         return $data;
     }
 
+    /**
+     * Tries to load data record, but will not fail if record can't be loaded.
+     *
+     * @param Model $m
+     * @param mixed $id
+     *
+     * @return array
+     */
     public function tryLoad(Model $m, $id)
     {
         $load = $this->action($m, 'select');
@@ -373,6 +488,13 @@ class Persistence_SQL extends Persistence
         return $data;
     }
 
+    /**
+     * Loads any one record.
+     *
+     * @param Model $m
+     *
+     * @return array
+     */
     public function loadAny(Model $m)
     {
         $load = $this->action($m, 'select');
@@ -402,6 +524,13 @@ class Persistence_SQL extends Persistence
         return $data;
     }
 
+    /**
+     * Tries to load any one record.
+     *
+     * @param Model $m
+     *
+     * @return array
+     */
     public function tryLoadAny(Model $m)
     {
         $load = $this->action($m, 'select');
@@ -427,6 +556,14 @@ class Persistence_SQL extends Persistence
         return $data;
     }
 
+    /**
+     * Inserts record in database and returns new record ID.
+     *
+     * @param Model  $m
+     * @param array  $data
+     *
+     * @return mixed
+     */
     public function insert(Model $m, $data)
     {
         $insert = $this->action($m, 'insert');
@@ -458,6 +595,14 @@ class Persistence_SQL extends Persistence
         return $insert->connection->lastInsertID();
     }
 
+    /**
+     * Export all DataSet.
+     *
+     * @param Model      $m
+     * @param array|null $fields
+     *
+     * @return array
+     */
     public function export(Model $m, $fields = null)
     {
         $export = $this->action($m, 'select', [$fields]);
@@ -465,6 +610,13 @@ class Persistence_SQL extends Persistence
         return $export->get();
     }
 
+    /**
+     * Prepare iterator.
+     *
+     * @param Model $m
+     *
+     * @return \PDOStatement
+     */
     public function prepareIterator(Model $m)
     {
         try {
@@ -481,6 +633,13 @@ class Persistence_SQL extends Persistence
         }
     }
 
+    /**
+     * Updates record in database.
+     *
+     * @param Model $m
+     * @param mixed $id
+     * @param array $data
+     */
     public function update(Model $m, $id, $data)
     {
         $update = $this->action($m, 'update');
@@ -520,12 +679,19 @@ class Persistence_SQL extends Persistence
         }
     }
 
+    /**
+     * Deletes record from database.
+     *
+     * @param Model $m
+     * @param mixed $id
+     */
     public function delete(Model $m, $id)
     {
         $delete = $this->action($m, 'delete');
         $delete->reset('where'); // because it could have join there..
         $delete->where($m->id_field, $id);
         $m->hook('beforeDeleteQuery', [$delete]);
+        
         try {
             $delete->execute();
         } catch (\Exception $e) {
