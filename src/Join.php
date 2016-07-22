@@ -4,6 +4,9 @@
 
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Join
 {
     use \atk4\core\TrackableTrait {

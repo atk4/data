@@ -4,6 +4,9 @@
 
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Field_Many
 {
     use \atk4\core\TrackableTrait {

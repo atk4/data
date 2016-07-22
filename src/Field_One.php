@@ -4,6 +4,9 @@
 
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Field_One
 {
     use \atk4\core\InitializerTrait {

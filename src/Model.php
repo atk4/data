@@ -4,6 +4,9 @@
 
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Model implements \ArrayAccess, \IteratorAggregate
 {
     use \atk4\core\ContainerTrait;

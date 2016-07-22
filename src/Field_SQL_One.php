@@ -4,6 +4,9 @@
 
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Field_SQL_One extends Field_One
 {
     /**
@@ -41,9 +44,9 @@ class Field_SQL_One extends Field_One
     {
         $m = $this->getModel();
         $m->addCondition(
-                $this->their_field ?: ($m->id_field),
-                $this->referenceOurValue($m)
-            );
+            $this->their_field ?: ($m->id_field),
+            $this->referenceOurValue($m)
+        );
 
         return $m;
     }
