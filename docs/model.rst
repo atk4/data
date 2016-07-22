@@ -216,7 +216,7 @@ Full example::
 Hooks
 =====
 
-- beforeSave [not currently worknig]
+- beforeSave [not currently working]
 
   - beforeInsert [only if insert]
     - beforeInsertQuery [sql only] (query)

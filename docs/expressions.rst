@@ -105,7 +105,7 @@ You can use a callback method when defining expression::
 Model Reloading after Save
 --------------------------
 
-Whe you add SQL Expressions into your model, that means that some of the fields
+When you add SQL Expressions into your model, that means that some of the fields
 might be out of sync and you might need your SQL to recalculate those expressions.
 
 To simplify your life, Agile Data implements smart model reloading. Consider
@@ -137,7 +137,7 @@ This is to ensure that expression 'sum' would be re-calculated for the values of
 4 and 6 so the final line will output a desired result - 10;
 
 Reload after save will only be executed if you have defined any expressions
-inside your model, however you can affect this beahviour::
+inside your model, however you can affect this behaviour::
 
     $m = new Model_Math($db, ['reload_after_save' => false]);
     $m['a'] = 4;

@@ -37,7 +37,7 @@ populate $owner, and $app values (due to AppScopeTrait) as well as
 execute init() method, which I want to define like this::
 
 
-    function init() {
+    public function init() {
         $this->_init();
 
         if(isset($this->owner->no_audit)){
@@ -74,13 +74,13 @@ Next we are going to define 'created_dts' field which will default to the curren
 
 The default value for our 'created_by_user_id' field would depend on a currently-logged in user,
 which would typically be accessible through your application. AppScope allows you to pass
-$app arround through all the objects, which means that your Audit Controller will be able
+$app around through all the objects, which means that your Audit Controller will be able
 to get the current user.
 
 Of course if the application is not defined, no default is set. This would be handy for
 unit tests where you could manually specify the value for this field.
 
-The last 2 fields (update_*) will be updated through a hook - beforeSave() and will
+The last 2 fields (update_*) will be updated through a hook - beforeUpdate() and will
 provide the values to be saved during ``save()``. beforeUpdate() will not be called when
 new record is inserted, so those fields will be left as "null" after initial insert.
 
@@ -161,7 +161,7 @@ Start by creating a class::
         }
     }
 
-This implementation of soft-delete can be turned off by setting model's property 'no_soft_delete'
+This implementation of soft-delete can be turned off by setting model's property 'deleted_only'
 to true (if you want to recover a record).
 
 When active, a new field will be defined 'is_deleted' and a new dynamic method will be added into
