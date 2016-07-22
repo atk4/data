@@ -7,6 +7,11 @@ class Field
     use \atk4\core\TrackableTrait;
     use \atk4\core\HookTrait;
 
+    /**
+     * Default value of field.
+     *
+     * @var mixed
+     */
     public $default = null;
 
     /**
@@ -17,12 +22,17 @@ class Field
     public $type = 'string';
 
     /**
-     * Actual field name
+     * Actual field name.
      *
      * @var string|null
      */
     public $actual = null;
 
+    /**
+     * Join object.
+     *
+     * @var Join|null
+     */
     public $join = null;
 
     /**
