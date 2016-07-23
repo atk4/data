@@ -4,6 +4,9 @@
 
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Field_Many
 {
     use \atk4\core\TrackableTrait {
@@ -13,33 +16,45 @@ class Field_Many
 
     /**
      * Use this alias for related entity by default.
+     *
+     * @var string
      */
     protected $table_alias;
 
     /**
      * What should we pass into owner->ref() to get
      * through to this reference.
+     *
+     * @var string
      */
     protected $link;
 
     /**
      * Definition of the destination model, that can
      * be either an object, a callback or a string.
+     *
+     * @var mixed
      */
     protected $model;
 
     /**
-     * their field will be $table.'_id' by default.
+     * Their field will be $table.'_id' by default.
+     *
+     * @var string
      */
     protected $their_field = null;
 
     /**
-     * our field will be 'id' by default.
+     * Our field will be 'id' by default.
+     *
+     * @var string
      */
     protected $our_field = null;
 
     /**
-     * default constructor. Will copy argument into properties.
+     * Default constructor. Will copy argument into properties.
+     *
+     * @param array $defaults
      */
     public function __construct($defaults = [])
     {
@@ -59,17 +74,29 @@ class Field_Many
 
     /**
      * Will use either foreign_alias or create #join_<table>.
+     *
+     * @return string
      */
     public function getDesiredName()
     {
         return '#ref_'.$this->link;
     }
 
+    /**
+     * Initialization.
+     */
     public function init()
     {
         $this->_init();
     }
 
+    /**
+     * Returns field model.
+     *
+     * @param array Array of properties
+     *
+     * @return Model
+     */
     protected function getModel($defaults = [])
     {
         if (!isset($defaults['table_alias'])) {
@@ -106,29 +133,41 @@ class Field_Many
 
         return $p->add($p->normalizeClassName($this->model, 'Model'), $defaults);
 
+        /* @todo These lines will never be executed !?
         throw new Exception([
             'Model is not defined for the relation',
             'model' => $this->model,
         ]);
+        */
     }
 
+    /**
+     * Returns our field value or id.
+     *
+     * @return mixed
+     */
     protected function getOurValue()
     {
         if ($this->owner->loaded()) {
-            if ($this->our_field) {
-                return $this->owner[$this->our_field];
-            } else {
-                return $this->owner->id;
-            }
+            return $this->our_field
+                ? $this->owner[$this->our_field]
+                : $this->owner->id;
         } else {
             // create expression based on exsting conditions
             return $this->owner->action(
-                'field', [
+                'field',
+                [
                     $this->our_field ?: $this->owner->id_field,
-                ]);
+                ]
+            );
         }
     }
 
+    /**
+     * Returns our field or id field.
+     *
+     * @return Field
+     */
     protected function referenceOurValue()
     {
         $this->owner->persistence_data['use_table_prefixes'] = true;
@@ -140,6 +179,10 @@ class Field_Many
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table but
      * form the join instead.
+     *
+     * @param array $defaults Properties
+     *
+     * @return Model
      */
     public function ref($defaults = [])
     {
@@ -151,7 +194,11 @@ class Field_Many
     }
 
     /**
-     * Creates model that can be used for generating sub-query acitons.
+     * Creates model that can be used for generating sub-query actions.
+     *
+     * @param array $defaults Properties
+     *
+     * @return Model
      */
     public function refLink($defaults = [])
     {
@@ -164,8 +211,13 @@ class Field_Many
 
     /**
      * Adding field into join will automatically associate that field
-     * with this join. That means it won't be loaded from $table but
+     * with this join. That means it won't be loaded from $table, but
      * form the join instead.
+     *
+     * @param string $n        Field name
+     * @param array  $defaults Properties
+     *
+     * @return Field_Callback
      */
     public function addField($n, $defaults = [])
     {
@@ -184,6 +236,15 @@ class Field_Many
         });
     }
 
+    /**
+     * Adds multiple fields.
+     *
+     * @see addField()
+     *
+     * @param array $fields Array of fields
+     *
+     * @return $this
+     */
     public function addFields($fields = [])
     {
         foreach ($fields as $field) {
@@ -196,6 +257,12 @@ class Field_Many
     }
 
     // {{{ Debug Methods
+
+    /**
+     * Returns array with useful debug info for var_dump.
+     *
+     * @return array
+     */
     public function __debugInfo()
     {
         $arr = [
