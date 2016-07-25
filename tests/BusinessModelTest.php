@@ -88,6 +88,10 @@ class BusinessModelTest extends TestCase
         $m['name'] = 10;
         $this->assertEquals(['name' => 5], $m->dirty);
 
+        $m['name'] = 15;
+        $this->assertEquals(['name' => 5], $m->dirty);
+
+
         $m['name'] = 5;
         $this->assertEquals([], $m->dirty);
 

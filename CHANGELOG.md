@@ -3,9 +3,8 @@
 This is our first maintenance release that solves several important
 issues.
 
-* 
 * Added support for automated model reloading after save(). 
-* Added documentaiton sections for Advanced Topics with tips and tricks
+* Added documentation sections for Advanced Topics with tips and tricks
   * how to implement [soft-delete](http://agile-data.readthedocs.io/en/develop/advanced.html#soft-delete), [audit](http://agile-data.readthedocs.io/en/develop/advanced.html#audit-fields)
   * how to [override default method actions](http://agile-data.readthedocs.io/en/develop/model.html?highlight=hook#how-to-prevent-action), e.g. [delete()](shttp://agile-data.readthedocs.io/en/develop/advanced.html#soft-delete-that-overrides-default-delete)
   * how to [verify updates](http://agile-data.readthedocs.io/en/develop/model.html?highlight=hook#how-to-verify-updates)
@@ -18,8 +17,8 @@ issues.
 This is our first stable version release for Agile Data. The class and
 method structure has sufficiently matured and will not be changed much
 anymore. Further 1.0.x versions will be focused on increasing stability
-and bugfixes. Versions 1.x will add more notable features, but will
-if any incompatibilities will occur, they will be mentioned in release
+and bugfixes. Versions 1.x will add more notable features, but if any
+incompatibilities will occur, then they will be mentioned in release
 notes and CHAGELOG.md
 
 * Rewrote QuickStart guide and README.md, so everyone should re-read them
