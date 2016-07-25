@@ -374,9 +374,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param string|array $field
      *
-     * @return boolean
+     * @return bool
      */
-    function isDirty($fields = [])
+    public function isDirty($fields = [])
     {
         if (!is_array($fields)) {
             $fields = [$fields];
@@ -385,7 +385,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($fields as $field) {
             $field = $this->normalizeFieldName($field);
 
-            if(isset($this->dirty[$field])) {
+            if (isset($this->dirty[$field])) {
                 return true;
             }
         }
