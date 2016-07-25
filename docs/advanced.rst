@@ -275,4 +275,52 @@ You can still access the deleted records::
 
 Calling delete() on the model with 'deleted_only' property will delete it permanently.
 
+Creating Unique Field
+=====================
+
+Database can has UNIQUE constraint, but this does work if you use DataSet. For instance, you
+may be only able to create one 'Category'  with name 'Book', but what if there is a
+soft-deleted record with same name or record that belongs to another user?
+
+With Agile Data you can create controller that will ensure that certain fields inside
+your model are unique::
+
+    class Controller_UniqueFields {
+        use \atk4\core\InitializerTrait {
+            init as _init;
+        }
+        use \atk4\core\TrackableTrait;
+
+        protected $fields = null;
+
+        function init() {
+            $this->_init();
+
+            // by default make 'name' unique
+            if (!$this->fields) {
+                $this->fields = [$this->owner->title_field];
+            }
+
+            $this->owner->addHook('beforeSave', $this);
+        }
+
+        function beforeSave($m) 
+        {
+            foreach ($this->fields as $field) {
+                if ($m->dirty[$field]) {
+                    $mm = clone $m;
+                    $mm->addCondition($mm->id_field != $this->id);
+                    $mm->tryLoadBy($field, $m[$field]);
+
+                    if ($mm->loaded()) {
+                        throw new \atk4\core\Exception(['Duplicate record exists', 'field'=>$field, 'value'=>$m[$field]]);
+                    }
+                }
+            }
+        }
+    }
+
+As expected - when you add a new model the new values are checked against existing records. You can also slightly modify the logic
+to make addCondition additive if you are verifying for the combination of matched fields.
+
 
