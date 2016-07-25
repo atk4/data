@@ -419,7 +419,7 @@ class Persistence_SQL extends Persistence
         // execute action
         try {
             $data = $load->getRow();
-        } catch (\Exception $e) {
+        } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to load due to query error',
                 'query'      => $load->getDebugQuery(false),
@@ -505,7 +505,7 @@ class Persistence_SQL extends Persistence
 
         if (!$data) {
             throw new Exception([
-                'Unable to load record',
+                'Unable to load any record',
                 'model' => $m,
                 'query' => $load->getDebugQuery(false),
             ]);
@@ -581,7 +581,7 @@ class Persistence_SQL extends Persistence
         try {
             $m->hook('beforeInsertQuery', [$insert]);
             $st = $insert->execute();
-        } catch (\Exception $e) {
+        } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to execute insert query',
                 'query'      => $insert->getDebugQuery(false),
@@ -623,7 +623,7 @@ class Persistence_SQL extends Persistence
             $export = $this->action($m, 'select');
 
             return $export->execute();
-        } catch (\Exception $e) {
+        } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to execute iteration query',
                 'query'      => $export->getDebugQuery(false),
@@ -642,7 +642,8 @@ class Persistence_SQL extends Persistence
      */
     public function update(Model $m, $id, $data)
     {
-        $update = $this->action($m, 'update');
+        $update = $this->initQuery($m);
+        $update->mode('update');
 
         // only apply fields that has been modified
         $cnt = 0;
@@ -662,7 +663,7 @@ class Persistence_SQL extends Persistence
         try {
             $m->hook('beforeUpdateQuery', [$update]);
             $st = $update->execute();
-        } catch (\Exception $e) {
+        } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to update due to query error',
                 'query'      => $update->getDebugQuery(false),
@@ -687,16 +688,16 @@ class Persistence_SQL extends Persistence
      */
     public function delete(Model $m, $id)
     {
-        $delete = $this->action($m, 'delete');
-        $delete->reset('where'); // because it could have join there..
+        $delete = $this->initQuery($m);
+        $delete->mode('delete');
         $delete->where($m->id_field, $id);
         $m->hook('beforeDeleteQuery', [$delete]);
 
         try {
             $delete->execute();
-        } catch (\Exception $e) {
+        } catch (\PDOException $e) {
             throw new Exception([
-                'Unable to load due to query error',
+                'Unable to delete due to query error',
                 'query'      => $delete->getDebugQuery(false),
                 'model'      => $m,
                 'conditions' => $m->conditions,
