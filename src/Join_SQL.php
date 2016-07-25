@@ -194,11 +194,9 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             return;
         }
 
-        //if ($this->dsql->args['set']) {
         $update = $this->dsql();
         $update->where($this->foreign_field, $this->id);
         $update->update();
-        //}
     }
 
     public function doDelete($model, $id)
@@ -211,13 +209,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         $delete
             ->where($this->foreign_field, $this->id);
 
-        //if ($this->delete_behaivour == 'cascade') {
-            $delete->delete()->execute();
-        //} elseif ($this->delete_behaivour == 'setnull') {
-            //$delete
-                //->set($this->foreign_field, null)
-                //->update();
-        //}
+        $delete->delete()->execute();
     }
 
     public function set($field, $value)
