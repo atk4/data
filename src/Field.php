@@ -55,6 +55,13 @@ class Field
     public $editable = true;
 
     /**
+     * Setting this to true will never actually store
+     * the field in the database. It will action as normal,
+     * but will be skipped by update/insert.
+     */
+    public $never_persist = false;
+
+    /**
      * Constructor. You can pass field properties as array.
      *
      * @param array $defaults
