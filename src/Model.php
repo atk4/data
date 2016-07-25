@@ -370,6 +370,30 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Will return true if any of the specified fields are dirty.
+     *
+     * @param string|array $field
+     *
+     * @return bool
+     */
+    public function isDirty($fields = [])
+    {
+        if (!is_array($fields)) {
+            $fields = [$fields];
+        }
+
+        foreach ($fields as $field) {
+            $field = $this->normalizeFieldName($field);
+
+            if (isset($this->dirty[$field])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Set field value.
      *
      * @param string|array $field
@@ -1197,6 +1221,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function leftJoin($foreign_table, $defaults = [])
     {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        }
         $defaults['weak'] = true;
 
         return $this->join($foreign_table, $defaults);
@@ -1215,7 +1242,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return object
      */
-    protected function _hasSomething($c, $link, $defaults = [])
+    protected function _hasRelation($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
             if ($defaults) {
@@ -1243,7 +1270,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function hasOne($link, $defaults = [])
     {
-        return $this->_hasSomething($this->_default_class_hasOne, $link, $defaults);
+        return $this->_hasRelation($this->_default_class_hasOne, $link, $defaults);
     }
 
     /**
@@ -1256,7 +1283,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function hasMany($link, $defaults = [])
     {
-        return $this->_hasSomething($this->_default_class_hasMany, $link, $defaults);
+        return $this->_hasRelation($this->_default_class_hasMany, $link, $defaults);
     }
 
     /**
