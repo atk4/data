@@ -655,9 +655,6 @@ class Persistence_SQL extends Persistence
             $update->set($f->actual ?: $f->short_name, $value);
             $cnt++;
         }
-        if (!$cnt) {
-            return;
-        }
         $update->where($m->getElement($m->id_field), $id);
 
 
@@ -665,7 +662,9 @@ class Persistence_SQL extends Persistence
 
         try {
             $m->hook('beforeUpdateQuery', [$update]);
-            $st = $update->execute();
+            if ($cnt) {
+                $st = $update->execute();
+            }
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to update due to query error',
@@ -678,7 +677,7 @@ class Persistence_SQL extends Persistence
         $m->hook('afterUpdateQuery', [$update, $st]);
 
         // if any rows were updated in database, and we had expressions, reload
-        if ($m->reload_after_save === true && $st->rowCount()) {
+        if ($m->reload_after_save === true && (!$st || $st->rowCount())) {
             $d = $m->dirty;
             $m->reload();
             $m->_dirty_after_reload = $m->dirty;
