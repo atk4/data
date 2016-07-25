@@ -649,7 +649,7 @@ class Persistence_SQL extends Persistence
         $cnt = 0;
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
-            $update->set($f->actual ?: $f->short_name, $value);
+            $update->set($f, $value);
             $cnt++;
         }
         if (!$cnt) {
