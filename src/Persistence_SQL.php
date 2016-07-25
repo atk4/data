@@ -642,7 +642,8 @@ class Persistence_SQL extends Persistence
      */
     public function update(Model $m, $id, $data)
     {
-        $update = $this->action($m, 'update');
+        $update = $this->initQuery($m);
+        $update->mode('update');
 
         // only apply fields that has been modified
         $cnt = 0;
@@ -687,8 +688,8 @@ class Persistence_SQL extends Persistence
      */
     public function delete(Model $m, $id)
     {
-        $delete = $this->action($m, 'delete');
-        $delete->reset('where'); // because it could have join there..
+        $delete = $this->initQuery($m);
+        $delete->mode('delete');
         $delete->where($m->id_field, $id);
         $m->hook('beforeDeleteQuery', [$delete]);
 
