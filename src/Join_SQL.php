@@ -142,12 +142,6 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         unset($model->data[$this->short_name]);
     }
 
-    public function afterUnload($model)
-    {
-        $this->id = null;
-        $this->save_buffer=[];
-    }
-
     public function beforeInsertQuery($model, $query)
     {
         if ($this->weak) {
