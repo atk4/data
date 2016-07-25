@@ -258,11 +258,27 @@ class JoinSQLTest extends SQLTestCase
             ], ], $this->getDB()
         );
 
-        $m_u->load(3);
+        $m_u->load(1);
         $m_u['name'] = 'XX';
         $m_u['contact_phone'] = '+999';
+        $m_u->load(3);
+        $m_u['name'] = 'XX';
         $m_u->save();
 
+
+        $this->assertEquals([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+            ], 'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+555'],
+                2 => ['id' => 2, 'contact_phone' => '+321'],
+            ], ], $this->getDB()
+        );
+
+        $m_u['contact_phone'] = '+999';
+        $m_u->save();
 
         $this->assertEquals([
             'user' => [
@@ -274,7 +290,6 @@ class JoinSQLTest extends SQLTestCase
                 2 => ['id' => 2, 'contact_phone' => '+999'],
             ], ], $this->getDB()
         );
-
 
         $m_u->tryLoad(4);
         $m_u['name'] = 'YYY';
