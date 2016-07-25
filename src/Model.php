@@ -370,6 +370,30 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Will return true if any of the specified fields are dirty.
+     *
+     * @param string|array $field
+     *
+     * @return boolean
+     */
+    function isDirty($fields = [])
+    {
+        if (!is_array($fields)) {
+            $fields = [$fields];
+        }
+
+        foreach ($fields as $field) {
+            $field = $this->normalizeFieldName($field);
+
+            if(isset($this->dirty[$field])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Set field value.
      *
      * @param string|array $field
