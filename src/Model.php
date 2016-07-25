@@ -703,9 +703,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function unload()
     {
+        $this->hook('beforeUnload');
         $this->id = null;
         $this->data = [];
         $this->dirty = [];
+        $this->hook('afterUnload');
 
         return $this;
     }
