@@ -676,7 +676,10 @@ class Persistence_SQL extends Persistence
 
         // if any rows were updated in database, and we had expressions, reload
         if ($m->reload_after_save === true && $st->rowCount()) {
+            $d = $m->dirty;
             $m->reload();
+            $m->_dirty_after_reload = $m->dirty;
+            $m->dirty = $d;
         }
     }
 
