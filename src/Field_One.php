@@ -4,6 +4,9 @@
 
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Field_One
 {
     use \atk4\core\InitializerTrait {
@@ -13,35 +16,52 @@ class Field_One
 
     /**
      * Use this alias for related entity by default.
+     *
+     * @var string
      */
     protected $table_alias;
 
     /**
      * What should we pass into owner->ref() to get
      * through to this reference.
+     *
+     * @var string
      */
     protected $link;
 
     /**
      * Definition of the destination model, that can
      * be either an object, a callback or a string.
+     *
+     * @var Model|null
      */
     protected $model;
 
+    /**
+     * Our field will be 'id' by default.
+     *
+     * @var string
+     */
     protected $our_field = null;
 
     /**
-     * their field will be $table.'_id' by default.
+     * Their field will be $table.'_id' by default.
+     *
+     * @var string
      */
     protected $their_field = null;
 
     /**
-     * points to the join if we are part of one.
+     * Points to the join if we are part of one.
+     *
+     * @var Join|null
      */
     protected $join = null;
 
     /**
-     * default constructor. Will copy argument into properties.
+     * Default constructor. Will copy argument into properties.
+     *
+     * @param array $defaults
      */
     public function __construct($defaults = [])
     {
@@ -57,12 +77,17 @@ class Field_One
 
     /**
      * Will use either foreign_alias or create #join_<table>.
+     *
+     * @return string
      */
     public function getDesiredName()
     {
         return '#ref_'.$this->link;
     }
 
+    /**
+     * Initialization.
+     */
     public function init()
     {
         $this->_init();
@@ -74,6 +99,13 @@ class Field_One
         }
     }
 
+    /**
+     * Returns model of field.
+     *
+     * @param array $defaults Properties
+     *
+     * @return Model
+     */
     public function getModel($defaults = [])
     {
         if (!isset($defaults['table_alias'])) {
@@ -109,12 +141,19 @@ class Field_One
 
         return $p->add($p->normalizeClassName($this->model, 'Model'), $defaults);
 
+        /* @todo These lines will never be executed !?
         throw new Exception([
             'Model is not defined for the relation',
             'model' => $this->model,
         ]);
+        */
     }
 
+    /**
+     * Returns our field or id field.
+     *
+     * @return Field
+     */
     protected function referenceOurValue()
     {
         $this->owner->persistence_data['use_table_prefixes'] = true;
@@ -126,6 +165,10 @@ class Field_One
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table but
      * form the join instead.
+     *
+     * @param array $defaults Properties
+     *
+     * @return Model
      */
     public function ref($defaults = [])
     {
@@ -158,6 +201,12 @@ class Field_One
     }
 
     // {{{ Debug Methods
+
+    /**
+     * Returns array with useful debug info for var_dump.
+     *
+     * @return array
+     */
     public function __debugInfo()
     {
         $arr = [

@@ -1,7 +1,12 @@
 <?php
 
+// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Persistence
 {
     use \atk4\core\ContainerTrait {
@@ -11,6 +16,16 @@ class Persistence
     use \atk4\core\HookTrait;
     use \atk4\core\AppScopeTrait;
 
+    /**
+     * Connects database.
+     *
+     * @param string $dsn
+     * @param string $user
+     * @param string $password
+     * @param array  $args
+     *
+     * @return Persistence
+     */
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {
         if (strpos($dsn, ':') === false) {
@@ -34,6 +49,11 @@ class Persistence
 
     /**
      * Associate model with the data driver.
+     *
+     * @param Model|string $m        Model which will use this persistence
+     * @param array        $defaults Properties
+     *
+     * @return Model
      */
     public function add($m, $defaults = [])
     {
@@ -48,7 +68,7 @@ class Persistence
 
         if ($m->persistence) {
             throw new Exception([
-                'Model already has conditions or is related to persistance',
+                'Model already has conditions or is related to persistence',
             ]);
         }
 
@@ -67,6 +87,8 @@ class Persistence
      * Extend this method to enhance model to work with your persistence. Here
      * you can define additional methods or store additional data. This method
      * is executed before model's init().
+     *
+     * @param Model $m
      */
     protected function initPersistence(Model $m)
     {

@@ -1,7 +1,12 @@
 <?php
 
+// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Join_SQL extends Join implements \atk4\dsql\Expressionable
 {
     public $foreign_alias;
@@ -42,8 +47,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
     public function getDSQLExpression($q)
     {
-        return $q->expr('{}.{}',
-           [$this->foreign_alias, $this->foreign_field]);
+        return $q->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
     }
 
     /**
