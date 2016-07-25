@@ -415,8 +415,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         if (array_key_exists($field, $this->dirty) && $this->dirty[$field] === $value) {
             unset($this->dirty[$field]);
-            $this->data[$field] = $value;
-        } else {
+        } elseif (!array_key_exists($field, $this->dirty)) {
             $this->dirty[$field] =
                 array_key_exists($field, $this->data) ?
                 $this->data[$field] :
@@ -424,8 +423,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     $f_object ? $f_object->default : null
                 );
 
-            $this->data[$field] = $value;
         }
+        $this->data[$field] = $value;
 
         if ($field === $this->id_field) {
             $this->id = $value;
