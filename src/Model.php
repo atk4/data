@@ -886,6 +886,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return $this
      */
+    public $_dirty_after_reload = [];
+
     public function save($data = [])
     {
         if (!$this->persistence) {
@@ -899,6 +901,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->hook('beforeSave') === false) {
             return $this;
         }
+
+        $this->_dirty_after_save = [];
 
         $is_update = $this->loaded();
         if ($is_update) {
@@ -963,7 +967,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->hook('afterInsert', [$this->id]);
 
             if ($this->reload_after_save !== false) {
+                $d = $this->dirty;
+                $this->dirty = [];
                 $this->reload();
+                $this->_dirty_after_reload = $this->dirty;
+                $this->dirty = $d;
             }
         }
 
@@ -971,7 +979,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
 
         if ($this->loaded()) {
-            $this->dirty = [];
+            $this->dirty = $this->_dirty_after_reload;
         }
 
         return $this;
