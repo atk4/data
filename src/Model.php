@@ -1193,6 +1193,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function leftJoin($foreign_table, $defaults = [])
     {
+        if (!is_array($defaults)) {
+            $defaults = ['master_field' => $defaults];
+        }
         $defaults['weak'] = true;
 
         return $this->join($foreign_table, $defaults);
