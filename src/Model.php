@@ -422,7 +422,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 (
                     $f_object ? $f_object->default : null
                 );
-
         }
         $this->data[$field] = $value;
 
