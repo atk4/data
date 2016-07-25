@@ -909,6 +909,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $is_update = $this->loaded();
         if ($is_update) {
             $data = [];
+            $dirty_join = false;
             foreach ($this->dirty as $name => $junk) {
                 $field = $this->hasElement($name);
                 if (!$field) {
@@ -922,6 +923,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 $value = $this->get($name);
 
                 if (isset($field->join)) {
+                    $dirty_join = true;
                     // storing into a different table join
                     $field->join->set($actual, $value);
                 } else {
@@ -930,7 +932,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             // No save needed, nothing was changed
-            if (!$data) {
+            if (!$data && !$dirty_join) {
                 return $this;
             }
 
