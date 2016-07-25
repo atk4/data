@@ -1214,7 +1214,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return object
      */
-    protected function _hasSomething($c, $link, $defaults = [])
+    protected function _hasRelation($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
             if ($defaults) {
@@ -1242,7 +1242,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function hasOne($link, $defaults = [])
     {
-        return $this->_hasSomething($this->_default_class_hasOne, $link, $defaults);
+        return $this->_hasRelation($this->_default_class_hasOne, $link, $defaults);
     }
 
     /**
@@ -1255,7 +1255,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function hasMany($link, $defaults = [])
     {
-        return $this->_hasSomething($this->_default_class_hasMany, $link, $defaults);
+        return $this->_hasRelation($this->_default_class_hasMany, $link, $defaults);
     }
 
     /**
