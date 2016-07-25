@@ -83,6 +83,13 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
             $this->owner->addHook('afterLoad', $this);
         } else {
+
+            // If table already has the field corresponding to the "join" then mark it as "do-not-persist"
+            $e = $this->owner->hasElement($this->master_field);
+            if ($e) {
+                $e->never_persist = true;
+            }
+
             $this->owner->addHook('beforeInsertQuery', $this);
             $this->owner->addHook('beforeUpdateQuery', $this);
             $this->owner->addHook('afterDelete', [$this, 'doDelete']);
