@@ -571,7 +571,7 @@ class Persistence_SQL extends Persistence
         // apply all fields we got from get
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
-            if (!$f->editable) {
+            if (!$f->editable || $f->never_persist) {
                 continue;
             }
             $insert->set($f->actual ?: $f->short_name, $value);
@@ -649,11 +649,11 @@ class Persistence_SQL extends Persistence
         $cnt = 0;
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
+            if ($f->never_persist) {
+                continue;
+            }
             $update->set($f->actual ?: $f->short_name, $value);
             $cnt++;
-        }
-        if (!$cnt) {
-            return;
         }
         $update->where($m->getElement($m->id_field), $id);
 
@@ -662,7 +662,9 @@ class Persistence_SQL extends Persistence
 
         try {
             $m->hook('beforeUpdateQuery', [$update]);
-            $st = $update->execute();
+            if ($cnt) {
+                $st = $update->execute();
+            }
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to update due to query error',
@@ -675,7 +677,7 @@ class Persistence_SQL extends Persistence
         $m->hook('afterUpdateQuery', [$update, $st]);
 
         // if any rows were updated in database, and we had expressions, reload
-        if ($m->reload_after_save === true && $st->rowCount()) {
+        if ($m->reload_after_save === true && (!$st || $st->rowCount())) {
             $d = $m->dirty;
             $m->reload();
             $m->_dirty_after_reload = $m->dirty;

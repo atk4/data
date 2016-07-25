@@ -54,11 +54,6 @@ class Join_Array extends Join
         $model->data = array_merge($data, $model->data);
     }
 
-    public function afterUnload()
-    {
-        $this->id = null;
-    }
-
     public function beforeInsert($model, &$data)
     {
         if ($this->weak) {

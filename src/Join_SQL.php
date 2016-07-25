@@ -33,11 +33,6 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
     protected $dsql = null;
 
     /**
-     * calling set() will make this dirty.
-     */
-    protected $dirty = false;
-
-    /**
      * Will use either foreign_alias or create #join_<table>.
      */
     public function getDesiredName()
@@ -83,6 +78,13 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
             $this->owner->addHook('afterLoad', $this);
         } else {
+
+            // If table already has the field corresponding to the "join" then mark it as "do-not-persist"
+            $e = $this->owner->hasElement($this->master_field);
+            if ($e) {
+                $e->never_persist = true;
+            }
+
             $this->owner->addHook('beforeInsertQuery', $this);
             $this->owner->addHook('beforeUpdateQuery', $this);
             $this->owner->addHook('afterDelete', [$this, 'doDelete']);
@@ -140,12 +142,6 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         unset($model->data[$this->short_name]);
     }
 
-    public function afterUnload($model)
-    {
-        $this->id = null;
-        $this->dirty = false;
-    }
-
     public function beforeInsertQuery($model, $query)
     {
         if ($this->weak) {
@@ -157,7 +153,10 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             return;
         }
 
-        $insert = $this->dsql()->set($this->foreign_field, null);
+        $insert = $this->dsql();
+        $insert->mode('insert');
+        $insert->set($this->save_buffer);
+        $insert->set($this->foreign_field, null);
         $insert->insert();
         $this->id = $insert->connection->lastInsertID();
 
@@ -175,6 +174,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         }
 
         $insert = $this->dsql();
+        $insert->set($this->save_buffer);
         $insert
             ->set(
                 $this->foreign_field,
@@ -190,11 +190,12 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             return;
         }
 
-        if (!$this->dirty) {
+        if (!$this->save_buffer) {
             return;
         }
 
         $update = $this->dsql();
+        $update->set($this->save_buffer);
         $update->where($this->foreign_field, $this->id);
         $update->update();
     }
@@ -210,11 +211,5 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             ->where($this->foreign_field, $this->id);
 
         $delete->delete()->execute();
-    }
-
-    public function set($field, $value)
-    {
-        $this->dirty = true;
-        $this->dsql->set($field, $value);
     }
 }
