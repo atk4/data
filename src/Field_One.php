@@ -181,30 +181,28 @@ class Field_One
     public function ref($defaults = [])
     {
         $m = $this->getModel($defaults);
-        if ($this->owner->loaded()) {
-            if ($this->their_field) {
-                return $m->tryLoadBy($this->their_field, $this->owner[$this->our_field])
-                    ->addHook('afterSave', function ($m) {
-                        $this->owner[$this->our_field] = $m[$this->their_field];
-                    })
-                    ->addHook('afterDelete', function ($m) {
-                        $this->owner[$this->our_field] = null;
-                    });
-            } else {
-                return $m->tryLoad($this->owner[$this->our_field])
-                    ->addHook('afterSave', function ($m) {
-                        $this->owner[$this->our_field] = $m->id;
-                    })
-                    ->addHook('afterDelete', function ($m) {
-                        $this->owner[$this->our_field] = null;
-                    });
+        $m->addHook('afterDelete', function ($m) {
+            $this->owner[$this->our_field] = null;
+        });
+
+        if ($this->their_field) {
+            if ($this->owner[$this->our_field]) {
+                $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
             }
+            return 
+                $m->addHook('afterSave', function ($m) {
+                    $this->owner[$this->our_field] = $m[$this->their_field];
+                })
+                ;
         } else {
-            $m = clone $m; // we will be adding conditions!
-
-            $values = $this->owner->action('field', [$this->our_field]);
-
-            return $m->addCondition($this->their_field ?: $m->id_field, $values);
+            if ($this->owner[$this->our_field]) {
+                $m->tryLoad($this->owner[$this->our_field]);
+            }
+            return
+                $m->addHook('afterSave', function ($m) {
+                    $this->owner[$this->our_field] = $m->id;
+                })
+                ;
         }
     }
 
