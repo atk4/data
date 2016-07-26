@@ -43,7 +43,7 @@ class RelationTest extends TestCase
         $db = new Persistence();
         $user = new Model($db, ['table' => 'user']);
         $user->id = 1;
-        $user->hasOne('order_id', ['model'=>['atk4/data/Model', 'table'=>'order']] );
+        $user->hasOne('order_id', ['model' => ['atk4/data/Model', 'table' => 'order']]);
         $o = $user->ref('order_id');
         $this->assertEquals('order', $o->table);
     }

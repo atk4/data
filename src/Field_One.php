@@ -97,7 +97,7 @@ class Field_One
             $this->our_field = $this->link;
         }
         if (!$this->owner->hasElement($this->our_field)) {
-            $this->owner->addField($this->our_field, ['system' => true, 'join' => $this->join, 'default'=>$this->default]);
+            $this->owner->addField($this->our_field, ['system' => true, 'join' => $this->join, 'default' => $this->default]);
         }
     }
 
@@ -115,7 +115,7 @@ class Field_One
                 $this->table_alias = $this->link;
                 $this->table_alias = preg_replace('/_id/', '', $this->table_alias);
                 $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
-                if(isset($this->owner->table_alias)) {
+                if (isset($this->owner->table_alias)) {
                     $this->table_alias = $this->owner->table_alias.'_'.$this->table_alias;
                 }
             }
@@ -189,20 +189,20 @@ class Field_One
             if ($this->owner[$this->our_field]) {
                 $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
             }
+
             return 
                 $m->addHook('afterSave', function ($m) {
                     $this->owner[$this->our_field] = $m[$this->their_field];
-                })
-                ;
+                });
         } else {
             if ($this->owner[$this->our_field]) {
                 $m->tryLoad($this->owner[$this->our_field]);
             }
+
             return
                 $m->addHook('afterSave', function ($m) {
                     $this->owner[$this->our_field] = $m->id;
-                })
-                ;
+                });
         }
     }
 
