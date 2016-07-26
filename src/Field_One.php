@@ -58,6 +58,8 @@ class Field_One
      */
     protected $join = null;
 
+    protected $default = null;
+
     /**
      * Default constructor. Will copy argument into properties.
      *
@@ -95,7 +97,7 @@ class Field_One
             $this->our_field = $this->link;
         }
         if (!$this->owner->hasElement($this->our_field)) {
-            $this->owner->addField($this->our_field, ['system' => true, 'join' => $this->join]);
+            $this->owner->addField($this->our_field, ['system' => true, 'join' => $this->join, 'default'=>$this->default]);
         }
     }
 
