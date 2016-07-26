@@ -115,6 +115,9 @@ class Field_One
                 $this->table_alias = $this->link;
                 $this->table_alias = preg_replace('/_id/', '', $this->table_alias);
                 $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
+                if(isset($this->owner->table_alias)) {
+                    $this->table_alias = $this->owner->table_alias.'_'.$this->table_alias;
+                }
             }
             $defaults['table_alias'] = $this->table_alias;
         }
