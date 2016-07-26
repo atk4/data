@@ -305,7 +305,7 @@ class RelationSQLTest extends SQLTestCase
     {
         $db = new Persistence_SQL($this->db->connection);
         $user = new Model($db, ['table' => 'user']);
-        $user->hasMany('Orders', ['model' => ['atk4/data/Model', 'table' => 'order'], 'their_field' => 'id'] );
+        $user->hasMany('Orders', ['model' => ['atk4/data/Model', 'table' => 'order'], 'their_field' => 'id']);
         $o = $user->ref('Orders');
         $this->assertEquals('order', $o->table);
     }

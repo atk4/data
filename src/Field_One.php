@@ -190,7 +190,7 @@ class Field_One
                 $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
             }
 
-            return 
+            return
                 $m->addHook('afterSave', function ($m) {
                     $this->owner[$this->our_field] = $m[$this->their_field];
                 });
