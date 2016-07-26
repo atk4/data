@@ -131,14 +131,17 @@ class Field_Many
         // last effort - try to add model
         $p = $this->owner->persistence;
 
-        return $p->add($p->normalizeClassName($this->model, 'Model'), $defaults);
+        if (is_array($this->model)) {
+            $model = $this->model[0];
+            $md = $this->model;
+            unset($md[0]);
 
-        /* @todo These lines will never be executed !?
-        throw new Exception([
-            'Model is not defined for the relation',
-            'model' => $this->model,
-        ]);
-        */
+            $defaults = array_merge($md, $defaults);
+        } else {
+            $model = $this->model;
+        }
+
+        return $p->add($p->normalizeClassName($model, 'Model'), $defaults);
     }
 
     /**

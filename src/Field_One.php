@@ -58,6 +58,8 @@ class Field_One
      */
     protected $join = null;
 
+    protected $default = null;
+
     /**
      * Default constructor. Will copy argument into properties.
      *
@@ -95,7 +97,7 @@ class Field_One
             $this->our_field = $this->link;
         }
         if (!$this->owner->hasElement($this->our_field)) {
-            $this->owner->addField($this->our_field, ['system' => true, 'join' => $this->join]);
+            $this->owner->addField($this->our_field, ['system' => true, 'join' => $this->join, 'default' => $this->default]);
         }
     }
 
@@ -113,6 +115,9 @@ class Field_One
                 $this->table_alias = $this->link;
                 $this->table_alias = preg_replace('/_id/', '', $this->table_alias);
                 $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
+                if (isset($this->owner->table_alias)) {
+                    $this->table_alias = $this->owner->table_alias.'_'.$this->table_alias;
+                }
             }
             $defaults['table_alias'] = $this->table_alias;
         }
@@ -139,14 +144,17 @@ class Field_One
         // last effort - try to add model
         $p = $this->owner->persistence;
 
-        return $p->add($p->normalizeClassName($this->model, 'Model'), $defaults);
+        if (is_array($this->model)) {
+            $model = $this->model[0];
+            $md = $this->model;
+            unset($md[0]);
 
-        /* @todo These lines will never be executed !?
-        throw new Exception([
-            'Model is not defined for the relation',
-            'model' => $this->model,
-        ]);
-        */
+            $defaults = array_merge($md, $defaults);
+        } else {
+            $model = $this->model;
+        }
+
+        return $p->add($p->normalizeClassName($model, 'Model'), $defaults);
     }
 
     /**
@@ -173,30 +181,28 @@ class Field_One
     public function ref($defaults = [])
     {
         $m = $this->getModel($defaults);
-        if ($this->owner->loaded()) {
-            if ($this->their_field) {
-                return $m->tryLoadBy($this->their_field, $this->owner[$this->our_field])
-                    ->addHook('afterSave', function ($m) {
-                        $this->owner[$this->our_field] = $m[$this->their_field];
-                    })
-                    ->addHook('afterDelete', function ($m) {
-                        $this->owner[$this->our_field] = null;
-                    });
-            } else {
-                return $m->tryLoad($this->owner[$this->our_field])
-                    ->addHook('afterSave', function ($m) {
-                        $this->owner[$this->our_field] = $m->id;
-                    })
-                    ->addHook('afterDelete', function ($m) {
-                        $this->owner[$this->our_field] = null;
-                    });
+        $m->addHook('afterDelete', function ($m) {
+            $this->owner[$this->our_field] = null;
+        });
+
+        if ($this->their_field) {
+            if ($this->owner[$this->our_field]) {
+                $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
             }
+
+            return
+                $m->addHook('afterSave', function ($m) {
+                    $this->owner[$this->our_field] = $m[$this->their_field];
+                });
         } else {
-            $m = clone $m; // we will be adding conditions!
+            if ($this->owner[$this->our_field]) {
+                $m->tryLoad($this->owner[$this->our_field]);
+            }
 
-            $values = $this->owner->action('field', [$this->our_field]);
-
-            return $m->addCondition($this->their_field ?: $m->id_field, $values);
+            return
+                $m->addHook('afterSave', function ($m) {
+                    $this->owner[$this->our_field] = $m->id;
+                });
         }
     }
 
