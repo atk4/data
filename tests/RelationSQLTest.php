@@ -145,7 +145,7 @@ class RelationSQLTest extends SQLTestCase
         $o->addCondition('amount', '<', 9);
 
         $this->assertEquals(
-            'select `id`,`name` from `user` where `id` in (select `user_id` from `order` where `amount` > :a and `amount` < :b)',
+            'select `id`,`name` from `user`',
             $o->ref('user_id')->action('select')->render()
         );
     }
@@ -299,5 +299,14 @@ class RelationSQLTest extends SQLTestCase
         $u->save()->reload();
         $this->assertEquals('Peters new contact', $u->ref('contact_id')['address']);
         $this->assertEquals('Peters new contact', $u['address']);
+    }
+
+    public function testModelProperty()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $user = new Model($db, ['table' => 'user']);
+        $user->hasMany('Orders', ['model'=>['atk4/data/Model', 'table'=>'order'], 'their_field'=>'id'] );
+        $o = $user->ref('Orders');
+        $this->assertEquals('order', $o->table);
     }
 }
