@@ -34,6 +34,24 @@ There are several ways to link your model up with the persistence::
 
     If record not found, will throw exception.
 
+.. php:method:: save($data = [])
+
+    Store active record back into DataSet. If record wasn't loaded, store it as a new record::
+
+        $m->load(10);
+        $m['name'] = 'John';
+        $$m->save();
+
+    You can pass argumen to save() to set() and save()::
+
+        $m->unload();
+        $m->save(['name'=>'John']);
+
+    Save, like set() support title field::
+
+        $m->unload();
+        $m->save('John');
+
 .. php:method:: tryLoad
 
     Same as load() but will silently fail if record is not found::

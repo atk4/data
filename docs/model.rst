@@ -140,7 +140,8 @@ array:
 .. php:method:: set
 
     Set field to a specified value. The original value will be stored in
-    $dirty property
+    $dirty property. If you pass non-array, then the value will be assigned
+    to the :ref:`title_field`.
 
 .. php:method:: unset
 
@@ -228,7 +229,16 @@ Full example::
     Verify and convert first argument got get / set;
 
 Title Field and ID Field
-===========
+========================
+
+Those are to properties that you can specify in the model or pass it through defaults::
+
+    class MyModel ..
+        public $title_field = 'full_name';
+
+or as defaults::
+
+    $m = new MyModel($db, ['title_field'=>'full_name']);
 
 
 ID Field
@@ -251,6 +261,8 @@ ID Field
         $m->save();
 
     You must remember that only dirty fields are saved, though. (We might add replace() function though).
+
+.. _title_field:
 
 Title Field
 -----------

@@ -6,7 +6,8 @@ This is our first maintenance release that solves several important issues.
 * Change: calling ref() on object without active record will return you object without active record instead of exception
 * Change: `$m->ref()` into non-existant hasOne() relation then [saving it will update field inside $m](http://agile-data.readthedocs.io/en/develop/relations.html?highlight=contact_id#relations-with-new-records).
 * Added ability to call `save([$data])`, which will combine set() and save()
-* Added support for `$model->title_field`
+* Added [support for `$model->title_field`](http://agile-data.readthedocs.io/en/develop/model.html#title-field-and-id-field)
+* added [$m->isDirty()](http://agile-data.readthedocs.io/en/develop/model.html#Model::isDirty)
 * Added [afterUnload and beforeUnload hooks](http://agile-data.readthedocs.io/en/develop/model.html#hooks).
 * Added support for [automated model reloading](http://agile-data.readthedocs.io/en/develop/expressions.html?highlight=reloading#model-reloading-after-save)
 * Added support for advanced patterns described here:
