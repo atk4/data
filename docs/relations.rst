@@ -7,6 +7,8 @@ Relations
 
 .. php:class:: Model
 
+.. php:method:: ref($link, $defailts = []);
+
 Models can relate one to another. The logic of traversing relations, however, is
 slightly different to the traditional ORM implementation, because in Agile Data
 traversing also imposes :ref:`conditions`
@@ -40,6 +42,10 @@ order will look like this::
     select * from order where user_id in (
         select id from user where is_vip = 1
     ) limit 1
+
+Argument $defaults will be passed to the new model that will be used for
+relation. This will not work if you have specified relation as existing
+model that has a persistence set.
 
 Persistence
 -----------
@@ -319,5 +325,115 @@ will ecapsulate sub-queries resulting in a query like this::
     select * from address where id in
         (select address_id from user where id in
             (select user_id from order where id=1 ))
+
+
+Relation Aliases
+================
+
+When related entity relies on the same table it is possible to run into problem when SQL is
+confused about which table to use.
+
+.. code-block:: sql
+
+    select name, (select name from item where item.parent_id = item.id) parent_name from item
+
+To avoid this problem Agile Data will automatically alias tables in sub-queries. Here is how
+it works::
+
+    $item->hasMany('parent_item_id', new Model_Item())
+        ->addField('parent', 'name');
+
+When generating expression for 'parent', the sub-query will use alias ``pi`` consisting of
+first letters in 'parent_item_id'. (except _id). You can actually specify a custom table alias
+if you want::
+
+    $item->hasMany('parent_item_id', [new Model_Item(), 'table_alias'=>'mypi'])
+        ->addField('parent', 'name');
+
+Additionally you can pass table_alias as second argument into ref() or refLink(). This can
+help you in creating a recursive models that relate to itself. Here is example::
+
+    class Model_Item3 extends \atk4\data\Model {
+        public $table='item';
+        function init() {
+            parent::init();
+
+            $m = new Model_Item3();
+
+            $this->addField('name');
+            $this->addField('age');
+            $i2 = $this->join('item2.item_id');
+            $i2->hasOne('parent_item_id', [$m, 'table_alias'=>'parent'])
+                ->addTitle();
+
+            $this->hasMany('Child', [$m, 'their_field'=>'parent_item_id', 'table_alias'=>'child'])
+                ->addField('child_age',['aggregate'=>'sum', 'field'=>'age']);
+        }
+    }
+
+Loading model like that can produce a pretty sophisticated query
+
+.. code-block:: sql
+
+    select
+        `pp`.`id`,`pp`.`name`,`pp`.`age`,`pp_i`.`parent_item_id`,
+        (select `parent`.`name` 
+         from `item` `parent`
+         left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id` 
+         where `parent`.`id` = `pp_i`.`parent_item_id`
+         ) `parent_item`,
+        (select sum(`child`.`age`) from `item` `child`
+         left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id` 
+         where `child_i`.`parent_item_id` = `pp`.`id`
+        ) `child_age`,`pp`.`id` `_i` 
+    from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
+
+Relations with New Records
+==========================
+
+Agile Data takes extra care to help you link your new records with new related entities.
+Consider the following two models::
+
+    class Model_User extends \atk4\data\Model {
+        public $table = 'user';
+        function init() {
+            parent::init();
+            $this->addField('name');
+
+            $this->hasOne('contact_id', new Model_Contact());
+        }
+    }
+
+    class Model_Contact extends \atk4\data\Model {
+        public $table = 'contact';
+        function init() {
+            parent::init();
+
+            $this->addField('address');
+        }
+    }
+
+This is a classic one to one relation, but let's look what happens when you are working with
+a new model::
+
+    $m = new Model_User($db);
+
+    $m['name'] = 'John';
+    $m->save();
+
+In this scenario, a new record will be added into 'user' with 'contact_id' equal to null. The
+next example will traverse into the contact to set it up::
+
+    $m = new Model_User($db);
+
+    $m['name'] = 'John';
+    $m->ref('address_id')->save(['address'=>'street']);
+    $m->save();
+
+When entity which you have referenced through ref() is saved, it will automatically populate
+$m['contact_id'] field and the final $m->save() will also store the reference. 
+
+ID setting is implemented through a basic hook. Related model will have afterSave
+hook, which will update address_id field of the $m.
 
 

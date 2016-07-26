@@ -1,7 +1,12 @@
 <?php
 
+// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Join_Array extends Join
 {
     /**
@@ -47,11 +52,6 @@ class Join_Array extends Join
             ], $e->getCode(), $e);
         }
         $model->data = array_merge($data, $model->data);
-    }
-
-    public function afterUnload()
-    {
-        $this->id = null;
     }
 
     public function beforeInsert($model, &$data)
