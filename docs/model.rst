@@ -137,15 +137,11 @@ use the following syntax when accessing fields of an active record::
 When you modify active record, it keeps the original value in the $dirty
 array:
 
-.. php:attr:: dirty
-
-    Contains list of modified fields since last loading and their original
-    valies.
-
 .. php:method:: set
 
     Set field to a specified value. The original value will be stored in
-    $dirty property
+    $dirty property. If you pass non-array, then the value will be assigned
+    to the :ref:`title_field`.
 
 .. php:method:: unset
 
@@ -159,14 +155,6 @@ array:
 
     This will restore original value of the field.
 
-.. php:method:: isset
-
-    Return true if field contains unsaved changes::
-
-        isset($m['name']); // returns false
-        $m['name'] = 'Other Name';
-        isset($m['name']); // returns true 
-
 .. php:method:: get
 
     Returns one of the following:
@@ -175,6 +163,33 @@ array:
      - If field was loaded from database, return original value
      - if field had default set, returns default
      - returns null.
+
+.. php:method:: isset
+
+    Return true if field contains unsaved changes (dirty)::
+
+        isset($m['name']); // returns false
+        $m['name'] = 'Other Name';
+        isset($m['name']); // returns true 
+
+
+.. php:method:: isDirty
+
+    Return true if one or multiple fields contain unsaved changes (dirty)::
+
+        if ($m->isDirty(['name','surname'])) {
+           $m['full_name'] = $m['name'].' '.$m['surname'];
+        }
+
+    When the code above is placed in beforeSave hook, it will only be executed when
+    certain fields have been changed. If your recalculations are expensive, it's
+    pretty handy to rely on "dirty" fields to avoid some complex logic.
+
+.. php:attr:: dirty
+
+    Contains list of modified fields since last loading and their original
+    valies.
+
 
 Full example::
 
@@ -213,6 +228,56 @@ Full example::
 
     Verify and convert first argument got get / set;
 
+Title Field and ID Field
+========================
+
+Those are to properties that you can specify in the model or pass it through defaults::
+
+    class MyModel ..
+        public $title_field = 'full_name';
+
+or as defaults::
+
+    $m = new MyModel($db, ['title_field'=>'full_name']);
+
+
+ID Field
+--------
+
+.. php:attr:: id_field
+
+    If your data storage uses field different than ``id`` to keep the ID of your records, then you can
+    specify that in $id_field property.
+
+.. tip:: You can change ID field of the current ID field by calling::
+
+        $m['id'] = $new_id;
+        $m->save();
+
+    This will update existing record with new $id. If you want to save your current field over another
+    existing record then::
+
+        $m->id = $new_id;
+        $m->save();
+
+    You must remember that only dirty fields are saved, though. (We might add replace() function though).
+
+.. _title_field:
+
+Title Field
+-----------
+
+.. php:attr:: title_field
+
+    This field by default is set to 'name' will act as a primary title field of your table. This is
+    especially handy if you use model inside UI framework, which can automatically display value of
+    your title field in the header, or inside drop-down.
+
+    If you don't have field 'name' but you want some other field to be title, you can specify that in
+    the property. If title_field is not needed, set it to false or point towards a non-existant field.
+
+    See: :php:meth::`hasOne::addTitle()`
+
 Hooks
 =====
 
@@ -229,6 +294,9 @@ Hooks
 
   - afterUpdate [only if existing record]
   - afterInsert [only if new record]
+
+  - beforeUnload
+  - afterUnload
 
 - afterSave
 
