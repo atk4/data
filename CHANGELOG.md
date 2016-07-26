@@ -1,16 +1,29 @@
 # 1.0.1
 
-This is our first maintenance release that solves several important
-issues.
+This is our first maintenance release that solves several important issues.
 
-* Added support for automated model reloading after save(). 
-* Added documentation sections for Advanced Topics with tips and tricks
-  * how to implement [soft-delete](http://agile-data.readthedocs.io/en/develop/advanced.html#soft-delete), [audit](http://agile-data.readthedocs.io/en/develop/advanced.html#audit-fields)
-  * how to [override default method actions](http://agile-data.readthedocs.io/en/develop/model.html?highlight=hook#how-to-prevent-action), e.g. [delete()](shttp://agile-data.readthedocs.io/en/develop/advanced.html#soft-delete-that-overrides-default-delete)
-  * how to [verify updates](http://agile-data.readthedocs.io/en/develop/model.html?highlight=hook#how-to-verify-updates)
-  * how to create [fields with unique values](http://agile-data.readthedocs.io/en/develop/advanced.html#creating-unique-field)
+* Change: `$m->insert()` will return ID and not clone of `$m`. Cloning was causing some problems.
+* Change: calling ref() on object without active record will return you object without active record instead of exception
+* Change: `$m->ref()` into non-existant hasOne() relation then [saving it will update field inside $m](http://agile-data.readthedocs.io/en/develop/relations.html?highlight=contact_id#relations-with-new-records).
+* Added ability to call `save([$data])`, which will combine set() and save()
+* Added support for `$model->title_field`
+* Added [afterUnload and beforeUnload hooks](http://agile-data.readthedocs.io/en/develop/model.html#hooks).
+* Added support for [automated model reloading](http://agile-data.readthedocs.io/en/develop/expressions.html?highlight=reloading#model-reloading-after-save)
+* Added support for advanced patterns described here:
+  * ability to implement [soft-delete](http://agile-data.readthedocs.io/en/develop/advanced.html#soft-delete), [audit](http://agile-data.readthedocs.io/en/develop/advanced.html#audit-fields)
+  * support to [override default method actions](http://agile-data.readthedocs.io/en/develop/model.html?highlight=hook#how-to-prevent-action), e.g. [delete()](shttp://agile-data.readthedocs.io/en/develop/advanced.html#soft-delete-that-overrides-default-delete)
+  * support to [verify updates](http://agile-data.readthedocs.io/en/develop/model.html?highlight=hook#how-to-verify-updates) with afterInsertQuery
+  * ability to create [fields with unique values](http://agile-data.readthedocs.io/en/develop/advanced.html#creating-unique-field)
+* Added support for [Related Aliases](http://agile-data.readthedocs.io/en/develop/relations.html#relation-aliases). Now you can hasOne() hasMany() to itself.
+* Fix: when you update field from join and then immediatelly save()
+* Fix: when you join on existing field
+* Fix: update and delete no longer try to use join or aliases
+* Fix: setting different values twice wouldn't reset dirty status if you return to the original
+* Fix: dirty flags are still available for `afterSave()` method (so that you know which fields were saved)
+* Documented $m->withID();
+* Updated to latest version of DSQL
 
-* Updated to latest version in dependencies
+Included PRs: #75, #74, #73, #72, #71, #70, #65, #63, #61, #58, #55
 
 # 1.0.0
 
