@@ -627,7 +627,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             if ($operator === '=' || func_num_args() == 2) {
                 $v = $operator === '=' ? $value : $operator;
 
-                if (!is_object($v)) {
+                if (!is_object($v) && !is_array($v)) {
                     $f->setAttr('default', $v);
                 }
             }

@@ -68,6 +68,9 @@ class Field
      */
     public function __construct($defaults = [])
     {
+        if (!is_array($defaults)) {
+            throw new Exception(['Field requires array for defaults', 'arg' => $defaults]);
+        }
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
