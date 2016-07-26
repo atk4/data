@@ -162,9 +162,9 @@ keep making your query bigger and bigger::
 
     $invoice->hasMany('Invoice_Line', new Model_Invoice_Line())
         ->addFields([
-            ['total_vat', ['aggregate'=>'sum']],
-            ['total_net', ['aggregate'=>'sum']],
-            ['total_gross', ['aggregate'=>'sum']],
+            ['total_vat', 'aggregate'=>'sum'],
+            ['total_net', 'aggregate'=>'sum'],
+            ['total_gross', 'aggregate'=>'sum'],
         ]);
 
 
