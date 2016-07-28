@@ -199,9 +199,9 @@ class JoinSQLTest extends SQLTestCase
 
         $db = new Persistence_SQL($this->db->connection);
         $m_u = new Model($db, 'user');
-        $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
+        $j->addField('contact_id', ['actual'=>'id']);
         $j->addField('contact_phone');
 
         $m_u->load(1);
@@ -345,5 +345,39 @@ class JoinSQLTest extends SQLTestCase
                 3 => ['id' => 3, 'contact_phone' => '+777'],
             ], ], $this->getDB()
         );
+    }
+
+
+
+    public function testDoubleSaveHook()
+    {
+        $a = [
+            'user' => [
+                '_' => ['id' => 1, 'name' => 'John'],
+            ], 'contact' => [
+                '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
+            ], ];
+
+        $db = new Persistence_SQL($this->db->connection);
+        $m_u = new Model($db, 'user');
+        $this->setDB($a);
+        $m_u->addField('name');
+        $j = $m_u->join('contact.test_id');
+        $j->addField('contact_phone');
+
+        $m_u->addHook('afterSave', function($m) {
+            if($m['contact_phone']!='+123') {
+                $m['contact_phone'] = '+123';
+                $m->save();
+            }
+        });
+
+        $m_u['name'] = 'John';
+        $m_u->save();
+
+        $this->assertEquals([
+            'user'    => [1 => ['id' => 1, 'name' => 'John']],
+            'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
+        ], $this->getDB('user,contact'));
     }
 }
