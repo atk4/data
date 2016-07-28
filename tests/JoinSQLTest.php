@@ -201,7 +201,7 @@ class JoinSQLTest extends SQLTestCase
         $m_u = new Model($db, 'user');
         $m_u->addField('name');
         $j = $m_u->join('contact');
-        $j->addField('contact_id', ['actual'=>'id']);
+        $j->addField('contact_id', ['actual' => 'id']);
         $j->addField('contact_phone');
 
         $m_u->load(1);
@@ -347,8 +347,6 @@ class JoinSQLTest extends SQLTestCase
         );
     }
 
-
-
     public function testDoubleSaveHook()
     {
         $a = [
@@ -365,8 +363,8 @@ class JoinSQLTest extends SQLTestCase
         $j = $m_u->join('contact.test_id');
         $j->addField('contact_phone');
 
-        $m_u->addHook('afterSave', function($m) {
-            if($m['contact_phone']!='+123') {
+        $m_u->addHook('afterSave', function ($m) {
+            if($m['contact_phone'] != '+123') {
                 $m['contact_phone'] = '+123';
                 $m->save();
             }
