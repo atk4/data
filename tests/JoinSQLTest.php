@@ -364,7 +364,7 @@ class JoinSQLTest extends SQLTestCase
         $j->addField('contact_phone');
 
         $m_u->addHook('afterSave', function ($m) {
-            if($m['contact_phone'] != '+123') {
+            if ($m['contact_phone'] != '+123') {
                 $m['contact_phone'] = '+123';
                 $m->save();
             }
