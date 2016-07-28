@@ -519,6 +519,39 @@ differently from PHP's default behaviour. See documentaiton for Model::isset
 This technique allows you to hide the complexity of the lookups and also embed the
 necessary queries inside your "insert" query.
 
+Fallback to default value
+-------------------------
+
+You might wonder, with the lookup like that, how the default values will work?
+What if the user-specified entry is not found? Lets look at the code::
+
+    if(isset($m['category']) && !isset($m['category_id'])) {
+        $c = $this->getRef('category_id')->getModel();
+        $c->addCondition($c->title_field, 'like', $m['category']);
+        $m['category_id'] = $c->action('field',['id']);
+    }
+
+So if category with a name is not found, then sub-query will return "NULL".
+If you wish to use a different value instead, you can create an expression::
+
+    if(isset($m['category']) && !isset($m['category_id'])) {
+        $c = $this->getRef('category_id')->getModel();
+        $c->addCondition($c->title_field, 'like', $m['category']);
+        $m['category_id'] = $this->expr('coalesce([],[])',[
+            $c->action('field',['id']),
+            $m->getElement('category_id')->default
+        ]);
+    }
+
+The beautiful thing about this approach is that default can also be defined
+as a lookup query::
+
+    $this->hasOne('category_id','Model_Category');
+    $this->getElement('category_id')->default = 
+        $this->getRef('category_id')->getModel()->addCondition('name','Other')
+            ->action('field',['id']);
+
+
 Inserting Hierarchical Data
 ===========================
 
@@ -566,4 +599,80 @@ further manipulation, you can relad a clone::
     $mm->reload();
     if ($mm['amount_due'] == 0) $mm->save(['status'=>'paid']);
 
+Related Record Conditioning
+===========================
+
+Sometimes you wish to extend one Model into another but related field type
+can also change. For example let's say we have Model_Invoice that extends
+Model_Document and we also have Model_Client that extends Model_Contact.
+
+In theory Document's 'contact_id' can be any Contact, however when you create
+'Model_Invoice' you wish that 'contact_id' allow only Clients. First, lets
+define Model_Document::
+
+    $this->hasOne('client_id', 'Model_Contact');
+
+One option here is to move 'Model_Contact' into model property, which will be
+different for the extended class::
+
+    $this->hasOne('client_id', $this->client_class);
+
+Alternatively you can replace model in the init() method of Model_Invoice::
+
+    $this->getRef('client_id')->model = 'Model_Client';
+
+You can also use array here if you wish to pass additional information into
+related model::
+
+    $this->getRef('client_id')->model = ['Model_Client', 'no_audit'=>true];
+
+Combined with our "Audit" handler above, this should allow you to relate
+with deleted clients.
+
+The final use case is when some value inside the existing model should be
+passed into the related model. Let's say we have 'Model_Invoice' and we
+want to add 'payment_invoice_id' that points to 'Model_Payment'. However
+we want this field only to offer payments made by the same client. Inside
+Model_Invoice add::
+
+    $this->hasOne('client_id', 'Client');
+
+    $this->hasOne('payment_invoice_id', function($m){ 
+        return $m->ref('client_id')->ref('Payment');
+    });
+
+    /// how to use
+
+    $m = new Model_Invoice($db);
+    $m['client_id'] = 123;
+
+    $m['payment_invoice_id'] = $m->ref('payment_invoice_id')->tryLoadAny()->id;
+
+In this case the payment_invoice_id will be set to ID of any payment by client
+123. There also may be some better uses::
+
+    $cl->ref('Invoice')->each(function($m) {
+
+        $m['payment_invoice_id'] = $m->ref('payment_invoice_id')->tryLoadAny()->id;
+        $m->save();
+
+    });  
+
+Narrowing Down Existing Relations
+=================================
+
+Aglie Data allow you to define multiple relations between same entities, but
+sometimes that can be quite useful. Consider adding this inside your Model_Contact::
+
+    $this->hasMany('Invoice', 'Model_Invoice');
+    $this->hasMany('OverdueInvoice', function($m){
+        return $m->ref('Invoice')->addCondition('due','<',date('Y-m-d'))
+    });
+
+This way if you extend your class into 'Model_Client' and modify the 'Invoice'
+relationship to use different model::
+
+    $this->getRef('Invoice')->model = 'Model_Invoice_Sale';
+
+The 'OverdueInvoice' relation will be also propoerly adjusted.
 
