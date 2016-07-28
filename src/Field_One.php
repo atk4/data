@@ -35,7 +35,7 @@ class Field_One
      *
      * @var Model|null
      */
-    protected $model;
+    public $model;
 
     /**
      * Our field will be 'id' by default.
