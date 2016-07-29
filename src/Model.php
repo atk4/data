@@ -926,8 +926,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             return $this;
         }
 
-        $this->_dirty_after_save = [];
-
         $is_update = $this->loaded();
         if ($is_update) {
             $data = [];
