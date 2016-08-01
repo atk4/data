@@ -240,6 +240,9 @@ class Persistence_SQL extends Persistence
         } else {
             foreach ($m->elements as $field => $f_object) {
                 if ($f_object instanceof Field_SQL) {
+                    if ($f_object->never_persist) {
+                        continue;
+                    }
                     $this->initField($q, $f_object);
                 }
             }
