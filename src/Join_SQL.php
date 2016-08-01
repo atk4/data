@@ -156,6 +156,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         $insert = $this->dsql();
         $insert->mode('insert');
         $insert->set($this->save_buffer);
+        $this->save_buffer = [];
         $insert->set($this->foreign_field, null);
         $insert->insert();
         $this->id = $insert->connection->lastInsertID();
@@ -196,7 +197,8 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         $update = $this->dsql();
         $update->set($this->save_buffer);
-        $update->where($this->foreign_field, $this->id);
+        $this->save_buffer = [];
+        $update->where($this->reverse? 'id' : $this->foreign_field, $this->id);
         $update->update();
     }
 
@@ -208,7 +210,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         $delete = $this->dsql();
         $delete
-            ->where($this->foreign_field, $this->id);
+            ->where($this->reverse? 'id' : $this->foreign_field, $this->id);
 
         $delete->delete()->execute();
     }
