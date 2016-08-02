@@ -78,7 +78,7 @@ class Field_One
     }
 
     /**
-     * Will use either foreign_alias or create #join_<table>.
+     * Will use #ref_<link>.
      *
      * @return string
      */
