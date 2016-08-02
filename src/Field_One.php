@@ -212,8 +212,8 @@ class Field_One
         }
 
         return
-            $m->addHook('afterSave', function ($m) use ($load_by_field) {
-                $this->owner[$this->our_field] = $m[$load_by_field];
+            $m->addHook('afterSave', function ($m) {
+                $this->owner[$this->our_field] = $this->their_field ?  $m[$this->their_field] : $m->id;
             });
     }
 
