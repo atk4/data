@@ -109,11 +109,13 @@ class Field_One
             $this->our_field = $this->link;
         }
         if (!$this->owner->hasElement($this->our_field)) {
+            $m = $this->getModel();
             $this->owner->addField($this->our_field, [
                 'system'   => true,
                 'join'     => $this->join,
                 'default'  => $this->default,
                 'editable' => $this->editable,
+                'type'     => $m->getElement($m->id_field)->type,
             ]);
         }
     }
