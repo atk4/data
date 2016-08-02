@@ -210,6 +210,7 @@ class Field_One
             if ($this->owner[$this->our_field]) {
                 $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
             }
+
             return
                 $m->addHook('afterSave', function ($m) {
                     $this->owner[$this->our_field] = $m[$this->their_field];
@@ -218,6 +219,7 @@ class Field_One
             if ($this->owner[$this->our_field]) {
                 $m->tryLoad($this->owner[$this->our_field]);
             }
+
             return
                 $m->addHook('afterSave', function ($m) {
                     $this->owner[$this->our_field] = $m->id;
