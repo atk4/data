@@ -10,12 +10,12 @@ namespace atk4\data;
 class Model implements \ArrayAccess, \IteratorAggregate
 {
     use \atk4\core\ContainerTrait;
-    use \atk4\core\TrackableTrait;
     use \atk4\core\DynamicMethodTrait;
     use \atk4\core\HookTrait;
     use \atk4\core\InitializerTrait {
         init as _init;
     }
+    use \atk4\core\NameTrait;
 
     // {{{ Properties of the class
 
