@@ -77,13 +77,27 @@ class Field
     }
 
     /**
-     * Returns this field object.
+     * Returns field value.
      *
-     * @return Field
+     * @return mixed
      */
     public function get()
     {
         return $this->owner[$this->short_name];
+    }
+
+    /**
+     * Sets field value.
+     *
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function set($value)
+    {
+        $this->owner[$this->short_name] = $value;
+
+        return$this;
     }
 
     /**
