@@ -58,7 +58,19 @@ class Field_One
      */
     protected $join = null;
 
-    protected $default = null;
+    /**
+     * Default value of field.
+     *
+     * @var mixed
+     */
+    public $default = null;
+
+    /**
+     * Is field editable? Normally you can edit fields.
+     *
+     * @var bool
+     */
+    public $editable = true;
 
     /**
      * Default constructor. Will copy argument into properties.
@@ -97,7 +109,7 @@ class Field_One
             $this->our_field = $this->link;
         }
         if (!$this->owner->hasElement($this->our_field)) {
-            $this->owner->addField($this->our_field, ['system' => true, 'join' => $this->join, 'default' => $this->default]);
+            $this->owner->addField($this->our_field, ['system' => true, 'join' => $this->join, 'default' => $this->default, 'editable'=>$this->editable]);
         }
     }
 
