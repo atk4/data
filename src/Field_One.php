@@ -113,7 +113,7 @@ class Field_One
             // but if we try to do so here, then we end up in infinite loop :(
             //$m = $this->getModel();
             $this->owner->addField($this->our_field, [
-                'type'     => 'int',//$m->getElement($m->id_field)->type,
+                'type'     => 'int', //$m->getElement($m->id_field)->type,
                 'system'   => true,
                 'join'     => $this->join,
                 'default'  => $this->default,
