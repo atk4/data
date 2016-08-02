@@ -113,7 +113,7 @@ class Field_One
                 'system'   => true,
                 'join'     => $this->join,
                 'default'  => $this->default,
-                'editable' => $this->editable
+                'editable' => $this->editable,
             ]);
         }
     }
