@@ -114,7 +114,7 @@ class Relation_One
             //$m = $this->getModel();
             $this->owner->addField($this->our_field, [
                 'type'     => 'int', //$m->getElement($m->id_field)->type,
-                'system'   => true,
+                'system'   => false,
                 'join'     => $this->join,
                 'default'  => $this->default,
                 'editable' => $this->editable,
