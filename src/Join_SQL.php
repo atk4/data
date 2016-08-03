@@ -30,7 +30,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
     /**
      * Query we are building.
      */
-    protected $dsql = null;
+    //protected $dsql = null;
 
     /**
      * Will use either foreign_alias or create #join_<table>.
@@ -52,9 +52,6 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
     {
         parent::init();
 
-        $this->dsql = $this->owner->persistence->initQuery($this->owner);
-        $this->dsql->reset('table');
-
         $this->owner->persistence_data['use_table_prefixes'] = true;
 
         // If kind is not specified, figure out join type
@@ -67,7 +64,6 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             $this->foreign_alias = (isset($this->owner->table_alias) ? $this->owner->table_alias : '').$this->short_name;
         }
 
-        $this->dsql->table($this->foreign_table, $this->foreign_alias);
 
         $this->owner->addhook('initSelectQuery', $this);
 
@@ -94,7 +90,11 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
     public function dsql()
     {
-        return clone $this->dsql;
+        $dsql = $this->owner->persistence->initQuery($this->owner);
+        $dsql->reset('table');
+        $dsql->table($this->foreign_table, $this->foreign_alias);
+
+        return $dsql;
     }
 
     /**
