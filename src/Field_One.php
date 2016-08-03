@@ -58,7 +58,19 @@ class Field_One
      */
     protected $join = null;
 
-    protected $default = null;
+    /**
+     * Default value of field.
+     *
+     * @var mixed
+     */
+    public $default = null;
+
+    /**
+     * Is field editable? Normally you can edit fields.
+     *
+     * @var bool
+     */
+    public $editable = true;
 
     /**
      * Default constructor. Will copy argument into properties.
@@ -78,7 +90,7 @@ class Field_One
     }
 
     /**
-     * Will use either foreign_alias or create #join_<table>.
+     * Will use #ref_<link>.
      *
      * @return string
      */
@@ -97,7 +109,16 @@ class Field_One
             $this->our_field = $this->link;
         }
         if (!$this->owner->hasElement($this->our_field)) {
-            $this->owner->addField($this->our_field, ['system' => true, 'join' => $this->join, 'default' => $this->default]);
+            // Imants: proper way would be to get actual field type of id field of related model,
+            // but if we try to do so here, then we end up in infinite loop :(
+            //$m = $this->getModel();
+            $this->owner->addField($this->our_field, [
+                'type'     => 'int', //$m->getElement($m->id_field)->type,
+                'system'   => true,
+                'join'     => $this->join,
+                'default'  => $this->default,
+                'editable' => $this->editable,
+            ]);
         }
     }
 
