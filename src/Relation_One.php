@@ -75,7 +75,7 @@ class Relation_One
     /**
      * Is field mandatory? By default fields are not mandatory.
      *
-     * @var bool
+     * @var bool|string
      */
     public $mandatory = false;
 
