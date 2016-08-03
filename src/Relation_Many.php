@@ -7,12 +7,12 @@ namespace atk4\data;
 /**
  * Class description?
  */
-class Field_One
+class Relation_Many
 {
-    use \atk4\core\InitializerTrait {
+    use \atk4\core\TrackableTrait {
         init as _init;
     }
-    use \atk4\core\TrackableTrait;
+    use \atk4\core\InitializerTrait;
 
     /**
      * Use this alias for related entity by default.
@@ -33,16 +33,9 @@ class Field_One
      * Definition of the destination model, that can
      * be either an object, a callback or a string.
      *
-     * @var Model|null
+     * @var mixed
      */
-    public $model;
-
-    /**
-     * Our field will be 'id' by default.
-     *
-     * @var string
-     */
-    protected $our_field = null;
+    protected $model;
 
     /**
      * Their field will be $table.'_id' by default.
@@ -52,25 +45,11 @@ class Field_One
     protected $their_field = null;
 
     /**
-     * Points to the join if we are part of one.
+     * Our field will be 'id' by default.
      *
-     * @var Join|null
+     * @var string
      */
-    protected $join = null;
-
-    /**
-     * Default value of field.
-     *
-     * @var mixed
-     */
-    public $default = null;
-
-    /**
-     * Is field editable? Normally you can edit fields.
-     *
-     * @var bool
-     */
-    public $editable = true;
+    protected $our_field = null;
 
     /**
      * Default constructor. Will copy argument into properties.
@@ -87,10 +66,14 @@ class Field_One
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
+
+        if (!$this->model) {
+            $this->model = $this->link;
+        }
     }
 
     /**
-     * Will use #ref_<link>.
+     * Will use either foreign_alias or create #join_<table>.
      *
      * @return string
      */
@@ -105,48 +88,31 @@ class Field_One
     public function init()
     {
         $this->_init();
-        if (!$this->our_field) {
-            $this->our_field = $this->link;
-        }
-        if (!$this->owner->hasElement($this->our_field)) {
-            // Imants: proper way would be to get actual field type of id field of related model,
-            // but if we try to do so here, then we end up in infinite loop :(
-            //$m = $this->getModel();
-            $this->owner->addField($this->our_field, [
-                'type'     => 'int', //$m->getElement($m->id_field)->type,
-                'system'   => true,
-                'join'     => $this->join,
-                'default'  => $this->default,
-                'editable' => $this->editable,
-            ]);
-        }
     }
 
     /**
-     * Returns model of field.
+     * Returns field model.
      *
-     * @param array $defaults Properties
+     * @param array Array of properties
      *
      * @return Model
      */
-    public function getModel($defaults = [])
+    protected function getModel($defaults = [])
     {
         if (!isset($defaults['table_alias'])) {
             if (!$this->table_alias) {
                 $this->table_alias = $this->link;
                 $this->table_alias = preg_replace('/_id/', '', $this->table_alias);
                 $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
-                if (isset($this->owner->table_alias)) {
-                    $this->table_alias = $this->owner->table_alias.'_'.$this->table_alias;
-                }
             }
             $defaults['table_alias'] = $this->table_alias;
         }
+
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
 
-            $c = $c($this->owner, $this);
-            if (!$c->persistence) {
+            $c = $c($this->owner, $this, $defaults);
+            if (!$c->persistence && $this->owner->persistence) {
                 $c = $this->owner->persistence->add($c, $defaults);
             }
 
@@ -154,12 +120,12 @@ class Field_One
         }
 
         if (is_object($this->model)) {
-            $c = clone $this->model;
-            if (!$this->model->persistence && $this->owner->persistence) {
-                $this->owner->persistence->add($c, $defaults);
+            if ($this->model->persistence || !$this->owner->persistence) {
+                return clone $this->model;
             }
+            $c = clone $this->model;
 
-            return $c;
+            return $this->owner->persistence->add($c, $defaults);
         }
 
         // last effort - try to add model
@@ -179,6 +145,28 @@ class Field_One
     }
 
     /**
+     * Returns our field value or id.
+     *
+     * @return mixed
+     */
+    protected function getOurValue()
+    {
+        if ($this->owner->loaded()) {
+            return $this->our_field
+                ? $this->owner[$this->our_field]
+                : $this->owner->id;
+        } else {
+            // create expression based on exsting conditions
+            return $this->owner->action(
+                'field',
+                [
+                    $this->our_field ?: $this->owner->id_field,
+                ]
+            );
+        }
+    }
+
+    /**
      * Returns our field or id field.
      *
      * @return Field
@@ -187,7 +175,7 @@ class Field_One
     {
         $this->owner->persistence_data['use_table_prefixes'] = true;
 
-        return $this->owner->getElement($this->our_field);
+        return $this->owner->getElement($this->our_field ?: $this->owner->id_field);
     }
 
     /**
@@ -201,30 +189,74 @@ class Field_One
      */
     public function ref($defaults = [])
     {
-        $m = $this->getModel($defaults);
-        $m->addHook('afterDelete', function ($m) {
-            $this->owner[$this->our_field] = null;
-        });
+        return $this->getModel($defaults)
+            ->addCondition(
+                $this->their_field ?: ($this->owner->table.'_id'),
+                $this->getOurValue()
+            );
+    }
 
-        if ($this->their_field) {
-            if ($this->owner[$this->our_field]) {
-                $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
-            }
+    /**
+     * Creates model that can be used for generating sub-query actions.
+     *
+     * @param array $defaults Properties
+     *
+     * @return Model
+     */
+    public function refLink($defaults = [])
+    {
+        return $this->getModel($defaults)
+            ->addCondition(
+                $this->their_field ?: ($this->owner->table.'_id'),
+                $this->referenceOurValue()
+            );
+    }
 
-            return
-                $m->addHook('afterSave', function ($m) {
-                    $this->owner[$this->our_field] = $m[$this->their_field];
-                });
-        } else {
-            if ($this->owner[$this->our_field]) {
-                $m->tryLoad($this->owner[$this->our_field]);
-            }
-
-            return
-                $m->addHook('afterSave', function ($m) {
-                    $this->owner[$this->our_field] = $m->id;
-                });
+    /**
+     * Adding field into join will automatically associate that field
+     * with this join. That means it won't be loaded from $table, but
+     * form the join instead.
+     *
+     * @param string $n        Field name
+     * @param array  $defaults Properties
+     *
+     * @return Field_Callback
+     */
+    public function addField($n, $defaults = [])
+    {
+        if (!isset($defaults['aggregate'])) {
+            throw new Exception([
+                '"aggregate" strategy should be defined for oneToMany field',
+                'field'    => $n,
+                'defaults' => $defaults,
+            ]);
         }
+
+        $field = isset($defaults['field']) ? $defaults['field'] : $n;
+
+        return $this->owner->addExpression($n, function () use ($defaults, $field) {
+            return $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
+        });
+    }
+
+    /**
+     * Adds multiple fields.
+     *
+     * @see addField()
+     *
+     * @param array $fields Array of fields
+     *
+     * @return $this
+     */
+    public function addFields($fields = [])
+    {
+        foreach ($fields as $field) {
+            $name = $field[0];
+            unset($field[0]);
+            $this->addField($name, $field);
+        }
+
+        return $this;
     }
 
     // {{{ Debug Methods

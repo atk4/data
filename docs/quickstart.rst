@@ -484,20 +484,22 @@ user john::
 Implementation of Relations
 ---------------------------
 
-When relation is added using getOne or getMany, the new object is created and added
-into Model of class Field_Many or Field_One (or Field_SQL_One). The object itself
-is quite simple and you can fetch it form the model if you keep the return value
-of hasOne() / hasMany() or call getRef() with the same identifier later on.
+When relation is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
+the new object is created and added into Model of class :php:class:`Relation_Many`
+or :php:class:`Relation_One` (or :php:class:`Relation_SQL_One` in case you use SQL
+database). The object itself is quite simple and you can fetch it form the model if
+you keep the return value of hasOne() / hasMany() or call :php:meth:`Model::getRef()`
+with the same identifier later on.
 
-Calling ref() will proxy into the ref() method of relation object which will
-in turn figure out what to do. 
+Calling :php:meth:`Model::ref()` will proxy into the ref() method of relation
+object which will in turn figure out what to do. 
 
-Additionally you can call addField() on the reference model that will bring
-one or several fields from related model into your current model.
+Additionally you can call :php:meth:`Model::addField()` on the reference model
+that will bring one or several fields from related model into your current model.
 
-Finally this reference object contains method getModel() which will produce
-a (possibly) fresh copy of related entity and will either adjust it's
-DataSet or set the active record.
+Finally this reference object contains method getModel() which will produce a
+(possibly) fresh copy of related entity and will either adjust it's DataSet or
+set the active record.
 
 Actions
 =======

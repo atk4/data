@@ -31,14 +31,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var string
      */
-    public $_default_class_hasOne = 'atk4\data\Field_One';
+    public $_default_class_hasOne = 'atk4\data\Relation_One';
 
     /**
      * The class used by hasMany() method.
      *
      * @var string
      */
-    public $_default_class_hasMany = 'atk4\data\Field_Many';
+    public $_default_class_hasMany = 'atk4\data\Relation_Many';
 
     /**
      * The class used by addField() method.
@@ -1262,7 +1262,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @return Field_One
+     * @return Relation_One
      */
     public function hasOne($link, $defaults = [])
     {
@@ -1275,7 +1275,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @return Field_Many
+     * @return Relation_Many
      */
     public function hasMany($link, $defaults = [])
     {
