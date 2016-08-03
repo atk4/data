@@ -73,6 +73,13 @@ class Relation_One
     public $editable = true;
 
     /**
+     * Is field mandatory? By default fields are not mandatory.
+     *
+     * @var bool
+     */
+    public $mandatory = false;
+
+    /**
      * Default constructor. Will copy argument into properties.
      *
      * @param array $defaults
@@ -113,11 +120,12 @@ class Relation_One
             // but if we try to do so here, then we end up in infinite loop :(
             //$m = $this->getModel();
             $this->owner->addField($this->our_field, [
-                'type'     => 'int', //$m->getElement($m->id_field)->type,
-                'system'   => false,
-                'join'     => $this->join,
-                'default'  => $this->default,
-                'editable' => $this->editable,
+                'type'      => 'int', //$m->getElement($m->id_field)->type,
+                'system'    => false,
+                'join'      => $this->join,
+                'default'   => $this->default,
+                'editable'  => $this->editable,
+                'mandatory' => $this->mandatory,
             ]);
         }
     }
