@@ -147,7 +147,7 @@ class Field
             $arr['editable'] = $this->editable;
         }
 
-         return $arr;
+        return $arr;
     }
 
     // }}}
