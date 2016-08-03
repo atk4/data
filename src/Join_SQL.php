@@ -138,8 +138,10 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
     public function afterLoad($model)
     {
         // we need to collect ID
-        $this->id = $model->data[$this->short_name];
-        unset($model->data[$this->short_name]);
+        if (isset($model->data[$this->short_name])) {
+            $this->id = $model->data[$this->short_name];
+            unset($model->data[$this->short_name]);
+        }
     }
 
     public function beforeInsertQuery($model, $query)
