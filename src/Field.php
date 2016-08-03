@@ -143,6 +143,10 @@ class Field
             $arr['join'] = $this->join;
         }
 
+        if ($this->editable) {
+            $arr['editable'] = $this->editable;
+        }
+
         return $arr;
     }
 
