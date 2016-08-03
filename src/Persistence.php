@@ -15,6 +15,7 @@ class Persistence
     use \atk4\core\FactoryTrait;
     use \atk4\core\HookTrait;
     use \atk4\core\AppScopeTrait;
+    use \atk4\core\NameTrait;
 
     /**
      * Connects database.
