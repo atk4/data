@@ -28,14 +28,14 @@ class Persistence_SQL extends Persistence
      *
      * @var string
      */
-    public $_default_class_hasOne = 'atk4\data\Field_SQL_One';
+    public $_default_class_hasOne = 'atk4\data\Relation_SQL_One';
 
     /**
      * Default class when adding hasMany field.
      *
      * @var string
      */
-    public $_default_class_hasMany = null; //'atk4\data\Field_Many';
+    public $_default_class_hasMany = null; //'atk4\data\Relation_Many';
 
     /**
      * Default class when adding Expression field.

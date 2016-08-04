@@ -20,7 +20,7 @@ class Field
     public $default = null;
 
     /**
-     * Field type, for example, 'string', 'boolean', 'numeric' etc.
+     * Field type, for example, 'string', 'boolean', 'numeric', 'int', 'date' etc.
      *
      * @var string
      */
@@ -53,6 +53,13 @@ class Field
      * @var bool
      */
     public $editable = true;
+
+    /**
+     * Is field mandatory? By default fields are not mandatory.
+     *
+     * @var bool|string
+     */
+    public $mandatory = false;
 
     /**
      * Setting this to true will never actually store
@@ -141,6 +148,10 @@ class Field
 
         if ($this->join) {
             $arr['join'] = $this->join;
+        }
+
+        if ($this->editable) {
+            $arr['editable'] = $this->editable;
         }
 
         return $arr;

@@ -1,3 +1,9 @@
+# upcomming
+
+* Change: classes Field_One, Field_Many and Field_SQL_One are renamed to Relation_One, Relation_Many and Relation_SQL_One respectively.
+
+
+
 # 1.0.1
 
 This is our first maintenance release that solves several important issues.
