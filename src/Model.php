@@ -259,7 +259,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, ['system' => true, 'type' => 'int', 'editable' => false]);
+            $this->addField($this->id_field, [
+                'system'    => true,
+                'type'      => 'int',
+                'mandatory' => true,
+                'editable'  => false,
+            ]);
         }
     }
 
