@@ -24,35 +24,35 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var string
      */
-    protected $_default_class_addField = 'atk4\data\Field';
+    public $_default_class_addField = 'atk4\data\Field';
 
     /**
      * The class used by hasOne() method.
      *
      * @var string
      */
-    protected $_default_class_hasOne = 'atk4\data\Field_One';
+    public $_default_class_hasOne = 'atk4\data\Relation_One';
 
     /**
      * The class used by hasMany() method.
      *
      * @var string
      */
-    protected $_default_class_hasMany = 'atk4\data\Field_Many';
+    public $_default_class_hasMany = 'atk4\data\Relation_Many';
 
     /**
      * The class used by addField() method.
      *
      * @var string
      */
-    protected $_default_class_addExpression = 'atk4\data\Field_Callback';
+    public $_default_class_addExpression = 'atk4\data\Field_Callback';
 
     /**
      * The class used by join() method.
      *
      * @var string
      */
-    protected $_default_class_join = 'atk4\data\Join';
+    public $_default_class_join = 'atk4\data\Join';
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -259,7 +259,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, ['system' => true, 'type' => 'int']);
+            $this->addField($this->id_field, [
+                'system'    => true,
+                'type'      => 'int',
+                'mandatory' => true,
+                'editable'  => false,
+            ]);
         }
     }
 
@@ -627,7 +632,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             if ($operator === '=' || func_num_args() == 2) {
                 $v = $operator === '=' ? $value : $operator;
 
-                if (!is_object($v)) {
+                if (!is_object($v) && !is_array($v)) {
                     $f->setAttr('default', $v);
                 }
             }
@@ -925,8 +930,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->hook('beforeSave') === false) {
             return $this;
         }
-
-        $this->_dirty_after_save = [];
 
         $is_update = $this->loaded();
         if ($is_update) {
@@ -1236,18 +1239,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param string $c        Class name
      * @param string $link     Link
-     * @param array  $defaults Properties
+     * @param array  $defaults Properties which we will pass to Relation object constructor
      *
      * @return object
      */
     protected function _hasRelation($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
-            if ($defaults) {
-                $defaults = ['model' => $defaults];
-            } else {
-                $defaults = ['model' => 'Model_'.$link];
-            }
+            $defaults = ['model' => $defaults ?: 'Model_'.$link];
         } elseif (isset($defaults[0])) {
             $defaults['model'] = $defaults[0];
             unset($defaults[0]);
@@ -1264,7 +1263,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @return Field_One
+     * @return Relation_One
      */
     public function hasOne($link, $defaults = [])
     {
@@ -1277,7 +1276,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @return Field_Many
+     * @return Relation_Many
      */
     public function hasMany($link, $defaults = [])
     {

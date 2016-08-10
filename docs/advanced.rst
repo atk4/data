@@ -323,4 +323,356 @@ your model are unique::
 As expected - when you add a new model the new values are checked against existing records. You can also slightly modify the logic
 to make addCondition additive if you are verifying for the combination of matched fields.
 
+Creating Many to Many relationship
+==================================
+
+Depending on the usage case many-to-many relationships can be implemented differently in Agile Data. I will be focusing on the
+practical approach. My system has "Invoice" and "Payment" document and I'd like to introduce "invoice_payment" that can
+link both entities together with fields ('invoice_id', 'payment_id', and 'amount_closed'). Here is what I need to do:
+
+1. Create Intermediate Entity - InvoicePayment
+----------------------------------------------
+
+Create new Model::
+
+    class Model_InvoicePayment extends \atk4\data\Model {
+        public $table='invoice_payment';
+        function init()
+        {
+            parent::init();
+            $this->hasOne('invoice_id', 'Model_Invoice');
+            $this->hasOne('payment_id', 'Model_Payment');
+            $this->addField('amount_closed');
+        }
+    }
+
+2. Update Invoice and Payment model
+-----------------------------------
+
+Next we need to define relationship. Inside Model_Invoice add::
+
+    $this->hasMany('InvoicePayment');
+
+    $this->hasMany('Payment', [function($m) {
+        $p = new Model_Payment($m->persistence);
+        $j = $p->join('invoice_payment.payment_id');
+        $j->addField('amount_closed');
+        $j->hasOne('invoice_id', 'Model_Invoice');
+    }, 'their_field'=>'invoice_id']);
+
+    $this->addHook('beforeDelete',function($m){ 
+        $m->ref('InvoicePayment')->action('delete')->execute();
+
+        // If you have important per-row hooks in InvoicePayment
+        // $m->ref('InvoicePayment')->each('delete');
+    });
+
+You'll have to do a similar change inside Payment model. The code for '$j->'
+have to be duplicated until we implement method Join->importModel().
+
+
+3. How to use
+-------------
+
+Here are some use-cases. First lets add payment to existing invoice. Obviously
+we cannot close amount that is bigger than invoice's total::
+
+    $i->ref('Payment')->insert([
+        'amount'=>$paid,
+        'amount_closed'=> min($paid, $i['total']),
+        'payment_code'=>'XYZ'
+    ]);
+
+Having some calculated fields for the invoice is handy. I'm adding `total_payments`
+that shows how much amount is closed and `amount_due`::
+
+    // define field to see closed amount on invoice
+    $this->hasMany('InvoicePayment')
+        ->addField('total_payments', ['aggregate'=>'sum', 'field'=>'amount_closed']);
+    $this->addExpression('amount_due', '[total]-coalesce([total_payments],0)');
+
+Note that I'm using coalesce because without InvoicePayments the aggregate sum will
+return NULL. Finally let's build allocation method, that allocates new payment
+towards a most suitable invoice::
+
+
+    // Add to Model_Payment
+    function autoAllocate()
+    {
+        $client = $this->ref['client_id'];
+        $invoices = $client->ref('Invoice');
+
+        // we are only interested in unpaid invoices
+        $invoices->addCondition('amount_due', '>', 0);
+        
+        // Prioritize older invoices
+        $invoices->setOrder('date');
+
+        while($this['amount_due'] > 0) {
+
+            // See if any invoices match by 'reference';
+            $invoices->tryLoadBy('reference', $this['reference']);
+
+            if (!$invoices->loaded()) {
+
+                // otherwise load any unpaid invoice
+                $invoices->tryLoadAny();
+
+                if(!$invoices->loaded()) {
+
+                    // couldn't load any invoice.
+                    return;
+                }
+            }
+
+            // How much we can allocate to this invoice
+            $alloc = min($this['amount_due'], $invoices['amount_due'])
+            $this->ref('InvoicePayment')->insert(['amount_closed'=>$alloc, 'invoice_id'=>$invoices->id]);
+
+            // Reload ourselves to refresh amount_due
+            $this->reload();
+        }
+    }
+
+The method here will prioritise oldest invoices unless it finds the one that has a matching
+reference. Additionally it will allocate your payment towards multiple invoices. Finally
+if invoice is partially paid it will only allocate what is due.
+
+
+
+Creating Related Entity Lookup
+==============================
+    
+Sometimes when you add a record inside your model you want to specify some related records
+not through ID but through other means. For instance, when adding invoice, I want to make
+it possible to specify 'Category' through the name, not only category_id. First, let me
+illustrate how can I do that with category_id::
+
+    class Model_Invoice extends \atk4\data\Model {
+        function init() {
+
+            parent::init();
+
+            ...
+
+            $this->hasOne('category_id', 'Model_Category');
+
+            ...
+        }
+    }
+
+    $m = new Model_Invoice($db);
+    $m->insert(['total'=>20, 'client_id'=>402, 'category_id'=>6]);
+
+So in situations when client_id and category_id is not known (such as import or API call)
+this approach will require us to perform 2 extra queries::
+
+    $m = new Model_Invoice($db);
+    $m->insert([
+        'total'=>20, 
+        'client_id'=>$m->ref('client_id')->loadBy('code', $client_code)->id,
+        'category_id'=>$m->ref('category_id')->loadBy('name', $category)->id,
+    ]);
+
+The ideal way would be to create some "non-peristable" fields that can be used to make
+things easier::
+
+    $m = new Model_Invoice($db);
+    $m->insert([
+        'total'=>20, 
+        'client_code'=>$client_code,
+        'category'=>$category
+    ]);
+
+Here is how to add them. First you need to create fields::
+
+    $this->addField('client_code', ['never_persist'=>true]);
+    $this->addField('client_name', ['never_persist'=>true]);
+    $this->addField('clategory', ['never_persist'=>true]);
+
+I have declared those fields with never_persist so they will never be used by persistence
+layer to load or save anything. Next I need a beforeSave handler::
+
+    $this->addHook('beforeSave', function($m) {
+        if(isset($m['client_code']) && !isset($m['client_id'])) {
+            $cl = $this->getRef('client_id')->getModel();
+            $cl->addCondition('code',$m['client_code']);
+            $m['client_id'] = $cl->action('field',['id']);
+        }
+
+        if(isset($m['client_name']) && !isset($m['client_id'])) {
+            $cl = $this->getRef('client_id')->getModel();
+            $cl->addCondition('name', 'like', $m['client_name']);
+            $m['client_id'] = $cl->action('field',['id']);
+        }
+
+        if(isset($m['category']) && !isset($m['category_id'])) {
+            $c = $this->getRef('category_id')->getModel();
+            $c->addCondition($c->title_field, 'like', $m['category']);
+            $m['category_id'] = $c->action('field',['id']);
+        }
+    });
+
+Note that isset() here will be true for modified fields only and behaves
+differently from PHP's default behaviour. See documentaiton for Model::isset
+
+This technique allows you to hide the complexity of the lookups and also embed the
+necessary queries inside your "insert" query.
+
+Fallback to default value
+-------------------------
+
+You might wonder, with the lookup like that, how the default values will work?
+What if the user-specified entry is not found? Lets look at the code::
+
+    if(isset($m['category']) && !isset($m['category_id'])) {
+        $c = $this->getRef('category_id')->getModel();
+        $c->addCondition($c->title_field, 'like', $m['category']);
+        $m['category_id'] = $c->action('field',['id']);
+    }
+
+So if category with a name is not found, then sub-query will return "NULL".
+If you wish to use a different value instead, you can create an expression::
+
+    if(isset($m['category']) && !isset($m['category_id'])) {
+        $c = $this->getRef('category_id')->getModel();
+        $c->addCondition($c->title_field, 'like', $m['category']);
+        $m['category_id'] = $this->expr('coalesce([],[])',[
+            $c->action('field',['id']),
+            $m->getElement('category_id')->default
+        ]);
+    }
+
+The beautiful thing about this approach is that default can also be defined
+as a lookup query::
+
+    $this->hasOne('category_id','Model_Category');
+    $this->getElement('category_id')->default = 
+        $this->getRef('category_id')->getModel()->addCondition('name','Other')
+            ->action('field',['id']);
+
+
+Inserting Hierarchical Data
+===========================
+
+In this example I'll be building API that allows me to insert multi-model
+information. Here is usage example::
+
+    $invoice->insert([
+        'client'=>'Joe Smith', 
+        'payment'=>[
+            'amount'=>15,
+            'ref'=>'half upfront',
+        ],
+        'lines'=>[
+            ['descr'=>'Book','qty'=>3, 'price'=>5]
+            ['descr'=>'Pencil','qty'=>1, 'price'=>10]
+            ['descr'=>'Eraser','qty'=>2, 'price'=>2.5]
+        ],
+    ]);
+
+Not only 'insert' but 'set' and 'save' should be able to use those fields
+for 'payment' and 'lines', so we need to first define those as 'never_persist'.
+If you curious about client lookup by-name, I have explained it in the previous
+section. Add this into your Invoice Model::
+
+    $this->addField('payment',['never_persist'=>true]);
+    $this->addField('lines',['never_persist'=>true]);
+
+Next both payment and lines need to be added after invoice is actually created,
+so::
+
+    $this->addHook('afterSave', function($m){ 
+        if(isset($m['payment'])) {
+            $m->ref('Payment')->insert($m['payment']);
+        }
+
+        if(isset($m['lines'])) {
+            $m->ref('Line')->import($m['lines']);
+        }
+    });
+
+You should never call save() inside afterSave hook, but if you wish to do some
+further manipulation, you can relad a clone::
+
+    $mm = clone $m;
+    $mm->reload();
+    if ($mm['amount_due'] == 0) $mm->save(['status'=>'paid']);
+
+Related Record Conditioning
+===========================
+
+Sometimes you wish to extend one Model into another but related field type
+can also change. For example let's say we have Model_Invoice that extends
+Model_Document and we also have Model_Client that extends Model_Contact.
+
+In theory Document's 'contact_id' can be any Contact, however when you create
+'Model_Invoice' you wish that 'contact_id' allow only Clients. First, lets
+define Model_Document::
+
+    $this->hasOne('client_id', 'Model_Contact');
+
+One option here is to move 'Model_Contact' into model property, which will be
+different for the extended class::
+
+    $this->hasOne('client_id', $this->client_class);
+
+Alternatively you can replace model in the init() method of Model_Invoice::
+
+    $this->getRef('client_id')->model = 'Model_Client';
+
+You can also use array here if you wish to pass additional information into
+related model::
+
+    $this->getRef('client_id')->model = ['Model_Client', 'no_audit'=>true];
+
+Combined with our "Audit" handler above, this should allow you to relate
+with deleted clients.
+
+The final use case is when some value inside the existing model should be
+passed into the related model. Let's say we have 'Model_Invoice' and we
+want to add 'payment_invoice_id' that points to 'Model_Payment'. However
+we want this field only to offer payments made by the same client. Inside
+Model_Invoice add::
+
+    $this->hasOne('client_id', 'Client');
+
+    $this->hasOne('payment_invoice_id', function($m){ 
+        return $m->ref('client_id')->ref('Payment');
+    });
+
+    /// how to use
+
+    $m = new Model_Invoice($db);
+    $m['client_id'] = 123;
+
+    $m['payment_invoice_id'] = $m->ref('payment_invoice_id')->tryLoadAny()->id;
+
+In this case the payment_invoice_id will be set to ID of any payment by client
+123. There also may be some better uses::
+
+    $cl->ref('Invoice')->each(function($m) {
+
+        $m['payment_invoice_id'] = $m->ref('payment_invoice_id')->tryLoadAny()->id;
+        $m->save();
+
+    });  
+
+Narrowing Down Existing Relations
+=================================
+
+Aglie Data allow you to define multiple relations between same entities, but
+sometimes that can be quite useful. Consider adding this inside your Model_Contact::
+
+    $this->hasMany('Invoice', 'Model_Invoice');
+    $this->hasMany('OverdueInvoice', function($m){
+        return $m->ref('Invoice')->addCondition('due','<',date('Y-m-d'))
+    });
+
+This way if you extend your class into 'Model_Client' and modify the 'Invoice'
+relationship to use different model::
+
+    $this->getRef('Invoice')->model = 'Model_Invoice_Sale';
+
+The 'OverdueInvoice' relation will be also propoerly adjusted.
 

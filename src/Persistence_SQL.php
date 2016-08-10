@@ -28,14 +28,14 @@ class Persistence_SQL extends Persistence
      *
      * @var string
      */
-    public $_default_class_hasOne = 'atk4\data\Field_SQL_One';
+    public $_default_class_hasOne = 'atk4\data\Relation_SQL_One';
 
     /**
      * Default class when adding hasMany field.
      *
      * @var string
      */
-    public $_default_class_hasMany = null; //'atk4\data\Field_Many';
+    public $_default_class_hasMany = null; //'atk4\data\Relation_Many';
 
     /**
      * Default class when adding Expression field.
@@ -240,6 +240,9 @@ class Persistence_SQL extends Persistence
         } else {
             foreach ($m->elements as $field => $f_object) {
                 if ($f_object instanceof Field_SQL) {
+                    if ($f_object->never_persist) {
+                        continue;
+                    }
                     $this->initField($q, $f_object);
                 }
             }
@@ -256,7 +259,11 @@ class Persistence_SQL extends Persistence
     {
         if ($m->limit && ($m->limit[0] || $m->limit[1])) {
             if ($m->limit[0] === null) {
-                // really, SQL?
+                // This is max number which is allowed in MySQL server.
+                // But be aware, that PDO will downgrade this number even lower probably because
+                // in LIMIT it expects numeric value and converts string (we set float values as PDO_PARAM_STR)
+                // back to PDO_PARAM_INT which is goes back to max int value specific server can have.
+                // On my Win10,64-bit it is 2147483647, on Travis server 9223372036854775807 etc.
                 $m->limit[0] = '18446744073709551615';
             }
             $q->limit($m->limit[0], $m->limit[1]);

@@ -20,7 +20,7 @@ class Field
     public $default = null;
 
     /**
-     * Field type, for example, 'string', 'boolean', 'numeric' etc.
+     * Field type, for example, 'string', 'boolean', 'numeric', 'int', 'date' etc.
      *
      * @var string
      */
@@ -55,6 +55,13 @@ class Field
     public $editable = true;
 
     /**
+     * Is field mandatory? By default fields are not mandatory.
+     *
+     * @var bool|string
+     */
+    public $mandatory = false;
+
+    /**
      * Setting this to true will never actually store
      * the field in the database. It will action as normal,
      * but will be skipped by update/insert.
@@ -68,19 +75,36 @@ class Field
      */
     public function __construct($defaults = [])
     {
+        if (!is_array($defaults)) {
+            throw new Exception(['Field requires array for defaults', 'arg' => $defaults]);
+        }
         foreach ($defaults as $key => $val) {
             $this->$key = $val;
         }
     }
 
     /**
-     * Returns this field object.
+     * Returns field value.
      *
-     * @return Field
+     * @return mixed
      */
     public function get()
     {
         return $this->owner[$this->short_name];
+    }
+
+    /**
+     * Sets field value.
+     *
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function set($value)
+    {
+        $this->owner[$this->short_name] = $value;
+
+        return$this;
     }
 
     /**
@@ -124,6 +148,10 @@ class Field
 
         if ($this->join) {
             $arr['join'] = $this->join;
+        }
+
+        if ($this->editable) {
+            $arr['editable'] = $this->editable;
         }
 
         return $arr;

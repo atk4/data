@@ -7,4 +7,4 @@ namespace atk4\data;
 /**
  * Obsolete. Left for compatibility
  */
-class Field_Many extends Relation_Many {}
+class Field_One_SQL extends Relation_One_SQL {}

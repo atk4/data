@@ -1,3 +1,20 @@
+# 1.0.2
+
+Maintenance release to include some of the bugfixes.
+
+* Change: classes `Field_One`, `Field_Many` and `Field_SQL_One` are renamed to `Relation_One`, `Relation_Many` and `Relation_SQL_One` respectively. (old classes will remain for compatibility until 1.2) #86
+* Added: `hasMany()->addFields(['foo','bar']);` (#77)
+* Fix: `addCondition('foo', ['a','b'])` no longer sets default value for field `foo` (#77)
+* Fix: `addField(new Field(), 'name')` displays error to remind you to use `add(new Field(), 'name')` (#77)
+* Change: traversing hasOne reference without loaded record no longer generates exception but gives you un-loaded model. (#78)
+* Added: `hasOne('client_id', ['default'=>$d])` will now properly set default for `client_id` field (#78)
+* Fix: When building sub-qureies, [alias is properly used](http://agile-data.readthedocs.io/en/develop/relations.html?highlight=alias#relation-aliases). (#78)
+* Added: [Advanced documentation](http://agile-data.readthedocs.io/en/develop/advanced.html)
+* Added: `Field->set($value)` as a shortcat for `$model['field'] = $value` #81
+* Added: Support for `mandatory` flag on field. `addField('name', ['mandatory'=>true])` #87
+* Fixes: #80, #85, 
+
+
 # 1.0.1
 
 This is our first maintenance release that solves several important issues.

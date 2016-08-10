@@ -7,7 +7,7 @@ namespace atk4\data;
 /**
  * Class description?
  */
-class Field_SQL_One extends Field_One
+class Relation_SQL_One extends Relation_One
 {
     /**
      * Creates expression which sub-selects a field inside related model.
@@ -40,7 +40,11 @@ class Field_SQL_One extends Field_One
     public function addFields($fields = [])
     {
         foreach ($fields as $field => $alias) {
-            $this->addField($field, $alias);
+            if (is_numeric($field)) {
+                $this->addField($alias);
+            } else {
+                $this->addField($field, $alias);
+            }
         }
 
         return $this;
