@@ -73,7 +73,7 @@ class Relation_Many
     }
 
     /**
-     * Will use either foreign_alias or create #join_<table>.
+     * Will use #ref_<link>.
      *
      * @return string
      */
@@ -99,6 +99,7 @@ class Relation_Many
      */
     protected function getModel($defaults = [])
     {
+        // set table_alias
         if (!isset($defaults['table_alias'])) {
             if (!$this->table_alias) {
                 $this->table_alias = $this->link;
@@ -108,6 +109,7 @@ class Relation_Many
             $defaults['table_alias'] = $this->table_alias;
         }
 
+        // if model is Closure, then call it and return model
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
 
@@ -119,6 +121,7 @@ class Relation_Many
             return $c;
         }
 
+        // if model is set, then return clone of this model
         if (is_object($this->model)) {
             if ($this->model->persistence || !$this->owner->persistence) {
                 return clone $this->model;
@@ -129,8 +132,6 @@ class Relation_Many
         }
 
         // last effort - try to add model
-        $p = $this->owner->persistence;
-
         if (is_array($this->model)) {
             $model = $this->model[0];
             $md = $this->model;
@@ -140,6 +141,8 @@ class Relation_Many
         } else {
             $model = $this->model;
         }
+
+        $p = $this->owner->persistence;
 
         return $p->add($p->normalizeClassName($model, 'Model'), $defaults);
     }
@@ -179,9 +182,7 @@ class Relation_Many
     }
 
     /**
-     * Adding field into join will automatically associate that field
-     * with this join. That means it won't be loaded from $table but
-     * form the join instead.
+     * Returns referenced model with condition set.
      *
      * @param array $defaults Properties
      *
@@ -213,9 +214,8 @@ class Relation_Many
     }
 
     /**
-     * Adding field into join will automatically associate that field
-     * with this join. That means it won't be loaded from $table, but
-     * form the join instead.
+     * Adds field as expression to owner model.
+     * Used in aggregate strategy.
      *
      * @param string $n        Field name
      * @param array  $defaults Properties

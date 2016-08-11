@@ -139,6 +139,7 @@ class Relation_One
      */
     public function getModel($defaults = [])
     {
+        // set table_alias
         if (!isset($defaults['table_alias'])) {
             if (!$this->table_alias) {
                 $this->table_alias = $this->link;
@@ -150,6 +151,8 @@ class Relation_One
             }
             $defaults['table_alias'] = $this->table_alias;
         }
+
+        // if model is Closure, then call it and return model
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
 
@@ -161,6 +164,7 @@ class Relation_One
             return $c;
         }
 
+        // if model is set, then return clone of this model
         if (is_object($this->model)) {
             $c = clone $this->model;
             if (!$this->model->persistence && $this->owner->persistence) {
@@ -171,8 +175,6 @@ class Relation_One
         }
 
         // last effort - try to add model
-        $p = $this->owner->persistence;
-
         if (is_array($this->model)) {
             $model = $this->model[0];
             $md = $this->model;
@@ -182,6 +184,8 @@ class Relation_One
         } else {
             $model = $this->model;
         }
+
+        $p = $this->owner->persistence;
 
         return $p->add($p->normalizeClassName($model, 'Model'), $defaults);
     }
@@ -199,9 +203,7 @@ class Relation_One
     }
 
     /**
-     * Adding field into join will automatically associate that field
-     * with this join. That means it won't be loaded from $table but
-     * form the join instead.
+     * Returns referenced model with condition set.
      *
      * @param array $defaults Properties
      *
