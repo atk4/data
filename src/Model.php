@@ -1293,7 +1293,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function ref($link, $defaults = [])
     {
-        return $this->getElement('#ref_'.$link)->ref($defaults);
+        return $this->getRef($link)->ref($defaults);
     }
 
     /**
@@ -1306,7 +1306,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function refLink($link, $defaults = [])
     {
-        return $this->getElement('#ref_'.$link)->refLink($defaults);
+        return $this->getRef($link)->refLink($defaults);
     }
 
     /**
