@@ -51,7 +51,7 @@ class Relation_SQL_One extends Relation_One
     }
 
     /**
-     * Creates model that can be used for generating sub-query acitons.
+     * Creates model that can be used for generating sub-query actions.
      *
      * @return Model
      */

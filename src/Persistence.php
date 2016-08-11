@@ -42,7 +42,7 @@ class Persistence
                 return new Persistence_SQL($dsn, $user, $password, $args);
             default:
                 throw new Exception([
-                    'Unable to determine pesistence driver from DSN',
+                    'Unable to determine persistence driver from DSN',
                     'dsn' => $dsn,
                 ]);
         }

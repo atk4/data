@@ -203,7 +203,10 @@ class Relation_One
     }
 
     /**
-     * Returns referenced model with condition set.
+     * If owner model is loaded, then return referenced model with respective record loaded.
+     *
+     * If owner model is not loaded, then return referenced model with condition set.
+     * This can happen in case of deep traversal $m->ref('Many')->ref('one_id'), for example.
      *
      * @param array $defaults Properties
      *
@@ -212,29 +215,47 @@ class Relation_One
     public function ref($defaults = [])
     {
         $m = $this->getModel($defaults);
+
+        // add hook to set our_field = null when record of referenced model is deleted
         $m->addHook('afterDelete', function ($m) {
             $this->owner[$this->our_field] = null;
         });
 
-        if ($this->their_field) {
-            if ($this->owner[$this->our_field]) {
-                $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
-            }
+        // if owner model is loaded, then try to load referenced model
+        if ($this->owner->loaded()) {
 
-            return
-                $m->addHook('afterSave', function ($m) {
-                    $this->owner[$this->our_field] = $m[$this->their_field];
-                });
-        } else {
-            if ($this->owner[$this->our_field]) {
-                $m->tryLoad($this->owner[$this->our_field]);
-            }
+            if ($this->their_field) {
+                if ($this->owner[$this->our_field]) {
+                    $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
+                }
 
-            return
-                $m->addHook('afterSave', function ($m) {
-                    $this->owner[$this->our_field] = $m->id;
-                });
+                return
+                    $m->addHook('afterSave', function ($m) {
+                        $this->owner[$this->our_field] = $m[$this->their_field];
+                    });
+            } else {
+                if ($this->owner[$this->our_field]) {
+                    $m->tryLoad($this->owner[$this->our_field]);
+                }
+
+                return
+                    $m->addHook('afterSave', function ($m) {
+                        $this->owner[$this->our_field] = $m->id;
+                    });
+            }
         }
+
+        // if owner model is not loaded, then return referenced model with condition set
+        // Imants: probably this piece of code should be moved to Relation_SQL_One->ref() method,
+        //         because only Persistence_SQL supports actions.
+        if (isset($this->owner->persistence) && $this->owner->persistence instanceof Persistence_SQL) {
+            $values = $this->owner->action('field', [$this->our_field]);
+
+            return $m->addCondition($this->their_field ?: $m->id_field, $values);
+        }
+
+        // can not load referenced model or set conditions on it, so we just return it
+        return $m;
     }
 
     // {{{ Debug Methods
