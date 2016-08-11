@@ -223,7 +223,6 @@ class Relation_One
 
         // if owner model is loaded, then try to load referenced model
         if ($this->owner->loaded()) {
-
             if ($this->their_field) {
                 if ($this->owner[$this->our_field]) {
                     $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
