@@ -7,6 +7,6 @@ namespace atk4\data;
 /**
  * Obsolete. Left for compatibility.
  */
-class Field_One extends Relation_One
+class Field_SQL_One extends Relation_SQL_One
 {
 }

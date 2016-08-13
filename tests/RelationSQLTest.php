@@ -145,7 +145,7 @@ class RelationSQLTest extends SQLTestCase
         $o->addCondition('amount', '<', 9);
 
         $this->assertEquals(
-            'select `id`,`name` from `user`',
+            'select `id`,`name` from `user` where `id` in (select `user_id` from `order` where `amount` > :a and `amount` < :b)',
             $o->ref('user_id')->action('select')->render()
         );
     }

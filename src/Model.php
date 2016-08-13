@@ -586,7 +586,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *  ->addCondition('my_field', 'in', [$value1, $value2]);
      *
      * Second argument could be '=', '>', '<', '>=', '<=', '!=' or 'in'.
-     * Those conditons are still supported by most of persistence drivers.
+     * Those conditions are still supported by most of persistence drivers.
      *
      * There are also vendor-specific expression support:
      *  ->addCondition('my_field', $expr);
@@ -1047,7 +1047,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Even more faster method to add adda, does not modify your
+     * Even more faster method to add data, does not modify your
      * current record and will not return anything.
      *
      * Will be further optimized in the future.
@@ -1293,7 +1293,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function ref($link, $defaults = [])
     {
-        return $this->getElement('#ref_'.$link)->ref($defaults);
+        return $this->getRef($link)->ref($defaults);
     }
 
     /**
@@ -1306,7 +1306,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function refLink($link, $defaults = [])
     {
-        return $this->getElement('#ref_'.$link)->refLink($defaults);
+        return $this->getRef($link)->refLink($defaults);
     }
 
     /**
