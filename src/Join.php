@@ -93,7 +93,6 @@ class Join
      */
     public function __construct($defaults = [])
     {
-var_dump($defaults);
         if (isset($defaults[0])) {
             $this->foreign_table = $defaults[0];
             unset($defaults[0]);

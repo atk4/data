@@ -108,7 +108,8 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
                 $this->foreign_table.' '.$this->foreign_alias,
                 $this->on instanceof \atk4\dsql\Expression ?
                 $this->on :
-                $query->expr($this->on)
+                $query->expr($this->on),
+                $this->kind
             );
 
             return;
@@ -121,7 +122,9 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             (
                 isset($this->owner->table_alias) ?
                 ($this->owner->table_alias.'.'.$this->master_field) :
-                ($this->owner->table).'.'.$this->master_field)
+                ($this->owner->table).'.'.$this->master_field
+            ),
+            $this->kind
         );
 
         if ($this->reverse) {
