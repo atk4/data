@@ -123,7 +123,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
                     ? (isset($this->join->foreign_alias) ? $this->join->foreign_alias : $this->join->foreign_table)
                     // otherwise use owner model table alias
                     : (isset($this->owner->table_alias) ? $this->owner->table_alias : $this->owner->table)
-                ) . '.' . $this->master_field
+                ).'.'.$this->master_field
             ),
             $this->kind
         );
