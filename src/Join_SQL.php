@@ -22,7 +22,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
     protected $kind;
 
     /**
-     * By default we create ON expresison ourselves, but if you want to specify
+     * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
      */
     protected $on = null;
