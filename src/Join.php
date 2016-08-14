@@ -4,6 +4,9 @@
 
 namespace atk4\data;
 
+/**
+ * Class description?
+ */
 class Join
 {
     use \atk4\core\TrackableTrait {
@@ -156,6 +159,8 @@ class Join
                 $this->foreign_field = 'id';
             }
         }
+
+        $this->owner->addHook('afterUnload', $this);
     }
 
     /**
@@ -322,5 +327,11 @@ class Join
     public function set($field, $value)
     {
         $this->save_buffer[$field] = $value;
+    }
+
+    public function afterUnload()
+    {
+        $this->id = null;
+        $this->save_buffer = [];
     }
 }

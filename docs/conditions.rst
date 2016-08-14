@@ -206,4 +206,16 @@ to the $value::
     $m->addCondition($m->getElement('name'), '!=', $this->getElement('surname'));
 
 
+Using withID
+============
+
+.. php:method:: withID($id)
+
+This method is similar to load($id) but instead of loading the specified record, it
+sets condition for ID to match. Technically that saves you on equery if you do not
+need actual record by are only looking to traverse::
+
+    $u = new Model_User($db);
+    $books = $u->withID(20)->ref('Books');
+
 

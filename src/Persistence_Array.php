@@ -5,14 +5,24 @@
 namespace atk4\data;
 
 /**
- * Implements persistance driver that can save data into array and load
+ * Implements persistence driver that can save data into array and load
  * from array. This basic driver only offers the load/save support based
  * around ID, you can't use conditions, order or limit.
  */
 class Persistence_Array extends Persistence
 {
+    /**
+     * Array of data.
+     *
+     * @var array
+     */
     public $data;
 
+    /**
+     * Constructor. Can pass array of data in parameters.
+     *
+     * @param array &$data
+     */
     public function __construct(&$data)
     {
         $this->data = &$data;
@@ -20,6 +30,11 @@ class Persistence_Array extends Persistence
 
     /**
      * Associate model with the data driver.
+     *
+     * @param Model|string $m        Model which will use this persistence
+     * @param array        $defaults Properties
+     *
+     * @return Model
      */
     public function add($m, $defaults = [])
     {
@@ -35,6 +50,15 @@ class Persistence_Array extends Persistence
         return parent::add($m, $defaults);
     }
 
+    /**
+     * Loads model and returns data record.
+     *
+     * @param Model  $m
+     * @param mixed  $id
+     * @param string $table
+     *
+     * @return array
+     */
     public function load(Model $m, $id, $table = null)
     {
         if (!isset($this->data[$m->table]) && !isset($table)) {
@@ -53,6 +77,16 @@ class Persistence_Array extends Persistence
         return $this->tryLoad($m, $id, $table);
     }
 
+    /**
+     * Tries to load model and return data record.
+     * Doesn't throw exception if model can't be loaded.
+     *
+     * @param Model  $m
+     * @param mixed  $id
+     * @param string $table
+     *
+     * @return array
+     */
     public function tryLoad(Model $m, $id, $table = null)
     {
         if (!isset($table)) {
@@ -66,11 +100,21 @@ class Persistence_Array extends Persistence
         return $this->data[$table][$id];
     }
 
+    /**
+     * Inserts record in data array and returns new record ID.
+     *
+     * @param Model  $m
+     * @param array  $data
+     * @param string $table
+     *
+     * @return mixed
+     */
     public function insert(Model $m, $data, $table = null)
     {
-        if (!$table) {
+        if (!isset($table)) {
             $table = $m->table;
         }
+
         $id = $this->generateNewID($m, $table);
         $data[$m->id_field] = $id;
         $this->data[$table][$id] = $data;
@@ -78,33 +122,58 @@ class Persistence_Array extends Persistence
         return $id;
     }
 
+    /**
+     * Updates record in data array and returns record ID.
+     *
+     * @param Model  $m
+     * @param mixed  $id
+     * @param array  $data
+     * @param string $table
+     *
+     * @return mixed
+     */
     public function update(Model $m, $id, $data, $table = null)
     {
-        if (!$table) {
+        if (!isset($table)) {
             $table = $m->table;
         }
 
         $this->data[$table][$id] =
             array_merge(
-                $this->data[$table][$id],
+                isset($this->data[$table][$id]) ? $this->data[$table][$id] : [],
                 $data
             );
 
         return $id;
     }
 
+    /**
+     * Deletes record in data array.
+     *
+     * @param Model  $m
+     * @param mixed  $id
+     * @param string $table
+     */
     public function delete(Model $m, $id, $table = null)
     {
-        if (!$table) {
+        if (!isset($table)) {
             $table = $m->table;
         }
 
         unset($this->data[$table][$id]);
     }
 
+    /**
+     * Generates new record ID.
+     *
+     * @param Model  $m
+     * @param string $table
+     *
+     * @return string
+     */
     public function generateNewID($m, $table = null)
     {
-        if (!$table) {
+        if (!isset($table)) {
             $table = $m->table;
         }
 
@@ -112,15 +181,16 @@ class Persistence_Array extends Persistence
 
         $type = $m->getElement($m->id_field)->type;
 
-        if ($type === 'int') {
-            return count($ids) === 0 ? 1 : (max($ids) + 1);
-        } elseif ($type == 'string') {
-            return uniqid();
-        } else {
-            throw new Exception([
-                'Unknown id type. Array supports type=integer or type=string only',
-                'type' => $type,
-            ]);
+        switch ($type) {
+            case 'int':
+                return count($ids) === 0 ? 1 : (max($ids) + 1);
+            case 'string':
+                return uniqid();
+            default:
+                throw new Exception([
+                    'Unsupported id field type. Array supports type=integer or type=string only',
+                    'type' => $type,
+                ]);
         }
     }
 }

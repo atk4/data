@@ -77,24 +77,11 @@ class JoinSQLTest extends SQLTestCase
 
         $m_u->save();
 
+        $m_u->unload();
+
         $this->assertEquals([
             'user'    => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
-        ], $this->getDB('user,contact'));
-
-        $m_u->unload();
-        $m_u['name'] = 'Peter';
-        $m_u['contact_id'] = 1;
-        $m_u->save();
-        $m_u->unload();
-
-        $this->assertEquals([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-            ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+123'],
-            ],
         ], $this->getDB('user,contact'));
 
         $m_u['name'] = 'Joe';
@@ -104,8 +91,7 @@ class JoinSQLTest extends SQLTestCase
         $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
+                2 => ['id' => 2, 'name' => 'Joe', 'contact_id' => 2],
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
@@ -213,9 +199,9 @@ class JoinSQLTest extends SQLTestCase
 
         $db = new Persistence_SQL($this->db->connection);
         $m_u = new Model($db, 'user');
-        $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
+        $j->addField('contact_id', ['actual' => 'id']);
         $j->addField('contact_phone');
 
         $m_u->load(1);
@@ -272,11 +258,27 @@ class JoinSQLTest extends SQLTestCase
             ], ], $this->getDB()
         );
 
-        $m_u->load(3);
+        $m_u->load(1);
         $m_u['name'] = 'XX';
         $m_u['contact_phone'] = '+999';
+        $m_u->load(3);
+        $m_u['name'] = 'XX';
         $m_u->save();
 
+
+        $this->assertEquals([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+            ], 'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+555'],
+                2 => ['id' => 2, 'contact_phone' => '+321'],
+            ], ], $this->getDB()
+        );
+
+        $m_u['contact_phone'] = '+999';
+        $m_u->save();
 
         $this->assertEquals([
             'user' => [
@@ -288,7 +290,6 @@ class JoinSQLTest extends SQLTestCase
                 2 => ['id' => 2, 'contact_phone' => '+999'],
             ], ], $this->getDB()
         );
-
 
         $m_u->tryLoad(4);
         $m_u['name'] = 'YYY';
@@ -344,5 +345,37 @@ class JoinSQLTest extends SQLTestCase
                 3 => ['id' => 3, 'contact_phone' => '+777'],
             ], ], $this->getDB()
         );
+    }
+
+    public function testDoubleSaveHook()
+    {
+        $a = [
+            'user' => [
+                '_' => ['id' => 1, 'name' => 'John'],
+            ], 'contact' => [
+                '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
+            ], ];
+
+        $db = new Persistence_SQL($this->db->connection);
+        $m_u = new Model($db, 'user');
+        $this->setDB($a);
+        $m_u->addField('name');
+        $j = $m_u->join('contact.test_id');
+        $j->addField('contact_phone');
+
+        $m_u->addHook('afterSave', function ($m) {
+            if ($m['contact_phone'] != '+123') {
+                $m['contact_phone'] = '+123';
+                $m->save();
+            }
+        });
+
+        $m_u['name'] = 'John';
+        $m_u->save();
+
+        $this->assertEquals([
+            'user'    => [1 => ['id' => 1, 'name' => 'John']],
+            'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
+        ], $this->getDB('user,contact'));
     }
 }

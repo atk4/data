@@ -300,4 +300,13 @@ class RelationSQLTest extends SQLTestCase
         $this->assertEquals('Peters new contact', $u->ref('contact_id')['address']);
         $this->assertEquals('Peters new contact', $u['address']);
     }
+
+    public function testModelProperty()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $user = new Model($db, ['table' => 'user']);
+        $user->hasMany('Orders', ['model' => ['atk4/data/Model', 'table' => 'order'], 'their_field' => 'id']);
+        $o = $user->ref('Orders');
+        $this->assertEquals('order', $o->table);
+    }
 }

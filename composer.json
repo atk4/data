@@ -14,7 +14,7 @@
     ],
     "require": {
         "php": ">=5.5.0",
-        "atk4/dsql": "~1.0.1",
+        "atk4/dsql": "~1.0.8",
         "atk4/core": "~1.1.0"
     },
     "require-dev": {
