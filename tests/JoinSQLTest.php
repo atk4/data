@@ -388,14 +388,14 @@ class JoinSQLTest extends SQLTestCase
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ], 'contact' => [
-                100 => ['id' => 100, 'contact_phone' => '+555', 'country_id'=>1],
-                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id'=>2],
-                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id'=>5],
+                100 => ['id' => 100, 'contact_phone' => '+555', 'country_id' => 1],
+                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
+                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
             ], 'country' => [
 
-                1 => ['id'=>1, 'name'=>'UK'],
-                2 => ['id'=>2, 'name'=>'US'],
-                3 => ['id'=>3, 'name'=>'India'],
+                1 => ['id' => 1, 'name' => 'UK'],
+                2 => ['id' => 2, 'name' => 'US'],
+                3 => ['id' => 3, 'name' => 'India'],
         ], ];
         $this->setDB($a);
 
@@ -406,14 +406,14 @@ class JoinSQLTest extends SQLTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
         $c = $j->join('country');
-        $c->addField('country_name', ['actual'=>'name']);
+        $c->addField('country_name', ['actual' => 'name']);
 
         $m_u->load(10);
         $m_u->delete();
 
         $m_u->loadBy('country_name', 'US');
         $this->assertEquals(30, $m_u->id);
-        $m_u['country_name']='USA';
+        $m_u['country_name'] = 'USA';
         $m_u->save();
 
         $m_u->tryLoad(40);
@@ -425,12 +425,12 @@ class JoinSQLTest extends SQLTestCase
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ], 'contact' => [
-                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id'=>2],
-                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id'=>5],
+                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
+                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
             ], 'country' => [
 
-                2 => ['id'=>2, 'name'=>'USA'],
-                3 => ['id'=>3, 'name'=>'India'],
+                2 => ['id' => 2, 'name' => 'USA'],
+                3 => ['id' => 3, 'name' => 'India'],
             ], ], $this->getDB()
         );
     }
@@ -444,14 +444,14 @@ class JoinSQLTest extends SQLTestCase
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ], 'contact' => [
-                100 => ['id' => 100, 'contact_phone' => '+555', 'country_id'=>1],
-                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id'=>2],
-                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id'=>5],
+                100 => ['id' => 100, 'contact_phone' => '+555', 'country_id' => 1],
+                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
+                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
             ], 'country' => [
 
-                1 => ['id'=>1, 'name'=>'UK'],
-                2 => ['id'=>2, 'name'=>'US'],
-                3 => ['id'=>3, 'name'=>'India'],
+                1 => ['id' => 1, 'name' => 'UK'],
+                2 => ['id' => 2, 'name' => 'US'],
+                3 => ['id' => 3, 'name' => 'India'],
         ], ];
         $this->setDB($a);
 
@@ -462,7 +462,7 @@ class JoinSQLTest extends SQLTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
         $c = $j->join('country');
-        $c->addField('country_name', ['actual'=>'name']);
+        $c->addField('country_name', ['actual' => 'name']);
 
         $m_u->load(10);
         $m_u->delete();
@@ -476,15 +476,13 @@ class JoinSQLTest extends SQLTestCase
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
             ], 'contact' => [
-                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id'=>2],
-                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id'=>5],
+                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
+                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
             ], 'country' => [
 
-                2 => ['id'=>2, 'name'=>'US'],
-                3 => ['id'=>3, 'name'=>'India'],
+                2 => ['id' => 2, 'name' => 'US'],
+                3 => ['id' => 3, 'name' => 'India'],
             ], ], $this->getDB()
         );
     }
-
-
 }
