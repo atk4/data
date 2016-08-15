@@ -9,10 +9,10 @@ namespace atk4\data;
  */
 class Join_SQL extends Join implements \atk4\dsql\Expressionable
 {
-    public $foreign_alias;
     /**
      * A short symbolic name that will be used as an alias for the joined table.
      */
+    public $foreign_alias;
 
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
@@ -22,7 +22,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
     protected $kind;
 
     /**
-     * By default we create ON expresison ourselves, but if you want to specify
+     * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
      */
     protected $on = null;
@@ -106,9 +106,8 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         if ($this->on) {
             $query->join(
                 $this->foreign_table.' '.$this->foreign_alias,
-                $this->on instanceof \atk4\dsql\Expression ?
-                $this->on :
-                $query->expr($this->on)
+                $this->on instanceof \atk4\dsql\Expression ? $this->on : $query->expr($this->on),
+                $this->kind
             );
 
             return;
@@ -119,9 +118,14 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
                 isset($this->foreign_alias) ? (' '.$this->foreign_alias) : ''
             ),
             (
-                isset($this->owner->table_alias) ?
-                ($this->owner->table_alias.'.'.$this->master_field) :
-                ($this->owner->table).'.'.$this->master_field)
+                ($this->join
+                    // if join is nested, then use previous join table alias
+                    ? (isset($this->join->foreign_alias) ? $this->join->foreign_alias : $this->join->foreign_table)
+                    // otherwise use owner model table alias
+                    : (isset($this->owner->table_alias) ? $this->owner->table_alias : $this->owner->table)
+                ).'.'.$this->master_field
+            ),
+            $this->kind
         );
 
         if ($this->reverse) {
