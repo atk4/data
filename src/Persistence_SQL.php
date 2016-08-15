@@ -681,6 +681,11 @@ class Persistence_SQL extends Persistence
             ], null, $e);
         }
 
+        if ($m->id_field && isset($data[$m->id_field]) && $m->dirty[$m->id_field]) {
+            // ID was changed
+            $m->id = $data[$m->id_field];
+        }
+
         $m->hook('afterUpdateQuery', [$update, $st]);
 
         // if any rows were updated in database, and we had expressions, reload
