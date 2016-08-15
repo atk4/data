@@ -681,7 +681,7 @@ class Persistence_SQL extends Persistence
             ], null, $e);
         }
 
-        if ($m->dirty[$m->id_field] && isset($data[$m->id_field])) {
+        if ($m->id_field && isset($data[$m->id_field]) && $m->dirty[$m->id_field] ) {
             // ID was changed
             $m->id = $data[$m->id_field];
         }

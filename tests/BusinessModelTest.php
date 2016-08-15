@@ -111,6 +111,15 @@ class BusinessModelTest extends TestCase
         $this->assertEquals('John', $m->get('name'));
     }
 
+    /*
+     * This is no longer the case after PR #69
+     *
+     * Now changing $m['id'] will actually update the value
+     * of original records. In a way $m['id'] is not a direct
+     * alias to ID, but has a deeper meaning and behaves more
+     * like a regular field.
+     *
+     *
     public function testDefaultInit()
     {
         $d = new Persistence();
@@ -121,6 +130,7 @@ class BusinessModelTest extends TestCase
         $m['id'] = 20;
         $this->assertEquals(20, $m->id);
     }
+     */
 
     /**
      * @expectedException Exception
