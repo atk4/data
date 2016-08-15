@@ -5,7 +5,7 @@
 namespace atk4\data;
 
 /**
- * Implements persistance driver that can save data into array and load
+ * Implements persistence driver that can save data into array and load
  * from array. This basic driver only offers the load/save support based
  * around ID, you can't use conditions, order or limit.
  */
