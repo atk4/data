@@ -48,7 +48,7 @@ class Join
     /**
      * Normally the foreign table is saved first, then it's ID is used in the
      * primary table. When deleting, the primary table record is deleted first
-     * which is followed by the foreign tabel record.
+     * which is followed by the foreign table record.
      *
      * If you are using the following syntax:
      *
