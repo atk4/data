@@ -42,31 +42,44 @@ class Field
 
     /**
      * Is it system field?
+     * System fields will be always loaded and saved.
      *
      * @var bool
      */
     public $system = false;
 
     /**
-     * Is field editable? Normally you can edit fields.
+     * Setting this to true will never actually store
+     * the field in the database. It will action as normal,
+     * but will be skipped by update/insert.
      *
      * @var bool
      */
-    public $editable = true;
+    public $never_persist = false;
+
+    /**
+     * Is field read only?
+     * Field value may not be changed. It'll never be saved.
+     * For example, expressions are read only.
+     *
+     * @var bool
+     */
+    public $readonly = false;
+
+    /**
+     * Array with UI flags like editable, visible and hidden.
+     *
+     * @var array
+     */
+    public $ui = [];
 
     /**
      * Is field mandatory? By default fields are not mandatory.
+     * Can contain error message for UI.
      *
      * @var bool|string
      */
     public $mandatory = false;
-
-    /**
-     * Setting this to true will never actually store
-     * the field in the database. It will action as normal,
-     * but will be skipped by update/insert.
-     */
-    public $never_persist = false;
 
     /**
      * Constructor. You can pass field properties as array.
@@ -79,7 +92,11 @@ class Field
             throw new Exception(['Field requires array for defaults', 'arg' => $defaults]);
         }
         foreach ($defaults as $key => $val) {
-            $this->$key = $val;
+            if (is_array($val)) {
+                $this->$key = array_merge(isset($this->$key) && is_array($this->$key) ? $this->$key : [], $val);
+            } else {
+                $this->$key = $val;
+            }
         }
     }
 
@@ -104,7 +121,7 @@ class Field
     {
         $this->owner[$this->short_name] = $value;
 
-        return$this;
+        return $this;
     }
 
     /**
@@ -124,6 +141,36 @@ class Field
         return $this;
     }
 
+    /**
+     * Returns if field should be editable in UI.
+     *
+     * @return bool
+     */
+    public function isEditable()
+    {
+        return isset($this->ui['editable']) ? $this->ui['editable'] : !$this->system;
+    }
+
+    /**
+     * Returns if field should be visible in UI.
+     *
+     * @return bool
+     */
+    public function isVisible()
+    {
+        return isset($this->ui['visible']) ? $this->ui['visible'] : !$this->system;
+    }
+
+    /**
+     * Returns if field should be hidden in UI.
+     *
+     * @return bool
+     */
+    public function isHidden()
+    {
+        return isset($this->ui['hidden']) ? $this->ui['hidden'] : false;
+    }
+
     // {{{ Debug Methods
 
     /**
@@ -138,20 +185,12 @@ class Field
             'value'      => $this->get(),
         ];
 
-        if ($this->type) {
-            $arr['type'] = $this->type;
-        }
-
-        if ($this->system) {
-            $arr['system'] = $this->system;
-        }
-
-        if ($this->join) {
-            $arr['join'] = $this->join;
-        }
-
-        if ($this->editable) {
-            $arr['editable'] = $this->editable;
+        foreach ([
+            'type', 'system', 'never_persist', 'readonly', 'ui', 'join',
+        ] as $key) {
+            if (isset($this->$key)) {
+                $arr[$key] = $this->$key;
+            }
         }
 
         return $arr;

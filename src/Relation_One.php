@@ -66,11 +66,29 @@ class Relation_One
     public $default = null;
 
     /**
-     * Is field editable? Normally you can edit fields.
+     * Setting this to true will never actually store
+     * the field in the database. It will action as normal,
+     * but will be skipped by update/insert.
      *
      * @var bool
      */
-    public $editable = true;
+    public $never_persist = false;
+
+    /**
+     * Is field read only?
+     * Field value may not be changed. It'll never be saved.
+     * For example, expressions are read only.
+     *
+     * @var bool
+     */
+    public $readonly = false;
+
+    /**
+     * Array with UI flags like editable, visible and hidden.
+     *
+     * @var array
+     */
+    public $ui = [];
 
     /**
      * Is field mandatory? By default fields are not mandatory.
@@ -92,7 +110,11 @@ class Relation_One
         }
 
         foreach ($defaults as $key => $val) {
-            $this->$key = $val;
+            if (is_array($val)) {
+                $this->$key = array_merge(isset($this->$key) && is_array($this->$key) ? $this->$key : [], $val);
+            } else {
+                $this->$key = $val;
+            }
         }
     }
 
@@ -120,12 +142,14 @@ class Relation_One
             // but if we try to do so here, then we end up in infinite loop :(
             //$m = $this->getModel();
             $this->owner->addField($this->our_field, [
-                'type'      => 'int', //$m->getElement($m->id_field)->type,
-                'system'    => false,
-                'join'      => $this->join,
-                'default'   => $this->default,
-                'editable'  => $this->editable,
-                'mandatory' => $this->mandatory,
+                'type'          => 'int', //$m->getElement($m->id_field)->type,
+                'system'        => true,
+                'join'          => $this->join,
+                'default'       => $this->default,
+                'never_persist' => $this->never_persist,
+                'readonly'      => $this->readonly,
+                'ui'            => $this->ui,
+                'mandatory'     => $this->mandatory,
             ]);
         }
     }
@@ -271,12 +295,12 @@ class Relation_One
             'model'   => $this->model,
         ];
 
-        if ($this->our_field) {
-            $arr['our_field'] = $this->our_field;
-        }
-
-        if ($this->their_field) {
-            $arr['their_field'] = $this->their_field;
+        foreach ([
+            'our_field', 'their_field', 'type', 'system', 'never_persist', 'readonly', 'ui', 'join',
+        ] as $key) {
+            if (isset($this->$key)) {
+                $arr[$key] = $this->$key;
+            }
         }
 
         return $arr;
