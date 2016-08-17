@@ -159,7 +159,7 @@ class Relation_Many
                 ? $this->owner[$this->our_field]
                 : $this->owner->id;
         } else {
-            // create expression based on exsting conditions
+            // create expression based on existing conditions
             return $this->owner->action(
                 'field',
                 [
@@ -273,12 +273,12 @@ class Relation_Many
             'model'   => $this->model,
         ];
 
-        if ($this->our_field) {
-            $arr['our_field'] = $this->our_field;
-        }
-
-        if ($this->their_field) {
-            $arr['their_field'] = $this->their_field;
+        foreach ([
+            'our_field', 'their_field',
+        ] as $key) {
+            if (isset($this->$key)) {
+                $arr[$key] = $this->$key;
+            }
         }
 
         return $arr;
