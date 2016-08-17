@@ -148,7 +148,9 @@ class Field
      */
     public function isEditable()
     {
-        return isset($this->ui['editable']) ? $this->ui['editable'] : !$this->system;
+        return $this->readonly || $this->never_persist
+            ? false
+            : (isset($this->ui['editable']) ? $this->ui['editable'] : !$this->system);
     }
 
     /**
