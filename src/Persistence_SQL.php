@@ -151,7 +151,7 @@ class Persistence_SQL extends Persistence
      *
      * @return \atk4\dsql\Expression
      */
-    public function expr($m, $expr, $args = [])
+    public function expr(Model $m, $expr, $args = [])
     {
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/',
