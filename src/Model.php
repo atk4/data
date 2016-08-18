@@ -60,7 +60,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * by persistence driver.
      *
      * You can define this field as associative array where "key" is used
-     * as the name of pesistence driver. Here is example for mysql and default:
+     * as the name of persistence driver. Here is example for mysql and default:
      *
      * $table = ['user', 'mysql'=>'tbl_user'];
      *
@@ -136,7 +136,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
 
     /**
-     * Contains ID of the curent record. If the value is null then the record
+     * Contains ID of the current record. If the value is null then the record
      * is considered to be new.
      *
      * @var mixed
@@ -174,7 +174,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * that you do not accidentally access field that you have explicitly
      * excluded.
      *
-     * The default behaviour is to return NULL and allow you to set new
+     * The default behavior is to return NULL and allow you to set new
      * fields even if addField() was not used to set the field.
      *
      * @var false|array
@@ -208,7 +208,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * $m = new Model($db);
      *
-     * The second use actually calls add() but is prefered usage because:
+     * The second use actually calls add() but is preferred usage because:
      *  - it's shorter
      *  - type hinting will work;
      *
@@ -274,7 +274,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 'system'    => true,
                 'type'      => 'int',
                 'mandatory' => true,
-                'editable'  => false,
             ]);
         }
     }
@@ -366,7 +365,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         if (!is_string($field) || $field === '' || is_numeric($field[0])) {
             throw new Exception([
-                'Incorect specification of field name',
+                'Incorrect specification of field name',
                 'arg' => $field,
             ]);
         }
@@ -948,7 +947,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $dirty_join = false;
             foreach ($this->dirty as $name => $junk) {
                 $field = $this->hasElement($name);
-                if (!$field) {
+                if (!$field || $field->readonly) {
                     continue;
                 }
 
@@ -983,7 +982,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $data = [];
             foreach ($this->get() as $name => $value) {
                 $field = $this->hasElement($name);
-                if (!$field) {
+                if (!$field || $field->readonly) {
                     continue;
                 }
 

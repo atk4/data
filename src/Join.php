@@ -140,8 +140,6 @@ class Join
                     $this->reverse = 'link';
 
                          */
-                    /*
-                     */
                 }
             }
             list($this->foreign_table, $this->foreign_field) =
@@ -165,7 +163,7 @@ class Join
 
     /**
      * Adding field into join will automatically associate that field
-     * with this join. That means it won't be loaded from $table but
+     * with this join. That means it won't be loaded from $table, but
      * form the join instead.
      */
     public function addField($n, $defaults = [])
@@ -306,6 +304,7 @@ class Join
      */
     public function importModel($m, $defaults = [])
     {
+        // not implemented yet !!!
     }
 
     /**
