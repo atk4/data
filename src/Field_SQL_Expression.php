@@ -21,12 +21,11 @@ class Field_SQL_Expression extends Field_SQL
     public $expr = null;
 
     /**
-     * Is field editable?
-     * Expression fields can't be editable.
+     * Expressions are always readonly.
      *
      * @var bool
      */
-    public $editable = false;
+    public $readonly = true;
 
     /**
      * Initialization.

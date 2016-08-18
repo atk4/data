@@ -578,7 +578,7 @@ class Persistence_SQL extends Persistence
         // apply all fields we got from get
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
-            if (!$f->editable || $f->never_persist) {
+            if ($f->readonly || $f->never_persist) {
                 continue;
             }
             $insert->set($f->actual ?: $f->short_name, $value);
@@ -656,7 +656,7 @@ class Persistence_SQL extends Persistence
         $cnt = 0;
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
-            if ($f->never_persist) {
+            if ($f->readonly || $f->never_persist) {
                 continue;
             }
             $update->set($f->actual ?: $f->short_name, $value);
