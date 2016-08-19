@@ -245,6 +245,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             foreach($this->elements as $id=>$el) {
                 if ($el instanceof Join) {
                     $this->elements[$id] = clone $el;
+                    $el->owner=$this;
                 }
             }
         }
