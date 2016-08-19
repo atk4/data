@@ -27,7 +27,7 @@
     "autoload-dev": {
         "psr-4": {
           "atk4\\data\\tests\\":"tests/",
-          "atk4\\data\\tests\\smbo\\":"tests/smbo"
+          "atk4\\data\\tests\\smbo\\":["tests/smbo","tests/smbo/lib"]
         }
     }
 }

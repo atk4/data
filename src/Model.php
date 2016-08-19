@@ -525,6 +525,22 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $value;
     }
 
+    /**
+     * Remove current field value and use default
+     *
+     * @param string|array $field
+     *
+     * @return $this
+     */
+    function unset($name) {
+        $name = $this->normalizeFieldName($name);
+        if (array_key_exists($name, $this->dirty)) {
+            $this->data[$name] = $this->dirty[$name];
+            unset($this->dirty[$name]);
+        }
+        return $this;
+    }
+
     // }}}
 
     // {{{ ArrayAccess support
@@ -571,11 +587,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function offsetUnset($name)
     {
-        $name = $this->normalizeFieldName($name);
-        if (array_key_exists($name, $this->dirty)) {
-            $this->data[$name] = $this->dirty[$name];
-            unset($this->dirty[$name]);
-        }
+        $this->unset($name);
     }
 
     // }}}
