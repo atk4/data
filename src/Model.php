@@ -985,13 +985,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 return $this;
             }
 
-            $this->hook('beforeModify', [&$data]);
+            $this->hook('beforeUpdate', [&$data]);
 
             $this->persistence->update($this, $this->id, $data);
 
-            $this->hook('afterModify', [&$data]);
-
-            //$this->hook('beforeUpdate', array(&$source));
+            $this->hook('afterUpdate', [&$data]);
         } else {
             $data = [];
             foreach ($this->get() as $name => $value) {
