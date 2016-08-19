@@ -80,13 +80,13 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             // so you can use expressions or fields inside joined entities.
             // If string specified here does not point to an existing model field
             // a new basic field is inserted and marked hidden.
-            if(is_string($this->master_field)) {
+            if (is_string($this->master_field)) {
                 $e = $this->owner->hasElement($this->master_field);
                 if (!$e) {
                     if ($this->join) {
-                        $e = $this->join->addField($this->master_field, ['system'=>true, 'readonly'=>true]);
-                    }else{
-                        $e = $this->owner->addField($this->master_field, ['system'=>true, 'readonly'=>true]);
+                        $e = $this->join->addField($this->master_field, ['system' => true, 'readonly' => true]);
+                    } else {
+                        $e = $this->owner->addField($this->master_field, ['system' => true, 'readonly' => true]);
                     }
                     $this->master_field = $e->short_name;
                 }
@@ -126,8 +126,8 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         $query->join(
             $this->foreign_table.(isset($this->foreign_alias) ? (' '.$this->foreign_alias) : ''),
-            $query->expr('{}.{} = {}',[
-                (isset($this->foreign_alias)?$this->foreign_alias : $this->foreign_table),
+            $query->expr('{}.{} = {}', [
+                (isset($this->foreign_alias) ? $this->foreign_alias : $this->foreign_table),
                 $this->foreign_field,
                 $this->owner->getElement($this->master_field),
             ]),
@@ -182,7 +182,6 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         $data[$this->master_field] = $this->id;
     }
 
-
     public function afterInsert($model, $id)
     {
         if ($this->weak) {
@@ -215,9 +214,9 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         $update->set($this->save_buffer);
         $this->save_buffer = [];
 
-        if($this->reverse){ 
+        if ($this->reverse) {
             $update->where($this->foreign_field, $this->owner->id);
-        }else{
+        } else {
             $update->where($this->foreign_field, $this->owner[$this->master_field]);
         }
 
@@ -231,9 +230,9 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         }
 
         $delete = $this->dsql();
-        if($this->reverse){ 
+        if ($this->reverse) {
             $delete->where($this->foreign_field, $this->owner->id);
-        }else{
+        } else {
             $delete->where($this->foreign_field, $this->owner[$this->master_field]);
         }
 
