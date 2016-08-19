@@ -578,9 +578,6 @@ class Persistence_SQL extends Persistence
         // apply all fields we got from get
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
-            if ($f->readonly || $f->never_persist) {
-                continue;
-            }
             $insert->set($f->actual ?: $f->short_name, $value);
         }
 
