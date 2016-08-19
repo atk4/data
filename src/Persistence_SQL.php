@@ -653,9 +653,6 @@ class Persistence_SQL extends Persistence
         $cnt = 0;
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
-            if ($f->readonly || $f->never_persist) {
-                continue;
-            }
             $update->set($f->actual ?: $f->short_name, $value);
             $cnt++;
         }

@@ -961,7 +961,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $dirty_join = false;
             foreach ($this->dirty as $name => $junk) {
                 $field = $this->hasElement($name);
-                if (!$field || $field->readonly) {
+                if (!$field || $field->readonly || $field->never_persist) {
                     continue;
                 }
 
