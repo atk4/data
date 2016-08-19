@@ -89,12 +89,14 @@ class Structure extends Expression
     public function drop()
     {
         $this->mode('drop')->execute();
+
         return $this;
     }
 
     public function create()
     {
         $this->mode('create')->execute();
+
         return $this;
     }
 

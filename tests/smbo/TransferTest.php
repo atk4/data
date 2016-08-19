@@ -5,20 +5,18 @@ namespace atk4\data\tests\smbo;
 use atk4\data\Persistence;
 
 class TransferTest extends SMBOTestCase
-    
 {
-
     public $debug = false;
 
     /**
-     * Testing transfer between two accounts
+     * Testing transfer between two accounts.
      */
     public function testTransfer()
     {
         $aib = (new Account($this->db))->save('AIB');
         $boi = (new Account($this->db))->save('BOI');
 
-        
+
         $t = $aib->transfer($boi, 100); // create transfer between accounts
 
         $t->save();
@@ -26,13 +24,12 @@ class TransferTest extends SMBOTestCase
         $this->assertEquals(-100, $aib->reload()['balance']);
         $this->assertEquals(100, $boi->reload()['balance']);
 
-        $data = $t->export(['id','transfer_document_id']);
+        $data = $t->export(['id', 'transfer_document_id']);
         $this->assertEquals([
-            ['id'=>1, 'transfer_document_id'=>2],
-            ['id'=>2, 'transfer_document_id'=>1],
+            ['id' => 1, 'transfer_document_id' => 2],
+            ['id' => 2, 'transfer_document_id' => 1],
         ], $data);
     }
-
 
     /*
     public function testBasicEntities()

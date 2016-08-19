@@ -2,9 +2,9 @@
 
 namespace atk4\data\tests\smbo;
 
-class Payment extends Document {
-
-    function init()
+class Payment extends Document
+{
+    public function init()
     {
         parent::init();
 
@@ -15,7 +15,6 @@ class Payment extends Document {
         $j_p->addField('cheque_no');
         $j_p->hasOne('account_id', new Account());
 
-        $j_p->addField('misc_payment', ['type'=>'bool']);
-
+        $j_p->addField('misc_payment', ['type' => 'bool']);
     }
 }

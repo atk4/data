@@ -1,28 +1,27 @@
 <?php
 
 namespace atk4\data\tests\smbo;
-use \atk4\core\Exception;
 
-class Transfer extends Payment {
-
+class Transfer extends Payment
+{
     protected $detached = false;
 
     public $other_leg_creation = null;
 
-    function init()
+    public function init()
     {
         parent::init();
 
-        $this->j_payment->hasOne('transfer_document_id', new Transfer());
+        $this->j_payment->hasOne('transfer_document_id', new self());
 
         // only used to create / destroy trasfer legs
         if (!$this->detached) {
-            $this->addCondition('transfer_document_id','not',null);
+            $this->addCondition('transfer_document_id', 'not', null);
         }
 
-        $this->addField('destination_account_id', ['never_persist'=>true]);
+        $this->addField('destination_account_id', ['never_persist' => true]);
 
-        $this->addHook('beforeSave', function($m) {
+        $this->addHook('beforeSave', function ($m) {
 
             // only for new records and when destination_account_id is set
             if ($m['destination_account_id'] && !$m->id) {
@@ -55,12 +54,11 @@ class Transfer extends Payment {
             }
         });
 
-        $this->addHook('afterSave', function($m) {
-            if($m->other_leg_creation) {
+        $this->addHook('afterSave', function ($m) {
+            if ($m->other_leg_creation) {
                 $m->other_leg_creation->set('transfer_document_id', $m->id)->save();
             }
             $m->other_leg_creation = null;
         });
-
     }
 }
