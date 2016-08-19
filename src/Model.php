@@ -237,15 +237,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
     }
 
-
     public function __clone()
     {
         // we need to clone some of the elements
-        if($this->elements) {
-            foreach($this->elements as $id=>$el) {
+        if ($this->elements) {
+            foreach ($this->elements as $id => $el) {
                 if ($el instanceof Join) {
                     $this->elements[$id] = clone $el;
-                    $el->owner=$this;
+                    $el->owner = $this;
                 }
             }
         }
@@ -527,18 +526,20 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Remove current field value and use default
+     * Remove current field value and use default.
      *
      * @param string|array $field
      *
      * @return $this
      */
-    function unset($name) {
+    public function unset($name)
+    {
         $name = $this->normalizeFieldName($name);
         if (array_key_exists($name, $this->dirty)) {
             $this->data[$name] = $this->dirty[$name];
             unset($this->dirty[$name]);
         }
+
         return $this;
     }
 

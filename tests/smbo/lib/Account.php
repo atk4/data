@@ -2,25 +2,26 @@
 
 namespace atk4\data\tests\smbo;
 
-class Account extends \atk4\data\Model {
-    public $table='account';
+class Account extends \atk4\data\Model
+{
+    public $table = 'account';
 
-    function init()
+    public function init()
     {
         parent::init();
 
         $this->addField('name');
 
         $this->hasMany('Payment', new Payment())
-            ->addField('balance', ['aggregate'=>'sum', 'field'=>'amount']);
+            ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount']);
     }
 
     /**
-     * create and return a trasnfer model
+     * create and return a trasnfer model.
      */
-    function transfer(Account $a, $amount)
+    public function transfer(Account $a, $amount)
     {
-        $t = new Transfer($this->persistence, ['detached'=>true]);
+        $t = new Transfer($this->persistence, ['detached' => true]);
         $t['account_id'] = $this->id;
 
         $t['destination_account_id'] = $a->id;
