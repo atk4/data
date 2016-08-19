@@ -201,7 +201,6 @@ class JoinSQLTest extends SQLTestCase
         $m_u = new Model($db, 'user');
         $m_u->addField('name');
         $j = $m_u->join('contact');
-        $j->addField('contact_id', ['actual' => 'id']);
         $j->addField('contact_phone');
 
         $m_u->load(1);
