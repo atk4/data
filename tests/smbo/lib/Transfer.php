@@ -27,12 +27,28 @@ class Transfer extends Payment {
             // only for new records and when destination_account_id is set
             if ($m['destination_account_id'] && !$m->id) {
 
-                $this->other_leg_creation = $m2 = new Transfer($this->persistence);
+                /**/
+                // In this section we test if "clone" works ok
 
+                $this->other_leg_creation = $m2 = clone $m;
+                $m2['account_id'] = $m2['destination_account_id'];
+                $m2['amount'] = -$m2['amount'];
+
+                $m2->unset('destination_account_id');
+
+
+                /*/
+
+                // If clone is not working, then this is a current work-around
+
+                $this->other_leg_creation = $m2 = new Transfer($this->persistence);
                 $m2->set($m->get());
                 $m2->unset('destination_account_id');
                 $m2['account_id'] = $m['destination_account_id'];
                 $m2['amount'] = -$m2['amount']; // neagtive amount
+
+                // **/
+
                 $m2->reload_after_save = false; // avoid check
 
                 $m['transfer_document_id'] = $m2->save()->id;

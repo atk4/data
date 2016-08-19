@@ -8,7 +8,7 @@ class TransferTest extends SMBOTestCase
     
 {
 
-    //public $debug = true;
+    public $debug = false;
 
     /**
      * Testing transfer between two accounts
@@ -25,6 +25,12 @@ class TransferTest extends SMBOTestCase
 
         $this->assertEquals(-100, $aib->reload()['balance']);
         $this->assertEquals(100, $boi->reload()['balance']);
+
+        $data = $t->export(['id','transfer_document_id']);
+        $this->assertEquals([
+            ['id'=>1, 'transfer_document_id'=>2],
+            ['id'=>2, 'transfer_document_id'=>1],
+        ], $data);
     }
 
 
