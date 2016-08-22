@@ -318,11 +318,21 @@ class Persistence_SQL extends Persistence
 
     /**
      * Will convert one row of data frorm Persistence-specific
-     * types to PHP native types
+     * types to PHP native types.
+     *
+     * @param Model $m
+     * @param array $row
+     *
+     * @return array
      */
-    protected function typecastLoadToPHP($m, $row)
+    public function typecastLoadToPHP($m, $row)
     {
         foreach($row as $key=>&$value) { 
+
+            if ($value === null) {
+                continue;
+            }
+
             if ($f = $m->hasElement($key)) { 
                 switch ($f->type) {
                 case 'boolean':
@@ -358,13 +368,90 @@ class Persistence_SQL extends Persistence
                     $value = json_decode($value, true) ?: [];
                     break;
                 }
-
-
             }
         }
         return $row;
     }
 
+    /**
+     * Will convert one row of data frorm native PHP types into
+     * persistence types
+     *
+     * @param Model $m
+     * @param array $row
+     *
+     * @return array
+     */
+    public function typecastSaveToPersistence($m, $row)
+    {
+        foreach($row as $key=>&$value) { 
+
+            //TODO: add bypass for expresionables
+            //if ($expression instanceof \atk4\data\Expression
+
+            if ($f = $m->hasElement($key)) { 
+
+                if ($value === null) continue;
+
+                switch ($f->type) {
+                case 'string':
+                case 'str':
+                    $value = trim($value);
+                    break;
+                case 'boolean':
+                case 'bool':
+                    $value = (int)$value;
+                    // TODO: if has enum, use enum
+                    //
+                    break;
+                case 'money':
+                    $value = round($value,4);
+                    break;
+                case 'date':
+                case 'datetime':
+                case 'time':
+
+                    $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+                    if ($value instanceof $class) {
+                        $value->setTimezone(new \DateTimeZone('UTC'));
+                    } elseif (is_numeric($value) && $value > 60) {
+                        $value = new $class('@'.$value);
+                        $value->setTimezone(new \DateTimeZone('UTC'));
+                    } elseif (is_string($value)) {
+                        $value = new $class($value);
+                        $value->setTimezone(new \DateTimeZone('UTC'));
+                    }
+
+                    switch ($f->type) {
+                    case 'date':
+                        $value = $value->format('Y-m-d');
+                        break;
+                    case 'datetime':
+                        $value = $value->format('Y-m-d H:i:s');
+                        break;
+                    case 'time':
+                        $value = $value->format('H:i:s');
+                        break;
+                    }
+
+
+                    break;
+                case 'int':
+                case 'integer':
+                    $value = (int)$value;
+                    break;
+                case 'float':
+                    $value = (float)$value;
+                    break;
+                case 'array':
+                    $value = json_encode($value);
+                    break;
+                }
+            }
+        }
+        return $row;
+    }
 
     /**
      * Executing $model->action('update') will call this method.
@@ -625,6 +712,8 @@ class Persistence_SQL extends Persistence
     {
         $insert = $this->action($m, 'insert');
 
+        $data = $this->typecastSaveToPersistence($m, $data);
+
         // apply all fields we got from get
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
@@ -661,7 +750,7 @@ class Persistence_SQL extends Persistence
     {
         $export = $this->action($m, 'select', [$fields]);
 
-        return $export->get();
+        return array_map(function($r) use ($m){ return $this->typecastLoadToPHP($m,$r); }, $export->get());
     }
 
     /**
@@ -698,6 +787,8 @@ class Persistence_SQL extends Persistence
     {
         $update = $this->initQuery($m);
         $update->mode('update');
+
+        $data = $this->typecastSaveToPersistence($m, $data);
 
         // only apply fields that has been modified
         $cnt = 0;

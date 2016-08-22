@@ -169,7 +169,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         $insert = $this->dsql();
         $insert->mode('insert');
-        $insert->set($this->save_buffer);
+        $insert->set($model->persistence->typecastSaveToPersistence($model, $this->save_buffer));
         $this->save_buffer = [];
         $insert->set($this->foreign_field, null);
         $insert->insert();
