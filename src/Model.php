@@ -795,6 +795,59 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Saves the current record by using a different
+     * model class. This is similar to:
+     *
+     * $m2 = $m->newInstance($class);
+     * $m2->load($m->id);
+     * $m2->set($m->get());
+     * $m2->save();
+     *
+     * but will assume that both models are compatible,
+     * therefore will not perform any loading. 
+     */
+    public function saveAs($class, $options = [])
+    {
+        return $this->as($class, $options)->save();
+    }
+
+    /**
+     * Store the data into database, but will never attempt
+     * to reload the data. Additioanlly any data
+     * will be unloaded. Use this instead of
+     * save() if you want to squezee a little more
+     * performance out
+     */
+    public function saveAndUnload($data = [])
+    {
+        $ras = $this->reload_after_save;
+        $this->reload_after_save = false;
+        $this->save($data);
+        $this->unload();
+
+        // restore original value
+        $this->reload_after_save = $ras;
+        return $this;
+    }
+
+    /**
+     * This will cast Model into another class without
+     * loosing state of your active record
+     */
+    public function as($class, $options) {
+        $m = $this->newInstance($class, $options);
+
+        // Warning. If condition is different on both models,
+        // but the respective field's value is un-changed
+        // there might be some related issues.
+        $m->data = $this->data;
+        $m->dirty = $this->dirty;
+        $m->id = $this->id;
+
+        return $m;
+    }
+
+    /**
      * Create new model form the same base class
      * as $this.
      *
@@ -802,12 +855,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return $this
      */
-    public function newInstance(string $class = null)
+    public function newInstance($class = null, $options = [])
     {
         if ($class === null) {
             $class = get_class($this);
         }
-        $m = new $class($this->persistence);
+        if (is_string($class)) {
+            $m = new $class($this->persistence, $options);
+        } elseif (is_object($class)) {
+            $m = $this->persistence->add($class, $options);
+        }
         return $m;
     }
 
