@@ -20,11 +20,19 @@ class Field
     public $default = null;
 
     /**
-     * Field type, for example, 'string', 'boolean', 'numeric', 'int', 'date' etc.
+     * Field type. Values are:
+     *
+     * 'string', 'boolean', 'integer', 'money', 'float', 'date', 'datetime', 'time'.
+     * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
      */
     public $type = 'string';
+
+    /**
+     * For several types enum can provide list of available options
+     */
+    public $enum = null;
 
     /**
      * Actual field name.
@@ -80,6 +88,18 @@ class Field
      * @var bool|string
      */
     public $mandatory = false;
+
+    /**
+     * Define callback to execute after loading value for this field
+     * from the database
+     */
+    public $load = null;
+
+    /**
+     * Define callback to execute before saving value for this field
+     * to the database
+     */
+    public $save = null;
 
     /**
      * Constructor. You can pass field properties as array.

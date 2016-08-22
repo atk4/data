@@ -333,10 +333,22 @@ class Persistence_SQL extends Persistence
             }
 
             if ($f = $m->hasElement($key)) {
+
+                if (($callback = $f->load)) {
+                    $value = $callback($value);
+                    continue;
+                }
+
                 switch ($f->type) {
                 case 'boolean':
                 case 'bool':
-                    $value = (bool) $value;
+
+                    if ($f->enum) {
+                        $value = ( $value == $f->enum[0] );
+                    } else {
+                        $value = (bool) $value;
+                    }
+
                     break;
                 case 'money':
                     $value = round($value, 4);
@@ -394,6 +406,11 @@ class Persistence_SQL extends Persistence
                     continue;
                 }
 
+                if (($callback = $f->save)) {
+                    $value = $callback($value);
+                    continue;
+                }
+
                 switch ($f->type) {
                 case 'string':
                 case 'str':
@@ -401,9 +418,13 @@ class Persistence_SQL extends Persistence
                     break;
                 case 'boolean':
                 case 'bool':
-                    $value = (int) $value;
-                    // TODO: if has enum, use enum
-                    //
+
+                    if ($f->enum) {
+                        $value = $value ? $f->enum[0] : $f->enum[1];
+                    } else {
+                        $value = (int) $value;
+                    }
+
                     break;
                 case 'money':
                     $value = round($value, 4);
