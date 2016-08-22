@@ -10,19 +10,18 @@ use atk4\data\Persistence_SQL;
  */
 class TypecastingTest extends SQLTestCase
 {
-
     public function testType()
     {
         $a = [
             'types' => [
                 [
-                    'date' => '2013-02-20', 
-                    'datetime' => '2013-02-20 20:00:12', 
-                    'time' => '12:00:50',
-                    'boolean' => '1',
-                    'int' => '2940',
-                    'money' => "8.20",
-                    'float' => "8.202343",
+                    'date'     => '2013-02-20',
+                    'datetime' => '2013-02-20 20:00:12',
+                    'time'     => '12:00:50',
+                    'boolean'  => '1',
+                    'int'      => '2940',
+                    'money'    => '8.20',
+                    'float'    => '8.202343',
                 ],
             ], ];
         $this->setDB($a);
@@ -31,18 +30,18 @@ class TypecastingTest extends SQLTestCase
 
         $db = new Persistence_SQL($this->db->connection);
 
-        $m = new Model($db, ['table'=>'types']);
-        $m->addField('date', ['type'=>'date']);
-        $m->addField('datetime', ['type'=>'datetime']);
-        $m->addField('time', ['type'=>'time']);
-        $m->addField('boolean', ['type'=>'boolean']);
-        $m->addField('money', ['type'=>'money']);
-        $m->addField('float', ['type'=>'float']);
-        $m->addField('int', ['type'=>'int']);
+        $m = new Model($db, ['table' => 'types']);
+        $m->addField('date', ['type' => 'date']);
+        $m->addField('datetime', ['type' => 'datetime']);
+        $m->addField('time', ['type' => 'time']);
+        $m->addField('boolean', ['type' => 'boolean']);
+        $m->addField('money', ['type' => 'money']);
+        $m->addField('float', ['type' => 'float']);
+        $m->addField('int', ['type' => 'int']);
         $m->load(1);
 
         date_default_timezone_set('UTC');
-        
+
 
         $this->assertSame(true, $m['boolean']);
         $this->assertSame(8.20, $m['money']);
@@ -57,25 +56,25 @@ class TypecastingTest extends SQLTestCase
 
         $a = [
             'types' => [
-                1=>[
-                    'id' => '1',
-                    'date' => '2013-02-20', 
-                    'datetime' => '2013-02-20 20:00:12', 
-                    'time' => '12:00:50',
-                    'boolean' => 1,
-                    'int' => 2940,
-                    'money' => 8.20,
-                    'float' => 8.202343,
+                1 => [
+                    'id'       => '1',
+                    'date'     => '2013-02-20',
+                    'datetime' => '2013-02-20 20:00:12',
+                    'time'     => '12:00:50',
+                    'boolean'  => 1,
+                    'int'      => 2940,
+                    'money'    => 8.20,
+                    'float'    => 8.202343,
                 ],
-                2=>[
-                    'id' => '2',
-                    'date' => '2013-02-20', 
-                    'datetime' => '2013-02-20 20:00:12', 
-                    'time' => '12:00:50',
-                    'boolean' => '1',
-                    'int' => '2940',
-                    'money' => '8.2',
-                    'float' => '8.202343',
+                2 => [
+                    'id'       => '2',
+                    'date'     => '2013-02-20',
+                    'datetime' => '2013-02-20 20:00:12',
+                    'time'     => '12:00:50',
+                    'boolean'  => '1',
+                    'int'      => '2940',
+                    'money'    => '8.2',
+                    'float'    => '8.202343',
                 ],
             ], ];
         $this->assertEquals($a, $this->getDB());
