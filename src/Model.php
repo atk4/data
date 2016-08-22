@@ -402,7 +402,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($fields as $field) {
             $field = $this->normalizeFieldName($field);
 
-            if (isset($this->dirty[$field])) {
+            if (array_key_exists($field, $this->dirty)) {
                 return true;
             }
         }
