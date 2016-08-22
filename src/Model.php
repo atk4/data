@@ -767,7 +767,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Reload model.
+     * Reload model by taking its current ID
      *
      * @return $this
      */
@@ -778,6 +778,85 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->load($id);
 
         return $this;
+    }
+
+    /**
+     * Keeps the model data, but wipes out the ID
+     * so when you save it next time, ends up as a new
+     * record in the database.
+     *
+     * @return $this
+     */
+    public function duplicate($new_id = null)
+    {
+        $this->id = null;
+        $this[$this->id_field] = $new_id;
+        return $this;
+    }
+
+    /**
+     * Create new model form the same base class
+     * as $this.
+     *
+     * @param string $class
+     *
+     * @return $this
+     */
+    public function newInstance(string $class = null)
+    {
+        if ($class === null) {
+            $class = get_class($this);
+        }
+        $m = new $class($this->persistence);
+        return $m;
+    }
+
+    /**
+     * Create new model form the same base class
+     * as $this. If you omit $id,then when saving
+     * a new record will be created with default ID.
+     * If you specify $id then it will be used
+     * to save/update your record. If set $id
+     * to `true` then model will assume that there
+     * is already record like that in the destination
+     * persistence. 
+     *
+     * If you wish to fully copy the data from one
+     * model to another you should use:
+     *
+     * $m->withPersintence($p2, false)->set($m)->save();
+     *
+     * See https://github.com/atk4/data/issues/111 for
+     * use-case examples.
+     *
+     * @param string $class
+     * @param mixed  $id
+     *
+     * @return $this
+     */
+    public function withPersistence($persistence, $id = null, string $class = null)
+    {
+        if (!$persistence instanceof \atk4\data\Persintence) {
+            throw new Exception([
+                'Please supply valid persistence',
+                'arg'=>$persistence
+            ]);
+        }
+
+        $m = new $class($persistence);
+
+        if ($id === true) {
+            $m->id = $this->id;
+            $m[$m->id_field] = $this[$this->id_field];
+        } elseif ($id) {
+            $m->id = null; // record shouldn't exist yet
+            $m[$m->id_field] = $id;
+        }
+
+        $m->data = $this->data;
+        $m->dirty = $this->dirty;
+
+        return $m;
     }
 
     /**
