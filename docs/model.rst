@@ -93,6 +93,12 @@ you create the instance like this::
 
     $m = new Model_User($db, 'user');
 
+.. php:method:: withPersistence($persistence, $id = null, $class = null)
+
+    Creates a duplicate of a current model and associate new copy with a specified
+    persistence. This method is useful for moving model data from one persistence
+    to another.
+
 
 Working with selective fields
 =============================

@@ -87,7 +87,433 @@ There are several ways to link your model up with the persistence::
     Remove current record from DataSet. You can optionally pass ID if you wish to delete
     a different record. If you pass ID of a currently loaded record, it will be unloaded.
 
+Inserting Record with a specific ID
+-----------------------------------
+
+When you add a new record with save(), insert() or import, you can specify ID explicitly::
+
+    $m['id'] = 123;
+    $m->save();
+
+    // or $m->insert(['Record with ID=123', 'id'=>123']);
+
+However if you change the ID for record that was loaded, then your 
+database record will also have it's ID changed? Here is example::
+
+    $m->load(123);
+    $m[$m->id_field] = 321;
+    $m->save();
+
+After this your database won't have a record with ID 123 anymore.
+
+Duplicating and Replacing Records
+=================================
+
+In normal operation, once you store a record inside your database, your interaction
+will always update this existing record. Sometimes you want to perform operations that may
+affect other records
+
+Create copy of existing record
+------------------------------
+
+.. php:method:: duplicate($id = null)
+
+    Normally, active record stores "id", but when you call duplicate() it forgets
+    current ID and will inserted as a next record when you execute `save()` next time.
+
+    If you pass the `$id` parameter then the new record will be saved under a new
+    ID::
+    
+        // First, lets delete all records except 123
+        (clone $m)->addCondition('id', '!=', 123)->action('delete')->execute();
+
+        // Next we can duplicate
+        $m->load(123)->duplicate()->save();
+
+        // Now you have 2 records
+        echo $m->action('count')->getOne();
+
+Duplicate then save under a new ID
+----------------------------------
+
+Assuming you have 2 different records in your database: 123 and 124,
+how can you take values of 123 and write it on top of 124?
+
+Here is how::
+
+    $m->load(123)->duplicate(124)->replace();
+
+Now the record 124 will be replaced with the new data using. For SQL
+that means calling 'replace into x'.
+
+.. warning::
+
+    You might be wondering how join() logic would work. Well there are no
+    special treatment for joins() when duplicating records, so your new
+    record will end up referencing a same joined record. If join is
+    reverse, then your new record may not load.
+
+    This will be properly addressed in future versions of Agile Data.
+
 .. _Action:
+
+
+Working with Multiple DataSets
+==============================
+
+When you load a model, conditions are applied that make it impossible
+for you to load record from outside of a data-set. In some cases you
+do want to store the model outside of a data-set. This section focuses
+on various use-cases like that.
+
+Cloning versus New Instance
+===========================
+
+When you clone a model, the new copy will inherit pretty much all the
+conditions and any in-line modifications that you have applied on
+the original model. If you decide to create new instance, it will
+provide a `vanilla` copy of model without any in-line modifications.
+This can be used in conjunction to escape data-set.
+
+.. php:method:: newInstance($class = null)
+
+Looking for duplicates
+----------------------
+
+We have a model 'Order' with a field 'ref', which must be unique
+within the context of a client. However, orders are also stored
+in a 'Basket'. Consider the following code::
+
+    $basket->ref('Order')->insert(['ref'=>123]);
+
+You need to verify that the specific client wouldn't have another
+order with this ref, how do you do it?
+
+Start by creating a beforeSave handler for Order::
+
+    $this->addHook('beforeSave', funciton($m) {
+        if ($this->isDirty('ref')) {
+
+            if (
+                $m->newInstance()
+                    ->addCondition('client_id', $m['client_id'])
+                    ->tryLoadBy('ref', $m['ref'])
+                    ->loaded()
+            ) {
+                throw new Exception([
+                    'Order with ref already exists',
+                    'ref'=>$this['ref']
+                ]);
+            }
+        }
+    });
+
+.. importat:: Always use $m, don't use $this, or cloning models will glitch. 
+
+So to review, we used newInstance() to create new copy of a current model. It
+is important to note that newInstance() is using get_class($this) to determine
+the class.
+
+Archiving Records
+-----------------
+
+In this use case you are having a model 'Order', but you have introduced the
+option to archive your orders. The method `archive()` is supposed to mark order
+as archived and return that order back. Here is the usage pattern::
+
+    $o->load(123);
+    $archive = $o->archive();
+    $archive['note'] .= "\nArchived on $date.";
+    $archive->save();
+
+With Agile Data API building it's quite common to cerate a method that does not
+actually persist the model.
+
+The problem occurs if you have added some conditions on the $o model. It's
+quite common to use $o inside a UI element and exclude Archived records. Because
+of that, saving record as archived may cause exception as it is now outside
+of the result-set.
+
+There are two approaches to deal with this problem. The first involves disabling
+after-save reloading::
+
+    function archive() {
+        $this->reload_after_save = false;
+        $this['is_archived'] = true;
+        retutrn $this;
+    }
+
+After-save reloading would fail due to `is_archived = false` condition so
+disabling reload is a hack to get your record into the database safely. 
+The other, more appropriate option is to re-use a vanilla Order record::
+
+    function archive() {
+
+        $this->save(); // just to be sure, no dirty stuff is left over.
+
+        $archive = $this->newInstance();
+        $archive->load($this->id);
+        $archive['is_archived'] = true;
+
+        $this->unload(); // active record is no longer accessible.
+
+        return $archive;
+    }
+
+This method may still not work if you extend and use "ActiveOrder" as your
+model. In this case you should pass the class to newInstance()::
+
+    $archive = $this->newInstance('Order');
+    // or
+    $archive = $this->newInstance(new Order());
+    // or with passing some default properties:
+    $archive = $this->newInstance([new Order(), 'audit'=>true]);
+
+
+In this case newInstance() would just associate passed class with the
+persistence pretty much identical to::
+
+    $archive = new Order($this->persistence);
+
+The use of newInstance() however requires you to load the model which is
+an extra database query.
+
+Using Model casting and saveAs
+------------------------------
+
+There is another method that can help with escaping the DataSet that does
+not involve record loading:
+
+.. php:method:: as($class = null)
+
+    Changes the class of a model, while keeping all the loaded and dirty
+    values.
+
+The above example this would then work like this::
+
+    $archive = $o->as('Order');
+    $archive['is_archived'] = true;
+
+    $this->unload(); // active record is no longer accessible.
+
+    return $archive;
+
+Note that after saving 'Order' it may attempt to :ref:`load_after_save` just
+to ensure that stored model is a valid 'Order'.
+
+.. php:method:: saveAs($class = null)
+
+    Save record into the database, using a different class for a model.
+
+As a last example for my arhiving example, here is how we can eliminate
+need of archive() method alltogether::
+
+
+    $o = new ActiveOrder($db);
+    $o->load(123);
+
+    $o->set(['is_arhived', true])->saveAs('Order');
+
+Currently the implementation of saveAs is rather trivial but in the future
+versions of Agile Data you may be able to do this::
+
+    // MAY NOT WORK YET
+    $o = new ActiveOrder($db);
+    $o->load(123);
+
+    $o->saveAs('ArchivedOrder');
+
+Of course - instead of using 'Order' you can also specify the object
+with `new Order()`.
+
+
+Working with Multiple Persistences
+==================================
+
+Normally when you load the model and save it later, it ends up in the same database
+from which you have loaded it. There are cases, however, when you want to store
+the record inside a different database. As we are looking into use-cases, you
+should keep in mind that with Agile Data Persistence can be pretty much anything
+including 'RestAPI', 'File', 'Memcache' or 'MongoDB'.
+
+.. important::
+
+    Instance of a model can be associated with as single persistence only. Once
+    it is associated, it stays like that. To store a model data into a different
+    persistence, a new instance of your model will be created, then associated
+    with a new persistence.
+
+
+.. php:method:: withPersistence($peristence, $id = null, $class = null)
+
+
+Creating Cache with Memcache
+----------------------------
+
+Assuming that loading of a specific items from the database is expensive, you can
+opt to store them in a MemCache. Caching is not part of core functionality of
+Agile Data, so you will have to create logic yourself, which is actually quite
+simple.
+
+You can use several designs. I will create a method inside my application class
+to load records from two persistences that are stored inside properties of my
+application::
+
+    function loadQuick($class, $id) {
+    
+        // first, try to load it from MemCache:
+
+        $m = $this->mdb->add(clone $class)->tryLoad($id);
+
+        if (!$m->loaded()) {
+
+            // fallback to load from SQL
+            $m = $this->sql->add(clone $class)->load($id);
+
+            // store into MemCache too.
+            $m = $m->withPersistence($this->mdb)->replace();
+        }
+
+        $m->addHook('beforeSave', function($m){
+            $m->withPersistence($this->sql)->save();
+        });
+
+        $m->addHook('beforeDelete', function($m){
+            $m->withPersistence($this->sql)->delete();
+        });
+
+        return $m;
+    }
+
+The above logic provides a simple caching framework for all of your models. To use
+it with any model::
+
+    $m = $app->loadQuick(new Order(), 123);
+
+    $m['completed'] = true;
+    $m->save();
+
+To look in more details into the actual method, I have broken it down into chunks::
+
+    // first, try to load it from MemCache:
+    $m = $this->mdb->add(clone $class)->tryLoad($id);
+
+The $class will be an unitialized instance of a model (although you can also use
+a string). It will first be associtaed with the MemCache DB persistence and we will
+attempt to load a corresponding ID. Next, if no record is found in the cache::
+
+    if (!$m->loaded()) {
+
+        // fallback to load from SQL
+        $m = $this->sql->add(clone $class)->load($id);
+
+        // store into MemCache too.
+        $m = $m->withPersistence($this->mdb)->replace();
+    }
+
+Load the record from the SQL database and store it into $m. Next, save $m into the 
+MemCache persistence by replacing (or creating new) record. The `$m` at the end will
+be associated with the MemCache persistence for consistency with cached records.
+The last two hooks are in order to replicate any changes into the SQL database
+also::
+
+    $m->addHook('beforeSave', function($m){
+        $m->withPersistence($this->sql)->save();
+    });
+
+    $m->addHook('beforeDelete', function($m){
+        $m->withPersistence($this->sql)->delete();
+    });
+
+I have too note that withPersistence() transfers the dirty flags into a new
+model, so SQL record will be updated with the record that you have modified only.
+
+If saving into SQL is successful the memcache peristence will be also updated.
+
+
+Using Read / Write Replicas
+---------------------------
+
+In some cases your application have to deal with read and write replicas of
+the same database. In this case all the operations would be done on the read
+replica, except for certain changes.
+
+In theory you can use hooks (that have option to cancel default action)
+to create a comprehensive system-wide solution, I'll illustrate how this
+can be done with a single record::
+
+
+    $m = new Order($read_replica);
+
+    $m['completed'] = true;
+
+    $m->withPersistence($write_replica)->save();
+    $m->dirty = [];
+
+    // Possibly the update is delayed
+    // $m->reload();
+
+By changing 'completed' field value, it creates a dirty field inside `$m`,
+which will be saved inside a `$write_replica`. Although the proper
+approach would be to reload the `$m`, if there is chance that your
+update to a write replica may not propogate to read replica, you can
+simply reset the dirty flags.
+
+If you need further optimization, make sure `reload_after_save` is disabled
+for the write replica::
+
+    $m->withPersistence($write_replica, null, ['reload_after_save'=>false])->save();
+
+or use::
+
+    $m->withPersistence($write_replica)->saveAndUnload();
+
+Archive Copies into different persitence
+----------------------------------------
+
+If you wish that every time you save your model the copy is also stored inside
+some other database (for archive purposes) you can implement it like this::
+
+    $m->addHook('beforeSave', function($m) {
+        $arc = $this->withPersistence($m->app->archive_db, false);
+
+        // add some audit fields
+        $arc->addField('original_id')->set($this->id);
+        $arc->addField('saved_by')->set($this->app->user);
+
+        $arc->saveAndUnload();
+    });
+
+When passing 2nd argument of `false` to the withPersistence() method, it will
+not link with not re-use current ID instead creating new records every time.
+
+Store a specific record
+-----------------------
+
+If you are using authentication mechanism to log a user in and you wish to
+store his details into Session, so that you don't have to reload every time,
+you can implement it like this::
+
+
+    if (!isset($_SESSION['ad'])) {
+        $_SESSION['ad'] = []; // initialize
+    }
+
+    $sess = new \atk4\data\Persistence_Array($_SESSION['ad']);
+    $logged_user = new User($sess);
+    $logged_user->load('active_user');
+
+This would load the user data from Array located inside a local session. There
+is no point storing multiple users, so I'm using id='active_user' for the only
+user record that I'm going to store there.
+
+How to add record inside session, e.g. log the user in? Here is the code::
+
+    $u = new User($db);
+    $u->load(123);
+
+    $u->withPersistence($sess, 'active_user')->save();
+
 
 Actions
 =======
