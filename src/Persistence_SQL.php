@@ -327,20 +327,19 @@ class Persistence_SQL extends Persistence
      */
     public function typecastLoadToPHP($m, $row)
     {
-        foreach($row as $key=>&$value) { 
-
+        foreach ($row as $key => &$value) {
             if ($value === null) {
                 continue;
             }
 
-            if ($f = $m->hasElement($key)) { 
+            if ($f = $m->hasElement($key)) {
                 switch ($f->type) {
                 case 'boolean':
                 case 'bool':
-                    $value = (bool)$value;
+                    $value = (bool) $value;
                     break;
                 case 'money':
-                    $value = round($value,4);
+                    $value = round($value, 4);
                     break;
                 case 'date':
                 case 'datetime':
@@ -359,10 +358,10 @@ class Persistence_SQL extends Persistence
                     break;
                 case 'int':
                 case 'integer':
-                    $value = (int)$value;
+                    $value = (int) $value;
                     break;
                 case 'float':
-                    $value = (float)$value;
+                    $value = (float) $value;
                     break;
                 case 'array':
                     $value = json_decode($value, true) ?: [];
@@ -370,12 +369,13 @@ class Persistence_SQL extends Persistence
                 }
             }
         }
+
         return $row;
     }
 
     /**
      * Will convert one row of data frorm native PHP types into
-     * persistence types
+     * persistence types.
      *
      * @param Model $m
      * @param array $row
@@ -384,14 +384,15 @@ class Persistence_SQL extends Persistence
      */
     public function typecastSaveToPersistence($m, $row)
     {
-        foreach($row as $key=>&$value) { 
+        foreach ($row as $key => &$value) {
 
             //TODO: add bypass for expresionables
             //if ($expression instanceof \atk4\data\Expression
 
-            if ($f = $m->hasElement($key)) { 
-
-                if ($value === null) continue;
+            if ($f = $m->hasElement($key)) {
+                if ($value === null) {
+                    continue;
+                }
 
                 switch ($f->type) {
                 case 'string':
@@ -400,12 +401,12 @@ class Persistence_SQL extends Persistence
                     break;
                 case 'boolean':
                 case 'bool':
-                    $value = (int)$value;
+                    $value = (int) $value;
                     // TODO: if has enum, use enum
                     //
                     break;
                 case 'money':
-                    $value = round($value,4);
+                    $value = round($value, 4);
                     break;
                 case 'date':
                 case 'datetime':
@@ -439,10 +440,10 @@ class Persistence_SQL extends Persistence
                     break;
                 case 'int':
                 case 'integer':
-                    $value = (int)$value;
+                    $value = (int) $value;
                     break;
                 case 'float':
-                    $value = (float)$value;
+                    $value = (float) $value;
                     break;
                 case 'array':
                     $value = json_encode($value);
@@ -450,6 +451,7 @@ class Persistence_SQL extends Persistence
                 }
             }
         }
+
         return $row;
     }
 
@@ -750,7 +752,9 @@ class Persistence_SQL extends Persistence
     {
         $export = $this->action($m, 'select', [$fields]);
 
-        return array_map(function($r) use ($m){ return $this->typecastLoadToPHP($m,$r); }, $export->get());
+        return array_map(function ($r) use ($m) {
+            return $this->typecastLoadToPHP($m, $r);
+        }, $export->get());
     }
 
     /**
