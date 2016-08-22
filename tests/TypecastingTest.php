@@ -7,22 +7,25 @@ use atk4\data\Persistence_SQL;
 
 class MyDate extends \DateTime
 {
-    function __toString() {
+    public function __toString()
+    {
         return $this->format('Y-m-d');
     }
 }
 
 class MyTime extends \DateTime
 {
-    function __toString() {
+    public function __toString()
+    {
         return $this->format('H:i:s');
     }
 }
 
 class MyDateTime extends \DateTime
 {
-    function __toString() {
-        return date('Y-m-d H:i:s',$this->format('U'));
+    public function __toString()
+    {
+        return date('Y-m-d H:i:s', $this->format('U'));
     }
 }
 
@@ -31,7 +34,7 @@ class MyDateTime extends \DateTime
  */
 class TypecastingTest extends SQLTestCase
 {
-//    public $debug = true;
+    //    public $debug = true;
     public function testType()
     {
         $a = [
@@ -112,12 +115,10 @@ class TypecastingTest extends SQLTestCase
         unset($duplicate['id']);
 
         $this->assertEquals($first, $duplicate);
-
     }
 
     public function testTypeCustom1()
     {
-
         $a = [
             'types' => [
                 [
@@ -129,7 +130,7 @@ class TypecastingTest extends SQLTestCase
                     'int'      => '2940',
                     'money'    => '8.20',
                     'float'    => '8.202343',
-                    'rot13'    => 'uryyb jbeyq'
+                    'rot13'    => 'uryyb jbeyq',
                 ],
             ], ];
         $this->setDB($a);
@@ -139,27 +140,29 @@ class TypecastingTest extends SQLTestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass'=>'\atk4\data\tests\MyDate']);
-        $m->addField('datetime', ['type' => 'datetime', 'dateTimeClass'=>'\atk4\data\tests\MyDateTime']);
-        $m->addField('time', ['type' => 'time', 'dateTimeClass'=>'\atk4\data\tests\MyTime']);
+        $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
+        $m->addField('datetime', ['type' => 'datetime', 'dateTimeClass' => '\atk4\data\tests\MyDateTime']);
+        $m->addField('time', ['type' => 'time', 'dateTimeClass' => '\atk4\data\tests\MyTime']);
         $m->addField('b1', ['type' => 'boolean', 'enum' => ['Y', 'N']]);
         $m->addField('b2', ['type' => 'boolean', 'enum' => ['Y', 'N']]);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('int', ['type' => 'int']);
 
-        $rot = function($v){ return str_rot13($v); };
+        $rot = function ($v) {
+            return str_rot13($v);
+        };
 
-        $m->addField('rot13', ['load'=>$rot, 'save'=>$rot]);
+        $m->addField('rot13', ['load' => $rot, 'save' => $rot]);
 
         $m->load(1);
 
         $this->assertSame('hello world', $m['rot13']);
         $this->assertSame(1, $m->id);
         $this->assertSame(1, $m['id']);
-        $this->assertEquals('2013-02-21 05:00:12', (string)$m['datetime']);
-        $this->assertEquals('2013-02-20', (string)$m['date']);
-        $this->assertEquals('12:00:50', (string)$m['time']);
+        $this->assertEquals('2013-02-21 05:00:12', (string) $m['datetime']);
+        $this->assertEquals('2013-02-20', (string) $m['date']);
+        $this->assertEquals('12:00:50', (string) $m['time']);
 
         $this->assertEquals(true, $m['b1']);
         $this->assertEquals(false, $m['b2']);
@@ -168,7 +171,7 @@ class TypecastingTest extends SQLTestCase
 
         $a = [
             'types' => [
-                2=>[
+                2 => [
                     'id'       => '2',
                     'date'     => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12',
@@ -178,7 +181,7 @@ class TypecastingTest extends SQLTestCase
                     'int'      => '2940',
                     'money'    => '8.20',
                     'float'    => '8.202343',
-                    'rot13'    => 'uryyb jbeyq'
+                    'rot13'    => 'uryyb jbeyq',
                 ],
             ], ];
         $this->assertEquals($a, $this->getDB());
@@ -203,7 +206,7 @@ class TypecastingTest extends SQLTestCase
         $u->hasOne('currency_id', $c)
             ->addTitle();
 
-        $u->insert(['Peter', 'currency'=>'Dollar']);
+        $u->insert(['Peter', 'currency' => 'Dollar']);
 
 
         $a = [

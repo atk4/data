@@ -333,7 +333,6 @@ class Persistence_SQL extends Persistence
             }
 
             if ($f = $m->hasElement($key)) {
-
                 if (($callback = $f->load)) {
                     $value = $callback($value);
                     continue;
@@ -344,7 +343,7 @@ class Persistence_SQL extends Persistence
                 case 'bool':
 
                     if ($f->enum) {
-                        $value = ( $value == $f->enum[0] );
+                        $value = ($value == $f->enum[0]);
                     } else {
                         $value = (bool) $value;
                     }
@@ -397,7 +396,6 @@ class Persistence_SQL extends Persistence
     public function typecastSaveToPersistence($m, $row)
     {
         foreach ($row as $key => &$value) {
-
             if ($value instanceof \atk4\dsql\Expression || $value instanceof \atk4\dsql\Expressionable) {
                 continue;
             }

@@ -462,8 +462,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($f_object->readonly) {
             throw new Exception([
                 'Attempting to change read-only field',
-                'field'=>$field,
-                'model'=>$this
+                'field' => $field,
+                'model' => $this,
             ]);
         }
 
