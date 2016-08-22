@@ -317,6 +317,56 @@ class Persistence_SQL extends Persistence
     }
 
     /**
+     * Will convert one row of data frorm Persistence-specific
+     * types to PHP native types
+     */
+    protected function typecastLoadToPHP($m, $row)
+    {
+        foreach($row as $key=>&$value) { 
+            if ($f = $m->hasElement($key)) { 
+                switch ($f->type) {
+                case 'boolean':
+                case 'bool':
+                    $value = (bool)$value;
+                    break;
+                case 'money':
+                    $value = round($value,4);
+                    break;
+                case 'date':
+                case 'datetime':
+                case 'time':
+
+                    // Can use DateTime, Carbon or anything else
+                    $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+                    if (is_numeric($value) && $value > 60) {
+                        // we can becertain this is a timestamp, not some
+                        // weird format
+                        $value = new $class('@'.$value);
+                    } elseif (is_string($value)) {
+                        $value = new $class($value, new \DateTimeZone('UTC'));
+                    }
+                    break;
+                case 'int':
+                case 'integer':
+                    $value = (int)$value;
+                    break;
+                case 'float':
+                    $value = (float)$value;
+                    break;
+                case 'array':
+                    $value = json_decode($value, true) ?: [];
+                    break;
+                }
+
+
+            }
+        }
+        return $row;
+    }
+
+
+    /**
      * Executing $model->action('update') will call this method.
      *
      * @param Model  $m
@@ -425,7 +475,7 @@ class Persistence_SQL extends Persistence
 
         // execute action
         try {
-            $data = $load->getRow();
+            $data = $this->typecastLoadToPHP($m, $load->getRow());
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to load due to query error',
