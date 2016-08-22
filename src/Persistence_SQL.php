@@ -398,8 +398,9 @@ class Persistence_SQL extends Persistence
     {
         foreach ($row as $key => &$value) {
 
-            //TODO: add bypass for expresionables
-            //if ($expression instanceof \atk4\data\Expression
+            if ($value instanceof \atk4\dsql\Expression || $value instanceof \atk4\dsql\Expressionable) {
+                continue;
+            }
 
             if ($f = $m->hasElement($key)) {
                 if ($value === null) {
