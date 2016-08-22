@@ -457,12 +457,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-        // $m->addField('datetime', ['type'=>'date']);
-        // $m['datetime'] = new DateTime('2000-01-01'); will potentially
-        // convert value into unix timestamp
         $f_object = $this->hasElement($field);
-        if ($f_object) {
-            $f_object->hook('normalize', [$field, &$value]);
+
+        if ($f_object->readonly) {
+            throw new Exception([
+                'Attempting to change read-only field',
+                'field'=>$field,
+                'model'=>$this
+            ]);
         }
 
 
