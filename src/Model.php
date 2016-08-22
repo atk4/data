@@ -767,7 +767,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Reload model by taking its current ID
+     * Reload model by taking its current ID.
      *
      * @return $this
      */
@@ -791,12 +791,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $this->id = null;
         $this[$this->id_field] = $new_id;
+
         return $this;
     }
 
     /**
      * Saves the current record by using a different
-     * model class. This is similar to:
+     * model class. This is similar to:.
      *
      * $m2 = $m->newInstance($class);
      * $m2->load($m->id);
@@ -804,7 +805,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * $m2->save();
      *
      * but will assume that both models are compatible,
-     * therefore will not perform any loading. 
+     * therefore will not perform any loading.
      */
     public function saveAs($class, $options = [])
     {
@@ -816,7 +817,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * to reload the data. Additioanlly any data
      * will be unloaded. Use this instead of
      * save() if you want to squezee a little more
-     * performance out
+     * performance out.
      */
     public function saveAndUnload($data = [])
     {
@@ -827,14 +828,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         // restore original value
         $this->reload_after_save = $ras;
+
         return $this;
     }
 
     /**
      * This will cast Model into another class without
-     * loosing state of your active record
+     * loosing state of your active record.
      */
-    public function asModel($class, $options) {
+    public function asModel($class, $options)
+    {
         $m = $this->newInstance($class, $options);
 
         // Warning. If condition is different on both models,
@@ -865,6 +868,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         } elseif (is_object($class)) {
             $m = $this->persistence->add($class, $options);
         }
+
         return $m;
     }
 
@@ -876,7 +880,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * to save/update your record. If set $id
      * to `true` then model will assume that there
      * is already record like that in the destination
-     * persistence. 
+     * persistence.
      *
      * If you wish to fully copy the data from one
      * model to another you should use:
@@ -896,7 +900,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if (!$persistence instanceof \atk4\data\Persintence) {
             throw new Exception([
                 'Please supply valid persistence',
-                'arg'=>$persistence
+                'arg' => $persistence,
             ]);
         }
 

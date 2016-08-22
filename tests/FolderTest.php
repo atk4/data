@@ -2,7 +2,6 @@
 
 namespace atk4\data\tests;
 
-use atk4\data\Model;
 use atk4\data\Persistence_SQL;
 
 class Folder extends \atk4\data\Model
@@ -14,13 +13,13 @@ class Folder extends \atk4\data\Model
         parent::init();
         $this->addField('name');
 
-        $this->hasMany('SubFolder', [new Folder(), 'their_field'=>'parent_id'])
-            ->addField('count', ['aggregate'=>'count', 'field'=>$this->expr('*')]);
+        $this->hasMany('SubFolder', [new self(), 'their_field' => 'parent_id'])
+            ->addField('count', ['aggregate' => 'count', 'field' => $this->expr('*')]);
 
-        $this->hasOne('parent_id', new Folder())
+        $this->hasOne('parent_id', new self())
             ->addTitle();
 
-        $this->addField('is_deleted', ['type'=>'bool']);
+        $this->addField('is_deleted', ['type' => 'bool']);
         $this->addCondition('is_deleted', false);
     }
 }
@@ -35,14 +34,14 @@ class FolderTest extends SQLTestCase
     {
         $a = [
             'folder' => [
-                ['parent_id' => 1, 'is_deleted'=>0, 'name'=>'Desktop'],
-                ['parent_id' => 1, 'is_deleted'=>0, 'name'=>'My Documents'],
-                ['parent_id' => 1, 'is_deleted'=>0, 'name'=>'My Videos'],
-                ['parent_id' => 1, 'is_deleted'=>0, 'name'=>'My Projects'],
-                ['parent_id' => 4, 'is_deleted'=>0, 'name'=>'Agile Data'],
-                ['parent_id' => 4, 'is_deleted'=>0, 'name'=>'DSQL'],
-                ['parent_id' => 4, 'is_deleted'=>0, 'name'=>'Agile Toolkit'],
-                ['parent_id' => 4, 'is_deleted'=>1, 'name'=>'test-project'],
+                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'Desktop'],
+                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Documents'],
+                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Videos'],
+                ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Projects'],
+                ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'Agile Data'],
+                ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'DSQL'],
+                ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'Agile Toolkit'],
+                ['parent_id' => 4, 'is_deleted' => 1, 'name' => 'test-project'],
             ], ];
         $this->setDB($a);
 
@@ -51,13 +50,12 @@ class FolderTest extends SQLTestCase
         $f->load(4);
 
         $this->assertEquals([
-            'id'=>4,
-            'name'=>'My Projects',
-            'count'=>3,
-            'parent_id'=>1,
-            'parent'=>'Desktop',
-            'is_deleted'=>0,
+            'id'         => 4,
+            'name'       => 'My Projects',
+            'count'      => 3,
+            'parent_id'  => 1,
+            'parent'     => 'Desktop',
+            'is_deleted' => 0,
         ], $f->get());
     }
-
 }
