@@ -808,7 +808,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function saveAs($class, $options = [])
     {
-        return $this->as($class, $options)->save();
+        return $this->asModel($class, $options)->save();
     }
 
     /**
@@ -834,7 +834,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * This will cast Model into another class without
      * loosing state of your active record
      */
-    public function as($class, $options) {
+    public function asModel($class, $options) {
         $m = $this->newInstance($class, $options);
 
         // Warning. If condition is different on both models,
