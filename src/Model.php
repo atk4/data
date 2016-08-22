@@ -181,6 +181,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public $only_fields = false;
 
+    /**
+     * When set to true, you can only change the fields inside a model,
+     * that was properly declared. This helps you avoid mistake by
+     * accessing or changing the field that does not exist.
+     *
+     * In some situations you want to set field value and then declare
+     * it later, then set $strict_field_check = false, but it's not
+     * recommended.
+     */
+    protected $strict_field_check = true;
 
     /**
      * Models that contain expressions will automatically reload after save.
@@ -381,6 +391,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     'only_fields' => $this->only_fields,
                 ]);
             }
+        }
+
+        if ($this->strict_field_check && !isset($this->elements[$field])) {
+            throw new Exception([
+                'Field is not defined inside a Model',
+                'field'       => $field,
+                'model'       => $this,
+            ]);
         }
 
         return $field;
