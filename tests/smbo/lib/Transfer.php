@@ -33,7 +33,7 @@ class Transfer extends Payment
                 $m2['account_id'] = $m2['destination_account_id'];
                 $m2['amount'] = -$m2['amount'];
 
-                $m2->unset('destination_account_id');
+                unset($m2['destination_account_id']);
 
 
                 /*/
