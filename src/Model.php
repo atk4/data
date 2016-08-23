@@ -552,7 +552,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return $this
      */
-    public function unset($name)
+    public function _unset($name)
     {
         $name = $this->normalizeFieldName($name);
         if (array_key_exists($name, $this->dirty)) {
@@ -609,7 +609,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function offsetUnset($name)
     {
-        $this->unset($name);
+        $this->_unset($name);
     }
 
     // }}}
