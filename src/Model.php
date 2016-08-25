@@ -810,7 +810,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * therefore will not perform any loading.
      *
      * @param string $class
-     * @param array $options
+     * @param array  $options
      *
      * @return Model
      */
@@ -847,7 +847,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * loosing state of your active record.
      *
      * @param string $class
-     * @param array $options
+     * @param array  $options
      *
      * @return Model
      */
@@ -870,7 +870,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * as $this.
      *
      * @param string $class
-     * @param array $options
+     * @param array  $options
      *
      * @return Model
      */
@@ -903,8 +903,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * use-case examples.
      *
      * @param Persistence $persistence
-     * @param mixed  $id
-     * @param string $class
+     * @param mixed       $id
+     * @param string      $class
      *
      * @return $this
      */
