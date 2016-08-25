@@ -9,7 +9,7 @@ of other ORM, ActiveRecord and QueryBuilder tools could be helpful, but
 you should carefully go through the basics if you want to know how to use
 Agile Data efficiently.
 
-Documentation for Agile Data is organised into chapters where each chapter
+Documentation for Agile Data is organized into chapters where each chapter
 is dedicated to provide full documentation on all functionality of Agile
 Data.
 
@@ -63,7 +63,7 @@ Core Concepts
 
 Business Model (see :ref:`Model`)
     You define business logic inside your own classes that extend :php:class:`Model`.
-    Each class you create represent one business entity. 
+    Each class you create represent one business entity.
 
     Model has 3 major characteristic: Business Logic definition, DataSet mapping
     and Active Record.
@@ -99,9 +99,9 @@ to your data. If you have used ORM, ActiveRecord or QueryBuilders, you will be
 thinking in terms of "Persistence Domain". That means that you think in terms
 of "tables", "fields", "foreign keys" and "group by" operations.
 
-In larger application developers does not necesserily have to know the
+In larger application developers does not necessarily have to know the
 details of your database structure. In fact - structure can often change and
-code that depend on specific field names or types can break. 
+code that depend on specific field names or types can break.
 
 More importantly, if you decide to store some data in different database either
 for caching (memcache), unique features (full-text search) or to handle large
@@ -114,7 +114,7 @@ words - Business Logic is an API you and the rest of your developer team
 can use without concerning about data storage.
 
 Agile Data has a rich set of features to define how Business Domain maps
-into Persistance Domain. It also allows you to perform most actions with
+into Persistence Domain. It also allows you to perform most actions with
 only knowledge of Business Domain, keeping the rest of your application
 independent from your database choice, structure or patterns.
 
@@ -122,7 +122,7 @@ Class vs In-Line definition
 ---------------------------
 Business model entity in Agile Data is represented through PHP object.
 While it is advisable to create each entity in its own class, you do not have
-to do so. 
+to do so.
 
 It might be handy to use in-line definition of a model. Try the following
 inside console::
@@ -140,7 +140,7 @@ Next, exit and create file `src/Model_ContactInfo.php`::
     class Model_ContactInfo extends \atk4\data\Model
     {
         public $table = 'contact_info';
-        function init() 
+        function init()
         {
             parent::init();
 
@@ -172,7 +172,7 @@ Persistence
 
 When you first create model using `new Model` it will just exist as an
 independent container. By passing `$db` as a parameter you are also
-associating your model with that specific persistence. 
+associating your model with that specific persistence.
 
 Once model is associated with one persistence, you cannot re-associate it.
 Method :php:meth:`Model::init()` will be executed only after persistence is
@@ -197,7 +197,7 @@ conditions is your way to specify which records to operate on::
     {
         return json_encode($m->export($fields));
     }
-    
+
     $m = new Model_User($db);
     $m->addCondition('country_id', '2');
 
@@ -222,7 +222,7 @@ stores. You can load / unload records like this::
 
 You can call `$m->loaded()` to see if there is active record and `$m->id`
 will store the ID of active record. You can also un-load the record with
-`$m->unload()`. 
+`$m->unload()`.
 
 By default no records are loaded and if you modify some field and attempt
 to save unloaded model, it will create a new record.
@@ -244,7 +244,7 @@ Other Parameters
 ^^^^^^^^^^^^^^^^
 
 Apart from the main 3 pieces of "state" your Model holds there can also be
-some other paramaters such as:
+some other parameters such as:
 
  - order
  - limit
@@ -256,7 +256,7 @@ You can also define your own parameters like this::
 
     $m->audit
 
-This can be used internally for all sorts of decisions for model behaviour.
+This can be used internally for all sorts of decisions for model behavior.
 
 
 Getting Started
@@ -296,7 +296,7 @@ instances::
 
 .. note:: If you're trying those lines, you will also have to
     create this new table inside your MySQL database::
-    
+
         create table user2 as select * from user:
 
 As I mentioned - :php:meth:`Model::init` is called when model is associated
@@ -326,7 +326,7 @@ initially, avoid using generators.
 
 In practice, :php:meth:`Model::addField()` creates a new 'Field' object and then
 links it up to your model. This object is used to store some information about
-your field, but it also participates in some field-related acitivity.
+your field, but it also participates in some field-related activity.
 
 Table Joins
 -----------
@@ -344,7 +344,7 @@ That means that your business model will contain 'address_1' and 'address_2'
 fields, but when it comes to storing those values, they will be sent
 into a different database table and the records will be automatically linked.
 
-Lets once again load up the console for some excercises::
+Lets once again load up the console for some exercises::
 
     $m = new Model_User($db);
 
@@ -373,7 +373,7 @@ will properly manipulate features of that specific database engine.
 Understanding Persistence
 -------------------------
 
-To make things simple, console has already created persistence 
+To make things simple, console has already created persistence
 inside variable `$db`. Load up `console.php` in your editor to look
 at how persistence is set up::
 
@@ -381,7 +381,7 @@ at how persistence is set up::
 
     // or
 
-    $app->db = new \atk4\data\Persistence_SQL($pdo, $user, $pass); 
+    $app->db = new \atk4\data\Persistence_SQL($pdo, $user, $pass);
 
 There are several Persistence classes that deal with different
 data sources. Lets load up our console and try out a different
@@ -398,7 +398,7 @@ persistence::
     var_dump($a); // shows you stored data
 
 This time our Model_User logic has worked pretty well with Array-only
-peristence logic.
+persistence logic.
 
 .. note:: Persisting into Array or MongoDB are not fully functional as of 1.0
     version. We plan to expand this functionality soon, see our development
@@ -412,7 +412,7 @@ Your application normally uses multiple business entities and they can be relate
 to each-other.
 
 .. warning:: Do not mix-up business model relations with database relations (foreign
-    keys). 
+    keys).
 
 Relations are defined by calling :php:meth:`Model::hasOne()` or
 :php:meth:`Model::hasMany()`. You always specify destination model and you can
@@ -492,7 +492,7 @@ you keep the return value of hasOne() / hasMany() or call :php:meth:`Model::getR
 with the same identifier later on.
 
 Calling :php:meth:`Model::ref()` will proxy into the ref() method of relation
-object which will in turn figure out what to do. 
+object which will in turn figure out what to do.
 
 Additionally you can call :php:meth:`Model::addField()` on the reference model
 that will bring one or several fields from related model into your current model.
@@ -570,7 +570,7 @@ Multi-record actions
 
 Actions also allow you to perform operations on multiple records. This can be very
 handy with some deep traversal to improve query efficiency. Suppose you need to change
-Client/Supplier status to 'suspended' for a specific user. Fire up a concole once
+Client/Supplier status to 'suspended' for a specific user. Fire up a console once
 away::
 
     $m = new Model_User($db);
@@ -585,7 +585,7 @@ away::
 Note that I had to perform 2 updates here, because Agile Data considers Client and
 Supplier as separate models. In our implementation they happened to be in a same
 table, but technically that could also be implemented differently by persistence
-layer. 
+layer.
 
 Advanced Use of Actions
 -----------------------

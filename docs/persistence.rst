@@ -42,7 +42,7 @@ There are several ways to link your model up with the persistence::
         $m['name'] = 'John';
         $$m->save();
 
-    You can pass argumen to save() to set() and save()::
+    You can pass argument to save() to set() and save()::
 
         $m->unload();
         $m->save(['name'=>'John']);
@@ -63,8 +63,8 @@ There are several ways to link your model up with the persistence::
 
 .. php:method:: loadAny
 
-    Attempt to load any matching record. You can use this in conjunciton with setOrder()::
-    
+    Attempt to load any matching record. You can use this in conjunction with setOrder()::
+
         $m->loadAny();
         echo $m['name'];
 
@@ -97,8 +97,8 @@ When you add a new record with save(), insert() or import, you can specify ID ex
 
     // or $m->insert(['Record with ID=123', 'id'=>123']);
 
-However if you change the ID for record that was loaded, then your 
-database record will also have it's ID changed? Here is example::
+However if you change the ID for record that was loaded, then your
+database record will also have its ID changed. Here is example::
 
     $m->load(123);
     $m[$m->id_field] = 321;
@@ -111,7 +111,7 @@ Duplicating and Replacing Records
 
 In normal operation, once you store a record inside your database, your interaction
 will always update this existing record. Sometimes you want to perform operations that may
-affect other records
+affect other records.
 
 Create copy of existing record
 ------------------------------
@@ -119,18 +119,20 @@ Create copy of existing record
 .. php:method:: duplicate($id = null)
 
     Normally, active record stores "id", but when you call duplicate() it forgets
-    current ID and will inserted as a next record when you execute `save()` next time.
+    current ID and as result it will be inserted as new record when you execute
+    `save()` next time.
 
-    If you pass the `$id` parameter then the new record will be saved under a new
+    If you pass the `$id` parameter, then the new record will be saved under a new
     ID::
-    
+
         // First, lets delete all records except 123
         (clone $m)->addCondition('id', '!=', 123)->action('delete')->execute();
 
         // Next we can duplicate
         $m->load(123)->duplicate()->save();
 
-        // Now you have 2 records
+        // Now you have 2 records:
+        // one with ID=123 and another with ID={next db generated id}
         echo $m->action('count')->getOne();
 
 Duplicate then save under a new ID
@@ -143,8 +145,8 @@ Here is how::
 
     $m->load(123)->duplicate(124)->replace();
 
-Now the record 124 will be replaced with the new data using. For SQL
-that means calling 'replace into x'.
+Now the record 124 will be replaced with the data taken from record 123.
+For SQL that means calling 'replace into x'.
 
 .. warning::
 
@@ -154,8 +156,6 @@ that means calling 'replace into x'.
     reverse, then your new record may not load.
 
     This will be properly addressed in future versions of Agile Data.
-
-.. _Action:
 
 
 Working with Multiple DataSets
@@ -167,7 +167,7 @@ do want to store the model outside of a data-set. This section focuses
 on various use-cases like that.
 
 Cloning versus New Instance
-===========================
+---------------------------
 
 When you clone a model, the new copy will inherit pretty much all the
 conditions and any in-line modifications that you have applied on
@@ -175,7 +175,7 @@ the original model. If you decide to create new instance, it will
 provide a `vanilla` copy of model without any in-line modifications.
 This can be used in conjunction to escape data-set.
 
-.. php:method:: newInstance($class = null)
+.. php:method:: newInstance($class = null, $options = [])
 
 Looking for duplicates
 ----------------------
@@ -191,7 +191,7 @@ order with this ref, how do you do it?
 
 Start by creating a beforeSave handler for Order::
 
-    $this->addHook('beforeSave', funciton($m) {
+    $this->addHook('beforeSave', function($m) {
         if ($this->isDirty('ref')) {
 
             if (
@@ -201,14 +201,15 @@ Start by creating a beforeSave handler for Order::
                     ->loaded()
             ) {
                 throw new Exception([
-                    'Order with ref already exists',
-                    'ref'=>$this['ref']
+                    'Order with ref already exists for this client',
+                    'client' => $this['client_id'],
+                    'ref'    => $this['ref']
                 ]);
             }
         }
     });
 
-.. importat:: Always use $m, don't use $this, or cloning models will glitch. 
+.. important:: Always use $m, don't use $this, or cloning models will glitch.
 
 So to review, we used newInstance() to create new copy of a current model. It
 is important to note that newInstance() is using get_class($this) to determine
@@ -221,12 +222,13 @@ In this use case you are having a model 'Order', but you have introduced the
 option to archive your orders. The method `archive()` is supposed to mark order
 as archived and return that order back. Here is the usage pattern::
 
+    $o->addCondition('is_archived', false); // to restrict loading of archived orders
     $o->load(123);
     $archive = $o->archive();
     $archive['note'] .= "\nArchived on $date.";
     $archive->save();
 
-With Agile Data API building it's quite common to cerate a method that does not
+With Agile Data API building it's quite common to create a method that does not
 actually persist the model.
 
 The problem occurs if you have added some conditions on the $o model. It's
@@ -240,22 +242,22 @@ after-save reloading::
     function archive() {
         $this->reload_after_save = false;
         $this['is_archived'] = true;
-        retutrn $this;
+        return $this;
     }
 
 After-save reloading would fail due to `is_archived = false` condition so
-disabling reload is a hack to get your record into the database safely. 
+disabling reload is a hack to get your record into the database safely.
+
 The other, more appropriate option is to re-use a vanilla Order record::
 
     function archive() {
-
-        $this->save(); // just to be sure, no dirty stuff is left over.
+        $this->save(); // just to be sure, no dirty stuff is left over
 
         $archive = $this->newInstance();
         $archive->load($this->id);
         $archive['is_archived'] = true;
 
-        $this->unload(); // active record is no longer accessible.
+        $this->unload(); // active record is no longer accessible
 
         return $archive;
     }
@@ -284,37 +286,40 @@ Using Model casting and saveAs
 There is another method that can help with escaping the DataSet that does
 not involve record loading:
 
-.. php:method:: as($class = null)
+.. php:method:: asModel($class = null, $options = [])
 
     Changes the class of a model, while keeping all the loaded and dirty
     values.
 
-The above example this would then work like this::
+The above example would then work like this::
 
-    $archive = $o->as('Order');
-    $archive['is_archived'] = true;
+    function archive() {
+        $this->save(); // just to be sure, no dirty stuff is left over
 
-    $this->unload(); // active record is no longer accessible.
+        $archive = $o->asModel('Order');
+        $archive['is_archived'] = true;
 
-    return $archive;
+        $this->unload(); // active record is no longer accessible.
+
+        return $archive;
+    }
 
 Note that after saving 'Order' it may attempt to :ref:`load_after_save` just
 to ensure that stored model is a valid 'Order'.
 
-.. php:method:: saveAs($class = null)
+.. php:method:: saveAs($class = null, $options= [])
 
     Save record into the database, using a different class for a model.
 
-As a last example for my arhiving example, here is how we can eliminate
-need of archive() method alltogether::
-
+As in my archiving example, here is how we can eliminate need of archive()
+method altogether::
 
     $o = new ActiveOrder($db);
     $o->load(123);
 
     $o->set(['is_arhived', true])->saveAs('Order');
 
-Currently the implementation of saveAs is rather trivial but in the future
+Currently the implementation of saveAs is rather trivial, but in the future
 versions of Agile Data you may be able to do this::
 
     // MAY NOT WORK YET
@@ -338,13 +343,13 @@ including 'RestAPI', 'File', 'Memcache' or 'MongoDB'.
 
 .. important::
 
-    Instance of a model can be associated with as single persistence only. Once
+    Instance of a model can be associated with a single persistence only. Once
     it is associated, it stays like that. To store a model data into a different
-    persistence, a new instance of your model will be created, then associated
+    persistence, a new instance of your model will be created and then associated
     with a new persistence.
 
 
-.. php:method:: withPersistence($peristence, $id = null, $class = null)
+.. php:method:: withPersistence($persistence, $id = null, $class = null)
 
 
 Creating Cache with Memcache
@@ -360,17 +365,16 @@ to load records from two persistences that are stored inside properties of my
 application::
 
     function loadQuick($class, $id) {
-    
-        // first, try to load it from MemCache:
 
+        // first, try to load it from MemCache
         $m = $this->mdb->add(clone $class)->tryLoad($id);
 
         if (!$m->loaded()) {
 
-            // fallback to load from SQL
+            // fall-back to load from SQL
             $m = $this->sql->add(clone $class)->load($id);
 
-            // store into MemCache too.
+            // store into MemCache too
             $m = $m->withPersistence($this->mdb)->replace();
         }
 
@@ -398,20 +402,20 @@ To look in more details into the actual method, I have broken it down into chunk
     // first, try to load it from MemCache:
     $m = $this->mdb->add(clone $class)->tryLoad($id);
 
-The $class will be an unitialized instance of a model (although you can also use
-a string). It will first be associtaed with the MemCache DB persistence and we will
+The $class will be an uninitialized instance of a model (although you can also use
+a string). It will first be associated with the MemCache DB persistence and we will
 attempt to load a corresponding ID. Next, if no record is found in the cache::
 
     if (!$m->loaded()) {
 
-        // fallback to load from SQL
+        // fall-back to load from SQL
         $m = $this->sql->add(clone $class)->load($id);
 
-        // store into MemCache too.
+        // store into MemCache too
         $m = $m->withPersistence($this->mdb)->replace();
     }
 
-Load the record from the SQL database and store it into $m. Next, save $m into the 
+Load the record from the SQL database and store it into $m. Next, save $m into the
 MemCache persistence by replacing (or creating new) record. The `$m` at the end will
 be associated with the MemCache persistence for consistency with cached records.
 The last two hooks are in order to replicate any changes into the SQL database
@@ -428,7 +432,7 @@ also::
 I have too note that withPersistence() transfers the dirty flags into a new
 model, so SQL record will be updated with the record that you have modified only.
 
-If saving into SQL is successful the memcache peristence will be also updated.
+If saving into SQL is successful the memcache persistence will be also updated.
 
 
 Using Read / Write Replicas
@@ -441,7 +445,6 @@ replica, except for certain changes.
 In theory you can use hooks (that have option to cancel default action)
 to create a comprehensive system-wide solution, I'll illustrate how this
 can be done with a single record::
-
 
     $m = new Order($read_replica);
 
@@ -456,7 +459,7 @@ can be done with a single record::
 By changing 'completed' field value, it creates a dirty field inside `$m`,
 which will be saved inside a `$write_replica`. Although the proper
 approach would be to reload the `$m`, if there is chance that your
-update to a write replica may not propogate to read replica, you can
+update to a write replica may not propagate to read replica, you can
 simply reset the dirty flags.
 
 If you need further optimization, make sure `reload_after_save` is disabled
@@ -468,8 +471,8 @@ or use::
 
     $m->withPersistence($write_replica)->saveAndUnload();
 
-Archive Copies into different persitence
-----------------------------------------
+Archive Copies into different persistence
+-----------------------------------------
 
 If you wish that every time you save your model the copy is also stored inside
 some other database (for archive purposes) you can implement it like this::
@@ -485,7 +488,7 @@ some other database (for archive purposes) you can implement it like this::
     });
 
 When passing 2nd argument of `false` to the withPersistence() method, it will
-not link with not re-use current ID instead creating new records every time.
+not re-use current ID instead creating new records every time.
 
 Store a specific record
 -----------------------
@@ -493,7 +496,6 @@ Store a specific record
 If you are using authentication mechanism to log a user in and you wish to
 store his details into Session, so that you don't have to reload every time,
 you can implement it like this::
-
 
     if (!isset($_SESSION['ad'])) {
         $_SESSION['ad'] = []; // initialize
@@ -514,6 +516,8 @@ How to add record inside session, e.g. log the user in? Here is the code::
 
     $u->withPersistence($sess, 'active_user')->save();
 
+.. _Action:
+
 
 Actions
 =======
@@ -523,7 +527,7 @@ will not affect records outside of DataSet (records that do not match conditions
 
 .. php:method:: action($action, $args = [])
 
-    Prepares a special object reperesnting "action" of a persistance layer based around
+    Prepares a special object representing "action" of a persistence layer based around
     your current model::
 
         $m = Model_User();
@@ -555,7 +559,7 @@ so you can have the following code::
 
     $m = Model_Invoice();
     $val = $m->action('count')();
-    
+
 When used inside the same Persistence, sometimes actions can be used without executing::
 
     $m = Model_Product($db);
@@ -649,7 +653,7 @@ Here is a way how to intervene with the process::
 
 The code above uses refLink and also creates expression, but it tweaks the action used.
 
-        
+
 Action Matrix
 --------------
 
@@ -659,7 +663,7 @@ SQL actions apply the following:
 - update: init, mode, conditions, limit, order, hook
 - delete: init, mode, conditions
 - select: init, fields, conditions, limit, order, hook
-- count:  init, field, conditions, hook, 
+- count:  init, field, conditions, hook,
 - field:  init, field, conditions
 - fx:     init, field, conditions
 
