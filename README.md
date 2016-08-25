@@ -162,7 +162,7 @@ saving data, there is another pleasant surprise. Loading, saving, iterating and
 deleting records do not create new in-memory objects:
 
 
-```
+``` php
 foreach($client->ref('Project') as $project) {
     echo $project->get('name')."\n"
 }
@@ -186,7 +186,7 @@ query components and glue them together yourself.
 Agile Data provides a universal support for Expressions and each expression
 have supports for `escaping` and `parameters`;
 
-```
+``` php
 $c->addCondition($c->expr('length([name]) = []', [2]))
 ```
 
@@ -194,7 +194,7 @@ This is condition from our deep-traversal demo, where our custom condition
 fetches only 2-character long countries. Compare that to the generated query
 segment:
 
-```
+``` php
 where length(`name`) = :a
 ```
 
