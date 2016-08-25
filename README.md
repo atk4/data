@@ -2,7 +2,15 @@
 
 **PHP Framework for better Business Logic design and scalable database access.**
 
-Use Agile Data inside your existing PHP application (works with most frameworks) to define and map your business logic into your database schema. Agile Data is designed with fresh ideas how to solve efficiency, performance, clarity, testability and cross-database compatibility in medium and large PHP projects.
+Using Agile Data inside your PHP app allows you to abstract database (SQL or NoSQL) access
+without loosing access to power-features (grouping, aggregating, sub-queries, custom expressions,
+cross-vendor references, entity-level joins).
+
+You will be able to separate your business logic from schema domain, so that the rest of
+your application could use expressions, imported fields and aggregate columns transparently.
+
+Agile Data also offers you to implement enterprise-focused features such as ACL, Audit, Undo,
+Scopes as well as transparently change database vendor for your entity storage.
 
 Code Quality:
 
@@ -23,11 +31,49 @@ Stats:
 [![License](https://poser.pugx.org/atk4/data/license)](https://packagist.org/packages/atk4/data)
 [![Version](https://badge.fury.io/gh/atk4%2Fdata.svg)](https://packagist.org/packages/atk4/data)
 
-## Goals and Features
+## Core Fundamental Differences
+
+### Introducing Actions
+
+ORM/Active Record is not designed for relational databases. There are too much potential that ORM
+abstracts. The way how modern ORM get around it by offering ability to generate "Query-in-progress"
+object off your model which you can tweak.
+
+Agile Data significantly expands amount of interactions you can do between Model and Query Builder.
+You can generate update/delete queries, aggregate queries and drop them into Query Builder:
+
+![GitHub release](docs/images/action.gif)]
+
+### Introducing Expressions
+
+In Agile Data your field can be defined through user-defined SQL expression. That does not affect
+the rest of the API, the field can still be used inside actions, conditions and inside your CRUD
+operations with a model. Most expressions are read-only though.
+
+![GitHub release](docs/images/expression.gif)]
+
+### Good bye Eager/Lazy Loading
+
+Have you felt that something is broken with Eager/Lazy loading approach? With Agile Data you'll
+never have to use it again. If you have a reference between models, you can "import" fields
+through this relationship.
+
+![GitHub release](docs/images/import-field.gif)]
+
+### 
+
+Most ORM today are built by extending Query Builder. While this gives a benefit to build "Queries"
+out of your entity this in a one-way operation. Additionally things you CAN build into a query
+are quite limited.
+
+
+
 
 Agile Data is a comprehensive framework for use in SaaS and Enterprise PHP projects, that focuses on solving these major goals:
 
-### 1. Object-oriented Business Logic and Persistence mapping
+### 1. To support all the features present in modern ORMs and Query Builders
+
+
 
 Face it. Your SQL architecture does NOT fit your business model map precisely. There are many differences mainly focused on structure optimisation, that can complicate loading/saving data into SQL:
 
