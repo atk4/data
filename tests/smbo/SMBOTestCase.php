@@ -10,13 +10,15 @@ class SMBOTestCase extends \atk4\data\tests\SQLTestCase
 
         $s = new \atk4\data\tests\Structure(['connection' => $this->db->connection]);
 
-        (clone $s)->table('account')->drop()
+        $x = clone $s;
+        $x->table('account')->drop()
             ->id()
             ->field('name')
             ->create();
 
 
-        (clone $s)->table('document')->drop()
+        $x = clone $s;
+        $x->table('document')->drop()
             ->id()
             ->field('reference')
             ->field('contact_from_id')
@@ -25,7 +27,8 @@ class SMBOTestCase extends \atk4\data\tests\SQLTestCase
             ->field('amount', ['type' => 'decimal(8,2)'])
             ->create();
 
-        (clone $s)->table('payment')->drop()
+        $x = clone $s;
+        $x->table('payment')->drop()
             ->id()
             ->field('document_id', ['type' => 'int'])
             ->field('account_id', ['type' => 'int'])

@@ -35,14 +35,14 @@ each iteration like this::
     }
 
 Additionally model will execute necessary after-load hooks that might trigger some other
-calculation or validations. 
+calculation or validations.
 
 .. note:: changing query parameter during iteration will has no effect until you finish
     iterating.
 
 Keeping models
 --------------
-If you wish to preserve the objects that you have loaded (not recomended as they will
+If you wish to preserve the objects that you have loaded (not recommended as they will
 consume memory), you can do it like this::
 
     $cat = [];
@@ -83,12 +83,12 @@ You can invoke and iterate action (particularly SQL) to fetch the data::
         var_dump($row); // array
     }
 
-This has the identical behaviour to $m->rawIterator();
+This has the identical behavior to $m->rawIterator();
 
 
 Comparison of various ways of fetching
 ======================================
 
 - getIterator - action(select), [ fetches row, set ID/Data, call afterLoad hook, yields model ], unloads data
-- rawIterator - action(select), [ fetches row, yields row ] 
+- rawIterator - action(select), [ fetches row, yields row ]
 - export - action(select), fetches all rows, returns all rows

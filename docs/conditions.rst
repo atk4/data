@@ -22,7 +22,7 @@ narrow down set of "loadable" records by introducing a condition::
     $m->addCondition('gender','F');
     $m->load(1);    // exception, user with ID=1 is M
 
-Conditions serve important role and must be used to inteligently restrict
+Conditions serve important role and must be used to intelligently restrict
 logically accessible data for a model before you attempt the loading.
 
 Basic Usage
@@ -86,11 +86,11 @@ You can have as many conditions as you like.
 Defining your classes
 ---------------------
 
-Although I have used in-line additon of the arguments, normally you would want to
+Although I have used in-line addition of the arguments, normally you would want to
 set those conditions inside the init() method of your model::
 
 
-    class Model_Girl extends Model_User 
+    class Model_Girl extends Model_User
     {
         function init()
         {
@@ -102,7 +102,7 @@ set those conditions inside the init() method of your model::
 
 Note that the field 'gender' should be defined inside Model_User::init().
 
-Vendor-dependant logic
+Vendor-dependent logic
 ======================
 
 There are many other ways to set conditions, but you must always check if
@@ -138,7 +138,7 @@ SQL Expression Matching
 
 .. php:method:: expr($expression, $arguments = [])
 
-    Basically is a wrapper to create DSQL Expression, however this will 
+    Basically is a wrapper to create DSQL Expression, however this will
     find any usage of identifiers inside the template that do not have
     a corresponding value inside $arguments and replace it with the
     field::
@@ -152,7 +152,7 @@ Supported by: SQL
 
 Usage::
 
-    $m->addCondition($m->expr('[age] inbetween [min_age] and [max_age]'));
+    $m->addCondition($m->expr('[age] between [min_age] and [max_age]'));
 
 Allow you to define an arbitrary expression using SQL language.
 
@@ -165,7 +165,7 @@ Supported by: SQL
 Usage::
 
     $m->addCondition(
-        $m->expr('[age] inbetween [min_age] and [max_age]'), 
+        $m->expr('[age] between [min_age] and [max_age]'),
         ['min_age'=>10, 'max_age'=>30]
     );
 
@@ -174,9 +174,9 @@ nested and consist of objects as well as actions::
 
 
     $m->addCondition(
-        $m->expr('[age] inbetween [min_age] and [max_age]'), 
+        $m->expr('[age] between [min_age] and [max_age]'),
         [
-            'min_age'=>$m->action('min', ['age']), 
+            'min_age'=>$m->action('min', ['age']),
             'max_age'=>$m->expr('(20 + [])', [20])
         ]
     );
@@ -184,12 +184,12 @@ nested and consist of objects as well as actions::
 This will result in the following condition::
 
     WHERE
-        `age` inbetween 
+        `age` between
             (select min(`age`) from `user`)
-            and 
+            and
             (20 + :a)
 
-where the other 20 is passed through parameter. Refer to 
+where the other 20 is passed through parameter. Refer to
 http://dsql.readthedocs.io/en/develop/expressions.html for full documentation
 on expressions.
 
@@ -212,7 +212,7 @@ Using withID
 .. php:method:: withID($id)
 
 This method is similar to load($id) but instead of loading the specified record, it
-sets condition for ID to match. Technically that saves you on equery if you do not
+sets condition for ID to match. Technically that saves you one query if you do not
 need actual record by are only looking to traverse::
 
     $u = new Model_User($db);

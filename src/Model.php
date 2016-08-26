@@ -828,9 +828,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Keeps the model data, but wipes out the ID
-     * so when you save it next time, ends up as a new
+     * Keeps the model data, but wipes out the ID so
+     * when you save it next time, it ends up as a new
      * record in the database.
+     *
+     * @param mixed|null $new_id
      *
      * @return $this
      */
@@ -853,6 +855,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * but will assume that both models are compatible,
      * therefore will not perform any loading.
+     *
+     * @param string $class
+     * @param array  $options
+     *
+     * @return Model
      */
     public function saveAs($class, $options = [])
     {
@@ -860,11 +867,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Store the data into database, but will never attempt
-     * to reload the data. Additioanlly any data
-     * will be unloaded. Use this instead of
-     * save() if you want to squezee a little more
-     * performance out.
+     * Store the data into database, but will never attempt to
+     * reload the data. Additionally any data will be unloaded.
+     * Use this instead of save() if you want to squezee a
+     * little more performance out.
+     *
+     * @param array $data
+     *
+     * @return $this
      */
     public function saveAndUnload($data = [])
     {
@@ -882,8 +892,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * This will cast Model into another class without
      * loosing state of your active record.
+     *
+     * @param string $class
+     * @param array  $options
+     *
+     * @return Model
      */
-    public function asModel($class, $options)
+    public function asModel($class, $options = [])
     {
         $m = $this->newInstance($class, $options);
 
@@ -898,29 +913,26 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Create new model form the same base class
+     * Create new model from the same base class
      * as $this.
      *
      * @param string $class
+     * @param array  $options
      *
-     * @return $this
+     * @return Model
      */
     public function newInstance($class = null, $options = [])
     {
         if ($class === null) {
             $class = get_class($this);
         }
-        if (is_string($class)) {
-            $m = new $class($this->persistence, $options);
-        } elseif (is_object($class)) {
-            $m = $this->persistence->add($class, $options);
-        }
+        $m = $this->persistence->add($class, $options);
 
         return $m;
     }
 
     /**
-     * Create new model form the same base class
+     * Create new model from the same base class
      * as $this. If you omit $id,then when saving
      * a new record will be created with default ID.
      * If you specify $id then it will be used
@@ -937,14 +949,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * See https://github.com/atk4/data/issues/111 for
      * use-case examples.
      *
-     * @param string $class
-     * @param mixed  $id
+     * @param Persistence $persistence
+     * @param mixed       $id
+     * @param string      $class
      *
      * @return $this
      */
     public function withPersistence($persistence, $id = null, string $class = null)
     {
-        if (!$persistence instanceof \atk4\data\Persintence) {
+        if (!$persistence instanceof \atk4\data\Persistence) {
             throw new Exception([
                 'Please supply valid persistence',
                 'arg' => $persistence,

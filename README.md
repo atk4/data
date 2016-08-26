@@ -2,7 +2,15 @@
 
 **PHP Framework for better Business Logic design and scalable database access.**
 
-Use Agile Data inside your existing PHP application (works with most frameworks) to define and map your business logic into your database schema. Agile Data is designed with fresh ideas how to solve efficiency, performance, clarity, testability and cross-database compatibility in medium and large PHP projects.
+Using Agile Data inside your PHP app allows you to abstract database (SQL or NoSQL) access
+without loosing access to power-features (grouping, aggregating, sub-queries, custom expressions,
+cross-vendor references, entity-level joins).
+
+You will be able to separate your business logic from schema domain, so that the rest of
+your application could use expressions, imported fields and aggregate columns transparently.
+
+Agile Data also offers you to implement enterprise-focused features such as ACL, Audit, Undo,
+Scopes as well as transparently change database vendor for your entity storage.
 
 Code Quality:
 
@@ -23,136 +31,231 @@ Stats:
 [![License](https://poser.pugx.org/atk4/data/license)](https://packagist.org/packages/atk4/data)
 [![Version](https://badge.fury.io/gh/atk4%2Fdata.svg)](https://packagist.org/packages/atk4/data)
 
-## Goals and Features
+## Core Fundamental Differences
+<<<<<<< HEAD
 
-Agile Data is a comprehensive framework for use in SaaS and Enterprise PHP projects, that focuses on solving these major goals:
+### Introducing Actions
 
-### 1. Object-oriented Business Logic and Persistence mapping
+ORM/Active Record is not designed for relational databases. There are too much potential that ORM
+abstracts. The way how modern ORM get around it by offering ability to generate "Query-in-progress"
+object off your model which you can tweak.
 
-Face it. Your SQL architecture does NOT fit your business model map precisely. There are many differences mainly focused on structure optimisation, that can complicate loading/saving data into SQL:
+Agile Data significantly expands amount of interactions you can do between Model and Query Builder.
+You can generate update/delete queries, aggregate queries and drop them into Query Builder:
 
- - single SQL table storing multiple business objects (clients and suppliers)
- - multiple SQL tables joined for a single business object (company, company_stats)
- - [data normalization](https://en.wikipedia.org/wiki/Database_normalization)
- - [disjoined subtyping](https://en.wikipedia.org/wiki/Subtyping)
- - optional weak joins
- - field type / name mapping (name => user_name)
+![GitHub release](docs/images/action.gif)]
 
-Agile Data allow you to map your business models with any of the above SQL techniques while using inheritance with very short and simple-to-read code.
+### Introducing Expressions
 
-### 2. Define your own data patterns and extend
+In Agile Data your field can be defined through user-defined SQL expression. That does not affect
+the rest of the API, the field can still be used inside actions, conditions and inside your CRUD
+operations with a model. Most expressions are read-only though.
 
- - Soft-delete
- - Record audit log
- - Update date, delete date, creation date
- - Access Control Lists
- 
-Those patterns can significantly complicate declaration of your business logic. Agile Data allows you to deal with them in a very flexible and re-usable way.
+![GitHub release](docs/images/expression.gif)]
 
-### 3. DataSet traversal
+### Good bye Eager/Lazy Loading
 
-Traversing relations is not a new concept. Many ORM systems implement traversal with record-to-record-array approach and lazy-loading. In practice, that creates some serious scalability problems.
+Have you felt that something is broken with Eager/Lazy loading approach? With Agile Data you'll
+never have to use it again. If you have a reference between models, you can "import" fields
+through this relationship.
 
-Agile data introduces Set-to-Set traversal allowing you to traverse not just a single record but multiple records at the same time:
+![GitHub release](docs/images/import-field.gif)]
+
+### 
+
+Most ORM today are built by extending Query Builder. While this gives a benefit to build "Queries"
+out of your entity this in a one-way operation. Additionally things you CAN build into a query
+are quite limited.
+
+
+
+
+### Introducing Actions
+
+ORM/Active Record is not designed for relational databases. There are too much potential that ORM
+abstracts. The way how modern ORM get around it by offering ability to generate "Query-in-progress"
+object off your model which you can tweak.
+>>>>>>> develop
+
+Agile Data significantly expands amount of interactions you can do between Model and Query Builder.
+You can generate update/delete queries, aggregate queries and drop them into Query Builder:
+
+![GitHub release](docs/images/action.gif)
+
+### Introducing Expressions
+
+In Agile Data your field can be defined through user-defined SQL expression. That does not affect
+the rest of the API, the field can still be used inside actions, conditions and inside your CRUD
+operations with a model. Most expressions are read-only though.
+
+![GitHub release](docs/images/expression.gif)
+
+### Good bye Eager/Lazy Loading
+
+Have you felt that something is broken with Eager/Lazy loading approach? With Agile Data you'll
+never have to use it again. If you have a reference between models, you can "import" fields
+through this relationship.
+
+![GitHub release](docs/images/import-field.gif)
+
+### Never again miss that critical condition
+
+References are like Relations except that they are defined between your Models. And because
+models are defined in "domain model" same goes for the References. 
+
+In this short example, I have defined "ActiveProjects" reference that can be used to address
+non-cancelled projects of a client. More importantly my aggregate field `total_budget` that
+is built using this reference automatically includes my new condition when it builds the
+sub-query.
+
+![GitHub release](docs/images/reference-magic.gif)
+
+
+### Build Reports inside Domain Model
+
+With most frameworks when it comes to serious data aggregation your only selection is to design
+and execute raw SQL queries. Agile Data stays with you all the way. How do we create an
+efficient query to display total budget from all the projects grouped by client's country
+while entirely remaining in domain model?
+
+![GitHub release](docs/images/domain-model-reports.gif)
+
+Did you notice that the amount excluded cancelled projects even though we never asked so
+explicitly?
+
+### Model-level join
+
+Most ORMs can define define models that only work with a single SQL table. If you have
+to store logical entity data into multiple tables - tough luck, you'll have to do
+some linking yourself.
+
+Agile Data allow you to define multiple joins right inside your model. As you join()
+another table, you will be able to import fields from the joined table. If you
+create a new record, data will automatically be distributed into the tables and
+records will be linked up correctly. 
+
+![GitHub release](docs/images/model-join.gif)
+
+### Deep Model Traversal
+
+Probably one of the best feature of Agile Data is deep traversal. Remember how
+your ORM tried to implement varous many-to-many relationships? This is no longer
+a problem in Agile Data.
+
+Suppose you want to look at all the countries that have 2-letter name. How many
+projects are there from the clients that are located in a country with 2-letter name?
+
+Agile Data can answer with a query or with a result.
+
+
+![GitHub release](docs/images/deep-traversal.gif)
+
+
+## Level UP
+
+The examples you saw so far are only a small fragment of the possibilities you can
+achieve with Agile Data. You now have a new playground where you can design your
+business logic around the advanced database features.
+
+One of the virtues we value the most in Agile Data is ability to abstract and
+add higher level features on our solid foundation.
+
+### Hooks
+
+You now have a domain-level and persistence-level hooks. With a domain-level
+ones (afterLoad, beforeSave) you get to operate with your field data before
+or after operation
+
+On other hand you can utilise persistence-level hooks 
+('beforeUpdateQuery', 'beforeSelectQuery') and you can interact with a
+powerful Query Builder to add a few SQL options (insert ignore or calc_found_rows)
+if you need.
+
+And guess what - should your model be saved into NoSQL database, the domain-level
+hooks will be executed, but SQL-specific ones will not.
+
+### Extensions
+
+Most ORMs hard-code features like soft-delete, audit-log, timestamps. In Agile Data
+the implementation of base model is incredibly lightweight and all the necessary
+features are added through external objects.
+
+We are still working on our Extension library but we plan to include:
+
+ - Audit Log - record all operations in a model (as well as previous field values)
+ - Undo - revert last few few operations on your model.
+ - ACL - flexible system to restrict access to certain records, fields or models based on
+   permissions of your logged-in user or custom logic.
+ - Filestore - allow you to work with files inside your model. Files are actually
+   stored in S3 (or other) but the references and meta-information remains in the database.
+ - Soft-Delete, purge and undelete - several strategies, custom fields, permissions.
+
+If you are interested in early access to Extensions, please contact us at
+http://agiletoolkit.org/contact
+
+### Performance
+
+If you wonder how those advanced features may impact performance of loading and
+saving data, there is another pleasant surprise. Loading, saving, iterating and
+deleting records do not create new in-memory objects:
+
 
 ``` php
-$clients = new my\Model_Client($db);
-$clients->addCondition('is_vip', true);
-$p = $clients->ref('Order')->ref('Payment');
-```
-
-In the code snippet above, `$p` will be a model object containing all payments of all orders placed by VIP clients in scope. Traversal executes no queries but rather relies on sub-query logic.
-
-### 4. Database Vendor Abstraction and Multi-record Actions
-
-NoSQL databases are rapidly adding options to peform multi-record operations and aggregation. Agile Data basic operations, such as record manipulation, already works with NoSQL transparently. In addition to that, Actions introduce a unified interface that can be used across all supporting persistence drivers. Consider this as continuation of the example above:
-
-``` php
-// get count of all payments (see previous example for scope)
-$cnt = $p->action('count')->getOne();
-
-// delete all notifications for these payments
-$n = new my\Model_Notification($db);
-$n->addCondition('payment_id', $p->action('field', ['id']));
-
-$n->action('delete')->execute();
-```
-
-When Action is executed or embedded, framework makes decision on how to best execute the strategy by using server-side capabilities of the database. If database is not capable of sub-select or multi-row operations, then it is still possible for Agile Data to simulate the action inside PHP.
-
-The same business Model definition can work with multiple database types, making it easy to store your data in caches, session, files or access it through API. The next example shows example of database-agnostic code that will work with either MySQL or MongoDB:
-
-``` php
-$m = new my\Model_User($mysql_db);
-// $m = new my\Model_User($mongo_db);
-
-
-$m->loadBy('name', $user);
-if ($m->verifyPassword($pass)) {
-    $m->action('increment', [$m->id, 'logins']);
+foreach($client->ref('Project') as $project) {
+    echo $project->get('name')."\n"
 }
+
+// $project refers to same object at all times, but $project's active data
+// is re-populated on each iteration.
 ```
 
-*Note: Support for MongoDB as of 1.0 is quite limited.*
+Nothing unnecessary is pre-fetched. Only requested columns are queried. Rows
+are streamed and never ever we will try to squeeze a large collection of IDs
+into a query!
 
-### 5. Reducing number of queries
+Agile Data works fast even if you have huge amount of records in the database.
 
-Business Logic designed with Agile Data can natively perform complex data operations such as joins, sub-selects, expressions which skilled developer can use to reduce total number of SQL queries per application request.
-My next example will create export of Clients along with their "account balance" that will be calculated by just a single query:
+### Security
+
+When ORM promise you "security" they don't really extend it to the cases where
+you wish to perform a sub-query of a sort. Then you have to deal with RAW
+query components and glue them together yourself.
+
+Agile Data provides a universal support for Expressions and each expression
+have supports for `escaping` and `parameters`;
 
 ``` php
-$c = new my\Model_Client($db);
-
-$c->getRef('Order')->addField('purchases', ['aggregate'=>'sum', 'field'=>'total']);
-$c->getRef('Payment')->addField('payments', ['aggregate'=>'sum', 'field'=>'paid']);
-$c->addExpression('balance', '[purchases]-[payments]');
-
-echo json_encode($c->export(['name','balance']));
-
-// purchases = sum(order.total) for specific client
-// payments = sum(payment.paid) for specific client
-// balance = sum(order.total) - sum(payment.paid)
+$c->addCondition($c->expr('length([name]) = []', [2]))
 ```
 
-### 6. Manipulating Records
-
-Certainly you can also operate with your models on record-by-record basis:
+This is condition from our deep-traversal demo, where our custom condition
+fetches only 2-character long countries. Compare that to the generated query
+segment:
 
 ``` php
-$p->onlyFields(['is_paid']);
-$p->loadBy('reference', $ref_id);
-$p['is_paid'] = true;
-$p->save();
-``` 
+where length(`name`) = :a
+```
 
-There are two significant advantages specifically designed to reduce data transfer footprint and improve security:
+First of all - `[name]` is automatically mapped into SQL representation of
+your name field (in case it's field from a join or a sub-query). Secondly
+the number `2` is supplied as PDO parameter. And Agile Data takes extra
+care to join parameters between different expressions that make it into
+your query.
 
- - you will only be able to load records from DataSet
- - with onlyFields() you can specify which model fields you are going to load
+The final security measure are the Conditions. Once you load your Client,
+traversing into 'Project' model will imply a condition which will only
+expose projects of that specific Client.
 
-### 7. Business Model Aggregation
+Even if you perform a multi-row opetation such as `action('update')` 
+or `action('delete')` it will only apply to projects of that client.
+With the model object you won't be able to create a new project that
+does NOT belong to loaded client.
 
-Most database mappers are good for accessing and modifying data only, however, Agile Data allows you to build aggregates from your business model. Regardless of how many tables you have joined, you can use one model as a source for another model thus embedding (or unioning) query source.
-
-*Note: This feature is planned for 1.1 release.*
-
-
-### 8. Extensions and Customisation
-
-Agile Data already is a great framework, but it can be further extended:
-
- - Add new database driver support, including NoSQL and custom RestAPI
- - Add new field types
- - Add new relation types, including cross-database relations
- - Validation engines
- - ACL engines
-
-See section below to learn more about commercial services and support options.
- 
+Those security measures are there to protect you against human factor.
 
 ### Full documentation for Agile Data
 
-[agile-data.readthedocs.io](http://agile-data.readthedocs.io).
+If you have missed link to documentation, then its [agile-data.readthedocs.io](http://agile-data.readthedocs.io).
 
 ### Getting Started Guides
 
@@ -217,10 +320,9 @@ Now you can explore. Try typing:
 > $m->loadBy('email', 'example@example.com')
 > $m->get()
 > $m->export(['email','name'])
+> $m->action('count')
 > $m->action('count')->getOne()
-> $m->action('count')->getDebugQuery()
 ```
-Full documentation is available at [agile-core.readthedocs.io](http://agile-core.readthedocs.io/)
 
 ## Agile Toolkit
 
