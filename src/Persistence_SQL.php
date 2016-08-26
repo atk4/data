@@ -151,7 +151,7 @@ class Persistence_SQL extends Persistence
      *
      * @return \atk4\dsql\Expression
      */
-    public function expr($m, $expr, $args = [])
+    public function expr(Model $m, $expr, $args = [])
     {
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/',
@@ -578,9 +578,6 @@ class Persistence_SQL extends Persistence
         // apply all fields we got from get
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
-            if ($f->readonly || $f->never_persist) {
-                continue;
-            }
             $insert->set($f->actual ?: $f->short_name, $value);
         }
 
@@ -656,9 +653,6 @@ class Persistence_SQL extends Persistence
         $cnt = 0;
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
-            if ($f->readonly || $f->never_persist) {
-                continue;
-            }
             $update->set($f->actual ?: $f->short_name, $value);
             $cnt++;
         }

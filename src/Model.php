@@ -237,6 +237,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
     }
 
+    public function __clone()
+    {
+        // we need to clone some of the elements
+        if ($this->elements) {
+            foreach ($this->elements as $id => $el) {
+                if ($el instanceof Join) {
+                    $this->elements[$id] = clone $el;
+                    $el->owner = $this;
+                }
+            }
+        }
+    }
+
     /**
      * Set default properties of model.
      *
@@ -512,6 +525,24 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $value;
     }
 
+    /**
+     * Remove current field value and use default.
+     *
+     * @param string|array $field
+     *
+     * @return $this
+     */
+    public function _unset($name)
+    {
+        $name = $this->normalizeFieldName($name);
+        if (array_key_exists($name, $this->dirty)) {
+            $this->data[$name] = $this->dirty[$name];
+            unset($this->dirty[$name]);
+        }
+
+        return $this;
+    }
+
     // }}}
 
     // {{{ ArrayAccess support
@@ -558,11 +589,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function offsetUnset($name)
     {
-        $name = $this->normalizeFieldName($name);
-        if (array_key_exists($name, $this->dirty)) {
-            $this->data[$name] = $this->dirty[$name];
-            unset($this->dirty[$name]);
-        }
+        $this->_unset($name);
     }
 
     // }}}
@@ -1089,7 +1116,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $dirty_join = false;
             foreach ($this->dirty as $name => $junk) {
                 $field = $this->hasElement($name);
-                if (!$field || $field->readonly) {
+                if (!$field || $field->readonly || $field->never_persist) {
                     continue;
                 }
 
@@ -1113,18 +1140,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 return $this;
             }
 
-            $this->hook('beforeModify', [&$data]);
+            $this->hook('beforeUpdate', [&$data]);
 
             $this->persistence->update($this, $this->id, $data);
 
-            $this->hook('afterModify', [&$data]);
-
-            //$this->hook('beforeUpdate', array(&$source));
+            $this->hook('afterUpdate', [&$data]);
         } else {
             $data = [];
             foreach ($this->get() as $name => $value) {
                 $field = $this->hasElement($name);
-                if (!$field || $field->readonly) {
+                if (!$field || $field->readonly || $field->never_persist) {
                     continue;
                 }
 

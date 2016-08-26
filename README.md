@@ -32,12 +32,50 @@ Stats:
 [![Version](https://badge.fury.io/gh/atk4%2Fdata.svg)](https://packagist.org/packages/atk4/data)
 
 ## Core Fundamental Differences
+<<<<<<< HEAD
 
 ### Introducing Actions
 
 ORM/Active Record is not designed for relational databases. There are too much potential that ORM
 abstracts. The way how modern ORM get around it by offering ability to generate "Query-in-progress"
 object off your model which you can tweak.
+
+Agile Data significantly expands amount of interactions you can do between Model and Query Builder.
+You can generate update/delete queries, aggregate queries and drop them into Query Builder:
+
+![GitHub release](docs/images/action.gif)]
+
+### Introducing Expressions
+
+In Agile Data your field can be defined through user-defined SQL expression. That does not affect
+the rest of the API, the field can still be used inside actions, conditions and inside your CRUD
+operations with a model. Most expressions are read-only though.
+
+![GitHub release](docs/images/expression.gif)]
+
+### Good bye Eager/Lazy Loading
+
+Have you felt that something is broken with Eager/Lazy loading approach? With Agile Data you'll
+never have to use it again. If you have a reference between models, you can "import" fields
+through this relationship.
+
+![GitHub release](docs/images/import-field.gif)]
+
+### 
+
+Most ORM today are built by extending Query Builder. While this gives a benefit to build "Queries"
+out of your entity this in a one-way operation. Additionally things you CAN build into a query
+are quite limited.
+
+
+
+
+### Introducing Actions
+
+ORM/Active Record is not designed for relational databases. There are too much potential that ORM
+abstracts. The way how modern ORM get around it by offering ability to generate "Query-in-progress"
+object off your model which you can tweak.
+>>>>>>> develop
 
 Agile Data significantly expands amount of interactions you can do between Model and Query Builder.
 You can generate update/delete queries, aggregate queries and drop them into Query Builder:

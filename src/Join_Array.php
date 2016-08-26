@@ -24,11 +24,11 @@ class Join_Array extends Join
         // Add necessary hooks
         if ($this->reverse) {
             $this->owner->addHook('afterInsert', $this, null, -5);
-            $this->owner->addHook('beforeModify', $this, null, -5);
+            $this->owner->addHook('beforeUpdate', $this, null, -5);
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
         } else {
             $this->owner->addHook('beforeInsert', $this);
-            $this->owner->addHook('beforeModify', $this);
+            $this->owner->addHook('beforeUpdate', $this);
             $this->owner->addHook('afterDelete', [$this, 'doDelete']);
             $this->owner->addHook('afterLoad', $this);
         }
@@ -102,7 +102,7 @@ class Join_Array extends Join
         );
     }
 
-    public function beforeModify($model, &$data)
+    public function beforeUpdate($model, &$data)
     {
         if ($this->weak) {
             return;
