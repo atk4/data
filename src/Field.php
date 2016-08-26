@@ -57,13 +57,22 @@ class Field
     public $system = false;
 
     /**
+     * Setting this to true will never actually load or store
+     * the field in the database. It will action as normal,
+     * but will be skipped by load/iterate/update/insert.
+     *
+     * @var bool
+     */
+    public $never_persist = false;
+
+    /**
      * Setting this to true will never actually store
      * the field in the database. It will action as normal,
      * but will be skipped by update/insert.
      *
      * @var bool
      */
-    public $never_persist = false;
+    public $never_save = false;
 
     /**
      * Is field read only?

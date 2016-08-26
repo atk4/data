@@ -1136,7 +1136,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $dirty_join = false;
             foreach ($this->dirty as $name => $junk) {
                 $field = $this->hasElement($name);
-                if (!$field || $field->readonly || $field->never_persist) {
+                if (!$field || $field->readonly || $field->never_persist || $field->never_save) {
                     continue;
                 }
 
@@ -1169,7 +1169,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $data = [];
             foreach ($this->get() as $name => $value) {
                 $field = $this->hasElement($name);
-                if (!$field || $field->readonly || $field->never_persist) {
+                if (!$field || $field->readonly || $field->never_persist || $field->never_save) {
                     continue;
                 }
 

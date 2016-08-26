@@ -85,7 +85,7 @@ class Relation_SQL_One extends Relation_One
         });
 
         $ex->readonly = false;
-        $ex->never_persist = true;
+        $ex->never_save = true;
 
         $this->owner->addHook('beforeSave', function ($m) use ($field) {
             if ($m->isDirty($field) && !$m->isDirty($this->link)) {
