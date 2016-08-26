@@ -7,7 +7,7 @@ Relations
 
 .. php:class:: Model
 
-.. php:method:: ref($link, $defailts = []);
+.. php:method:: ref($link, $details = []);
 
 Models can relate one to another. The logic of traversing relations, however, is
 slightly different to the traditional ORM implementation, because in Agile Data
@@ -36,7 +36,7 @@ also possible::
     $orders_for_vips->loadAny();
 
 Condition on the base model will be carried over to the orders and you will
-only be able to access orders that belong to vip users. The query for loading
+only be able to access orders that belong to VIP users. The query for loading
 order will look like this::
 
     select * from order where user_id in (
@@ -76,7 +76,7 @@ Safety and Performance
 
 When using ref() on hasMany relation, it will always return a fresh clone
 of the model. You can perform actions on the clone and next time you execute
-ref() this will not be impcated. If you performing traversals inside
+ref() this will not be impacted. If you performing traversals inside
 iterations, this can cause performance issues, for this reason you should
 see refLink()
 
@@ -123,7 +123,7 @@ Dealing with NON-ID fields
 
 Sometimes you have to use non-ID relations. For example we might have two models
 describing list of currencies and for each currency we might have historic rates
-available. Both models will relate throug ``currency.code = exchange.currency_code``::
+available. Both models will relate through ``currency.code = exchange.currency_code``::
 
     $c = new Model_Currency();
     $e = new Model_ExchangeRate();
@@ -135,9 +135,9 @@ available. Both models will relate throug ``currency.code = exchange.currency_co
 
 This will produce the following query::
 
-    select * from exchange 
-    where currency_code in 
-        (select code form currency wehre is_convertable=1)
+    select * from exchange
+    where currency_code in
+        (select code form currency where is_convertable=1)
 
 
 Add Aggregate Fields
@@ -191,7 +191,7 @@ The refLink would define a condition on a query like this::
 And it will not be viable on its own, however if you use it inside a sub-query,
 then it now makes sense for generating expression::
 
-    select 
+    select
         (select sum(amount) from `order` where user_id = `user`.id) sum_amount
     from user
     where is_vip = 1
@@ -239,10 +239,10 @@ user model::
 The important point here is that no additional queries are generated in the process and
 the loadAny() will look like this::
 
-    select * from user where id in 
+    select * from user where id in
         (select user_id from order where status = 'failed')
 
-By passing options to hasOne() you can also differenciate field name::
+By passing options to hasOne() you can also differentiate field name::
 
     $o->addField('user_id');
     $o->hasOne('User', [$u, 'our_field'=>'user_id']);
@@ -250,7 +250,7 @@ By passing options to hasOne() you can also differenciate field name::
     $o->load(1)->ref('User')['name'];
 
 You can also use ``their_field`` if you need non-id matching (see example above for hasMany()).
-    
+
 Importing Fields
 ----------------
 
@@ -282,7 +282,7 @@ did above::
             'address_notes'=>['notes', 'type'=>'text']
         ]);
 Above, all ``address_`` fields are copied with the same name, however field 'notes' from Address model
-will be called 'address_notes' inside user model. 
+will be called 'address_notes' inside user model.
 
 Relation Discovery
 ==================
@@ -320,7 +320,7 @@ you can use::
     echo $o->id(1)->ref('user_id/address_id')->loadAny()['address_1'];
 
 Here ``id()`` will only set a condition without actually loading the record and traversal
-will ecapsulate sub-queries resulting in a query like this::
+will encapsulate sub-queries resulting in a query like this::
 
     select * from address where id in
         (select address_id from user where id in
@@ -377,15 +377,15 @@ Loading model like that can produce a pretty sophisticated query
 
     select
         `pp`.`id`,`pp`.`name`,`pp`.`age`,`pp_i`.`parent_item_id`,
-        (select `parent`.`name` 
+        (select `parent`.`name`
          from `item` `parent`
-         left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id` 
+         left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id`
          where `parent`.`id` = `pp_i`.`parent_item_id`
          ) `parent_item`,
         (select sum(`child`.`age`) from `item` `child`
-         left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id` 
+         left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id`
          where `child_i`.`parent_item_id` = `pp`.`id`
-        ) `child_age`,`pp`.`id` `_i` 
+        ) `child_age`,`pp`.`id` `_i`
     from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
 
 Relations with New Records
@@ -431,7 +431,7 @@ next example will traverse into the contact to set it up::
     $m->save();
 
 When entity which you have referenced through ref() is saved, it will automatically populate
-$m['contact_id'] field and the final $m->save() will also store the reference. 
+$m['contact_id'] field and the final $m->save() will also store the reference.
 
 ID setting is implemented through a basic hook. Related model will have afterSave
 hook, which will update address_id field of the $m.

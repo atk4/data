@@ -30,9 +30,9 @@ Example will calculate "total_gross" by adding up values for "net" and "vat"::
 
 The query using during load() will look like this::
 
-    select 
+    select
         `id`,`total_net`,`total_vat`,
-        (`total_net`+`total_vat`) `total_gross` 
+        (`total_net`+`total_vat`) `total_gross`
     from `invoice`',
 
 Defining Expression
@@ -40,15 +40,15 @@ Defining Expression
 
 The simplest format to define expression is by simply passing a string. The
 argument is executed through Model::expr() which automatically substitutes
-values for the other fields including other expressions. 
+values for the other fields including other expressions.
 
 There are other ways how you can specify expression::
 
-    $m->addExpression('total_gross', 
+    $m->addExpression('total_gross',
         $m->expr('[total_net]+[total_vat] + [fee]', ['fee'=>$fee])
     );
 
-This format allow you to supply additional parametetrs inside expression.
+This format allow you to supply additional parameters inside expression.
 You should always use parameters instead of appending values inside your
 expression string (for safety)
 
@@ -111,7 +111,7 @@ might be out of sync and you might need your SQL to recalculate those expression
 To simplify your life, Agile Data implements smart model reloading. Consider
 the following model::
 
-    class Model_Math extends \atk4\data\Model 
+    class Model_Math extends \atk4\data\Model
     {
         public $table = 'math';
         function init()
@@ -132,12 +132,12 @@ the following model::
 
     echo $m['sum'];
 
-When $m->save() is executed, Agile Data will perform reloading of the model. 
+When $m->save() is executed, Agile Data will perform reloading of the model.
 This is to ensure that expression 'sum' would be re-calculated for the values of
 4 and 6 so the final line will output a desired result - 10;
 
 Reload after save will only be executed if you have defined any expressions
-inside your model, however you can affect this behaviour::
+inside your model, however you can affect this behavior::
 
     $m = new Model_Math($db, ['reload_after_save' => false]);
     $m['a'] = 4;
@@ -159,7 +159,7 @@ is another scenario when your database defines default fields:
 
 Then try the following code::
 
-    class Model_Math extends \atk4\data\Model 
+    class Model_Math extends \atk4\data\Model
     {
         public $table = 'math';
         function init()
@@ -188,5 +188,5 @@ expressions. This time you can explicitly enable reload after save::
     echo $m['a']+$m['b']; // outputs 14
 
 .. note:: If your model is using reload_after_save, but you wish to insert
-    data without additional query - use :php:meth:`Model::insert()` or 
+    data without additional query - use :php:meth:`Model::insert()` or
     :php:meth:`Model::import()`.

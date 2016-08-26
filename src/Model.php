@@ -794,7 +794,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Reload model.
+     * Reload model by taking its current ID.
      *
      * @return $this
      */
@@ -805,6 +805,159 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->load($id);
 
         return $this;
+    }
+
+    /**
+     * Keeps the model data, but wipes out the ID so
+     * when you save it next time, it ends up as a new
+     * record in the database.
+     *
+     * @param mixed|null $new_id
+     *
+     * @return $this
+     */
+    public function duplicate($new_id = null)
+    {
+        $this->id = null;
+        $this[$this->id_field] = $new_id;
+
+        return $this;
+    }
+
+    /**
+     * Saves the current record by using a different
+     * model class. This is similar to:.
+     *
+     * $m2 = $m->newInstance($class);
+     * $m2->load($m->id);
+     * $m2->set($m->get());
+     * $m2->save();
+     *
+     * but will assume that both models are compatible,
+     * therefore will not perform any loading.
+     *
+     * @param string $class
+     * @param array  $options
+     *
+     * @return Model
+     */
+    public function saveAs($class, $options = [])
+    {
+        return $this->asModel($class, $options)->save();
+    }
+
+    /**
+     * Store the data into database, but will never attempt to
+     * reload the data. Additionally any data will be unloaded.
+     * Use this instead of save() if you want to squezee a
+     * little more performance out.
+     *
+     * @param array $data
+     *
+     * @return $this
+     */
+    public function saveAndUnload($data = [])
+    {
+        $ras = $this->reload_after_save;
+        $this->reload_after_save = false;
+        $this->save($data);
+        $this->unload();
+
+        // restore original value
+        $this->reload_after_save = $ras;
+
+        return $this;
+    }
+
+    /**
+     * This will cast Model into another class without
+     * loosing state of your active record.
+     *
+     * @param string $class
+     * @param array  $options
+     *
+     * @return Model
+     */
+    public function asModel($class, $options = [])
+    {
+        $m = $this->newInstance($class, $options);
+
+        // Warning. If condition is different on both models,
+        // but the respective field's value is un-changed
+        // there might be some related issues.
+        $m->data = $this->data;
+        $m->dirty = $this->dirty;
+        $m->id = $this->id;
+
+        return $m;
+    }
+
+    /**
+     * Create new model from the same base class
+     * as $this.
+     *
+     * @param string $class
+     * @param array  $options
+     *
+     * @return Model
+     */
+    public function newInstance($class = null, $options = [])
+    {
+        if ($class === null) {
+            $class = get_class($this);
+        }
+        $m = $this->persistence->add($class, $options);
+
+        return $m;
+    }
+
+    /**
+     * Create new model from the same base class
+     * as $this. If you omit $id,then when saving
+     * a new record will be created with default ID.
+     * If you specify $id then it will be used
+     * to save/update your record. If set $id
+     * to `true` then model will assume that there
+     * is already record like that in the destination
+     * persistence.
+     *
+     * If you wish to fully copy the data from one
+     * model to another you should use:
+     *
+     * $m->withPersintence($p2, false)->set($m)->save();
+     *
+     * See https://github.com/atk4/data/issues/111 for
+     * use-case examples.
+     *
+     * @param Persistence $persistence
+     * @param mixed       $id
+     * @param string      $class
+     *
+     * @return $this
+     */
+    public function withPersistence($persistence, $id = null, string $class = null)
+    {
+        if (!$persistence instanceof \atk4\data\Persistence) {
+            throw new Exception([
+                'Please supply valid persistence',
+                'arg' => $persistence,
+            ]);
+        }
+
+        $m = new $class($persistence);
+
+        if ($id === true) {
+            $m->id = $this->id;
+            $m[$m->id_field] = $this[$this->id_field];
+        } elseif ($id) {
+            $m->id = null; // record shouldn't exist yet
+            $m[$m->id_field] = $id;
+        }
+
+        $m->data = $this->data;
+        $m->dirty = $this->dirty;
+
+        return $m;
     }
 
     /**
