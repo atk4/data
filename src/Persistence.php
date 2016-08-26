@@ -63,13 +63,15 @@ class Persistence
             unset($defaults[0]);
         }
 
-        if (!is_object($m)) {
-            $m = $this->factory($this->normalizeClassName($m), $defaults);
-        }
+        $m = $this->factory($m, $defaults);
 
         if ($m->persistence) {
+            if ($m->persistence === $this) {
+                return $m;
+            }
+
             throw new Exception([
-                'Model already has conditions or is related to persistence',
+                'Model is already related to another persistence',
             ]);
         }
 
