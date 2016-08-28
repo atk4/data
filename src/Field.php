@@ -81,7 +81,7 @@ class Field
      *
      * @var bool
      */
-    public $readonly = false;
+    public $read_only = false;
 
     /**
      * Array with UI flags like editable, visible and hidden.
@@ -177,7 +177,7 @@ class Field
      */
     public function isEditable()
     {
-        return $this->readonly || $this->never_persist
+        return $this->read_only || $this->never_persist
             ? false
             : (isset($this->ui['editable']) ? $this->ui['editable'] : !$this->system);
     }
@@ -217,7 +217,7 @@ class Field
         ];
 
         foreach ([
-            'type', 'system', 'never_persist', 'readonly', 'ui', 'join',
+            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'join',
         ] as $key) {
             if (isset($this->$key)) {
                 $arr[$key] = $this->$key;

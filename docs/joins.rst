@@ -66,9 +66,9 @@ After this you will have the following fields in your model:
 
 - username
 - country_id
-- country_code [readonly]
-- country_name [readonly]
-- default_currency [readonly]
+- country_code [read_only]
+- country_name [read_only]
+- default_currency [read_only]
 
 .. php:method:: imortModel
 

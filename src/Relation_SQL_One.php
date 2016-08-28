@@ -84,7 +84,7 @@ class Relation_SQL_One extends Relation_One
             return $mm->action('field', [$mm->title_field]);
         });
 
-        $ex->readonly = false;
+        $ex->read_only = false;
         $ex->never_save = true;
 
         $this->owner->addHook('beforeSave', function ($m) use ($field) {

@@ -74,7 +74,7 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
         ], $a);
 
         $m->unload();
-        $m->set(['name' => 'Foo', 'surname' => 'Bar', 'other' => 'Baz']);
+        $m->set(['name' => 'Foo', 'surname' => 'Bar']);
         $m->save();
 
         $this->assertEquals([
@@ -100,7 +100,7 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $m->insert(['name' => 'Foo', 'surname' => 'Bar', 'other' => 'Baz']);
+        $m->insert(['name' => 'Foo', 'surname' => 'Bar']);
 
         $this->assertEquals([
             'user' => [

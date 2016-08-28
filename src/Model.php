@@ -459,7 +459,21 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $f_object = $this->hasElement($field);
 
-        if ($f_object->readonly) {
+        // set hook here
+
+        $default_value = $f_object ? $f_object->default : null;
+
+        $original_value = array_key_exists($field, $this->dirty)?$this->dirty[$field]:
+            ((isset($f_object) && isset($f_object->default)) ? $f_object->default : null);
+
+        $current_value = array_key_exists($field, $this->data)?$this->data[$field]:$original_value;
+
+        if ($value === $current_value) {
+            // do nothing, value unchanged
+            return $this;
+        }
+
+        if ($f_object && $f_object->read_only) {
             throw new Exception([
                 'Attempting to change read-only field',
                 'field' => $field,
@@ -467,12 +481,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             ]);
         }
 
-
-        // $m['name'] = $m['name'];
-        if (array_key_exists($field, $this->data) && $value === $this->data[$field]) {
-            // do nothing, value unchanged
-            return $this;
-        }
 
         if (array_key_exists($field, $this->dirty) && $this->dirty[$field] === $value) {
             unset($this->dirty[$field]);
@@ -485,10 +493,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 );
         }
         $this->data[$field] = $value;
-
-        //if ($field === $this->id_field) {
-            //$this->id = $value;
-        //}
 
         return $this;
     }
@@ -1136,7 +1140,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $dirty_join = false;
             foreach ($this->dirty as $name => $junk) {
                 $field = $this->hasElement($name);
-                if (!$field || $field->readonly || $field->never_persist || $field->never_save) {
+                if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
                     continue;
                 }
 
@@ -1169,7 +1173,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $data = [];
             foreach ($this->get() as $name => $value) {
                 $field = $this->hasElement($name);
-                if (!$field || $field->readonly || $field->never_persist || $field->never_save) {
+                if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
                     continue;
                 }
 

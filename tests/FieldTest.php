@@ -7,14 +7,62 @@ use atk4\data\Persistence_SQL;
 
 class FieldTest extends SQLTestCase
 {
+
+    public function testDirty1()
+    {
+        $m = new Model();
+        $m->addField('foo', ['default'=>'abc']);
+
+        $this->assertEquals(false, $m->isDirty('foo'));
+
+        $m['foo'] = 'abc';
+        $this->assertEquals(false, $m->isDirty('foo'));
+
+        $m['foo'] = 'bca';
+        $this->assertEquals(true, $m->isDirty('foo'));
+
+        $m['foo'] = 'abc';
+        $this->assertEquals(false, $m->isDirty('foo'));
+
+        $m->data['foo'] = 'xx';
+
+        $m['foo'] = 'abc';
+        $this->assertEquals(true, $m->isDirty('foo'));
+
+        $m['foo'] = 'bca';
+        $this->assertEquals(true, $m->isDirty('foo'));
+
+        $m['foo'] = 'xx';
+        $this->assertEquals(false, $m->isDirty('foo'));
+    }
+
+
+
     /**
      * @expectedException Exception
      */
-    public function testReadOnly()
+    public function testReadOnly1()
     {
         $m = new Model();
-        $m->addField('foo', ['readonly'=>true]);
+        $m->addField('foo', ['read_only'=>true]);
         $m['foo'] = 'bar';
+    }
+
+    public function testReadOnly2()
+    {
+        $this->markTestSkipped('TODO: readonly setting same value should be OK');
+        $m = new Model();
+        $m->addField('foo', ['read_only'=>true, 'default'=>'abc']);
+        $m['foo'] = 'abc';
+    }
+
+    public function testReadOnly3()
+    {
+        $this->markTestSkipped('TODO: readonly setting same value should be OK');
+        $m = new Model();
+        $m->addField('foo', ['read_only'=>true, 'default'=>'abc']);
+        $m->data['foo'] = 'xx';
+        $m['foo'] = 'xx';
     }
 
 
@@ -118,5 +166,22 @@ class FieldTest extends SQLTestCase
             ], 
         ];
         $this->assertEquals($a, $this->getDB());
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testStrict1()
+    {
+        $m = new Model();
+        $m->addField('foo');
+        $m['baz'] = 'bar';
+    }
+
+    public function testStrict2()
+    {
+        $m = new Model(['strict_field_check'=>false]);
+        $m->addField('foo');
+        $m['baz'] = 'bar';
     }
 }
