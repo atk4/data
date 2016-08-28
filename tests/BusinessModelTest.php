@@ -53,9 +53,10 @@ class BusinessModelTest extends TestCase
         $m['name'] = null;
         $this->assertEquals(['name' => null], $m->data);
     }
+
     public function testNull()
     {
-        $m = new Model(['strict_field_check'=>false]);
+        $m = new Model(['strict_field_check' => false]);
         $m->set(['name' => 5]);
         $m['name'] = null;
         $this->assertEquals(['name' => null], $m->data);
@@ -63,7 +64,7 @@ class BusinessModelTest extends TestCase
 
     public function testFieldAccess2()
     {
-        $m = new Model(['strict_field_check'=>false]);
+        $m = new Model(['strict_field_check' => false]);
         $this->assertEquals(false, isset($m['name']));
         $m->set(['name' => 5]);
         $this->assertEquals(true, isset($m['name']));
@@ -81,7 +82,7 @@ class BusinessModelTest extends TestCase
 
     public function testGet()
     {
-        $m = new Model(['strict_field_check'=>false]);
+        $m = new Model(['strict_field_check' => false]);
         $m->addField('name');
         $m->addField('surname');
         $m->set(['name' => 'john', 'surname' => 'peter', 'foo' => 'bar']);
