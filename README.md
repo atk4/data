@@ -31,8 +31,6 @@ Stats:
 [![License](https://poser.pugx.org/atk4/data/license)](https://packagist.org/packages/atk4/data)
 [![Version](https://badge.fury.io/gh/atk4%2Fdata.svg)](https://packagist.org/packages/atk4/data)
 
-## Core Fundamental Differences
-<<<<<<< HEAD
 
 ### Introducing Actions
 
@@ -61,21 +59,11 @@ through this relationship.
 
 ![GitHub release](docs/images/import-field.gif)]
 
-### 
-
-Most ORM today are built by extending Query Builder. While this gives a benefit to build "Queries"
-out of your entity this in a one-way operation. Additionally things you CAN build into a query
-are quite limited.
-
-
-
-
 ### Introducing Actions
 
-ORM/Active Record is not designed for relational databases. There are too much potential that ORM
+There are too much potential that classic ORM implementation
 abstracts. The way how modern ORM get around it by offering ability to generate "Query-in-progress"
 object off your model which you can tweak.
->>>>>>> develop
 
 Agile Data significantly expands amount of interactions you can do between Model and Query Builder.
 You can generate update/delete queries, aggregate queries and drop them into Query Builder:
