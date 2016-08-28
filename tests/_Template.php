@@ -5,7 +5,7 @@ namespace atk4\data\tests;
 use atk4\data\Model;
 use atk4\data\Persistence_SQL;
 
-class RandomSQLTests extends SQLTestCase
+class _Template extends SQLTestCase
 {
     public function sampleTest()
     {
@@ -26,5 +26,4 @@ class RandomSQLTests extends SQLTestCase
 
         $this->assertEquals($a, $this->getDB());
     }
-
 }

@@ -7,11 +7,10 @@ use atk4\data\Persistence_SQL;
 
 class FieldTest extends SQLTestCase
 {
-
     public function testDirty1()
     {
         $m = new Model();
-        $m->addField('foo', ['default'=>'abc']);
+        $m->addField('foo', ['default' => 'abc']);
 
         $this->assertEquals(false, $m->isDirty('foo'));
 
@@ -35,8 +34,6 @@ class FieldTest extends SQLTestCase
         $m['foo'] = 'xx';
         $this->assertEquals(false, $m->isDirty('foo'));
     }
-
-
 
     /**
      * @expectedException Exception
@@ -44,7 +41,7 @@ class FieldTest extends SQLTestCase
     public function testReadOnly1()
     {
         $m = new Model();
-        $m->addField('foo', ['read_only'=>true]);
+        $m->addField('foo', ['read_only' => true]);
         $m['foo'] = 'bar';
     }
 
@@ -52,7 +49,7 @@ class FieldTest extends SQLTestCase
     {
         $this->markTestSkipped('TODO: readonly setting same value should be OK');
         $m = new Model();
-        $m->addField('foo', ['read_only'=>true, 'default'=>'abc']);
+        $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
         $m['foo'] = 'abc';
     }
 
@@ -60,24 +57,23 @@ class FieldTest extends SQLTestCase
     {
         $this->markTestSkipped('TODO: readonly setting same value should be OK');
         $m = new Model();
-        $m->addField('foo', ['read_only'=>true, 'default'=>'abc']);
+        $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
         $m->data['foo'] = 'xx';
         $m['foo'] = 'xx';
     }
-
 
     public function testPersist()
     {
         $db = new Persistence_SQL($this->db->connection);
         $a = [
             'item' => [
-                1=>['id'=>1, 'name' => 'John', 'surname'=>'Smith'],
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ], ];
         $this->setDB($a);
 
         $m = new Model($db, 'item');
-        $m->addField('name', ['never_persist'=>true]);
-        $m->addField('surname', ['never_save'=>true]);
+        $m->addField('name', ['never_persist' => true]);
+        $m->addField('surname', ['never_save' => true]);
         $m->load(1);
 
         $this->assertNull($m['name']);
@@ -90,23 +86,23 @@ class FieldTest extends SQLTestCase
 
         $m->reload();
         $this->assertEquals('Smith', $m['surname']);
-        $m->getElement('surname')->never_save=false;
+        $m->getElement('surname')->never_save = false;
         $m['surname'] = 'Stalker';
         $m->save();
         $a['item'][1]['surname'] = 'Stalker';
         $this->assertEquals($a, $this->getDB());
 
-        $m->addHook('beforeSave', function($m) {
+        $m->addHook('beforeSave', function ($m) {
             if ($m->isDirty('name')) {
                 $m['surname'] = $m['name'];
                 unset($m['name']);
-            }elseif ($m->isDirty('surname')) {
+            } elseif ($m->isDirty('surname')) {
                 $m['name'] = $m['surname'];
                 unset($m['surname']);
             }
         });
 
-        $m['name']='X';
+        $m['name'] = 'X';
         $m->save();
 
 
@@ -116,7 +112,7 @@ class FieldTest extends SQLTestCase
         $this->assertNull($m['name']);
         $this->assertEquals('X', $m['surname']);
 
-        $m['surname']='Y';
+        $m['surname'] = 'Y';
         $m->save();
 
         $this->assertEquals($a, $this->getDB());
@@ -129,13 +125,13 @@ class FieldTest extends SQLTestCase
         $db = new Persistence_SQL($this->db->connection);
         $a = [
             'user' => [
-                1=>['id'=>1, 'name' => 'John', 'surname'=>'Smith', 'category_id'=>2],
-            ], 
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
+            ],
             'category' => [
-                1=>['id'=>1, 'name' => 'General'],
-                2=>['id'=>2, 'name' => 'Programmer'],
-                3=>['id'=>3, 'name' => 'Sales'],
-            ], 
+                1 => ['id' => 1, 'name' => 'General'],
+                2 => ['id' => 2, 'name' => 'Programmer'],
+                3 => ['id' => 3, 'name' => 'Sales'],
+            ],
         ];
         $this->setDB($a);
 
@@ -152,18 +148,18 @@ class FieldTest extends SQLTestCase
         $this->assertEquals('John', $m['name']);
         $this->assertEquals('Programmer', $m['category']);
 
-        $m->insert(['Peter', 'category'=>'Sales']);
+        $m->insert(['Peter', 'category' => 'Sales']);
 
         $a = [
             'user' => [
-                1=>['id'=>1, 'name' => 'John', 'surname'=>'Smith', 'category_id'=>2],
-                2=>['id'=>2, 'name' => 'Peter', 'surname'=>null, 'category_id'=>3],
-            ], 
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
+                2 => ['id' => 2, 'name' => 'Peter', 'surname' => null, 'category_id' => 3],
+            ],
             'category' => [
-                1=>['id'=>1, 'name' => 'General'],
-                2=>['id'=>2, 'name' => 'Programmer'],
-                3=>['id'=>3, 'name' => 'Sales'],
-            ], 
+                1 => ['id' => 1, 'name' => 'General'],
+                2 => ['id' => 2, 'name' => 'Programmer'],
+                3 => ['id' => 3, 'name' => 'Sales'],
+            ],
         ];
         $this->assertEquals($a, $this->getDB());
     }
@@ -180,7 +176,7 @@ class FieldTest extends SQLTestCase
 
     public function testStrict2()
     {
-        $m = new Model(['strict_field_check'=>false]);
+        $m = new Model(['strict_field_check' => false]);
         $m->addField('foo');
         $m['baz'] = 'bar';
     }

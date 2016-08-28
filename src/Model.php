@@ -463,10 +463,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $default_value = $f_object ? $f_object->default : null;
 
-        $original_value = array_key_exists($field, $this->dirty)?$this->dirty[$field]:
+        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] :
             ((isset($f_object) && isset($f_object->default)) ? $f_object->default : null);
 
-        $current_value = array_key_exists($field, $this->data)?$this->data[$field]:$original_value;
+        $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
         if ($value === $current_value) {
             // do nothing, value unchanged
