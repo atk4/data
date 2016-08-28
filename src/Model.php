@@ -487,10 +487,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         } elseif (!array_key_exists($field, $this->dirty)) {
             $this->dirty[$field] =
                 array_key_exists($field, $this->data) ?
-                $this->data[$field] :
-                (
-                    $f_object ? $f_object->default : null
-                );
+                $this->data[$field] : $default_value;
         }
         $this->data[$field] = $value;
 
