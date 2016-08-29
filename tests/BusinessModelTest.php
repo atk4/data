@@ -50,8 +50,6 @@ class BusinessModelTest extends TestCase
     {
         $m = new Model();
         $m->set(['name' => 5]);
-        $m['name'] = null;
-        $this->assertEquals(['name' => null], $m->data);
     }
 
     public function testNull()
@@ -85,11 +83,20 @@ class BusinessModelTest extends TestCase
         $m = new Model(['strict_field_check' => false]);
         $m->addField('name');
         $m->addField('surname');
+
         $m->set(['name' => 'john', 'surname' => 'peter', 'foo' => 'bar']);
         $this->assertEquals(['name' => 'john', 'surname' => 'peter'], $m->get());
+        $this->assertEquals(['name' => null, 'surname' => null, 'foo' => null], $m->dirty);
 
+        // we can define fields later if strict_field_check=false
+        $m->addField('foo');
+        $this->assertEquals(['name' => 'john', 'surname' => 'peter', 'foo' => 'bar'], $m->get());
+        $this->assertEquals(['name' => null, 'surname' => null, 'foo' => null], $m->dirty);
+
+        // test with onlyFields
         $m->onlyFields(['surname']);
         $this->assertEquals(['surname' => 'peter'], $m->get());
+        $this->assertEquals(['name' => null, 'surname' => null, 'foo' => null], $m->dirty);
     }
 
     public function testDirty()

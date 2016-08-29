@@ -317,7 +317,7 @@ class Persistence_SQL extends Persistence
     }
 
     /**
-     * Will convert one row of data frorm Persistence-specific
+     * Will convert one row of data from Persistence-specific
      * types to PHP native types.
      *
      * @param Model $m
@@ -333,12 +333,15 @@ class Persistence_SQL extends Persistence
             }
 
             if ($f = $m->hasElement($key)) {
-                if (($callback = $f->load)) {
+                if ($callback = $f->loadCallback) {
                     $value = $callback($value);
                     continue;
                 }
 
                 switch ($f->type) {
+                case 'string':
+                case 'str':
+                    break;
                 case 'boolean':
                 case 'bool':
 
@@ -360,7 +363,7 @@ class Persistence_SQL extends Persistence
                     $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
 
                     if (is_numeric($value) && $value > 60) {
-                        // we can becertain this is a timestamp, not some
+                        // we can be certain this is a timestamp, not some
                         // weird format
                         $value = new $class('@'.$value);
                     } elseif (is_string($value)) {
@@ -385,7 +388,7 @@ class Persistence_SQL extends Persistence
     }
 
     /**
-     * Will convert one row of data frorm native PHP types into
+     * Will convert one row of data from native PHP types into
      * persistence types.
      *
      * @param Model $m
@@ -400,12 +403,12 @@ class Persistence_SQL extends Persistence
                 continue;
             }
 
-            if ($f = $m->hasElement($key)) {
-                if ($value === null) {
-                    continue;
-                }
+            if ($value === null) {
+                continue;
+            }
 
-                if (($callback = $f->save)) {
+            if ($f = $m->hasElement($key)) {
+                if ($callback = $f->saveCallback) {
                     $value = $callback($value);
                     continue;
                 }
@@ -432,30 +435,24 @@ class Persistence_SQL extends Persistence
                 case 'datetime':
                 case 'time':
 
+                    // Can use DateTime, Carbon or anything else
                     $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+                    $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+
+                    if (is_numeric($value) && $value > 60) {
+                        // we can be certain this is a timestamp, not some
+                        // weird format
+                        $value = new $class('@'.$value);
+                    } elseif (is_string($value)) {
+                        $value = new $class($value);
+                    }
 
                     if ($value instanceof $class) {
                         $value->setTimezone(new \DateTimeZone('UTC'));
-                    } elseif (is_numeric($value) && $value > 60) {
-                        $value = new $class('@'.$value);
-                        $value->setTimezone(new \DateTimeZone('UTC'));
-                    } elseif (is_string($value)) {
-                        $value = new $class($value);
-                        $value->setTimezone(new \DateTimeZone('UTC'));
                     }
 
-                    switch ($f->type) {
-                    case 'date':
-                        $value = $value->format('Y-m-d');
-                        break;
-                    case 'datetime':
-                        $value = $value->format('Y-m-d H:i:s');
-                        break;
-                    case 'time':
-                        $value = $value->format('H:i:s');
-                        break;
-                    }
-
+                    $value = $value->format($format[$f->type]);
 
                     break;
                 case 'int':

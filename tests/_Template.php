@@ -5,6 +5,10 @@ namespace atk4\data\tests;
 use atk4\data\Model;
 use atk4\data\Persistence_SQL;
 
+/**
+ * THIS IS NOT A TEST. This file is a template which you can duplicate
+ * to create a new TestCase.
+ */
 class _Template extends SQLTestCase
 {
     public function sampleTest()

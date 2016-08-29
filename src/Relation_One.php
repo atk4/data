@@ -142,14 +142,14 @@ class Relation_One
             // but if we try to do so here, then we end up in infinite loop :(
             //$m = $this->getModel();
             $this->owner->addField($this->our_field, [
-                'type'           => 'int', //$m->getElement($m->id_field)->type,
-                'system'         => true,
-                'join'           => $this->join,
-                'default'        => $this->default,
-                'never_persist'  => $this->never_persist,
-                'read_only'      => $this->read_only,
-                'ui'             => $this->ui,
-                'mandatory'      => $this->mandatory,
+                'type'          => 'int', //$m->getElement($m->id_field)->type,
+                'system'        => true,
+                'join'          => $this->join,
+                'default'       => $this->default,
+                'never_persist' => $this->never_persist,
+                'read_only'     => $this->read_only,
+                'ui'            => $this->ui,
+                'mandatory'     => $this->mandatory,
             ]);
         }
     }

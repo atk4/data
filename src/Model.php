@@ -366,7 +366,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     private function normalizeFieldName($field)
     {
-        // $m->set($m->getElement('name'), 'John')
         if (
             is_object($field)
             && isset($field->_trackableTrait)
@@ -382,7 +381,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             ]);
         }
 
-        // $m->onlyFields(['name'])->set('surname', 'Jane');
         if ($this->only_fields) {
             if (!in_array($field, $this->only_fields)) {
                 throw new Exception([
@@ -1534,7 +1532,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Returns ll reference fields.
+     * Returns all reference fields.
      *
      * @return array
      */

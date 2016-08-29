@@ -40,6 +40,17 @@ driver. Use it to define fields of your model::
 
         $this->addField('surname', ['default'=>'Smith']);
 
+Read more about :php:class:`Field`
+
+.. php:property:: strict_fields
+
+    By default model will only allow you to operate with values for the fields
+    that have been defined through addField(). If you attempt to get, set or
+    otherwise access th evalue of any other field that has not been properly
+    defined, you'll get exception. ead more about :php:class:`Field`
+
+    If you set strict_field to false, then the check will not be performed.
+
 Populating Data
 ===============
 
