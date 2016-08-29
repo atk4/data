@@ -191,38 +191,4 @@ class TypecastingTest extends SQLTestCase
             ], ];
         $this->assertEquals($a, $this->getDB());
     }
-
-    public function testCastingExpressions()
-    {
-        $a = [
-            'user' => [
-                ['name' => 'John', 'currency_id' => 1],
-            ], 'currency' => [
-                ['currency' => 'EUR', 'name' => 'Euro'],
-                ['currency' => 'USD', 'name' => 'Dollar'],
-                ['currency' => 'GBP', 'name' => 'Pound'],
-            ], ];
-        $this->setDB($a);
-
-        $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name']);
-        $c = (new Model($db, 'currency'))->addFields(['currency', 'name']);
-
-        $u->hasOne('currency_id', $c)
-            ->addTitle();
-
-        $u->insert(['Peter', 'currency' => 'Dollar']);
-
-
-        $a = [
-            'user' => [
-                1 => ['id' => '1', 'name' => 'John', 'currency_id' => 1],
-                2 => ['id' => '2', 'name' => 'Peter', 'currency_id' => 2],
-            ], 'currency' => [
-                1 => ['id' => '1', 'currency' => 'EUR', 'name' => 'Euro'],
-                2 => ['id' => '2', 'currency' => 'USD', 'name' => 'Dollar'],
-                3 => ['id' => '3', 'currency' => 'GBP', 'name' => 'Pound'],
-            ], ];
-        $this->assertEquals($a, $this->getDB());
-    }
 }
