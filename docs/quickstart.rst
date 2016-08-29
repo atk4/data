@@ -361,7 +361,7 @@ As you load or save models you should see actual queries in the console,
 that should give you some idea what kind of information is sent to the
 database.
 
-Adding Fields, Joins, Expressions and Relations creates more objects
+Adding Fields, Joins, Expressions and References creates more objects
 and 'adds' them into Model (to better understand how Model can behave
 like a container for these objects, see `documentation on Agile Core
 Containers <http://agile-core.readthedocs.io/en/develop/container.html>`_).
@@ -405,23 +405,23 @@ persistence logic.
     `roadmap <https://github.com/atk4/data#roadmap>`_.
 
 
-Relations between Models
-========================
+References between Models
+=========================
 
 Your application normally uses multiple business entities and they can be related
 to each-other.
 
-.. warning:: Do not mix-up business model relations with database relations (foreign
+.. warning:: Do not mix-up business model references with database relations (foreign
     keys).
 
-Relations are defined by calling :php:meth:`Model::hasOne()` or
+References are defined by calling :php:meth:`Model::hasOne()` or
 :php:meth:`Model::hasMany()`. You always specify destination model and you can
 optionally specify which fields are used for conditioning.
 
 One to Many
 -----------
 
-Launch up console again and let's create relationship between 'User' and 'System'.
+Launch up console again and let's create reference between 'User' and 'System'.
 As per our database design - one user can have multiple 'system' records::
 
     $m = new Model_User($db);
@@ -462,7 +462,7 @@ model further::
     $c->export();
     $c->action('count')->getDebugQuery();
 
-By looking at the code - both MtM and OtM relations are defined with 'hasMany'. The only
+By looking at the code - both MtM and OtM references are defined with 'hasMany'. The only
 difference is the loaded() state of the source model.
 
 Calling ref()->ref() is also called Deep Traversal.
@@ -481,17 +481,17 @@ user john::
     $cc->id;
     $cc->get();
 
-Implementation of Relations
----------------------------
+Implementation of References
+----------------------------
 
-When relation is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
-the new object is created and added into Model of class :php:class:`Relation_Many`
-or :php:class:`Relation_One` (or :php:class:`Relation_SQL_One` in case you use SQL
+When reference is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
+the new object is created and added into Model of class :php:class:`Reference_Many`
+or :php:class:`Reference_One` (or :php:class:`Reference_SQL_One` in case you use SQL
 database). The object itself is quite simple and you can fetch it form the model if
 you keep the return value of hasOne() / hasMany() or call :php:meth:`Model::getRef()`
 with the same identifier later on.
 
-Calling :php:meth:`Model::ref()` will proxy into the ref() method of relation
+Calling :php:meth:`Model::ref()` will proxy into the ref() method of reference
 object which will in turn figure out what to do.
 
 Additionally you can call :php:meth:`Model::addField()` on the reference model
@@ -519,7 +519,7 @@ a data-set. SQL persistence implements some of the operations::
     $m->action('fx', ['sum', 'total'])->getOne();
     $m->action('fx', ['max', 'shipping'])->getOne();
 
-Aggregation actions can be used in Expressions with hasMany relations and they can
+Aggregation actions can be used in Expressions with hasMany references and they can
 be brought into the original model as fields::
 
     $m = new Model_Client($db);
@@ -527,7 +527,7 @@ be brought into the original model as fields::
     $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
     $m->export(['name','max_delivery','total_paid']);
 
-The above code is more consise and can be used together with relation declaration, although
+The above code is more consise and can be used together with reference declaration, although
 this is how it works::
 
     $m = new Model_Client($db);
@@ -542,7 +542,7 @@ produce expression for calculating max/sum for the specific record of Client and
 are used inside an Expression().
 
 Expression is a special type of read-only Field that uses sub-query or a more complex SQL expression
-instead of a physical field. (See :ref:`Expressions` and :ref:`Relations`)
+instead of a physical field. (See :ref:`Expressions` and :ref:`References`)
 
 Field-reference actions
 -----------------------
@@ -553,7 +553,7 @@ Field referencing allows you to fetch a specific field from related model::
     $m->action('field', ['name'])->get();
     $m->action('field', ['name'])->getDebugQuery();
 
-This is useful with hasMany relations::
+This is useful with hasMany references::
 
     $m = new Model_User($db);
     $m->getRef('country_id')->addField('country', 'name');

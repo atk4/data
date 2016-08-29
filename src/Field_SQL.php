@@ -47,7 +47,7 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable
                 $this->actual ?: $this->short_name,
             ]);
         } else {
-            // relations set flag use_table_prefixes, so no need to check them here
+            // references set flag use_table_prefixes, so no need to check them here
             return $expression->expr('{}', [
                 $this->actual ?: $this->short_name,
             ]);

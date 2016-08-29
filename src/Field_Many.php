@@ -7,6 +7,6 @@ namespace atk4\data;
 /**
  * Obsolete. Left for compatibility.
  */
-class Field_Many extends Relation_Many
+class Field_Many extends Reference_Many
 {
 }
