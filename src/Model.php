@@ -457,14 +457,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-        $f_object = $this->hasElement($field);
+        $f = $this->hasElement($field);
 
         // set hook here
 
-        $default_value = $f_object ? $f_object->default : null;
+        $default_value = $f ? $f->default : null;
 
         $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] :
-            ((isset($f_object) && isset($f_object->default)) ? $f_object->default : null);
+            ((isset($f) && isset($f->default)) ? $f->default : null);
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
@@ -473,13 +473,27 @@ class Model implements \ArrayAccess, \IteratorAggregate
             return $this;
         }
 
-        if ($f_object && $f_object->read_only) {
-            throw new Exception([
-                'Attempting to change read-only field',
-                'field' => $field,
-                'model' => $this,
-            ]);
+        if ($f) {
+            // perform bunch of standard validation here. This can be refactured in the future.
+            if ($f->read_only) {
+                throw new Exception([
+                    'Attempting to change read-only field',
+                    'field' => $field,
+                    'model' => $this,
+                ]);
+            }
+
+            if ($f->enum && $f->type != 'boolean' && $f->type != 'bool') {
+                if (!in_array($value, $f->enum, true) && $value !== null) {
+                    throw new Exception([
+                        'This is not one of the alowed values for the field',
+                        'field'=>$field, 'model'=>$this, 'value'=>$value, 'enum'=>$f->enum
+                    ]);
+                }
+            }
         }
+
+
 
 
         if (array_key_exists($field, $this->dirty) && $this->dirty[$field] === $value) {
