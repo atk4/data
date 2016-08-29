@@ -40,6 +40,7 @@ class TypecastingTest extends SQLTestCase
         $a = [
             'types' => [
                 [
+                    'string'   => 'foo',
                     'date'     => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12',
                     'time'     => '12:00:50',
@@ -49,7 +50,8 @@ class TypecastingTest extends SQLTestCase
                     'float'    => '8.202343',
                     'array'    => '[1,2,3]',
                 ],
-            ], ];
+            ],
+        ];
         $this->setDB($a);
 
         date_default_timezone_set('Asia/Seoul');
@@ -57,6 +59,7 @@ class TypecastingTest extends SQLTestCase
         $db = new Persistence_SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
+        $m->addField('string', ['type' => 'string']);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -69,7 +72,7 @@ class TypecastingTest extends SQLTestCase
 
         date_default_timezone_set('UTC');
 
-
+        $this->assertSame('foo', $m['string']);
         $this->assertSame(true, $m['boolean']);
         $this->assertSame(8.20, $m['money']);
         $this->assertEquals(new \DateTime('2013-02-20'), $m['date']);
@@ -86,6 +89,7 @@ class TypecastingTest extends SQLTestCase
             'types' => [
                 1 => [
                     'id'       => '1',
+                    'string'   => 'foo',
                     'date'     => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12',
                     'time'     => '12:00:50',
@@ -97,6 +101,7 @@ class TypecastingTest extends SQLTestCase
                 ],
                 2 => [
                     'id'       => '2',
+                    'string'   => 'foo',
                     'date'     => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12',
                     'time'     => '12:00:50',
@@ -153,7 +158,7 @@ class TypecastingTest extends SQLTestCase
             return str_rot13($v);
         };
 
-        $m->addField('rot13', ['load' => $rot, 'save' => $rot]);
+        $m->addField('rot13', ['loadCallback' => $rot, 'saveCallback' => $rot]);
 
         $m->load(1);
 
@@ -181,7 +186,7 @@ class TypecastingTest extends SQLTestCase
                     'int'      => '2940',
                     'money'    => '8.20',
                     'float'    => '8.202343',
-                    'rot13'    => 'uryyb jbeyq',
+                    'rot13'    => 'uryyb jbeyq', // str_rot13(hello world)
                 ],
             ], ];
         $this->assertEquals($a, $this->getDB());

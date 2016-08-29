@@ -23,7 +23,9 @@ class FieldTest extends SQLTestCase
         $m['foo'] = 'abc';
         $this->assertEquals(false, $m->isDirty('foo'));
 
+        // set initial data
         $m->data['foo'] = 'xx';
+        $this->assertEquals(false, $m->isDirty('foo'));
 
         $m['foo'] = 'abc';
         $this->assertEquals(true, $m->isDirty('foo'));
@@ -47,7 +49,7 @@ class FieldTest extends SQLTestCase
 
     public function testReadOnly2()
     {
-        $this->markTestSkipped('TODO: readonly setting same value should be OK');
+        $this->markTestSkipped('TODO: read_only setting same value should be OK');
         $m = new Model();
         $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
         $m['foo'] = 'abc';
@@ -55,7 +57,7 @@ class FieldTest extends SQLTestCase
 
     public function testReadOnly3()
     {
-        $this->markTestSkipped('TODO: readonly setting same value should be OK');
+        $this->markTestSkipped('TODO: read_only setting same value should be OK');
         $m = new Model();
         $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
         $m->data['foo'] = 'xx';
@@ -167,14 +169,14 @@ class FieldTest extends SQLTestCase
     /**
      * @expectedException Exception
      */
-    public function testStrict1()
+    public function testStrictException1()
     {
         $m = new Model();
         $m->addField('foo');
         $m['baz'] = 'bar';
     }
 
-    public function testStrict2()
+    public function testStrict1()
     {
         $m = new Model(['strict_field_check' => false]);
         $m->addField('foo');

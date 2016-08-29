@@ -20,9 +20,10 @@ class Field
     public $default = null;
 
     /**
-     * Field type. Values are:.
+     * Field type.
      *
-     * 'string', 'boolean', 'integer', 'money', 'float', 'date', 'datetime', 'time'.
+     * Values are: 'string', 'boolean', 'bool', 'integer', 'int', 'money',
+     *             'float', 'date', 'datetime', 'time', 'array'.
      * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
@@ -31,6 +32,8 @@ class Field
 
     /**
      * For several types enum can provide list of available options.
+     *
+     * @var array|null
      */
     public $enum = null;
 
@@ -102,13 +105,13 @@ class Field
      * Define callback to execute after loading value for this field
      * from the database.
      */
-    public $load = null;
+    public $loadCallback = null;
 
     /**
      * Define callback to execute before saving value for this field
      * to the database.
      */
-    public $save = null;
+    public $saveCallback = null;
 
     /**
      * Constructor. You can pass field properties as array.
