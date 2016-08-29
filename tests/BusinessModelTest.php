@@ -86,7 +86,7 @@ class BusinessModelTest extends TestCase
 
         $m->set(['name' => 'john', 'surname' => 'peter', 'foo' => 'bar']);
         $this->assertEquals(['name' => 'john', 'surname' => 'peter'], $m->get());
-        $this->assertEquals(['name' => 'john', 'surname' => 'peter', 'foo' => 'bar'], $m->dirty);
+        $this->assertEquals(['name' => null, 'surname' => null, 'foo' => null], $m->dirty);
 
         // we can define fields later if strict_field_check=false
         $m->addField('foo');
