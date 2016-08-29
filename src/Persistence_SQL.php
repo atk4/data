@@ -28,14 +28,14 @@ class Persistence_SQL extends Persistence
      *
      * @var string
      */
-    public $_default_class_hasOne = 'atk4\data\Relation_SQL_One';
+    public $_default_class_hasOne = 'atk4\data\Reference_SQL_One';
 
     /**
      * Default class when adding hasMany field.
      *
      * @var string
      */
-    public $_default_class_hasMany = null; //'atk4\data\Relation_Many';
+    public $_default_class_hasMany = null; //'atk4\data\Reference_Many';
 
     /**
      * Default class when adding Expression field.
@@ -103,7 +103,7 @@ class Persistence_SQL extends Persistence
      */
     public function add($m, $defaults = [])
     {
-        // Use our own classes for fields, relations and expressions unless
+        // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
         $defaults = array_merge([
             '_default_class_addField'      => $this->_default_class_addField,

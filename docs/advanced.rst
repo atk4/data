@@ -326,7 +326,7 @@ to make addCondition additive if you are verifying for the combination of matche
 Creating Many to Many relationship
 ==================================
 
-Depending on the usage case many-to-many relationships can be implemented differently in Agile Data. I will be focusing on the
+Depending on the use-case many-to-many relationships can be implemented differently in Agile Data. I will be focusing on the
 practical approach. My system has "Invoice" and "Payment" document and I'd like to introduce "invoice_payment" that can
 link both entities together with fields ('invoice_id', 'payment_id', and 'amount_closed'). Here is what I need to do:
 
@@ -349,7 +349,7 @@ Create new Model::
 2. Update Invoice and Payment model
 -----------------------------------
 
-Next we need to define relationship. Inside Model_Invoice add::
+Next we need to define reference. Inside Model_Invoice add::
 
     $this->hasMany('InvoicePayment');
 
@@ -658,10 +658,10 @@ In this case the payment_invoice_id will be set to ID of any payment by client
 
     });
 
-Narrowing Down Existing Relations
-=================================
+Narrowing Down Existing References
+==================================
 
-Agile Data allow you to define multiple relations between same entities, but
+Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::
 
     $this->hasMany('Invoice', 'Model_Invoice');
@@ -670,9 +670,9 @@ sometimes that can be quite useful. Consider adding this inside your Model_Conta
     });
 
 This way if you extend your class into 'Model_Client' and modify the 'Invoice'
-relationship to use different model::
+reference to use different model::
 
     $this->getRef('Invoice')->model = 'Model_Invoice_Sale';
 
-The 'OverdueInvoice' relation will be also properly adjusted.
+The 'OverdueInvoice' reference will be also properly adjusted.
 
