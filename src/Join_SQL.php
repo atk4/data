@@ -84,9 +84,9 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
                 $e = $this->owner->hasElement($this->master_field);
                 if (!$e) {
                     if ($this->join) {
-                        $e = $this->join->addField($this->master_field, ['system' => true, 'readonly' => true]);
+                        $e = $this->join->addField($this->master_field, ['system' => true, 'read_only' => true]);
                     } else {
-                        $e = $this->owner->addField($this->master_field, ['system' => true, 'readonly' => true]);
+                        $e = $this->owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
                     }
                     $this->master_field = $e->short_name;
                 }
@@ -169,7 +169,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         $insert = $this->dsql();
         $insert->mode('insert');
-        $insert->set($this->save_buffer);
+        $insert->set($model->persistence->typecastSaveToPersistence($model, $this->save_buffer));
         $this->save_buffer = [];
         $insert->set($this->foreign_field, null);
         $insert->insert();

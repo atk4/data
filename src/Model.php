@@ -181,6 +181,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public $only_fields = false;
 
+    /**
+     * When set to true, you can only change the fields inside a model,
+     * that was properly declared. This helps you avoid mistake by
+     * accessing or changing the field that does not exist.
+     *
+     * In some situations you want to set field value and then declare
+     * it later, then set $strict_field_check = false, but it's not
+     * recommended.
+     */
+    protected $strict_field_check = true;
 
     /**
      * Models that contain expressions will automatically reload after save.
@@ -356,7 +366,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     private function normalizeFieldName($field)
     {
-        // $m->set($m->getElement('name'), 'John')
         if (
             is_object($field)
             && isset($field->_trackableTrait)
@@ -372,7 +381,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             ]);
         }
 
-        // $m->onlyFields(['name'])->set('surname', 'Jane');
         if ($this->only_fields) {
             if (!in_array($field, $this->only_fields)) {
                 throw new Exception([
@@ -381,6 +389,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     'only_fields' => $this->only_fields,
                 ]);
             }
+        }
+
+        if ($this->strict_field_check && !isset($this->elements[$field])) {
+            throw new Exception([
+                'Field is not defined inside a Model',
+                'field'       => $field,
+                'model'       => $this,
+            ]);
         }
 
         return $field;
@@ -402,7 +418,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($fields as $field) {
             $field = $this->normalizeFieldName($field);
 
-            if (isset($this->dirty[$field])) {
+            if (array_key_exists($field, $this->dirty)) {
                 return true;
             }
         }
@@ -439,36 +455,39 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-        // $m->addField('datetime', ['type'=>'date']);
-        // $m['datetime'] = new DateTime('2000-01-01'); will potentially
-        // convert value into unix timestamp
         $f_object = $this->hasElement($field);
-        if ($f_object) {
-            $f_object->hook('normalize', [$field, &$value]);
-        }
 
+        // set hook here
 
-        // $m['name'] = $m['name'];
-        if (array_key_exists($field, $this->data) && $value === $this->data[$field]) {
+        $default_value = $f_object ? $f_object->default : null;
+
+        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] :
+            ((isset($f_object) && isset($f_object->default)) ? $f_object->default : null);
+
+        $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
+
+        if ($value === $current_value) {
             // do nothing, value unchanged
             return $this;
         }
+
+        if ($f_object && $f_object->read_only) {
+            throw new Exception([
+                'Attempting to change read-only field',
+                'field' => $field,
+                'model' => $this,
+            ]);
+        }
+
 
         if (array_key_exists($field, $this->dirty) && $this->dirty[$field] === $value) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
             $this->dirty[$field] =
                 array_key_exists($field, $this->data) ?
-                $this->data[$field] :
-                (
-                    $f_object ? $f_object->default : null
-                );
+                $this->data[$field] : $default_value;
         }
         $this->data[$field] = $value;
-
-        //if ($field === $this->id_field) {
-            //$this->id = $value;
-        //}
 
         return $this;
     }
@@ -1116,7 +1135,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $dirty_join = false;
             foreach ($this->dirty as $name => $junk) {
                 $field = $this->hasElement($name);
-                if (!$field || $field->readonly || $field->never_persist) {
+                if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
                     continue;
                 }
 
@@ -1149,7 +1168,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $data = [];
             foreach ($this->get() as $name => $value) {
                 $field = $this->hasElement($name);
-                if (!$field || $field->readonly || $field->never_persist) {
+                if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
                     continue;
                 }
 
@@ -1499,7 +1518,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Returns ll reference fields.
+     * Returns all reference fields.
      *
      * @return array
      */

@@ -20,11 +20,22 @@ class Field
     public $default = null;
 
     /**
-     * Field type, for example, 'string', 'boolean', 'numeric', 'int', 'date' etc.
+     * Field type.
+     *
+     * Values are: 'string', 'boolean', 'bool', 'integer', 'int', 'money',
+     *             'float', 'date', 'datetime', 'time', 'array'.
+     * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
      */
     public $type = 'string';
+
+    /**
+     * For several types enum can provide list of available options.
+     *
+     * @var array|null
+     */
+    public $enum = null;
 
     /**
      * Actual field name.
@@ -49,13 +60,22 @@ class Field
     public $system = false;
 
     /**
+     * Setting this to true will never actually load or store
+     * the field in the database. It will action as normal,
+     * but will be skipped by load/iterate/update/insert.
+     *
+     * @var bool
+     */
+    public $never_persist = false;
+
+    /**
      * Setting this to true will never actually store
      * the field in the database. It will action as normal,
      * but will be skipped by update/insert.
      *
      * @var bool
      */
-    public $never_persist = false;
+    public $never_save = false;
 
     /**
      * Is field read only?
@@ -64,7 +84,7 @@ class Field
      *
      * @var bool
      */
-    public $readonly = false;
+    public $read_only = false;
 
     /**
      * Array with UI flags like editable, visible and hidden.
@@ -80,6 +100,18 @@ class Field
      * @var bool|string
      */
     public $mandatory = false;
+
+    /**
+     * Define callback to execute after loading value for this field
+     * from the database.
+     */
+    public $loadCallback = null;
+
+    /**
+     * Define callback to execute before saving value for this field
+     * to the database.
+     */
+    public $saveCallback = null;
 
     /**
      * Constructor. You can pass field properties as array.
@@ -148,7 +180,7 @@ class Field
      */
     public function isEditable()
     {
-        return $this->readonly || $this->never_persist
+        return $this->read_only || $this->never_persist
             ? false
             : (isset($this->ui['editable']) ? $this->ui['editable'] : !$this->system);
     }
@@ -188,7 +220,7 @@ class Field
         ];
 
         foreach ([
-            'type', 'system', 'never_persist', 'readonly', 'ui', 'join',
+            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'join',
         ] as $key) {
             if (isset($this->$key)) {
                 $arr[$key] = $this->$key;

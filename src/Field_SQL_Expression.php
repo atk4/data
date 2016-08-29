@@ -21,11 +21,11 @@ class Field_SQL_Expression extends Field_SQL
     public $expr = null;
 
     /**
-     * Expressions are always readonly.
+     * Expressions are always read_only.
      *
      * @var bool
      */
-    public $readonly = true;
+    public $read_only = true;
 
     /**
      * Initialization.

@@ -78,10 +78,23 @@ class Relation_SQL_One extends Relation_One
     public function addTitle()
     {
         $field = str_replace('_id', '', $this->link);
-        $this->owner->addExpression($field, function ($m) {
-            $mm = $m->refLink($this->link);
+        $this->owner->addExpression($field, [
+            function ($m) {
+                $mm = $m->refLink($this->link);
 
-            return $mm->action('field', [$mm->title_field]);
+                return $mm->action('field', [$mm->title_field]);
+            },
+            'read_only'  => false,
+            'never_save' => true,
+        ]);
+
+        $this->owner->addHook('beforeSave', function ($m) use ($field) {
+            if ($m->isDirty($field) && !$m->isDirty($this->link)) {
+                $mm = $m->getRef($this->link)->getModel();
+
+                $mm->addCondition($mm->title_field, $m[$field]);
+                $m[$this->link] = $mm->action('field', [$mm->id_field]);
+            }
         });
 
         return $this;

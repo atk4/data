@@ -317,6 +317,162 @@ class Persistence_SQL extends Persistence
     }
 
     /**
+     * Will convert one row of data from Persistence-specific
+     * types to PHP native types.
+     *
+     * @param Model $m
+     * @param array $row
+     *
+     * @return array
+     */
+    public function typecastLoadToPHP($m, $row)
+    {
+        foreach ($row as $key => &$value) {
+            if ($value === null) {
+                continue;
+            }
+
+            if ($f = $m->hasElement($key)) {
+                if ($callback = $f->loadCallback) {
+                    $value = $callback($value);
+                    continue;
+                }
+
+                switch ($f->type) {
+                case 'string':
+                case 'str':
+                    break;
+                case 'boolean':
+                case 'bool':
+
+                    if ($f->enum) {
+                        $value = ($value == $f->enum[0]);
+                    } else {
+                        $value = (bool) $value;
+                    }
+
+                    break;
+                case 'money':
+                    $value = round($value, 4);
+                    break;
+                case 'date':
+                case 'datetime':
+                case 'time':
+
+                    // Can use DateTime, Carbon or anything else
+                    $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+                    if (is_numeric($value) && $value > 60) {
+                        // we can be certain this is a timestamp, not some
+                        // weird format
+                        $value = new $class('@'.$value);
+                    } elseif (is_string($value)) {
+                        $value = new $class($value, new \DateTimeZone('UTC'));
+                    }
+                    break;
+                case 'int':
+                case 'integer':
+                    $value = (int) $value;
+                    break;
+                case 'float':
+                    $value = (float) $value;
+                    break;
+                case 'array':
+                    $value = json_decode($value, true) ?: [];
+                    break;
+                }
+            }
+        }
+
+        return $row;
+    }
+
+    /**
+     * Will convert one row of data from native PHP types into
+     * persistence types.
+     *
+     * @param Model $m
+     * @param array $row
+     *
+     * @return array
+     */
+    public function typecastSaveToPersistence($m, $row)
+    {
+        foreach ($row as $key => &$value) {
+            if ($value instanceof \atk4\dsql\Expression || $value instanceof \atk4\dsql\Expressionable) {
+                continue;
+            }
+
+            if ($value === null) {
+                continue;
+            }
+
+            if ($f = $m->hasElement($key)) {
+                if ($callback = $f->saveCallback) {
+                    $value = $callback($value);
+                    continue;
+                }
+
+                switch ($f->type) {
+                case 'string':
+                case 'str':
+                    $value = trim($value);
+                    break;
+                case 'boolean':
+                case 'bool':
+
+                    if ($f->enum) {
+                        $value = $value ? $f->enum[0] : $f->enum[1];
+                    } else {
+                        $value = (int) $value;
+                    }
+
+                    break;
+                case 'money':
+                    $value = round($value, 4);
+                    break;
+                case 'date':
+                case 'datetime':
+                case 'time':
+
+                    // Can use DateTime, Carbon or anything else
+                    $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+                    $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+
+                    if (is_numeric($value) && $value > 60) {
+                        // we can be certain this is a timestamp, not some
+                        // weird format
+                        $value = new $class('@'.$value);
+                    } elseif (is_string($value)) {
+                        $value = new $class($value);
+                    }
+
+                    if ($value instanceof $class) {
+                        $value->setTimezone(new \DateTimeZone('UTC'));
+                    }
+
+                    $value = $value->format($format[$f->type]);
+
+                    break;
+                case 'int':
+                case 'integer':
+                    $value = (int) $value;
+                    break;
+                case 'float':
+                    $value = (float) $value;
+                    break;
+                case 'array':
+                    $value = json_encode($value);
+                    break;
+                }
+            }
+        }
+
+        return $row;
+    }
+
+    /**
      * Executing $model->action('update') will call this method.
      *
      * @param Model  $m
@@ -425,7 +581,7 @@ class Persistence_SQL extends Persistence
 
         // execute action
         try {
-            $data = $load->getRow();
+            $data = $this->typecastLoadToPHP($m, $load->getRow());
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to load due to query error',
@@ -575,6 +731,8 @@ class Persistence_SQL extends Persistence
     {
         $insert = $this->action($m, 'insert');
 
+        $data = $this->typecastSaveToPersistence($m, $data);
+
         // apply all fields we got from get
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
@@ -611,7 +769,9 @@ class Persistence_SQL extends Persistence
     {
         $export = $this->action($m, 'select', [$fields]);
 
-        return $export->get();
+        return array_map(function ($r) use ($m) {
+            return $this->typecastLoadToPHP($m, $r);
+        }, $export->get());
     }
 
     /**
@@ -648,6 +808,8 @@ class Persistence_SQL extends Persistence
     {
         $update = $this->initQuery($m);
         $update->mode('update');
+
+        $data = $this->typecastSaveToPersistence($m, $data);
 
         // only apply fields that has been modified
         $cnt = 0;

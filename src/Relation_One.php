@@ -81,7 +81,7 @@ class Relation_One
      *
      * @var bool
      */
-    public $readonly = false;
+    public $read_only = false;
 
     /**
      * Array with UI flags like editable, visible and hidden.
@@ -147,7 +147,7 @@ class Relation_One
                 'join'          => $this->join,
                 'default'       => $this->default,
                 'never_persist' => $this->never_persist,
-                'readonly'      => $this->readonly,
+                'read_only'     => $this->read_only,
                 'ui'            => $this->ui,
                 'mandatory'     => $this->mandatory,
             ]);
@@ -296,7 +296,7 @@ class Relation_One
         ];
 
         foreach ([
-            'our_field', 'their_field', 'type', 'system', 'never_persist', 'readonly', 'ui', 'join',
+            'our_field', 'their_field', 'type', 'system', 'never_save', 'never_persist', 'read_only', 'ui', 'join',
         ] as $key) {
             if (isset($this->$key)) {
                 $arr[$key] = $this->$key;

@@ -95,7 +95,7 @@ class SQLTestCase extends TestCase
 
             foreach ($data as &$row) {
                 foreach ($row as &$val) {
-                    if (is_numeric($val)) {
+                    if (is_int($val)) {
                         $val = (int) $val;
                     }
                 }
