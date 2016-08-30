@@ -80,7 +80,7 @@ you can even join using existing models::
     $user->addField('country_id');
     $user->weakJoin('country')->importModel('Country');
 
-This will automatically import fields, expressions, relations and conditions from
+This will automatically import fields, expressions, references and conditions from
 'Country' model into $user model and will also re-map field names in process.
 
 .. php:method:: weakJoinModel
@@ -149,12 +149,12 @@ with a foreign table.
 
 .. php:method:: hasOne
 
-    same as :php:meth:`Model::hasOne` but relation ID field will be associated with foreign table.
+    same as :php:meth:`Model::hasOne` but reference ID field will be associated with foreign table.
 
 .. php:method:: hasMany
 
     same as :php:meth:`Model::hasMany` but condition for related model will be based on foreign table field
-    and :php:attr:`Relation::their_field` will be set to $foreign_table.'_id'.
+    and :php:attr:`Reference::their_field` will be set to $foreign_table.'_id'.
 
 .. php:method:: containsOne
 

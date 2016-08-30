@@ -205,7 +205,7 @@ Code to access field values::
 Domain Model Relationship
 -------------------------
 
-Next - relations. Think how those objects relate to each-other. Think in terms of "specific object" and not database relations. Client has many Orders. Order has one Client.
+Next - references. Think how those objects relate to each-other. Think in terms of "specific object" and not database relations. Client has many Orders. Order has one Client.
 
  - User
    - hasMany(Client)
