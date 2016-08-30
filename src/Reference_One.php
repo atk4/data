@@ -7,7 +7,7 @@ namespace atk4\data;
 /**
  * Class description?
  */
-class Relation_One
+class Reference_One
 {
     use \atk4\core\InitializerTrait {
         init as _init;
@@ -269,7 +269,7 @@ class Relation_One
         }
 
         // if owner model is not loaded, then return referenced model with condition set
-        // Imants: probably this piece of code should be moved to Relation_SQL_One->ref() method,
+        // Imants: probably this piece of code should be moved to Reference_SQL_One->ref() method,
         //         because only Persistence_SQL supports actions.
         if (isset($this->owner->persistence) && $this->owner->persistence instanceof Persistence_SQL) {
             $values = $this->owner->action('field', [$this->our_field]);

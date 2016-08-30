@@ -233,7 +233,7 @@ class Join
     }
 
     /**
-     * creates relation based on a field from the join.
+     * creates reference based on a field from the join.
      */
     public function hasOne($model, $defaults = [])
     {
@@ -246,7 +246,7 @@ class Join
     }
 
     /**
-     * creates relation based on the field from the join.
+     * creates reference based on the field from the join.
      */
     public function hasMany($model, $defaults = [])
     {
@@ -295,7 +295,7 @@ class Join
     /**
      * Will iterate through this model by pulling
      *  - fields
-     *  - relations
+     *  - references
      *  - conditions.
      *
      * and then will apply them locally. Any you think that any fields

@@ -31,14 +31,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var string
      */
-    public $_default_class_hasOne = 'atk4\data\Relation_One';
+    public $_default_class_hasOne = 'atk4\data\Reference_One';
 
     /**
      * The class used by hasMany() method.
      *
      * @var string
      */
-    public $_default_class_hasMany = 'atk4\data\Relation_Many';
+    public $_default_class_hasMany = 'atk4\data\Reference_Many';
 
     /**
      * The class used by addField() method.
