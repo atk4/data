@@ -8,7 +8,7 @@ use atk4\data\Persistence_SQL;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class RelationSQLTest extends SQLTestCase
+class ReferenceSQLTest extends SQLTestCase
 {
     public function testBasic()
     {
@@ -254,7 +254,7 @@ class RelationSQLTest extends SQLTestCase
         $this->assertEquals($n * ($vat + 1), $i['total_gross']);
     }
 
-    public function testRelationHook()
+    public function testReferenceHook()
     {
         $a = [
             'user' => [

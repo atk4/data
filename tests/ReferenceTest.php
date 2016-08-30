@@ -8,9 +8,9 @@ use atk4\data\Persistence;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class RelationTest extends TestCase
+class ReferenceTest extends TestCase
 {
-    public function testBasicRelations()
+    public function testBasicReferences()
     {
         $user = new Model(['table' => 'user']);
         $user->addField('name');
