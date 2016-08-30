@@ -1428,18 +1428,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     // }}}
 
-    // {{{ Relations
+    // {{{ References
 
     /**
      * Private method.
      *
      * @param string $c        Class name
      * @param string $link     Link
-     * @param array  $defaults Properties which we will pass to Relation object constructor
+     * @param array  $defaults Properties which we will pass to Reference object constructor
      *
      * @return object
      */
-    protected function _hasRelation($c, $link, $defaults = [])
+    protected function _hasReference($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_'.$link];
@@ -1459,11 +1459,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @return Relation_One
+     * @return Reference_One
      */
     public function hasOne($link, $defaults = [])
     {
-        return $this->_hasRelation($this->_default_class_hasOne, $link, $defaults);
+        return $this->_hasReference($this->_default_class_hasOne, $link, $defaults);
     }
 
     /**
@@ -1472,11 +1472,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @return Relation_Many
+     * @return Reference_Many
      */
     public function hasMany($link, $defaults = [])
     {
-        return $this->_hasRelation($this->_default_class_hasMany, $link, $defaults);
+        return $this->_hasReference($this->_default_class_hasMany, $link, $defaults);
     }
 
     /**
