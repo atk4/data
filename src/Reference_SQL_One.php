@@ -93,7 +93,7 @@ class Reference_SQL_One extends Reference_One
             [
                 // to be able to change title field, but not save and
                 // afterSave hook will take care of the rest
-                'read_only' => false,
+                'read_only'  => false,
                 'never_save' => true,
             ]
         ));
