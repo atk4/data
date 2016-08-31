@@ -297,7 +297,7 @@ instances::
 .. note:: If you're trying those lines, you will also have to
     create this new table inside your MySQL database::
 
-        create table user2 as select * from user:
+        create table user2 as select * from user
 
 As I mentioned - :php:meth:`Model::init` is called when model is associated
 with persistence. You could create model and associate it with persistence

@@ -23,7 +23,9 @@ joins::
 
 This code will load data from two tables simultaneously and if you do change any of those
 fields they will be update in their respective tables. With SQL the load query would
-look like this::
+look like this:
+
+.. code-block:: sql
 
     select
         u.username, c.address, c.county, c.country_id
@@ -38,7 +40,9 @@ first, then load other record and will collect fields together::
     $user_data = $user->find($id);
     $contact_data = $contact->find($user_data['contact_id']);
 
-When saving the record, Joins will automatically record data correctly::
+When saving the record, Joins will automatically record data correctly:
+
+.. code-block:: sql
 
     insert into contact (address, county, country_id) values ($, $, $);
     @join_c = last_insert_id();

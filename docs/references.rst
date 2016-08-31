@@ -37,7 +37,9 @@ also possible::
 
 Condition on the base model will be carried over to the orders and you will
 only be able to access orders that belong to VIP users. The query for loading
-order will look like this::
+order will look like this:
+
+.. code-block:: sql
 
     select * from order where user_id in (
         select id from user where is_vip = 1
@@ -63,7 +65,9 @@ You can specify a different database though::
     $orders_for_vips = $m->ref('Orders');
 
 Now that a different databases are used, the queries can no longer be
-joined so Agile Data will carry over list of IDs instead::
+joined so Agile Data will carry over list of IDs instead:
+
+.. code-block:: sql
 
     $ids = select id from user where is_vip = 1
     select * from order where user_id in ($ids)
@@ -133,7 +137,9 @@ available. Both models will relate through ``currency.code = exchange.currency_c
     $c->addCondition('is_convertable',true);
     $e = $c->ref('Exchanges');
 
-This will produce the following query::
+This will produce the following query:
+
+.. code-block:: sql
 
     select * from exchange
     where currency_code in
@@ -184,12 +190,16 @@ sub-queries::
     $sum = $m->refLink('Orders')->action('sum', ['amount']);
     $m->addExpression('sum_amount')->set($action);
 
-The refLink would define a condition on a query like this::
+The refLink would define a condition on a query like this:
+
+.. code-block:: sql
 
     select * from `order` where user_id = `user`.id
 
 And it will not be viable on its own, however if you use it inside a sub-query,
-then it now makes sense for generating expression::
+then it now makes sense for generating expression:
+
+.. code-block:: sql
 
     select
         (select sum(amount) from `order` where user_id = `user`.id) sum_amount
@@ -237,7 +247,9 @@ user model::
     $u->loadAny();  // will load some user who has at least one failed order
 
 The important point here is that no additional queries are generated in the process and
-the loadAny() will look like this::
+the loadAny() will look like this:
+
+.. code-block:: sql
 
     select * from user where id in
         (select user_id from order where status = 'failed')
@@ -320,7 +332,9 @@ you can use::
     echo $o->id(1)->ref('user_id/address_id')->loadAny()['address_1'];
 
 Here ``id()`` will only set a condition without actually loading the record and traversal
-will encapsulate sub-queries resulting in a query like this::
+will encapsulate sub-queries resulting in a query like this:
+
+.. code-block:: sql
 
     select * from address where id in
         (select address_id from user where id in
@@ -371,7 +385,7 @@ help you in creating a recursive models that relate to itself. Here is example::
         }
     }
 
-Loading model like that can produce a pretty sophisticated query
+Loading model like that can produce a pretty sophisticated query:
 
 .. code-block:: sql
 
