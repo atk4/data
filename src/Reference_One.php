@@ -86,9 +86,15 @@ class Reference_One
     /**
      * Array with UI flags like editable, visible and hidden.
      *
+     * By default hasOne relation ID field should be editable in forms,
+     * but not visible in grids. UI should respect these flags.
+     *
      * @var array
      */
-    public $ui = [];
+    public $ui = [
+        'editable' => true,
+        'visible'  => false,
+    ];
 
     /**
      * Is field mandatory? By default fields are not mandatory.

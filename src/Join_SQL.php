@@ -76,7 +76,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         } else {
 
             // Master field indicates ID of the joined item. In the past it had to be
-            // defined as a physical field in the mani table. Now it is a model field
+            // defined as a physical field in the main table. Now it is a model field
             // so you can use expressions or fields inside joined entities.
             // If string specified here does not point to an existing model field
             // a new basic field is inserted and marked hidden.
