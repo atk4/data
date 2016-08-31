@@ -80,13 +80,22 @@ class Reference_SQL_One extends Reference_One
     public function addTitle($defaults = [])
     {
         $field = str_replace('_id', '', $this->link);
-        $ex = $this->owner->addExpression($field, array_merge([
-            function ($m) {
-                $mm = $m->refLink($this->link);
+        $ex = $this->owner->addExpression($field, array_merge_recursive(
+            [
+                function ($m) {
+                    $mm = $m->refLink($this->link);
 
-                return $mm->action('field', [$mm->title_field]);
-            },
-        ], $defaults));
+                    return $mm->action('field', [$mm->title_field]);
+                },
+            ],
+            $defaults,
+            [
+                // to be able to change title field, but not save and
+                // afterSave hook will take care of the rest
+                'read_only' => false,
+                'never_save' => true,
+            ]
+        ));
 
         $this->owner->addHook('beforeSave', function ($m) use ($field) {
             if ($m->isDirty($field) && !$m->isDirty($this->link)) {
