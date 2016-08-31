@@ -34,7 +34,7 @@ Stats:
 
 ### Introducing Actions
 
-ORM/Active Record is not designed for relational databases. There are too much potential that ORM
+ORM/Active Record is not only designed for relational databases. There are too much potential that ORM
 abstracts. The way how modern ORM get around it by offering ability to generate "Query-in-progress"
 object off your model which you can tweak.
 
@@ -59,37 +59,10 @@ through this relationship.
 
 ![GitHub release](docs/images/import-field.gif)]
 
-### Introducing Actions
-
-There are too much potential that classic ORM implementation
-abstracts. The way how modern ORM get around it by offering ability to generate "Query-in-progress"
-object off your model which you can tweak.
-
-Agile Data significantly expands amount of interactions you can do between Model and Query Builder.
-You can generate update/delete queries, aggregate queries and drop them into Query Builder:
-
-![GitHub release](docs/images/action.gif)
-
-### Introducing Expressions
-
-In Agile Data your field can be defined through user-defined SQL expression. That does not affect
-the rest of the API, the field can still be used inside actions, conditions and inside your CRUD
-operations with a model. Most expressions are read-only though.
-
-![GitHub release](docs/images/expression.gif)
-
-### Good bye Eager/Lazy Loading
-
-Have you felt that something is broken with Eager/Lazy loading approach? With Agile Data you'll
-never have to use it again. If you have a reference between models, you can "import" fields
-through this relationship.
-
-![GitHub release](docs/images/import-field.gif)
-
 ### Never again miss that critical condition
 
-References are like Relations except that they are defined between your Models. And because
-models are defined in "domain model" same goes for the References. 
+References are like relations in SQL database except that they are defined between your Models.
+And because models are defined in "domain model" same goes for the References.
 
 In this short example, I have defined "ActiveProjects" reference that can be used to address
 non-cancelled projects of a client. More importantly my aggregate field `total_budget` that
@@ -120,7 +93,7 @@ some linking yourself.
 Agile Data allow you to define multiple joins right inside your model. As you join()
 another table, you will be able to import fields from the joined table. If you
 create a new record, data will automatically be distributed into the tables and
-records will be linked up correctly. 
+records will be linked up correctly.
 
 ![GitHub release](docs/images/model-join.gif)
 
@@ -154,7 +127,7 @@ You now have a domain-level and persistence-level hooks. With a domain-level
 ones (afterLoad, beforeSave) you get to operate with your field data before
 or after operation
 
-On other hand you can utilise persistence-level hooks 
+On other hand you can utilise persistence-level hooks
 ('beforeUpdateQuery', 'beforeSelectQuery') and you can interact with a
 powerful Query Builder to add a few SQL options (insert ignore or calc_found_rows)
 if you need.
@@ -234,7 +207,7 @@ The final security measure are the Conditions. Once you load your Client,
 traversing into 'Project' model will imply a condition which will only
 expose projects of that specific Client.
 
-Even if you perform a multi-row opetation such as `action('update')` 
+Even if you perform a multi-row opetation such as `action('update')`
 or `action('delete')` it will only apply to projects of that client.
 With the model object you won't be able to create a new project that
 does NOT belong to loaded client.
@@ -279,7 +252,7 @@ class Model_User extends \atk4\data\Model
     function init()
     {
         parent::init();
-        
+
         $this->addFields(['email','name','password']);
     }
 }
@@ -320,7 +293,7 @@ this project, you should also look into:
  - [DSQL](https://github.com/atk4/dsql) - [![GitHub release](https://img.shields.io/github/release/atk4/dsql.svg?maxAge=2592000)]()
  - [Agile Core](https://github.com/atk4/core) - [![GitHub release](https://img.shields.io/github/release/atk4/core.svg?maxAge=2592000)]()
 
- 
+
 ## Help us make Agile Data better!!
 
 We wish to take on your feedback and improve Agile Data further. Here is how you can connect with developer team:
@@ -349,7 +322,7 @@ Follow pull-request history and activity of repository to see what's going on.
 * 05 Jul: Released 0.5 Expressions, Conditions, Relations
 * 28 Jun: Released 0.4 join support for SQL and Array
 * 24 Jun: Released 0.3 with general improvements
-* 17 Jun: Finally shipping 0.2: With good starting support of SQL and Array 
+* 17 Jun: Finally shipping 0.2: With good starting support of SQL and Array
 * 29 May: Finished implementation of core logic for Business Model
 * 11 May: Released 0.1: Implemented code climate, test coverage and travis
 * 06 May: Revamped the concept, updated video and made it simpler

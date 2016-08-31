@@ -7,7 +7,7 @@ namespace atk4\data;
 /**
  * Class description?
  */
-class Relation_SQL_One extends Relation_One
+class Reference_SQL_One extends Reference_One
 {
     /**
      * Creates expression which sub-selects a field inside related model.

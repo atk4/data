@@ -7,7 +7,7 @@ namespace atk4\data;
 /**
  * Class description?
  */
-class Relation_Many
+class Reference_Many
 {
     use \atk4\core\TrackableTrait {
         init as _init;
