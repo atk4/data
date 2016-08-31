@@ -73,20 +73,20 @@ class Reference_SQL_One extends Reference_One
      *
      * This will add expression 'user' equal to ref('user_id')['name'];
      *
-     * @return $this
+     * @param array $defaults Properties
+     *
+     * @return Field_SQL_Expression
      */
-    public function addTitle()
+    public function addTitle($defaults = [])
     {
         $field = str_replace('_id', '', $this->link);
-        $this->owner->addExpression($field, [
+        $ex = $this->owner->addExpression($field, array_merge([
             function ($m) {
                 $mm = $m->refLink($this->link);
 
                 return $mm->action('field', [$mm->title_field]);
             },
-            'read_only'  => false,
-            'never_save' => true,
-        ]);
+        ], $defaults));
 
         $this->owner->addHook('beforeSave', function ($m) use ($field) {
             if ($m->isDirty($field) && !$m->isDirty($this->link)) {
@@ -97,6 +97,6 @@ class Reference_SQL_One extends Reference_One
             }
         });
 
-        return $this;
+        return $ex;
     }
 }
