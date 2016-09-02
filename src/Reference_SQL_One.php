@@ -73,6 +73,8 @@ class Reference_SQL_One extends Reference_One
      *
      * This will add expression 'user' equal to ref('user_id')['name'];
      *
+     * This method returns newly created expression field.
+     *
      * @param array $defaults Properties
      *
      * @return Field_SQL_Expression
@@ -108,5 +110,23 @@ class Reference_SQL_One extends Reference_One
         });
 
         return $ex;
+    }
+
+    /**
+     * Add a title of related entity as expression to our field.
+     *
+     * $order->hasOne('user_id', 'User')->addTitle();
+     *
+     * This will add expression 'user' equal to ref('user_id')['name'];
+     *
+     * @param array $defaults Properties
+     *
+     * @return $this
+     */
+    public function withTitle($defaults = [])
+    {
+        $this->addTitle($defaults);
+
+        return $this;
     }
 }
