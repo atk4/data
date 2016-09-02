@@ -28,7 +28,9 @@ Example will calculate "total_gross" by adding up values for "net" and "vat"::
 
     echo $m['total_gross'];
 
-The query using during load() will look like this::
+The query using during load() will look like this:
+
+.. code-block:: sql
 
     select
         `id`,`total_net`,`total_vat`,
@@ -67,7 +69,9 @@ basic example::
     $m->loadAny();
     echo $m['now'];
 
-In this example the query will look like this::
+In this example the query will look like this:
+
+.. code-block:: sql
 
     select (1) `id`, (now()) `now` limit 1
 

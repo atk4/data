@@ -73,20 +73,32 @@ class Reference_SQL_One extends Reference_One
      *
      * This will add expression 'user' equal to ref('user_id')['name'];
      *
-     * @return $this
+     * This method returns newly created expression field.
+     *
+     * @param array $defaults Properties
+     *
+     * @return Field_SQL_Expression
      */
-    public function addTitle()
+    public function addTitle($defaults = [])
     {
         $field = str_replace('_id', '', $this->link);
-        $this->owner->addExpression($field, [
-            function ($m) {
-                $mm = $m->refLink($this->link);
+        $ex = $this->owner->addExpression($field, array_merge_recursive(
+            [
+                function ($m) {
+                    $mm = $m->refLink($this->link);
 
-                return $mm->action('field', [$mm->title_field]);
-            },
-            'read_only'  => false,
-            'never_save' => true,
-        ]);
+                    return $mm->action('field', [$mm->title_field]);
+                },
+                'ui' => ['editable' => false, 'visible' => true],
+            ],
+            $defaults,
+            [
+                // to be able to change title field, but not save and
+                // afterSave hook will take care of the rest
+                'read_only'  => false,
+                'never_save' => true,
+            ]
+        ));
 
         $this->owner->addHook('beforeSave', function ($m) use ($field) {
             if ($m->isDirty($field) && !$m->isDirty($this->link)) {
@@ -96,6 +108,24 @@ class Reference_SQL_One extends Reference_One
                 $m[$this->link] = $mm->action('field', [$mm->id_field]);
             }
         });
+
+        return $ex;
+    }
+
+    /**
+     * Add a title of related entity as expression to our field.
+     *
+     * $order->hasOne('user_id', 'User')->addTitle();
+     *
+     * This will add expression 'user' equal to ref('user_id')['name'];
+     *
+     * @param array $defaults Properties
+     *
+     * @return $this
+     */
+    public function withTitle($defaults = [])
+    {
+        $this->addTitle($defaults);
 
         return $this;
     }
