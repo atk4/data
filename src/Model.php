@@ -284,8 +284,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->id_field) {
             $this->addField($this->id_field, [
                 'system'    => true,
-                'type'      => 'int',
-                'mandatory' => true,
+                'type'      => 'int'
             ]);
         }
     }
@@ -491,9 +490,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
         }
 
-
-
-
         if (array_key_exists($field, $this->dirty) && $this->dirty[$field] === $value) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
@@ -550,10 +546,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 $f_object->default :
                 null
             );
-
-        if ($f_object) {
-            $f_object->hook('get', [$field, &$value]);
-        }
 
         return $value;
     }
@@ -687,12 +679,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($f) {
-            $f->setAttr('system', true);
+            $f->system = true;
             if ($operator === '=' || func_num_args() == 2) {
                 $v = $operator === '=' ? $value : $operator;
 
                 if (!is_object($v) && !is_array($v)) {
-                    $f->setAttr('default', $v);
+                    $f->default = $v;
                 }
             }
         }
@@ -1153,18 +1145,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     continue;
                 }
 
-                // get actual name of the field
-                $actual = $field->actual ?: $name;
-
                 // get the value of the field
                 $value = $this->get($name);
 
                 if (isset($field->join)) {
                     $dirty_join = true;
                     // storing into a different table join
-                    $field->join->set($actual, $value);
+                    $field->join->set($name, $value);
                 } else {
-                    $data[$actual] = $value;
+                    $data[$name] = $value;
                 }
             }
 
@@ -1186,14 +1175,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     continue;
                 }
 
-                // get actual name of the field
-                $actual = $field->actual ?: $name;
-
                 if (isset($field->join)) {
                     // storing into a different table join
-                    $field->join->set($actual, $value);
+                    $field->join->set($name, $value);
                 } else {
-                    $data[$actual] = $value;
+                    $data[$name] = $value;
                 }
             }
 

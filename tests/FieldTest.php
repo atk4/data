@@ -161,16 +161,6 @@ class FieldTest extends SQLTestCase
         $m['foo'] = true;
     }
 
-    /**
-     * @expectedException Exception
-     */
-    public function testEnum3deff()
-    {
-        // default value should be valid
-        $m = new Model();
-        $m->addField('foo', ['enum' => [1, 'bar'], 'default' => true]);
-    }
-
     public function testEnum4()
     {
         // PHP type control is really crappy...
@@ -339,5 +329,65 @@ class FieldTest extends SQLTestCase
 
         $m->onlyFields(['bar']);
         // TODO: build a query and see if the field is there
+    }
+
+    public function testEncryptedField()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'user' => [
+                '_' => ['id' => 1, 'name' => 'John', 'secret' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+
+        $encrypt = function($value, $field, $persistence) {
+
+            if (!$persistence instanceof \atk4\data\Persistence_SQL) return $value;
+
+            /*
+            $algorithm = 'rijndael-128';
+            $key = md5($field->password, true);
+            $iv_length = mcrypt_get_iv_size( $algorithm, MCRYPT_MODE_CBC );
+            $iv = mcrypt_create_iv( $iv_length, MCRYPT_RAND );
+            return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
+             */
+            return base64_encode($value);
+
+        };
+
+        $decrypt = function($value, $field, $persistence) {
+
+            if (!$persistence instanceof \atk4\data\Persistence_SQL) return $value;
+
+            /*
+            $algorithm = 'rijndael-128';
+            $key = md5($field->password, true);
+            $iv_length = mcrypt_get_iv_size( $algorithm, MCRYPT_MODE_CBC );
+            $iv = mcrypt_create_iv( $iv_length, MCRYPT_RAND );
+            return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
+             */
+            return base64_decode($value);
+
+        };
+
+
+
+        $m = new Model($db, 'user');
+        $m->addField('name', ['mandatory' => true]);
+        $m->addField('secret', [
+            'password'=>'bonkers',
+            'saveCallback'=>$encrypt,
+            'loadCallback'=>$decrypt,
+        ]);
+        $m->save(['name' => 'John', 'secret'=>'i am a woman']);
+
+        $a = $this->getDB();
+        $this->assertNotNull($a['user'][1]['secret']);
+        $this->assertNotEquals('i am a woman', $a['user'][1]['secret']);
+
+
+        $m->unload()->load(1);
+        $this->assertEquals('i am a woman', $m['secret']);
     }
 }
