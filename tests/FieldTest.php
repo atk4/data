@@ -61,7 +61,7 @@ class FieldTest extends SQLTestCase
         $m = new Model($db, 'user');
         $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
-        $m->insert(['surname'=>'qq']);
+        $m->insert(['surname' => 'qq']);
     }
 
     /**
@@ -80,7 +80,7 @@ class FieldTest extends SQLTestCase
         $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
         $m->load(1);
-        $m->save(['name'=>null]);
+        $m->save(['name' => null]);
     }
 
     public function testMandatory3()
@@ -93,9 +93,9 @@ class FieldTest extends SQLTestCase
         $this->setDB($a);
 
         $m = new Model($db, 'user');
-        $m->addField('name', ['mandatory' => true, 'default'=>'NoName']);
+        $m->addField('name', ['mandatory' => true, 'default' => 'NoName']);
         $m->addField('surname');
-        $m->insert(['surname'=>'qq']);
+        $m->insert(['surname' => 'qq']);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -135,21 +135,20 @@ class FieldTest extends SQLTestCase
     public function testEnum1()
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => ['foo','bar']]);
+        $m->addField('foo', ['enum' => ['foo', 'bar']]);
         $m['foo'] = 'xx';
     }
 
     public function testEnum2()
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => [1,'bar']]);
+        $m->addField('foo', ['enum' => [1, 'bar']]);
         $m['foo'] = 1;
 
         $this->assertSame(1, $m['foo']);
 
         $m['foo'] = 'bar';
         $this->assertSame('bar', $m['foo']);
-
     }
 
     /**
@@ -158,7 +157,7 @@ class FieldTest extends SQLTestCase
     public function testEnum3()
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => [1,'bar']]);
+        $m->addField('foo', ['enum' => [1, 'bar']]);
         $m['foo'] = true;
     }
 
@@ -169,7 +168,7 @@ class FieldTest extends SQLTestCase
     {
         // default value should be valid
         $m = new Model();
-        $m->addField('foo', ['enum' => [1,'bar'], 'default'=>true]);
+        $m->addField('foo', ['enum' => [1, 'bar'], 'default' => true]);
     }
 
     public function testEnum4()
@@ -178,7 +177,7 @@ class FieldTest extends SQLTestCase
         // This test has no purpose but it stands testament
         // to a weird behaviours of PHP
         $m = new Model();
-        $m->addField('foo', ['enum' => [1,'bar'], 'default'=>1]);
+        $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
         $m['foo'] = null;
 
         $this->assertSame(null, $m['foo']);
@@ -313,9 +312,9 @@ class FieldTest extends SQLTestCase
         $this->setDB($a);
 
         $m = new Model($db, 'user');
-        $m->addField('first_name', ['actual'=>'name']);
+        $m->addField('first_name', ['actual' => 'name']);
         $m->addField('surname');
-        $m->insert(['first_name'=>'Peter', 'surname'=>'qq']);
+        $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
         $m->load(1);
         $this->assertEquals('John', $m['first_name']);
 
@@ -333,7 +332,7 @@ class FieldTest extends SQLTestCase
     public function testSystem1()
     {
         $m = new Model();
-        $m->addField('foo', ['system'=>true]);
+        $m->addField('foo', ['system' => true]);
         $m->addField('bar');
         $this->assertEquals(false, $m->getElement('foo')->isEditable());
         $this->assertEquals(false, $m->getElement('foo')->isVisible());
