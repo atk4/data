@@ -341,9 +341,10 @@ class FieldTest extends SQLTestCase
         $this->setDB($a);
 
 
-        $encrypt = function($value, $field, $persistence) {
-
-            if (!$persistence instanceof \atk4\data\Persistence_SQL) return $value;
+        $encrypt = function ($value, $field, $persistence) {
+            if (!$persistence instanceof \atk4\data\Persistence_SQL) {
+                return $value;
+            }
 
             /*
             $algorithm = 'rijndael-128';
@@ -353,12 +354,12 @@ class FieldTest extends SQLTestCase
             return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
              */
             return base64_encode($value);
-
         };
 
-        $decrypt = function($value, $field, $persistence) {
-
-            if (!$persistence instanceof \atk4\data\Persistence_SQL) return $value;
+        $decrypt = function ($value, $field, $persistence) {
+            if (!$persistence instanceof \atk4\data\Persistence_SQL) {
+                return $value;
+            }
 
             /*
             $algorithm = 'rijndael-128';
@@ -368,7 +369,6 @@ class FieldTest extends SQLTestCase
             return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
              */
             return base64_decode($value);
-
         };
 
 
@@ -376,11 +376,11 @@ class FieldTest extends SQLTestCase
         $m = new Model($db, 'user');
         $m->addField('name', ['mandatory' => true]);
         $m->addField('secret', [
-            'password'=>'bonkers',
-            'saveCallback'=>$encrypt,
-            'loadCallback'=>$decrypt,
+            'password'     => 'bonkers',
+            'saveCallback' => $encrypt,
+            'loadCallback' => $decrypt,
         ]);
-        $m->save(['name' => 'John', 'secret'=>'i am a woman']);
+        $m->save(['name' => 'John', 'secret' => 'i am a woman']);
 
         $a = $this->getDB();
         $this->assertNotNull($a['user'][1]['secret']);

@@ -284,7 +284,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->id_field) {
             $this->addField($this->id_field, [
                 'system'    => true,
-                'type'      => 'int'
+                'type'      => 'int',
             ]);
         }
     }
