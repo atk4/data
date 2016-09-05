@@ -433,10 +433,7 @@ class Persistence_SQL extends Persistence
             if (
                 $value === null && $f->mandatory
             ) {
-                throw new Exception([
-                    'Mandatory field value cannot be null',
-                    'field' => $key,
-                    ]);
+                throw new Exception(['Mandatory field value cannot be null', 'field' => $key]);
             }
 
             // Expression and null cannot be converted.
@@ -458,27 +455,20 @@ class Persistence_SQL extends Persistence
 
             // Manually handle remaining types
             switch ($f->type) {
-            case 'string':
-            case 'str':
+            case 'string': case 'str':
                 $value = trim($value);
-
                 break;
-            case 'boolean':
-            case 'bool':
+            case 'boolean': case 'bool':
                 if ($f->enum) {
                     $value = $value ? $f->enum[0] : $f->enum[1];
                 } else {
                     $value = (int) $value;
                 }
-
                 break;
             case 'money':
                 $value = round($value, 4);
-
                 break;
-            case 'date':
-            case 'datetime':
-            case 'time':
+            case 'date': case 'datetime': case 'time':
                 $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
 
                 $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
@@ -498,20 +488,15 @@ class Persistence_SQL extends Persistence
 
                 // Format for SQL
                 $value = $value->format(isset($f->dateFormat) ? $f->dateFormat : $format[$f->type]);
-
                 break;
-            case 'int':
-            case 'integer':
+            case 'int': case 'integer':
                 $value = (int) $value;
-
                 break;
             case 'float':
                 $value = (float) $value;
-
                 break;
             case 'array':
                 $value = json_encode($value);
-
                 break;
             }
             $result[$field] = $value;
