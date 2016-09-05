@@ -390,10 +390,10 @@ class Persistence_SQL extends Persistence
     /**
      * Will convert one row of data from native PHP types into
      * persistence types. This will also take care of the "actual"
-     * field keys. Example:
+     * field keys. Example:.
      *
-     * In: 
-     *  [ 
+     * In:
+     *  [
      *    'name'=>' John Smith',
      *    'age'=>30,
      *    'password'=>'abc',
@@ -430,18 +430,18 @@ class Persistence_SQL extends Persistence
             // Figure out the name of the destination field
             $field = $f->actual ?: $key;
 
-            if(
+            if (
                 $value === null && $f->mandatory
             ) {
                 throw new Exception([
                     'Mandatory field value cannot be null',
-                    'field'=>$key
+                    'field' => $key,
                     ]);
             }
 
             // Expression and null cannot be converted.
             if (
-                $value instanceof \atk4\dsql\Expression || 
+                $value instanceof \atk4\dsql\Expression ||
                 $value instanceof \atk4\dsql\Expressionable ||
                 $value === null
             ) {
