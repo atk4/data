@@ -51,7 +51,7 @@ Operations
 
 Most database drivers will support the following additional operations::
 
-    >, <, >=, <=, !=, in
+    >, <, >=, <=, !=, in, not in
 
 The operation must be specified as second argument::
 
@@ -59,7 +59,7 @@ The operation must be specified as second argument::
     $girls = (clone $m)->addCondition('gender', 'F');
     $not_girls = (clone $m)->addCondition('gender', '!=', 'F');
 
-When you use 'in' you should pass value as array::
+When you use 'in' or 'not in' you should pass value as array::
 
     $m = new Model_User($db, 'user');
     $girls_or_boys = (clone $m)->addCondition('gender', 'in', ['F', 'M']);
@@ -181,7 +181,9 @@ nested and consist of objects as well as actions::
         ]
     );
 
-This will result in the following condition::
+This will result in the following condition:
+
+.. code-block:: sql
 
     WHERE
         `age` between

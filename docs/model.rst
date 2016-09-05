@@ -293,7 +293,7 @@ Title Field
     If you don't have field 'name' but you want some other field to be title, you can specify that in
     the property. If title_field is not needed, set it to false or point towards a non-existent field.
 
-    See: :php:meth::`hasOne::addTitle()`
+    See: :php:meth::`hasOne::addTitle()` and :php:meth::`hasOne::withTitle()`
 
 Hooks
 =====

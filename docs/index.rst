@@ -16,7 +16,7 @@ Contents:
     fields
     conditions
     sql
-    relations
+    references
     expressions
     joins
     hooks

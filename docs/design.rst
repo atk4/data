@@ -205,7 +205,7 @@ Code to access field values::
 Domain Model Relationship
 -------------------------
 
-Next - relations. Think how those objects relate to each-other. Think in terms of "specific object" and not database relations. Client has many Orders. Order has one Client.
+Next - references. Think how those objects relate to each-other. Think in terms of "specific object" and not database relations. Client has many Orders. Order has one Client.
 
  - User
    - hasMany(Client)
@@ -444,7 +444,9 @@ placed by VIP clients::
 
 This code will attempt to execute a single-query only, however the ability to optimize
 your request relies on the capabilities of database vendor. The actual database
-operation(s) might look like this on SQL database::
+operation(s) might look like this on SQL database:
+
+.. code-block:: sql
 
     select count(*) from `order` where user_id in
         (select id from user where type="user" and is_vip=1)

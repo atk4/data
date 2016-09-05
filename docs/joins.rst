@@ -23,7 +23,9 @@ joins::
 
 This code will load data from two tables simultaneously and if you do change any of those
 fields they will be update in their respective tables. With SQL the load query would
-look like this::
+look like this:
+
+.. code-block:: sql
 
     select
         u.username, c.address, c.county, c.country_id
@@ -38,7 +40,9 @@ first, then load other record and will collect fields together::
     $user_data = $user->find($id);
     $contact_data = $contact->find($user_data['contact_id']);
 
-When saving the record, Joins will automatically record data correctly::
+When saving the record, Joins will automatically record data correctly:
+
+.. code-block:: sql
 
     insert into contact (address, county, country_id) values ($, $, $);
     @join_c = last_insert_id();
@@ -80,7 +84,7 @@ you can even join using existing models::
     $user->addField('country_id');
     $user->weakJoin('country')->importModel('Country');
 
-This will automatically import fields, expressions, relations and conditions from
+This will automatically import fields, expressions, references and conditions from
 'Country' model into $user model and will also re-map field names in process.
 
 .. php:method:: weakJoinModel
@@ -149,12 +153,12 @@ with a foreign table.
 
 .. php:method:: hasOne
 
-    same as :php:meth:`Model::hasOne` but relation ID field will be associated with foreign table.
+    same as :php:meth:`Model::hasOne` but reference ID field will be associated with foreign table.
 
 .. php:method:: hasMany
 
     same as :php:meth:`Model::hasMany` but condition for related model will be based on foreign table field
-    and :php:attr:`Relation::their_field` will be set to $foreign_table.'_id'.
+    and :php:attr:`Reference::their_field` will be set to $foreign_table.'_id'.
 
 .. php:method:: containsOne
 
