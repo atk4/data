@@ -485,7 +485,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 if (!in_array($value, $f->enum, true) && $value !== null) {
                     throw new Exception([
                         'This is not one of the alowed values for the field',
-                        'field'=>$field, 'model'=>$this, 'value'=>$value, 'enum'=>$f->enum
+                        'field' => $field, 'model' => $this, 'value' => $value, 'enum' => $f->enum,
                     ]);
                 }
             }
