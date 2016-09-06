@@ -10,6 +10,87 @@ use atk4\data\Persistence_SQL;
  */
 class IteratorTest extends SQLTestCase
 {
+    /**
+     * if first argument is array, then second argument should not be used
+     * @expectedException Exception
+     */
+    public function testException1()
+    {
+        $m = new Model();
+        $m->addFields(['name', 'salary']);
+        $m->setOrder(['name', 'salary'], 'desc');
+    }
+
+    /**
+     * Model is not associated with any database - persistence should be set
+     * @expectedException Exception
+     */
+    public function testException2()
+    {
+        $m = new Model();
+        $m->tryLoad(1);
+    }
+
+    /**
+     * Model is not associated with any database - persistence should be set
+     * @expectedException Exception
+     */
+    public function testException3()
+    {
+        $m = new Model();
+        $m->tryLoadAny();
+    }
+
+    /**
+     * Model is not associated with any database - persistence should be set
+     * @expectedException Exception
+     */
+    public function testException4()
+    {
+        $m = new Model();
+        $m->loadAny();
+    }
+
+    /**
+     * Model is not associated with any database - persistence should be set
+     * @expectedException Exception
+     */
+    public function testException5()
+    {
+        $m = new Model();
+        $m->load();
+    }
+
+    /**
+     * Model is not associated with any database - persistence should be set
+     * @expectedException Exception
+     */
+    public function testException6()
+    {
+        $m = new Model();
+        $m->save();
+    }
+
+    /**
+     * Model is not associated with any database - persistence should be set
+     * @expectedException Exception
+     */
+    public function testException7()
+    {
+        $m = new Model();
+        $m->action('insert');
+    }
+
+    /**
+     * Model is not associated with any database - persistence should be set
+     * @expectedException Exception
+     */
+    public function testException1()
+    {
+        $m = new Model();
+        $m->load(1);
+    }
+
     public function testBasic()
     {
         $a = [

@@ -42,6 +42,51 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Smith', $m['surname']);
     }
 
+    public function testSaveAs()
+    {
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
+            'client' => [
+                1 => ['name' => 'Jack', 'surname' => 'Daniels'],
+            ],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m1 = new Model($p, 'user');
+        $m1->addField('name');
+        $m1->addField('surname');
+
+        $m2 = new Model($p, 'client');
+        $m1->addField('name');
+        $m1->addField('surname');
+
+        // test saveAs, asModel, newInstance
+        $m1->load(2);
+        $m1->saveAs($m2);
+
+        $this->assertEquals([
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
+            'client' => [
+                1 => ['name' => 'Jack', 'surname' => 'Daniels'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
+        ], $a);
+
+        // test saveAndUnload
+        $m1->load(1);
+        $this->assertTrue($m1->loaded());
+        $m1->save();
+        $this->assertTrue($m1->loaded());
+        $m1->saveAndUnload();
+        $this->assertFalse($m1->loaded());
+    }
+
     public function testUpdateArray()
     {
         $a = [

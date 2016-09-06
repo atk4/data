@@ -723,7 +723,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Shortcut for using addConditionn(id_field, $id).
+     * Shortcut for using addCondition(id_field, $id).
      *
      * @param mixed $id
      *

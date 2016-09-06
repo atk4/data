@@ -9,6 +9,18 @@ use atk4\data\Model;
  */
 class ConditionTest extends TestCase
 {
+
+    /**
+     * @expectedException Exception
+     */
+    public function testException1()
+    {
+        // not existing field in condition
+        $m = new Model();
+        $m->addField('name');
+        $m->addCondition('last_name', 'Smith');
+    }
+
     public function testBasicDiscrimination()
     {
         $m = new Model();
