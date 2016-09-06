@@ -543,6 +543,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $f = $this->hasElement($field);
+
         return $f ? $f->default : null;
     }
 
