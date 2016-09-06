@@ -66,8 +66,8 @@ class TypecastingTest extends SQLTestCase
         $m->addField('boolean', ['type' => 'boolean']);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
-        $m->addField('int', ['type' => 'int']);
-        $m->addField('array', ['type' => 'array']);
+        $m->addField('int', ['type' => 'integer']);
+        $m->addField('array', ['type' => 'struct']);
         $m->load(1);
 
         date_default_timezone_set('UTC');
@@ -152,7 +152,7 @@ class TypecastingTest extends SQLTestCase
         $m->addField('b2', ['type' => 'boolean', 'enum' => ['Y', 'N']]);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
-        $m->addField('int', ['type' => 'int']);
+        $m->addField('int', ['type' => 'integer']);
 
         $rot = function ($v) {
             return str_rot13($v);

@@ -27,6 +27,19 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable
     }
 
     /**
+     * SQL fields are allowed to have expressions inside of them
+     */
+    function normalize($value)
+    {
+        if ($value instanceof \atk4\dsql\Expression || 
+            $value instanceof \atk4\dsql\Expressionable)
+            return $value;
+
+        return parent::normalize($value);
+    }
+
+
+    /**
      * When field is used as expression, this method will be called.
      *
      * @param \atk\dsql\Expression $expression

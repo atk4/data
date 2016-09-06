@@ -127,6 +127,9 @@ class Persistence_SQL extends Persistence
         if ($m->table === false) {
             $m->getElement('id')->destroy();
             $m->addExpression('id', '1');
+        } else {
+            // SQL databases use ID of int by default
+            $m->getElement('id')->type = 'integer';
         }
 
         return $m;
@@ -423,14 +426,16 @@ class Persistence_SQL extends Persistence
         }
 
         switch ($f->type) {
-        case 'string':
-        case 'str':
-            break;
         case 'boolean':
-        case 'bool':
 
             if ($f->enum) {
-                $value = ($value == $f->enum[0]);
+                if ($value == $f->enum[0]) {
+                    $value = true;
+                } elseif ($value == $f->enum[1]) {
+                    $value = false;
+                } else {
+                    $value = null;
+                }
             } else {
                 $value = (bool) $value;
             }
@@ -442,26 +447,22 @@ class Persistence_SQL extends Persistence
         case 'date':
         case 'datetime':
         case 'time':
-
             // Can use DateTime, Carbon or anything else
             $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
 
-            if (is_numeric($value) && $value > 60) {
-                // we can be certain this is a timestamp, not some
-                // weird format
+            if (is_numeric($value)) {
                 $value = new $class('@'.$value);
             } elseif (is_string($value)) {
                 $value = new $class($value, new \DateTimeZone('UTC'));
             }
             break;
-        case 'int':
         case 'integer':
             $value = (int) $value;
             break;
         case 'float':
             $value = (float) $value;
             break;
-        case 'array':
+        case 'struct':
             $value = json_decode($value, true) ?: [];
             break;
         }
@@ -481,33 +482,19 @@ class Persistence_SQL extends Persistence
 
         // Manually handle remaining types
         switch ($f->type) {
-        case 'string': case 'str':
-            $value = trim($value);
-            break;
-        case 'boolean': case 'bool':
+        case 'boolean':
             if ($f->enum) {
                 $value = $value ? $f->enum[0] : $f->enum[1];
             } else {
                 $value = (int) $value;
             }
             break;
-        case 'money':
-            $value = round($value, 4);
-            break;
         case 'date': case 'datetime': case 'time':
+            // Datetime only - change to UTC
             $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
 
             $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
 
-            if (is_numeric($value)) {
-                // we can be certain this is a timestamp, not some
-                // weird format
-                $value = new $class('@'.$value);
-            } elseif (is_string($value)) {
-                $value = new $class($value);
-            }
-
-            // Datetime only - change to UTC
             if ($value instanceof $class && $f->type == 'datetime') {
                 $value->setTimezone(new \DateTimeZone('UTC'));
             }
@@ -515,13 +502,7 @@ class Persistence_SQL extends Persistence
             // Format for SQL
             $value = $value->format(isset($f->dateFormat) ? $f->dateFormat : $format[$f->type]);
             break;
-        case 'int': case 'integer':
-            $value = (int) $value;
-            break;
-        case 'float':
-            $value = (float) $value;
-            break;
-        case 'array':
+        case 'struct':
             $value = json_encode($value);
             break;
         }

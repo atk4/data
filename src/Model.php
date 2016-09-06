@@ -193,6 +193,20 @@ class Model implements \ArrayAccess, \IteratorAggregate
     protected $strict_field_check = true;
 
     /**
+     * When set to true, all the field types will be enforced and
+     * normalized when setting
+     */ 
+    public $strict_types = true;
+
+    /**
+     * When set to true, loading model from database will also
+     * perform value normalization. Use this if you think that
+     * persistence may contain badly formatted data that may
+     * impact your business logic
+     */
+    public $load_normalization = false;
+
+    /**
      * Models that contain expressions will automatically reload after save.
      * This is to ensure that any SQL-based calculation are executed and
      * updated correctly after you have performed any modifications to
@@ -456,7 +470,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $f = $this->hasElement($field);
 
-        // set hook here
+        try {
+            if ($this->hook('normalize') !== false && $f) {
+                $value = $f->normalize($value);
+
+            }
+        } catch (Exception $e) {
+            if (method_exists($e, 'addMoreInfo')) {
+                $e->addMoreInfo('field', $field);
+                $e->addMoreInfo('value', $value);
+                $e->addMoreInfo('f', $f);
+            }
+            throw $e;
+        }
 
         $default_value = $f ? $f->default : null;
 

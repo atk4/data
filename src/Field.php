@@ -28,7 +28,7 @@ class Field
      *
      * @var string
      */
-    public $type = 'string';
+    public $type = null;
 
     /**
      * For several types enum can provide list of available options.
@@ -130,6 +130,75 @@ class Field
                 $this->$key = $val;
             }
         }
+    }
+
+    /**
+     * Depending on the type of a current field, this will perform
+     * some normalization for strict types
+     */
+    function normalize($value)
+    {
+        if (!$this->owner->strict_types) return $value;
+        if ($value === null) return null;
+        $f = $this;
+
+        switch ($f->type) {
+        case 'string':
+            if (!is_string($value) && !is_numeric($value)) {
+                throw new Exception('Field value must be a string');
+            }
+            $value = trim($value);
+            break;
+        case 'boolean':
+            if (is_bool($value)) {
+                break;
+            }
+            if ($value === $f->enum[0]) {
+                $value = true;
+            } elseif ($value === $f->enum[1]) {
+                $value = false;
+            } else {
+                throw new Exception('Field value must be a boolean');
+            }
+        case 'money':
+            $value = round($value, 4);
+            break;
+        case 'date': case 'datetime': case 'time':
+            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+            if (is_numeric($value)) {
+                $value = new $class('@'.$value);
+            } elseif (is_string($value)) {
+                $value = new $class($value);
+            } elseif (!$value instanceof $class) {
+                throw new Exception('Field value must be a '.$f->type);
+            }
+            break;
+        case 'integer':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be an integer');
+            }
+            $value = (int) $value;
+            break;
+        case 'float':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be a float');
+            }
+            $value = (float) $value;
+            break;
+        case 'struct':
+            // Can be pretty-much anything, but not object
+            if (is_object($value)) {
+                throw new Exception('Field value must be a struct');
+            }
+            break;
+        case 'int': case 'bool': case 'str':
+            throw new Exception([
+                'Use of obsolete field type abbreviation. Use "string", "boolean" etc.', 
+                'type'=>$f->type
+            ]);
+        }
+        return $value;
     }
 
     /**
