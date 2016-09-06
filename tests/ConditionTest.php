@@ -9,7 +9,6 @@ use atk4\data\Model;
  */
 class ConditionTest extends TestCase
 {
-
     /**
      * @expectedException Exception
      */

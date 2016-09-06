@@ -11,7 +11,8 @@ use atk4\data\Persistence_SQL;
 class IteratorTest extends SQLTestCase
 {
     /**
-     * if first argument is array, then second argument should not be used
+     * If first argument is array, then second argument should not be used.
+     *
      * @expectedException Exception
      */
     public function testException1()
@@ -22,7 +23,8 @@ class IteratorTest extends SQLTestCase
     }
 
     /**
-     * Model is not associated with any database - persistence should be set
+     * Model is not associated with any database - persistence should be set.
+     *
      * @expectedException Exception
      */
     public function testException2()
@@ -32,7 +34,8 @@ class IteratorTest extends SQLTestCase
     }
 
     /**
-     * Model is not associated with any database - persistence should be set
+     * Model is not associated with any database - persistence should be set.
+     *
      * @expectedException Exception
      */
     public function testException3()
@@ -42,27 +45,30 @@ class IteratorTest extends SQLTestCase
     }
 
     /**
-     * Model is not associated with any database - persistence should be set
+     * Model is not associated with any database - persistence should be set.
+     *
      * @expectedException Exception
      */
     public function testException4()
+    {
+        $m = new Model();
+        $m->load(1);
+    }
+
+    /**
+     * Model is not associated with any database - persistence should be set.
+     *
+     * @expectedException Exception
+     */
+    public function testException5()
     {
         $m = new Model();
         $m->loadAny();
     }
 
     /**
-     * Model is not associated with any database - persistence should be set
-     * @expectedException Exception
-     */
-    public function testException5()
-    {
-        $m = new Model();
-        $m->load();
-    }
-
-    /**
-     * Model is not associated with any database - persistence should be set
+     * Model is not associated with any database - persistence should be set.
+     *
      * @expectedException Exception
      */
     public function testException6()
@@ -72,23 +78,14 @@ class IteratorTest extends SQLTestCase
     }
 
     /**
-     * Model is not associated with any database - persistence should be set
+     * Model is not associated with any database - persistence should be set.
+     *
      * @expectedException Exception
      */
     public function testException7()
     {
         $m = new Model();
         $m->action('insert');
-    }
-
-    /**
-     * Model is not associated with any database - persistence should be set
-     * @expectedException Exception
-     */
-    public function testException1()
-    {
-        $m = new Model();
-        $m->load(1);
     }
 
     public function testBasic()
