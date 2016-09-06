@@ -471,7 +471,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($f) {
-            // perform bunch of standard validation here. This can be refactured in the future.
+            // perform bunch of standard validation here. This can be re-factored in the future.
             if ($f->read_only) {
                 throw new Exception([
                     'Attempting to change read-only field',
@@ -483,8 +483,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
             if ($f->enum && $f->type != 'boolean' && $f->type != 'bool') {
                 if (!in_array($value, $f->enum, true) && $value !== null) {
                     throw new Exception([
-                        'This is not one of the alowed values for the field',
-                        'field' => $field, 'model' => $this, 'value' => $value, 'enum' => $f->enum,
+                        'This is not one of the allowed values for the field',
+                        'field' => $field,
+                        'model' => $this,
+                        'value' => $value,
+                        'enum'  => $f->enum,
                     ]);
                 }
             }
@@ -523,8 +526,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
             } else {
                 // get all field-elements
-                foreach ($this->elements as $field => $f_object) {
-                    if ($f_object instanceof Field) {
+                foreach ($this->elements as $field => $f) {
+                    if ($f instanceof Field) {
                         $data[$field] = $this->get($field);
                     }
                 }
@@ -535,25 +538,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
+        if (array_key_exists($field, $this->data)) {
+            return $this->data[$field];
+        }
 
-        $f_object = $this->hasElement($field);
-
-        $value =
-            array_key_exists($field, $this->data) ?
-            $this->data[$field] :
-            (
-                $f_object ?
-                $f_object->default :
-                null
-            );
-
-        return $value;
+        $f = $this->hasElement($field);
+        return $f ? $f->default : null;
     }
 
     /**
      * Remove current field value and use default.
      *
-     * @param string|array $field
+     * @param string|array $name
      *
      * @return $this
      */

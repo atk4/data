@@ -372,7 +372,6 @@ class FieldTest extends SQLTestCase
         };
 
 
-
         $m = new Model($db, 'user');
         $m->addField('name', ['mandatory' => true]);
         $m->addField('secret', [
