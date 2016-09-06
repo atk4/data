@@ -134,12 +134,16 @@ class Field
 
     /**
      * Depending on the type of a current field, this will perform
-     * some normalization for strict types
+     * some normalization for strict types.
      */
-    function normalize($value)
+    public function normalize($value)
     {
-        if (!$this->owner->strict_types) return $value;
-        if ($value === null) return null;
+        if (!$this->owner->strict_types) {
+            return $value;
+        }
+        if ($value === null) {
+            return;
+        }
         $f = $this;
 
         switch ($f->type) {
@@ -194,10 +198,11 @@ class Field
             break;
         case 'int': case 'bool': case 'str':
             throw new Exception([
-                'Use of obsolete field type abbreviation. Use "string", "boolean" etc.', 
-                'type'=>$f->type
+                'Use of obsolete field type abbreviation. Use "string", "boolean" etc.',
+                'type' => $f->type,
             ]);
         }
+
         return $value;
     }
 

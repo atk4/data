@@ -339,9 +339,7 @@ class Persistence_SQL extends Persistence
             }
 
             if ($f = $m->hasElement($key)) {
-
                 $value = $this->typecastLoadField($f, $value);
-
             }
         }
 
@@ -418,9 +416,10 @@ class Persistence_SQL extends Persistence
 
     /**
      * Cast specific field value from the way how it's stored inside
-     * persistence to a PHP format
+     * persistence to a PHP format.
      */
-    function typecastLoadField(Field $f, $value) {
+    public function typecastLoadField(Field $f, $value)
+    {
         if ($callback = $f->loadCallback) {
             return $callback($value, $f, $this);
         }
@@ -443,6 +442,7 @@ class Persistence_SQL extends Persistence
             break;
         case 'money':
             $value = round($value, 4);
+
             return $value;
         case 'date':
         case 'datetime':
@@ -466,6 +466,7 @@ class Persistence_SQL extends Persistence
             $value = json_decode($value, true) ?: [];
             break;
         }
+
         return $value;
     }
 
@@ -473,7 +474,8 @@ class Persistence_SQL extends Persistence
      * Prepare value of a specific field by converting it to
      * persistence - friendly format.
      */
-    function typecastSaveField(Field $f, $value) {
+    public function typecastSaveField(Field $f, $value)
+    {
 
         // Support for callback: (28, ['age', [persistence_object]])
         if ($callback = $f->saveCallback) {
@@ -506,10 +508,9 @@ class Persistence_SQL extends Persistence
             $value = json_encode($value);
             break;
         }
+
         return $value;
     }
-
-
 
     /**
      * Executing $model->action('update') will call this method.
