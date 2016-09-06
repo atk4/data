@@ -30,8 +30,8 @@ You can specify unsupported type. It will be untouched by Agile Data
 so you would have to implement your own handling of a new type.
 
 Persistence implements two methods:
- - :php:meth:`Persistence::typecastSaveToPersistence()`
- - :php:meth:`Persistence::typecastLoadFromPersistence()`
+ - :php:meth:`Persistence::typecastSaveRow()`
+ - :php:meth:`Persistence::typecastLoadRow()`
 
 Those are responsible for converting PHP native types to persistence
 specific formats as defined in fields. Those methods will also change

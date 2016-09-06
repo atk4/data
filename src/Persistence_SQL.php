@@ -417,6 +417,11 @@ class Persistence_SQL extends Persistence
     /**
      * Cast specific field value from the way how it's stored inside
      * persistence to a PHP format.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
      */
     public function typecastLoadField(Field $f, $value)
     {
@@ -427,10 +432,10 @@ class Persistence_SQL extends Persistence
         switch ($f->type) {
         case 'boolean':
 
-            if ($f->enum) {
-                if ($value == $f->enum[0]) {
+            if (isset($f->enum) && is_array($f->enum)) {
+                if (isset($f->enum[0]) && $value == $f->enum[0]) {
                     $value = true;
-                } elseif ($value == $f->enum[1]) {
+                } elseif (isset($f->enum[1]) && $value == $f->enum[1]) {
                     $value = false;
                 } else {
                     $value = null;
@@ -473,6 +478,11 @@ class Persistence_SQL extends Persistence
     /**
      * Prepare value of a specific field by converting it to
      * persistence - friendly format.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
      */
     public function typecastSaveField(Field $f, $value)
     {
@@ -485,13 +495,15 @@ class Persistence_SQL extends Persistence
         // Manually handle remaining types
         switch ($f->type) {
         case 'boolean':
-            if ($f->enum) {
+            if (isset($f->enum) && is_array($f->enum) && isset($f->enum[0]) && isset($f->enum[1])) {
                 $value = $value ? $f->enum[0] : $f->enum[1];
             } else {
                 $value = (int) $value;
             }
             break;
-        case 'date': case 'datetime': case 'time':
+        case 'date':
+        case 'datetime':
+        case 'time':
             // Datetime only - change to UTC
             $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
 

@@ -139,7 +139,7 @@ Strict Types an Normalization
 PHP does not have strict types for variables, however if you specify type
 for your model fields, the type will be enforced.
 
-Calling "set()" ar using array-access to set the value will start by
+Calling "set()" or using array-access to set the value will start by
 casting the value to an appropriate data-type. If it is impossible to
 cast the value, then exception will be generated::
 
@@ -169,7 +169,7 @@ complex logic::
     $m['balance'] = '12,200.00 EUR';
 
     // May transparently work with 2 columns: 'balance_amount' and
-    // 'balance_currency_id'. 
+    // 'balance_currency_id' for example.
 
 The process of converting field values as indicated above is called
 "normalization" and it is controlled by two model properties::
@@ -177,14 +177,14 @@ The process of converting field values as indicated above is called
     $m->strict_types = true;
     $m->load_normalization = false;
 
-Setting `strict_types` to false, will still disable any type-casting
-and store exact values you specify regardless of type. If you switch
-on `load_normalization` then the values will also be normalized
-as they are loaded from the database. Normally you should only
-do that if you're storing values into database by other means and
-not through Agile Data.
+Setting :php:attr:`Model::strict_types` to false, will still disable any
+type-casting and store exact values you specify regardless of type. If you
+switch on :php:attr:`Model::load_normalization` then the values will also be
+normalized as they are loaded from the database. Normally you should only
+do that if you're storing values into database by other means and not through
+Agile Data.
 
-Final field flag that is worth mentioning is called `read_only`
+Final field flag that is worth mentioning is called :php:attr:`Field::read_only`
 and if set, then value of a field may not be modified directly::
 
     $m->addField('ref_no', ['read_only' => true]);
@@ -205,7 +205,7 @@ Note that `read_only` can still have a default value::
     $m->save();  // stores creation time just fine and also will loade it.
 
 
-.. note:: If you hae been following our "Domain" vs "Persistence" then
+.. note:: If you have been following our "Domain" vs "Persistence" then
     you can probably see that all of the above functionality described
     in this section apply only to the "Domain" model.
 
@@ -224,16 +224,15 @@ dirty.
 Join construct will single out the fields that needs to be stored
 in a separate table and will typecast them before persisting.
 
-You must remember that type-castin is a two-way operation. If
-you introducing your own types, you will need to make sure they
-can be saved and loaded correctly. 
+You must remember that type-casting is a two-way operation. If
+you are introducing your own types, you will need to make sure they
+can be saved and loaded correctly.
 
 There are also a lot of flexiblity on how exactly you typecast
 your values to match your database requirements.
 
 
-For 
-SQL databases it's essential to convert date formats, booleans
+For SQL databases it's essential to convert date formats, booleans
 and pack arrays::
 
     $m->addField('registered', ['type'=>'date']);
@@ -271,7 +270,7 @@ Validation
 ----------
 
 Validation in application always depends on business logic
-For example if you want `age` field to be
+For example, if you want `age` field to be
 above `14` for the user registration you may have to ask
 yourself some questions:
 
@@ -283,13 +282,13 @@ If 12 cannot be stored at all, then exception would be
 generated during set(), before you even get a chance to look
 at other fields.
 
-If storing of `12` is in the model field is OK validation can
+If storing of `12` in the model field is OK validation can
 be called from beforeSave() hook. This might be a better way
 if your validation rules depends on multiple field conditions
 which you need to be able to access.
 
-Finally you may allow persistence to store `12` value but
-validate before on a user-defined operation. `completeRegistration`
+Finally you may allow persistence to store `12` value, but
+validate before a user-defined operation. `completeRegistration`
 method could perform the validation. In this case you can
 create a confirmation page, that actually stores your
 in-complete registration inside the database.
@@ -307,9 +306,9 @@ Agile Data does not deal directly with formatting your data
 for the user. There may be various items to consider, for instance
 the same date can be presented in a short or long format for the user.
 
-The UI framework such as Agile Toolkit can make use of the `ui`
+The UI framework such as Agile Toolkit can make use of the :php:attr:`Field::ui`
 property to allow user to define default formats or input parsing
-rules, but Agile Data does not regulate the `ui` property and
+rules, but Agile Data does not regulate the :php:attr:`Field::ui` property and
 different UI frameworks may use it differently.
 
 Multi-column fields
@@ -329,8 +328,9 @@ On other hand, we would prefer to hide those two columns
 for the rest of application.
 
 Finally, even though we are storing "id" for the currency
-we want to make use of References. Your init() method
-for a Field_Currency might look like this::
+we want to make use of References.
+
+Your init() method for a Field_Currency might look like this::
 
 
     function init() {
@@ -355,17 +355,17 @@ for a Field_Currency might look like this::
     }
 
 There are more work to be done until Field_Currency could be
-a valid field, but I wanted to draw your attenton to the use
+a valid field, but I wanted to draw your attention to the use
 of field flags:
 
- - system flag is used to hide `balance_amount` and `balance_currency_id`.
- - never_persist flag is used because there are no `balance` column.
+ - system flag is used to hide `balance_amount` and `balance_currency_id` in UI.
+ - never_persist flag is used because there are no `balance` column in persistence.
 
 
 Type Matrix
 -----------
 
-.. todo:: this section might neet cleanup
+.. todo:: this section might need cleanup
 
 +----+----+----------------------------------------------------------+------+----+-----+
 | ty | al | description                                              | nati | sq | mon |
@@ -419,11 +419,10 @@ Dates and Time
 
 .. todo:: this section might neet cleanup
 
-There are 3 date formats supported:
+There are 4 date formats supported:
 
 -  ts (or timestamp): Stores in database using UTC. Defaults into unix
    timestamp (int) in PHP.
-
 -  date: Converts into YYYY-MM-DD using UTC timezone for SQL. Defaults
    to DateTime() class in PHP, but supports string input (parsed as date
    in a current timezone) or unix timestamp.
@@ -435,7 +434,7 @@ There are 3 date formats supported:
    DateTime() class in PHP. Supports string input parsed by strtotime()
    or unix timestamp.
 
-Customisations
+Customizations
 --------------
 
 Process which converts field values in native PHP format to/from database-specific formats
@@ -448,18 +447,15 @@ following two methods:
 
 .. php:method:: typecastSaveRow($model, $row);
 
-
     Convert native PHP-native row of data into persistence-specific.
 
 Row persisting may rely on additional methods, such as:
-
 
 .. php:method:: typecastLoadField(Field $field, $value);
 
     Convert persistence-specific row of data to PHP-friendly row of data.
 
 .. php:method:: typecastSaveField(Field $field, $value);
-
 
     Convert native PHP-native row of data into persistence-specific.
 

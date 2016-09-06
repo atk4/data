@@ -135,6 +135,10 @@ class Field
     /**
      * Depending on the type of a current field, this will perform
      * some normalization for strict types.
+     *
+     * @param mixed $value
+     *
+     * @return mixed
      */
     public function normalize($value)
     {
@@ -157,17 +161,26 @@ class Field
             if (is_bool($value)) {
                 break;
             }
-            if ($value === $f->enum[0]) {
-                $value = true;
-            } elseif ($value === $f->enum[1]) {
-                $value = false;
-            } else {
+            if (isset($f->enum) && is_array($f->enum)) {
+                if (isset($f->enum[0]) && $value === $f->enum[0]) {
+                    $value = true;
+                } elseif (isset($f->enum[1]) && $value === $f->enum[1]) {
+                    $value = false;
+                }
+            }
+            if (!is_bool($value)) {
                 throw new Exception('Field value must be a boolean');
             }
+            break;
         case 'money':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be numeric');
+            }
             $value = round($value, 4);
             break;
-        case 'date': case 'datetime': case 'time':
+        case 'date':
+        case 'datetime':
+        case 'time':
             $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
 
             if (is_numeric($value)) {
@@ -196,11 +209,14 @@ class Field
                 throw new Exception('Field value must be a struct');
             }
             break;
-        case 'int': case 'bool': case 'str':
+        case 'int':
+        case 'bool':
+        case 'str':
             throw new Exception([
-                'Use of obsolete field type abbreviation. Use "string", "boolean" etc.',
+                'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
                 'type' => $f->type,
             ]);
+            break;
         }
 
         return $value;

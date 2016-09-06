@@ -28,6 +28,10 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable
 
     /**
      * SQL fields are allowed to have expressions inside of them.
+     *
+     * @param mixed $value
+     *
+     * @return mixed
      */
     public function normalize($value)
     {

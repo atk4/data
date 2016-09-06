@@ -189,12 +189,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * In some situations you want to set field value and then declare
      * it later, then set $strict_field_check = false, but it's not
      * recommended.
+     *
+     * @var bool
      */
     protected $strict_field_check = true;
 
     /**
      * When set to true, all the field types will be enforced and
      * normalized when setting.
+     *
+     * @var bool
      */
     public $strict_types = true;
 
@@ -203,6 +207,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * perform value normalization. Use this if you think that
      * persistence may contain badly formatted data that may
      * impact your business logic.
+     *
+     * @var bool
      */
     public $load_normalization = false;
 
@@ -563,18 +569,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-        $f_object = $this->hasElement($field);
+        if (array_key_exists($field, $this->data)) {
+            return $this->data[$field];
+        }
 
-        $value =
-            array_key_exists($field, $this->data) ?
-            $this->data[$field] :
-            (
-                $f_object ?
-                $f_object->default :
-                null
-            );
+        $f = $this->hasElement($field);
 
-        return $value;
+        return $f ? $f->default : null;
     }
 
     /**
