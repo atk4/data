@@ -5,7 +5,7 @@ Overview
 Agile Data is a unique SQL/NoSQL access library that promotes correct Business Logic design in
 your PHP application and implements database access in a flexible and scalable way.
 
-.. image:: images/presentation.png 
+.. image:: images/presentation.png
     :target: https://www.youtube.com/watch?v=XUXZI7123B8
 
 Simple to learn
@@ -15,7 +15,7 @@ We have designed Agile Data to be very friendly for those who started programmin
 and teach them correct patterns through clever architectural design.
 
 Agile Data carries the spirit of PHP language in general and gives developer ability
-to make choices. The framework can be beneficial even in small applications, but the 
+to make choices. The framework can be beneficial even in small applications, but the
 true power can be drawn out of Agile Toolkit.
 
 Fresh Concepts
@@ -43,7 +43,7 @@ Major Databases are Supported
 =============================
 
 The classic approach of record mapping puts low requirements on the database, but as
-result acrifice performance. The abstraction of queries leads to your code being reliant
+result sacrifice performance. The abstraction of queries leads to your code being reliant
 on SQL vendor.
 
 Agile Data introduces concepts that can be implemented across multiple database vendors
