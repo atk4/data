@@ -10,7 +10,7 @@ namespace atk4\data;
 class Field
 {
     use \atk4\core\TrackableTrait;
-    use \atk4\core\HookTrait;
+//    use \atk4\core\HookTrait;
 
     /**
      * Default value of field.
@@ -152,23 +152,6 @@ class Field
     public function set($value)
     {
         $this->owner[$this->short_name] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Sets field attribute value.
-     *
-     * If you can, use $this->$attr = foo instead of this method. No magic.
-     *
-     * @param string $attr  Attribute name
-     * @param mixed  $value Attribute value
-     *
-     * @return $this
-     */
-    public function setAttr($attr, $value)
-    {
-        $this->$attr = $value;
 
         return $this;
     }

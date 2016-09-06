@@ -325,7 +325,7 @@ class Persistence_SQL extends Persistence
      *
      * @return array
      */
-    public function typecastLoadToPHP($m, $row)
+    public function typecastLoadFromPersistence($m, $row)
     {
         foreach ($row as $key => &$value) {
             if ($value === null) {
@@ -334,7 +334,7 @@ class Persistence_SQL extends Persistence
 
             if ($f = $m->hasElement($key)) {
                 if ($callback = $f->loadCallback) {
-                    $value = $callback($value);
+                    $value = $callback($value, $f, $this);
                     continue;
                 }
 
@@ -389,7 +389,23 @@ class Persistence_SQL extends Persistence
 
     /**
      * Will convert one row of data from native PHP types into
-     * persistence types.
+     * persistence types. This will also take care of the "actual"
+     * field keys. Example:.
+     *
+     * In:
+     *  [
+     *    'name'=>' John Smith',
+     *    'age'=>30,
+     *    'password'=>'abc',
+     *    'is_married'=>true,
+     *  ]
+     *
+     *  Out:
+     *   [
+     *     'first_name'=>'John Smith',
+     *     'age'=>30,
+     *     'is_married'=>1
+     *   ]
      *
      * @param Model $m
      * @param array $row
@@ -398,78 +414,95 @@ class Persistence_SQL extends Persistence
      */
     public function typecastSaveToPersistence($m, $row)
     {
-        foreach ($row as $key => &$value) {
-            if ($value instanceof \atk4\dsql\Expression || $value instanceof \atk4\dsql\Expressionable) {
+        $result = [];
+        foreach ($row as $key => $value) {
+
+            // Look up field object
+            $f = $m->hasElement($key);
+
+            // We have no knowledge of the field, it wasn't defined, so
+            // we will leave it as-is.
+            if (!$f) {
+                $result[$field] = $value;
                 continue;
             }
 
-            if ($value === null) {
+            // Figure out the name of the destination field
+            $field = $f->actual ?: $key;
+
+            if (
+                $value === null && $f->mandatory
+            ) {
+                throw new Exception(['Mandatory field value cannot be null', 'field' => $key]);
+            }
+
+            // Expression and null cannot be converted.
+            if (
+                $value instanceof \atk4\dsql\Expression ||
+                $value instanceof \atk4\dsql\Expressionable ||
+                $value === null
+            ) {
+                $result[$field] = $value;
                 continue;
             }
 
-            if ($f = $m->hasElement($key)) {
-                if ($callback = $f->saveCallback) {
-                    $value = $callback($value);
-                    continue;
-                }
 
-                switch ($f->type) {
-                case 'string':
-                case 'str':
-                    $value = trim($value);
-                    break;
-                case 'boolean':
-                case 'bool':
+            // Support for callback: (28, ['age', [persistence_object]])
+            if ($callback = $f->saveCallback) {
+                $result[$field] = $callback($value, $f, $this);
+                continue;
+            }
 
-                    if ($f->enum) {
-                        $value = $value ? $f->enum[0] : $f->enum[1];
-                    } else {
-                        $value = (int) $value;
-                    }
-
-                    break;
-                case 'money':
-                    $value = round($value, 4);
-                    break;
-                case 'date':
-                case 'datetime':
-                case 'time':
-
-                    // Can use DateTime, Carbon or anything else
-                    $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-
-                    $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
-
-                    if (is_numeric($value) && $value > 60) {
-                        // we can be certain this is a timestamp, not some
-                        // weird format
-                        $value = new $class('@'.$value);
-                    } elseif (is_string($value)) {
-                        $value = new $class($value);
-                    }
-
-                    if ($value instanceof $class) {
-                        $value->setTimezone(new \DateTimeZone('UTC'));
-                    }
-
-                    $value = $value->format($format[$f->type]);
-
-                    break;
-                case 'int':
-                case 'integer':
+            // Manually handle remaining types
+            switch ($f->type) {
+            case 'string': case 'str':
+                $value = trim($value);
+                break;
+            case 'boolean': case 'bool':
+                if ($f->enum) {
+                    $value = $value ? $f->enum[0] : $f->enum[1];
+                } else {
                     $value = (int) $value;
-                    break;
-                case 'float':
-                    $value = (float) $value;
-                    break;
-                case 'array':
-                    $value = json_encode($value);
-                    break;
                 }
+                break;
+            case 'money':
+                $value = round($value, 4);
+                break;
+            case 'date': case 'datetime': case 'time':
+                $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+
+                if (is_numeric($value)) {
+                    // we can be certain this is a timestamp, not some
+                    // weird format
+                    $value = new $class('@'.$value);
+                } elseif (is_string($value)) {
+                    $value = new $class($value);
+                }
+
+                // Datetime only - change to UTC
+                if ($value instanceof $class && $f->type == 'datetime') {
+                    $value->setTimezone(new \DateTimeZone('UTC'));
+                }
+
+                // Format for SQL
+                $value = $value->format(isset($f->dateFormat) ? $f->dateFormat : $format[$f->type]);
+                break;
+            case 'int': case 'integer':
+                $value = (int) $value;
+                break;
+            case 'float':
+                $value = (float) $value;
+                break;
+            case 'array':
+                $value = json_encode($value);
+                break;
             }
+            $result[$field] = $value;
         }
 
-        return $row;
+        return $result;
     }
 
     /**
@@ -581,7 +614,7 @@ class Persistence_SQL extends Persistence
 
         // execute action
         try {
-            $data = $this->typecastLoadToPHP($m, $load->getRow());
+            $data = $this->typecastLoadFromPersistence($m, $load->getRow());
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to load due to query error',
@@ -730,14 +763,7 @@ class Persistence_SQL extends Persistence
     public function insert(Model $m, $data)
     {
         $insert = $this->action($m, 'insert');
-
-        $data = $this->typecastSaveToPersistence($m, $data);
-
-        // apply all fields we got from get
-        foreach ($data as $field => $value) {
-            $f = $m->getElement($field);
-            $insert->set($f->actual ?: $f->short_name, $value);
-        }
+        $insert->set($this->typecastSaveToPersistence($m, $data));
 
         $st = null;
         try {
@@ -770,7 +796,7 @@ class Persistence_SQL extends Persistence
         $export = $this->action($m, 'select', [$fields]);
 
         return array_map(function ($r) use ($m) {
-            return $this->typecastLoadToPHP($m, $r);
+            return $this->typecastLoadFromPersistence($m, $r);
         }, $export->get());
     }
 

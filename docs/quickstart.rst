@@ -437,9 +437,9 @@ array of objects, :php:meth:`Model::ref()` actually returns another Model to
 you, however it will add one extra Condition. This type of reference traversal
 is called "Active Record to DataSet" or One to Many.
 
-Your Active Record was user john and after traversal you get a model with DataSet corresponding
-to all Systems that belong to user john. You can use the following to see number of records
-in DataSet or export DataSet::
+Your Active Record was user john and after traversal you get a model with DataSet
+corresponding to all Systems that belong to user john. You can use the following
+to see number of records in DataSet or export DataSet::
 
     $s->loaded();
     $s->action('count')->getOne();
@@ -453,17 +453,17 @@ Agile Data also supports another type of traversal - 'DataSet to DataSet' or Man
 
     $c = $m->ref('System')->ref('Client');
 
-This will create a Model_Client instance with a DataSet corresponding to all the Clients that
-are contained in all of the Systems that belong to user john. You can examine the this
-model further::
+This will create a Model_Client instance with a DataSet corresponding to all
+the Clients that are contained in all of the Systems that belong to user john.
+You can examine the this model further::
 
     $c->loaded();
     $c->action('count')->getOne();
     $c->export();
     $c->action('count')->getDebugQuery();
 
-By looking at the code - both MtM and OtM references are defined with 'hasMany'. The only
-difference is the loaded() state of the source model.
+By looking at the code - both MtM and OtM references are defined with 'hasMany'.
+The only difference is the loaded() state of the source model.
 
 Calling ref()->ref() is also called Deep Traversal.
 
@@ -527,7 +527,7 @@ be brought into the original model as fields::
     $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
     $m->export(['name','max_delivery','total_paid']);
 
-The above code is more consise and can be used together with reference declaration, although
+The above code is more concise and can be used together with reference declaration, although
 this is how it works::
 
     $m = new Model_Client($db);

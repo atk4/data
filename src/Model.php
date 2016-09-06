@@ -285,7 +285,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->addField($this->id_field, [
                 'system'    => true,
                 'type'      => 'int',
-                'mandatory' => true,
             ]);
         }
     }
@@ -455,14 +454,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-        $f_object = $this->hasElement($field);
+        $f = $this->hasElement($field);
 
         // set hook here
 
-        $default_value = $f_object ? $f_object->default : null;
+        $default_value = $f ? $f->default : null;
 
         $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] :
-            ((isset($f_object) && isset($f_object->default)) ? $f_object->default : null);
+            ((isset($f) && isset($f->default)) ? $f->default : null);
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
@@ -471,14 +470,28 @@ class Model implements \ArrayAccess, \IteratorAggregate
             return $this;
         }
 
-        if ($f_object && $f_object->read_only) {
-            throw new Exception([
-                'Attempting to change read-only field',
-                'field' => $field,
-                'model' => $this,
-            ]);
-        }
+        if ($f) {
+            // perform bunch of standard validation here. This can be re-factored in the future.
+            if ($f->read_only) {
+                throw new Exception([
+                    'Attempting to change read-only field',
+                    'field' => $field,
+                    'model' => $this,
+                ]);
+            }
 
+            if ($f->enum && $f->type != 'boolean' && $f->type != 'bool') {
+                if (!in_array($value, $f->enum, true) && $value !== null) {
+                    throw new Exception([
+                        'This is not one of the allowed values for the field',
+                        'field' => $field,
+                        'model' => $this,
+                        'value' => $value,
+                        'enum'  => $f->enum,
+                    ]);
+                }
+            }
+        }
 
         if (array_key_exists($field, $this->dirty) && $this->dirty[$field] === $value) {
             unset($this->dirty[$field]);
@@ -513,8 +526,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
             } else {
                 // get all field-elements
-                foreach ($this->elements as $field => $f_object) {
-                    if ($f_object instanceof Field) {
+                foreach ($this->elements as $field => $f) {
+                    if ($f instanceof Field) {
                         $data[$field] = $this->get($field);
                     }
                 }
@@ -525,29 +538,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-
-        $f_object = $this->hasElement($field);
-
-        $value =
-            array_key_exists($field, $this->data) ?
-            $this->data[$field] :
-            (
-                $f_object ?
-                $f_object->default :
-                null
-            );
-
-        if ($f_object) {
-            $f_object->hook('get', [$field, &$value]);
+        if (array_key_exists($field, $this->data)) {
+            return $this->data[$field];
         }
 
-        return $value;
+        $f = $this->hasElement($field);
+
+        return $f ? $f->default : null;
     }
 
     /**
      * Remove current field value and use default.
      *
-     * @param string|array $field
+     * @param string|array $name
      *
      * @return $this
      */
@@ -673,12 +676,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($f) {
-            $f->setAttr('system', true);
+            $f->system = true;
             if ($operator === '=' || func_num_args() == 2) {
                 $v = $operator === '=' ? $value : $operator;
 
                 if (!is_object($v) && !is_array($v)) {
-                    $f->setAttr('default', $v);
+                    $f->default = $v;
                 }
             }
         }
@@ -1139,18 +1142,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     continue;
                 }
 
-                // get actual name of the field
-                $actual = $field->actual ?: $name;
-
                 // get the value of the field
                 $value = $this->get($name);
 
                 if (isset($field->join)) {
                     $dirty_join = true;
                     // storing into a different table join
-                    $field->join->set($actual, $value);
+                    $field->join->set($name, $value);
                 } else {
-                    $data[$actual] = $value;
+                    $data[$name] = $value;
                 }
             }
 
@@ -1172,14 +1172,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     continue;
                 }
 
-                // get actual name of the field
-                $actual = $field->actual ?: $name;
-
                 if (isset($field->join)) {
                     // storing into a different table join
-                    $field->join->set($actual, $value);
+                    $field->join->set($name, $value);
                 } else {
-                    $data[$actual] = $value;
+                    $data[$name] = $value;
                 }
             }
 

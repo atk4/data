@@ -37,6 +37,73 @@ class FieldTest extends SQLTestCase
         $this->assertEquals(false, $m->isDirty('foo'));
     }
 
+    public function testMandatory1()
+    {
+        $m = new Model();
+        $m->addField('foo', ['mandatory' => true]);
+        $m['foo'] = 'abc';
+        $m['foo'] = null;
+        unset($m['foo']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testMandatory2()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'user');
+        $m->addField('name', ['mandatory' => true]);
+        $m->addField('surname');
+        $m->insert(['surname' => 'qq']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testMandatory4()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'user');
+        $m->addField('name', ['mandatory' => true]);
+        $m->addField('surname');
+        $m->load(1);
+        $m->save(['name' => null]);
+    }
+
+    public function testMandatory3()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'user');
+        $m->addField('name', ['mandatory' => true, 'default' => 'NoName']);
+        $m->addField('surname');
+        $m->insert(['surname' => 'qq']);
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+                2 => ['id' => 2, 'name' => 'NoName', 'surname' => 'qq'],
+            ], ];
+        $this->assertEquals($a, $this->getDB());
+    }
+
     /**
      * @expectedException Exception
      */
@@ -49,7 +116,6 @@ class FieldTest extends SQLTestCase
 
     public function testReadOnly2()
     {
-        $this->markTestSkipped('TODO: read_only setting same value should be OK');
         $m = new Model();
         $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
         $m['foo'] = 'abc';
@@ -57,11 +123,54 @@ class FieldTest extends SQLTestCase
 
     public function testReadOnly3()
     {
-        $this->markTestSkipped('TODO: read_only setting same value should be OK');
         $m = new Model();
         $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
         $m->data['foo'] = 'xx';
         $m['foo'] = 'xx';
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testEnum1()
+    {
+        $m = new Model();
+        $m->addField('foo', ['enum' => ['foo', 'bar']]);
+        $m['foo'] = 'xx';
+    }
+
+    public function testEnum2()
+    {
+        $m = new Model();
+        $m->addField('foo', ['enum' => [1, 'bar']]);
+        $m['foo'] = 1;
+
+        $this->assertSame(1, $m['foo']);
+
+        $m['foo'] = 'bar';
+        $this->assertSame('bar', $m['foo']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testEnum3()
+    {
+        $m = new Model();
+        $m->addField('foo', ['enum' => [1, 'bar']]);
+        $m['foo'] = true;
+    }
+
+    public function testEnum4()
+    {
+        // PHP type control is really crappy...
+        // This test has no purpose but it stands testament
+        // to a weird behaviours of PHP
+        $m = new Model();
+        $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
+        $m['foo'] = null;
+
+        $this->assertSame(null, $m['foo']);
     }
 
     public function testPersist()
@@ -181,5 +290,103 @@ class FieldTest extends SQLTestCase
         $m = new Model(['strict_field_check' => false]);
         $m->addField('foo');
         $m['baz'] = 'bar';
+    }
+
+    public function testActual()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'user');
+        $m->addField('first_name', ['actual' => 'name']);
+        $m->addField('surname');
+        $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
+        $m->load(1);
+        $this->assertEquals('John', $m['first_name']);
+
+        $d = $m->export();
+        $this->assertEquals('John', $d[0]['first_name']);
+
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+                2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
+            ], ];
+        $this->assertEquals($a, $this->getDB());
+    }
+
+    public function testSystem1()
+    {
+        $m = new Model();
+        $m->addField('foo', ['system' => true]);
+        $m->addField('bar');
+        $this->assertEquals(false, $m->getElement('foo')->isEditable());
+        $this->assertEquals(false, $m->getElement('foo')->isVisible());
+
+        $m->onlyFields(['bar']);
+        // TODO: build a query and see if the field is there
+    }
+
+    public function testEncryptedField()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'user' => [
+                '_' => ['id' => 1, 'name' => 'John', 'secret' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+
+        $encrypt = function ($value, $field, $persistence) {
+            if (!$persistence instanceof \atk4\data\Persistence_SQL) {
+                return $value;
+            }
+
+            /*
+            $algorithm = 'rijndael-128';
+            $key = md5($field->password, true);
+            $iv_length = mcrypt_get_iv_size( $algorithm, MCRYPT_MODE_CBC );
+            $iv = mcrypt_create_iv( $iv_length, MCRYPT_RAND );
+            return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
+             */
+            return base64_encode($value);
+        };
+
+        $decrypt = function ($value, $field, $persistence) {
+            if (!$persistence instanceof \atk4\data\Persistence_SQL) {
+                return $value;
+            }
+
+            /*
+            $algorithm = 'rijndael-128';
+            $key = md5($field->password, true);
+            $iv_length = mcrypt_get_iv_size( $algorithm, MCRYPT_MODE_CBC );
+            $iv = mcrypt_create_iv( $iv_length, MCRYPT_RAND );
+            return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
+             */
+            return base64_decode($value);
+        };
+
+
+        $m = new Model($db, 'user');
+        $m->addField('name', ['mandatory' => true]);
+        $m->addField('secret', [
+            'password'     => 'bonkers',
+            'saveCallback' => $encrypt,
+            'loadCallback' => $decrypt,
+        ]);
+        $m->save(['name' => 'John', 'secret' => 'i am a woman']);
+
+        $a = $this->getDB();
+        $this->assertNotNull($a['user'][1]['secret']);
+        $this->assertNotEquals('i am a woman', $a['user'][1]['secret']);
+
+
+        $m->unload()->load(1);
+        $this->assertEquals('i am a woman', $m['secret']);
     }
 }
