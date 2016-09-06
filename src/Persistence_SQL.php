@@ -325,62 +325,20 @@ class Persistence_SQL extends Persistence
      *
      * @return array
      */
-    public function typecastLoadFromPersistence($m, $row)
+    public function typecastLoadRow($m, $row)
     {
+        if (!$row) {
+            return $row;
+        }
         foreach ($row as $key => &$value) {
             if ($value === null) {
                 continue;
             }
 
             if ($f = $m->hasElement($key)) {
-                if ($callback = $f->loadCallback) {
-                    $value = $callback($value, $f, $this);
-                    continue;
-                }
 
-                switch ($f->type) {
-                case 'string':
-                case 'str':
-                    break;
-                case 'boolean':
-                case 'bool':
+                $value = $this->typecastLoadField($f, $value);
 
-                    if ($f->enum) {
-                        $value = ($value == $f->enum[0]);
-                    } else {
-                        $value = (bool) $value;
-                    }
-
-                    break;
-                case 'money':
-                    $value = round($value, 4);
-                    break;
-                case 'date':
-                case 'datetime':
-                case 'time':
-
-                    // Can use DateTime, Carbon or anything else
-                    $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-
-                    if (is_numeric($value) && $value > 60) {
-                        // we can be certain this is a timestamp, not some
-                        // weird format
-                        $value = new $class('@'.$value);
-                    } elseif (is_string($value)) {
-                        $value = new $class($value, new \DateTimeZone('UTC'));
-                    }
-                    break;
-                case 'int':
-                case 'integer':
-                    $value = (int) $value;
-                    break;
-                case 'float':
-                    $value = (float) $value;
-                    break;
-                case 'array':
-                    $value = json_decode($value, true) ?: [];
-                    break;
-                }
             }
         }
 
@@ -412,8 +370,11 @@ class Persistence_SQL extends Persistence
      *
      * @return array
      */
-    public function typecastSaveToPersistence($m, $row)
+    public function typecastSaveRow($m, $row)
     {
+        if (!$row) {
+            return $row;
+        }
         $result = [];
         foreach ($row as $key => $value) {
 
@@ -446,64 +407,128 @@ class Persistence_SQL extends Persistence
                 continue;
             }
 
-
-            // Support for callback: (28, ['age', [persistence_object]])
-            if ($callback = $f->saveCallback) {
-                $result[$field] = $callback($value, $f, $this);
-                continue;
-            }
-
-            // Manually handle remaining types
-            switch ($f->type) {
-            case 'string': case 'str':
-                $value = trim($value);
-                break;
-            case 'boolean': case 'bool':
-                if ($f->enum) {
-                    $value = $value ? $f->enum[0] : $f->enum[1];
-                } else {
-                    $value = (int) $value;
-                }
-                break;
-            case 'money':
-                $value = round($value, 4);
-                break;
-            case 'date': case 'datetime': case 'time':
-                $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-
-                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
-
-                if (is_numeric($value)) {
-                    // we can be certain this is a timestamp, not some
-                    // weird format
-                    $value = new $class('@'.$value);
-                } elseif (is_string($value)) {
-                    $value = new $class($value);
-                }
-
-                // Datetime only - change to UTC
-                if ($value instanceof $class && $f->type == 'datetime') {
-                    $value->setTimezone(new \DateTimeZone('UTC'));
-                }
-
-                // Format for SQL
-                $value = $value->format(isset($f->dateFormat) ? $f->dateFormat : $format[$f->type]);
-                break;
-            case 'int': case 'integer':
-                $value = (int) $value;
-                break;
-            case 'float':
-                $value = (float) $value;
-                break;
-            case 'array':
-                $value = json_encode($value);
-                break;
-            }
-            $result[$field] = $value;
+            $result[$field] = $this->typecastSaveField($f, $value);
         }
 
         return $result;
     }
+
+    /**
+     * Cast specific field value from the way how it's stored inside
+     * persistence to a PHP format
+     */
+    function typecastLoadField(Field $f, $value) {
+        if ($callback = $f->loadCallback) {
+            return $callback($value, $f, $this);
+        }
+
+        switch ($f->type) {
+        case 'string':
+        case 'str':
+            break;
+        case 'boolean':
+        case 'bool':
+
+            if ($f->enum) {
+                $value = ($value == $f->enum[0]);
+            } else {
+                $value = (bool) $value;
+            }
+
+            break;
+        case 'money':
+            $value = round($value, 4);
+            return $value;
+        case 'date':
+        case 'datetime':
+        case 'time':
+
+            // Can use DateTime, Carbon or anything else
+            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+            if (is_numeric($value) && $value > 60) {
+                // we can be certain this is a timestamp, not some
+                // weird format
+                $value = new $class('@'.$value);
+            } elseif (is_string($value)) {
+                $value = new $class($value, new \DateTimeZone('UTC'));
+            }
+            break;
+        case 'int':
+        case 'integer':
+            $value = (int) $value;
+            break;
+        case 'float':
+            $value = (float) $value;
+            break;
+        case 'array':
+            $value = json_decode($value, true) ?: [];
+            break;
+        }
+        return $value;
+    }
+
+    /**
+     * Prepare value of a specific field by converting it to
+     * persistence - friendly format.
+     */
+    function typecastSaveField(Field $f, $value) {
+
+        // Support for callback: (28, ['age', [persistence_object]])
+        if ($callback = $f->saveCallback) {
+            return $callback($value, $f, $this);
+        }
+
+        // Manually handle remaining types
+        switch ($f->type) {
+        case 'string': case 'str':
+            $value = trim($value);
+            break;
+        case 'boolean': case 'bool':
+            if ($f->enum) {
+                $value = $value ? $f->enum[0] : $f->enum[1];
+            } else {
+                $value = (int) $value;
+            }
+            break;
+        case 'money':
+            $value = round($value, 4);
+            break;
+        case 'date': case 'datetime': case 'time':
+            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+            $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+
+            if (is_numeric($value)) {
+                // we can be certain this is a timestamp, not some
+                // weird format
+                $value = new $class('@'.$value);
+            } elseif (is_string($value)) {
+                $value = new $class($value);
+            }
+
+            // Datetime only - change to UTC
+            if ($value instanceof $class && $f->type == 'datetime') {
+                $value->setTimezone(new \DateTimeZone('UTC'));
+            }
+
+            // Format for SQL
+            $value = $value->format(isset($f->dateFormat) ? $f->dateFormat : $format[$f->type]);
+            break;
+        case 'int': case 'integer':
+            $value = (int) $value;
+            break;
+        case 'float':
+            $value = (float) $value;
+            break;
+        case 'array':
+            $value = json_encode($value);
+            break;
+        }
+        return $value;
+    }
+
+
 
     /**
      * Executing $model->action('update') will call this method.
@@ -614,7 +639,7 @@ class Persistence_SQL extends Persistence
 
         // execute action
         try {
-            $data = $this->typecastLoadFromPersistence($m, $load->getRow());
+            $data = $this->typecastLoadRow($m, $load->getRow());
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to load due to query error',
@@ -763,7 +788,7 @@ class Persistence_SQL extends Persistence
     public function insert(Model $m, $data)
     {
         $insert = $this->action($m, 'insert');
-        $insert->set($this->typecastSaveToPersistence($m, $data));
+        $insert->set($this->typecastSaveRow($m, $data));
 
         $st = null;
         try {
@@ -796,7 +821,7 @@ class Persistence_SQL extends Persistence
         $export = $this->action($m, 'select', [$fields]);
 
         return array_map(function ($r) use ($m) {
-            return $this->typecastLoadFromPersistence($m, $r);
+            return $this->typecastLoadRow($m, $r);
         }, $export->get());
     }
 
@@ -835,7 +860,7 @@ class Persistence_SQL extends Persistence
         $update = $this->initQuery($m);
         $update->mode('update');
 
-        $data = $this->typecastSaveToPersistence($m, $data);
+        $data = $this->typecastSaveRow($m, $data);
 
         // only apply fields that has been modified
         $cnt = 0;

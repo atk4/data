@@ -2,7 +2,7 @@
 .. _Persistence:
 
 =============================
-Saving and Loading Model Data
+Loading and Saving (Persistence)
 =============================
 
 .. php:class:: Model
@@ -105,6 +105,365 @@ database record will also have its ID changed. Here is example::
     $m->save();
 
 After this your database won't have a record with ID 123 anymore.
+
+Type Converting
+===============
+
+PHP operates with a handful of scalar types such as integer, string,
+booleans etc. There are more advanced types such as DateTime. Finally
+user may introduce more useful types.
+
+Agile Data ensures that regardless of the selected database, types
+are converted correctly for saving and restored as they were when loading::
+
+    $m->addField('is_admin', ['type'=>'boolean']);
+    $m['is_admin'] = false;
+    $m->save();
+
+    // SQL database will actually store `0`
+
+    $m->load();
+
+    $m['is_admin'];  // converted back to `false`
+
+Behind a two simple lines might be a long path for the value. The
+various components are essential and as developer you must understand
+the full sequence::
+
+    $m['is_admin'] = false;
+    $m->save();
+
+Strict Types an Normalization
+-----------------------------
+
+PHP does not have strict types for variables, however if you specify type
+for your model fields, the type will be enforced.
+
+Calling "set()" ar using array-access to set the value will start by
+casting the value to an appropriate data-type. If it is impossible to
+cast the value, then exception will be generated::
+
+    $m['is_admin'] = "1"; // OK, but stores as `true`
+
+    $m['is_admin'] = 123; // throws exception.
+
+It's not only the 'type' property, but 'enum' can also imply restrictions::
+
+    $m->addField('access_type', ['enum' => ['read_only', 'full']]);
+
+    $m['access_type'] = 'full'; // OK
+    $m['access_type'] = 'half-full'; // Exception
+
+There are also non-trivial types in Agile Data::
+
+    $m->addField('salary', ['type' => 'money']);
+    $m['salary'] = "20";  // converts to 20.00
+
+    $m->addField('date', ['type' => 'date']);
+    $m['date'] = time();  // converts to DateTime class
+
+Finally, you may create your own custom field types that follow a more
+complex logic::
+
+    $m->add(new Field_Currency(), 'balance');
+    $m['balance'] = '12,200.00 EUR';
+
+    // May transparently work with 2 columns: 'balance_amount' and
+    // 'balance_currency_id'. 
+
+The process of converting field values as indicated above is called
+"normalization" and it is controlled by two model properties::
+
+    $m->strict_types = true;
+    $m->load_normalization = false;
+
+Setting `strict_types` to false, will still disable any type-casting
+and store exact values you specify regardless of type. If you switch
+on `load_normalization` then the values will also be normalized
+as they are loaded from the database. Normally you should only
+do that if you're storing values into database by other means and
+not through Agile Data.
+
+Final field flag that is worth mentioning is called `read_only`
+and if set, then value of a field may not be modified directly::
+
+    $m->addField('ref_no', ['read_only' => true]);
+    $m->load(123);
+
+    $m['ref_no']; // perfect for reading field that is populated by trigger.
+
+    $m['ref_no'] = 'foo'; // exception
+
+Note that `read_only` can still have a default value::
+
+    $m->addField('created', [
+        'read_only' => true,
+        'type'      => 'datetime',
+        'default'   => new DateTime()
+    ]);
+
+    $m->save();  // stores creation time just fine and also will loade it.
+
+
+.. note:: If you hae been following our "Domain" vs "Persistence" then
+    you can probably see that all of the above functionality described
+    in this section apply only to the "Domain" model.
+
+Typecasting
+-----------
+
+Typecasting is envoked when you are attempting to save or load the
+record. Unlike strict types and normalization, typecasting is a
+persistence-specific operation.
+
+Typecasting is necessary to save the values inside the database and
+restore them back just as they were before. When modifying a
+record, typecasting will only be invoked on the fields which were
+dirty.
+
+Join construct will single out the fields that needs to be stored
+in a separate table and will typecast them before persisting.
+
+You must remember that type-castin is a two-way operation. If
+you introducing your own types, you will need to make sure they
+can be saved and loaded correctly. 
+
+There are also a lot of flexiblity on how exactly you typecast
+your values to match your database requirements.
+
+
+For 
+SQL databases it's essential to convert date formats, booleans
+and pack arrays::
+
+    $m->addField('registered', ['type'=>'date']);
+
+    $m['registered'] = time();   // will cast to DateTime
+
+    $m->save();   // will convert into YYYY-MM-DD
+
+Some formats such as `date`, `time` and `datetime` may have
+additional options to it::
+
+    $m->addField('registered', [
+        'type'=>'date',
+        'datetime_class'=>'Carbon\Carbon',
+        'persist_format'=>'d/m/Y',
+    ]);
+
+    $m['registered'] = time();   // will cast to Carbon
+
+    $m->save();   // will convert into DD/MM/YYYY in SQL
+
+Here is another example with booleans::
+
+    $m->addField('is_married', [
+        'type' => boolean',
+        'enum' => ['Yes', 'No']
+    ]);
+
+    $m['is_married'] = 'Yes';  // type-casts into true
+    $m['is_married'] = true;   // better way!
+
+    $m->save();   // stores as "Yes".
+
+Validation
+----------
+
+Validation in application always depends on business logic
+For example if you want `age` field to be
+above `14` for the user registration you may have to ask
+yourself some questions:
+
+ - Can user store `12` inside a age field?
+ - If yes, Can user persist age with value of `12`?
+ - If yes, Can user complete registration with age of `12`?
+
+If 12 cannot be stored at all, then exception would be
+generated during set(), before you even get a chance to look
+at other fields.
+
+If storing of `12` is in the model field is OK validation can
+be called from beforeSave() hook. This might be a better way
+if your validation rules depends on multiple field conditions
+which you need to be able to access.
+
+Finally you may allow persistence to store `12` value but
+validate before on a user-defined operation. `completeRegistration`
+method could perform the validation. In this case you can
+create a confirmation page, that actually stores your
+in-complete registration inside the database.
+
+You may also make a decision to store registration-in-progress inside
+a session, so your validation should be aware of this logic.
+
+Agile Data relies on 3rd party validation libraries, and
+you should be able to find more information on how to integrate them.
+
+UI Presentation
+---------------
+
+Agile Data does not deal directly with formatting your data
+for the user. There may be various items to consider, for instance
+the same date can be presented in a short or long format for the user.
+
+The UI framework such as Agile Toolkit can make use of the `ui`
+property to allow user to define default formats or input parsing
+rules, but Agile Data does not regulate the `ui` property and
+different UI frameworks may use it differently.
+
+Multi-column fields
+-------------------
+
+Lets talk more about this currency field::
+
+    $m->add(new Field_Currency(), 'balance');
+    $m['balance'] = '12,200.00 EUR';
+
+It may be designed to split up the value by using two
+fields in the database: `balance_amount` and `balance_currency_id`.
+Both values must be loaded otherwise it will be impossible
+to re-construct the value.
+
+On other hand, we would prefer to hide those two columns
+for the rest of application.
+
+Finally, even though we are storing "id" for the currency
+we want to make use of References. Your init() method
+for a Field_Currency might look like this::
+
+
+    function init() {
+        parent::init();
+
+        $this->never_persist = true;
+
+        $f = $this->short_name; // balance
+
+        $this->owner->addField(
+            $f.'_amount',
+            ['type' => 'money', 'system' => true]
+        );
+
+        $this->owner->hasOne(
+            $f.'_currency_id',
+            [
+                $this->currency_model ?: new Currency(),
+                'system' => true,
+            ]
+        );
+    }
+
+There are more work to be done until Field_Currency could be
+a valid field, but I wanted to draw your attenton to the use
+of field flags:
+
+ - system flag is used to hide `balance_amount` and `balance_currency_id`.
+ - never_persist flag is used because there are no `balance` column.
+
+
+Type Matrix
+-----------
+
+.. todo:: this section might neet cleanup
+
++----+----+----------------------------------------------------------+------+----+-----+
+| ty | al | description                                              | nati | sq | mon |
+| pe | ia |                                                          | ve   | l  | go  |
+|    | s( |                                                          |      |    |     |
+|    | es |                                                          |      |    |     |
+|    | )  |                                                          |      |    |     |
++====+====+==========================================================+======+====+=====+
+| st |    | Will be trim() ed.                                       |      |    |     |
+| ri |    |                                                          |      |    |     |
+| ng |    |                                                          |      |    |     |
++----+----+----------------------------------------------------------+------+----+-----+
+| in | in | will cast to int make sure it's not passed as a string.  | -394 | 49 | 49  |
+| t  | te |                                                          | ,    |    |     |
+|    | ge |                                                          | "49" |    |     |
+|    | r  |                                                          |      |    |     |
++----+----+----------------------------------------------------------+------+----+-----+
+| fl |    | decimal number with floating point                       | 3.28 |    |     |
+| oa |    |                                                          | 84,  |    |     |
+| t  |    |                                                          |      |    |     |
++----+----+----------------------------------------------------------+------+----+-----+
+| mo |    | Will convert loosly-specified currency into float or     | "£3, | 38 |     |
+| ne |    | dedicated format for storage. Optionally support 'fmt'   | 294. | 29 |     |
+| y  |    | proprety.                                                | 48", | 4. |     |
+|    |    |                                                          | 3.99 | 48 |     |
+|    |    |                                                          | 999  | ,  |     |
+|    |    |                                                          |      | 4  |     |
++----+----+----------------------------------------------------------+------+----+-----+
+| bo | bo | true / false type value. Optionally specify              | true | 1  | tru |
+| ol | ol | 'enum'=>['Y','N'] to store true as 'Y' and false as 'N'. |      |    | e   |
+|    | ea | By default uses [1,0].                                   |      |    |     |
+|    | n  |                                                          |      |    |     |
++----+----+----------------------------------------------------------+------+----+-----+
+| ar |    | Optionally pass 'fmt' option, which is 'json' by         | [2=> | {2 | sto |
+| ra |    | default. Will json\_encode and json\_decode(..., true)   | "bar | :" | red |
+| y  |    | the value if database does not support array storage.    | "]   | ba | as- |
+|    |    |                                                          |      | r" | is  |
+|    |    |                                                          |      | }  |     |
++----+----+----------------------------------------------------------+------+----+-----+
+| bi |    | Supports storage of binary data like BLOBs               |      |    |     |
+| na |    |                                                          |      |    |     |
+| ry |    |                                                          |      |    |     |
++----+----+----------------------------------------------------------+------+----+-----+
+
+-  Money: http://php.net/manual/en/numberformatter.parsecurrency.php.
+-  money: See also
+   http://www.thefinancials.com/Default.aspx?SubSectionID=curformat
+
+Dates and Time
+--------------
+
+.. todo:: this section might neet cleanup
+
+There are 3 date formats supported:
+
+-  ts (or timestamp): Stores in database using UTC. Defaults into unix
+   timestamp (int) in PHP.
+
+-  date: Converts into YYYY-MM-DD using UTC timezone for SQL. Defaults
+   to DateTime() class in PHP, but supports string input (parsed as date
+   in a current timezone) or unix timestamp.
+-  time: converts into HH:MM:SS using UTC timezone for storing in SQL.
+   Defaults to DateTime() class in PHP, but supports string input
+   (parsed as date in current timezone) or unix timestamp. Will discard
+   date from timestamp.
+-  datetime: stores both date and time. Uses UTC in DB. Defaults to
+   DateTime() class in PHP. Supports string input parsed by strtotime()
+   or unix timestamp.
+
+Customisations
+--------------
+
+Process which converts field values in native PHP format to/from database-specific formats
+is called typecasting. Persistence driver implements a necessary type-casting through the
+following two methods:
+
+.. php:method:: typecastLoadRow($model, $row);
+
+    Convert persistence-specific row of data to PHP-friendly row of data.
+
+.. php:method:: typecastSaveRow($model, $row);
+
+
+    Convert native PHP-native row of data into persistence-specific.
+
+Row persisting may rely on additional methods, such as:
+
+
+.. php:method:: typecastLoadField(Field $field, $value);
+
+    Convert persistence-specific row of data to PHP-friendly row of data.
+
+.. php:method:: typecastSaveField(Field $field, $value);
+
+
+    Convert native PHP-native row of data into persistence-specific.
+
+
 
 Duplicating and Replacing Records
 =================================
@@ -666,5 +1025,4 @@ SQL actions apply the following:
 - count:  init, field, conditions, hook,
 - field:  init, field, conditions
 - fx:     init, field, conditions
-
 
