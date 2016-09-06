@@ -60,8 +60,8 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
         $m1->addField('surname');
 
         $m2 = new Model($p, 'client');
-        $m1->addField('name');
-        $m1->addField('surname');
+        $m2->addField('name');
+        $m2->addField('surname');
 
         // test saveAs, asModel, newInstance
         $m1->load(2);
