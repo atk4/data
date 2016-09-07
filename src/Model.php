@@ -481,11 +481,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 $value = $f->normalize($value);
             }
         } catch (Exception $e) {
-            if (method_exists($e, 'addMoreInfo')) {
-                $e->addMoreInfo('field', $field);
-                $e->addMoreInfo('value', $value);
-                $e->addMoreInfo('f', $f);
-            }
+            $e->addMoreInfo('field', $field);
+            $e->addMoreInfo('value', $value);
+            $e->addMoreInfo('f', $f);
             throw $e;
         }
 
