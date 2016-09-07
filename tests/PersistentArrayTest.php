@@ -63,7 +63,6 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
         ], $a);
-
     }
 
     public function testSaveAndUnload()
