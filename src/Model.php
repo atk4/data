@@ -940,6 +940,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $m->dirty = $this->dirty;
         $m->id = $this->id;
 
+        // next we need to go over fields to see if any system
+        // values have changed and mark them as dirty
+
         return $m;
     }
 

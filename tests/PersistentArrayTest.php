@@ -44,48 +44,56 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
 
     public function testSaveAs()
     {
-        $this->markTestIncomplete('the method is technically correct, but the test is not saving, because the model is not dirty');
+        $this->markTestSkipped('TODO: see #146');
         $a = [
             'user' => [
-                1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-            ],
-            'client' => [
-                1 => ['name' => 'Jack', 'surname' => 'Daniels'],
+                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
         ];
 
         $p = new Persistence_Array($a);
-        $m1 = new Model($p, 'user');
-        $m1->addField('name');
-        $m1->addField('surname');
-
-        $m2 = new Model($p, 'client');
-        $m2->addField('name');
-        $m2->addField('surname');
-
-        // test saveAs, asModel, newInstance
-        $m1->load(2);
-        $m1->saveAs($m2);
+        $m = new Model_Male($p, 'user');
+        $m->load(1);
+        $m->saveAs(new Model_Female());
 
         $this->assertEquals([
             'user' => [
-                1 => ['name' => 'John', 'surname' => 'Smith'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-            ],
-            'client' => [
-                1 => ['name' => 'Jack', 'surname' => 'Daniels'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
         ], $a);
 
-        // test saveAndUnload
-        $m1->load(1);
-        $this->assertTrue($m1->loaded());
-        $m1->save();
-        $this->assertTrue($m1->loaded());
-        $m1->saveAndUnload();
-        $this->assertFalse($m1->loaded());
+    }
+
+    public function testSaveAndUnload()
+    {
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
+            ],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m = new Model_Male($p, 'user');
+
+        $m->load(1);
+        $this->assertTrue($m->loaded());
+        $m['gender'] = 'F';
+        $m->saveAndUnload();
+        $this->assertFalse($m->loaded());
+
+        $m = new Model_Female($p, 'user');
+        $m->load(1);
+        $this->assertTrue($m->loaded());
+
+        $this->assertEquals([
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
+            ],
+        ], $a);
     }
 
     public function testUpdateArray()
