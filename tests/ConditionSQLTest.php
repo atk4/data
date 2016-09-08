@@ -28,16 +28,24 @@ class ConditionSQLTest extends SQLTestCase
         $m->tryLoad(2);
         $this->assertEquals('Sue', $m['name']);
 
-        $m->addCondition('gender', 'M');
-        $m->tryLoad(1);
-        $this->assertEquals('John', $m['name']);
-        $m->tryLoad(2);
-        $this->assertEquals(null, $m['name']);
+        $mm = clone $m;
+        $mm->addCondition('gender', 'M');
+        $mm->tryLoad(1);
+        $this->assertEquals('John', $mm['name']);
+        $mm->tryLoad(2);
+        $this->assertEquals(null, $mm['name']);
 
         $this->assertEquals(
             'select `id`,`name`,`gender` from `user` where `gender` = :a',
-            $m->action('select')->render()
+            $mm->action('select')->render()
         );
+
+        $mm = clone $m;
+        $mm->withID(2); // = addCondition(id, 2)
+        $mm->tryLoad(1);
+        $this->assertEquals(null, $mm['name']);
+        $mm->tryLoad(2);
+        $this->assertEquals('Sue', $mm['name']);
     }
 
     public function testOperations()

@@ -169,7 +169,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         $insert = $this->dsql();
         $insert->mode('insert');
-        $insert->set($model->persistence->typecastSaveToPersistence($model, $this->save_buffer));
+        $insert->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
         $insert->set($this->foreign_field, null);
         $insert->insert();
@@ -185,7 +185,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         }
 
         $insert = $this->dsql();
-        $insert->set($model->persistence->typecastSaveToPersistence($model, $this->save_buffer));
+        $insert->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
         $insert
             ->set(
@@ -207,7 +207,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         }
 
         $update = $this->dsql();
-        $update->set($model->persistence->typecastSaveToPersistence($model, $this->save_buffer));
+        $update->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
 
         if ($this->reverse) {

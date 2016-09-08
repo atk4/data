@@ -38,11 +38,11 @@ engines:
         enabled: false
       Controversial/CamelCaseMethodName:    # because we need certain method naming patterns, render_blah for rendering [blah]
         enabled: false
-      Controversial/CamelCaseParameterName: # 
+      Controversial/CamelCaseParameterName: #
         enabled: false
       Controversial/CamelCasePropertyName:  # because we use _better_dont_change properties
         enabled: false
-      Controversial/CamelCaseVariableName:  # 
+      Controversial/CamelCaseVariableName:  #
         enabled: false
       Controversial/CamelCaseClassName:     # Because we use Join_SQL where we specifically include _
         enabled: false
@@ -55,8 +55,17 @@ engines:
     enabled: true
 ratings:
   paths:
-  - src/**
+  - "src/**"
 exclude_paths:
-- docs/**
-- tests/**
-- vendor/**
+- "docs/**"
+- "tests/**"
+- "vendor/**"
+# exclude obsolete classes
+- "src/Field_Many.php"
+- "src/Field_One.php"
+- "src/Field_SQL_One.php"
+- "src/Relation_Many.php"
+- "src/Relation_One.php"
+- "src/Relation_SQL_One.php"
+# exclude classes completely inherited from other repos
+- "src/Exception.php"

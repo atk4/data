@@ -22,13 +22,13 @@ class Field
     /**
      * Field type.
      *
-     * Values are: 'string', 'boolean', 'bool', 'integer', 'int', 'money',
-     *             'float', 'date', 'datetime', 'time', 'array'.
+     * Values are: 'string', 'boolean', 'integer', 'money', 'float',
+     *             'date', 'datetime', 'time', 'struct'.
      * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
      */
-    public $type = 'string';
+    public $type = null;
 
     /**
      * For several types enum can provide list of available options.
@@ -130,6 +130,96 @@ class Field
                 $this->$key = $val;
             }
         }
+    }
+
+    /**
+     * Depending on the type of a current field, this will perform
+     * some normalization for strict types.
+     *
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function normalize($value)
+    {
+        if (!$this->owner->strict_types) {
+            return $value;
+        }
+        if ($value === null) {
+            return;
+        }
+        $f = $this;
+
+        switch ($f->type) {
+        case 'string':
+            if (!is_string($value) && !is_numeric($value)) {
+                throw new Exception('Field value must be a string');
+            }
+            $value = trim($value);
+            break;
+        case 'boolean':
+            if (is_bool($value)) {
+                break;
+            }
+            if (isset($f->enum) && is_array($f->enum)) {
+                if (isset($f->enum[0]) && $value === $f->enum[0]) {
+                    $value = false;
+                } elseif (isset($f->enum[1]) && $value === $f->enum[1]) {
+                    $value = true;
+                }
+            }
+            if (!is_bool($value)) {
+                throw new Exception('Field value must be a boolean');
+            }
+            break;
+        case 'money':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be numeric');
+            }
+            $value = round($value, 4);
+            break;
+        case 'date':
+        case 'datetime':
+        case 'time':
+            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+            if (is_numeric($value)) {
+                $value = new $class('@'.$value);
+            } elseif (is_string($value)) {
+                $value = new $class($value);
+            } elseif (!$value instanceof $class) {
+                throw new Exception('Field value must be a '.$f->type);
+            }
+            break;
+        case 'integer':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be an integer');
+            }
+            $value = (int) $value;
+            break;
+        case 'float':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be a float');
+            }
+            $value = (float) $value;
+            break;
+        case 'struct':
+            // Can be pretty-much anything, but not object
+            if (is_object($value)) {
+                throw new Exception('Field value must be a struct');
+            }
+            break;
+        case 'int':
+        case 'bool':
+        case 'str':
+            throw new Exception([
+                'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
+                'type' => $f->type,
+            ]);
+            break;
+        }
+
+        return $value;
     }
 
     /**

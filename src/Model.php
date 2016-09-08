@@ -189,8 +189,28 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * In some situations you want to set field value and then declare
      * it later, then set $strict_field_check = false, but it's not
      * recommended.
+     *
+     * @var bool
      */
     protected $strict_field_check = true;
+
+    /**
+     * When set to true, all the field types will be enforced and
+     * normalized when setting.
+     *
+     * @var bool
+     */
+    public $strict_types = true;
+
+    /**
+     * When set to true, loading model from database will also
+     * perform value normalization. Use this if you think that
+     * persistence may contain badly formatted data that may
+     * impact your business logic.
+     *
+     * @var bool
+     */
+    public $load_normalization = false;
 
     /**
      * Models that contain expressions will automatically reload after save.
@@ -284,7 +304,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->id_field) {
             $this->addField($this->id_field, [
                 'system'    => true,
-                'type'      => 'int',
+                'type'      => 'integer',
             ]);
         }
     }
@@ -456,7 +476,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $f = $this->hasElement($field);
 
-        // set hook here
+        try {
+            if ($f && $this->hook('normalize', [$f, $value]) !== false) {
+                $value = $f->normalize($value);
+            }
+        } catch (Exception $e) {
+            $e->addMoreInfo('field', $field);
+            $e->addMoreInfo('value', $value);
+            $e->addMoreInfo('f', $f);
+            throw $e;
+        }
 
         $default_value = $f ? $f->default : null;
 
@@ -480,7 +509,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 ]);
             }
 
-            if ($f->enum && $f->type != 'boolean' && $f->type != 'bool') {
+            if ($f->enum && $f->type != 'boolean') {
                 if (!in_array($value, $f->enum, true) && $value !== null) {
                     throw new Exception([
                         'This is not one of the allowed values for the field',
@@ -692,7 +721,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Shortcut for using addConditionn(id_field, $id).
+     * Shortcut for using addCondition(id_field, $id).
      *
      * @param mixed $id
      *
@@ -910,6 +939,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $m->data = $this->data;
         $m->dirty = $this->dirty;
         $m->id = $this->id;
+
+        // next we need to go over fields to see if any system
+        // values have changed and mark them as dirty
 
         return $m;
     }
