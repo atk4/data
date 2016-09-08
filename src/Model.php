@@ -477,7 +477,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $f = $this->hasElement($field);
 
         try {
-            if ($this->hook('normalize') !== false && $f) {
+            if ($f && $this->hook('normalize', [$f, $value]) !== false) {
                 $value = $f->normalize($value);
             }
         } catch (Exception $e) {
