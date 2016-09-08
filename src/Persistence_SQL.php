@@ -434,9 +434,9 @@ class Persistence_SQL extends Persistence
 
             if (isset($f->enum) && is_array($f->enum)) {
                 if (isset($f->enum[0]) && $value == $f->enum[0]) {
-                    $value = true;
-                } elseif (isset($f->enum[1]) && $value == $f->enum[1]) {
                     $value = false;
+                } elseif (isset($f->enum[1]) && $value == $f->enum[1]) {
+                    $value = true;
                 } else {
                     $value = null;
                 }
@@ -496,7 +496,7 @@ class Persistence_SQL extends Persistence
         switch ($f->type) {
         case 'boolean':
             if (isset($f->enum) && is_array($f->enum) && isset($f->enum[0]) && isset($f->enum[1])) {
-                $value = $value ? $f->enum[0] : $f->enum[1];
+                $value = $value ? $f->enum[1] : $f->enum[0];
             } else {
                 $value = (int) $value;
             }

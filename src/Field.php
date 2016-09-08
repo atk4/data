@@ -22,8 +22,8 @@ class Field
     /**
      * Field type.
      *
-     * Values are: 'string', 'boolean', 'bool', 'integer', 'int', 'money',
-     *             'float', 'date', 'datetime', 'time', 'array'.
+     * Values are: 'string', 'boolean', 'integer', 'money', 'float',
+     *             'date', 'datetime', 'time', 'struct'.
      * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
@@ -163,9 +163,9 @@ class Field
             }
             if (isset($f->enum) && is_array($f->enum)) {
                 if (isset($f->enum[0]) && $value === $f->enum[0]) {
-                    $value = true;
-                } elseif (isset($f->enum[1]) && $value === $f->enum[1]) {
                     $value = false;
+                } elseif (isset($f->enum[1]) && $value === $f->enum[1]) {
+                    $value = true;
                 }
             }
             if (!is_bool($value)) {

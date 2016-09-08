@@ -258,7 +258,7 @@ Here is another example with booleans::
 
     $m->addField('is_married', [
         'type' => boolean',
-        'enum' => ['Yes', 'No']
+        'enum' => ['No', 'Yes']
     ]);
 
     $m['is_married'] = 'Yes';  // type-casts into true
@@ -395,8 +395,8 @@ Type Matrix
 |    |    |                                                          |      | 4  |     |
 +----+----+----------------------------------------------------------+------+----+-----+
 | bo | bo | true / false type value. Optionally specify              | true | 1  | tru |
-| ol | ol | 'enum'=>['Y','N'] to store true as 'Y' and false as 'N'. |      |    | e   |
-|    | ea | By default uses [1,0].                                   |      |    |     |
+| ol | ol | 'enum'=>['N','Y'] to store true as 'Y' and false as 'N'. |      |    | e   |
+|    | ea | By default uses [0,1].                                   |      |    |     |
 |    | n  |                                                          |      |    |     |
 +----+----+----------------------------------------------------------+------+----+-----+
 | ar |    | Optionally pass 'fmt' option, which is 'json' by         | [2=> | {2 | sto |

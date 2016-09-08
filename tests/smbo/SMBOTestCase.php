@@ -30,10 +30,10 @@ class SMBOTestCase extends \atk4\data\tests\SQLTestCase
         $x = clone $s;
         $x->table('payment')->drop()
             ->id()
-            ->field('document_id', ['type' => 'int'])
-            ->field('account_id', ['type' => 'int'])
+            ->field('document_id', ['type' => 'integer'])
+            ->field('account_id', ['type' => 'integer'])
             ->field('cheque_no')
-            ->field('misc_payment', ['type' => 'enum("Y","N")'])
+            ->field('misc_payment', ['type' => 'enum("N","Y")'])
             ->field('transfer_document_id')
             ->create();
     }

@@ -182,7 +182,7 @@ class Persistence_Array extends Persistence
         $type = $m->getElement($m->id_field)->type;
 
         switch ($type) {
-            case 'int':
+            case 'integer':
                 return count($ids) === 0 ? 1 : (max($ids) + 1);
             case 'string':
                 return uniqid();

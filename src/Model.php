@@ -304,7 +304,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->id_field) {
             $this->addField($this->id_field, [
                 'system'    => true,
-                'type'      => 'int',
+                'type'      => 'integer',
             ]);
         }
     }
@@ -509,7 +509,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 ]);
             }
 
-            if ($f->enum && $f->type != 'boolean' && $f->type != 'bool') {
+            if ($f->enum && $f->type != 'boolean') {
                 if (!in_array($value, $f->enum, true) && $value !== null) {
                     throw new Exception([
                         'This is not one of the allowed values for the field',

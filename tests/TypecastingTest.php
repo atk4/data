@@ -45,7 +45,7 @@ class TypecastingTest extends SQLTestCase
                     'datetime' => '2013-02-20 20:00:12',
                     'time'     => '12:00:50',
                     'boolean'  => '1',
-                    'int'      => '2940',
+                    'integer'  => '2940',
                     'money'    => '8.20',
                     'float'    => '8.202343',
                     'array'    => '[1,2,3]',
@@ -66,7 +66,7 @@ class TypecastingTest extends SQLTestCase
         $m->addField('boolean', ['type' => 'boolean']);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
-        $m->addField('int', ['type' => 'integer']);
+        $m->addField('integer', ['type' => 'integer']);
         $m->addField('array', ['type' => 'struct']);
         $m->load(1);
 
@@ -78,7 +78,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals(new \DateTime('2013-02-20'), $m['date']);
         $this->assertEquals(new \DateTime('2013-02-20 20:00:12'), $m['datetime']);
         $this->assertEquals(new \DateTime('12:00:50'), $m['time']);
-        $this->assertSame(2940, $m['int']);
+        $this->assertSame(2940, $m['integer']);
         $this->assertEquals([1, 2, 3], $m['array']);
         $this->assertSame(8.202343, $m['float']);
 
@@ -94,7 +94,7 @@ class TypecastingTest extends SQLTestCase
                     'datetime' => '2013-02-20 20:00:12',
                     'time'     => '12:00:50',
                     'boolean'  => 1,
-                    'int'      => 2940,
+                    'integer'  => 2940,
                     'money'    => 8.20,
                     'float'    => 8.202343,
                     'array'    => '[1,2,3]',
@@ -106,7 +106,7 @@ class TypecastingTest extends SQLTestCase
                     'datetime' => '2013-02-20 20:00:12',
                     'time'     => '12:00:50',
                     'boolean'  => '1',
-                    'int'      => '2940',
+                    'integer'  => '2940',
                     'money'    => '8.2',
                     'float'    => '8.202343',
                     'array'    => '[1,2,3]',
@@ -132,7 +132,7 @@ class TypecastingTest extends SQLTestCase
                     'time'     => '12:00:50',
                     'b1'       => 'Y',
                     'b2'       => 'N',
-                    'int'      => '2940',
+                    'integer'  => '2940',
                     'money'    => '8.20',
                     'float'    => '8.202343',
                     'rot13'    => 'uryyb jbeyq',
@@ -148,11 +148,11 @@ class TypecastingTest extends SQLTestCase
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
         $m->addField('datetime', ['type' => 'datetime', 'dateTimeClass' => '\atk4\data\tests\MyDateTime']);
         $m->addField('time', ['type' => 'time', 'dateTimeClass' => '\atk4\data\tests\MyTime']);
-        $m->addField('b1', ['type' => 'boolean', 'enum' => ['Y', 'N']]);
-        $m->addField('b2', ['type' => 'boolean', 'enum' => ['Y', 'N']]);
+        $m->addField('b1', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
+        $m->addField('b2', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
-        $m->addField('int', ['type' => 'integer']);
+        $m->addField('integer', ['type' => 'integer']);
 
         $rot = function ($v) {
             return str_rot13($v);
@@ -183,7 +183,7 @@ class TypecastingTest extends SQLTestCase
                     'time'     => '12:00:50',
                     'b1'       => 'Y',
                     'b2'       => 'N',
-                    'int'      => '2940',
+                    'integer'  => '2940',
                     'money'    => '8.20',
                     'float'    => '8.202343',
                     'rot13'    => 'uryyb jbeyq', // str_rot13(hello world)
