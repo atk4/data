@@ -146,13 +146,19 @@ class Field
             return $value;
         }
         if ($value === null) {
-            return;
+            return null;
         }
         $f = $this;
 
+        // only string type fields can use empty string as legit value, for all
+        // other field types empty value is the same as no-value, nothing or null
+        if ($f->type != 'string' && $value === '') {
+            return null;
+        }
+
         switch ($f->type) {
         case 'string':
-            if (!is_string($value) && !is_numeric($value)) {
+            if (!is_scalar($value)) {
                 throw new Exception('Field value must be a string');
             }
             $value = trim($value);

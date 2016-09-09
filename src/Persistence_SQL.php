@@ -429,6 +429,16 @@ class Persistence_SQL extends Persistence
             return $callback($value, $f, $this);
         }
 
+        if ($value === null) {
+            return null;
+        }
+
+        // only string type fields can use empty string as legit value, for all
+        // other field types empty value is the same as no-value, nothing or null
+        if ($f->type != 'string' && $value === '') {
+            return null;
+        }
+
         switch ($f->type) {
         case 'boolean':
 
@@ -490,6 +500,16 @@ class Persistence_SQL extends Persistence
         // Support for callback: (28, ['age', [persistence_object]])
         if ($callback = $f->saveCallback) {
             return $callback($value, $f, $this);
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
+        // only string type fields can use empty string as legit value, for all
+        // other field types empty value is the same as no-value, nothing or null
+        if ($f->type != 'string' && $value === '') {
+            return null;
         }
 
         // Manually handle remaining types
