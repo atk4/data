@@ -167,6 +167,8 @@ class Field
                 } elseif (isset($f->enum[1]) && $value === $f->enum[1]) {
                     $value = true;
                 }
+            } elseif (is_numeric($value)) {
+                $value = (bool) $value;
             }
             if (!is_bool($value)) {
                 throw new Exception('Field value must be a boolean');
