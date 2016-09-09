@@ -16,7 +16,7 @@ class Reference_SQL_One extends Reference_One
      *
      * @param string|Field $field
      * @param string|null  $their_field
-     * @param array        $defaults Properties
+     * @param array        $defaults    Properties
      *
      * @return Field_SQL_Expression
      */
