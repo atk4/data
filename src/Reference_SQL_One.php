@@ -16,18 +16,22 @@ class Reference_SQL_One extends Reference_One
      *
      * @param string|Field $field
      * @param string|null  $their_field
+     * @param array $defaults Properties
      *
      * @return Field_SQL_Expression
      */
-    public function addField($field, $their_field = null)
+    public function addField($field, $their_field = null, $defaults = [])
     {
         if ($their_field === null) {
             $their_field = $field;
         }
 
-        return $this->owner->addExpression($field, function ($m) use ($their_field) {
-            return $m->refLink($this->link)->action('field', [$their_field]);
-        });
+        return $this->owner->addExpression($field, array_merge([
+            function ($m) use ($their_field) {
+                return $m->refLink($this->link)->action('field', [$their_field]);
+            }],
+            $defaults
+        ));
     }
 
     /**
