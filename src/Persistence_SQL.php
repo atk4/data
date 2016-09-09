@@ -430,13 +430,13 @@ class Persistence_SQL extends Persistence
         }
 
         if ($value === null) {
-            return null;
+            return;
         }
 
         // only string type fields can use empty string as legit value, for all
         // other field types empty value is the same as no-value, nothing or null
         if ($f->type != 'string' && $value === '') {
-            return null;
+            return;
         }
 
         switch ($f->type) {
@@ -503,13 +503,13 @@ class Persistence_SQL extends Persistence
         }
 
         if ($value === null) {
-            return null;
+            return;
         }
 
         // only string type fields can use empty string as legit value, for all
         // other field types empty value is the same as no-value, nothing or null
         if ($f->type != 'string' && $value === '') {
-            return null;
+            return;
         }
 
         // Manually handle remaining types

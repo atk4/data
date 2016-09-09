@@ -16,7 +16,7 @@ class Reference_SQL_One extends Reference_One
      *
      * @param string|Field $field
      * @param string|null  $their_field
-     * @param array $defaults Properties
+     * @param array        $defaults Properties
      *
      * @return Field_SQL_Expression
      */
@@ -29,7 +29,7 @@ class Reference_SQL_One extends Reference_One
         return $this->owner->addExpression($field, array_merge([
             function ($m) use ($their_field) {
                 return $m->refLink($this->link)->action('field', [$their_field]);
-            }],
+            }, ],
             $defaults
         ));
     }
@@ -94,7 +94,7 @@ class Reference_SQL_One extends Reference_One
                     return $mm->action('field', [$mm->title_field]);
                 },
                 'type' => 'string',
-                'ui' => ['editable' => false, 'visible' => true],
+                'ui'   => ['editable' => false, 'visible' => true],
             ],
             $defaults,
             [
