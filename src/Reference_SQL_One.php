@@ -89,6 +89,7 @@ class Reference_SQL_One extends Reference_One
 
                     return $mm->action('field', [$mm->title_field]);
                 },
+                'type' => 'string',
                 'ui' => ['editable' => false, 'visible' => true],
             ],
             $defaults,
