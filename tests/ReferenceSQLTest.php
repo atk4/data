@@ -7,6 +7,10 @@ use atk4\data\Persistence_SQL;
 
 /**
  * @coversDefaultClass \atk4\data\Model
+ *
+ * Tests that condition is applied when traversing hasMany
+ * also that the original model can be re-loaded with a different
+ * value without making any condition stick.
  */
 class ReferenceSQLTest extends SQLTestCase
 {
@@ -55,6 +59,9 @@ class ReferenceSQLTest extends SQLTestCase
         );
     }
 
+    /**
+     * Tests to make sure refLink properly generates field links
+     */
     public function testLink()
     {
         $db = new Persistence_SQL($this->db->connection);
@@ -112,6 +119,10 @@ class ReferenceSQLTest extends SQLTestCase
         );
     }
 
+    /**
+     * Tests that condition defined on the parent model is retained when traversing 
+     * through hasMany
+     */
     public function testBasicOne()
     {
         $a = [
@@ -150,13 +161,16 @@ class ReferenceSQLTest extends SQLTestCase
         );
     }
 
+    /**
+     * Tests Join::addField's ability to create expressions from foreign fields
+     */
     public function testAddOneField()
     {
         $a = [
             'user' => [
-                1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
+                1 => ['id' => 1, 'name' => 'John', 'date' => '2001-01-02'],
+                2 => ['id' => 2, 'name' => 'Peter', 'date' => '2004-08-20'],
+                3 => ['id' => 3, 'name' => 'Joe', 'date' => '2005-08-20'],
             ], 'order' => [
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
@@ -167,13 +181,15 @@ class ReferenceSQLTest extends SQLTestCase
         $this->setDB($a);
 
         $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name']);
+        $u = (new Model($db, 'user'))->addFields(['name', ['date', 'type' => 'date']]);
         $o = (new Model($db, 'order'))->addFields(['amount']);
 
-        $o->hasOne('user_id', $u)->addField('username', 'name');
+        $o->hasOne('user_id', $u)->addFields(['username'=>'name', 'date']);
 
 
         $this->assertEquals('John', $o->load(1)['username']);
+        $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['date']);
+
         $this->assertEquals('Peter', $o->load(2)['username']);
         $this->assertEquals('John', $o->load(3)['username']);
         $this->assertEquals('Joe', $o->load(5)['username']);

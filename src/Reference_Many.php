@@ -234,9 +234,17 @@ class Reference_Many
 
         $field = isset($defaults['field']) ? $defaults['field'] : $n;
 
-        return $this->owner->addExpression($n, function () use ($defaults, $field) {
+        $e = $this->owner->addExpression($n, function () use ($defaults, $field) {
             return $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
         });
+
+        if (isset($defaults['type'])) {
+            $e->type = $defaults['type'];
+        } else {
+            $e->type = $this->getModel()->getElement($field)->type;
+        }
+
+        return $e;
     }
 
     /**

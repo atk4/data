@@ -26,12 +26,20 @@ class Reference_SQL_One extends Reference_One
             $their_field = $field;
         }
 
-        return $this->owner->addExpression($field, array_merge([
+        $e = $this->owner->addExpression($field, array_merge([
             function ($m) use ($their_field) {
                 return $m->refLink($this->link)->action('field', [$their_field]);
             }, ],
             $defaults
         ));
+
+        if (isset($defaults['type'])) {
+            $e->type = $defaults['type'];
+        } else {
+            $e->type = $this->getModel()->getElement($their_field)->type;
+        }
+
+        return $e;
     }
 
     /**
