@@ -144,6 +144,7 @@ class Reference_One
             $this->our_field = $this->link;
         }
         if (!$this->owner->hasElement($this->our_field)) {
+            // @todo
             // Imants: proper way would be to get actual field type of id field of related model,
             // but if we try to do so here, then we end up in infinite loop :(
             //$m = $this->getModel();
