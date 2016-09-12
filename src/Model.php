@@ -1191,7 +1191,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 return $this;
             }
 
-            $this->hook('beforeUpdate', [&$data]);
+            if ($this->hook('beforeUpdate', [&$data]) === false) {
+                return $this;
+            }
 
             $this->persistence->update($this, $this->id, $data);
 
