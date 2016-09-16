@@ -60,7 +60,7 @@ class ReferenceSQLTest extends SQLTestCase
     }
 
     /**
-     * Tests to make sure refLink properly generates field links
+     * Tests to make sure refLink properly generates field links.
      */
     public function testLink()
     {
@@ -120,8 +120,8 @@ class ReferenceSQLTest extends SQLTestCase
     }
 
     /**
-     * Tests that condition defined on the parent model is retained when traversing 
-     * through hasMany
+     * Tests that condition defined on the parent model is retained when traversing
+     * through hasMany.
      */
     public function testBasicOne()
     {
@@ -162,7 +162,7 @@ class ReferenceSQLTest extends SQLTestCase
     }
 
     /**
-     * Tests Join::addField's ability to create expressions from foreign fields
+     * Tests Join::addField's ability to create expressions from foreign fields.
      */
     public function testAddOneField()
     {
@@ -184,7 +184,7 @@ class ReferenceSQLTest extends SQLTestCase
         $u = (new Model($db, 'user'))->addFields(['name', ['date', 'type' => 'date']]);
         $o = (new Model($db, 'order'))->addFields(['amount']);
 
-        $o->hasOne('user_id', $u)->addFields(['username'=>'name', 'date']);
+        $o->hasOne('user_id', $u)->addFields(['username' => 'name', 'date']);
 
 
         $this->assertEquals('John', $o->load(1)['username']);

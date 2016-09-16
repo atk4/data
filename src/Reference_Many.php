@@ -9,7 +9,6 @@ namespace atk4\data;
  */
 class Reference_Many extends Reference
 {
-
     /**
      * Returns our field value or id.
      *
@@ -129,5 +128,4 @@ class Reference_Many extends Reference
 
         return $this;
     }
-
 }

@@ -30,7 +30,7 @@ class Reference
     /**
      * What should we pass into owner->ref() to get through to this reference.
      * Each reference has a unique identifier, although it's stored
-     * in Model's elements as '#ref-xx'
+     * in Model's elements as '#ref-xx'.
      *
      * @var string
      */
@@ -40,7 +40,7 @@ class Reference
      * Definition of the destination model, that can be either an object, a
      * callback or a string. This can be defined during initialization and
      * then used inside getModel() to fully populate and associate with
-     * persistence
+     * persistence.
      *
      * @var Model|null
      */
@@ -92,7 +92,6 @@ class Reference
     {
         return '#ref_'.$this->link;
     }
-
 
     /**
      * Initialization.
@@ -164,7 +163,7 @@ class Reference
     }
 
     /**
-     * Returns referenced model without any extra conditions
+     * Returns referenced model without any extra conditions.
      *
      * @param array $defaults Properties
      *
@@ -180,10 +179,10 @@ class Reference
      * will traverse into a related model and fetch the type of their field. This
      * method will be extra careful to avoid any loops.
      */
-    function guessFieldType($their_field = null, $use_title = false)
+    public function guessFieldType($their_field = null, $use_title = false)
     {
         if (!is_scalar($their_field)) {
-            return null;
+            return;
         }
 
         // We shouldn't traverse into ourselves recursively
@@ -194,7 +193,7 @@ class Reference
             $dnti = $this->owner->_do_not_traverse_into;
 
             if (isset($dnti[$cl])) {
-                return null;
+                return;
             }
         }
         $dnti[$cl] = true;
