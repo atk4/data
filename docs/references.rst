@@ -13,19 +13,18 @@ Models can relate one to another. The logic of traversing references, however, i
 slightly different to the traditional ORM implementation, because in Agile Data
 traversing also imposes :ref:`conditions`
 
-There are two basic types of references: hasOne() and hasMany(). You need to define
-reference between the models before you can traverse it, which you can do either
-inside the init() method or anywhere else::
-
+There are two basic types of references: hasOne() and hasMany(), but it's also
+possible to add other reference types. The basic ones are really easy to
+use::
 
     $m = new Model_User($db, 'user');
     $m->hasMany('Orders', new Model_Order());
-    $m->load(1);
+    $m->load(13);
 
-    $orders_for_user_1 = $m->ref('Orders');
+    $orders_for_user_13 = $m->ref('Orders');
 
-As mentioned - $orders_for_user_1 will have it's DataSet automatically adjusted
-so that you could only access orders for the user with ID=1. The following is
+As mentioned - $orders_for_user_13 will have it's DataSet automatically adjusted
+so that you could only access orders for the user with ID=13. The following is
 also possible::
 
     $m = new Model_User($db, 'user');
@@ -45,18 +44,18 @@ order will look like this:
         select id from user where is_vip = 1
     ) limit 1
 
-Argument $defaults will be passed to the new model that will be used for
-reference. This will not work if you have specified reference as existing
-model that has a persistence set.
+Argument $defaults will be passed to the new model that will be used to create
+referenced model. This will not work if you have specified reference as existing
+model that has a persistence set. (See Reference::getModel())
 
 Persistence
 -----------
 
 Agile Data supports traversal between persistences. The code above does not
-explicitly assign database to Model_Order, therefore it will be associated
-with the $db when traversing.
+explicitly assign database to Model_Order. But what if destination model does
+not reside inside the same database?
 
-You can specify a different database though::
+You can specify it like this::
 
     $m = new Model_User($db_array_cache, 'user');
     $m->hasMany('Orders', new Model_Order($db_sql));
@@ -75,15 +74,28 @@ joined so Agile Data will carry over list of IDs instead:
 Since we are using ``$db_array_cache``, then field values will actually
 be retrieved from memory.
 
+.. note:: This is not implemented as of 1.1.0, see https://github.com/atk4/data/issues/158
+
 Safety and Performance
 ----------------------
 
 When using ref() on hasMany reference, it will always return a fresh clone
 of the model. You can perform actions on the clone and next time you execute
-ref() this will not be impacted. If you performing traversals inside
-iterations, this can cause performance issues, for this reason you should
-see refLink()
+ref() you will get a fresh copy. 
 
+If you are worried about performance you can keep 2 models in memory::
+
+    $order = new Order($db);
+    $client = $order->getRef('client_id')->getModel();
+
+    foreach($order as $o) {
+        $client->load($o['client_id']);
+    }
+
+.. warning:: This code is seriously flawed and is called "N+1 Problem".
+    Agile Data discourages you from using this and instead offers you
+    many other tools: field importing, model joins, field actions and
+    refLink().
 
 
 hasMany Reference
@@ -172,6 +184,12 @@ keep making your query bigger and bigger::
             ['total_net', 'aggregate'=>'sum'],
             ['total_gross', 'aggregate'=>'sum'],
         ]);
+
+.. important::
+    Imported fields will preserve format of the field the reference. In the example,
+    if 'Invoice_line' field total_vat has type `money` then it will also be used
+    for a sum. Aggregate fields are always declared read-only, and if you try to
+    change them, you will receive exception.
 
 
 hasMany / refLink
@@ -293,8 +311,42 @@ did above::
             'address_3',
             'address_notes'=>['notes', 'type'=>'text']
         ]);
+
 Above, all ``address_`` fields are copied with the same name, however field 'notes' from Address model
 will be called 'address_notes' inside user model.
+
+.. important:: 
+    When importing fields, they will preserve type, e.g. if you are importing 'date' then the type
+    of your imported field will also be date. Imported fields are also marked as "read-only" and
+    attempt to change them will result in exception.
+
+Importing hasOne Title
+----------------------
+
+When you are using hasOne() in most cases the referenced object will be addressed through "ID" but
+will have a human-readable field as well. In the example above `Model_Currency` has a title field
+called `name`. Agile Data provides you an easier way how to define currency title::
+
+    $i = new Invoice($db)
+
+    $i->hasOne('currency_id', new Currency())
+        ->addTitle();
+
+This would create 'currency' field containing name of the curerncy::
+
+    $i->load(20);
+
+    echo "Currency for invoice 20 is ".$i['currency'];   // EUR
+
+Unlike addField() which creates fields read-only, title field can in fact be modified::
+
+    $i['currency'] = 'GBP';
+    $i->save();
+
+    // will update $i['currency_id'] to the corresponding ID for currency with name GBP.
+
+This behaviour is awesome when you are importing large amounts of data, because the 
+lookup for the currency_id is entirely done in a database.
 
 Reference Discovery
 ===================
@@ -315,23 +367,17 @@ perform some changes on it, such as import more fields with addField()
 Deep traversal
 ==============
 
-.. warning:: NOT IMPLEMENTED
-
 When operating with data-sets you can define references that use deep traversal::
 
-    $o = new Model_Order($db);
-    $o->hasOne('user_id', new Model_User())
-        ->hasOne('address_id', new Model_Address());
-
-    echo $o->load(1)->ref('user_id/address_id')['address_1'];
+    echo $o->load(1)->ref('user_id')->ref('address_id')['address_1'];
 
 The above example will actually perform 3 load operations, because as I have explained above,
 ref() loads related model when called on a loaded model. To perform a single query instead,
 you can use::
 
-    echo $o->id(1)->ref('user_id/address_id')->loadAny()['address_1'];
+    echo $o->withID(1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
 
-Here ``id()`` will only set a condition without actually loading the record and traversal
+Here ``withID()`` will only set a condition without actually loading the record and traversal
 will encapsulate sub-queries resulting in a query like this:
 
 .. code-block:: sql
