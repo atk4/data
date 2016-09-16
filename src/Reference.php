@@ -179,7 +179,7 @@ class Reference
      * will traverse into a related model and fetch the type of their field. This
      * method will be extra careful to avoid any loops.
      */
-    public function guessFieldType($their_field = null, $use_title = false)
+    public function guessFieldType($their_field = null)
     {
         if (!is_scalar($their_field)) {
             return;
@@ -200,16 +200,7 @@ class Reference
 
         $m = $this->getModel(['_do_not_traverse_into' => $dnti]);
 
-        if ($use_title) {
-            $their_field = $m->title_field;
-            $f = $m->hasElement($m->title_field);
-
-            if (!$f) {
-                $f = $m->hasElement($m->id_field);
-            }
-        } else {
-            $f = $m->hasElement($their_field ?: $this->their_field);
-        }
+        $f = $m->hasElement($their_field ?: $this->their_field);
 
         return $f ? $f->type : null;
     }
