@@ -211,4 +211,44 @@ class TypecastingTest extends SQLTestCase
 
         $this->assertTrue($m['date'] instanceof MyDate);
     }
+
+    public function testTryLoadAny()
+    {
+        $a = [
+            'types' => [
+                [
+                    'date'     => '2013-02-20',
+                ],
+            ], ];
+        $this->setDB($a);
+        $db = new Persistence_SQL($this->db->connection);
+
+        $m = new Model($db, ['table' => 'types']);
+
+        $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
+
+        $m->tryLoadAny();
+
+        $this->assertTrue($m['date'] instanceof MyDate);
+    }
+
+    public function testTryLoadBy()
+    {
+        $a = [
+            'types' => [
+                [
+                    'date'     => '2013-02-20',
+                ],
+            ], ];
+        $this->setDB($a);
+        $db = new Persistence_SQL($this->db->connection);
+
+        $m = new Model($db, ['table' => 'types']);
+
+        $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
+
+        $m->loadBy('id', 1);
+
+        $this->assertTrue($m['date'] instanceof MyDate);
+    }
 }
