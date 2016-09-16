@@ -119,26 +119,24 @@ class Reference_One extends Reference
         });
 
         // if owner model is loaded, then try to load referenced model
-        if ($this->owner->loaded()) {
-            if ($this->their_field) {
-                if ($this->owner[$this->our_field]) {
-                    $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
-                }
-
-                return
-                    $m->addHook('afterSave', function ($m) {
-                        $this->owner[$this->our_field] = $m[$this->their_field];
-                    });
-            } else {
-                if ($this->owner[$this->our_field]) {
-                    $m->tryLoad($this->owner[$this->our_field]);
-                }
-
-                return
-                    $m->addHook('afterSave', function ($m) {
-                        $this->owner[$this->our_field] = $m->id;
-                    });
+        if ($this->their_field) {
+            if ($this->owner[$this->our_field]) {
+                $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
             }
+
+            return
+                $m->addHook('afterSave', function ($m) {
+                    $this->owner[$this->our_field] = $m[$this->their_field];
+                });
+        } else {
+            if ($this->owner[$this->our_field]) {
+                $m->tryLoad($this->owner[$this->our_field]);
+            }
+
+            return
+                $m->addHook('afterSave', function ($m) {
+                    $this->owner[$this->our_field] = $m->id;
+                });
         }
 
         // can not load referenced model or set conditions on it, so we just return it
