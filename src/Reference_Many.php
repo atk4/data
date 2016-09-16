@@ -104,7 +104,7 @@ class Reference_Many extends Reference
         if (isset($defaults['type'])) {
             $e->type = $defaults['type'];
         } else {
-            $e->type = $this->getModel()->getElement($field)->type;
+            $e->type = $this->guessFieldType($field);
         }
 
         return $e;
