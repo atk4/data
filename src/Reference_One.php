@@ -141,13 +141,6 @@ class Reference_One extends Reference
             }
         }
 
-        // if owner model is not loaded, then return referenced model with condition set
-        if (isset($this->owner->persistence) && $this->owner->persistence instanceof Persistence_SQL) {
-            $values = $this->owner->action('field', [$this->our_field]);
-
-            return $m->addCondition($this->their_field ?: $m->id_field, $values);
-        }
-
         // can not load referenced model or set conditions on it, so we just return it
         return $m;
     }
