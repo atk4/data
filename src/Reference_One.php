@@ -7,49 +7,8 @@ namespace atk4\data;
 /**
  * Class description?
  */
-class Reference_One
+class Reference_One extends Reference
 {
-    use \atk4\core\InitializerTrait {
-        init as _init;
-    }
-    use \atk4\core\TrackableTrait;
-
-    /**
-     * Use this alias for related entity by default.
-     *
-     * @var string
-     */
-    protected $table_alias;
-
-    /**
-     * What should we pass into owner->ref() to get
-     * through to this reference.
-     *
-     * @var string
-     */
-    protected $link;
-
-    /**
-     * Definition of the destination model, that can
-     * be either an object, a callback or a string.
-     *
-     * @var Model|null
-     */
-    public $model;
-
-    /**
-     * Our field will be 'id' by default.
-     *
-     * @var string
-     */
-    protected $our_field = null;
-
-    /**
-     * Their field will be $table.'_id' by default.
-     *
-     * @var string
-     */
-    protected $their_field = null;
 
     /**
      * Points to the join if we are part of one.
@@ -104,50 +63,18 @@ class Reference_One
     public $mandatory = false;
 
     /**
-     * Default constructor. Will copy argument into properties.
-     *
-     * @param array $defaults
-     */
-    public function __construct($defaults = [])
-    {
-        if (isset($defaults[0])) {
-            $this->link = $defaults[0];
-            unset($defaults[0]);
-        }
-
-        foreach ($defaults as $key => $val) {
-            if (is_array($val)) {
-                $this->$key = array_merge(isset($this->$key) && is_array($this->$key) ? $this->$key : [], $val);
-            } else {
-                $this->$key = $val;
-            }
-        }
-    }
-
-    /**
-     * Will use #ref_<link>.
-     *
-     * @return string
-     */
-    public function getDesiredName()
-    {
-        return '#ref_'.$this->link;
-    }
-
-    /**
-     * Initialization.
+     * Reference_One will also add a field corresponding
+     * to 'our_field' unless it exists of course.
      */
     public function init()
     {
-        $this->_init();
+        parent::init();
+
         if (!$this->our_field) {
             $this->our_field = $this->link;
         }
+
         if (!$this->owner->hasElement($this->our_field)) {
-            // @todo
-            // Imants: proper way would be to get actual field type of id field of related model,
-            // but if we try to do so here, then we end up in infinite loop :(
-            //$m = $this->getModel();
             $this->owner->addField($this->our_field, [
                 'type'          => 'integer', //$m->getElement($m->id_field)->type,
                 'system'        => true,
@@ -159,66 +86,6 @@ class Reference_One
                 'mandatory'     => $this->mandatory,
             ]);
         }
-    }
-
-    /**
-     * Returns model of field.
-     *
-     * @param array $defaults Properties
-     *
-     * @return Model
-     */
-    public function getModel($defaults = [])
-    {
-        // set table_alias
-        if (!isset($defaults['table_alias'])) {
-            if (!$this->table_alias) {
-                $this->table_alias = $this->link;
-                $this->table_alias = preg_replace('/_id/', '', $this->table_alias);
-                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
-                if (isset($this->owner->table_alias)) {
-                    $this->table_alias = $this->owner->table_alias.'_'.$this->table_alias;
-                }
-            }
-            $defaults['table_alias'] = $this->table_alias;
-        }
-
-        // if model is Closure, then call it and return model
-        if (is_object($this->model) && $this->model instanceof \Closure) {
-            $c = $this->model;
-
-            $c = $c($this->owner, $this);
-            if (!$c->persistence) {
-                $c = $this->owner->persistence->add($c, $defaults);
-            }
-
-            return $c;
-        }
-
-        // if model is set, then return clone of this model
-        if (is_object($this->model)) {
-            $c = clone $this->model;
-            if (!$this->model->persistence && $this->owner->persistence) {
-                $this->owner->persistence->add($c, $defaults);
-            }
-
-            return $c;
-        }
-
-        // last effort - try to add model
-        if (is_array($this->model)) {
-            $model = $this->model[0];
-            $md = $this->model;
-            unset($md[0]);
-
-            $defaults = array_merge($md, $defaults);
-        } else {
-            $model = $this->model;
-        }
-
-        $p = $this->owner->persistence;
-
-        return $p->add($p->normalizeClassName($model, 'Model'), $defaults);
     }
 
     /**
@@ -288,30 +155,8 @@ class Reference_One
         return $m;
     }
 
-    // {{{ Debug Methods
-
     /**
-     * Returns array with useful debug info for var_dump.
-     *
-     * @return array
+     * List of properties to show in var_dump.
      */
-    public function __debugInfo()
-    {
-        $arr = [
-            'ref'     => $this->link,
-            'model'   => $this->model,
-        ];
-
-        foreach ([
-            'our_field', 'their_field', 'type', 'system', 'never_save', 'never_persist', 'read_only', 'ui', 'join',
-        ] as $key) {
-            if (isset($this->$key)) {
-                $arr[$key] = $this->$key;
-            }
-        }
-
-        return $arr;
-    }
-
-    // }}}
+    protected $debug_fields = ['our_field', 'their_field', 'type', 'system', 'never_save', 'never_persist', 'read_only', 'ui', 'join'];
 }
