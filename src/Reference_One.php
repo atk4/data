@@ -9,7 +9,6 @@ namespace atk4\data;
  */
 class Reference_One extends Reference
 {
-
     /**
      * Points to the join if we are part of one.
      *
