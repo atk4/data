@@ -143,8 +143,6 @@ class Reference_One extends Reference
         }
 
         // if owner model is not loaded, then return referenced model with condition set
-        // Imants: probably this piece of code should be moved to Reference_SQL_One->ref() method,
-        //         because only Persistence_SQL supports actions.
         if (isset($this->owner->persistence) && $this->owner->persistence instanceof Persistence_SQL) {
             $values = $this->owner->action('field', [$this->our_field]);
 
