@@ -317,7 +317,6 @@ class FieldTest extends SQLTestCase
                 2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
             ], ];
         $this->assertEquals($a, $this->getDB());
-
     }
 
     public function testSystem1()
