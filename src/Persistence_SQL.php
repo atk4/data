@@ -637,15 +637,14 @@ class Persistence_SQL extends Persistence
     }
 
     /**
-     * Generates action that performs load of the record $id
-     * and returns requested fields.
+     * Tries to load data record, but will not fail if record can't be loaded.
      *
      * @param Model $m
      * @param mixed $id
      *
      * @return array
      */
-    public function load(Model $m, $id)
+    public function tryLoad(Model $m, $id)
     {
         $load = $this->action($m, 'select');
         $load->where($m->getElement($m->id_field), $id);
@@ -664,12 +663,7 @@ class Persistence_SQL extends Persistence
         }
 
         if (!$data) {
-            throw new Exception([
-                'Unable to load record',
-                'model' => $m,
-                'id'    => $id,
-                'query' => $load->getDebugQuery(false),
-            ]);
+            return;
         }
 
         if (isset($data[$m->id_field])) {
@@ -687,73 +681,24 @@ class Persistence_SQL extends Persistence
     }
 
     /**
-     * Tries to load data record, but will not fail if record can't be loaded.
+     * Loads a record from model and returns a associative array.
      *
      * @param Model $m
      * @param mixed $id
      *
      * @return array
      */
-    public function tryLoad(Model $m, $id)
+    public function load(Model $m, $id)
     {
-        $load = $this->action($m, 'select');
-        $load->where($m->getElement($m->id_field), $id);
-        $load->limit(1);
-
-        // execute action
-        $data = $load->getRow();
-
-        if (!$data) {
-            $m->unload();
-
-            return [];
-        }
-
-        if (isset($data[$m->id_field])) {
-            $m->id = $data[$m->id_field];
-        } else {
-            throw new Exception([
-                'ID of the record is unavailable. Read-only mode is not supported',
-                'model' => $m,
-                'id'    => $id,
-                'data'  => $data,
-            ]);
-        }
-
-        return $data;
-    }
-
-    /**
-     * Loads any one record.
-     *
-     * @param Model $m
-     *
-     * @return array
-     */
-    public function loadAny(Model $m)
-    {
-        $load = $this->action($m, 'select');
-        $load->limit(1);
-
-        // execute action
-        $data = $load->getRow();
+        $data = $this->tryLoad($m, $id);
 
         if (!$data) {
             throw new Exception([
-                'Unable to load any record',
-                'model' => $m,
-                'query' => $load->getDebugQuery(false),
-            ]);
-        }
-
-        if (isset($data[$m->id_field])) {
-            $m->id = $data[$m->id_field];
-        } else {
-            throw new Exception([
-                'ID of the record is unavailable. Read-only mode is not supported',
-                'model' => $m,
-                'data'  => $data,
-            ]);
+                'Record was not found',
+                'model'      => $m,
+                'id'         => $id,
+                'conditions' => $m->conditions,
+            ], 404);
         }
 
         return $data;
@@ -772,10 +717,20 @@ class Persistence_SQL extends Persistence
         $load->limit(1);
 
         // execute action
-        $data = $load->getRow();
+        try {
+            $data = $this->typecastLoadRow($m, $load->getRow());
+        } catch (\PDOException $e) {
+            throw new Exception([
+                'Unable to load due to query error',
+                'query'      => $load->getDebugQuery(false),
+                'model'      => $m,
+                'conditions' => $m->conditions,
+            ], null, $e);
+        }
+
 
         if (!$data) {
-            return [];
+            return;
         }
 
         if (isset($data[$m->id_field])) {
@@ -786,6 +741,28 @@ class Persistence_SQL extends Persistence
                 'model' => $m,
                 'data'  => $data,
             ]);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Loads any one record.
+     *
+     * @param Model $m
+     *
+     * @return array
+     */
+    public function loadAny(Model $m)
+    {
+        $data = $this->tryLoadAny($m);
+
+        if (!$data) {
+            throw new Exception([
+                'No matching records were found',
+                'model'      => $m,
+                'conditions' => $m->conditions,
+            ], 404);
         }
 
         return $data;
