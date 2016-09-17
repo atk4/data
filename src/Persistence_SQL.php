@@ -94,6 +94,16 @@ class Persistence_SQL extends Persistence
     }
 
     /**
+     * Atomic executes operations within one begin/end transaction, so if
+     * the code inside callback will fail, then all of the transaction
+     * will be also rolled back.
+     */
+    public function atomic($f)
+    {
+        return $this->connection->atomic($f);
+    }
+
+    /**
      * Associate model with the data driver.
      *
      * @param Model|string $m        Model which will use this persistence
