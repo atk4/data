@@ -386,7 +386,6 @@ class FieldTest extends SQLTestCase
         $this->assertNotNull($a['user'][1]['secret']);
         $this->assertNotEquals('i am a woman', $a['user'][1]['secret']);
 
-
         $m->unload()->load(1);
         $this->assertEquals('i am a woman', $m['secret']);
     }

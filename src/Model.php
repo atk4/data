@@ -1160,7 +1160,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->set($data);
         }
 
-        return $this->atomic(function() use ($data) {
+        return $this->atomic(function () use ($data) {
             if ($this->hook('beforeSave') === false) {
                 return $this;
             }
@@ -1367,7 +1367,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $id = null;
         }
 
-        return $this->atomic(function() use ($id) {
+        return $this->atomic(function () use ($id) {
             if ($id) {
                 $c = clone $this;
                 $c->load($id)->delete();
@@ -1393,7 +1393,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      */
-    public function atomic($f) {
+    public function atomic($f)
+    {
         return $this->persistence->atomic($f);
     }
 

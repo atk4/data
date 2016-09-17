@@ -26,24 +26,24 @@ class TransactionTest extends SQLTestCase
         $m->load(2);
 
 
-        $m->addHook('afterSave', function($m){ 
+        $m->addHook('afterSave', function ($m) { 
             throw new \Exception('Awful thing happened');
         });
         $m['name'] = 'XXX';
         try {
             $m->save();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
         }
 
         $this->assertEquals('Sue', $this->getDB()['item'][2]['name']);
 
 
-        $m->addHook('afterDelete', function($m){ 
+        $m->addHook('afterDelete', function ($m) { 
             throw new \Exception('Awful thing happened');
         });
         try {
             $m->delete();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
         }
 
         $this->assertEquals('Sue', $this->getDB()['item'][2]['name']);
