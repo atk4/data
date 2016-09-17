@@ -305,7 +305,7 @@ class FieldTest extends SQLTestCase
         $m->addField('first_name', ['actual' => 'name']);
         $m->addField('surname');
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
-        $m->load(1);
+        $m->loadBy('first_name', 'John');
         $this->assertEquals('John', $m['first_name']);
 
         $d = $m->export();
@@ -317,6 +317,7 @@ class FieldTest extends SQLTestCase
                 2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
             ], ];
         $this->assertEquals($a, $this->getDB());
+
     }
 
     public function testSystem1()

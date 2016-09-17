@@ -310,8 +310,14 @@ class Persistence_SQL extends Persistence
             }
 
             if (count($cond) == 2) {
+                if ($cond[0] instanceof Field) {
+                    $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
+                }
                 $q->where($cond[0], $cond[1]);
             } else {
+                if ($cond[0] instanceof Field) {
+                    $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
+                }
                 $q->where($cond[0], $cond[1], $cond[2]);
             }
         }
