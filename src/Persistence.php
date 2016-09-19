@@ -102,7 +102,7 @@ class Persistence
      * persistences will support atomic operations, so by default we just
      * don't do anything.
      *
-     * @param Callable $f
+     * @param callable $f
      *
      * @return mixed
      */

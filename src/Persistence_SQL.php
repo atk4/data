@@ -98,7 +98,7 @@ class Persistence_SQL extends Persistence
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param Callable $f
+     * @param callable $f
      *
      * @return mixed
      */
