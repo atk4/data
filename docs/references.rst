@@ -81,7 +81,7 @@ Safety and Performance
 
 When using ref() on hasMany reference, it will always return a fresh clone
 of the model. You can perform actions on the clone and next time you execute
-ref() you will get a fresh copy. 
+ref() you will get a fresh copy.
 
 If you are worried about performance you can keep 2 models in memory::
 
@@ -315,7 +315,7 @@ did above::
 Above, all ``address_`` fields are copied with the same name, however field 'notes' from Address model
 will be called 'address_notes' inside user model.
 
-.. important:: 
+.. important::
     When importing fields, they will preserve type, e.g. if you are importing 'date' then the type
     of your imported field will also be date. Imported fields are also marked as "read-only" and
     attempt to change them will result in exception.
@@ -345,7 +345,7 @@ Unlike addField() which creates fields read-only, title field can in fact be mod
 
     // will update $i['currency_id'] to the corresponding ID for currency with name GBP.
 
-This behaviour is awesome when you are importing large amounts of data, because the 
+This behaviour is awesome when you are importing large amounts of data, because the
 lookup for the currency_id is entirely done in a database.
 
 Reference Discovery
@@ -360,8 +360,12 @@ or if you know the reference you'd like to fetch, you can use getRef()::
 
     $ref = $model->getRef('owner_id');
 
-While ref() returns a related model, getRef gives you the reference object itself so that you could
-perform some changes on it, such as import more fields with addField()
+While ref() returns a related model, getRef() gives you the reference object itself so that you
+could perform some changes on it, such as import more fields with addField().
+
+You can also use hasRef() to check if particular reference exists in model::
+
+    $ref = $model->hasRef('owner_id');
 
 
 Deep traversal
