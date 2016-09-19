@@ -487,9 +487,10 @@ Implementation of References
 When reference is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
 the new object is created and added into Model of class :php:class:`Reference_Many`
 or :php:class:`Reference_One` (or :php:class:`Reference_SQL_One` in case you use SQL
-database). The object itself is quite simple and you can fetch it form the model if
+database). The object itself is quite simple and you can fetch it from the model if
 you keep the return value of hasOne() / hasMany() or call :php:meth:`Model::getRef()`
 with the same identifier later on.
+You can also use :php:meth:`Model::hasRef()` to check if reference exists in model.
 
 Calling :php:meth:`Model::ref()` will proxy into the ref() method of reference
 object which will in turn figure out what to do.

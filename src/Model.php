@@ -1579,6 +1579,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $refs;
     }
 
+    /**
+     * Return reference field or false if reference field does not exist.
+     *
+     * @param string $link
+     *
+     * @return Field|bool
+     */
+    public function hasRef($link)
+    {
+        return $this->hasElement('#ref_'.$link);
+    }
+
     // }}}
 
     // {{{ Expressions
