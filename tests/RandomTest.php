@@ -268,7 +268,7 @@ class RandomSQLTests extends SQLTestCase
         $m->delete();
     }
 
-    function testIssue163()
+    public function testIssue163()
     {
         $db = new Persistence_SQL($this->db->connection);
         $m = new Model_Item($db);
