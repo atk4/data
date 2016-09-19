@@ -81,6 +81,10 @@ class Reference
                 $this->$key = $val;
             }
         }
+
+        if (!$this->model) {
+            $this->model = $this->link;
+        }
     }
 
     /**

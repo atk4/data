@@ -6,6 +6,7 @@ use atk4\data\Model;
 
 class Model_Person extends Model
 {
+    public $table = 'person';
     public function init()
     {
         parent::init();

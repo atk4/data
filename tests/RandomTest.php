@@ -267,4 +267,13 @@ class RandomSQLTests extends SQLTestCase
 
         $m->delete();
     }
+
+    function testIssue163()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model_Item($db);
+
+        $m->hasOne('Person', 'atk4/data/tests/Person');
+        $person = $m->ref('Person');
+    }
 }
