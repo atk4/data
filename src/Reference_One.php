@@ -146,5 +146,5 @@ class Reference_One extends Reference
     /**
      * List of properties to show in var_dump.
      */
-    protected $debug_fields = ['our_field', 'their_field', 'type', 'system', 'never_save', 'never_persist', 'read_only', 'ui', 'join'];
+    protected $__debug_fields = ['ref' => 'link', 'model', 'our_field', 'their_field', 'type', 'system', 'never_save', 'never_persist', 'read_only', 'ui', 'join'];
 }

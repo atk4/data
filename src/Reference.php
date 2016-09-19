@@ -178,10 +178,14 @@ class Reference
      * If you have set $their_field property correctly, then calling this method
      * will traverse into a related model and fetch the type of their field. This
      * method will be extra careful to avoid any loops.
+     *
+     * @param string $their_field
+     *
+     * @return string
      */
     public function guessFieldType($their_field = null)
     {
-        if (!is_scalar($their_field)) {
+        if (!is_string($their_field)) {
             return;
         }
 
@@ -210,7 +214,7 @@ class Reference
     /**
      * List of properties to show in var_dump.
      */
-    protected $debug_fields = ['our_field', 'their_field'];
+    protected $__debug_fields = ['ref' => 'link', 'model', 'our_field', 'their_field'];
 
     /**
      * Returns array with useful debug info for var_dump.
@@ -219,14 +223,11 @@ class Reference
      */
     public function __debugInfo()
     {
-        $arr = [
-            'ref'     => $this->link,
-            'model'   => $this->model,
-        ];
-
-        foreach ($this->__debug_fields as $key) {
-            if (isset($this->$key)) {
-                $arr[$key] = $this->$key;
+        $arr = [];
+        foreach ($this->__debug_fields as $k => $v) {
+            $k = is_numeric($k) ? $v : $k;
+            if (isset($this->$v)) {
+                $arr[$k] = $this->$v;
             }
         }
 
