@@ -1160,85 +1160,87 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->set($data);
         }
 
-        if ($this->hook('beforeSave') === false) {
+        return $this->atomic(function () use ($data) {
+            if ($this->hook('beforeSave') === false) {
+                return $this;
+            }
+
+            $is_update = $this->loaded();
+            if ($is_update) {
+                $data = [];
+                $dirty_join = false;
+                foreach ($this->dirty as $name => $junk) {
+                    $field = $this->hasElement($name);
+                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                        continue;
+                    }
+
+                    // get the value of the field
+                    $value = $this->get($name);
+
+                    if (isset($field->join)) {
+                        $dirty_join = true;
+                        // storing into a different table join
+                        $field->join->set($name, $value);
+                    } else {
+                        $data[$name] = $value;
+                    }
+                }
+
+                // No save needed, nothing was changed
+                if (!$data && !$dirty_join) {
+                    return $this;
+                }
+
+                if ($this->hook('beforeUpdate', [&$data]) === false) {
+                    return $this;
+                }
+
+                $this->persistence->update($this, $this->id, $data);
+
+                $this->hook('afterUpdate', [&$data]);
+            } else {
+                $data = [];
+                foreach ($this->get() as $name => $value) {
+                    $field = $this->hasElement($name);
+                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                        continue;
+                    }
+
+                    if (isset($field->join)) {
+                        // storing into a different table join
+                        $field->join->set($name, $value);
+                    } else {
+                        $data[$name] = $value;
+                    }
+                }
+
+                if ($this->hook('beforeInsert', [&$data]) === false) {
+                    return $this;
+                }
+
+                // Collect all data of a new record
+                $this->id = $this->persistence->insert($this, $data);
+                $this->hook('afterInsert', [$this->id]);
+
+                if ($this->reload_after_save !== false) {
+                    $d = $this->dirty;
+                    $this->dirty = [];
+                    $this->reload();
+                    $this->_dirty_after_reload = $this->dirty;
+                    $this->dirty = $d;
+                }
+            }
+
+            $this->hook('afterSave');
+
+
+            if ($this->loaded()) {
+                $this->dirty = $this->_dirty_after_reload;
+            }
+
             return $this;
-        }
-
-        $is_update = $this->loaded();
-        if ($is_update) {
-            $data = [];
-            $dirty_join = false;
-            foreach ($this->dirty as $name => $junk) {
-                $field = $this->hasElement($name);
-                if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
-                    continue;
-                }
-
-                // get the value of the field
-                $value = $this->get($name);
-
-                if (isset($field->join)) {
-                    $dirty_join = true;
-                    // storing into a different table join
-                    $field->join->set($name, $value);
-                } else {
-                    $data[$name] = $value;
-                }
-            }
-
-            // No save needed, nothing was changed
-            if (!$data && !$dirty_join) {
-                return $this;
-            }
-
-            if ($this->hook('beforeUpdate', [&$data]) === false) {
-                return $this;
-            }
-
-            $this->persistence->update($this, $this->id, $data);
-
-            $this->hook('afterUpdate', [&$data]);
-        } else {
-            $data = [];
-            foreach ($this->get() as $name => $value) {
-                $field = $this->hasElement($name);
-                if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
-                    continue;
-                }
-
-                if (isset($field->join)) {
-                    // storing into a different table join
-                    $field->join->set($name, $value);
-                } else {
-                    $data[$name] = $value;
-                }
-            }
-
-            if ($this->hook('beforeInsert', [&$data]) === false) {
-                return $this;
-            }
-
-            // Collect all data of a new record
-            $this->id = $this->persistence->insert($this, $data);
-            $this->hook('afterInsert', [$this->id]);
-
-            if ($this->reload_after_save !== false) {
-                $d = $this->dirty;
-                $this->dirty = [];
-                $this->reload();
-                $this->_dirty_after_reload = $this->dirty;
-                $this->dirty = $d;
-            }
-        }
-
-        $this->hook('afterSave');
-
-
-        if ($this->loaded()) {
-            $this->dirty = $this->_dirty_after_reload;
-        }
-
-        return $this;
+        });
     }
 
     /**
@@ -1365,23 +1367,35 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $id = null;
         }
 
-        if ($id) {
-            $c = clone $this;
-            $c->load($id)->delete();
+        return $this->atomic(function () use ($id) {
+            if ($id) {
+                $c = clone $this;
+                $c->load($id)->delete();
 
-            return $this;
-        } elseif ($this->loaded()) {
-            if ($this->hook('beforeDelete', [$this->id]) === false) {
                 return $this;
-            }
-            $this->persistence->delete($this, $this->id);
-            $this->hook('afterDelete', [$this->id]);
-            $this->unload();
+            } elseif ($this->loaded()) {
+                if ($this->hook('beforeDelete', [$this->id]) === false) {
+                    return $this;
+                }
+                $this->persistence->delete($this, $this->id);
+                $this->hook('afterDelete', [$this->id]);
+                $this->unload();
 
-            return $this;
-        } else {
-            throw new Exception(['No active record is set, unable to delete.']);
-        }
+                return $this;
+            } else {
+                throw new Exception(['No active record is set, unable to delete.']);
+            }
+        });
+    }
+
+    /**
+     * Atomic executes operations within one begin/end transaction, so if
+     * the code inside callback will fail, then all of the transaction
+     * will be also rolled back.
+     */
+    public function atomic($f)
+    {
+        return $this->persistence->atomic($f);
     }
 
     // }}}

@@ -94,6 +94,20 @@ class Persistence_SQL extends Persistence
     }
 
     /**
+     * Atomic executes operations within one begin/end transaction, so if
+     * the code inside callback will fail, then all of the transaction
+     * will be also rolled back.
+     *
+     * @param callable $f
+     *
+     * @return mixed
+     */
+    public function atomic($f)
+    {
+        return $this->connection->atomic($f);
+    }
+
+    /**
      * Associate model with the data driver.
      *
      * @param Model|string $m        Model which will use this persistence
@@ -310,8 +324,14 @@ class Persistence_SQL extends Persistence
             }
 
             if (count($cond) == 2) {
+                if ($cond[0] instanceof Field) {
+                    $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
+                }
                 $q->where($cond[0], $cond[1]);
             } else {
+                if ($cond[0] instanceof Field) {
+                    $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
+                }
                 $q->where($cond[0], $cond[1], $cond[2]);
             }
         }

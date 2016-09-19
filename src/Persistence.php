@@ -96,4 +96,18 @@ class Persistence
     protected function initPersistence(Model $m)
     {
     }
+
+    /**
+     * Atomic executes operations within one begin/end transaction. Not all
+     * persistences will support atomic operations, so by default we just
+     * don't do anything.
+     *
+     * @param callable $f
+     *
+     * @return mixed
+     */
+    public function atomic($f)
+    {
+        return call_user_func($f);
+    }
 }

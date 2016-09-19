@@ -305,7 +305,7 @@ class FieldTest extends SQLTestCase
         $m->addField('first_name', ['actual' => 'name']);
         $m->addField('surname');
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
-        $m->load(1);
+        $m->loadBy('first_name', 'John');
         $this->assertEquals('John', $m['first_name']);
 
         $d = $m->export();
@@ -371,7 +371,6 @@ class FieldTest extends SQLTestCase
             return base64_decode($value);
         };
 
-
         $m = new Model($db, 'user');
         $m->addField('name', ['mandatory' => true]);
         $m->addField('secret', [
@@ -384,7 +383,6 @@ class FieldTest extends SQLTestCase
         $a = $this->getDB();
         $this->assertNotNull($a['user'][1]['secret']);
         $this->assertNotEquals('i am a woman', $a['user'][1]['secret']);
-
 
         $m->unload()->load(1);
         $this->assertEquals('i am a woman', $m['secret']);
