@@ -330,20 +330,24 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Adds multiple fields into model.
      *
      * @param array $fields
+     * @param array $defaults
      *
      * @return $this
      */
-    public function addFields($fields = [])
+    public function addFields($fields = [], $defaults = [])
     {
         foreach ($fields as $field) {
             if (is_string($field)) {
-                $this->addField($field);
+                $this->addField($field, $defaults);
                 continue;
             }
 
-            $name = $field[0];
-            unset($field[0]);
-            $this->addField($name, $field);
+            if (is_array($field) && isset($field[0])) {
+                $name = $field[0];
+                unset($field[0]);
+                $this->addField($name, $field);
+                continue;
+            }
         }
 
         return $this;
