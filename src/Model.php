@@ -511,7 +511,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             if ($f->enum && $f->type != 'boolean') {
                 $values = [];
-                foreach ($f->enum as $k=>$v) {
+                foreach ($f->enum as $k => $v) {
                     $values[] = is_numeric($k) ? $v : $k;
                 }
 
