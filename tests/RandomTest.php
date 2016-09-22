@@ -110,6 +110,29 @@ class RandomSQLTests extends SQLTestCase
             ], ], $this->getDB());
     }
 
+    public function testAddFields()
+    {
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'login' => 'john@example.com'],
+            ], ];
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model($db, 'user');
+        $m->addFields(['name', 'login'], ['default' => 'unknown']);
+
+        $m->insert(['name' => 'Peter']);
+        $m->insert([]);
+
+        $this->assertEquals([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'login' => 'john@example.com'],
+                2 => ['id' => 2, 'name' => 'Peter', 'login' => 'unknown'],
+                3 => ['id' => 3, 'name' => 'unknown', 'login' => 'unknown'],
+            ], ], $this->getDB());
+    }
+
     public function testSameTable()
     {
         $db = new Persistence_SQL($this->db->connection);
