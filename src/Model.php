@@ -761,9 +761,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
             return $this;
         }
 
-        if (is_null($desc) && is_string($field) && strpos($field, ' ') !== false) {
+        if (is_null($desc) && is_string($field)) {
             // no realistic workaround in PHP for 2nd argument being null
-            list($field, $desc) = array_map('trim', explode(' ', trim($field), 2));
+            $field = trim($field);
+            if (strpos($field, ' ') !== false) {
+                list($field, $desc) = array_map('trim', explode(' ', $field, 2));
+            }
         }
 
         $this->order[] = [$field, $desc];
