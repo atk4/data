@@ -510,7 +510,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             if ($f->enum && $f->type != 'boolean') {
-                if (!in_array($value, $f->enum, true) && $value !== null) {
+                $values = [];
+                foreach ($f->enum as $k=>$v) {
+                    $values[] = is_numeric($k) ? $v : $k;
+                }
+
+                if (!in_array($value, $values, true) && $value !== null) {
                     throw new Exception([
                         'This is not one of the allowed values for the field',
                         'field' => $field,

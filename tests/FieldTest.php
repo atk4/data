@@ -173,6 +173,28 @@ class FieldTest extends SQLTestCase
         $this->assertSame(null, $m['foo']);
     }
 
+    /**
+     * @expectedException Exception
+     */
+    public function testEnum5()
+    {
+        $m = new Model();
+        $m->addField('foo', ['enum' => ['foo', 'bar' => 'qwe']]);
+        $m['foo'] = 'qwe';
+    }
+
+    public function testEnum6()
+    {
+        $m = new Model();
+        $m->addField('foo', ['enum' => ['foo', 'bar' => 'qwe']]);
+
+        $m['foo'] = 'foo';
+        $this->assertSame('foo', $m['foo']);
+
+        $m['foo'] = 'bar';
+        $this->assertSame('bar', $m['foo']);
+    }
+
     public function testPersist()
     {
         $db = new Persistence_SQL($this->db->connection);
