@@ -9,10 +9,10 @@ namespace atk4\data;
  */
 class Join
 {
-    use \atk4\core\TrackableTrait {
+    use \atk4\core\TrackableTrait;
+    use \atk4\core\InitializerTrait {
         init as _init;
     }
-    use \atk4\core\InitializerTrait;
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
