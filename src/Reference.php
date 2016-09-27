@@ -189,6 +189,7 @@ class Reference
      */
     public function guessFieldType($their_field = null)
     {
+        return;
         if (!is_string($their_field)) {
             return;
         }
