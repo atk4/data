@@ -244,12 +244,19 @@ class Persistence_SQL extends Persistence
 
             // Add requested fields first
             foreach ($m->only_fields as $field) {
-                $this->initField($q, $m->getElement($field));
+                $f_object = $m->getElement($field);
+                if ($f_object instanceof Field && $f_object->never_persist) {
+                    continue;
+                }
+                $this->initField($q, $f_object);
                 $added_fields[$field] = true;
             }
 
             // now add system fields, if they were not added
             foreach ($m->elements as $field => $f_object) {
+                if ($f_object instanceof Field && $f_object->never_persist) {
+                    continue;
+                }
                 if ($f_object instanceof Field_SQL && $f_object->system && !isset($added_fields[$field])) {
                     $this->initField($q, $f_object);
                 }
