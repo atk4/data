@@ -56,7 +56,7 @@ class Model_Item3 extends \atk4\data\Model
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
         $i2->hasOne('parent_item_id', [$m, 'table_alias' => 'parent'])
-            ->addTitle();
+            ->withTitle();
 
         $this->hasMany('Child', [$m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
@@ -107,6 +107,29 @@ class RandomSQLTests extends SQLTestCase
                 2 => ['id' => 2, 'name' => 'Steve', 'salary' => 30],
                 3 => ['id' => 3, 'name' => 'Sue', 'salary' => 10],
                 4 => ['id' => 4, 'name' => 'John', 'salary' => 40],
+            ], ], $this->getDB());
+    }
+
+    public function testAddFields()
+    {
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'login' => 'john@example.com'],
+            ], ];
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model($db, 'user');
+        $m->addFields(['name', 'login'], ['default' => 'unknown']);
+
+        $m->insert(['name' => 'Peter']);
+        $m->insert([]);
+
+        $this->assertEquals([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'login' => 'john@example.com'],
+                2 => ['id' => 2, 'name' => 'Peter', 'login' => 'unknown'],
+                3 => ['id' => 3, 'name' => 'unknown', 'login' => 'unknown'],
             ], ], $this->getDB());
     }
 
@@ -266,5 +289,14 @@ class RandomSQLTests extends SQLTestCase
         $this->assertEquals('rec #3', $m->load(3)['name']);
 
         $m->delete();
+    }
+
+    public function testIssue163()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model_Item($db);
+
+        $m->hasOne('Person', 'atk4/data/tests/Person');
+        $person = $m->ref('Person');
     }
 }

@@ -50,11 +50,11 @@ The Domain Layer Scope
 =======================
 
 Agile Data is a framework that will allow you to define your Domain objects
-and will map them into database of your choice. 
+and will map them into database of your choice.
 
 You can use Agile Data with SQL (PDO-compatible) vendors, NoSQL (MongoDB)
 or memory Arrays. Support for other database vendors can be added
-through add-ons. 
+through add-ons.
 
 
 The Danger of Raw Queries
@@ -114,7 +114,7 @@ When dealing with Domain logic, you work with a single object.
 When we start developing a new application, we first decide on the Model structure.
 Think what models your application will use and how they are related. Do not
 think in terms of "tables", but rather think in terms of "objects" and properties
-of those objects. 
+of those objects.
 
 All of those model properties are "declared".
 
@@ -140,10 +140,10 @@ A code to declare a model::
 
 Domain Model Methods
 --------------------
- 
+
 Next we need to write down various "functions" your application would have to
 perform and attribute those to individual models. At the same time think
-about object inheritance. 
+about object inheritance.
 
  - User
    - sendPasswordReminder()
@@ -181,10 +181,10 @@ Our next step is to define object fields (or properties). Remember that inherita
    - permission_level
  - Order
    - description, amount, is_paid
-   
+
 Those fields are not just mere "properties", but have more "meta" information behind them and that's why we call them "fields" and not "properties". A typical field contain information about field name, caption, type, validation rules, persistence rules, presentation rules and more. Meta information is optional and it can be used by automated processes (such as presentation or persistence).
 
-For instance, is_paid has a `type('boolean')` which means it will be stored as 1/0 in MySQL, but will use true/false in MongoDB. It will be displayed as a checkbox. Those decisions are made by the framework and will simplify your life, however if you want to do things differently, you will still be able to override default behaviour.
+For instance, is_paid has a `type('boolean')` which means it will be stored as 1/0 in MySQL, but will use true/false in MongoDB. It will be displayed as a checkbox. Those decisions are made by the framework and will simplify your life, however if you want to do things differently, you will still be able to override default behavior.
 
 Code to declare fields::
 
@@ -205,13 +205,13 @@ Code to access field values::
 Domain Model Relationship
 -------------------------
 
-Next - relations. Think how those objects relate to each-other. Think in terms of "specific object" and not database relations. Client has many Orders. Order has one Client. 
+Next - references. Think how those objects relate to each-other. Think in terms of "specific object" and not database relations. Client has many Orders. Order has one Client.
 
  - User
    - hasMany(Client)
  - Client
    - hasOne(User)
-  
+
 There are no "many-to-many" relationship in Domain Model because relationships
 work from a specific record, but more on that later.
 
@@ -264,7 +264,7 @@ know it's ID::
 Persistence-specific Code
 =========================
 
-Finally, some code may rely on specific features of your persistence layer. 
+Finally, some code may rely on specific features of your persistence layer.
 
 
 Domain Model Expressions
@@ -299,7 +299,7 @@ Code::
 
                 $this->addExpression('is_password_expired')
                     ->set(
-                        '{} < NOW() - INTERVAL 1 MONTH', 
+                        '{} < NOW() - INTERVAL 1 MONTH',
                         [$this->getElement('password_change_date')]
                     );
             }
@@ -312,7 +312,7 @@ Persistence Hooks
 
 Hooks can help you perform operations when object is being persisted::
 
-    
+
     class Model_User extends data\Model {
         function init() {
             parent::init();
@@ -364,7 +364,7 @@ Orders::
     $sum += $order['amount'];
 
 You can iterate over the DataSet::
-    
+
     $sum = 0;
     foreach($db->add('Model_Order') as $order) {
         $sum += $order['amount'];
@@ -380,7 +380,7 @@ At this point, I'll jump ahead a bit and will show you an alternative code::
 
 It will have same effect as the code above, but will perform operation of
 adding up all order amounts inside the database and save you a lot of
-CPU cycles. 
+CPU cycles.
 
 Domain Conditions
 =================
@@ -410,7 +410,7 @@ on user_id. We can't do that, because "query", "table" and "user_id" are persist
 and we must keep them outside of business logic. Other ORM solution give you something like this::
 
     $array_of_orders = $user->orders();
-    
+
 Unfortunately this has practical performance implications and scalability constraints. What
 if your user is having millions of orders? Even with lazy-loading, you will be operating
 with million "id" records.
@@ -421,7 +421,7 @@ Agile Data implements traversal as a simple operation that converts one DataSet 
     $vip_orders = $user_dataset -> refSet('Order');
 
     $sum = $vip_orders->sum('amount')->getOne();
-    
+
 The implementation of refSet is pretty powerful - $user_dataset can address 3 users in
 the database and only 2 of those users are VIP. Typical ORM would require you to fetch all
 VIP records and then perform additional queries to find their orders.
@@ -435,7 +435,7 @@ Domain Model Actions
 --------------------
 
 Persistence layer in Agile Data uses intelligent mapping of your Domain Logic into
-DatabaseVendor-specific operations. 
+DatabaseVendor-specific operations.
 
 To continue my example from above, I'll use a query method to calculate number of orders
 placed by VIP clients::
@@ -444,7 +444,9 @@ placed by VIP clients::
 
 This code will attempt to execute a single-query only, however the ability to optimize
 your request relies on the capabilities of database vendor. The actual database
-operation(s) might look like this on SQL database::
+operation(s) might look like this on SQL database:
+
+.. code-block:: sql
 
     select count(*) from `order` where user_id in
         (select id from user where type="user" and is_vip=1)
@@ -453,7 +455,7 @@ While with MongoDB, the query could be different::
 
     $ids = collections.client.find({'is_vip':true}).field('id');
     return collections.order.find({'user_id':$ids}).count();
-    
+
 Finally the code above will work even if you use a simple Array as a data source::
 
     $db = new data\Persistence\Array([
@@ -495,7 +497,7 @@ not violate SRP (Single Responsibility Principle)
 
 Unique Features of Persistence Layer
 ------------------------------------
-More often than not, your application is designed and built with a specific persistence layer in mind. If you are using SQL database, you want to 
+More often than not, your application is designed and built with a specific persistence layer in mind. If you are using SQL database, you want to
 
 
 
@@ -511,5 +513,5 @@ Before we talk "databases", we must outline a few challenges:
  - we should be able to perform basic Unit tests on our domain logic
  - single vs multiple records
  - ..add more..
- 
+
 

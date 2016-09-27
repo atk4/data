@@ -3,7 +3,7 @@
 Advanced Topics
 ===============
 
-Agile Data allow you to implement various tricks. 
+Agile Data allow you to implement various tricks.
 
 
 Audit Fields
@@ -22,7 +22,7 @@ I will be looking to create the following fields:
 To implement the above, I'll create a new class::
 
     class Controller_Audit {
-        
+
         use \atk4\core\InitializerTrait {
             init as _init;
         }
@@ -33,7 +33,7 @@ To implement the above, I'll create a new class::
 
 TrackableTrait means that I'll be able to add this object inside model
 with ``$model->add(new Controller_Audit())`` and that will automatically
-populate $owner, and $app values (due to AppScopeTrait) as well as 
+populate $owner, and $app values (due to AppScopeTrait) as well as
 execute init() method, which I want to define like this::
 
 
@@ -63,8 +63,8 @@ execute init() method, which I want to define like this::
         });
     }
 
-In order to add your defined behaviour to the model. The first check actually allows you to define
-models that will bypass audit alltogether::
+In order to add your defined behavior to the model. The first check actually allows you to define
+models that will bypass audit altogether::
 
     $u1 = new Model_User($db);   // Model_User::init() includes audit
 
@@ -98,7 +98,7 @@ soft-delete controller for Agile Data (for educational purposes).
 Start by creating a class::
 
     class Controller_SoftDelete {
-        
+
         use \atk4\core\InitializerTrait {
             init as _init;
         }
@@ -175,16 +175,16 @@ The method body is actually defined in our controller. Notice that we have defin
 hooks - beforeSoftDelete and afterSoftDelete that work similarly to beforeDelete and afterDelete.
 
 beforeSoftDelete will allow you to "break" it in certain cases to bypass the rest of method, again,
-this is to maintain conistency with the rest of before* hooks in Agile Data.
+this is to maintain consistency with the rest of before* hooks in Agile Data.
 
-Hooks are called through the model, so your call-back will autamtically receive first argument
+Hooks are called through the model, so your call-back will automatically receive first argument
 $m, and afterSoftDelete will pass second argument - $id of deleted record.
 
 I am then setting reload_after_save value to false, because after I set 'is_deleted' to false,
 $m will no longer be able to load the record - it will fall outside of the DataSet. (We
 might implement a better method for saving records outside of DataSet in the future).
 
-After softDelete active record is unloaded, mimicking behaviour of delete().
+After softDelete active record is unloaded, mimicking behavior of delete().
 
 It's also possible for you to easily look at deleted records and even restore them::
 
@@ -202,7 +202,7 @@ a pretty simple controller. In fact I'm reusing the one from before and just sli
 it::
 
     class Controller_SoftDelete {
-        
+
         use \atk4\core\InitializerTrait {
             init as _init;
         }
@@ -265,7 +265,7 @@ it::
 
 Implementation of this controller is similar to the one above, however instead of creating softDelete()
 it overrides the delete() method through a hook. It will still call 'afterDelete' to mimic the
-behaviour of regular delete() after the record is marked as deleted and unloaded.
+behavior of regular delete() after the record is marked as deleted and unloaded.
 
 You can still access the deleted records::
 
@@ -304,7 +304,7 @@ your model are unique::
             $this->owner->addHook('beforeSave', $this);
         }
 
-        function beforeSave($m) 
+        function beforeSave($m)
         {
             foreach ($this->fields as $field) {
                 if ($m->dirty[$field]) {
@@ -326,7 +326,7 @@ to make addCondition additive if you are verifying for the combination of matche
 Creating Many to Many relationship
 ==================================
 
-Depending on the usage case many-to-many relationships can be implemented differently in Agile Data. I will be focusing on the
+Depending on the use-case many-to-many relationships can be implemented differently in Agile Data. I will be focusing on the
 practical approach. My system has "Invoice" and "Payment" document and I'd like to introduce "invoice_payment" that can
 link both entities together with fields ('invoice_id', 'payment_id', and 'amount_closed'). Here is what I need to do:
 
@@ -349,7 +349,7 @@ Create new Model::
 2. Update Invoice and Payment model
 -----------------------------------
 
-Next we need to define relationship. Inside Model_Invoice add::
+Next we need to define reference. Inside Model_Invoice add::
 
     $this->hasMany('InvoicePayment');
 
@@ -360,7 +360,7 @@ Next we need to define relationship. Inside Model_Invoice add::
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field'=>'invoice_id']);
 
-    $this->addHook('beforeDelete',function($m){ 
+    $this->addHook('beforeDelete',function($m){
         $m->ref('InvoicePayment')->action('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment
@@ -404,7 +404,7 @@ towards a most suitable invoice::
 
         // we are only interested in unpaid invoices
         $invoices->addCondition('amount_due', '>', 0);
-        
+
         // Prioritize older invoices
         $invoices->setOrder('date');
 
@@ -434,7 +434,7 @@ towards a most suitable invoice::
         }
     }
 
-The method here will prioritise oldest invoices unless it finds the one that has a matching
+The method here will prioritize oldest invoices unless it finds the one that has a matching
 reference. Additionally it will allocate your payment towards multiple invoices. Finally
 if invoice is partially paid it will only allocate what is due.
 
@@ -442,7 +442,7 @@ if invoice is partially paid it will only allocate what is due.
 
 Creating Related Entity Lookup
 ==============================
-    
+
 Sometimes when you add a record inside your model you want to specify some related records
 not through ID but through other means. For instance, when adding invoice, I want to make
 it possible to specify 'Category' through the name, not only category_id. First, let me
@@ -469,17 +469,17 @@ this approach will require us to perform 2 extra queries::
 
     $m = new Model_Invoice($db);
     $m->insert([
-        'total'=>20, 
+        'total'=>20,
         'client_id'=>$m->ref('client_id')->loadBy('code', $client_code)->id,
         'category_id'=>$m->ref('category_id')->loadBy('name', $category)->id,
     ]);
 
-The ideal way would be to create some "non-peristable" fields that can be used to make
+The ideal way would be to create some "non-persistable" fields that can be used to make
 things easier::
 
     $m = new Model_Invoice($db);
     $m->insert([
-        'total'=>20, 
+        'total'=>20,
         'client_code'=>$client_code,
         'category'=>$category
     ]);
@@ -488,7 +488,7 @@ Here is how to add them. First you need to create fields::
 
     $this->addField('client_code', ['never_persist'=>true]);
     $this->addField('client_name', ['never_persist'=>true]);
-    $this->addField('clategory', ['never_persist'=>true]);
+    $this->addField('category', ['never_persist'=>true]);
 
 I have declared those fields with never_persist so they will never be used by persistence
 layer to load or save anything. Next I need a beforeSave handler::
@@ -514,7 +514,7 @@ layer to load or save anything. Next I need a beforeSave handler::
     });
 
 Note that isset() here will be true for modified fields only and behaves
-differently from PHP's default behaviour. See documentaiton for Model::isset
+differently from PHP's default behavior. See documentation for Model::isset
 
 This technique allows you to hide the complexity of the lookups and also embed the
 necessary queries inside your "insert" query.
@@ -547,7 +547,7 @@ The beautiful thing about this approach is that default can also be defined
 as a lookup query::
 
     $this->hasOne('category_id','Model_Category');
-    $this->getElement('category_id')->default = 
+    $this->getElement('category_id')->default =
         $this->getRef('category_id')->getModel()->addCondition('name','Other')
             ->action('field',['id']);
 
@@ -559,7 +559,7 @@ In this example I'll be building API that allows me to insert multi-model
 information. Here is usage example::
 
     $invoice->insert([
-        'client'=>'Joe Smith', 
+        'client'=>'Joe Smith',
         'payment'=>[
             'amount'=>15,
             'ref'=>'half upfront',
@@ -582,7 +582,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->addHook('afterSave', function($m){ 
+    $this->addHook('afterSave', function($m){
         if(isset($m['payment'])) {
             $m->ref('Payment')->insert($m['payment']);
         }
@@ -593,7 +593,7 @@ so::
     });
 
 You should never call save() inside afterSave hook, but if you wish to do some
-further manipulation, you can relad a clone::
+further manipulation, you can reload a clone::
 
     $mm = clone $m;
     $mm->reload();
@@ -637,7 +637,7 @@ Model_Invoice add::
 
     $this->hasOne('client_id', 'Client');
 
-    $this->hasOne('payment_invoice_id', function($m){ 
+    $this->hasOne('payment_invoice_id', function($m){
         return $m->ref('client_id')->ref('Payment');
     });
 
@@ -656,12 +656,12 @@ In this case the payment_invoice_id will be set to ID of any payment by client
         $m['payment_invoice_id'] = $m->ref('payment_invoice_id')->tryLoadAny()->id;
         $m->save();
 
-    });  
+    });
 
-Narrowing Down Existing Relations
-=================================
+Narrowing Down Existing References
+==================================
 
-Aglie Data allow you to define multiple relations between same entities, but
+Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::
 
     $this->hasMany('Invoice', 'Model_Invoice');
@@ -670,9 +670,9 @@ sometimes that can be quite useful. Consider adding this inside your Model_Conta
     });
 
 This way if you extend your class into 'Model_Client' and modify the 'Invoice'
-relationship to use different model::
+reference to use different model::
 
     $this->getRef('Invoice')->model = 'Model_Invoice_Sale';
 
-The 'OverdueInvoice' relation will be also propoerly adjusted.
+The 'OverdueInvoice' reference will be also properly adjusted.
 

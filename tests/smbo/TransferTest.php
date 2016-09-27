@@ -4,11 +4,34 @@ namespace atk4\data\tests\smbo;
 
 use atk4\data\Persistence;
 
-class SMBOTest extends \atk4\data\tests\TestCase
+class TransferTest extends SMBOTestCase
 {
+    public $debug = false;
+
     /**
-     * Test constructor.
+     * Testing transfer between two accounts.
      */
+    public function testTransfer()
+    {
+        $aib = (new Account($this->db))->save('AIB');
+        $boi = (new Account($this->db))->save('BOI');
+
+
+        $t = $aib->transfer($boi, 100); // create transfer between accounts
+
+        $t->save();
+
+        $this->assertEquals(-100, $aib->reload()['balance']);
+        $this->assertEquals(100, $boi->reload()['balance']);
+
+        $data = $t->export(['id', 'transfer_document_id']);
+        $this->assertEquals([
+            ['id' => 1, 'transfer_document_id' => 2],
+            ['id' => 2, 'transfer_document_id' => 1],
+        ], $data);
+    }
+
+    /*
     public function testBasicEntities()
     {
         $db = Persistence::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
@@ -81,4 +104,5 @@ class SMBOTest extends \atk4\data\tests\TestCase
         // (100.00+10.00) + (61.50 + 12.30) - 10.20*2
         $this->assertEquals(163.40, $debt->sum('amount'));
     }
+     */
 }

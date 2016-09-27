@@ -9,10 +9,10 @@ namespace atk4\data;
  */
 class Join
 {
-    use \atk4\core\TrackableTrait {
+    use \atk4\core\TrackableTrait;
+    use \atk4\core\InitializerTrait {
         init as _init;
     }
-    use \atk4\core\InitializerTrait;
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
@@ -48,7 +48,7 @@ class Join
     /**
      * Normally the foreign table is saved first, then it's ID is used in the
      * primary table. When deleting, the primary table record is deleted first
-     * which is followed by the foreign tabel record.
+     * which is followed by the foreign table record.
      *
      * If you are using the following syntax:
      *
@@ -140,8 +140,6 @@ class Join
                     $this->reverse = 'link';
 
                          */
-                    /*
-                     */
                 }
             }
             list($this->foreign_table, $this->foreign_field) =
@@ -165,7 +163,7 @@ class Join
 
     /**
      * Adding field into join will automatically associate that field
-     * with this join. That means it won't be loaded from $table but
+     * with this join. That means it won't be loaded from $table, but
      * form the join instead.
      */
     public function addField($n, $defaults = [])
@@ -235,7 +233,7 @@ class Join
     }
 
     /**
-     * creates relation based on a field from the join.
+     * creates reference based on a field from the join.
      */
     public function hasOne($model, $defaults = [])
     {
@@ -248,7 +246,7 @@ class Join
     }
 
     /**
-     * creates relation based on the field from the join.
+     * creates reference based on the field from the join.
      */
     public function hasMany($model, $defaults = [])
     {
@@ -297,7 +295,7 @@ class Join
     /**
      * Will iterate through this model by pulling
      *  - fields
-     *  - relations
+     *  - references
      *  - conditions.
      *
      * and then will apply them locally. Any you think that any fields
@@ -306,6 +304,7 @@ class Join
      */
     public function importModel($m, $defaults = [])
     {
+        // not implemented yet !!!
     }
 
     /**

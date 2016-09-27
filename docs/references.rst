@@ -1,31 +1,30 @@
 
-.. _Relations:
+.. _References:
 
-=========
-Relations
-=========
+==========
+References
+==========
 
 .. php:class:: Model
 
-.. php:method:: ref($link, $defailts = []);
+.. php:method:: ref($link, $details = []);
 
-Models can relate one to another. The logic of traversing relations, however, is
+Models can relate one to another. The logic of traversing references, however, is
 slightly different to the traditional ORM implementation, because in Agile Data
 traversing also imposes :ref:`conditions`
 
-There are two basic types of relations: hasOne() and hasMany(). You need to define
-relation between the models before you can traverse it, which you can do either
-inside the init() method or anywhere else::
-
+There are two basic types of references: hasOne() and hasMany(), but it's also
+possible to add other reference types. The basic ones are really easy to
+use::
 
     $m = new Model_User($db, 'user');
     $m->hasMany('Orders', new Model_Order());
-    $m->load(1);
+    $m->load(13);
 
-    $orders_for_user_1 = $m->ref('Orders');
+    $orders_for_user_13 = $m->ref('Orders');
 
-As mentioned - $orders_for_user_1 will have it's DataSet automatically adjusted
-so that you could only access orders for the user with ID=1. The following is
+As mentioned - $orders_for_user_13 will have it's DataSet automatically adjusted
+so that you could only access orders for the user with ID=13. The following is
 also possible::
 
     $m = new Model_User($db, 'user');
@@ -36,25 +35,27 @@ also possible::
     $orders_for_vips->loadAny();
 
 Condition on the base model will be carried over to the orders and you will
-only be able to access orders that belong to vip users. The query for loading
-order will look like this::
+only be able to access orders that belong to VIP users. The query for loading
+order will look like this:
+
+.. code-block:: sql
 
     select * from order where user_id in (
         select id from user where is_vip = 1
     ) limit 1
 
-Argument $defaults will be passed to the new model that will be used for
-relation. This will not work if you have specified relation as existing
-model that has a persistence set.
+Argument $defaults will be passed to the new model that will be used to create
+referenced model. This will not work if you have specified reference as existing
+model that has a persistence set. (See Reference::getModel())
 
 Persistence
 -----------
 
 Agile Data supports traversal between persistences. The code above does not
-explicitly assign database to Model_Order, therefore it will be associated
-with the $db when traversing.
+explicitly assign database to Model_Order. But what if destination model does
+not reside inside the same database?
 
-You can specify a different database though::
+You can specify it like this::
 
     $m = new Model_User($db_array_cache, 'user');
     $m->hasMany('Orders', new Model_Order($db_sql));
@@ -63,7 +64,9 @@ You can specify a different database though::
     $orders_for_vips = $m->ref('Orders');
 
 Now that a different databases are used, the queries can no longer be
-joined so Agile Data will carry over list of IDs instead::
+joined so Agile Data will carry over list of IDs instead:
+
+.. code-block:: sql
 
     $ids = select id from user where is_vip = 1
     select * from order where user_id in ($ids)
@@ -71,19 +74,32 @@ joined so Agile Data will carry over list of IDs instead::
 Since we are using ``$db_array_cache``, then field values will actually
 be retrieved from memory.
 
+.. note:: This is not implemented as of 1.1.0, see https://github.com/atk4/data/issues/158
+
 Safety and Performance
 ----------------------
 
-When using ref() on hasMany relation, it will always return a fresh clone
+When using ref() on hasMany reference, it will always return a fresh clone
 of the model. You can perform actions on the clone and next time you execute
-ref() this will not be impcated. If you performing traversals inside
-iterations, this can cause performance issues, for this reason you should
-see refLink()
+ref() you will get a fresh copy.
+
+If you are worried about performance you can keep 2 models in memory::
+
+    $order = new Order($db);
+    $client = $order->getRef('client_id')->getModel();
+
+    foreach($order as $o) {
+        $client->load($o['client_id']);
+    }
+
+.. warning:: This code is seriously flawed and is called "N+1 Problem".
+    Agile Data discourages you from using this and instead offers you
+    many other tools: field importing, model joins, field actions and
+    refLink().
 
 
-
-hasMany Relation
-================
+hasMany Reference
+=================
 
 .. php:method:: hasMany($link, $model);
 
@@ -98,10 +114,10 @@ There are several ways how to link models with hasMany::
     $m->hasMany('Order');                      // will use factory new Model_Order
 
 
-Dealing with many-to-many relations
------------------------------------
+Dealing with many-to-many references
+------------------------------------
 
-It is possible to perform relation through an 3rd party table::
+It is possible to perform reference through an 3rd party table::
 
     $i = new Model_Invoice();
     $p = new Model_Payment();
@@ -121,9 +137,9 @@ Now you can fetch all the payments associated with the invoice through::
 Dealing with NON-ID fields
 --------------------------
 
-Sometimes you have to use non-ID relations. For example we might have two models
+Sometimes you have to use non-ID references. For example, we might have two models
 describing list of currencies and for each currency we might have historic rates
-available. Both models will relate throug ``currency.code = exchange.currency_code``::
+available. Both models will relate through ``currency.code = exchange.currency_code``::
 
     $c = new Model_Currency();
     $e = new Model_ExchangeRate();
@@ -133,17 +149,19 @@ available. Both models will relate throug ``currency.code = exchange.currency_co
     $c->addCondition('is_convertable',true);
     $e = $c->ref('Exchanges');
 
-This will produce the following query::
+This will produce the following query:
 
-    select * from exchange 
-    where currency_code in 
-        (select code form currency wehre is_convertable=1)
+.. code-block:: sql
+
+    select * from exchange
+    where currency_code in
+        (select code form currency where is_convertable=1)
 
 
 Add Aggregate Fields
 --------------------
 
-Relation hasMany makes it a little simpler for you to define an aggregate fields::
+Reference hasMany makes it a little simpler for you to define an aggregate fields::
 
     $u = new Model_User($db_array_cache, 'user');
 
@@ -167,6 +185,12 @@ keep making your query bigger and bigger::
             ['total_gross', 'aggregate'=>'sum'],
         ]);
 
+.. important::
+    Imported fields will preserve format of the field the reference. In the example,
+    if 'Invoice_line' field total_vat has type `money` then it will also be used
+    for a sum. Aggregate fields are always declared read-only, and if you try to
+    change them, you will receive exception.
+
 
 hasMany / refLink
 =================
@@ -184,35 +208,39 @@ sub-queries::
     $sum = $m->refLink('Orders')->action('sum', ['amount']);
     $m->addExpression('sum_amount')->set($action);
 
-The refLink would define a condition on a query like this::
+The refLink would define a condition on a query like this:
+
+.. code-block:: sql
 
     select * from `order` where user_id = `user`.id
 
 And it will not be viable on its own, however if you use it inside a sub-query,
-then it now makes sense for generating expression::
+then it now makes sense for generating expression:
 
-    select 
+.. code-block:: sql
+
+    select
         (select sum(amount) from `order` where user_id = `user`.id) sum_amount
     from user
     where is_vip = 1
 
-hasOne relation
-===============
+hasOne reference
+================
 
 .. php:method:: hasOne($link, $model)
 
     $model can be an array containing options: [$model, ...]
 
 
-This relation allows you to attach a related model to a foreign key::
+This reference allows you to attach a related model to a foreign key::
 
     $o = new Model_Order($db, 'order');
     $u = new Model_User($db, 'user');
 
     $o->hasOne('user_id', $u);
 
-The relation is similar to hasMany, but it does behave slightly different. Also this
-relation will define a system new field ``user_id`` if you haven't done so already.
+This reference is similar to hasMany, but it does behave slightly different. Also this
+reference will define a system new field ``user_id`` if you haven't done so already.
 
 
 Traversing loaded model
@@ -237,12 +265,14 @@ user model::
     $u->loadAny();  // will load some user who has at least one failed order
 
 The important point here is that no additional queries are generated in the process and
-the loadAny() will look like this::
+the loadAny() will look like this:
 
-    select * from user where id in 
+.. code-block:: sql
+
+    select * from user where id in
         (select user_id from order where status = 'failed')
 
-By passing options to hasOne() you can also differenciate field name::
+By passing options to hasOne() you can also differentiate field name::
 
     $o->addField('user_id');
     $o->hasOne('User', [$u, 'our_field'=>'user_id']);
@@ -250,7 +280,7 @@ By passing options to hasOne() you can also differenciate field name::
     $o->load(1)->ref('User')['name'];
 
 You can also use ``their_field`` if you need non-id matching (see example above for hasMany()).
-    
+
 Importing Fields
 ----------------
 
@@ -281,11 +311,45 @@ did above::
             'address_3',
             'address_notes'=>['notes', 'type'=>'text']
         ]);
-Above, all ``address_`` fields are copied with the same name, however field 'notes' from Address model
-will be called 'address_notes' inside user model. 
 
-Relation Discovery
-==================
+Above, all ``address_`` fields are copied with the same name, however field 'notes' from Address model
+will be called 'address_notes' inside user model.
+
+.. important::
+    When importing fields, they will preserve type, e.g. if you are importing 'date' then the type
+    of your imported field will also be date. Imported fields are also marked as "read-only" and
+    attempt to change them will result in exception.
+
+Importing hasOne Title
+----------------------
+
+When you are using hasOne() in most cases the referenced object will be addressed through "ID" but
+will have a human-readable field as well. In the example above `Model_Currency` has a title field
+called `name`. Agile Data provides you an easier way how to define currency title::
+
+    $i = new Invoice($db)
+
+    $i->hasOne('currency_id', new Currency())
+        ->addTitle();
+
+This would create 'currency' field containing name of the curerncy::
+
+    $i->load(20);
+
+    echo "Currency for invoice 20 is ".$i['currency'];   // EUR
+
+Unlike addField() which creates fields read-only, title field can in fact be modified::
+
+    $i['currency'] = 'GBP';
+    $i->save();
+
+    // will update $i['currency_id'] to the corresponding ID for currency with name GBP.
+
+This behaviour is awesome when you are importing large amounts of data, because the
+lookup for the currency_id is entirely done in a database.
+
+Reference Discovery
+===================
 
 You can call getRefs() to fetch all the references of a model::
 
@@ -296,39 +360,39 @@ or if you know the reference you'd like to fetch, you can use getRef()::
 
     $ref = $model->getRef('owner_id');
 
-While ref() returns a related model, getRef gives you the reference object itself so that you could
-perform some changes on it, such as import more fields with addField()
+While ref() returns a related model, getRef() gives you the reference object itself so that you
+could perform some changes on it, such as import more fields with addField().
+
+You can also use hasRef() to check if particular reference exists in model::
+
+    $ref = $model->hasRef('owner_id');
 
 
 Deep traversal
 ==============
 
-.. warning:: NOT IMPLEMENTED
+When operating with data-sets you can define references that use deep traversal::
 
-When operating with data-sets you can define relations that use deep traversal::
-
-    $o = new Model_Order($db);
-    $o->hasOne('user_id', new Model_User())
-        ->hasOne('address_id', new Model_Address());
-
-    echo $o->load(1)->ref('user_id/address_id')['address_1'];
+    echo $o->load(1)->ref('user_id')->ref('address_id')['address_1'];
 
 The above example will actually perform 3 load operations, because as I have explained above,
 ref() loads related model when called on a loaded model. To perform a single query instead,
 you can use::
 
-    echo $o->id(1)->ref('user_id/address_id')->loadAny()['address_1'];
+    echo $o->withID(1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
 
-Here ``id()`` will only set a condition without actually loading the record and traversal
-will ecapsulate sub-queries resulting in a query like this::
+Here ``withID()`` will only set a condition without actually loading the record and traversal
+will encapsulate sub-queries resulting in a query like this:
+
+.. code-block:: sql
 
     select * from address where id in
         (select address_id from user where id in
             (select user_id from order where id=1 ))
 
 
-Relation Aliases
-================
+Reference Aliases
+=================
 
 When related entity relies on the same table it is possible to run into problem when SQL is
 confused about which table to use.
@@ -371,25 +435,25 @@ help you in creating a recursive models that relate to itself. Here is example::
         }
     }
 
-Loading model like that can produce a pretty sophisticated query
+Loading model like that can produce a pretty sophisticated query:
 
 .. code-block:: sql
 
     select
         `pp`.`id`,`pp`.`name`,`pp`.`age`,`pp_i`.`parent_item_id`,
-        (select `parent`.`name` 
+        (select `parent`.`name`
          from `item` `parent`
-         left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id` 
+         left join `item2` as `parent_i` on `parent_i`.`item_id` = `parent`.`id`
          where `parent`.`id` = `pp_i`.`parent_item_id`
          ) `parent_item`,
         (select sum(`child`.`age`) from `item` `child`
-         left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id` 
+         left join `item2` as `child_i` on `child_i`.`item_id` = `child`.`id`
          where `child_i`.`parent_item_id` = `pp`.`id`
-        ) `child_age`,`pp`.`id` `_i` 
+        ) `child_age`,`pp`.`id` `_i`
     from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
 
-Relations with New Records
-==========================
+References with New Records
+===========================
 
 Agile Data takes extra care to help you link your new records with new related entities.
 Consider the following two models::
@@ -413,7 +477,7 @@ Consider the following two models::
         }
     }
 
-This is a classic one to one relation, but let's look what happens when you are working with
+This is a classic one to one reference, but let's look what happens when you are working with
 a new model::
 
     $m = new Model_User($db);
@@ -431,7 +495,7 @@ next example will traverse into the contact to set it up::
     $m->save();
 
 When entity which you have referenced through ref() is saved, it will automatically populate
-$m['contact_id'] field and the final $m->save() will also store the reference. 
+$m['contact_id'] field and the final $m->save() will also store the reference.
 
 ID setting is implemented through a basic hook. Related model will have afterSave
 hook, which will update address_id field of the $m.

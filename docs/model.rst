@@ -14,7 +14,7 @@ Initialization
 
 Model class implements your Business Model - single entity of your business logic. When
 you plan your business application you should create classes for all your possible
-business entities by extending from "Model" class. 
+business entities by extending from "Model" class.
 
 .. php:method:: init
 
@@ -33,12 +33,23 @@ driver. Use it to define fields of your model::
 
 .. php:method:: addField($name, $defaults)
 
-    Creates a new field objects inside your model (by default the class is 'Field'). 
+    Creates a new field objects inside your model (by default the class is 'Field').
     The fields are implemented on top of Containers from Agile Core.
 
     Second argument to addField() can supply field default properties::
 
         $this->addField('surname', ['default'=>'Smith']);
+
+Read more about :php:class:`Field`
+
+.. php:property:: strict_fields
+
+    By default model will only allow you to operate with values for the fields
+    that have been defined through addField(). If you attempt to get, set or
+    otherwise access th evalue of any other field that has not been properly
+    defined, you'll get exception. ead more about :php:class:`Field`
+
+    If you set strict_field to false, then the check will not be performed.
 
 Populating Data
 ===============
@@ -65,13 +76,13 @@ Populating Data
     amounts of data.
 
     The method will still convert the data needed and operate with joined
-    tables as needed. If you wish to access tables directly, you'll 
+    tables as needed. If you wish to access tables directly, you'll
     have to look into Persistence::insert($m, $data, $table);
 
 Associating Model with Database
 ===============================
 
-Normally you should always associate your model with persistance layer (database) when
+Normally you should always associate your model with persistence layer (database) when
 you create the instance like this::
 
     $m = new Model_User($db);
@@ -83,15 +94,21 @@ you create the instance like this::
 
 .. php:attr:: persistence_data
 
-    Array containing arbitrary data by a specific persistance layer.
+    Array containing arbitrary data by a specific persistence layer.
 
 .. php:attr:: table
 
-    If $table property is set, then your persistance driver will use it as default
-    table / colleciton when loading data. If you omit the table, you should specify
-    it when assoicating model with database::
+    If $table property is set, then your persistence driver will use it as default
+    table / collection when loading data. If you omit the table, you should specify
+    it when associating model with database::
 
     $m = new Model_User($db, 'user');
+
+.. php:method:: withPersistence($persistence, $id = null, $class = null)
+
+    Creates a duplicate of a current model and associate new copy with a specified
+    persistence. This method is useful for moving model data from one persistence
+    to another.
 
 
 Working with selective fields
@@ -170,7 +187,7 @@ array:
 
         isset($m['name']); // returns false
         $m['name'] = 'Other Name';
-        isset($m['name']); // returns true 
+        isset($m['name']); // returns true
 
 
 .. php:method:: isDirty
@@ -188,7 +205,7 @@ array:
 .. php:attr:: dirty
 
     Contains list of modified fields since last loading and their original
-    valies.
+    values.
 
 
 Full example::
@@ -212,7 +229,7 @@ Full example::
 
     echo $m['salary'];          // 3000 (changed)
     echo isset($m['salary']);   // true
-    
+
     unset($m['salary']);        // return to original value
 
     echo $m['salary'];          // 2000
@@ -274,9 +291,9 @@ Title Field
     your title field in the header, or inside drop-down.
 
     If you don't have field 'name' but you want some other field to be title, you can specify that in
-    the property. If title_field is not needed, set it to false or point towards a non-existant field.
+    the property. If title_field is not needed, set it to false or point towards a non-existent field.
 
-    See: :php:meth::`hasOne::addTitle()`
+    See: :php:meth::`hasOne::addTitle()` and :php:meth::`hasOne::withTitle()`
 
 Hooks
 =====
@@ -287,7 +304,7 @@ Hooks
     - beforeInsertQuery [sql only] (query)
     - afterInsertQuery (query, statement)
 
-  - beforeUpdate [only ift update]
+  - beforeUpdate [only if update]
     - beforeUpdateQuery [sql only] (query)
     - afterUpdateQuery (query, statement)
 
@@ -303,7 +320,7 @@ Hooks
 How to verify Updates
 ---------------------
 
-The model is only beind saved if any fields have been changed (dirty).
+The model is only being saved if any fields have been changed (dirty).
 Sometimes it's possible that the record in the database is no longer
 available and your update() may not actually update anything. This
 does not normally generate an error, however if you want to actually
@@ -346,7 +363,7 @@ further execution of other beforeLoad hooks and by specifying
 argument as 'false' it will also prevent call to $persistence
 for actual loading of the data.
 
-Similarly you can prevent deletion if you wish to implement 
-:ref:`soft-delete` or stop insert/modify from occuring.
+Similarly you can prevent deletion if you wish to implement
+:ref:`soft-delete` or stop insert/modify from occurring.
 
 

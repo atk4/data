@@ -21,9 +21,11 @@ joins::
     $j_contact->addField('county');
     $j_contact->hasOne('Country');
 
-This code will load data from two tables simultaniously and if you do change any of those
+This code will load data from two tables simultaneously and if you do change any of those
 fields they will be update in their respective tables. With SQL the load query would
-look like this::
+look like this:
+
+.. code-block:: sql
 
     select
         u.username, c.address, c.county, c.country_id
@@ -32,13 +34,15 @@ look like this::
     join contact c on c.id=u.contact_id
     where u.id = $id
 
-If driver is unable to query both tables simultaniously, then it will load one record
+If driver is unable to query both tables simultaneously, then it will load one record
 first, then load other record and will collect fields together::
 
     $user_data = $user->find($id);
     $contact_data = $contact->find($user_data['contact_id']);
 
-When saving the record, Joins will automatically record data correctly::
+When saving the record, Joins will automatically record data correctly:
+
+.. code-block:: sql
 
     insert into contact (address, county, country_id) values ($, $, $);
     @join_c = last_insert_id();
@@ -66,9 +70,9 @@ After this you will have the following fields in your model:
 
 - username
 - country_id
-- country_code [readonly]
-- country_name [readonly]
-- default_currency [readonly]
+- country_code [read_only]
+- country_name [read_only]
+- default_currency [read_only]
 
 .. php:method:: imortModel
 
@@ -80,8 +84,8 @@ you can even join using existing models::
     $user->addField('country_id');
     $user->weakJoin('country')->importModel('Country');
 
-This will automatically import fields, expressions, relations and conditions from
-'Country' model into $user model and will also re-map field names in process. 
+This will automatically import fields, expressions, references and conditions from
+'Country' model into $user model and will also re-map field names in process.
 
 .. php:method:: weakJoinModel
 
@@ -97,7 +101,7 @@ Join relationship definitions
 -----------------------------
 
 When defining joins, you need to outline two fields that must match. In our
-earlier examples, we the master table was "user" that contained reference to 
+earlier examples, we the master table was "user" that contained reference to
 "contact". The condition would look like this ``user.contact_id=contact.id``.
 In some cases, however, a relation should be reversed::
 
@@ -109,14 +113,14 @@ can optionally define the field in the foreign table. If field is set, we will
 assume that it's a reverse join.
 
 Reverse joins are saved in the opposite order - primary table will be saved
-first and when id of a primary tabel is known, foreign table record is stored
+first and when id of a primary table is known, foreign table record is stored
 and ID is supplied. You can pass option 'master_field' to the join() which
 will specify which field to be used for matching. By default the field is
 calculated like this: foreign_table.'_id'. Here is usage example::
 
     $user->addField('username');
     $j_cc = $user->join('credit_card', [
-        'prefix'=>'cc_', 
+        'prefix'=>'cc_',
         'master_field'=>'default_credit_card_id'
     ]);
     $j_cc->addField('number');  // creates cc_number
@@ -131,7 +135,7 @@ Method Proxying
 ---------------
 
 Once your join is defined, you can call several methods on the join objects, that
-will create fields, other joins or expressions but those would be associated 
+will create fields, other joins or expressions but those would be associated
 with a foreign table.
 
 
@@ -149,12 +153,12 @@ with a foreign table.
 
 .. php:method:: hasOne
 
-    same as :php:meth:`Model::hasOne` but relation ID field will be associated with foreign table.
+    same as :php:meth:`Model::hasOne` but reference ID field will be associated with foreign table.
 
 .. php:method:: hasMany
 
     same as :php:meth:`Model::hasMany` but condition for related model will be based on foreign table field
-    and :php:attr:`Relation::their_field` will be set to $foreign_table.'_id'.
+    and :php:attr:`Reference::their_field` will be set to $foreign_table.'_id'.
 
 .. php:method:: containsOne
 
@@ -164,12 +168,12 @@ with a foreign table.
 
     same as :php:meth:`Model::containsMany` but the data will be stored in a field inside foreign table.
 
-Create and Delete behaivour
----------------------------
+Create and Delete behavior
+--------------------------
 
 Updating joined records are simple, but when it comes to creation and deletion, there are some
-conditions. First we look at dependency. If master table contains id of a foreign table, then 
-foreign table record must be created first, so that we can store its ID in a master table. If 
+conditions. First we look at dependency. If master table contains id of a foreign table, then
+foreign table record must be created first, so that we can store its ID in a master table. If
 the join is reversed, the master record is created first and then foreign record is inserted
 along with the value of master id.
 
@@ -222,7 +226,7 @@ SQL-specific joins
 
 When your model is associated with SQL-capable driver, then instead of using 'Join' class, the
 'Join_SQL' is used instead. This class is designed to improve loading technique, because
-SQL vendors can query multiple tables simultaniously. 
+SQL vendors can query multiple tables simultaneously.
 
 Vendors that cannot do JOINs will have to implement compatibility by pulling data from
 collections in a correct order.
@@ -230,7 +234,7 @@ collections in a correct order.
 Implementation Details
 ----------------------
 
-- altough some SQL vendors allow update .. join .. syntax, this will not be used. That is done to
+- although some SQL vendors allow update .. join .. syntax, this will not be used. That is done to
   ensure better compatibility.
 - when field has the 'join' option set, trying to convert this field into expression will prefix
   the field properly with the foreign table alias.

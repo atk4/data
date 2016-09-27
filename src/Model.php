@@ -31,14 +31,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var string
      */
-    public $_default_class_hasOne = 'atk4\data\Relation_One';
+    public $_default_class_hasOne = 'atk4\data\Reference_One';
 
     /**
      * The class used by hasMany() method.
      *
      * @var string
      */
-    public $_default_class_hasMany = 'atk4\data\Relation_Many';
+    public $_default_class_hasMany = 'atk4\data\Reference_Many';
 
     /**
      * The class used by addField() method.
@@ -60,7 +60,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * by persistence driver.
      *
      * You can define this field as associative array where "key" is used
-     * as the name of pesistence driver. Here is example for mysql and default:
+     * as the name of persistence driver. Here is example for mysql and default:
      *
      * $table = ['user', 'mysql'=>'tbl_user'];
      *
@@ -136,7 +136,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
 
     /**
-     * Contains ID of the curent record. If the value is null then the record
+     * Contains ID of the current record. If the value is null then the record
      * is considered to be new.
      *
      * @var mixed
@@ -174,13 +174,43 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * that you do not accidentally access field that you have explicitly
      * excluded.
      *
-     * The default behaviour is to return NULL and allow you to set new
+     * The default behavior is to return NULL and allow you to set new
      * fields even if addField() was not used to set the field.
      *
      * @var false|array
      */
     public $only_fields = false;
 
+    /**
+     * When set to true, you can only change the fields inside a model,
+     * that was properly declared. This helps you avoid mistake by
+     * accessing or changing the field that does not exist.
+     *
+     * In some situations you want to set field value and then declare
+     * it later, then set $strict_field_check = false, but it's not
+     * recommended.
+     *
+     * @var bool
+     */
+    protected $strict_field_check = true;
+
+    /**
+     * When set to true, all the field types will be enforced and
+     * normalized when setting.
+     *
+     * @var bool
+     */
+    public $strict_types = true;
+
+    /**
+     * When set to true, loading model from database will also
+     * perform value normalization. Use this if you think that
+     * persistence may contain badly formatted data that may
+     * impact your business logic.
+     *
+     * @var bool
+     */
+    public $load_normalization = false;
 
     /**
      * Models that contain expressions will automatically reload after save.
@@ -208,7 +238,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * $m = new Model($db);
      *
-     * The second use actually calls add() but is prefered usage because:
+     * The second use actually calls add() but is preferred usage because:
      *  - it's shorter
      *  - type hinting will work;
      *
@@ -237,6 +267,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
     }
 
+    public function __clone()
+    {
+        // we need to clone some of the elements
+        if ($this->elements) {
+            foreach ($this->elements as $id => $el) {
+                if ($el instanceof Join) {
+                    $this->elements[$id] = clone $el;
+                    $el->owner = $this;
+                }
+            }
+        }
+    }
+
     /**
      * Set default properties of model.
      *
@@ -261,9 +304,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->id_field) {
             $this->addField($this->id_field, [
                 'system'    => true,
-                'type'      => 'int',
-                'mandatory' => true,
-                'editable'  => false,
+                'type'      => 'integer',
             ]);
         }
     }
@@ -289,20 +330,24 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Adds multiple fields into model.
      *
      * @param array $fields
+     * @param array $defaults
      *
      * @return $this
      */
-    public function addFields($fields = [])
+    public function addFields($fields = [], $defaults = [])
     {
         foreach ($fields as $field) {
             if (is_string($field)) {
-                $this->addField($field);
+                $this->addField($field, $defaults);
                 continue;
             }
 
-            $name = $field[0];
-            unset($field[0]);
-            $this->addField($name, $field);
+            if (is_array($field) && isset($field[0])) {
+                $name = $field[0];
+                unset($field[0]);
+                $this->addField($name, $field);
+                continue;
+            }
         }
 
         return $this;
@@ -344,7 +389,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     private function normalizeFieldName($field)
     {
-        // $m->set($m->getElement('name'), 'John')
         if (
             is_object($field)
             && isset($field->_trackableTrait)
@@ -355,12 +399,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         if (!is_string($field) || $field === '' || is_numeric($field[0])) {
             throw new Exception([
-                'Incorect specification of field name',
+                'Incorrect specification of field name',
                 'arg' => $field,
             ]);
         }
 
-        // $m->onlyFields(['name'])->set('surname', 'Jane');
         if ($this->only_fields) {
             if (!in_array($field, $this->only_fields)) {
                 throw new Exception([
@@ -369,6 +412,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     'only_fields' => $this->only_fields,
                 ]);
             }
+        }
+
+        if ($this->strict_field_check && !isset($this->elements[$field])) {
+            throw new Exception([
+                'Field is not defined inside a Model',
+                'field'       => $field,
+                'model'       => $this,
+            ]);
         }
 
         return $field;
@@ -390,7 +441,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($fields as $field) {
             $field = $this->normalizeFieldName($field);
 
-            if (isset($this->dirty[$field])) {
+            if (array_key_exists($field, $this->dirty)) {
                 return true;
             }
         }
@@ -427,19 +478,52 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-        // $m->addField('datetime', ['type'=>'date']);
-        // $m['datetime'] = new DateTime('2000-01-01'); will potentially
-        // convert value into unix timestamp
-        $f_object = $this->hasElement($field);
-        if ($f_object) {
-            $f_object->hook('normalize', [$field, &$value]);
+        $f = $this->hasElement($field);
+
+        try {
+            if ($f && $this->hook('normalize', [$f, $value]) !== false) {
+                $value = $f->normalize($value);
+            }
+        } catch (Exception $e) {
+            $e->addMoreInfo('field', $field);
+            $e->addMoreInfo('value', $value);
+            $e->addMoreInfo('f', $f);
+            throw $e;
         }
 
+        $default_value = $f ? $f->default : null;
 
-        // $m['name'] = $m['name'];
-        if (array_key_exists($field, $this->data) && $value === $this->data[$field]) {
+        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] :
+            ((isset($f) && isset($f->default)) ? $f->default : null);
+
+        $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
+
+        if ($value === $current_value) {
             // do nothing, value unchanged
             return $this;
+        }
+
+        if ($f) {
+            // perform bunch of standard validation here. This can be re-factored in the future.
+            if ($f->read_only) {
+                throw new Exception([
+                    'Attempting to change read-only field',
+                    'field' => $field,
+                    'model' => $this,
+                ]);
+            }
+
+            if ($f->enum && $f->type != 'boolean') {
+                if (!in_array($value, $f->enum, true) && $value !== null) {
+                    throw new Exception([
+                        'This is not one of the allowed values for the field',
+                        'field' => $field,
+                        'model' => $this,
+                        'value' => $value,
+                        'enum'  => $f->enum,
+                    ]);
+                }
+            }
         }
 
         if (array_key_exists($field, $this->dirty) && $this->dirty[$field] === $value) {
@@ -447,16 +531,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         } elseif (!array_key_exists($field, $this->dirty)) {
             $this->dirty[$field] =
                 array_key_exists($field, $this->data) ?
-                $this->data[$field] :
-                (
-                    $f_object ? $f_object->default : null
-                );
+                $this->data[$field] : $default_value;
         }
         $this->data[$field] = $value;
-
-        if ($field === $this->id_field) {
-            $this->id = $value;
-        }
 
         return $this;
     }
@@ -482,8 +559,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
             } else {
                 // get all field-elements
-                foreach ($this->elements as $field => $f_object) {
-                    if ($f_object instanceof Field) {
+                foreach ($this->elements as $field => $f) {
+                    if ($f instanceof Field) {
                         $data[$field] = $this->get($field);
                     }
                 }
@@ -494,23 +571,31 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-
-        $f_object = $this->hasElement($field);
-
-        $value =
-            array_key_exists($field, $this->data) ?
-            $this->data[$field] :
-            (
-                $f_object ?
-                $f_object->default :
-                null
-            );
-
-        if ($f_object) {
-            $f_object->hook('get', [$field, &$value]);
+        if (array_key_exists($field, $this->data)) {
+            return $this->data[$field];
         }
 
-        return $value;
+        $f = $this->hasElement($field);
+
+        return $f ? $f->default : null;
+    }
+
+    /**
+     * Remove current field value and use default.
+     *
+     * @param string|array $name
+     *
+     * @return $this
+     */
+    public function _unset($name)
+    {
+        $name = $this->normalizeFieldName($name);
+        if (array_key_exists($name, $this->dirty)) {
+            $this->data[$name] = $this->dirty[$name];
+            unset($this->dirty[$name]);
+        }
+
+        return $this;
     }
 
     // }}}
@@ -559,11 +644,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function offsetUnset($name)
     {
-        $name = $this->normalizeFieldName($name);
-        if (array_key_exists($name, $this->dirty)) {
-            $this->data[$name] = $this->dirty[$name];
-            unset($this->dirty[$name]);
-        }
+        $this->_unset($name);
     }
 
     // }}}
@@ -586,7 +667,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *  ->addCondition('my_field', 'in', [$value1, $value2]);
      *
      * Second argument could be '=', '>', '<', '>=', '<=', '!=' or 'in'.
-     * Those conditons are still supported by most of persistence drivers.
+     * Those conditions are still supported by most of persistence drivers.
      *
      * There are also vendor-specific expression support:
      *  ->addCondition('my_field', $expr);
@@ -628,12 +709,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($f) {
-            $f->setAttr('system', true);
+            $f->system = true;
             if ($operator === '=' || func_num_args() == 2) {
                 $v = $operator === '=' ? $value : $operator;
 
                 if (!is_object($v) && !is_array($v)) {
-                    $f->setAttr('default', $v);
+                    $f->default = $v;
                 }
             }
         }
@@ -644,7 +725,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Shortcut for using addConditionn(id_field, $id).
+     * Shortcut for using addCondition(id_field, $id).
      *
      * @param mixed $id
      *
@@ -684,9 +765,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
             return $this;
         }
 
-        if (is_null($desc) && is_string($field) && strpos($field, ' ') !== false) {
+        if (is_null($desc) && is_string($field)) {
             // no realistic workaround in PHP for 2nd argument being null
-            @list($field, $desc) = array_map('trim', explode(' ', trim($field), 2));
+            $field = trim($field);
+            if (strpos($field, ' ') !== false) {
+                list($field, $desc) = array_map('trim', explode(' ', $field, 2));
+            }
         }
 
         $this->order[] = [$field, $desc];
@@ -768,7 +852,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Reload model.
+     * Reload model by taking its current ID.
      *
      * @return $this
      */
@@ -779,6 +863,162 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->load($id);
 
         return $this;
+    }
+
+    /**
+     * Keeps the model data, but wipes out the ID so
+     * when you save it next time, it ends up as a new
+     * record in the database.
+     *
+     * @param mixed|null $new_id
+     *
+     * @return $this
+     */
+    public function duplicate($new_id = null)
+    {
+        $this->id = null;
+        $this[$this->id_field] = $new_id;
+
+        return $this;
+    }
+
+    /**
+     * Saves the current record by using a different
+     * model class. This is similar to:.
+     *
+     * $m2 = $m->newInstance($class);
+     * $m2->load($m->id);
+     * $m2->set($m->get());
+     * $m2->save();
+     *
+     * but will assume that both models are compatible,
+     * therefore will not perform any loading.
+     *
+     * @param string $class
+     * @param array  $options
+     *
+     * @return Model
+     */
+    public function saveAs($class, $options = [])
+    {
+        return $this->asModel($class, $options)->save();
+    }
+
+    /**
+     * Store the data into database, but will never attempt to
+     * reload the data. Additionally any data will be unloaded.
+     * Use this instead of save() if you want to squezee a
+     * little more performance out.
+     *
+     * @param array $data
+     *
+     * @return $this
+     */
+    public function saveAndUnload($data = [])
+    {
+        $ras = $this->reload_after_save;
+        $this->reload_after_save = false;
+        $this->save($data);
+        $this->unload();
+
+        // restore original value
+        $this->reload_after_save = $ras;
+
+        return $this;
+    }
+
+    /**
+     * This will cast Model into another class without
+     * loosing state of your active record.
+     *
+     * @param string $class
+     * @param array  $options
+     *
+     * @return Model
+     */
+    public function asModel($class, $options = [])
+    {
+        $m = $this->newInstance($class, $options);
+
+        // Warning. If condition is different on both models,
+        // but the respective field's value is un-changed
+        // there might be some related issues.
+        $m->data = $this->data;
+        $m->dirty = $this->dirty;
+        $m->id = $this->id;
+
+        // next we need to go over fields to see if any system
+        // values have changed and mark them as dirty
+
+        return $m;
+    }
+
+    /**
+     * Create new model from the same base class
+     * as $this.
+     *
+     * @param string $class
+     * @param array  $options
+     *
+     * @return Model
+     */
+    public function newInstance($class = null, $options = [])
+    {
+        if ($class === null) {
+            $class = get_class($this);
+        }
+        $m = $this->persistence->add($class, $options);
+
+        return $m;
+    }
+
+    /**
+     * Create new model from the same base class
+     * as $this. If you omit $id,then when saving
+     * a new record will be created with default ID.
+     * If you specify $id then it will be used
+     * to save/update your record. If set $id
+     * to `true` then model will assume that there
+     * is already record like that in the destination
+     * persistence.
+     *
+     * If you wish to fully copy the data from one
+     * model to another you should use:
+     *
+     * $m->withPersintence($p2, false)->set($m)->save();
+     *
+     * See https://github.com/atk4/data/issues/111 for
+     * use-case examples.
+     *
+     * @param Persistence $persistence
+     * @param mixed       $id
+     * @param string      $class
+     *
+     * @return $this
+     */
+    public function withPersistence($persistence, $id = null, string $class = null)
+    {
+        if (!$persistence instanceof \atk4\data\Persistence) {
+            throw new Exception([
+                'Please supply valid persistence',
+                'arg' => $persistence,
+            ]);
+        }
+
+        $m = new $class($persistence);
+
+        if ($id === true) {
+            $m->id = $this->id;
+            $m[$m->id_field] = $this[$this->id_field];
+        } elseif ($id) {
+            $m->id = null; // record shouldn't exist yet
+            $m[$m->id_field] = $id;
+        }
+
+        $m->data = $this->data;
+        $m->dirty = $this->dirty;
+
+        return $m;
     }
 
     /**
@@ -927,91 +1167,87 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->set($data);
         }
 
-        if ($this->hook('beforeSave') === false) {
+        return $this->atomic(function () use ($data) {
+            if ($this->hook('beforeSave') === false) {
+                return $this;
+            }
+
+            $is_update = $this->loaded();
+            if ($is_update) {
+                $data = [];
+                $dirty_join = false;
+                foreach ($this->dirty as $name => $junk) {
+                    $field = $this->hasElement($name);
+                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                        continue;
+                    }
+
+                    // get the value of the field
+                    $value = $this->get($name);
+
+                    if (isset($field->join)) {
+                        $dirty_join = true;
+                        // storing into a different table join
+                        $field->join->set($name, $value);
+                    } else {
+                        $data[$name] = $value;
+                    }
+                }
+
+                // No save needed, nothing was changed
+                if (!$data && !$dirty_join) {
+                    return $this;
+                }
+
+                if ($this->hook('beforeUpdate', [&$data]) === false) {
+                    return $this;
+                }
+
+                $this->persistence->update($this, $this->id, $data);
+
+                $this->hook('afterUpdate', [&$data]);
+            } else {
+                $data = [];
+                foreach ($this->get() as $name => $value) {
+                    $field = $this->hasElement($name);
+                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                        continue;
+                    }
+
+                    if (isset($field->join)) {
+                        // storing into a different table join
+                        $field->join->set($name, $value);
+                    } else {
+                        $data[$name] = $value;
+                    }
+                }
+
+                if ($this->hook('beforeInsert', [&$data]) === false) {
+                    return $this;
+                }
+
+                // Collect all data of a new record
+                $this->id = $this->persistence->insert($this, $data);
+                $this->hook('afterInsert', [$this->id]);
+
+                if ($this->reload_after_save !== false) {
+                    $d = $this->dirty;
+                    $this->dirty = [];
+                    $this->reload();
+                    $this->_dirty_after_reload = $this->dirty;
+                    $this->dirty = $d;
+                }
+            }
+
+            $this->hook('afterSave');
+
+
+            if ($this->loaded()) {
+                $this->dirty = $this->_dirty_after_reload;
+            }
+
             return $this;
-        }
-
-        $is_update = $this->loaded();
-        if ($is_update) {
-            $data = [];
-            $dirty_join = false;
-            foreach ($this->dirty as $name => $junk) {
-                $field = $this->hasElement($name);
-                if (!$field) {
-                    continue;
-                }
-
-                // get actual name of the field
-                $actual = $field->actual ?: $name;
-
-                // get the value of the field
-                $value = $this->get($name);
-
-                if (isset($field->join)) {
-                    $dirty_join = true;
-                    // storing into a different table join
-                    $field->join->set($actual, $value);
-                } else {
-                    $data[$actual] = $value;
-                }
-            }
-
-            // No save needed, nothing was changed
-            if (!$data && !$dirty_join) {
-                return $this;
-            }
-
-            $this->hook('beforeModify', [&$data]);
-
-            $this->persistence->update($this, $this->id, $data);
-
-            $this->hook('afterModify', [&$data]);
-
-            //$this->hook('beforeUpdate', array(&$source));
-        } else {
-            $data = [];
-            foreach ($this->get() as $name => $value) {
-                $field = $this->hasElement($name);
-                if (!$field) {
-                    continue;
-                }
-
-                // get actual name of the field
-                $actual = $field->actual ?: $name;
-
-                if (isset($field->join)) {
-                    // storing into a different table join
-                    $field->join->set($actual, $value);
-                } else {
-                    $data[$actual] = $value;
-                }
-            }
-
-            if ($this->hook('beforeInsert', [&$data]) === false) {
-                return $this;
-            }
-
-            // Collect all data of a new record
-            $this->id = $this->persistence->insert($this, $data);
-            $this->hook('afterInsert', [$this->id]);
-
-            if ($this->reload_after_save !== false) {
-                $d = $this->dirty;
-                $this->dirty = [];
-                $this->reload();
-                $this->_dirty_after_reload = $this->dirty;
-                $this->dirty = $d;
-            }
-        }
-
-        $this->hook('afterSave');
-
-
-        if ($this->loaded()) {
-            $this->dirty = $this->_dirty_after_reload;
-        }
-
-        return $this;
+        });
     }
 
     /**
@@ -1047,7 +1283,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Even more faster method to add adda, does not modify your
+     * Even more faster method to add data, does not modify your
      * current record and will not return anything.
      *
      * Will be further optimized in the future.
@@ -1138,23 +1374,35 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $id = null;
         }
 
-        if ($id) {
-            $c = clone $this;
-            $c->load($id)->delete();
+        return $this->atomic(function () use ($id) {
+            if ($id) {
+                $c = clone $this;
+                $c->load($id)->delete();
 
-            return $this;
-        } elseif ($this->loaded()) {
-            if ($this->hook('beforeDelete', [$this->id]) === false) {
                 return $this;
-            }
-            $this->persistence->delete($this, $this->id);
-            $this->hook('afterDelete', [$this->id]);
-            $this->unload();
+            } elseif ($this->loaded()) {
+                if ($this->hook('beforeDelete', [$this->id]) === false) {
+                    return $this;
+                }
+                $this->persistence->delete($this, $this->id);
+                $this->hook('afterDelete', [$this->id]);
+                $this->unload();
 
-            return $this;
-        } else {
-            throw new Exception(['No active record is set, unable to delete.']);
-        }
+                return $this;
+            } else {
+                throw new Exception(['No active record is set, unable to delete.']);
+            }
+        });
+    }
+
+    /**
+     * Atomic executes operations within one begin/end transaction, so if
+     * the code inside callback will fail, then all of the transaction
+     * will be also rolled back.
+     */
+    public function atomic($f)
+    {
+        return $this->persistence->atomic($f);
     }
 
     // }}}
@@ -1232,18 +1480,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     // }}}
 
-    // {{{ Relations
+    // {{{ References
 
     /**
      * Private method.
      *
      * @param string $c        Class name
      * @param string $link     Link
-     * @param array  $defaults Properties which we will pass to Relation object constructor
+     * @param array  $defaults Properties which we will pass to Reference object constructor
      *
      * @return object
      */
-    protected function _hasRelation($c, $link, $defaults = [])
+    protected function _hasReference($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_'.$link];
@@ -1263,11 +1511,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @return Relation_One
+     * @return Reference_One
      */
     public function hasOne($link, $defaults = [])
     {
-        return $this->_hasRelation($this->_default_class_hasOne, $link, $defaults);
+        return $this->_hasReference($this->_default_class_hasOne, $link, $defaults);
     }
 
     /**
@@ -1276,11 +1524,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @return Relation_Many
+     * @return Reference_Many
      */
     public function hasMany($link, $defaults = [])
     {
-        return $this->_hasRelation($this->_default_class_hasMany, $link, $defaults);
+        return $this->_hasReference($this->_default_class_hasMany, $link, $defaults);
     }
 
     /**
@@ -1293,7 +1541,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function ref($link, $defaults = [])
     {
-        return $this->getElement('#ref_'.$link)->ref($defaults);
+        return $this->getRef($link)->ref($defaults);
     }
 
     /**
@@ -1306,7 +1554,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function refLink($link, $defaults = [])
     {
-        return $this->getElement('#ref_'.$link)->refLink($defaults);
+        return $this->getRef($link)->refLink($defaults);
     }
 
     /**
@@ -1322,7 +1570,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Returns ll reference fields.
+     * Returns all reference fields.
      *
      * @return array
      */
@@ -1336,6 +1584,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         return $refs;
+    }
+
+    /**
+     * Return reference field or false if reference field does not exist.
+     *
+     * @param string $link
+     *
+     * @return Field|bool
+     */
+    public function hasRef($link)
+    {
+        return $this->hasElement('#ref_'.$link);
     }
 
     // }}}

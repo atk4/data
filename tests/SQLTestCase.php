@@ -11,11 +11,13 @@ class SQLTestCase extends TestCase
 
     public $tables = null;
 
+    public $debug = false;
+
     public function setUp()
     {
         parent::setUp();
         // establish connection
-        $this->db = new Persistence_SQL('sqlite::memory:');
+        $this->db = new Persistence_SQL(($this->debug ? ('dumper:') : '').'sqlite::memory:');
     }
 
     /**
@@ -93,7 +95,7 @@ class SQLTestCase extends TestCase
 
             foreach ($data as &$row) {
                 foreach ($row as &$val) {
-                    if (is_numeric($val)) {
+                    if (is_int($val)) {
                         $val = (int) $val;
                     }
                 }

@@ -27,6 +27,23 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable
     }
 
     /**
+     * SQL fields are allowed to have expressions inside of them.
+     *
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function normalize($value)
+    {
+        if ($value instanceof \atk4\dsql\Expression ||
+            $value instanceof \atk4\dsql\Expressionable) {
+            return $value;
+        }
+
+        return parent::normalize($value);
+    }
+
+    /**
      * When field is used as expression, this method will be called.
      *
      * @param \atk\dsql\Expression $expression
@@ -47,7 +64,7 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable
                 $this->actual ?: $this->short_name,
             ]);
         } else {
-            // relations set flag use_table_prefixes, so no need to check them here
+            // references set flag use_table_prefixes, so no need to check them here
             return $expression->expr('{}', [
                 $this->actual ?: $this->short_name,
             ]);

@@ -42,7 +42,7 @@ class Persistence
                 return new Persistence_SQL($dsn, $user, $password, $args);
             default:
                 throw new Exception([
-                    'Unable to determine pesistence driver from DSN',
+                    'Unable to determine persistence driver from DSN',
                     'dsn' => $dsn,
                 ]);
         }
@@ -63,13 +63,15 @@ class Persistence
             unset($defaults[0]);
         }
 
-        if (!is_object($m)) {
-            $m = $this->factory($this->normalizeClassName($m), $defaults);
-        }
+        $m = $this->factory($m, $defaults);
 
         if ($m->persistence) {
+            if ($m->persistence === $this) {
+                return $m;
+            }
+
             throw new Exception([
-                'Model already has conditions or is related to persistence',
+                'Model is already related to another persistence',
             ]);
         }
 
@@ -93,5 +95,19 @@ class Persistence
      */
     protected function initPersistence(Model $m)
     {
+    }
+
+    /**
+     * Atomic executes operations within one begin/end transaction. Not all
+     * persistences will support atomic operations, so by default we just
+     * don't do anything.
+     *
+     * @param callable $f
+     *
+     * @return mixed
+     */
+    public function atomic($f)
+    {
+        return call_user_func($f);
     }
 }

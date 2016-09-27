@@ -28,14 +28,14 @@ class Persistence_SQL extends Persistence
      *
      * @var string
      */
-    public $_default_class_hasOne = 'atk4\data\Relation_SQL_One';
+    public $_default_class_hasOne = 'atk4\data\Reference_SQL_One';
 
     /**
      * Default class when adding hasMany field.
      *
      * @var string
      */
-    public $_default_class_hasMany = null; //'atk4\data\Relation_Many';
+    public $_default_class_hasMany = null; //'atk4\data\Reference_Many';
 
     /**
      * Default class when adding Expression field.
@@ -94,6 +94,20 @@ class Persistence_SQL extends Persistence
     }
 
     /**
+     * Atomic executes operations within one begin/end transaction, so if
+     * the code inside callback will fail, then all of the transaction
+     * will be also rolled back.
+     *
+     * @param callable $f
+     *
+     * @return mixed
+     */
+    public function atomic($f)
+    {
+        return $this->connection->atomic($f);
+    }
+
+    /**
      * Associate model with the data driver.
      *
      * @param Model|string $m        Model which will use this persistence
@@ -103,7 +117,7 @@ class Persistence_SQL extends Persistence
      */
     public function add($m, $defaults = [])
     {
-        // Use our own classes for fields, relations and expressions unless
+        // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
         $defaults = array_merge([
             '_default_class_addField'      => $this->_default_class_addField,
@@ -127,13 +141,16 @@ class Persistence_SQL extends Persistence
         if ($m->table === false) {
             $m->getElement('id')->destroy();
             $m->addExpression('id', '1');
+        } else {
+            // SQL databases use ID of int by default
+            $m->getElement('id')->type = 'integer';
         }
 
         return $m;
     }
 
     /**
-     * Initialize persistance.
+     * Initialize persistence.
      *
      * @param Model $m
      */
@@ -151,7 +168,7 @@ class Persistence_SQL extends Persistence
      *
      * @return \atk4\dsql\Expression
      */
-    public function expr($m, $expr, $args = [])
+    public function expr(Model $m, $expr, $args = [])
     {
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/',
@@ -307,13 +324,244 @@ class Persistence_SQL extends Persistence
             }
 
             if (count($cond) == 2) {
+                if ($cond[0] instanceof Field) {
+                    $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
+                }
                 $q->where($cond[0], $cond[1]);
             } else {
+                if ($cond[0] instanceof Field) {
+                    $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
+                }
                 $q->where($cond[0], $cond[1], $cond[2]);
             }
         }
 
         return $q;
+    }
+
+    /**
+     * Will convert one row of data from Persistence-specific
+     * types to PHP native types.
+     *
+     * @param Model $m
+     * @param array $row
+     *
+     * @return array
+     */
+    public function typecastLoadRow($m, $row)
+    {
+        if (!$row) {
+            return $row;
+        }
+        foreach ($row as $key => &$value) {
+            if ($value === null) {
+                continue;
+            }
+
+            if ($f = $m->hasElement($key)) {
+                $value = $this->typecastLoadField($f, $value);
+            }
+        }
+
+        return $row;
+    }
+
+    /**
+     * Will convert one row of data from native PHP types into
+     * persistence types. This will also take care of the "actual"
+     * field keys. Example:.
+     *
+     * In:
+     *  [
+     *    'name'=>' John Smith',
+     *    'age'=>30,
+     *    'password'=>'abc',
+     *    'is_married'=>true,
+     *  ]
+     *
+     *  Out:
+     *   [
+     *     'first_name'=>'John Smith',
+     *     'age'=>30,
+     *     'is_married'=>1
+     *   ]
+     *
+     * @param Model $m
+     * @param array $row
+     *
+     * @return array
+     */
+    public function typecastSaveRow($m, $row)
+    {
+        if (!$row) {
+            return $row;
+        }
+        $result = [];
+        foreach ($row as $key => $value) {
+
+            // Look up field object
+            $f = $m->hasElement($key);
+
+            // We have no knowledge of the field, it wasn't defined, so
+            // we will leave it as-is.
+            if (!$f) {
+                $result[$field] = $value;
+                continue;
+            }
+
+            // Figure out the name of the destination field
+            $field = $f->actual ?: $key;
+
+            if (
+                $value === null && $f->mandatory
+            ) {
+                throw new Exception(['Mandatory field value cannot be null', 'field' => $key]);
+            }
+
+            // Expression and null cannot be converted.
+            if (
+                $value instanceof \atk4\dsql\Expression ||
+                $value instanceof \atk4\dsql\Expressionable ||
+                $value === null
+            ) {
+                $result[$field] = $value;
+                continue;
+            }
+
+            $result[$field] = $this->typecastSaveField($f, $value);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Cast specific field value from the way how it's stored inside
+     * persistence to a PHP format.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function typecastLoadField(Field $f, $value)
+    {
+        if ($callback = $f->loadCallback) {
+            return $callback($value, $f, $this);
+        }
+
+        if ($value === null) {
+            return;
+        }
+
+        // only string type fields can use empty string as legit value, for all
+        // other field types empty value is the same as no-value, nothing or null
+        if ($f->type != 'string' && $value === '') {
+            return;
+        }
+
+        switch ($f->type) {
+        case 'boolean':
+
+            if (isset($f->enum) && is_array($f->enum)) {
+                if (isset($f->enum[0]) && $value == $f->enum[0]) {
+                    $value = false;
+                } elseif (isset($f->enum[1]) && $value == $f->enum[1]) {
+                    $value = true;
+                } else {
+                    $value = null;
+                }
+            } else {
+                $value = (bool) $value;
+            }
+
+            break;
+        case 'money':
+            $value = round($value, 4);
+
+            return $value;
+        case 'date':
+        case 'datetime':
+        case 'time':
+            // Can use DateTime, Carbon or anything else
+            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+            if (is_numeric($value)) {
+                $value = new $class('@'.$value);
+            } elseif (is_string($value)) {
+                $value = new $class($value, new \DateTimeZone('UTC'));
+            }
+            break;
+        case 'integer':
+            $value = (int) $value;
+            break;
+        case 'float':
+            $value = (float) $value;
+            break;
+        case 'struct':
+            $value = json_decode($value, true) ?: [];
+            break;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Prepare value of a specific field by converting it to
+     * persistence - friendly format.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function typecastSaveField(Field $f, $value)
+    {
+
+        // Support for callback: (28, ['age', [persistence_object]])
+        if ($callback = $f->saveCallback) {
+            return $callback($value, $f, $this);
+        }
+
+        if ($value === null) {
+            return;
+        }
+
+        // only string type fields can use empty string as legit value, for all
+        // other field types empty value is the same as no-value, nothing or null
+        if ($f->type != 'string' && $value === '') {
+            return;
+        }
+
+        // Manually handle remaining types
+        switch ($f->type) {
+        case 'boolean':
+            if (isset($f->enum) && is_array($f->enum) && isset($f->enum[0]) && isset($f->enum[1])) {
+                $value = $value ? $f->enum[1] : $f->enum[0];
+            } else {
+                $value = (int) $value;
+            }
+            break;
+        case 'date':
+        case 'datetime':
+        case 'time':
+            // Datetime only - change to UTC
+            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+            $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+
+            if ($value instanceof $class && $f->type == 'datetime') {
+                $value->setTimezone(new \DateTimeZone('UTC'));
+            }
+
+            // Format for SQL
+            $value = $value->format(isset($f->dateFormat) ? $f->dateFormat : $format[$f->type]);
+            break;
+        case 'struct':
+            $value = json_encode($value);
+            break;
+        }
+
+        return $value;
     }
 
     /**
@@ -381,7 +629,7 @@ class Persistence_SQL extends Persistence
             case 'fx':
                 if (!isset($args[0], $args[1])) {
                     throw new Exception([
-                        'fx action needs 2 argumens, eg: ["sum", "amount"]',
+                        'fx action needs 2 arguments, eg: ["sum", "amount"]',
                         'action' => $type,
                     ]);
                 }
@@ -409,56 +657,6 @@ class Persistence_SQL extends Persistence
     }
 
     /**
-     * Generates action that performs load of the record $id
-     * and returns requested fields.
-     *
-     * @param Model $m
-     * @param mixed $id
-     *
-     * @return array
-     */
-    public function load(Model $m, $id)
-    {
-        $load = $this->action($m, 'select');
-        $load->where($m->getElement($m->id_field), $id);
-        $load->limit(1);
-
-        // execute action
-        try {
-            $data = $load->getRow();
-        } catch (\PDOException $e) {
-            throw new Exception([
-                'Unable to load due to query error',
-                'query'      => $load->getDebugQuery(false),
-                'model'      => $m,
-                'conditions' => $m->conditions,
-            ], null, $e);
-        }
-
-        if (!$data) {
-            throw new Exception([
-                'Unable to load record',
-                'model' => $m,
-                'id'    => $id,
-                'query' => $load->getDebugQuery(false),
-            ]);
-        }
-
-        if (isset($data[$m->id_field])) {
-            $m->id = $data[$m->id_field];
-        } else {
-            throw new Exception([
-                'ID of the record is unavailable. Read-only mode is not supported',
-                'model' => $m,
-                'id'    => $id,
-                'data'  => $data,
-            ]);
-        }
-
-        return $data;
-    }
-
-    /**
      * Tries to load data record, but will not fail if record can't be loaded.
      *
      * @param Model $m
@@ -473,12 +671,19 @@ class Persistence_SQL extends Persistence
         $load->limit(1);
 
         // execute action
-        $data = $load->getRow();
+        try {
+            $data = $this->typecastLoadRow($m, $load->getRow());
+        } catch (\PDOException $e) {
+            throw new Exception([
+                'Unable to load due to query error',
+                'query'      => $load->getDebugQuery(false),
+                'model'      => $m,
+                'conditions' => $m->conditions,
+            ], null, $e);
+        }
 
         if (!$data) {
-            $m->unload();
-
-            return [];
+            return;
         }
 
         if (isset($data[$m->id_field])) {
@@ -496,36 +701,24 @@ class Persistence_SQL extends Persistence
     }
 
     /**
-     * Loads any one record.
+     * Loads a record from model and returns a associative array.
      *
      * @param Model $m
+     * @param mixed $id
      *
      * @return array
      */
-    public function loadAny(Model $m)
+    public function load(Model $m, $id)
     {
-        $load = $this->action($m, 'select');
-        $load->limit(1);
-
-        // execute action
-        $data = $load->getRow();
+        $data = $this->tryLoad($m, $id);
 
         if (!$data) {
             throw new Exception([
-                'Unable to load any record',
-                'model' => $m,
-                'query' => $load->getDebugQuery(false),
-            ]);
-        }
-
-        if (isset($data[$m->id_field])) {
-            $m->id = $data[$m->id_field];
-        } else {
-            throw new Exception([
-                'ID of the record is unavailable. Read-only mode is not supported',
-                'model' => $m,
-                'data'  => $data,
-            ]);
+                'Record was not found',
+                'model'      => $m,
+                'id'         => $id,
+                'conditions' => $m->conditions,
+            ], 404);
         }
 
         return $data;
@@ -544,10 +737,20 @@ class Persistence_SQL extends Persistence
         $load->limit(1);
 
         // execute action
-        $data = $load->getRow();
+        try {
+            $data = $this->typecastLoadRow($m, $load->getRow());
+        } catch (\PDOException $e) {
+            throw new Exception([
+                'Unable to load due to query error',
+                'query'      => $load->getDebugQuery(false),
+                'model'      => $m,
+                'conditions' => $m->conditions,
+            ], null, $e);
+        }
+
 
         if (!$data) {
-            return [];
+            return;
         }
 
         if (isset($data[$m->id_field])) {
@@ -564,6 +767,28 @@ class Persistence_SQL extends Persistence
     }
 
     /**
+     * Loads any one record.
+     *
+     * @param Model $m
+     *
+     * @return array
+     */
+    public function loadAny(Model $m)
+    {
+        $data = $this->tryLoadAny($m);
+
+        if (!$data) {
+            throw new Exception([
+                'No matching records were found',
+                'model'      => $m,
+                'conditions' => $m->conditions,
+            ], 404);
+        }
+
+        return $data;
+    }
+
+    /**
      * Inserts record in database and returns new record ID.
      *
      * @param Model $m
@@ -574,15 +799,7 @@ class Persistence_SQL extends Persistence
     public function insert(Model $m, $data)
     {
         $insert = $this->action($m, 'insert');
-
-        // apply all fields we got from get
-        foreach ($data as $field => $value) {
-            $f = $m->getElement($field);
-            if (!$f->editable || $f->never_persist) {
-                continue;
-            }
-            $insert->set($f->actual ?: $f->short_name, $value);
-        }
+        $insert->set($this->typecastSaveRow($m, $data));
 
         $st = null;
         try {
@@ -614,7 +831,9 @@ class Persistence_SQL extends Persistence
     {
         $export = $this->action($m, 'select', [$fields]);
 
-        return $export->get();
+        return array_map(function ($r) use ($m) {
+            return $this->typecastLoadRow($m, $r);
+        }, $export->get());
     }
 
     /**
@@ -652,13 +871,12 @@ class Persistence_SQL extends Persistence
         $update = $this->initQuery($m);
         $update->mode('update');
 
+        $data = $this->typecastSaveRow($m, $data);
+
         // only apply fields that has been modified
         $cnt = 0;
         foreach ($data as $field => $value) {
             $f = $m->getElement($field);
-            if ($f->never_persist) {
-                continue;
-            }
             $update->set($f->actual ?: $f->short_name, $value);
             $cnt++;
         }
@@ -679,6 +897,11 @@ class Persistence_SQL extends Persistence
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
+        }
+
+        if ($m->id_field && isset($data[$m->id_field]) && $m->dirty[$m->id_field]) {
+            // ID was changed
+            $m->id = $data[$m->id_field];
         }
 
         $m->hook('afterUpdateQuery', [$update, $st]);

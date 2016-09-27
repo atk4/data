@@ -42,6 +42,59 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Smith', $m['surname']);
     }
 
+    public function testSaveAs()
+    {
+        $this->markTestSkipped('TODO: see #146');
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
+            ],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m = new Model_Male($p, 'user');
+        $m->load(1);
+        $m->saveAs(new Model_Female());
+
+        $this->assertEquals([
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
+            ],
+        ], $a);
+    }
+
+    public function testSaveAndUnload()
+    {
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
+            ],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m = new Model_Male($p, 'user');
+
+        $m->load(1);
+        $this->assertTrue($m->loaded());
+        $m['gender'] = 'F';
+        $m->saveAndUnload();
+        $this->assertFalse($m->loaded());
+
+        $m = new Model_Female($p, 'user');
+        $m->load(1);
+        $this->assertTrue($m->loaded());
+
+        $this->assertEquals([
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
+            ],
+        ], $a);
+    }
+
     public function testUpdateArray()
     {
         $a = [
@@ -74,7 +127,7 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
         ], $a);
 
         $m->unload();
-        $m->set(['name' => 'Foo', 'surname' => 'Bar', 'other' => 'Baz']);
+        $m->set(['name' => 'Foo', 'surname' => 'Bar']);
         $m->save();
 
         $this->assertEquals([
@@ -100,7 +153,7 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $m->insert(['name' => 'Foo', 'surname' => 'Bar', 'other' => 'Baz']);
+        $m->insert(['name' => 'Foo', 'surname' => 'Bar']);
 
         $this->assertEquals([
             'user' => [
