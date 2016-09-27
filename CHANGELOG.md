@@ -1,3 +1,26 @@
+# 1.1.0
+
+The main feature of this release is introduction of strong types. See [Type Converting](http://agile-data.readthedocs.io/en/develop/persistence.html?highlight=typecasting#type-converting).
+
+* Added support for load_normalization (off by default) and typecasting #94, #109, #125, #129, #131, #140, #144, #160, #161, #162, #167, #168, #169, 
+* Improved support for field flags (read_only, never_persist etc) #105, #106, #123, #166, #170
+* Refactored join implementation #98, #99, #107
+* Improved integration with Agile Toolkit UI #95
+* Added support for strict_field_check (on by default)
+* Refactoring load() and save() code.
+* Added methods: duplicate, saveAs, saveAndUnload, asModel, newInstance, withPersistence, #111, #112
+* Refactored references. Reference addField will inherit type. #157, #163, 
+* Implemented $model->atomic(). CRUD operations are now atomic. #116
+* Improved ref('link_id') for loaded models. added hasRef() method. #124, #164
+* Huge number of new unit-tests (278->369), and added some advanced tests.
+* Added documentation for Fields [link](http://agile-data.readthedocs.io/en/develop/fields.html) #117
+* Expanded Persistence section [link](http://agile-data.readthedocs.io/en/develop/persistence.html?highlight=persistence#inserting-record-with-a-specific-id) (from insert records with specific id, down to actions)
+* Removed use of 'relations'. We use 'References' everywhere now. #120, #127, #134, #135, #139
+* Added documentation on Title field importing [link](http://agile-data.readthedocs.io/en/develop/references.html#importing-hasone-title) #122, #137
+* Other documentation (typos)
+* Dependencies updated (dsql, core) #121
+* PRs: #79, #82, #83, #85, #88, #90, #94, #95, #97, #130, #151, #156, #171
+
 # 1.0.2
 
 Maintenance release to include some of the bugfixes.
