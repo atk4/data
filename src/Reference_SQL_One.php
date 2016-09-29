@@ -14,17 +14,24 @@ class Reference_SQL_One extends Reference_One
      *
      * Returns Expression in case you want to do something else with it.
      *
-     * @param string|Field $field
-     * @param string|null  $their_field
-     * @param array        $defaults    Properties
+     * @param string|Field|array $field or [$field, ..defaults]
+     * @param string|null        $their_field
      *
      * @return Field_SQL_Expression
      */
-    public function addField($field, $their_field = null, $defaults = [])
+    public function addField($field, $their_field = null)
     {
+        if (is_array($field)) {
+            $defaults = $field;
+            $field = $defaults[0];
+        } else {
+            $defaults = [];
+        }
+
         if ($their_field === null) {
             $their_field = $field;
         }
+
 
         $e = $this->owner->addExpression($field, array_merge([
             function ($m) use ($their_field) {
@@ -32,6 +39,7 @@ class Reference_SQL_One extends Reference_One
             }, ],
             $defaults
         ));
+
 
         if (isset($defaults['type'])) {
             $e->type = $defaults['type'];
@@ -43,20 +51,39 @@ class Reference_SQL_One extends Reference_One
     }
 
     /**
-     * Add multiple expressions by calling addField several times.
+     * Add multiple expressions by calling addField several times. Fields
+     * may contain 3 types of elements:
+     *
+     * [ 'name', 'surname' ] - will import those fields as-is
+     * [ 'full_name' => 'name', 'day_of_birth' => ['dob', 'type'=>'date'] ] - use alias and options
+     * [ ['dob', 'type' => 'date'] ]  - use options
+     * 
+     * You may also use second param to specify parameters:
+     *
+     * addFields(['from', 'to'], ['type' => 'date']);
      *
      * @param array $fields
      *
      * @return $this
      */
-    public function addFields($fields = [])
+    public function addFields($fields = [], $defaults = [])
     {
         foreach ($fields as $field => $alias) {
-            if (is_numeric($field)) {
-                $this->addField($alias);
+            $d = $defaults;
+
+            if (is_array($alias)) {
+                $d = array_merge($defaults, $alias);
+                $alias = $alias[0];
             } else {
-                $this->addField($field, $alias);
+                $d = $defaults;
             }
+
+            if (is_numeric($field)) {
+                $field = $alias;
+            }
+
+            $d[0] = $field;
+            $this->addField($d, $alias);
         }
 
         return $this;
