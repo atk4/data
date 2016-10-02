@@ -1,3 +1,8 @@
+# 1.1.1
+
+* disabled type fetching from related entities when using ref->addField due to performance degradation
+* hotfixed situations where never_persist fields are loaded when specified as part as onlyFields
+
 # 1.1.0
 
 The main feature of this release is introduction of strong types. See [Type Converting](http://agile-data.readthedocs.io/en/develop/persistence.html?highlight=typecasting#type-converting).
