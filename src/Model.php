@@ -710,7 +710,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         if ($f) {
             $f->system = true;
-            $f->ui['editable'] = false;
             if ($operator === '=' || func_num_args() == 2) {
                 $v = $operator === '=' ? $value : $operator;
 
