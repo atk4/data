@@ -14,7 +14,7 @@ class Reference_SQL_One extends Reference_One
      *
      * Returns Expression in case you want to do something else with it.
      *
-     * @param string|Field|array $field or [$field, ..defaults]
+     * @param string|Field|array $field       or [$field, ..defaults]
      * @param string|null        $their_field
      *
      * @return Field_SQL_Expression
@@ -52,12 +52,12 @@ class Reference_SQL_One extends Reference_One
 
     /**
      * Add multiple expressions by calling addField several times. Fields
-     * may contain 3 types of elements:
+     * may contain 3 types of elements:.
      *
      * [ 'name', 'surname' ] - will import those fields as-is
      * [ 'full_name' => 'name', 'day_of_birth' => ['dob', 'type'=>'date'] ] - use alias and options
      * [ ['dob', 'type' => 'date'] ]  - use options
-     * 
+     *
      * You may also use second param to specify parameters:
      *
      * addFields(['from', 'to'], ['type' => 'date']);

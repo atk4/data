@@ -184,7 +184,7 @@ class ReferenceSQLTest extends SQLTestCase
         $u = (new Model($db, 'user'))->addFields(['name', ['date', 'type' => 'date']]);
 
         $o = (new Model($db, 'order'))->addFields(['amount']);
-        $o->hasOne('user_id', $u)->addFields(['username' => 'name', ['date', 'type'=>'date']]);
+        $o->hasOne('user_id', $u)->addFields(['username' => 'name', ['date', 'type' => 'date']]);
 
         $this->assertEquals('John', $o->load(1)['username']);
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['date']);
@@ -196,14 +196,13 @@ class ReferenceSQLTest extends SQLTestCase
 
         // few more tests
         $o = (new Model($db, 'order'))->addFields(['amount']);
-        $o->hasOne('user_id', $u)->addFields(['username' => 'name', 'thedate' => ['date', 'type'=>'date']]);
+        $o->hasOne('user_id', $u)->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
         $this->assertEquals('John', $o->load(1)['username']);
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['thedate']);
 
         $o = (new Model($db, 'order'))->addFields(['amount']);
-        $o->hasOne('user_id', $u)->addFields(['date'], ['type'=>'date']);
+        $o->hasOne('user_id', $u)->addFields(['date'], ['type' => 'date']);
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['date']);
-
     }
 
     public function testRelatedExpression()

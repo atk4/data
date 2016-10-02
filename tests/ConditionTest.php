@@ -45,7 +45,7 @@ class ConditionTest extends TestCase
         $m = new Model();
         $m->addField('name');
         $m->addField('gender');
-        $m->addCondition('gender','M');
+        $m->addCondition('gender', 'M');
 
         $this->assertEquals(true, $m->getElement('gender')->system);
         $this->assertEquals(false, $m->getElement('gender')->isEditable());
