@@ -452,6 +452,24 @@ Loading model like that can produce a pretty sophisticated query:
         ) `child_age`,`pp`.`id` `_i`
     from `item` `pp`left join `item2` as `pp_i` on `pp_i`.`item_id` = `pp`.`id`
 
+Various ways to specify options
+-------------------------------
+
+When calling `hasOne()->addFields()` there are various ways to pass options:
+
+- `addFields(['name', 'dob'])` - no options are passed, use defaults. Note that
+  reference will not fetch the type of foreign field due to performance consideration.
+
+- `addFields(['first_name' => 'name'])` - this indicates aliasing. Field `name` will be
+  added as `first_name`.
+
+- `addFields([['dob', 'type'=>'date']])` - wrap inside array to pass options to field
+
+- `addFields(['the_date' => ['dob', 'type'=>'date']])` - combination of aliasing and options
+
+- `addFields(['dob', 'dod'], ['type'=>'date'])` - passing defaults for multiple fields
+
+
 References with New Records
 ===========================
 
