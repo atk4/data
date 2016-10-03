@@ -50,4 +50,18 @@ class ConditionTest extends TestCase
         $this->assertEquals(true, $m->getElement('gender')->system);
         $this->assertEquals(false, $m->getElement('gender')->isEditable());
     }
+
+    public function testEditableHasOne()
+    {
+        $gender = new Model();
+        $gender->addField('name');
+
+
+        $m = new Model();
+        $m->addField('name');
+        $m->hasOne('gender_id', $gender);
+
+        $this->assertEquals(true, $m->getElement('gender_id')->system);
+        $this->assertEquals(false, $m->getElement('gender_id')->isEditable());
+    }
 }
