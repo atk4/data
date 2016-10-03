@@ -139,9 +139,4 @@ class Reference_One extends Reference
         // can not load referenced model or set conditions on it, so we just return it
         return $m;
     }
-
-    /**
-     * List of properties to show in var_dump.
-     */
-    protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
 }
