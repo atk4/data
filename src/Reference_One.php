@@ -49,10 +49,7 @@ class Reference_One extends Reference
      *
      * @var array
      */
-    public $ui = [
-        'editable' => true,
-        'visible'  => false,
-    ];
+    public $ui = [];
 
     /**
      * Is field mandatory? By default fields are not mandatory.
@@ -76,7 +73,7 @@ class Reference_One extends Reference
         if (!$this->owner->hasElement($this->our_field)) {
             $this->owner->addField($this->our_field, [
                 'type'          => null, // $this->guessFieldType(),
-                'system'        => true,
+                //'system'        => true,
                 'join'          => $this->join,
                 'default'       => $this->default,
                 'never_persist' => $this->never_persist,
@@ -142,9 +139,4 @@ class Reference_One extends Reference
         // can not load referenced model or set conditions on it, so we just return it
         return $m;
     }
-
-    /**
-     * List of properties to show in var_dump.
-     */
-    protected $__debug_fields = ['ref' => 'link', 'model', 'our_field', 'their_field', 'type', 'system', 'never_save', 'never_persist', 'read_only', 'ui', 'join'];
 }

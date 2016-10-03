@@ -1,3 +1,8 @@
+# 1.1.2
+
+Minimum stability fixes after the release #172, #173
+
+
 # 1.1.1
 
 * disabled type fetching from related entities when using ref->addField due to performance degradation

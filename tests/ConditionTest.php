@@ -39,4 +39,29 @@ class ConditionTest extends TestCase
         $m->addCondition([['gender', 'F'], ['foo', 'bar']]);
         $this->assertEquals(4, count($m->conditions));
     }
+
+    public function testEditableAfterCondition()
+    {
+        $m = new Model();
+        $m->addField('name');
+        $m->addField('gender');
+        $m->addCondition('gender', 'M');
+
+        $this->assertEquals(true, $m->getElement('gender')->system);
+        $this->assertEquals(false, $m->getElement('gender')->isEditable());
+    }
+
+    public function testEditableHasOne()
+    {
+        $gender = new Model();
+        $gender->addField('name');
+
+
+        $m = new Model();
+        $m->addField('name');
+        $m->hasOne('gender_id', $gender);
+
+        $this->assertEquals(false, $m->getElement('gender_id')->system);
+        $this->assertEquals(true, $m->getElement('gender_id')->isEditable());
+    }
 }

@@ -182,10 +182,9 @@ class ReferenceSQLTest extends SQLTestCase
 
         $db = new Persistence_SQL($this->db->connection);
         $u = (new Model($db, 'user'))->addFields(['name', ['date', 'type' => 'date']]);
+
         $o = (new Model($db, 'order'))->addFields(['amount']);
-
-        $o->hasOne('user_id', $u)->addFields(['username' => 'name', 'date']);
-
+        $o->hasOne('user_id', $u)->addFields(['username' => 'name', ['date', 'type' => 'date']]);
 
         $this->assertEquals('John', $o->load(1)['username']);
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['date']);
@@ -193,6 +192,17 @@ class ReferenceSQLTest extends SQLTestCase
         $this->assertEquals('Peter', $o->load(2)['username']);
         $this->assertEquals('John', $o->load(3)['username']);
         $this->assertEquals('Joe', $o->load(5)['username']);
+
+
+        // few more tests
+        $o = (new Model($db, 'order'))->addFields(['amount']);
+        $o->hasOne('user_id', $u)->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
+        $this->assertEquals('John', $o->load(1)['username']);
+        $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['thedate']);
+
+        $o = (new Model($db, 'order'))->addFields(['amount']);
+        $o->hasOne('user_id', $u)->addFields(['date'], ['type' => 'date']);
+        $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['date']);
     }
 
     public function testRelatedExpression()
