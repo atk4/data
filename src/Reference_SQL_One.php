@@ -75,8 +75,6 @@ class Reference_SQL_One extends Reference_One
     public function addFields($fields = [], $defaults = [])
     {
         foreach ($fields as $field => $alias) {
-            $d = $defaults;
-
             if (is_array($alias)) {
                 $d = array_merge($defaults, $alias);
                 if (!isset($alias[0])) {
