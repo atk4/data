@@ -219,7 +219,7 @@ class Reference
     /**
      * List of properties to show in var_dump.
      */
-    protected $__debug_fields = ['ref' => 'link', 'model', 'our_field', 'their_field'];
+    protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
 
     /**
      * Returns array with useful debug info for var_dump.
