@@ -49,7 +49,7 @@ class Reference_One extends Reference
      *
      * @var array
      */
-    public $ui = null;
+    public $ui = [];
 
     /**
      * Is field mandatory? By default fields are not mandatory.
