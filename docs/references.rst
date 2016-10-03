@@ -399,7 +399,6 @@ You can also use hasRef() to check if particular reference exists in model::
 
     $ref = $model->hasRef('owner_id');
 
-
 Deep traversal
 ==============
 
