@@ -1506,6 +1506,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Add generic relation. Provide your own call-back that will
+     * return the model
+     */
+    public function addRef($link, $callback)
+    {
+        if (!is_array($callback)) {
+            $callback = ['model' => $callback];
+        }
+        return $this->_hasReference('\atk4\data\Reference', $link, $callback);
+    }
+
+    /**
      * Add hasOne field.
      *
      * @param string $link

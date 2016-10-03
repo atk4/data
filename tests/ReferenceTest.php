@@ -47,4 +47,17 @@ class ReferenceTest extends TestCase
         $o = $user->ref('order_id');
         $this->assertEquals('order', $o->table);
     }
+
+    public function testCustomRef()
+    {
+        $a = [];
+        $p = new \atk4\data\Persistence_Array($a);
+
+        $m = new Model($p, ['table' => 'user']);
+        $m->addRef('archive', function($m) {
+            return $m->newInstance(null, ['table' => $m->table.'_archive']);
+        });
+
+        $this->assertEquals('user_archive', $m->ref('archive')->table);
+    }
 }
