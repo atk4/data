@@ -54,7 +54,7 @@ class ReferenceTest extends TestCase
         $p = new \atk4\data\Persistence_Array($a);
 
         $m = new Model($p, ['table' => 'user']);
-        $m->addRef('archive', function($m) {
+        $m->addRef('archive', function ($m) {
             return $m->newInstance(null, ['table' => $m->table.'_archive']);
         });
 
