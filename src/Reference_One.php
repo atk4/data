@@ -71,7 +71,7 @@ class Reference_One extends Reference
         }
 
         if (!$this->owner->hasElement($this->our_field)) {
-            $f = $this->owner->addField($this->our_field, [
+            $this->owner->addField($this->our_field, [
                 'type'          => null, // $this->guessFieldType(),
                 //'system'        => true,
                 'join'          => $this->join,
@@ -143,5 +143,5 @@ class Reference_One extends Reference
     /**
      * List of properties to show in var_dump.
      */
-    protected $__debug_fields = ['link', 'model'];
+    protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
 }
