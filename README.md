@@ -49,7 +49,7 @@ In Agile Data your field can be defined through user-defined SQL expression. Tha
 the rest of the API, the field can still be used inside actions, conditions and inside your CRUD
 operations with a model. Most expressions are read-only though.
 
-![GitHub release](docs/images/expression.gif)]
+![GitHub release](docs/images/expression.gif)
 
 ### Good bye Eager/Lazy Loading
 
@@ -57,7 +57,7 @@ Have you felt that something is broken with Eager/Lazy loading approach? With Ag
 never have to use it again. If you have a reference between models, you can "import" fields
 through this relationship.
 
-![GitHub release](docs/images/import-field.gif)]
+![GitHub release](docs/images/import-field.gif)
 
 ### Never again miss that critical condition
 
