@@ -1167,7 +1167,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->set($data);
         }
 
-        return $this->atomic(function () use ($data) {
+        $a = $this->atomic(function () use ($data) {
             if ($this->hook('beforeSave') === false) {
                 return $this;
             }
@@ -1248,6 +1248,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             return $this;
         });
+
+        $this->hook('afterSaveTransaction', [$a]);
+
+        return $a;
     }
 
     /**
@@ -1374,7 +1378,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $id = null;
         }
 
-        return $this->atomic(function () use ($id) {
+        $a = $this->atomic(function () use ($id) {
             if ($id) {
                 $c = clone $this;
                 $c->load($id)->delete();
@@ -1393,6 +1397,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 throw new Exception(['No active record is set, unable to delete.']);
             }
         });
+
+        $this->hook('afterDeleteTransaction', [$a]);
+
+        return $a;
     }
 
     /**
