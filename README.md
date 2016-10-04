@@ -41,7 +41,7 @@ object off your model which you can tweak.
 Agile Data significantly expands amount of interactions you can do between Model and Query Builder.
 You can generate update/delete queries, aggregate queries and drop them into Query Builder:
 
-![GitHub release](docs/images/action.gif)]
+![GitHub release](docs/images/action.gif)
 
 ### Introducing Expressions
 
