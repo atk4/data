@@ -1508,6 +1508,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Add generic relation. Provide your own call-back that will
      * return the model.
+     *
+     * @param string $link     Link
+     * @param array  $callback Callback
+     *
+     * @return object
      */
     public function addRef($link, $callback)
     {
