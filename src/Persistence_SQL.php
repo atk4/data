@@ -542,11 +542,22 @@ class Persistence_SQL extends Persistence
         // Manually handle remaining types
         switch ($f->type) {
         case 'boolean':
-            if (isset($f->enum) && is_array($f->enum) && isset($f->enum[0]) && isset($f->enum[1])) {
-                $value = $value ? $f->enum[1] : $f->enum[0];
-            } else {
+
+            // if enum is not set, cast value to boolean simply.
+            if (!isset($f->enum) || !$f->enum) {
                 $value = (int) $value;
+                break;
             }
+
+            // if enum is set, first lets see if it matches one of those precisely
+            if ($value === $f->enum[1]) {
+                $value = true;
+            } elseif ($value === $f->enum[0]) {
+                $value = false;
+            }
+
+            // finally, convert into appropriate value
+            $value = $value ? $f->enum[1] : $f->enum[0];
             break;
         case 'date':
         case 'datetime':
