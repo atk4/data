@@ -283,5 +283,4 @@ class TypecastingTest extends SQLTestCase
 
         $this->assertEquals('N', $db->typecastSaveField($f, 'N'));
     }
-
 }

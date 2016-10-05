@@ -3,9 +3,8 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_Array;
 
-class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase 
+class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testBasicSerialize()
     {
@@ -14,7 +13,6 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $f = $m->addField('data', ['encode' => 'serialize']);
 
-        $this->assertEquals('N', $db->typecastSaveField($f, ['foo'=>'bar']));
+        $this->assertEquals('N', $db->typecastSaveField($f, ['foo' => 'bar']));
     }
-
 }
