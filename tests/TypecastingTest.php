@@ -273,4 +273,15 @@ class TypecastingTest extends SQLTestCase
 
         $m->addCondition('date', $d)->loadAny();
     }
+
+    public function testTypecastBoolean()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model($db, 'job');
+
+        $f = $m->addField('closed', ['type'=>'boolean','enum'=>['N','Y']]);
+
+        $this->assertEquals('N', $db->typecastSaveField($f, 'N'));
+    }
+
 }
