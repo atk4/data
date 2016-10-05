@@ -110,4 +110,111 @@ class Persistence
     {
         return call_user_func($f);
     }
+
+    /**
+     * Prepare value of a specific field by converting it to
+     * persistence - friendly format.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function typecastSaveField(Field $f, $value)
+    {
+        // use typecast = false to disable typecasting entirely
+        if ($f->typecast === false) {
+            return $value;
+        }
+
+        // use typecast = [callback, callback]
+        if (is_array($f->typecast) && isset($f->typecast[0])) {
+            $t = $f->typecast[0];
+            return $t($value, $f, $this;);
+        }
+
+        // we respect null values.
+        if ($value === null) {
+            return;
+        }
+
+        // only string type fields can use empty string as legit value, for all
+        // other field types empty value is the same as no-value, nothing or null
+        if ($f->type != 'string' && $value === '') {
+            return;
+        }
+
+        return $this->_typecastSaveField($f, $value);
+    }
+
+    /**
+     * This is the actual typecasting, which you can override in your persistence
+     * to implement necessary typecasting.
+     */
+    public function _typecastSaveField(Field $f, $value)
+    {
+        switch ($this->type)
+        {
+        case 'array':
+            if(!is_array($value)) {
+                throw new Exception([
+                    'This field can only store arrays',
+                    'field'=>$f, 'value'=>value
+                ]);
+            }
+
+
+            // MOVE THIS TO SQL
+            if(!$this->serialize === null) {
+                // even though serialize wasn't defined, we have to serialize
+                $value = json_encode($value);
+            }
+
+        }
+        return $value;
+    }
+
+    // TODO: add typecastLoadField and _typecastLoadField
+    // TODO: rename typecastLoadField in Persistence_SQL
+
+    /**
+     * Provided with a value, will perform field serialization. Can be used for
+     * the purposes of encryption or storing unsupported formats 
+     */
+    public serializeSaveField(Field $f, $value)
+    {
+        // use serialize = false to disable serializing entirely
+        if ($f->serialize === false) {
+            return $value;
+        }
+
+        // use typecast = [callback, callback]
+        if (is_array($f->serialize) && isset($f->serialize[0])) {
+            $s = $f->serialize[0];
+            return $s($value, $f, $this;);
+        }
+
+        return $this->_serializeSaveField(Field $f, $value);
+    }
+
+    /**
+     * Override this to fine-tune for your persistence
+     */
+    public serializeSaveField(Field $f, $value)
+    {
+        switch ($this->serialize) {
+        case 'json':
+            // TODO, check $this->type when unserializing to adjust 2nd argument
+            return json_encode($f->typecast? $this->typecastSaveField($value):$value);
+        case true:
+        case 'serialize':
+            return serialize($f->typecast? $this->typecastSaveField($value):$value);
+        case 'base64':
+            return base64_encode($this->typecastSaveField($value));
+        }
+    }
+
+    public serializeLoadField(Field $f, $value)
+    {
+    }
 }
