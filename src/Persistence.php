@@ -419,7 +419,7 @@ class Persistence
                 return json_decode($value, false);
             }
 
-            return json_decode($value);
+            return json_decode($value, true);
         case 'base64':
             return base64_decode($value);
         }
