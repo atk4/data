@@ -448,11 +448,11 @@ class Persistence_SQL extends Persistence
             break;
         case 'array':
             // don't decode if we already use some kind of serialization
-            $value = $f->serialize ? $value : $json_decode($value, true);
+            $value = $f->serialize ? $value : json_decode($value, true);
             break;
         case 'object':
             // don't decode if we already use some kind of serialization
-            $value = $f->serialize ? $value : $json_decode($value, false);
+            $value = $f->serialize ? $value : json_decode($value, false);
             break;
         }
 
