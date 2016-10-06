@@ -104,7 +104,9 @@ class Field
     /**
      * Should we use typecasting when saving/loading data to/from persistence.
      *
-     * @var null|bool
+     * Value can be array [$typecast_save_callback, $typecast_load_callback].
+     *
+     * @var null|bool|array
      */
     public $typecast = null;
 
@@ -116,22 +118,6 @@ class Field
      * @var null|bool|array
      */
     public $serialize = null;
-
-    /**
-     * Define callback to execute after loading value for this field
-     * from the database.
-     *
-     * @var callable
-     */
-    public $loadCallback = null;
-
-    /**
-     * Define callback to execute before saving value for this field
-     * to the database.
-     *
-     * @var callable
-     */
-    public $saveCallback = null;
 
     /**
      * Constructor. You can pass field properties as array.
@@ -183,6 +169,24 @@ class Field
             }
             $value = trim($value);
             break;
+        case 'integer':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be an integer');
+            }
+            $value = (int) $value;
+            break;
+        case 'float':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be a float');
+            }
+            $value = (float) $value;
+            break;
+        case 'money':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be numeric');
+            }
+            $value = round($value, 4);
+            break;
         case 'boolean':
             if (is_bool($value)) {
                 break;
@@ -200,12 +204,6 @@ class Field
                 throw new Exception('Field value must be a boolean');
             }
             break;
-        case 'money':
-            if (!is_numeric($value)) {
-                throw new Exception('Field value must be numeric');
-            }
-            $value = round($value, 4);
-            break;
         case 'date':
         case 'datetime':
         case 'time':
@@ -218,18 +216,6 @@ class Field
             } elseif (!$value instanceof $class) {
                 throw new Exception('Field value must be a '.$f->type);
             }
-            break;
-        case 'integer':
-            if (!is_numeric($value)) {
-                throw new Exception('Field value must be an integer');
-            }
-            $value = (int) $value;
-            break;
-        case 'float':
-            if (!is_numeric($value)) {
-                throw new Exception('Field value must be a float');
-            }
-            $value = (float) $value;
             break;
         case 'array':
             if (!is_array($value)) {

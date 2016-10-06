@@ -112,8 +112,140 @@ class Persistence
     }
 
     /**
+     * Will convert one row of data from native PHP types into
+     * persistence types. This will also take care of the "actual"
+     * field keys. Example:.
+     *
+     * In:
+     *  [
+     *    'name'=>' John Smith',
+     *    'age'=>30,
+     *    'password'=>'abc',
+     *    'is_married'=>true,
+     *  ]
+     *
+     *  Out:
+     *   [
+     *     'first_name'=>'John Smith',
+     *     'age'=>30,
+     *     'is_married'=>1
+     *   ]
+     *
+     * @param Model $m
+     * @param array $row
+     *
+     * @return array
+     */
+    public function typecastSaveRow(Model $m, $row)
+    {
+        if (!$row) {
+            return $row;
+        }
+
+        $result = [];
+        foreach ($row as $key => $value) {
+
+            // Look up field object
+            $f = $m->hasElement($key);
+
+            // Figure out the name of the destination field
+            $field = $f->actual ?: $key;
+
+            // We have no knowledge of the field, it wasn't defined, so
+            // we will leave it as-is.
+            if (!$f) {
+                $result[$field] = $value;
+                continue;
+            }
+
+            // check null values for mandatory fields
+            if ($value === null && $f->mandatory) {
+                throw new Exception(['Mandatory field value cannot be null', 'field' => $key]);
+            }
+
+            // Expression and null cannot be converted.
+            if (
+                $value instanceof \atk4\dsql\Expression ||
+                $value instanceof \atk4\dsql\Expressionable ||
+                $value === null
+            ) {
+                $result[$field] = $value;
+                continue;
+            }
+
+            // typecast if we explicitly want that or there is not serialization enabled
+            if ($f->typecast || ($f->typecast === null && $f->serialize === null)) {
+                $value = $this->typecastSaveField($f, $value);
+            }
+
+            // serialize if we explicitly want that
+            if ($f->serialize) {
+                $value = $this->serializeSaveField($f, $value);
+            }
+
+            // store converted value
+            $result[$field] = $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Will convert one row of data from Persistence-specific
+     * types to PHP native types.
+     *
+     * @param Model $m
+     * @param array $row
+     *
+     * @return array
+     */
+    public function typecastLoadRow(Model $m, $row)
+    {
+        if (!$row) {
+            return $row;
+        }
+
+        $result = [];
+        foreach ($row as $key => &$value) {
+
+            // Look up field object
+            $f = $m->hasElement($key);
+
+            // Figure out the name of the destination field
+            $field = $f->actual ?: $key;
+
+            // We have no knowledge of the field, it wasn't defined, so
+            // we will leave it as-is.
+            if (!$f) {
+                $result[$field] = $value;
+                continue;
+            }
+
+            // ignore null values
+            if ($value === null) {
+                continue;
+            }
+
+            // serialize if we explicitly want that
+            if ($f->serialize) {
+                $value = $this->serializeLoadField($f, $value);
+            }
+
+            // typecast if we explicitly want that or there is not serialization enabled
+            if ($f->typecast || ($f->typecast === null && $f->serialize === null)) {
+                $value = $this->typecastLoadField($f, $value);
+            }
+
+            // store converted value
+            $result[$field] = $value;
+        }
+
+        return $result;
+    }
+
+    /**
      * Prepare value of a specific field by converting it to
-     * persistence - friendly format.
+     * persistence-friendly format.
      *
      * @param Field $f
      * @param mixed $value
@@ -122,20 +254,37 @@ class Persistence
      */
     public function typecastSaveField(Field $f, $value)
     {
-        // use typecast = false to disable typecasting entirely
-        if ($f->typecast === false) {
-            return $value;
+        // use $f->typecast = [typecast_save_callback, typecast_load_callback]
+        if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
+            return $t($f, $value);
         }
 
-        // use typecast = [callback, callback]
-        if (is_array($f->typecast) && isset($f->typecast[0])) {
-            $t = $f->typecast[0];
-            return $t($value, $f, $this;);
-        }
+        // normalize value
+        $value = $f->normalize($value);
 
-        // we respect null values.
+        // we respect null values
         if ($value === null) {
             return;
+        }
+
+        // run persistence-specific typecasting of field value
+        return $this->_typecastSaveField($f, $value);
+    }
+
+    /**
+     * Cast specific field value from the way how it's stored inside
+     * persistence to a PHP format.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function typecastLoadField(Field $f, $value)
+    {
+        // use $f->typecast = [typecast_save_callback, typecast_load_callback]
+        if (is_array($f->typecast) && isset($f->typecast[1]) && is_callable($t = $f->typecast[1])) {
+            return $t($f, $value);
         }
 
         // only string type fields can use empty string as legit value, for all
@@ -144,77 +293,135 @@ class Persistence
             return;
         }
 
-        return $this->_typecastSaveField($f, $value);
+        // we respect null values
+        if ($value === null) {
+            return;
+        }
+
+        // run persistence-specific typecasting of field value
+        return $this->_typecastLoadField($f, $value);
     }
 
     /**
-     * This is the actual typecasting, which you can override in your persistence
-     * to implement necessary typecasting.
+     * This is the actual field typecasting, which you can override in your
+     * persistence to implement necessary typecasting.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
      */
     public function _typecastSaveField(Field $f, $value)
     {
-        switch ($this->type)
-        {
-        case 'array':
-            if(!is_array($value)) {
-                throw new Exception([
-                    'This field can only store arrays',
-                    'field'=>$f, 'value'=>value
-                ]);
-            }
-
-
-            // MOVE THIS TO SQL
-            if(!$this->serialize === null) {
-                // even though serialize wasn't defined, we have to serialize
-                $value = json_encode($value);
-            }
-
-        }
         return $value;
     }
 
-    // TODO: add typecastLoadField and _typecastLoadField
-    // TODO: rename typecastLoadField in Persistence_SQL
-
     /**
-     * Provided with a value, will perform field serialization. Can be used for
-     * the purposes of encryption or storing unsupported formats
+     * This is the actual field typecasting, which you can override in your
+     * persistence to implement necessary typecasting.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
      */
-    public function serializeSaveField(Field $f, $value)
+    public function _typecastLoadField(Field $f, $value)
     {
-        // use serialize = false to disable serializing entirely
-        if ($f->serialize === false) {
-            return $value;
-        }
-
-        // use typecast = [callback, callback]
-        if (is_array($f->serialize) && isset($f->serialize[0])) {
-            $s = $f->serialize[0];
-            return $s($value, $f, $this;);
-        }
-
-        return $this->_serializeSaveField(Field $f, $value);
+        return $value;
     }
 
     /**
-     * Override this to fine-tune for your persistence
+     * Provided with a value, will perform field serialization.
+     * Can be used for the purposes of encryption or storing unsupported formats.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
      */
     public function serializeSaveField(Field $f, $value)
     {
-        switch ($this->serialize) {
-        case 'json':
-            // TODO, check $this->type when unserializing to adjust 2nd argument
-            return json_encode($f->typecast? $this->typecastSaveField($value):$value);
-        case true:
-        case 'serialize':
-            return serialize($f->typecast? $this->typecastSaveField($value):$value);
-        case 'base64':
-            return base64_encode($this->typecastSaveField($value));
+        // use $f->serialize = [encode_callback, decode_callback]
+        if (is_array($f->serialize) && isset($f->serialize[0]) && is_callable($t = $f->serialize[0])) {
+            return $t($f, $value);
         }
+
+        // run persistence-specific serialization of field value
+        return $this->_serializeSaveField($f, $value);
     }
 
+    /**
+     * Provided with a value, will perform field un-serialization.
+     * Can be used for the purposes of encryption or storing unsupported formats.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
+     */
     public function serializeLoadField(Field $f, $value)
     {
+        // use $f->serialize = [encode_callback, decode_callback]
+        if (is_array($f->serialize) && isset($f->serialize[1]) && is_callable($t = $f->serialize[1])) {
+            return $t($f, $value);
+        }
+
+        // run persistence-specific un-serialization of field value
+        return $this->_serializeLoadField($f, $value);
+    }
+
+    /**
+     * Override this to fine-tune serialization for your persistence.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function _serializeSaveField(Field $f, $value)
+    {
+        switch ($f->serialize) {
+        case true:
+        case 'serialize':
+            return serialize($value);
+        case 'json':
+            return json_encode($value);
+        case 'base64':
+            if (!is_string($value)) {
+                throw new Exception([
+                    'Field value can not be base64 encoded because it is not of string type',
+                    'field' => $f,
+                    'value' => $value,
+                ]);
+            }
+            return base64_encode($value);
+        }
+    }
+
+    /**
+     * Override this to fine-tune un-serialization for your persistence.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function _serializeLoadField(Field $f, $value)
+    {
+        switch ($f->serialize) {
+        case true:
+        case 'serialize':
+            return unserialize($value);
+        case 'json':
+            switch ($f->type) {
+            case 'array':
+                return json_decode($value, true);
+            case 'object':
+                return json_decode($value, false);
+            }
+            return json_decode($value);
+        case 'base64':
+            return base64_decode($value);
+        }
     }
 }

@@ -61,7 +61,9 @@ class Reference_One extends Reference
     /**
      * Should we use typecasting when saving/loading data to/from persistence.
      *
-     * @var null|bool
+     * Value can be array [$typecast_save_callback, $typecast_load_callback].
+     *
+     * @var null|bool|array
      */
     public $typecast = null;
 
