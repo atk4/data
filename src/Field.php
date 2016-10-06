@@ -227,9 +227,11 @@ class Field
                 throw new Exception('Field value must be a object');
             }
             break;
-        default:
+        case 'int':
+        case 'str':
+        case 'bool':
             throw new Exception([
-                'Use of incorrect or obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
+                'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
                 'type' => $f->type,
             ]);
             break;
