@@ -256,7 +256,7 @@ class Persistence
     {
         // use $f->typecast = [typecast_save_callback, typecast_load_callback]
         if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
-            return $t($f, $value);
+            return $t($f, $value, $this);
         }
 
         // normalize value
@@ -284,7 +284,7 @@ class Persistence
     {
         // use $f->typecast = [typecast_save_callback, typecast_load_callback]
         if (is_array($f->typecast) && isset($f->typecast[1]) && is_callable($t = $f->typecast[1])) {
-            return $t($f, $value);
+            return $t($f, $value, $this);
         }
 
         // only string type fields can use empty string as legit value, for all
@@ -343,7 +343,7 @@ class Persistence
     {
         // use $f->serialize = [encode_callback, decode_callback]
         if (is_array($f->serialize) && isset($f->serialize[0]) && is_callable($t = $f->serialize[0])) {
-            return $t($f, $value);
+            return $t($f, $value, $this);
         }
 
         // run persistence-specific serialization of field value
@@ -363,7 +363,7 @@ class Persistence
     {
         // use $f->serialize = [encode_callback, decode_callback]
         if (is_array($f->serialize) && isset($f->serialize[1]) && is_callable($t = $f->serialize[1])) {
-            return $t($f, $value);
+            return $t($f, $value, $this);
         }
 
         // run persistence-specific un-serialization of field value
