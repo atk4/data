@@ -179,9 +179,9 @@ class Persistence
 
     /**
      * Provided with a value, will perform field serialization. Can be used for
-     * the purposes of encryption or storing unsupported formats 
+     * the purposes of encryption or storing unsupported formats
      */
-    public serializeSaveField(Field $f, $value)
+    public function serializeSaveField(Field $f, $value)
     {
         // use serialize = false to disable serializing entirely
         if ($f->serialize === false) {
@@ -200,7 +200,7 @@ class Persistence
     /**
      * Override this to fine-tune for your persistence
      */
-    public serializeSaveField(Field $f, $value)
+    public function serializeSaveField(Field $f, $value)
     {
         switch ($this->serialize) {
         case 'json':
@@ -214,7 +214,7 @@ class Persistence
         }
     }
 
-    public serializeLoadField(Field $f, $value)
+    public function serializeLoadField(Field $f, $value)
     {
     }
 }

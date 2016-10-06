@@ -59,6 +59,22 @@ class Reference_One extends Reference
     public $mandatory = false;
 
     /**
+     * Should we use typecasting when saving/loading data to/from persistence.
+     *
+     * @var null|bool
+     */
+    public $typecast = null;
+
+    /**
+     * Should we use serialization when saving/loading data to/from persistence.
+     *
+     * Value can be array [$encode_callback, $decode_callback].
+     *
+     * @var null|bool|array
+     */
+    public $serialize = null;
+
+    /**
      * Reference_One will also add a field corresponding
      * to 'our_field' unless it exists of course.
      */
@@ -80,6 +96,8 @@ class Reference_One extends Reference
                 'read_only'     => $this->read_only,
                 'ui'            => $this->ui,
                 'mandatory'     => $this->mandatory,
+                'typecast'      => $this->typecast,
+                'serialize'     => $this->serialize,
             ]);
         }
     }

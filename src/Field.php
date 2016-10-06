@@ -23,7 +23,7 @@ class Field
      * Field type.
      *
      * Values are: 'string', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'struct'.
+     *             'date', 'datetime', 'time', 'array', 'object'.
      * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
@@ -102,14 +102,34 @@ class Field
     public $mandatory = false;
 
     /**
+     * Should we use typecasting when saving/loading data to/from persistence.
+     *
+     * @var null|bool
+     */
+    public $typecast = null;
+
+    /**
+     * Should we use serialization when saving/loading data to/from persistence.
+     *
+     * Value can be array [$encode_callback, $decode_callback].
+     *
+     * @var null|bool|array
+     */
+    public $serialize = null;
+
+    /**
      * Define callback to execute after loading value for this field
      * from the database.
+     *
+     * @var callable
      */
     public $loadCallback = null;
 
     /**
      * Define callback to execute before saving value for this field
      * to the database.
+     *
+     * @var callable
      */
     public $saveCallback = null;
 
@@ -211,17 +231,19 @@ class Field
             }
             $value = (float) $value;
             break;
-        case 'struct':
-            // Can be pretty-much anything, but not object
-            if (is_object($value)) {
-                throw new Exception('Field value must be a struct');
+        case 'array':
+            if (!is_array($value)) {
+                throw new Exception('Field value must be a array');
             }
             break;
-        case 'int':
-        case 'bool':
-        case 'str':
+        case 'object':
+            if (!is_object($value)) {
+                throw new Exception('Field value must be a object');
+            }
+            break;
+        default:
             throw new Exception([
-                'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
+                'Use of incorrect or obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
                 'type' => $f->type,
             ]);
             break;
