@@ -498,7 +498,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
-        if ($value == $current_value) {
+        if ($value === $current_value) {
             // do nothing, value unchanged
             return $this;
         }
