@@ -498,7 +498,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
-        if ($value === $current_value) {
+        if ($value == $current_value) {
             // do nothing, value unchanged
             return $this;
         }
@@ -526,7 +526,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
         }
 
-        if (array_key_exists($field, $this->dirty) && $this->dirty[$field] === $value) {
+        if (array_key_exists($field, $this->dirty) && $this->dirty[$field] == $value) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
             $this->dirty[$field] =
@@ -1399,6 +1399,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Atomic executes operations within one begin/end transaction, so if
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
+     *
+     * @param callable $f
+     *
+     * @return mixed
      */
     public function atomic($f)
     {
@@ -1503,6 +1507,24 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $defaults[0] = $link;
 
         return $this->add(new $c($defaults));
+    }
+
+    /**
+     * Add generic relation. Provide your own call-back that will
+     * return the model.
+     *
+     * @param string $link     Link
+     * @param array  $callback Callback
+     *
+     * @return object
+     */
+    public function addRef($link, $callback)
+    {
+        if (!is_array($callback)) {
+            $callback = ['model' => $callback];
+        }
+
+        return $this->_hasReference('\atk4\data\Reference', $link, $callback);
     }
 
     /**

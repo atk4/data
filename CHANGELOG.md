@@ -1,3 +1,7 @@
+# 1.1.3
+
+Don't mark fields as dirty value has a fuzzy-match (4=="4"). Fix each() typecasting.
+
 # 1.1.2
 
 Minimum stability fixes after the release #172, #173

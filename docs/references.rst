@@ -348,6 +348,38 @@ Unlike addField() which creates fields read-only, title field can in fact be mod
 This behaviour is awesome when you are importing large amounts of data, because the
 lookup for the currency_id is entirely done in a database.
 
+User-defined Reference
+======================
+
+.. php:method:: addRef($link, $callback)
+
+Sometimes you would want to have a different type of relation between models, so with
+`addRef` you can define whatever reference you want::
+
+    $m->addRef('Archive', function($m) {
+        return $m->newInstance(null, ['table' => $m->table.'_archive']);
+    });
+
+The above example will work for a table structure where a main table `user` is shadowed by
+a archive table `user_archive`. Structure of both tables are same, and if you wish to
+look into an archive of a User you would do::
+
+    $user->ref('Archive');
+
+Note that you can create one-to-many or many-to-one relations, by using your custom logic.
+No condition will be applied by default so it's all up to you::
+
+    $m->addRef('Archive', function($m) {
+        $archive = $m->newInstance(null, ['table' => $m->table.'_archive']);
+
+        $m->addField('original_id', ['type' => 'int']);
+
+        if ($m->loaded)) {
+            $archive->addCondition('original_id', $m->id);
+            // only show record of currently loaded record
+        }
+    });
+
 Reference Discovery
 ===================
 
