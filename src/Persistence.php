@@ -394,6 +394,7 @@ class Persistence
                     'value' => $value,
                 ]);
             }
+
             return base64_encode($value);
         }
     }
@@ -419,6 +420,7 @@ class Persistence
             case 'object':
                 return json_decode($value, false);
             }
+
             return json_decode($value);
         case 'base64':
             return base64_decode($value);
