@@ -21,8 +21,8 @@ Scopes as well as transparently change database vendor for your entity storage.
 
 ## Links for the new users
 
-- Slides from the "[Love and Hate Relationship between ORMs and Query Builders](https://www.icloud.com/keynote/0eyOJalMEVj5uqBThTJPp9r5g#Agile_Data_-_Presentation_2)"
-- WE NEED FEEDBACK! Stop by and say hi: [![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+- Slides from the "[Love and Hate Relationship between ORMs and Query Builders](http://www.slideshare.net/romaninsh/love-and-hate-relationship-between-orm-and-query-builders)" talk.
+- WE NEED FEEDBACK! Stop by and say "Hi": [![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 - [Agile Toolkit](http://agiletoolkit.org/) and [Agile Data](http://agiletoolkit.org/data)
 - [Commercial extension directory](http://www.agiletoolkit.org/data/extensions)
 - Where to ask questions: [![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=develop)](http://agile-data.readthedocs.io/en/develop/?badge=latest) [![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4) [![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
