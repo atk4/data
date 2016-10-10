@@ -120,11 +120,32 @@ class BusinessModelTest extends TestCase
         $m['name'] = '5';
         $this->assertEquals([], $m->dirty);
 
+        $m['name'] = '6';
+        $this->assertNotEquals([], $m->dirty);
+        $m['name'] = '5';
+        $this->assertEquals([], $m->dirty);
+
         $m['name'] = '5.0';
         $this->assertEquals([], $m->dirty);
 
         $m->data = ['name' => ''];
         $m['name'] = '';
+        $this->assertEquals([], $m->dirty);
+
+        $m->data = ['name' => '5'];
+        $m['name'] = 5;
+        $this->assertEquals([], $m->dirty);
+        $m['name'] = 6;
+        $this->assertNotEquals([], $m->dirty);
+        $m['name'] = 5;
+        $this->assertEquals([], $m->dirty);
+
+        $m->data = ['name' => 4.28];
+        $m['name'] = '4.28';
+        $this->assertEquals([], $m->dirty);
+        $m['name'] = '5.28';
+        $this->assertNotEquals([], $m->dirty);
+        $m['name'] = '4.28';
         $this->assertEquals([], $m->dirty);
 
         // now with defaults
