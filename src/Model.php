@@ -498,7 +498,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
-        if ($value === $current_value || 
+        if ($value === $current_value ||
             (is_string($value) && is_numeric($current_value) && $value == $current_value) ||
             (is_numeric($value) && is_string($current_value) && $value == $current_value)
         ) {
