@@ -299,8 +299,8 @@ class BusinessModelTest extends TestCase
     public function testNormalize()
     {
         $m = new Model();
-        $m->addField('name', ['type'=>'string']);
-        $m->addField('age', ['type'=>'int']);
+        $m->addField('name', ['type' => 'string']);
+        $m->addField('age', ['type' => 'int']);
         $m->addField('data');
 
         $m['name'] = '';
