@@ -892,12 +892,7 @@ class Persistence_SQL extends Persistence
         $data = $this->typecastSaveRow($m, $data);
 
         // only apply fields that has been modified
-        $cnt = 0;
-        foreach ($data as $field => $value) {
-            $f = $m->getElement($field);
-            $update->set($f->actual ?: $f->short_name, $value);
-            $cnt++;
-        }
+        $update->set($data);
         $update->where($m->getElement($m->id_field), $id);
 
 
@@ -905,7 +900,7 @@ class Persistence_SQL extends Persistence
 
         try {
             $m->hook('beforeUpdateQuery', [$update]);
-            if ($cnt) {
+            if ($data) {
                 $st = $update->execute();
             }
         } catch (\PDOException $e) {
