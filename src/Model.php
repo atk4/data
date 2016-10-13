@@ -1167,7 +1167,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->set($data);
         }
 
-        return $this->atomic(function () use ($data) {
+        return $this->atomic(function () {
             if ($this->hook('beforeSave') === false) {
                 return $this;
             }
