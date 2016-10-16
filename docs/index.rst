@@ -11,6 +11,7 @@ Contents:
     quickstart
     design
     model
+    typecasting
     persistence
     results
     fields
