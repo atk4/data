@@ -514,7 +514,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             if ($f->enum && $f->type != 'boolean') {
-                if ($value === "") {
+                if ($value === '') {
                     $value = null;
                 }
                 if (!in_array($value, $f->enum, true) && $value !== null) {
