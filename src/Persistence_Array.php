@@ -47,7 +47,15 @@ class Persistence_Array extends Persistence
             '_default_class_join' => 'atk4\data\Join_Array',
         ], $defaults);
 
-        return parent::add($m, $defaults);
+        $m = parent::add($m, $defaults);
+
+        if($f = $m->hasElement($m->id_field)) {
+            if (!$f->type) {
+                $f->type = 'integer';
+            }
+        }
+
+        return $m;
     }
 
     /**

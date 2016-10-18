@@ -163,8 +163,8 @@ class TypecastingTest extends SQLTestCase
         $m->load(1);
 
         $this->assertSame('hello world', $m['rot13']);
-        $this->assertSame(1, $m->id);
-        $this->assertSame(1, $m['id']);
+        $this->assertSame('1', $m->id);
+        $this->assertSame('1', $m['id']);
         $this->assertEquals('2013-02-21 05:00:12', (string) $m['datetime']);
         $this->assertEquals('2013-02-20', (string) $m['date']);
         $this->assertEquals('12:00:50', (string) $m['time']);
