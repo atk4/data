@@ -49,7 +49,7 @@ class Persistence_Array extends Persistence
 
         $m = parent::add($m, $defaults);
 
-        if($f = $m->hasElement($m->id_field)) {
+        if ($f = $m->hasElement($m->id_field)) {
             if (!$f->type) {
                 $f->type = 'integer';
             }

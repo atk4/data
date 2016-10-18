@@ -844,7 +844,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $this->data = $this->persistence->load($this, $id);
-        if(is_null($this->id)) {
+        if (is_null($this->id)) {
             $this->id = $id;
         }
         $this->hook('afterLoad');
