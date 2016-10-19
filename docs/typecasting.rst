@@ -55,10 +55,10 @@ Here is another example with booleans::
         'enum' => ['No', 'Yes']
     ]);
 
-    $m['is_married'] = 'Yes';  // type-casts into true
-    $m['is_married'] = true;   // better way!
+    $m['is_married'] = 'Yes';  // normalizes into true
+    $m['is_married'] = true;   // better way because no need to normalize
 
-    $m->save();   // stores as "Yes".
+    $m->save();   // stores as "Yes" because of type-casting
 
 Value types
 ===========
@@ -70,8 +70,8 @@ Any type can have a value of `null`::
         // either null or false
     }
 
-If type is passed with incompatible format, Agile Data will try
-to cast the data::
+If value is passed which is not compatible with field type, Agile Data
+will try to normalize value::
 
     $m->addField('age', ['type'=>'integer']);
     $m->addField('name', ['type'=>'string']);
@@ -79,24 +79,24 @@ to cast the data::
     $m['age'] = '49.80';
     $m['name'] = '       John';
 
-    echo $m['age']; // 49
-    echo $m['name']; // 'John'
+    echo $m['age']; // 49 - normalization cast value to integer
+    echo $m['name']; // 'John' - normalization trims value
 
 Undefined type
 --------------
-If you do not set type for a field, Agile Data will attempt to
-keep value unmodified.
+If you do not set type for a field, Agile Data will not normalize
+and type-cast its value.
 
 Because of the loose PHP types, you can encounter situations
 where undefined type is changed from `'4'` to `4`. This change
 is still considered "dirty".
 
-If you use with a typeless numeric value in SQL, the response
+If you use numeric value with a type-less field, the response
 from SQL does not distinguish between integers and strings, so
 your value will be stored as "string" inside the model.
 
 The same can be said about forms, which submit all their data
-through POST request that has no types, so undefined type 
+through POST request that has no types, so undefined type
 fields should work relatively good with the standard setup
 of Agile Data + Agile Toolkit + SQL.
 
@@ -104,25 +104,32 @@ Type of IDs
 -----------
 
 Many databases will allow you to use different types for ID fields.
-In SQL the 'id' column will usually be "integer" but sometimes it
-can be a different value.
+In SQL the 'id' column will usually be "integer", but sometimes it
+can be of a different type.
 
-The same applies for references ($m->hasOne()). 
+The same applies for references ($m->hasOne()).
 
 Supported types
 ---------------
 
 - 'string' - for storing short strings, such as name of a person.
   Normalize will trim the value.
-- 'integer' - normalize will (int) the value. 
-- 'array' - 
+- 'boolean' - normalize will cast value to boolean.
+- 'integer' - normalize will cast value to integer.
+- 'money' - normalize will round value with 4 digits after dot.
+- 'float' - normalize will cast value to float.
+- 'date' - normalize will convert value to DateTime object.
+- 'datetime' - normalize will convert value to DateTime object.
+- 'time' - normalize will convert value to DateTime object.
+- 'array' - no normalization by default
+- 'object' - no normalization by default
 
 Types and UI
 ------------
 
-UI framework such as Agile Toolkit will typically rely on type
-information to properly present data with views (forms and tables)
-without you having to specify the `ui` property.
+UI framework such as Agile Toolkit will typically rely on field type
+information to properly present data for views (forms and tables)
+without you having to explicitly specify the `ui` property.
 
 Serialization
 =============
@@ -140,7 +147,16 @@ storage purpose::
     ]);
 
 This is one way to store binary data. Type is unspecified but the
-binary value of a field will be encoded with base64 before storing.
+binary value of a field will be encoded with base64 before storing and
+automatically decoded when you load this value back from persistence.
+
+Supported algorithms
+--------------------
+
+- 'serialize' - for storing PHP objects, uses `serialize`, `unserialize`
+- 'json' - for storing objects and arrays, uses `json_encode`, `json_decode`
+- 'base64' - for storing encoded strings, uses `base64_encode`, `base64_decode`
+- [serialize_callback, unserialize_callback] - for custom serialization
 
 Storing unsupported types
 -------------------------
@@ -154,12 +170,12 @@ will use an object and we are specifying our callbacks for converting::
     }
 
     $money_dencode = function($x) {
-        list($amount, $currency) = explode($x);
+        list($amount, $currency) = explode(' ', $x);
         return new MyMoney($amount, $currency);
     }
 
     $this->addField('money', [
-        'serialize'=>[$money_encode, $money_decode],
+        'serialize' => [$money_encode, $money_decode],
     ]);
 
 Array and Object types
