@@ -304,7 +304,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->id_field) {
             $this->addField($this->id_field, [
                 'system'    => true,
-                'type'      => 'integer',
             ]);
         }
     }
@@ -845,7 +844,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $this->data = $this->persistence->load($this, $id);
-        $this->id = $id;
+        if (is_null($this->id)) {
+            $this->id = $id;
+        }
         $this->hook('afterLoad');
 
         return $this;
@@ -1167,7 +1168,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->set($data);
         }
 
-        return $this->atomic(function () use ($data) {
+        return $this->atomic(function () {
             if ($this->hook('beforeSave') === false) {
                 return $this;
             }

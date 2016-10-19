@@ -143,7 +143,7 @@ class Persistence_SQL extends Persistence
             $m->addExpression('id', '1');
         } else {
             // SQL databases use ID of int by default
-            $m->getElement('id')->type = 'integer';
+            //$m->getElement('id')->type = 'integer';
         }
 
         return $m;
