@@ -513,6 +513,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             if ($f->enum && $f->type != 'boolean') {
+                if ($value === '') {
+                    $value = null;
+                }
                 if (!in_array($value, $f->enum, true) && $value !== null) {
                     throw new Exception([
                         'This is not one of the allowed values for the field',

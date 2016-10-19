@@ -212,59 +212,7 @@ Note that `read_only` can still have a default value::
 Typecasting
 -----------
 
-Typecasting is envoked when you are attempting to save or load the
-record. Unlike strict types and normalization, typecasting is a
-persistence-specific operation.
-
-Typecasting is necessary to save the values inside the database and
-restore them back just as they were before. When modifying a
-record, typecasting will only be invoked on the fields which were
-dirty.
-
-Join construct will single out the fields that needs to be stored
-in a separate table and will typecast them before persisting.
-
-You must remember that type-casting is a two-way operation. If
-you are introducing your own types, you will need to make sure they
-can be saved and loaded correctly.
-
-There are also a lot of flexiblity on how exactly you typecast
-your values to match your database requirements.
-
-
-For SQL databases it's essential to convert date formats, booleans
-and pack arrays::
-
-    $m->addField('registered', ['type'=>'date']);
-
-    $m['registered'] = time();   // will cast to DateTime
-
-    $m->save();   // will convert into YYYY-MM-DD
-
-Some formats such as `date`, `time` and `datetime` may have
-additional options to it::
-
-    $m->addField('registered', [
-        'type'=>'date',
-        'datetime_class'=>'Carbon\Carbon',
-        'persist_format'=>'d/m/Y',
-    ]);
-
-    $m['registered'] = time();   // will cast to Carbon
-
-    $m->save();   // will convert into DD/MM/YYYY in SQL
-
-Here is another example with booleans::
-
-    $m->addField('is_married', [
-        'type' => boolean',
-        'enum' => ['No', 'Yes']
-    ]);
-
-    $m['is_married'] = 'Yes';  // type-casts into true
-    $m['is_married'] = true;   // better way!
-
-    $m->save();   // stores as "Yes".
+For full documentation on type-casting see :ref:`typecasting`
 
 Validation
 ----------
@@ -298,18 +246,6 @@ a session, so your validation should be aware of this logic.
 
 Agile Data relies on 3rd party validation libraries, and
 you should be able to find more information on how to integrate them.
-
-UI Presentation
----------------
-
-Agile Data does not deal directly with formatting your data
-for the user. There may be various items to consider, for instance
-the same date can be presented in a short or long format for the user.
-
-The UI framework such as Agile Toolkit can make use of the :php:attr:`Field::ui`
-property to allow user to define default formats or input parsing
-rules, but Agile Data does not regulate the :php:attr:`Field::ui` property and
-different UI frameworks may use it differently.
 
 Multi-column fields
 -------------------
@@ -438,7 +374,7 @@ Customizations
 --------------
 
 Process which converts field values in native PHP format to/from database-specific formats
-is called typecasting. Persistence driver implements a necessary type-casting through the
+is called _`typecasting`. Persistence driver implements a necessary type-casting through the
 following two methods:
 
 .. php:method:: typecastLoadRow($model, $row);
