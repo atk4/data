@@ -378,17 +378,20 @@ class Persistence_SQL extends Persistence
         case 'date':
         case 'datetime':
         case 'time':
-            // Datetime only - change to UTC
-            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+            $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+            $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
 
-            $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+            if ($value instanceof $dt_class) {
+                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+                $format = $f->persist_format ?: $format[$f->type];
 
-            if ($value instanceof $class && $f->type == 'datetime') {
-                $value->setTimezone(new \DateTimeZone('UTC'));
+                // datetime only - set to UTC
+                if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                    $value->setTimezone(new $tz_class($f->persist_timezone));
+                }
+
+                $value = $value->format($format);
             }
-
-            // Format for SQL
-            $value = $value->format(isset($f->dateFormat) ? $f->dateFormat : $format[$f->type]);
             break;
         case 'array':
         case 'object':
@@ -437,13 +440,21 @@ class Persistence_SQL extends Persistence
         case 'date':
         case 'datetime':
         case 'time':
-            // Can use DateTime, Carbon or anything else
-            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+            $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+            $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
 
             if (is_numeric($value)) {
-                $value = new $class('@'.$value);
+                $value = new $dt_class('@'.$value);
             } elseif (is_string($value)) {
-                $value = new $class($value, new \DateTimeZone('UTC'));
+                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+                $format = $f->persist_format ?: $format[$f->type];
+
+                // datetime only - set from UTC
+                if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                    $value = $dt_class::createFromFormat($format, $value, new $tz_class($f->persist_timezone));
+                } else {
+                    $value = $dt_class::createFromFormat($format, $value);
+                }
             }
             break;
         case 'array':

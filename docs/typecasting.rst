@@ -21,7 +21,7 @@ persistence-specific operation. Here is the sequence and sample::
 
     $m->save();
     // At this point typecasting converts the "DateTime" value
-    // into UTC date-time prerepsentation for SQL or "MongoDate"
+    // into UTC date-time representation for SQL or "MongoDate"
     // type if you're persisting with MongoDB. This does not affect
     // value of a model field.
 

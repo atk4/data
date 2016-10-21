@@ -120,6 +120,42 @@ class Field
     public $serialize = null;
 
     /**
+     * Persisting format for type = 'date', 'datetime', 'time' fields.
+     *
+     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
+     *
+     * @var string
+     */
+    public $persist_format = null;
+
+    /**
+     * Persisting timezone for type = 'date', 'datetime', 'time' fields.
+     *
+     * For example, 'IST', 'UTC', 'Europe/Riga' etc.
+     *
+     * @var string
+     */
+    public $persist_timezone = 'UTC';
+
+    /**
+     * DateTime class used for type = 'data', 'datetime', 'time' fields.
+     *
+     * For example, 'DateTime', 'Carbon' etc.
+     *
+     * @param string
+     */
+    public $dateTimeClass = 'DateTime';
+
+    /**
+     * Timezone class used for type = 'data', 'datetime', 'time' fields.
+     *
+     * For example, 'DateTimeZone', 'Carbon' etc.
+     *
+     * @param string
+     */
+    public $dateTimeZoneClass = 'DateTimeZone';
+
+    /**
      * Constructor. You can pass field properties as array.
      *
      * @param array $defaults
