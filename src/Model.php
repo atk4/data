@@ -1524,10 +1524,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addRef($link, $callback)
     {
-        if (!is_array($callback)) {
-            $callback = ['model' => $callback];
-        }
-
         return $this->_hasReference('\atk4\data\Reference', $link, $callback);
     }
 
