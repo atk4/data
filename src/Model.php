@@ -498,7 +498,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
-        if ($value == $current_value) {
+        if ($value === $current_value ||
+            (is_string($value) && is_numeric($current_value) && $value == $current_value) ||
+            (is_numeric($value) && is_string($current_value) && $value == $current_value)
+        ) {
             // do nothing, value unchanged
             return $this;
         }
@@ -526,7 +529,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
         }
 
-        if (array_key_exists($field, $this->dirty) && $this->dirty[$field] == $value) {
+        if (array_key_exists($field, $this->dirty) && (
+            $this->dirty[$field] === $value ||
+            (is_string($value) && is_numeric($this->dirty[$field]) && $value == $this->dirty[$field]) ||
+            (is_numeric($value) && is_string($this->dirty[$field]) && $value == $this->dirty[$field])
+        )) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
             $this->dirty[$field] =
