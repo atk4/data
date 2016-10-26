@@ -56,58 +56,70 @@ Use Agile Data in your existing PHP Apps to boost scalability, performance, secu
 
 - Slides from the presentation: [Love and Hate Relationship between ORMs and Query Builders](http://www.slideshare.net/romaninsh/love-and-hate-relationship-between-orm-and-query-builders)" talk.
 
--  (https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+- (https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 - Agile Data is part of [Agile Toolkit](http://agiletoolkit.org/). See our list of commercial services and extensions for [Agile Data](http://agiletoolkit.org/data).
 
 ![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)[![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=develop)](http://agile-data.readthedocs.io/en/develop/?badge=latest)[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4)[![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
 
+### Introducing Models
+
+Start by creating a new class that defines your Models. In Agile Data the `Model` class is a lightweight object, to augment your business entities.
+
+``` php
+class Client extends \atk4\data\Model {
+  public $table = 'client';
+  function init() {
+    parent::init();
+    
+    $this->addFields(['name','address']);
+    
+    $this->hasMany('Project', new Project());
+  }
+}
+```
+
+-   Documentation: http://agile-data.readthedocs.io/en/develop/model.html
+-   Examples: https://github.com/atk4/data-primer/tree/master/src
+
 ### Introducing Actions
 
-ORM/Active Record is not only designed for relational databases. There are too much potential that ORM
-abstracts. The way how modern ORM get around it by offering ability to generate "Query-in-progress"
-object off your model which you can tweak.
+ ![mapping](docs/images/mapping.png)
 
-Agile Data significantly expands amount of interactions you can do between Model and Query Builder.
-You can generate update/delete queries, aggregate queries and drop them into Query Builder:
+Anything related to a Model (Field, Condition, Reference) lives is the realm of "Domain Model" inside PHP memory. When you  `save()`, frameworks generates an "Action" that will actually update your SQL table, invoke RestAPI request or write that file to disk.
+
+For SQL-persistence, Actions obect are build using a powerful SQL Query Builder that gives you a window into all the features of Relational databases that many ORM simply choose to "lock away". Actions can either query or change the data and they can work with either SQL "fields" or DomainModel "fields":
 
 ![GitHub release](docs/images/action.gif)
 
 ### Introducing Expressions
 
-In Agile Data your field can be defined through user-defined SQL expression. That does not affect
-the rest of the API, the field can still be used inside actions, conditions and inside your CRUD
-operations with a model. Most expressions are read-only though.
+In Agile Data your Domain Model Field (such as `$project['budget']`) can be defined through user-defined SQL expression. Currently only SQL Persistence fully suports expressions. Domain model "fields" that map into expression behave no different to the read-only physical field to the rest of your application.
 
 ![GitHub release](docs/images/expression.gif)
 
-### Good bye Eager/Lazy Loading
+### Introducing References
 
-Have you felt that something is broken with Eager/Lazy loading approach? With Agile Data you'll
-never have to use it again. If you have a reference between models, you can "import" fields
-through this relationship.
+Foreign keys and Relation are bread and butter of RDBMS. While it makes sense in "Persistence", not all databases support Relations.
+
+Agile Data takes a different approach by introducing "References". It allow you to define relationships between Domain Models that can work with non-relational databases, yet allow you to perform various operations such as importing or aggregating fields.
 
 ![GitHub release](docs/images/import-field.gif)
 
-### Never again miss that critical condition
+### Model Conditions and DataSets
 
-References are like relations in SQL database except that they are defined between your Models.
-And because models are defined in "domain model" same goes for the References.
+Conditions (or scopes) are rare and optional feature across ORMs but it is one of the most significant features in Agile Data. It allows you to create objects that represent multiple database records without actually loading them.  
 
-In this short example, I have defined "ActiveProjects" reference that can be used to address
-non-cancelled projects of a client. More importantly my aggregate field `total_budget` that
-is built using this reference automatically includes my new condition when it builds the
-sub-query.
+Once condition is defined, it's will appear in actions and will also restrict you from adding non-compliant records.
 
 ![GitHub release](docs/images/reference-magic.gif)
 
 
 ### Build Reports inside Domain Model
 
-With most frameworks when it comes to serious data aggregation your only selection is to design
-and execute raw SQL queries. Agile Data stays with you all the way. How do we create an
-efficient query to display total budget from all the projects grouped by client's country
-while entirely remaining in domain model?
+With most frameworks when it comes to serious data aggregation you must make a choice - write in-efficient domain-model code or write RAW SQL query. Agile Data helps you tap into unique features of your DataBase while letting you stay inside Domain Model.
+
+How do we create an efficient query to display total budget from all the projects grouped by client's country while entirely remaining in domain model?
 
 ![GitHub release](docs/images/domain-model-reports.gif)
 
@@ -141,35 +153,27 @@ Agile Data can answer with a query or with a result.
 
 ![GitHub release](docs/images/deep-traversal.gif)
 
-
-## Level UP
+## Advanced Features
 
 The examples you saw so far are only a small fragment of the possibilities you can
 achieve with Agile Data. You now have a new playground where you can design your
-business logic around the advanced database features.
+business logic around the very powerful concepts.
 
 One of the virtues we value the most in Agile Data is ability to abstract and
 add higher level features on our solid foundation.
 
 ### Hooks
 
-You now have a domain-level and persistence-level hooks. With a domain-level
-ones (afterLoad, beforeSave) you get to operate with your field data before
-or after operation
+You now have a domain-level and persistence-level hooks. With a domain-level ones (afterLoad, beforeSave) you get to operate with your field data before or after operation.
 
-On other hand you can utilise persistence-level hooks
-('beforeUpdateQuery', 'beforeSelectQuery') and you can interact with a
-powerful Query Builder to add a few SQL options (insert ignore or calc_found_rows)
+On other hand you can utilise persistence-level hooks ('beforeUpdateQuery', 'beforeSelectQuery') and you can interact with a powerful Query Builder to add a few SQL options (insert ignore or calc_found_rows)
 if you need.
 
-And guess what - should your model be saved into NoSQL database, the domain-level
-hooks will be executed, but SQL-specific ones will not.
+And guess what - should your model be saved into NoSQL database, the domain-level hooks will be executed, but SQL-specific ones will not.
 
 ### Extensions
 
-Most ORMs hard-code features like soft-delete, audit-log, timestamps. In Agile Data
-the implementation of base model is incredibly lightweight and all the necessary
-features are added through external objects.
+Most ORMs hard-code features like soft-delete, audit-log, timestamps. In Agile Data the implementation of base model is incredibly lightweight and all the necessary features are added through external objects.
 
 We are still working on our Extension library but we plan to include:
 
@@ -186,9 +190,7 @@ http://agiletoolkit.org/contact
 
 ### Performance
 
-If you wonder how those advanced features may impact performance of loading and
-saving data, there is another pleasant surprise. Loading, saving, iterating and
-deleting records do not create new in-memory objects:
+If you wonder how those advanced features may impact performance of loading and saving data, there is another pleasant surprise. Loading, saving, iterating and deleting records do not create new in-memory objects:
 
 
 ``` php
@@ -200,23 +202,18 @@ foreach($client->ref('Project') as $project) {
 // is re-populated on each iteration.
 ```
 
-Nothing unnecessary is pre-fetched. Only requested columns are queried. Rows
-are streamed and never ever we will try to squeeze a large collection of IDs
-into a query!
+Nothing unnecessary is pre-fetched. Only requested columns are queried. Rows are streamed and never ever we will try to squeeze a large collection of IDs into a query!
 
 Agile Data works fast even if you have huge amount of records in the database.
 
 ### Security
 
-When ORM promise you "security" they don't really extend it to the cases where
-you wish to perform a sub-query of a sort. Then you have to deal with RAW
-query components and glue them together yourself.
+When ORM promise you "security" they don't really extend it to the cases where you wish to perform a sub-query of a sort. Then you have to deal with RAW query components and glue them together yourself.
 
-Agile Data provides a universal support for Expressions and each expression
-have supports for `escaping` and `parameters`;
+Agile Data provides a universal support for Expressions and each expression have supports for `escaping` and `parameters`;
 
 ``` php
-$c->addCondition($c->expr('length([name]) = []', [2]))
+$c->addCondition($c->expr('length([name]) = []', [20]))
 ```
 
 This is condition from our deep-traversal demo, where our custom condition
@@ -224,23 +221,14 @@ fetches only 2-character long countries. Compare that to the generated query
 segment:
 
 ``` php
-where length(`name`) = :a
+where length(`name`) = :a  [:a=20]
 ```
 
-First of all - `[name]` is automatically mapped into SQL representation of
-your name field (in case it's field from a join or a sub-query). Secondly
-the number `2` is supplied as PDO parameter. And Agile Data takes extra
-care to join parameters between different expressions that make it into
-your query.
+First of all - `[name]` is automatically mapped into SQL representation of your name field (in case it's field from a join or a sub-query). Secondly the number `2` is supplied as PDO parameter. And Agile Data takes extra care to join parameters between different expressions that make it into your query.
 
-The final security measure are the Conditions. Once you load your Client,
-traversing into 'Project' model will imply a condition which will only
-expose projects of that specific Client.
+The final security measure are the Conditions. Once you load your Client, traversing into 'Project' model will imply a condition which will only expose projects of that specific Client.
 
-Even if you perform a multi-row opetation such as `action('update')`
-or `action('delete')` it will only apply to projects of that client.
-With the model object you won't be able to create a new project that
-does NOT belong to loaded client.
+Even if you perform a multi-row opetation such as `action('update')` or `action('delete')` it will only apply to projects of that client. With the model object you won't be able to create a new project that does NOT belong to loaded client.
 
 Those security measures are there to protect you against human factor.
 
