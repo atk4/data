@@ -256,7 +256,7 @@ class Persistence
     {
         // use $f->typecast = [typecast_save_callback, typecast_load_callback]
         if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
-            return $t($f, $value, $this);
+            return $t($value, $f, $this);
         }
 
         // normalize value
@@ -284,7 +284,7 @@ class Persistence
     {
         // use $f->typecast = [typecast_save_callback, typecast_load_callback]
         if (is_array($f->typecast) && isset($f->typecast[1]) && is_callable($t = $f->typecast[1])) {
-            return $t($f, $value, $this);
+            return $t($value, $f, $this);
         }
 
         // only string type fields can use empty string as legit value, for all
