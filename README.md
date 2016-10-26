@@ -17,6 +17,8 @@ echo $m->addCondition('vip', true)
   ->ref('Order')->ref('Line')->action('fx', ['sum', 'total']);
 ```
 
+Resulting Query:
+
 ``` sql
 select sum(`price`*`qty`) from `order_line` `O_L` where `order_id` in (
   select `id` from `order` `O` where `client_id` in (
@@ -38,13 +40,17 @@ $c->ref('Invoice')
 ]);
 ```
 
-Agile Data is not only for SQL databases. It can be used from interpreting Form submission data from $_POST into domain model to API abstractions. Zero-configuration implementation for "AuditTrail", "ACL" and "Soft Delete" bring some advanced usage patterns that no other "ORM" implements, such as "Undo", "Global Scoping" and "Cross-persistence"
+Agile Data is not only for SQL databases. It can be used from interpreting Form submission data from $_POST into domain model to RestAPI abstractions and proxying. Zero-configuration implementation for "AuditTrail", "ACL" and "Soft Delete" as well as new features such as "Undo", "Global Scoping" and "Cross-persistence" make your Agile Data code enterprise-ready out of the box.
 
-If you enjoy advanced examples, see https://github.com/atk4/data-primer.
+If you enjoy advanced examples, continue to https://github.com/atk4/data-primer.
 
 ## The Gentle Beginning
 
-By the time you finish your first application in Agile Data, you will no longer look at the rest of PHP ORMs and QueryBuilders. However you must be ready to learn something new, even if you are familiar with all of the Martin Fowler's works. 
+You must be ready to learn, even if you are familiar with all of the Martin Fowler's works and several different PHP ORM implementations. Various features and patterns are exclusive to Agile Data. 
+
+http://socialcompare.com/en/comparison/php-data-access-libraries-orm-activerecord-persistence
+
+Use Agile Data in your existing PHP Apps to boost scalability, performance, security and clean up your code.
 
 ## Essential Links
 
