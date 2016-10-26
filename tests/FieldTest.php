@@ -317,6 +317,16 @@ class FieldTest extends SQLTestCase
                 2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
             ], ];
         $this->assertEquals($a, $this->getDB());
+
+        $m['first_name'] = 'Scott';
+        $m->save();
+
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'Scott', 'surname' => 'Smith'],
+                2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
+            ], ];
+        $this->assertEquals($a, $this->getDB());
     }
 
     public function testSystem1()

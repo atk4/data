@@ -152,7 +152,7 @@ class Field
 
         // only string type fields can use empty string as legit value, for all
         // other field types empty value is the same as no-value, nothing or null
-        if ($f->type != 'string' && $value === '') {
+        if ($f->type && $f->type != 'string' && $value === '') {
             return;
         }
 

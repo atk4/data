@@ -1,5 +1,12 @@
 # Agile Data
 
+[![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
+[![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
+[![StyleCI](https://styleci.io/repos/56442737/shield)](https://styleci.io/repos/56442737)
+[![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
+[![Version](https://badge.fury.io/gh/atk4%2Fdata.svg)](https://packagist.org/packages/atk4/data)
+
+
 **PHP Framework for better Business Logic design and scalable database access.**
 
 Using Agile Data inside your PHP app allows you to abstract database (SQL or NoSQL) access
@@ -12,25 +19,13 @@ your application could use expressions, imported fields and aggregate columns tr
 Agile Data also offers you to implement enterprise-focused features such as ACL, Audit, Undo,
 Scopes as well as transparently change database vendor for your entity storage.
 
-Code Quality:
+## Links for the new users
 
-[![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
-[![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
-[![StyleCI](https://styleci.io/repos/56442737/shield)](https://styleci.io/repos/56442737)
-[![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
-
-Resources and Community:
-
-[![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=develop)](http://agile-data.readthedocs.io/en/develop/?badge=latest)
-[![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4)
-[![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
-
-Stats:
-
-[![License](https://poser.pugx.org/atk4/data/license)](https://packagist.org/packages/atk4/data)
-[![Version](https://badge.fury.io/gh/atk4%2Fdata.svg)](https://packagist.org/packages/atk4/data)
-
+- Slides from the "[Love and Hate Relationship between ORMs and Query Builders](http://www.slideshare.net/romaninsh/love-and-hate-relationship-between-orm-and-query-builders)" talk.
+- WE NEED FEEDBACK! Stop by and say "Hi": [![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+- [Agile Toolkit](http://agiletoolkit.org/) and [Agile Data](http://agiletoolkit.org/data)
+- [Commercial extension directory](http://www.agiletoolkit.org/data/extensions)
+- Where to ask questions: [![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=develop)](http://agile-data.readthedocs.io/en/develop/?badge=latest) [![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4) [![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
 
 ### Introducing Actions
 
