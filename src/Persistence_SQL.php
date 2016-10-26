@@ -455,8 +455,11 @@ class Persistence_SQL extends Persistence
                 } else {
                     $value = $dt_class::createFromFormat($format, $value);
                 }
-                // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
-                $value = ($dt_class) $value;
+                if ($dt_class <> 'DateTime') {
+                    // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
+                    // this is what Carbon::instance(DateTime $dt) method does for example
+                    $value = new $dt_class($value->format('Y-m-d H:i:s.u'), $value->getTimeZone());
+                }
             }
             break;
         case 'array':
