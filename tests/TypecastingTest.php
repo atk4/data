@@ -267,6 +267,7 @@ class TypecastingTest extends SQLTestCase
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
         $m->loadAny();
         $d = $m['date'];
+        var_dump(get_class($d));
         $m->unload();
 
         $m->loadBy('date', $d)->unload();

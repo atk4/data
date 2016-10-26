@@ -309,8 +309,7 @@ class FieldTest extends SQLTestCase
         $this->assertEquals('John', $m['first_name']);
 
         $d = $m->export();
-        var_dump($d);
-        $this->assertEquals('John', $d[0]['first_name']);
+        $this->assertEquals('John', $d[0]['name']);
 
         $a = [
             'user' => [
