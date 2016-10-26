@@ -442,8 +442,6 @@ class Persistence_SQL extends Persistence
         case 'time':
             $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
             $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
-var_dump($value);
-var_dump($dt_class);
 
             if (is_numeric($value)) {
                 $value = new $dt_class('@'.$value);
@@ -457,8 +455,9 @@ var_dump($dt_class);
                 } else {
                     $value = $dt_class::createFromFormat($format, $value);
                 }
+                // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
+                $value = ($dt_class) $value;
             }
-var_dump($value);
             break;
         case 'array':
             // don't decode if we already use some kind of serialization
