@@ -250,7 +250,7 @@ class Field
             } elseif (is_string($value)) {
                 $value = new $class($value);
             } elseif (!$value instanceof $class) {
-                throw new Exception('Field value must be a '.$f->type);
+                throw new Exception(['Field value must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
             }
             break;
         case 'array':
