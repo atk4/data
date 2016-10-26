@@ -158,7 +158,7 @@ class TypecastingTest extends SQLTestCase
             return str_rot13($v);
         };
 
-        $m->addField('rot13', ['loadCallback' => $rot, 'saveCallback' => $rot]);
+        $m->addField('rot13', ['typecast' => [$rot, $rot]]);
 
         $m->load(1);
 
