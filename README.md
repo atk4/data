@@ -9,23 +9,52 @@
 
 **PHP Framework for better Business Logic design and scalable database access.**
 
-Using Agile Data inside your PHP app allows you to abstract database (SQL or NoSQL) access
-without loosing access to power-features (grouping, aggregating, sub-queries, custom expressions,
-cross-vendor references, entity-level joins).
+Agile Data implements various advanced database access patterns such as Active Record, Persistence Mapping, Domain Model, Event sourcing, Actions, DataSets and Query Building in a **practical way** that can be **easily learned**, used in any framework with SQL or NoSQL database and meeting all **enterprise**-specific requirements.
 
-You will be able to separate your business logic from schema domain, so that the rest of
-your application could use expressions, imported fields and aggregate columns transparently.
+``` php
+$m = new Client($db);
+echo $m->addCondition('vip', true)
+  ->ref('Order')->ref('Line')->action('fx', ['sum', 'total']);
+```
 
-Agile Data also offers you to implement enterprise-focused features such as ACL, Audit, Undo,
-Scopes as well as transparently change database vendor for your entity storage.
+``` sql
+select sum(`price`*`qty`) from `order_line` `O_L` where `order_id` in (
+  select `id` from `order` `O` where `client_id` in (
+    select `id` from `client` where `vip` = 'Y'
+  )
+)
+```
 
-## Links for the new users
+One of the goals is to keep your entire domain logic away from abstracted data-stores while using the advanced query patterns like JOIN, SUBQUERY, UNION to boost scalability. DataSet solve decade-old ORM problems such as `N+1`. All of that is achieved with a beautiful and consise syntax, that does not rely on extra XML files or annotations. Next snippet illustrates data import, that will automatically map into 3-related records across 2 or more SQL tables:
 
-- Slides from the "[Love and Hate Relationship between ORMs and Query Builders](http://www.slideshare.net/romaninsh/love-and-hate-relationship-between-orm-and-query-builders)" talk.
-- WE NEED FEEDBACK! Stop by and say "Hi": [![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-- [Agile Toolkit](http://agiletoolkit.org/) and [Agile Data](http://agiletoolkit.org/data)
-- [Commercial extension directory](http://www.agiletoolkit.org/data/extensions)
-- Where to ask questions: [![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=develop)](http://agile-data.readthedocs.io/en/develop/?badge=latest) [![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4) [![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
+``` php
+$c = new Client($db);
+$c->loadBy('name', 'Pear Company');
+$c->ref('Invoice')
+   ->save(['ref'=>'TBL1', 'due'=>new DateTime('+1 month')])
+   ->ref('Lines')->import([
+      ['table', 'qty'=>2, 'price'=>10.50],
+      ['chair', 'qty'=>10, 'price'=>3.25],
+]);
+```
+
+Agile Data is not only for SQL databases. It can be used from interpreting Form submission data from $_POST into domain model to API abstractions. Zero-configuration implementation for "AuditTrail", "ACL" and "Soft Delete" bring some advanced usage patterns that no other "ORM" implements, such as "Undo", "Global Scoping" and "Cross-persistence"
+
+If you enjoy advanced examples, see https://github.com/atk4/data-primer.
+
+## The Gentle Beginning
+
+By the time you finish your first application in Agile Data, you will no longer look at the rest of PHP ORMs and QueryBuilders. However you must be ready to learn something new, even if you are familiar with all of the Martin Fowler's works. 
+
+## Essential Links
+
+- Slides from the presentation: [Love and Hate Relationship between ORMs and Query Builders](http://www.slideshare.net/romaninsh/love-and-hate-relationship-between-orm-and-query-builders)" talk.
+
+-  (https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+- Agile Data is part of [Agile Toolkit](http://agiletoolkit.org/). See our list of commercial services and extensions for [Agile Data](http://agiletoolkit.org/data).
+
+![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)[![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=develop)](http://agile-data.readthedocs.io/en/develop/?badge=latest)[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4)[![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
 
 ### Introducing Actions
 
@@ -138,13 +167,13 @@ features are added through external objects.
 
 We are still working on our Extension library but we plan to include:
 
- - Audit Log - record all operations in a model (as well as previous field values)
- - Undo - revert last few few operations on your model.
- - ACL - flexible system to restrict access to certain records, fields or models based on
-   permissions of your logged-in user or custom logic.
- - Filestore - allow you to work with files inside your model. Files are actually
-   stored in S3 (or other) but the references and meta-information remains in the database.
- - Soft-Delete, purge and undelete - several strategies, custom fields, permissions.
+- Audit Log - record all operations in a model (as well as previous field values)
+- Undo - revert last few few operations on your model.
+- ACL - flexible system to restrict access to certain records, fields or models based on
+  permissions of your logged-in user or custom logic.
+- Filestore - allow you to work with files inside your model. Files are actually
+  stored in S3 (or other) but the references and meta-information remains in the database.
+- Soft-Delete, purge and undelete - several strategies, custom fields, permissions.
 
 If you are interested in early access to Extensions, please contact us at
 http://agiletoolkit.org/contact
@@ -215,8 +244,8 @@ If you have missed link to documentation, then its [agile-data.readthedocs.io](h
 
 ### Getting Started Guides
 
- * [Follow the Quick Start guides](http://agile-data.readthedocs.io/en/develop/quickstart.html)
- * [Watch short introduction video on Youtube](https://youtu.be/ZekgUxdPWwc)
+* [Follow the Quick Start guides](http://agile-data.readthedocs.io/en/develop/quickstart.html)
+* [Watch short introduction video on Youtube](https://youtu.be/ZekgUxdPWwc)
 
 ## Installing into existing project
 
@@ -285,18 +314,18 @@ Now you can explore. Try typing:
 Agile Data is part of [Agile Toolkit - PHP UI Framework](http://agiletoolkit.org). If you like
 this project, you should also look into:
 
- - [DSQL](https://github.com/atk4/dsql) - [![GitHub release](https://img.shields.io/github/release/atk4/dsql.svg?maxAge=2592000)]()
- - [Agile Core](https://github.com/atk4/core) - [![GitHub release](https://img.shields.io/github/release/atk4/core.svg?maxAge=2592000)]()
+- [DSQL](https://github.com/atk4/dsql) - [![GitHub release](https://img.shields.io/github/release/atk4/dsql.svg?maxAge=2592000)]()
+- [Agile Core](https://github.com/atk4/core) - [![GitHub release](https://img.shields.io/github/release/atk4/core.svg?maxAge=2592000)]()
 
 
 ## Help us make Agile Data better!!
 
 We wish to take on your feedback and improve Agile Data further. Here is how you can connect with developer team:
 
- - chat with us on [Gitter](https://gitter.im/atk4/data) and ask your questions directly.
- - ask or post suggestions on our forum [https://forum.agiletoolkit.org](https://forum.agiletoolkit.org)
- - **share Agile Data with your friends**, we need more people to use it. Blog. Tweet. Share.
- - work on some of the tickets marked with [help wanted](https://github.com/atk4/data/labels/help%20wanted) tag.
+- chat with us on [Gitter](https://gitter.im/atk4/data) and ask your questions directly.
+- ask or post suggestions on our forum [https://forum.agiletoolkit.org](https://forum.agiletoolkit.org)
+- **share Agile Data with your friends**, we need more people to use it. Blog. Tweet. Share.
+- work on some of the tickets marked with [help wanted](https://github.com/atk4/data/labels/help%20wanted) tag.
 
 See [www.agiletoolkit.org](http://www.agiletoolkit.org/) for more frameworks and libraries that can make your PHP Web Application even more efficient.
 
