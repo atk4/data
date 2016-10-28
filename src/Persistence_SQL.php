@@ -495,7 +495,11 @@ class Persistence_SQL extends Persistence
             if (is_numeric($value)) {
                 $value = new $class('@'.$value);
             } elseif (is_string($value)) {
-                $value = new $class($value, new \DateTimeZone('UTC'));
+                if ($f->type == 'datetime') {
+                    $value = new $class($value, new \DateTimeZone($f->timezone?:'UTC'));
+                } else {
+                    $value = new $class($value);
+                }
             }
             break;
         case 'integer':
@@ -568,7 +572,8 @@ class Persistence_SQL extends Persistence
             $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
 
             if ($value instanceof $class && $f->type == 'datetime') {
-                $value->setTimezone(new \DateTimeZone('UTC'));
+                $value = clone $value;
+                $value->setTimezone(new \DateTimeZone($f->timezone?:'UTC'));
             }
 
             // Format for SQL
