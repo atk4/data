@@ -38,6 +38,12 @@ class Field
     public $enum = null;
 
     /**
+     * For "datetime" type, this can specify how the value is persisted in
+     * the database that lacks timezone support.
+     */
+    public $timezone = null;
+
+    /**
      * Actual field name.
      *
      * @var string|null

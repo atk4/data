@@ -70,13 +70,11 @@ class TypecastingTest extends SQLTestCase
         $m->addField('array', ['type' => 'struct']);
         $m->load(1);
 
-        date_default_timezone_set('UTC');
-
         $this->assertSame('foo', $m['string']);
         $this->assertSame(true, $m['boolean']);
         $this->assertSame(8.20, $m['money']);
         $this->assertEquals(new \DateTime('2013-02-20'), $m['date']);
-        $this->assertEquals(new \DateTime('2013-02-20 20:00:12'), $m['datetime']);
+        $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $m['datetime']);
         $this->assertEquals(new \DateTime('12:00:50'), $m['time']);
         $this->assertSame(2940, $m['integer']);
         $this->assertEquals([1, 2, 3], $m['array']);
@@ -282,5 +280,51 @@ class TypecastingTest extends SQLTestCase
         $f = $m->addField('closed', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
 
         $this->assertEquals('N', $db->typecastSaveField($f, 'N'));
+    }
+
+    public function testTypecastTimezone()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model($db, 'event');
+
+        $dt = $m->addField('dt', ['type' => 'datetime', 'timezone' => 'EEST']);
+        $d = $m->addField('d', ['type' => 'date', 'timezone' => 'EEST']);
+        $t = $m->addField('t', ['type' => 'time', 'timezone' => 'EEST']);
+
+        date_default_timezone_set('UTC');
+
+        $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
+
+        $this->assertEquals('2005-08-16 00:52:01', $db->typecastSaveField($dt, $s));
+        $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
+        $this->assertEquals('22:52:01', $db->typecastSaveField($t, $s));
+
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
+        $this->assertEquals(new \DateTime('22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+
+        date_default_timezone_set('Asia/Tokyo');
+
+        $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
+
+        $this->assertEquals('2005-08-16 00:52:01', $db->typecastSaveField($dt, $s));
+        $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
+        $this->assertEquals('22:52:01', $db->typecastSaveField($t, $s));
+
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
+        $this->assertEquals(new \DateTime('22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+
+        date_default_timezone_set('America/Los_Angeles');
+
+        $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
+
+        $this->assertEquals('2005-08-16 00:52:01', $db->typecastSaveField($dt, $s));
+        $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
+        $this->assertEquals('22:52:01', $db->typecastSaveField($t, $s));
+
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
+        $this->assertEquals(new \DateTime('22:52:01'), $db->typecastLoadField($t, '22:52:01'));
     }
 }
