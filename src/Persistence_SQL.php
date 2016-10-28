@@ -496,7 +496,7 @@ class Persistence_SQL extends Persistence
                 $value = new $class('@'.$value);
             } elseif (is_string($value)) {
                 if ($f->type == 'datetime') {
-                    $value = new $class($value, new \DateTimeZone($f->timezone?:'UTC'));
+                    $value = new $class($value, new \DateTimeZone($f->timezone ?: 'UTC'));
                 } else {
                     $value = new $class($value);
                 }
@@ -573,7 +573,7 @@ class Persistence_SQL extends Persistence
 
             if ($value instanceof $class && $f->type == 'datetime') {
                 $value = clone $value;
-                $value->setTimezone(new \DateTimeZone($f->timezone?:'UTC'));
+                $value->setTimezone(new \DateTimeZone($f->timezone ?: 'UTC'));
             }
 
             // Format for SQL
