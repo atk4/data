@@ -110,7 +110,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Currently loaded record data. This record is associative array
      * that contain field=>data pairs. It may contain data for un-defined
-     * fields only if $_onlyFieldsMode is false.
+     * fields only if $onlyFields mode is false.
      *
      * Avoid accessing $data directly, use set() / get() instead.
      *
