@@ -194,6 +194,10 @@ class Persistence
      * Will convert one row of data from Persistence-specific
      * types to PHP native types.
      *
+     * NOTE: Please DO NOT perform "actual" field mapping here, because data
+     * may be "aliased" from SQL persistences or mapped depending on persistence
+     * driver.
+     *
      * @param Model $m
      * @param array $row
      *
