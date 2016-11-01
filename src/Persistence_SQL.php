@@ -358,7 +358,8 @@ class Persistence_SQL extends Persistence
     public function _typecastSaveField(Field $f, $value)
     {
         // work only on copied value not real one !!!
-        $v = is_object($value) ? clone $value : $value;
+        //$v = is_object($value) ? clone $value : $value;
+        $v = $value;
 
         switch ($f->type) {
         case 'boolean':
