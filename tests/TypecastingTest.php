@@ -318,7 +318,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals(new \DateTime('22:52:01'), $db->typecastLoadField($t, '22:52:01'));
     }
 
-    function testTimestamp()
+    public function testTimestamp()
     {
         $sql_time = '2016-10-25 11:44:08';
 
@@ -332,7 +332,7 @@ class TypecastingTest extends SQLTestCase
         $db = new Persistence_SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
-        $m->addField('ts', ['actual'=>'date', 'type' => 'datetime']);
+        $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $m->loadAny();
         $d = $m['ts'];
         $m->unload();
