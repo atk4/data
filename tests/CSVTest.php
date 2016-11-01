@@ -8,31 +8,32 @@ use atk4\data\Persistence_CSV;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class PersistentArrayTest extends \PHPUnit_Framework_TestCase
+class CSVTest extends \PHPUnit_Framework_TestCase
 {
-
     public $file = 'atk-test.csv';
 
-    function setDB($data) {
+    public function setDB($data)
+    {
         $f = fopen($this->file, 'w');
         fputcsv($f, array_keys(current($data)));
-        foreach($data as $row) {
+        foreach ($data as $row) {
             fputcsv($f, $row);
         }
         fclose($f);
     }
 
-    function getDB() {
+    public function getDB()
+    {
         $f = fopen($this->file, 'r');
         $keys = fgetcsv($f);
         $data = [];
-        while($row = fgetcsv($f)) {
+        while ($row = fgetcsv($f)) {
             $data[] = array_combine($keys, $row);
         }
         fclose($f);
+
         return $data;
     }
-
 
     /**
      * Test constructor.

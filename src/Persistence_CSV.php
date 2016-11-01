@@ -12,14 +12,14 @@ namespace atk4\data;
 class Persistence_CSV extends Persistence
 {
     /**
-     * Name of the file
+     * Name of the file.
      *
      * @var string
      */
     public $file;
 
     /**
-     * Filehandle, when the $file is opened
+     * Filehandle, when the $file is opened.
      *
      * @var resource
      */
@@ -83,9 +83,9 @@ class Persistence_CSV extends Persistence
     /**
      * When load opeartion starts, this will open file and read
      * the first line. This line is then used to identify
-     * columns
+     * columns.
      */
-    function loadHeader()
+    public function loadHeader()
     {
         // Overide this method and open handle yourself if you want to
         // reposition or load some extra columns on the top.
@@ -102,18 +102,19 @@ class Persistence_CSV extends Persistence
      * Remembers $this->header so that the data can be
      * easier mapped.
      */
-    function initializeHeader($header)
+    public function initializeHeader($header)
     {
         $this->header = $header;
         $this->header_reverse = [];
 
         // "ass" is short for associative
-        foreach ($header as $num=>$ass) {
+        foreach ($header as $num => $ass) {
             $this->header_reverse[$ass] = $num;
         }
     }
 
-    function typecastLoadRow($m, $row){ 
+    public function typecastLoadRow($m, $row)
+    {
         $row = array_combine($this->header, $row);
 
         foreach ($row as $key => &$value) {
