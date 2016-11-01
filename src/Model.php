@@ -529,7 +529,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if (array_key_exists($field, $this->dirty) && (
-            $this->dirty[$field] === $value
+            gettype($this->dirty[$field]) == gettype($value) && $this->dirty[$field] == $value
         )) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
