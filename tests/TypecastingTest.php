@@ -359,24 +359,24 @@ class TypecastingTest extends SQLTestCase
 
         $this->assertFalse($m->isDirty('ts'));
     }
-    function testTimestampSave()
-    {
 
+    public function testTimestampSave()
+    {
         $a = [
             'types' => [
                 [
-                    'date'     => 'foobar'
+                    'date'     => 'foobar',
                 ],
             ], ];
         $this->setDB($a);
         $db = new Persistence_SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
-        $m->addField('ts', ['actual'=>'date', 'type' => 'date']);
+        $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
         $m->loadAny();
         $m['ts'] = new \DateTime();
         $m->save();
 
-        $this->assertEquals(['types'=>[1=>['id'=>1, 'date'=>'2016-11-01']]], $this->getDB());
+        $this->assertEquals(['types' => [1 => ['id' => 1, 'date' => '2016-11-01']]], $this->getDB());
     }
 }
