@@ -12,8 +12,11 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $db = new Persistence_SQL($this->db->connection);
         $m = new Model($db, 'job');
 
-        $f = $m->addField('data', ['encode' => 'serialize']);
+        $f = $m->addField('data', ['serialize' => 'serialize']);
 
-        $this->assertEquals('N', $db->typecastSaveField($f, ['foo' => 'bar']));
+        $this->assertEquals(['data'=>'a:1:{s:3:"foo";s:3:"bar";}'], $db->typecastSaveRow($m, ['data'=>['foo' => 'bar']]));
+
+        $f->serialize='json';
+        $this->assertEquals(['data'=>'{"foo":"bar"}'], $db->typecastSaveRow($m, ['data'=>['foo' => 'bar']]));
     }
 }

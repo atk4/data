@@ -46,13 +46,6 @@ class Reference_SQL_One extends Reference_One
             $defaults
         ));
 
-
-        if (isset($defaults['type'])) {
-            $e->type = $defaults['type'];
-        } else {
-            $e->type = 'integer'; //$this->guessFieldType($their_field);
-        }
-
         return $e;
     }
 
