@@ -18,7 +18,8 @@ after_script:
     - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.0" ]]; then echo "Sending coverage report"; vendor/bin/test-reporter; fi
 
 script:
-    - phpunit
+    - if [[ ${TRAVIS_PHP_VERSION:0:3} != "7.0" ]]; then NC="--no-coverage"; fi
+    - ./vendor/phpunit/phpunit/phpunit $NC
 
 cache:
   directories:

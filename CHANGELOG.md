@@ -1,3 +1,10 @@
+# 1.1.4
+
+* Added implementation for addRef(). #176
+* Improve boolean handling. #181
+* Fix matching of incompatible types. #187
+* Don't assume ID is int for SQL types #191
+
 # 1.1.3
 
 Don't mark fields as dirty value has a fuzzy-match (4=="4"). Fix each() typecasting.

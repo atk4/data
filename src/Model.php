@@ -528,7 +528,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
         }
 
-        if (array_key_exists($field, $this->dirty) && $this->dirty[$field] == $value) {
+        if (array_key_exists($field, $this->dirty) && (
+            $this->dirty[$field] === $value ||
+            (is_string($value) && is_numeric($this->dirty[$field]) && $value == $this->dirty[$field]) ||
+            (is_numeric($value) && is_string($this->dirty[$field]) && $value == $this->dirty[$field])
+        )) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
             $this->dirty[$field] =

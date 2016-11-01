@@ -104,6 +104,9 @@ class BusinessModelTest extends TestCase
         $m = new Model();
         $m->addField('name');
         $m->data = ['name' => 5];
+        $m['name'] = 5;
+        $this->assertEquals([], $m->dirty);
+
         $m['name'] = 10;
         $this->assertEquals(['name' => 5], $m->dirty);
 
@@ -112,6 +115,37 @@ class BusinessModelTest extends TestCase
 
 
         $m['name'] = 5;
+        $this->assertEquals([], $m->dirty);
+
+        $m['name'] = '5';
+        $this->assertEquals([], $m->dirty);
+
+        $m['name'] = '6';
+        $this->assertNotEquals([], $m->dirty);
+        $m['name'] = '5';
+        $this->assertEquals([], $m->dirty);
+
+        $m['name'] = '5.0';
+        $this->assertEquals([], $m->dirty);
+
+        $m->data = ['name' => ''];
+        $m['name'] = '';
+        $this->assertEquals([], $m->dirty);
+
+        $m->data = ['name' => '5'];
+        $m['name'] = 5;
+        $this->assertEquals([], $m->dirty);
+        $m['name'] = 6;
+        $this->assertNotEquals([], $m->dirty);
+        $m['name'] = 5;
+        $this->assertEquals([], $m->dirty);
+
+        $m->data = ['name' => 4.28];
+        $m['name'] = '4.28';
+        $this->assertEquals([], $m->dirty);
+        $m['name'] = '5.28';
+        $this->assertNotEquals([], $m->dirty);
+        $m['name'] = '4.28';
         $this->assertEquals([], $m->dirty);
 
         // now with defaults
@@ -281,6 +315,23 @@ class BusinessModelTest extends TestCase
         $c['name'] = '  jo hn ';
         $this->assertEquals(['name' => 'jo hn'], $c->data);
         $this->assertEquals('jo hn123', $c['name']);
+    }
+
+    public function testNormalize()
+    {
+        $m = new Model();
+        $m->addField('name', ['type' => 'string']);
+        $m->addField('age', ['type' => 'int']);
+        $m->addField('data');
+
+        $m['name'] = '';
+        $this->assertSame('', $m['name']);
+
+        $m['age'] = '';
+        $this->assertSame(null, $m['age']);
+
+        $m['data'] = '';
+        $this->assertSame('', $m['data']);
     }
 
     public function testExampleFromDoc()
