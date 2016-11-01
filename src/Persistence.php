@@ -237,7 +237,7 @@ class Persistence
             }
 
             // store converted value
-            $result[$field] = $value;
+            $result[$key] = $value;
         }
 
         return $result;
