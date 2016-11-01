@@ -67,16 +67,14 @@ class TypecastingTest extends SQLTestCase
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('array', ['type' => 'struct']);
+        $m->addField('array', ['type' => 'array']);
         $m->load(1);
-
-        date_default_timezone_set('UTC');
 
         $this->assertSame('foo', $m['string']);
         $this->assertSame(true, $m['boolean']);
         $this->assertSame(8.20, $m['money']);
         $this->assertEquals(new \DateTime('2013-02-20'), $m['date']);
-        $this->assertEquals(new \DateTime('2013-02-20 20:00:12'), $m['datetime']);
+        $this->assertEquals(new \DateTime('2013-02-21 05:00:12'), $m['datetime']);
         $this->assertEquals(new \DateTime('12:00:50'), $m['time']);
         $this->assertSame(2940, $m['integer']);
         $this->assertEquals([1, 2, 3], $m['array']);
