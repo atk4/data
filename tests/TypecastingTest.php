@@ -334,11 +334,8 @@ class TypecastingTest extends SQLTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $m->loadAny();
-        $d = $m['ts'];
-        $m->unload();
 
-        //$m->loadBy('ts', $d)->unload();
-
-        //$m->addCondition('ts', $d)->loadAny();
+        // must respect 'actual'
+        $this->assertNotNull($m['ts']);
     }
 }
