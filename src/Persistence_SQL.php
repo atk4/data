@@ -357,23 +357,26 @@ class Persistence_SQL extends Persistence
      */
     public function _typecastSaveField(Field $f, $value)
     {
+        // work only on copied value not real one !!!
+        $v = is_object($value) ? clone $value : $value;
+
         switch ($f->type) {
         case 'boolean':
             // if enum is not set, then simply cast value to integer
             if (!isset($f->enum) || !$f->enum) {
-                $value = (int) $value;
+                $v = (int) $v;
                 break;
             }
 
             // if enum is set, first lets see if it matches one of those precisely
-            if ($value === $f->enum[1]) {
-                $value = true;
-            } elseif ($value === $f->enum[0]) {
-                $value = false;
+            if ($v === $f->enum[1]) {
+                $v = true;
+            } elseif ($v === $f->enum[0]) {
+                $v = false;
             }
 
             // finally, convert into appropriate value
-            $value = $value ? $f->enum[1] : $f->enum[0];
+            $v = $v ? $f->enum[1] : $f->enum[0];
             break;
         case 'date':
         case 'datetime':
@@ -381,26 +384,25 @@ class Persistence_SQL extends Persistence
             $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
             $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
 
-            if ($value instanceof $dt_class) {
+            if ($v instanceof $dt_class) {
                 $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
                 $format = $f->persist_format ?: $format[$f->type];
 
-                // datetime only - set to UTC
+                // datetime only - set to persisting timezone
                 if ($f->type == 'datetime' && isset($f->persist_timezone)) {
-                    $value->setTimezone(new $tz_class($f->persist_timezone));
+                    $v->setTimezone(new $tz_class($f->persist_timezone));
                 }
-
-                $value = $value->format($format);
+                $v = $v->format($format);
             }
             break;
         case 'array':
         case 'object':
             // don't encode if we already use some kind of serialization
-            $value = $f->serialize ? $value : json_encode($value);
+            $v = $f->serialize ? $v : json_encode($v);
             break;
         }
 
-        return $value;
+        return $v;
     }
 
     /**
@@ -414,27 +416,30 @@ class Persistence_SQL extends Persistence
      */
     public function _typecastLoadField(Field $f, $value)
     {
+        // work only on copied value not real one !!!
+        $v = is_object($value) ? clone $value : $value;
+
         switch ($f->type) {
         case 'integer':
-            $value = (int) $value;
+            $v = (int) $v;
             break;
         case 'float':
-            $value = (float) $value;
+            $v = (float) $v;
             break;
         case 'money':
-            $value = round($value, 4);
+            $v = round($v, 4);
             break;
         case 'boolean':
             if (isset($f->enum) && is_array($f->enum)) {
-                if (isset($f->enum[0]) && $value == $f->enum[0]) {
-                    $value = false;
-                } elseif (isset($f->enum[1]) && $value == $f->enum[1]) {
-                    $value = true;
+                if (isset($f->enum[0]) && $v == $f->enum[0]) {
+                    $v = false;
+                } elseif (isset($f->enum[1]) && $v == $f->enum[1]) {
+                    $v = true;
                 } else {
-                    $value = null;
+                    $v = null;
                 }
             } else {
-                $value = (bool) $value;
+                $v = (bool) $v;
             }
             break;
         case 'date':
@@ -443,36 +448,39 @@ class Persistence_SQL extends Persistence
             $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
             $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
 
-            if (is_numeric($value)) {
-                $value = new $dt_class('@'.$value);
-            } elseif (is_string($value)) {
-                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+            if (is_numeric($v)) {
+                $v = new $dt_class('@'.$v);
+            } elseif (is_string($v)) {
+                // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
+                $format = ['date' => '!Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
                 $format = $f->persist_format ?: $format[$f->type];
 
-                // datetime only - set from UTC
+                // datetime only - set from persisting timezone
                 if ($f->type == 'datetime' && isset($f->persist_timezone)) {
-                    $value = $dt_class::createFromFormat($format, $value, new $tz_class($f->persist_timezone));
+                    $v = $dt_class::createFromFormat($format, $v, new $tz_class($f->persist_timezone));
+                    $v->setTimeZone(new $tz_class(date_default_timezone_get()));
                 } else {
-                    $value = $dt_class::createFromFormat($format, $value);
+                    $v = $dt_class::createFromFormat($format, $v);
                 }
+
+                // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
+                // this is what Carbon::instance(DateTime $dt) method does for example
                 if ($dt_class != 'DateTime') {
-                    // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
-                    // this is what Carbon::instance(DateTime $dt) method does for example
-                    $value = new $dt_class($value->format('Y-m-d H:i:s.u'), $value->getTimeZone());
+                    $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimeZone());
                 }
             }
             break;
         case 'array':
             // don't decode if we already use some kind of serialization
-            $value = $f->serialize ? $value : json_decode($value, true);
+            $v = $f->serialize ? $v : json_decode($v, true);
             break;
         case 'object':
             // don't decode if we already use some kind of serialization
-            $value = $f->serialize ? $value : json_decode($value, false);
+            $v = $f->serialize ? $v : json_decode($v, false);
             break;
         }
 
-        return $value;
+        return $v;
     }
 
     /**
