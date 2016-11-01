@@ -211,13 +211,10 @@ class Persistence
             // Look up field object
             $f = $m->hasElement($key);
 
-            // Figure out the name of the destination field
-            $field = $f->actual ?: $key;
-
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
             if (!$f) {
-                $result[$field] = $value;
+                $result[$key] = $value;
                 continue;
             }
 
