@@ -457,9 +457,10 @@ class Persistence_SQL extends Persistence
 
                 // datetime only - set from persisting timezone
                 if ($f->type == 'datetime' && isset($f->persist_timezone)) {
-                    $value = $dt_class::createFromFormat('!'.$format, $value, new $tz_class($f->persist_timezone));
+                    $v = $dt_class::createFromFormat($format, $v, new $tz_class($f->persist_timezone));
+                    $v->setTimeZone(new $tz_class(date_default_timezone_get()));
                 } else {
-                    $value = $dt_class::createFromFormat('!'.$format, $value);
+                    $v = $dt_class::createFromFormat($format, $v);
                 }
 
                 // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
