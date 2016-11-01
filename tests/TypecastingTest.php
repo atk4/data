@@ -70,8 +70,6 @@ class TypecastingTest extends SQLTestCase
         $m->addField('array', ['type' => 'struct']);
         $m->load(1);
 
-        date_default_timezone_set('UTC');
-
         $this->assertSame('foo', $m['string']);
         $this->assertSame(true, $m['boolean']);
         $this->assertSame(8.20, $m['money']);
