@@ -384,9 +384,8 @@ class FieldTest extends SQLTestCase
         $m = new Model($db, 'user');
         $m->addField('name', ['mandatory' => true]);
         $m->addField('secret', [
-            'password'     => 'bonkers',
-            'saveCallback' => $encrypt,
-            'loadCallback' => $decrypt,
+            //'password'  => 'bonkers',
+            'typecast'  => [$encrypt, $decrypt],
         ]);
         $m->save(['name' => 'John', 'secret' => 'i am a woman']);
 

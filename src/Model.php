@@ -110,7 +110,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Currently loaded record data. This record is associative array
      * that contain field=>data pairs. It may contain data for un-defined
-     * fields only if $_onlyFieldsMode is false.
+     * fields only if $onlyFields mode is false.
      *
      * Avoid accessing $data directly, use set() / get() instead.
      *
@@ -304,7 +304,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->id_field) {
             $this->addField($this->id_field, [
                 'system'    => true,
-                'type'      => 'integer',
             ]);
         }
     }
@@ -498,10 +497,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
-        if ($value === $current_value ||
-            (is_string($value) && is_numeric($current_value) && $value == $current_value) ||
-            (is_numeric($value) && is_string($current_value) && $value == $current_value)
-        ) {
+        if ($value === $current_value) {
             // do nothing, value unchanged
             return $this;
         }
@@ -517,6 +513,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             if ($f->enum && $f->type != 'boolean') {
+                if ($value === '') {
+                    $value = null;
+                }
                 if (!in_array($value, $f->enum, true) && $value !== null) {
                     throw new Exception([
                         'This is not one of the allowed values for the field',
@@ -530,9 +529,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if (array_key_exists($field, $this->dirty) && (
-            $this->dirty[$field] === $value ||
-            (is_string($value) && is_numeric($this->dirty[$field]) && $value == $this->dirty[$field]) ||
-            (is_numeric($value) && is_string($this->dirty[$field]) && $value == $this->dirty[$field])
+            $this->dirty[$field] === $value
         )) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
@@ -852,7 +849,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $this->data = $this->persistence->load($this, $id);
-        $this->id = $id;
+        if (is_null($this->id)) {
+            $this->id = $id;
+        }
         $this->hook('afterLoad');
 
         return $this;
@@ -1527,10 +1526,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addRef($link, $callback)
     {
-        if (!is_array($callback)) {
-            $callback = ['model' => $callback];
-        }
-
         return $this->_hasReference('\atk4\data\Reference', $link, $callback);
     }
 

@@ -143,7 +143,7 @@ class Persistence_SQL extends Persistence
             $m->addExpression('id', '1');
         } else {
             // SQL databases use ID of int by default
-            $m->getElement('id')->type = 'integer';
+            //$m->getElement('id')->type = 'integer';
         }
 
         return $m;
@@ -347,239 +347,140 @@ class Persistence_SQL extends Persistence
     }
 
     /**
-     * Will convert one row of data from Persistence-specific
-     * types to PHP native types.
-     *
-     * @param Model $m
-     * @param array $row
-     *
-     * @return array
-     */
-    public function typecastLoadRow($m, $row)
-    {
-        if (!$row) {
-            return $row;
-        }
-        foreach ($row as $key => &$value) {
-            if ($value === null) {
-                continue;
-            }
-
-            if ($f = $m->hasElement($key)) {
-                $value = $this->typecastLoadField($f, $value);
-            }
-        }
-
-        return $row;
-    }
-
-    /**
-     * Will convert one row of data from native PHP types into
-     * persistence types. This will also take care of the "actual"
-     * field keys. Example:.
-     *
-     * In:
-     *  [
-     *    'name'=>' John Smith',
-     *    'age'=>30,
-     *    'password'=>'abc',
-     *    'is_married'=>true,
-     *  ]
-     *
-     *  Out:
-     *   [
-     *     'first_name'=>'John Smith',
-     *     'age'=>30,
-     *     'is_married'=>1
-     *   ]
-     *
-     * @param Model $m
-     * @param array $row
-     *
-     * @return array
-     */
-    public function typecastSaveRow($m, $row)
-    {
-        if (!$row) {
-            return $row;
-        }
-        $result = [];
-        foreach ($row as $key => $value) {
-
-            // Look up field object
-            $f = $m->hasElement($key);
-
-            // We have no knowledge of the field, it wasn't defined, so
-            // we will leave it as-is.
-            if (!$f) {
-                $result[$field] = $value;
-                continue;
-            }
-
-            // Figure out the name of the destination field
-            $field = $f->actual ?: $key;
-
-            if (
-                $value === null && $f->mandatory
-            ) {
-                throw new Exception(['Mandatory field value cannot be null', 'field' => $key]);
-            }
-
-            // Expression and null cannot be converted.
-            if (
-                $value instanceof \atk4\dsql\Expression ||
-                $value instanceof \atk4\dsql\Expressionable ||
-                $value === null
-            ) {
-                $result[$field] = $value;
-                continue;
-            }
-
-            $result[$field] = $this->typecastSaveField($f, $value);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Cast specific field value from the way how it's stored inside
-     * persistence to a PHP format.
+     * This is the actual field typecasting, which you can override in your
+     * persistence to implement necessary typecasting.
      *
      * @param Field $f
      * @param mixed $value
      *
      * @return mixed
      */
-    public function typecastLoadField(Field $f, $value)
+    public function _typecastSaveField(Field $f, $value)
     {
-        if ($callback = $f->loadCallback) {
-            return $callback($value, $f, $this);
-        }
-
-        if ($value === null) {
-            return;
-        }
-
-        // only string type fields can use empty string as legit value, for all
-        // other field types empty value is the same as no-value, nothing or null
-        if ($f->type != 'string' && $value === '') {
-            return;
-        }
+        // work only on copied value not real one !!!
+        $v = is_object($value) ? clone $value : $value;
 
         switch ($f->type) {
         case 'boolean':
-
-            if (isset($f->enum) && is_array($f->enum)) {
-                if (isset($f->enum[0]) && $value == $f->enum[0]) {
-                    $value = false;
-                } elseif (isset($f->enum[1]) && $value == $f->enum[1]) {
-                    $value = true;
-                } else {
-                    $value = null;
-                }
-            } else {
-                $value = (bool) $value;
-            }
-
-            break;
-        case 'money':
-            $value = round($value, 4);
-
-            return $value;
-        case 'date':
-        case 'datetime':
-        case 'time':
-            // Can use DateTime, Carbon or anything else
-            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-
-            if (is_numeric($value)) {
-                $value = new $class('@'.$value);
-            } elseif (is_string($value)) {
-                $value = new $class($value, new \DateTimeZone('UTC'));
-            }
-            break;
-        case 'integer':
-            $value = (int) $value;
-            break;
-        case 'float':
-            $value = (float) $value;
-            break;
-        case 'struct':
-            $value = json_decode($value, true) ?: [];
-            break;
-        }
-
-        return $value;
-    }
-
-    /**
-     * Prepare value of a specific field by converting it to
-     * persistence - friendly format.
-     *
-     * @param Field $f
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function typecastSaveField(Field $f, $value)
-    {
-
-        // Support for callback: (28, ['age', [persistence_object]])
-        if ($callback = $f->saveCallback) {
-            return $callback($value, $f, $this);
-        }
-
-        if ($value === null) {
-            return;
-        }
-
-        // only string type fields can use empty string as legit value, for all
-        // other field types empty value is the same as no-value, nothing or null
-        if ($f->type != 'string' && $value === '') {
-            return;
-        }
-
-        // Manually handle remaining types
-        switch ($f->type) {
-        case 'boolean':
-
-            // if enum is not set, cast value to boolean simply.
+            // if enum is not set, then simply cast value to integer
             if (!isset($f->enum) || !$f->enum) {
-                $value = (int) $value;
+                $v = (int) $v;
                 break;
             }
 
             // if enum is set, first lets see if it matches one of those precisely
-            if ($value === $f->enum[1]) {
-                $value = true;
-            } elseif ($value === $f->enum[0]) {
-                $value = false;
+            if ($v === $f->enum[1]) {
+                $v = true;
+            } elseif ($v === $f->enum[0]) {
+                $v = false;
             }
 
             // finally, convert into appropriate value
-            $value = $value ? $f->enum[1] : $f->enum[0];
+            $v = $v ? $f->enum[1] : $f->enum[0];
             break;
         case 'date':
         case 'datetime':
         case 'time':
-            // Datetime only - change to UTC
-            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+            $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+            $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
 
-            $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+            if ($v instanceof $dt_class) {
+                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+                $format = $f->persist_format ?: $format[$f->type];
 
-            if ($value instanceof $class && $f->type == 'datetime') {
-                $value->setTimezone(new \DateTimeZone('UTC'));
+                // datetime only - set to persisting timezone
+                if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                    $v->setTimezone(new $tz_class($f->persist_timezone));
+                }
+                $v = $v->format($format);
             }
-
-            // Format for SQL
-            $value = $value->format(isset($f->dateFormat) ? $f->dateFormat : $format[$f->type]);
             break;
-        case 'struct':
-            $value = json_encode($value);
+        case 'array':
+        case 'object':
+            // don't encode if we already use some kind of serialization
+            $v = $f->serialize ? $v : json_encode($v);
             break;
         }
 
-        return $value;
+        return $v;
+    }
+
+    /**
+     * This is the actual field typecasting, which you can override in your
+     * persistence to implement necessary typecasting.
+     *
+     * @param Field $f
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function _typecastLoadField(Field $f, $value)
+    {
+        // work only on copied value not real one !!!
+        $v = is_object($value) ? clone $value : $value;
+
+        switch ($f->type) {
+        case 'integer':
+            $v = (int) $v;
+            break;
+        case 'float':
+            $v = (float) $v;
+            break;
+        case 'money':
+            $v = round($v, 4);
+            break;
+        case 'boolean':
+            if (isset($f->enum) && is_array($f->enum)) {
+                if (isset($f->enum[0]) && $v == $f->enum[0]) {
+                    $v = false;
+                } elseif (isset($f->enum[1]) && $v == $f->enum[1]) {
+                    $v = true;
+                } else {
+                    $v = null;
+                }
+            } else {
+                $v = (bool) $v;
+            }
+            break;
+        case 'date':
+        case 'datetime':
+        case 'time':
+            $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+            $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
+
+            if (is_numeric($v)) {
+                $v = new $dt_class('@'.$v);
+            } elseif (is_string($v)) {
+                // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
+                $format = ['date' => '!Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+                $format = $f->persist_format ?: $format[$f->type];
+
+                // datetime only - set from persisting timezone
+                if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                    $v = $dt_class::createFromFormat($format, $v, new $tz_class($f->persist_timezone));
+                    $v->setTimeZone(new $tz_class(date_default_timezone_get()));
+                } else {
+                    $v = $dt_class::createFromFormat($format, $v);
+                }
+
+                // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
+                // this is what Carbon::instance(DateTime $dt) method does for example
+                if ($dt_class != 'DateTime') {
+                    $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimeZone());
+                }
+            }
+            break;
+        case 'array':
+            // don't decode if we already use some kind of serialization
+            $v = $f->serialize ? $v : json_decode($v, true);
+            break;
+        case 'object':
+            // don't decode if we already use some kind of serialization
+            $v = $f->serialize ? $v : json_decode($v, false);
+            break;
+        }
+
+        return $v;
     }
 
     /**
