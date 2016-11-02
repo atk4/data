@@ -426,6 +426,9 @@ class TypecastingTest extends SQLTestCase
         $this->assertNotNull($m['ts']);
     }
 
+    /**
+     * @expectedException Exception
+     */
     public function testBadTimestamp()
     {
         $sql_time = '20blah16-10-25 11:44:08';
@@ -442,9 +445,6 @@ class TypecastingTest extends SQLTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $m->loadAny();
-
-        // must respect 'actual'
-        $this->assertNull($m['ts']);
     }
 
     public function testDirtyTimestamp()
