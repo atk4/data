@@ -468,7 +468,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals(['types' => [1 => ['id' => 1, 'date' => '2012-03-01']]], $this->getDB());
     }
 
-    function testIntegerSave()
+    public function testIntegerSave()
     {
         $db = new Persistence_SQL($this->db->connection);
 
@@ -482,7 +482,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertSame([], $m->dirty);
 
         $m['i'] = '2';
-        $this->assertSame(['i'=>1], $m->dirty);
+        $this->assertSame(['i' => 1], $m->dirty);
 
         $m['i'] = '1';
         $this->assertSame([], $m->dirty);
