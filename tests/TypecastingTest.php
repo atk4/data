@@ -473,7 +473,7 @@ class TypecastingTest extends SQLTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => 'foobar',
+                    'date'     => '',
                 ],
             ], ];
         $this->setDB($a);

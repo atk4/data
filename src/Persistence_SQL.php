@@ -464,6 +464,9 @@ class Persistence_SQL extends Persistence
                     $v->setTimeZone(new $tz_class(date_default_timezone_get()));
                 } else {
                     $v = $dt_class::createFromFormat($format, $v);
+                    if ($v === false) {
+                        throw new Exception(['Incorrectly formatted date/time', 'format' => $format, 'value' => $value, 'field' => $f]);
+                    }
                 }
 
                 // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
