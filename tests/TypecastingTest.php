@@ -426,6 +426,27 @@ class TypecastingTest extends SQLTestCase
         $this->assertNotNull($m['ts']);
     }
 
+    public function testBadTimestamp()
+    {
+        $sql_time = '20blah16-10-25 11:44:08';
+
+        $a = [
+            'types' => [
+                [
+                    'date'     => $sql_time,
+                ],
+            ], ];
+        $this->setDB($a);
+        $db = new Persistence_SQL($this->db->connection);
+
+        $m = new Model($db, ['table' => 'types']);
+        $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
+        $m->loadAny();
+
+        // must respect 'actual'
+        $this->assertNull($m['ts']);
+    }
+
     public function testDirtyTimestamp()
     {
         $sql_time = '2016-10-25 11:44:08';
