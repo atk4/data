@@ -124,7 +124,7 @@ class TypecastingTest extends SQLTestCase
     {
         $a = [
             'types' => [
-                1=> $v = [
+                1 => $v = [
                     'id'       => 1,
                     'string'   => '',
                     'notype'   => '',
@@ -158,7 +158,7 @@ class TypecastingTest extends SQLTestCase
         $m->addField('array', ['type' => 'array']);
         $m->load(1);
 
-        // Only 
+        // Only
         $this->assertSame('', $m['string']);
         $this->assertSame('', $m['notype']);
         $this->assertSame(null, $m['boolean']);
@@ -446,25 +446,25 @@ class TypecastingTest extends SQLTestCase
 
         $this->assertFalse($m->isDirty('ts'));
     }
-    function testTimestampSave()
-    {
 
+    public function testTimestampSave()
+    {
         $a = [
             'types' => [
                 [
-                    'date'     => 'foobar'
+                    'date'     => 'foobar',
                 ],
             ], ];
         $this->setDB($a);
         $db = new Persistence_SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
-        $m->addField('ts', ['actual'=>'date', 'type' => 'date']);
+        $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
         $m->loadAny();
         $m['ts'] = new \DateTime('2012-02-30');
         $m->save();
 
         // stores valid date.
-        $this->assertEquals(['types'=>[1=>['id'=>1, 'date'=>'2012-03-01']]], $this->getDB());
+        $this->assertEquals(['types' => [1 => ['id' => 1, 'date' => '2012-03-01']]], $this->getDB());
     }
 }
