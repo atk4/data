@@ -136,6 +136,7 @@ class TypecastingTest extends SQLTestCase
                     'money'    => '',
                     'float'    => '',
                     'array'    => '',
+                    'object'   => '',
                 ],
             ],
         ];
@@ -152,37 +153,40 @@ class TypecastingTest extends SQLTestCase
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
         $m->addField('boolean', ['type' => 'boolean']);
+        $m->addField('integer', ['type' => 'integer']);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
-        $m->addField('integer', ['type' => 'integer']);
         $m->addField('array', ['type' => 'array']);
+        $m->addField('object', ['type' => 'object']);
         $m->load(1);
 
         // Only
         $this->assertSame('', $m['string']);
         $this->assertSame('', $m['notype']);
-        $this->assertSame(null, $m['boolean']);
-        $this->assertSame(null, $m['money']);
         $this->assertSame(null, $m['date']);
         $this->assertSame(null, $m['datetime']);
         $this->assertSame(null, $m['time']);
+        $this->assertSame(null, $m['boolean']);
         $this->assertSame(null, $m['integer']);
-        $this->assertSame(null, $m['array']);
+        $this->assertSame(null, $m['money']);
         $this->assertSame(null, $m['float']);
+        $this->assertSame(null, $m['array']);
+        $this->assertSame(null, $m['object']);
 
         unset($v['id']);
         $m->set($v);
 
         $this->assertSame('', $m['string']);
         $this->assertSame('', $m['notype']);
-        $this->assertSame(null, $m['boolean']);
-        $this->assertSame(null, $m['money']);
         $this->assertSame(null, $m['date']);
         $this->assertSame(null, $m['datetime']);
         $this->assertSame(null, $m['time']);
+        $this->assertSame(null, $m['boolean']);
         $this->assertSame(null, $m['integer']);
-        $this->assertSame(null, $m['array']);
+        $this->assertSame(null, $m['money']);
         $this->assertSame(null, $m['float']);
+        $this->assertSame(null, $m['array']);
+        $this->assertSame(null, $m['object']);
         $this->assertEquals([], $m->dirty);
 
         $m->save();
@@ -202,6 +206,7 @@ class TypecastingTest extends SQLTestCase
                     'money'    => null,
                     'float'    => null,
                     'array'    => null,
+                    'object'   => null,
         ];
 
         $this->assertEquals($a, $this->getDB());
