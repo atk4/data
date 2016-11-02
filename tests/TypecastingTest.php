@@ -120,6 +120,93 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals($first, $duplicate);
     }
 
+    public function testEmptyValues()
+    {
+        $a = [
+            'types' => [
+                1=> $v = [
+                    'id'       => 1,
+                    'string'   => '',
+                    'notype'   => '',
+                    'date'     => '',
+                    'datetime' => '',
+                    'time'     => '',
+                    'boolean'  => '',
+                    'integer'  => '',
+                    'money'    => '',
+                    'float'    => '',
+                    'array'    => '',
+                ],
+            ],
+        ];
+        $this->setDB($a);
+
+        date_default_timezone_set('Asia/Seoul');
+
+        $db = new Persistence_SQL($this->db->connection);
+
+        $m = new Model($db, ['table' => 'types']);
+        $m->addField('string', ['type' => 'string']);
+        $m->addField('notype');
+        $m->addField('date', ['type' => 'date']);
+        $m->addField('datetime', ['type' => 'datetime']);
+        $m->addField('time', ['type' => 'time']);
+        $m->addField('boolean', ['type' => 'boolean']);
+        $m->addField('money', ['type' => 'money']);
+        $m->addField('float', ['type' => 'float']);
+        $m->addField('integer', ['type' => 'integer']);
+        $m->addField('array', ['type' => 'array']);
+        $m->load(1);
+
+        // Only 
+        $this->assertSame('', $m['string']);
+        $this->assertSame('', $m['notype']);
+        $this->assertSame(null, $m['boolean']);
+        $this->assertSame(null, $m['money']);
+        $this->assertSame(null, $m['date']);
+        $this->assertSame(null, $m['datetime']);
+        $this->assertSame(null, $m['time']);
+        $this->assertSame(null, $m['integer']);
+        $this->assertSame(null, $m['array']);
+        $this->assertSame(null, $m['float']);
+
+        unset($v['id']);
+        $m->set($v);
+
+        $this->assertSame('', $m['string']);
+        $this->assertSame('', $m['notype']);
+        $this->assertSame(null, $m['boolean']);
+        $this->assertSame(null, $m['money']);
+        $this->assertSame(null, $m['date']);
+        $this->assertSame(null, $m['datetime']);
+        $this->assertSame(null, $m['time']);
+        $this->assertSame(null, $m['integer']);
+        $this->assertSame(null, $m['array']);
+        $this->assertSame(null, $m['float']);
+        $this->assertEquals([], $m->dirty);
+
+        $m->save();
+        $this->assertEquals($a, $this->getDB());
+
+        $m->duplicate()->save();
+
+        $a['types'][2] = [
+                    'id'       => 2,
+                    'string'   => '',
+                    'notype'   => '',
+                    'date'     => null,
+                    'datetime' => null,
+                    'time'     => null,
+                    'boolean'  => null,
+                    'integer'  => null,
+                    'money'    => null,
+                    'float'    => null,
+                    'array'    => null,
+        ];
+
+        $this->assertEquals($a, $this->getDB());
+    }
+
     public function testTypeCustom1()
     {
         $a = [
@@ -359,24 +446,25 @@ class TypecastingTest extends SQLTestCase
 
         $this->assertFalse($m->isDirty('ts'));
     }
-
-    public function testTimestampSave()
+    function testTimestampSave()
     {
+
         $a = [
             'types' => [
                 [
-                    'date'     => 'foobar',
+                    'date'     => 'foobar'
                 ],
             ], ];
         $this->setDB($a);
         $db = new Persistence_SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
-        $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
+        $m->addField('ts', ['actual'=>'date', 'type' => 'date']);
         $m->loadAny();
-        $m['ts'] = new \DateTime();
+        $m['ts'] = new \DateTime('2012-02-30');
         $m->save();
 
-        $this->assertEquals(['types' => [1 => ['id' => 1, 'date' => '2016-11-01']]], $this->getDB());
+        // stores valid date.
+        $this->assertEquals(['types'=>[1=>['id'=>1, 'date'=>'2012-03-01']]], $this->getDB());
     }
 }
