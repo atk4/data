@@ -467,4 +467,44 @@ class TypecastingTest extends SQLTestCase
         // stores valid date.
         $this->assertEquals(['types' => [1 => ['id' => 1, 'date' => '2012-03-01']]], $this->getDB());
     }
+
+    function testIntegerSave()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+
+        $m = new Model($db, ['table' => 'types']);
+        $m->addField('i', ['type' => 'integer']);
+
+        $m->data['i'] = 1;
+        $this->assertSame([], $m->dirty);
+
+        $m['i'] = '1';
+        $this->assertSame([], $m->dirty);
+
+        $m['i'] = '2';
+        $this->assertSame(['i'=>1], $m->dirty);
+
+        $m['i'] = '1';
+        $this->assertSame([], $m->dirty);
+
+        // same test without type integer
+        $m = new Model($db, ['table' => 'types']);
+        $m->addField('i');
+
+        $m->data['i'] = 1;
+        $this->assertSame([], $m->dirty);
+
+        $m['i'] = '1';
+        $this->assertSame(1, $m->dirty['i']);
+
+        $m['i'] = '2';
+        $this->assertSame(1, $m->dirty['i']);
+
+
+        $m['i'] = '1';
+        $this->assertSame(1, $m->dirty['i']);
+
+        $m['i'] = 1;
+        $this->assertSame([], $m->dirty);
+    }
 }
