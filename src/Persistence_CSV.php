@@ -113,7 +113,7 @@ class Persistence_CSV extends Persistence
         }
     }
 
-    public function typecastLoadRow($m, $row)
+    public function typecastLoadRow(Model $m, $row)
     {
         $row = array_combine($this->header, $row);
 

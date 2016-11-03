@@ -118,34 +118,37 @@ class BusinessModelTest extends TestCase
         $this->assertEquals([], $m->dirty);
 
         $m['name'] = '5';
-        $this->assertEquals([], $m->dirty);
+        $this->assertSame(5, $m->dirty['name']);
 
         $m['name'] = '6';
-        $this->assertNotEquals([], $m->dirty);
+        $this->assertSame(5, $m->dirty['name']);
         $m['name'] = '5';
-        $this->assertEquals([], $m->dirty);
+        $this->assertSame(5, $m->dirty['name']);
 
         $m['name'] = '5.0';
-        $this->assertEquals([], $m->dirty);
+        $this->assertSame(5, $m->dirty['name']);
 
+        $m->dirty = [];
         $m->data = ['name' => ''];
         $m['name'] = '';
         $this->assertEquals([], $m->dirty);
 
         $m->data = ['name' => '5'];
         $m['name'] = 5;
-        $this->assertEquals([], $m->dirty);
+        $this->assertSame('5', $m->dirty['name']);
         $m['name'] = 6;
-        $this->assertNotEquals([], $m->dirty);
+        $this->assertSame('5', $m->dirty['name']);
         $m['name'] = 5;
+        $this->assertSame('5', $m->dirty['name']);
+        $m['name'] = '5';
         $this->assertEquals([], $m->dirty);
 
         $m->data = ['name' => 4.28];
         $m['name'] = '4.28';
-        $this->assertEquals([], $m->dirty);
+        $this->assertSame(4.28, $m->dirty['name']);
         $m['name'] = '5.28';
-        $this->assertNotEquals([], $m->dirty);
-        $m['name'] = '4.28';
+        $this->assertSame(4.28, $m->dirty['name']);
+        $m['name'] = 4.28;
         $this->assertEquals([], $m->dirty);
 
         // now with defaults

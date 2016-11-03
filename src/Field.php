@@ -23,7 +23,7 @@ class Field
      * Field type.
      *
      * Values are: 'string', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'struct'.
+     *             'date', 'datetime', 'time', 'array', 'object'.
      * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
@@ -108,16 +108,58 @@ class Field
     public $mandatory = false;
 
     /**
-     * Define callback to execute after loading value for this field
-     * from the database.
+     * Should we use typecasting when saving/loading data to/from persistence.
+     *
+     * Value can be array [$typecast_save_callback, $typecast_load_callback].
+     *
+     * @var null|bool|array
      */
-    public $loadCallback = null;
+    public $typecast = null;
 
     /**
-     * Define callback to execute before saving value for this field
-     * to the database.
+     * Should we use serialization when saving/loading data to/from persistence.
+     *
+     * Value can be array [$encode_callback, $decode_callback].
+     *
+     * @var null|bool|array
      */
-    public $saveCallback = null;
+    public $serialize = null;
+
+    /**
+     * Persisting format for type = 'date', 'datetime', 'time' fields.
+     *
+     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
+     *
+     * @var string
+     */
+    public $persist_format = null;
+
+    /**
+     * Persisting timezone for type = 'date', 'datetime', 'time' fields.
+     *
+     * For example, 'IST', 'UTC', 'Europe/Riga' etc.
+     *
+     * @var string
+     */
+    public $persist_timezone = 'UTC';
+
+    /**
+     * DateTime class used for type = 'data', 'datetime', 'time' fields.
+     *
+     * For example, 'DateTime', 'Carbon' etc.
+     *
+     * @param string
+     */
+    public $dateTimeClass = 'DateTime';
+
+    /**
+     * Timezone class used for type = 'data', 'datetime', 'time' fields.
+     *
+     * For example, 'DateTimeZone', 'Carbon' etc.
+     *
+     * @param string
+     */
+    public $dateTimeZoneClass = 'DateTimeZone';
 
     /**
      * Constructor. You can pass field properties as array.
@@ -169,6 +211,24 @@ class Field
             }
             $value = trim($value);
             break;
+        case 'integer':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be an integer');
+            }
+            $value = (int) $value;
+            break;
+        case 'float':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be a float');
+            }
+            $value = (float) $value;
+            break;
+        case 'money':
+            if (!is_numeric($value)) {
+                throw new Exception('Field value must be numeric');
+            }
+            $value = round($value, 4);
+            break;
         case 'boolean':
             if (is_bool($value)) {
                 break;
@@ -186,12 +246,6 @@ class Field
                 throw new Exception('Field value must be a boolean');
             }
             break;
-        case 'money':
-            if (!is_numeric($value)) {
-                throw new Exception('Field value must be numeric');
-            }
-            $value = round($value, 4);
-            break;
         case 'date':
         case 'datetime':
         case 'time':
@@ -202,30 +256,22 @@ class Field
             } elseif (is_string($value)) {
                 $value = new $class($value);
             } elseif (!$value instanceof $class) {
-                throw new Exception('Field value must be a '.$f->type);
+                throw new Exception(['Field value must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
             }
             break;
-        case 'integer':
-            if (!is_numeric($value)) {
-                throw new Exception('Field value must be an integer');
+        case 'array':
+            if (!is_array($value)) {
+                throw new Exception('Field value must be a array');
             }
-            $value = (int) $value;
             break;
-        case 'float':
-            if (!is_numeric($value)) {
-                throw new Exception('Field value must be a float');
-            }
-            $value = (float) $value;
-            break;
-        case 'struct':
-            // Can be pretty-much anything, but not object
-            if (is_object($value)) {
-                throw new Exception('Field value must be a struct');
+        case 'object':
+            if (!is_object($value)) {
+                throw new Exception('Field value must be a object');
             }
             break;
         case 'int':
-        case 'bool':
         case 'str':
+        case 'bool':
             throw new Exception([
                 'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
                 'type' => $f->type,

@@ -19,7 +19,7 @@ class Folder extends \atk4\data\Model
         $this->hasOne('parent_id', new self())
             ->addTitle();
 
-        $this->addField('is_deleted', ['type' => 'bool']);
+        $this->addField('is_deleted', ['type' => 'boolean']);
         $this->addCondition('is_deleted', false);
     }
 }
