@@ -1,25 +1,37 @@
-# 1.1.4
+## 1.1.5
+
+-   Added documentation for TypeCasting (#189)
+-   Added 'typecast' and 'serialise' properties for fields (#184)
+-   Renamed 'struct' into 'object' and added 'array' to avoid confusion
+-   ID fields for SQL are no longer 'integer'. They can be anything now. (#191)
+-   General typecasting is now moved into generic Persistence
+-   Improved normalisaton, so that fields don't become dirty for no reason (#187, #195)
+-   Added persist_timezone and persist_format (#193)
+-   Added date_time_class so that you can use Carbon if you want
+-   Many new tests added
+-   Minor fixes (#177, #188)
+
+## 1.1.4
 
 * Added implementation for addRef(). #176
 * Improve boolean handling. #181
 * Fix matching of incompatible types. #187
 * Don't assume ID is int for SQL types #191
 
-# 1.1.3
+## 1.1.3
 
 Don't mark fields as dirty value has a fuzzy-match (4=="4"). Fix each() typecasting.
 
-# 1.1.2
+## 1.1.2
 
 Minimum stability fixes after the release #172, #173
 
-
-# 1.1.1
+## 1.1.1
 
 * disabled type fetching from related entities when using ref->addField due to performance degradation
 * hotfixed situations where never_persist fields are loaded when specified as part as onlyFields
 
-# 1.1.0
+## 1.1.0
 
 The main feature of this release is introduction of strong types. See [Type Converting](http://agile-data.readthedocs.io/en/develop/persistence.html?highlight=typecasting#type-converting).
 
@@ -42,7 +54,7 @@ The main feature of this release is introduction of strong types. See [Type Conv
 * Dependencies updated (dsql, core) #121
 * PRs: #79, #82, #83, #85, #88, #90, #94, #95, #97, #130, #151, #156, #171
 
-# 1.0.2
+## 1.0.2
 
 Maintenance release to include some of the bugfixes.
 
@@ -59,7 +71,7 @@ Maintenance release to include some of the bugfixes.
 * Fixes: #80, #85, 
 
 
-# 1.0.1
+## 1.0.1
 
 This is our first maintenance release that solves several important issues.
 
@@ -72,10 +84,10 @@ This is our first maintenance release that solves several important issues.
 * Added [afterUnload and beforeUnload hooks](http://agile-data.readthedocs.io/en/develop/model.html#hooks).
 * Added support for [automated model reloading](http://agile-data.readthedocs.io/en/develop/expressions.html?highlight=reloading#model-reloading-after-save)
 * Added support for advanced patterns described here:
-  * ability to implement [soft-delete](http://agile-data.readthedocs.io/en/develop/advanced.html#soft-delete), [audit](http://agile-data.readthedocs.io/en/develop/advanced.html#audit-fields)
-  * support to [override default method actions](http://agile-data.readthedocs.io/en/develop/model.html?highlight=hook#how-to-prevent-action), e.g. [delete()](shttp://agile-data.readthedocs.io/en/develop/advanced.html#soft-delete-that-overrides-default-delete)
-  * support to [verify updates](http://agile-data.readthedocs.io/en/develop/model.html?highlight=hook#how-to-verify-updates) with afterInsertQuery
-  * ability to create [fields with unique values](http://agile-data.readthedocs.io/en/develop/advanced.html#creating-unique-field)
+* ability to implement [soft-delete](http://agile-data.readthedocs.io/en/develop/advanced.html#soft-delete), [audit](http://agile-data.readthedocs.io/en/develop/advanced.html#audit-fields)
+* support to [override default method actions](http://agile-data.readthedocs.io/en/develop/model.html?highlight=hook#how-to-prevent-action), e.g. [delete()](shttp://agile-data.readthedocs.io/en/develop/advanced.html#soft-delete-that-overrides-default-delete)
+* support to [verify updates](http://agile-data.readthedocs.io/en/develop/model.html?highlight=hook#how-to-verify-updates) with afterInsertQuery
+* ability to create [fields with unique values](http://agile-data.readthedocs.io/en/develop/advanced.html#creating-unique-field)
 * Added support for [Related Aliases](http://agile-data.readthedocs.io/en/develop/relations.html#relation-aliases). Now you can hasOne() hasMany() to itself.
 * Fix: when you update field from join and then immediatelly save()
 * Fix: when you join on existing field
@@ -87,7 +99,7 @@ This is our first maintenance release that solves several important issues.
 
 Included PRs: #75, #74, #73, #72, #71, #70, #65, #63, #61, #58, #55
 
-# 1.0.0
+# 1.0
 
 This is our first stable version release for Agile Data. The class and
 method structure has sufficiently matured and will not be changed much

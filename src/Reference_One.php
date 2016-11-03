@@ -59,6 +59,60 @@ class Reference_One extends Reference
     public $mandatory = false;
 
     /**
+     * Should we use typecasting when saving/loading data to/from persistence.
+     *
+     * Value can be array [$typecast_save_callback, $typecast_load_callback].
+     *
+     * @var null|bool|array
+     */
+    public $typecast = null;
+
+    /**
+     * Should we use serialization when saving/loading data to/from persistence.
+     *
+     * Value can be array [$encode_callback, $decode_callback].
+     *
+     * @var null|bool|array
+     */
+    public $serialize = null;
+
+    /**
+     * Persisting format for type = 'date', 'datetime', 'time' fields.
+     *
+     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
+     *
+     * @var string
+     */
+    public $persist_format = null;
+
+    /**
+     * Persisting timezone for type = 'date', 'datetime', 'time' fields.
+     *
+     * For example, 'IST', 'UTC', 'Europe/Riga' etc.
+     *
+     * @var string
+     */
+    public $persist_timezone = 'UTC';
+
+    /**
+     * DateTime class used for type = 'data', 'datetime', 'time' fields.
+     *
+     * For example, 'DateTime', 'Carbon' etc.
+     *
+     * @param string
+     */
+    public $dateTimeClass = 'DateTime';
+
+    /**
+     * Timezone class used for type = 'data', 'datetime', 'time' fields.
+     *
+     * For example, 'DateTimeZone', 'Carbon' etc.
+     *
+     * @param string
+     */
+    public $dateTimeZoneClass = 'DateTimeZone';
+
+    /**
      * Reference_One will also add a field corresponding
      * to 'our_field' unless it exists of course.
      */
@@ -72,14 +126,20 @@ class Reference_One extends Reference
 
         if (!$this->owner->hasElement($this->our_field)) {
             $this->owner->addField($this->our_field, [
-                'type'          => null, // $this->guessFieldType(),
-                //'system'        => true,
-                'join'          => $this->join,
-                'default'       => $this->default,
-                'never_persist' => $this->never_persist,
-                'read_only'     => $this->read_only,
-                'ui'            => $this->ui,
-                'mandatory'     => $this->mandatory,
+                'type'              => null, // $this->guessFieldType(),
+                //'system'          => true,
+                'join'              => $this->join,
+                'default'           => $this->default,
+                'never_persist'     => $this->never_persist,
+                'read_only'         => $this->read_only,
+                'ui'                => $this->ui,
+                'mandatory'         => $this->mandatory,
+                'typecast'          => $this->typecast,
+                'serialize'         => $this->serialize,
+                'persist_format'    => $this->persist_format,
+                'persist_timezone'  => $this->persist_timezone,
+                'dateTimeClass'     => $this->dateTimeClass,
+                'dateTimeZoneClass' => $this->dateTimeZoneClass,
             ]);
         }
     }

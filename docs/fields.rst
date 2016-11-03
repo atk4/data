@@ -150,6 +150,19 @@ Set the value of the field. Same as $model->set($field_name, $value);
 
 Get the value of the field. Same as $model->get($field_name, $value);
 
+UI Presentation
+---------------
+
+Agile Data does not deal directly with formatting your data
+for the user. There may be various items to consider, for instance
+the same date can be presented in a short or long format for the user.
+
+The UI framework such as Agile Toolkit can make use of the :php:attr:`Field::ui`
+property to allow user to define default formats or input parsing
+rules, but Agile Data does not regulate the :php:attr:`Field::ui` property and
+different UI frameworks may use it differently.
+
+
 .. php:method:: isEditable
 
 Returns true if UI should render this field as editable and include inside
