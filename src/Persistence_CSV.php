@@ -7,7 +7,19 @@ namespace atk4\data;
 /**
  * Implements persistence driver that can save data and load from CSV file.
  * This basic driver only offers the load/save does not offer conditions or
- * id-specific operations.
+ * id-specific operations. You can only use a single persistence object with
+ * a single file.
+ *
+ * $p = new Persistence_CSV('file.csv');
+ * $m = new MyModel($p);
+ * $data = $m->export();
+ *
+ * Alternatively you can write into a file. First operation you perform on
+ * the persistence will determine the mode.
+ *
+ * $p = new Persistence_CSV('file.csv');
+ * $m = new MyModel($sql);
+ * $m->import($data);
  */
 class Persistence_CSV extends Persistence
 {
@@ -18,12 +30,25 @@ class Persistence_CSV extends Persistence
      */
     public $file;
 
+
+    /**
+     * Line in CSV file
+     */
+    public $line=0;
+
     /**
      * Filehandle, when the $file is opened.
      *
      * @var resource
      */
     public $handle = null;
+
+    /**
+     * Mode of opeation. 'r' for reading and 'w' for writing.
+     * If you manually set this operation, it will be used
+     * for file opening.
+     */
+    public $mode = null;
 
     /**
      * Constructor. Can pass array of data in parameters.
@@ -35,49 +60,10 @@ class Persistence_CSV extends Persistence
         $this->file = $file;
     }
 
-    /**
-     * Associate model with the data driver.
-     *
-     * @param Model|string $m        Model which will use this persistence
-     * @param array        $defaults Properties
-     *
-     * @return Model
-     */
-    public function add($m, $defaults = [])
+    function getLine()
     {
-        if (isset($defaults[0])) {
-            $m->file = $defaults[0];
-            unset($defaults[0]);
-        }
-
-        return parent::add($m, $defaults);
-    }
-
-    /**
-     * Loads model and returns data record.
-     *
-     * @param Model  $m
-     * @param mixed  $id
-     * @param string $table
-     *
-     * @return array
-     */
-    public function load(Model $m, $id, $table = null)
-    {
-        if (!isset($this->data[$m->table]) && !isset($table)) {
-            throw Exception([
-                'Table was not found in the array data source',
-                'table' => $m->table,
-            ]);
-        }
-        if (!isset($this->data[$table ?: $m->table][$id])) {
-            throw new Exception([
-                'Record with specified ID was not found',
-                'id' => $id,
-            ], 404);
-        }
-
-        return $this->tryLoad($m, $id, $table);
+        $this->line++;
+        return fgetcsv($this->handle);
     }
 
     /**
@@ -93,7 +79,7 @@ class Persistence_CSV extends Persistence
             $this->handle = fopen($this->file, 'r');
         }
 
-        $header = fgetcsv($this->handle);
+        $header = $this->getLine();
 
         $this->initializeHeader($header);
     }
@@ -142,11 +128,34 @@ class Persistence_CSV extends Persistence
      */
     public function loadAny(Model $m)
     {
+        if (!$this->mode) {
+            $this->mode = 'r';
+        } elseif ($this->mode == 'w') {
+            throw new Exception(['Currently writing records, so loading is not possible.']);
+        }
+
         if (!$this->handle) {
             $this->loadHeader();
         }
+        $data = fgetcsv($this->handle);
+        if ($data === false) {
+            throw new Exception(['No more records'], 404);
+        }
 
-        return $this->typecastLoadRow($m, fgetcsv($this->handle));
+        $data = $this->typecastLoadRow($m, $data);
+        $data['id'] = $this->line;
+        return $data;
+    }
+
+    public function tryLoadAny(Model $m)
+    {
+        try {
+            $this->loadAny($m);
+        }catch(\Exception $e){
+            if($e->getCode() === 404) {
+                return null;
+            }
+        }
     }
 
     /**
@@ -158,10 +167,16 @@ class Persistence_CSV extends Persistence
      *
      * @return mixed
      */
-    public function insert(Model $m, $data, $table = null)
+    public function insert(Model $m, $data)
     {
-        if (!isset($table)) {
-            $table = $m->table;
+        if (!$this->mode) {
+            $this->mode = 'w';
+        } elseif ($this->mode == 'r') {
+            throw new Exception(['Currently reading records, so writing is not possible.']);
+        }
+
+        if (!$this->handle) {
+            $this->saveHeader();
         }
 
         $id = $this->generateNewID($m, $table);

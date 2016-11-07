@@ -68,4 +68,28 @@ class CSVTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('John', $m['name']);
         $this->assertEquals('Smith', $m['surname']);
     }
+
+    public function testLoadAnyException()
+    {
+        $data = [
+                ['name' => 'John', 'surname' => 'Smith'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
+            ];
+
+        $this->setDB($data);
+
+        $p = new Persistence_CSV($this->file);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+        $m->loadAny();
+        $m->loadAny();
+
+        $this->assertEquals('Sarah', $m['name']);
+        $this->assertEquals('Jones', $m['surname']);
+
+        $m->tryLoadAny();
+        $this->assertFalse($m->loaded());
+    }
+
 }
