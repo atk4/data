@@ -91,5 +91,4 @@ class CSVTest extends \PHPUnit_Framework_TestCase
         $m->tryLoadAny();
         $this->assertFalse($m->loaded());
     }
-
 }

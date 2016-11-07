@@ -32,9 +32,9 @@ class Persistence_CSV extends Persistence
 
 
     /**
-     * Line in CSV file
+     * Line in CSV file.
      */
-    public $line=0;
+    public $line = 0;
 
     /**
      * Filehandle, when the $file is opened.
@@ -60,9 +60,10 @@ class Persistence_CSV extends Persistence
         $this->file = $file;
     }
 
-    function getLine()
+    public function getLine()
     {
         $this->line++;
+
         return fgetcsv($this->handle);
     }
 
@@ -144,6 +145,7 @@ class Persistence_CSV extends Persistence
 
         $data = $this->typecastLoadRow($m, $data);
         $data['id'] = $this->line;
+
         return $data;
     }
 
@@ -151,9 +153,9 @@ class Persistence_CSV extends Persistence
     {
         try {
             $this->loadAny($m);
-        }catch(\Exception $e){
-            if($e->getCode() === 404) {
-                return null;
+        } catch (\Exception $e) {
+            if ($e->getCode() === 404) {
+                return;
             }
         }
     }
