@@ -126,7 +126,7 @@ class Reference_SQL_One extends Reference_One
         if (!is_array($defaults)) {
             throw new Exception([
                 'Argument to addTitle should be an array',
-                'arg'=>$defaults
+                'arg' => $defaults,
             ]);
         }
         $field = str_replace('_id', '', $this->link);
