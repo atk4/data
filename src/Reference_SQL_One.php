@@ -123,6 +123,12 @@ class Reference_SQL_One extends Reference_One
      */
     public function addTitle($defaults = [])
     {
+        if (!is_array($defaults)) {
+            throw new Exception([
+                'Argument to addTitle should be an array',
+                'arg'=>$defaults
+            ]);
+        }
         $field = str_replace('_id', '', $this->link);
         $ex = $this->owner->addExpression($field, array_merge_recursive(
             [
