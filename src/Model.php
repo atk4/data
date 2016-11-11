@@ -1569,7 +1569,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Return related model
+     * Return related model.
      *
      * @param string $link
      * @param array  $defaults
