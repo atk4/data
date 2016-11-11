@@ -1569,6 +1569,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Return related model
+     *
+     * @param string $link
+     * @param array  $defaults
+     *
+     * @return Model
+     */
+    public function refModel($link, $defaults = [])
+    {
+        return $this->getRef($link)->refModel($defaults);
+    }
+
+    /**
      * Returns model that can be used for generating sub-query actions.
      *
      * @param string $link
