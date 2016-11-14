@@ -451,8 +451,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Set field value.
      *
-     * @param string|array $field
-     * @param mixed        $value
+     * @param string|array|Model $field
+     * @param mixed              $value
      *
      * @return $this
      */
@@ -1260,8 +1260,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * This is a temporary method to avoid code duplication, but insert / import should
      * be implemented differently.
      *
-     * @param Model $m
-     * @param array $row
+     * @param Model       $m
+     * @param array|Model $row
      */
     protected function _rawInsert($m, $row)
     {
@@ -1276,7 +1276,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * Will be further optimized in the future.
      *
-     * @param array $row
+     * @param array|Model $row
      *
      * @return mixed
      */
@@ -1294,7 +1294,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * Will be further optimized in the future.
      *
-     * @param array $row
+     * @param array|Model $row
      *
      * @return $this
      */

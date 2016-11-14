@@ -33,23 +33,23 @@ actually opened unless you perform load/save operation::
 Exporting and Importing data from CSV
 =====================================
 
-You can take a model that is loaded form other persistence and save
-it into CSV like this. The next example demonstrates a basic export
-functionality::
+You can take a model that is loaded from other persistence and save
+it into CSV like this. The next example demonstrates a basic functionality
+of SQL database export to CSV file::
 
     $db = new Persistence_SQL($pdo);
-    $csv = new Persistence_CSV('dump.sql');
+    $csv = new Persistence_CSV('dump.csv');
 
     $m = new Model_User($db);
 
-    foreach(new Model_User($db) as $m) {
+    foreach (new Model_User($db) as $m) {
         $m->withPersistence($csv)->save();
     }
 
 Theoretically you can do few things to tweak this process. You can specify
 which fields you would like to see in the CSV::
 
-    foreach(new Model_User($db) as $m) {
+    foreach (new Model_User($db) as $m) {
         $m->withPersistence($csv)
             ->onlyFields(['id','name','password'])
             ->save();
@@ -57,9 +57,9 @@ which fields you would like to see in the CSV::
 
 Additionally if you want to use a different column titles, you can::
 
-    foreach(new Model_User($db) as $m) {
+    foreach (new Model_User($db) as $m) {
         $m_csv = $m->withPersistence($csv);
-        $m_csv->onlyFields(['id','name','password'])
+        $m_csv->onlyFields(['id', 'name', 'password'])
         $m_csv->getElement('name')->actual = 'First Name';
         $m_csv->save();
     }
@@ -73,10 +73,10 @@ iterations::
 
     $m = new Model_User($db);
     $m_csv = $m->withPersistence($csv);
-    $m_csv->onlyFields(['id','name','password'])
+    $m_csv->onlyFields(['id', 'name', 'password'])
     $m_csv->getElement('name')->actual = 'First Name';
 
-    foreach($m as $m) {
+    foreach ($m as $m_csv) {
         $m_csv->save();
     }
 
@@ -84,7 +84,7 @@ This code can be further simplified if you use import() method::
 
     $m = new Model_User($db);
     $m_csv = $m->withPersistence($csv);
-    $m_csv->onlyFields(['id','name','password'])
+    $m_csv->onlyFields(['id', 'name', 'password'])
     $m_csv->getElement('name')->actual = 'First Name';
     $m_csv->import($m);
 
@@ -92,7 +92,7 @@ Naturally you can also move data in the other direction::
 
     $m = new Model_User($db);
     $m_csv = $m->withPersistence($csv);
-    $m_csv->onlyFields(['id','name','password'])
+    $m_csv->onlyFields(['id', 'name', 'password'])
     $m_csv->getElement('name')->actual = 'First Name';
 
     $m->import($m_csv);

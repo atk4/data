@@ -6,7 +6,7 @@ namespace atk4\data;
 
 /**
  * Implements persistence driver that can save data and load from CSV file.
- * This basic driver only offers the load/save does not offer conditions or
+ * This basic driver only offers the load/save. It does not offer conditions or
  * id-specific operations. You can only use a single persistence object with
  * a single file.
  *
@@ -18,7 +18,7 @@ namespace atk4\data;
  * the persistence will determine the mode.
  *
  * $p = new Persistence_CSV('file.csv');
- * $m = new MyModel($sql);
+ * $m = new MyModel($p);
  * $m->import($data);
  */
 class Persistence_CSV extends Persistence
@@ -30,14 +30,15 @@ class Persistence_CSV extends Persistence
      */
     public $file;
 
-
     /**
      * Line in CSV file.
+     *
+     * @var int
      */
     public $line = 0;
 
     /**
-     * Filehandle, when the $file is opened.
+     * File handle, when the $file is opened.
      *
      * @var resource
      */
@@ -47,6 +48,8 @@ class Persistence_CSV extends Persistence
      * Mode of opeation. 'r' for reading and 'w' for writing.
      * If you manually set this operation, it will be used
      * for file opening.
+     *
+     * @var string
      */
     public $mode = null;
 
@@ -60,6 +63,11 @@ class Persistence_CSV extends Persistence
         $this->file = $file;
     }
 
+    /**
+     * Returns one line of CSV file as array.
+     *
+     * @return array
+     */
     public function getLine()
     {
         $this->line++;
@@ -68,13 +76,12 @@ class Persistence_CSV extends Persistence
     }
 
     /**
-     * When load opeartion starts, this will open file and read
-     * the first line. This line is then used to identify
-     * columns.
+     * When load operation starts, this will open file and read
+     * the first line. This line is then used to identify columns.
      */
     public function loadHeader()
     {
-        // Overide this method and open handle yourself if you want to
+        // Override this method and open handle yourself if you want to
         // reposition or load some extra columns on the top.
         if (!$this->handle) {
             $this->handle = fopen($this->file, 'r');
@@ -92,14 +99,17 @@ class Persistence_CSV extends Persistence
     public function initializeHeader($header)
     {
         $this->header = $header;
-        $this->header_reverse = [];
-
-        // "ass" is short for associative
-        foreach ($header as $num => $ass) {
-            $this->header_reverse[$ass] = $num;
-        }
+        $this->header_reverse = array_flip($header);
     }
 
+    /**
+     * Typecasting when load data row.
+     *
+     * @param Model $m
+     * @param array $row
+     *
+     * @return array
+     */
     public function typecastLoadRow(Model $m, $row)
     {
         $row = array_combine($this->header, $row);
@@ -121,13 +131,11 @@ class Persistence_CSV extends Persistence
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
      *
-     * @param Model  $m
-     * @param mixed  $id
-     * @param string $table
+     * @param Model $m
      *
-     * @return array
+     * @return array|null
      */
-    public function loadAny(Model $m)
+    public function tryLoadAny(Model $m)
     {
         if (!$this->mode) {
             $this->mode = 'r';
@@ -138,9 +146,10 @@ class Persistence_CSV extends Persistence
         if (!$this->handle) {
             $this->loadHeader();
         }
+
         $data = fgetcsv($this->handle);
-        if ($data === false) {
-            throw new Exception(['No more records'], 404);
+        if (!$data) {
+            return;
         }
 
         $data = $this->typecastLoadRow($m, $data);
@@ -149,15 +158,25 @@ class Persistence_CSV extends Persistence
         return $data;
     }
 
-    public function tryLoadAny(Model $m)
+    /**
+     * Loads any one record.
+     *
+     * @param Model $m
+     *
+     * @return array
+     */
+    public function loadAny(Model $m)
     {
-        try {
-            $this->loadAny($m);
-        } catch (\Exception $e) {
-            if ($e->getCode() === 404) {
-                return;
-            }
+        $data = $this->tryLoadAny($m);
+
+        if (!$data) {
+            throw new Exception([
+                'No more records',
+                'model'      => $m,
+            ], 404);
         }
+
+        return $data;
     }
 
     /**
