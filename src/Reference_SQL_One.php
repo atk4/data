@@ -149,6 +149,7 @@ class Reference_SQL_One extends Reference_One
             ]
         ));
 
+        // Will try to execute last
         $this->owner->addHook('beforeSave', function ($m) use ($field) {
             if ($m->isDirty($field) && !$m->isDirty($this->link)) {
                 $mm = $m->getRef($this->link)->getModel();
@@ -156,7 +157,7 @@ class Reference_SQL_One extends Reference_One
                 $mm->addCondition($mm->title_field, $m[$field]);
                 $m[$this->link] = $mm->action('field', [$mm->id_field]);
             }
-        });
+        }, null, 20);
 
         return $ex;
     }
