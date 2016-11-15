@@ -86,7 +86,7 @@ ref() you will get a fresh copy.
 If you are worried about performance you can keep 2 models in memory::
 
     $order = new Order($db);
-    $client = $order->getRef('client_id')->getModel();
+    $client = $order->refModel('client_id');
 
     foreach($order as $o) {
         $client->load($o['client_id']);
@@ -192,8 +192,8 @@ keep making your query bigger and bigger::
     change them, you will receive exception.
 
 
-hasMany / refLink
-=================
+hasMany / refLink / refModel
+============================
 
 .. php:method:: refLink($link)
 
@@ -223,6 +223,11 @@ then it now makes sense for generating expression:
         (select sum(amount) from `order` where user_id = `user`.id) sum_amount
     from user
     where is_vip = 1
+
+.. php:method:: refModel($link)
+
+There are many situations when you need to get referenced model instead of reference itself.
+In such case refModel() comes in as handy shortcut of doing `$model->refLink($link)->getModel()`.
 
 hasOne reference
 ================
@@ -383,19 +388,25 @@ No condition will be applied by default so it's all up to you::
 Reference Discovery
 ===================
 
-You can call getRefs() to fetch all the references of a model::
+You can call :php:meth:`Model::getRefs()` to fetch all the references of a model::
 
     $refs = $model->getRefs();
     $ref = $refs['owner_id'];
 
-or if you know the reference you'd like to fetch, you can use getRef()::
+or if you know the reference you'd like to fetch, you can use :php:meth:`Model::getRef()`::
 
     $ref = $model->getRef('owner_id');
 
-While ref() returns a related model, getRef() gives you the reference object itself so that you
-could perform some changes on it, such as import more fields with addField().
+While :php:meth:`Model::ref()` returns a related model, :php:meth:`Model::getRef()`
+gives you the reference object itself so that you could perform some changes on it,
+such as import more fields with :php:meth:`Model::addField()`.
 
-You can also use hasRef() to check if particular reference exists in model::
+Or you can use :php:meth:`Model::refModel()` which will simply return referenced model
+and you can do fancy things with it.
+
+    $ref_model = $model->refModel('owner_id');
+
+You can also use :php:meth:`Model::hasRef()` to check if particular reference exists in model::
 
     $ref = $model->hasRef('owner_id');
 
@@ -406,9 +417,9 @@ When operating with data-sets you can define references that use deep traversal:
 
     echo $o->load(1)->ref('user_id')->ref('address_id')['address_1'];
 
-The above example will actually perform 3 load operations, because as I have explained above,
-ref() loads related model when called on a loaded model. To perform a single query instead,
-you can use::
+The above example will actually perform 3 load operations, because as I have
+explained above, :php:meth:`Model::ref()` loads related model when called on
+a loaded model. To perform a single query instead, you can use::
 
     echo $o->withID(1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
 
@@ -445,8 +456,9 @@ if you want::
     $item->hasMany('parent_item_id', [new Model_Item(), 'table_alias'=>'mypi'])
         ->addField('parent', 'name');
 
-Additionally you can pass table_alias as second argument into ref() or refLink(). This can
-help you in creating a recursive models that relate to itself. Here is example::
+Additionally you can pass table_alias as second argument into :php:meth:`Model::ref()` or
+:php:meth:`Model::refLink()`. This can help you in creating a recursive models that relate
+to itself. Here is example::
 
     class Model_Item3 extends \atk4\data\Model {
         public $table='item';
