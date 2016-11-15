@@ -211,9 +211,9 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         $this->save_buffer = [];
 
         if ($this->reverse) {
-            $update->where($this->foreign_field, $this->owner->id);
+            $update->where($this->foreign_field, $model->id);
         } else {
-            $update->where($this->foreign_field, $this->owner[$this->master_field]);
+            $update->where($this->foreign_field, $model[$this->master_field]);
         }
 
         $update->update();

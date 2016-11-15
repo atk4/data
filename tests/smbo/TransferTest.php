@@ -26,8 +26,8 @@ class TransferTest extends SMBOTestCase
 
         $data = $t->export(['id', 'transfer_document_id']);
         $this->assertEquals([
-            ['id' => 1, 'transfer_document_id' => 2],
-            ['id' => 2, 'transfer_document_id' => 1],
+            ['id' => '1', 'transfer_document_id' => '2'],
+            ['id' => '2', 'transfer_document_id' => '1'],
         ], $data);
     }
 

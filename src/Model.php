@@ -272,10 +272,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         // we need to clone some of the elements
         if ($this->elements) {
             foreach ($this->elements as $id => $el) {
-                if ($el instanceof Join) {
-                    $this->elements[$id] = clone $el;
-                    $el->owner = $this;
-                }
+                $el = clone $el;
+                $this->elements[$id] = $el;
+                $el->owner = $this;
             }
         }
     }
