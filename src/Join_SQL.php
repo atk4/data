@@ -175,12 +175,11 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         $insert->insert();
         $this->id = $insert->connection->lastInsertID();
 
-        if($this->join) {
+        if ($this->join) {
             $this->join->set($this->master_field, $this->id);
         } else {
             $data[$this->master_field] = $this->id;
         }
-
     }
 
     public function afterInsert($model, $id)
