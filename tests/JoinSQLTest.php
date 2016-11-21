@@ -402,10 +402,10 @@ class JoinSQLTest extends SQLTestCase
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
-        $j = $m_u->join('contact');
-        $j->addField('contact_phone');
-        $c = $j->join('country');
-        $c->addField('country_name', ['actual' => 'name']);
+        $j_contact = $m_u->join('contact');
+        $j_contact->addField('contact_phone');
+        $j_country = $j_contact->join('country');
+        $j_country->addField('country_name', ['actual' => 'name']);
 
         $m_u->load(10);
         $m_u->delete();
@@ -417,6 +417,8 @@ class JoinSQLTest extends SQLTestCase
 
         $m_u->tryLoad(40);
         $this->assertEquals(false, $m_u->loaded());
+
+        $this->assertSame($m_u->getElement('country_id')->join, $m_u->getElement('contact_phone')->join);
 
         $m_u->unload();
         $m_u->save(['name'=>'new', 'contact_phone'=>'+000', 'country_name'=>'LV']); 
