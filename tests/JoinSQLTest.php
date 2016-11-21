@@ -421,7 +421,7 @@ class JoinSQLTest extends SQLTestCase
         $this->assertSame($m_u->getElement('country_id')->join, $m_u->getElement('contact_phone')->join);
 
         $m_u->unload();
-        $m_u->save(['name'=>'new', 'contact_phone'=>'+000', 'country_name'=>'LV']); 
+        $m_u->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
         $this->assertEquals([
             'user' => [
