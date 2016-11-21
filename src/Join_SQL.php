@@ -69,8 +69,8 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->owner->addHook('afterInsert', $this, null, -5);
-            $this->owner->addHook('beforeUpdate', $this, null, -5);
+            $this->owner->addHook('afterInsert', $this);
+            $this->owner->addHook('beforeUpdate', $this);
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
             $this->owner->addHook('afterLoad', $this);
         } else {
@@ -92,7 +92,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
                 }
             }
 
-            $this->owner->addHook('beforeInsert', $this);
+            $this->owner->addHook('beforeInsert', $this, null, -5);
             $this->owner->addHook('beforeUpdate', $this);
             $this->owner->addHook('afterDelete', [$this, 'doDelete']);
             $this->owner->addHook('afterLoad', $this);
@@ -175,7 +175,11 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         $insert->insert();
         $this->id = $insert->connection->lastInsertID();
 
-        $data[$this->master_field] = $this->id;
+        if ($this->join) {
+            $this->join->set($this->master_field, $this->id);
+        } else {
+            $data[$this->master_field] = $this->id;
+        }
     }
 
     public function afterInsert($model, $id)
