@@ -207,9 +207,7 @@ array:
     Contains list of modified fields since last loading and their original
     values.
 
-
 Full example::
-
 
     $m = new Model_User($db, 'user');
 

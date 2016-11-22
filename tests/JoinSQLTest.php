@@ -402,10 +402,10 @@ class JoinSQLTest extends SQLTestCase
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
-        $j = $m_u->join('contact');
-        $j->addField('contact_phone');
-        $c = $j->join('country');
-        $c->addField('country_name', ['actual' => 'name']);
+        $j_contact = $m_u->join('contact');
+        $j_contact->addField('contact_phone');
+        $j_country = $j_contact->join('country');
+        $j_country->addField('country_name', ['actual' => 'name']);
 
         $m_u->load(10);
         $m_u->delete();
@@ -418,18 +418,26 @@ class JoinSQLTest extends SQLTestCase
         $m_u->tryLoad(40);
         $this->assertEquals(false, $m_u->loaded());
 
+        $this->assertSame($m_u->getElement('country_id')->join, $m_u->getElement('contact_phone')->join);
+
+        $m_u->unload();
+        $m_u->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
+
         $this->assertEquals([
             'user' => [
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
+                41 => ['id' => 41, 'name' => 'new', 'contact_id' => 301],
             ], 'contact' => [
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
+                301 => ['id' => 301, 'contact_phone' => '+000', 'country_id' => 4],
             ], 'country' => [
 
                 2 => ['id' => 2, 'name' => 'USA'],
                 3 => ['id' => 3, 'name' => 'India'],
+                4 => ['id' => 4, 'name' => 'LV'],
             ], ], $this->getDB()
         );
     }

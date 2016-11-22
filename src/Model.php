@@ -272,10 +272,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         // we need to clone some of the elements
         if ($this->elements) {
             foreach ($this->elements as $id => $el) {
-                if ($el instanceof Join) {
-                    $this->elements[$id] = clone $el;
-                    $el->owner = $this;
-                }
+                $el = clone $el;
+                $this->elements[$id] = $el;
+                $el->owner = $this;
             }
         }
     }
@@ -1566,6 +1565,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function ref($link, $defaults = [])
     {
         return $this->getRef($link)->ref($defaults);
+    }
+
+    /**
+     * Return related model.
+     *
+     * @param string $link
+     * @param array  $defaults
+     *
+     * @return Model
+     */
+    public function refModel($link, $defaults = [])
+    {
+        return $this->getRef($link)->refModel($defaults);
     }
 
     /**

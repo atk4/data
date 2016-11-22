@@ -498,9 +498,9 @@ object which will in turn figure out what to do.
 Additionally you can call :php:meth:`Model::addField()` on the reference model
 that will bring one or several fields from related model into your current model.
 
-Finally this reference object contains method getModel() which will produce a
-(possibly) fresh copy of related entity and will either adjust it's DataSet or
-set the active record.
+Finally this reference object contains method :php:meth:`Reference::getModel()`
+which will produce a (possibly) fresh copy of related entity and will either
+adjust it's DataSet or set the active record.
 
 Actions
 =======
