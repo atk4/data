@@ -16,7 +16,7 @@ Agile Data implements an entirely new pattern for data abstraction, that is spec
 
 **Q: I fine-tune all my SQL queries. Why should I care?**
 
-Agile Data is capable of fine-tuning queries for you, including being able to consistently use joins, sub-qureies, expressions and advanced SQL patterns such as UNION, full-text search conditions or aggregation without you explicitly wrating SQL code.
+Agile Data is capable of fine-tuning queries for you, including being able to consistently use joins, sub-qureies, expressions and advanced SQL patterns such as UNION, full-text search conditions or aggregation without you explicitly writing SQL code.
 
 Now, since your code is no longer SQL-reliant, it's much easier to transparently start using NoSQL vendors, such as Cloud Databases for storing "AuditLog" or In-memory database for caches.
 
@@ -26,29 +26,29 @@ We are working on more extensions/vendor drivers, which you will be able to use 
 
 **Q: How is Agile Data different to ORM or Active Record?**
 
-ORM is designed for persisting application data in local, low-latency storage such as SQLite. Most cloud applications are now separated from their databases through networks, virtual containers and are often stored elsewhere. This often cripples performance and forces use of hacks (such as eager-loading) to solve scalability problems.
+ORM is designed for persisting application data in local, low-latency storage such as SQLite. Most cloud applications are now separated from their databases through networks, virtual containers and physical distances. This often cripples performance and forces use of hacks (such as eager-loading) to solve scalability problems.
 
 You may also run into memory problems when using ORM over extremely large databases. ORM are not designed to work with multi-user data shared inside same tables either.
 
-Agile Data [retains all of the basic and advanced ORM features](http://socialcompare.com/en/comparison/php-data-access-libraries-orm-activerecord-persistence) and has a very similar syntax, yet It's much easier to learn and customize.
+Agile Data [retains all of the basic and advanced ORM features](http://socialcompare.com/en/comparison/php-data-access-libraries-orm-activerecord-persistence), has a very similar simple syntax yet it is much better at using advanced database features (such as aggregation frameworks).
 
 **Q: What are benefits and risks if I start using Agile Data in my existing app?**
 
-Agile Data has minimum dependencies and is designed to be compatible with any PHP architecture or application. You can use it along-side your existing Query logic and focus on areas with low performance in your existing app to gradually refactor without risks. If your current application executes more than 2 SQL queries per request or contains at least 1 complex SQL statement, it's worth the move.
+Agile Data has minimum dependencies and is designed to be compatible with any PHP architecture or application (even your custom-mvc-framework). You can use it along-side your existing Query logic and focus on performance bottlenecks as you gradually refactor you app. If your current application executes more than 2 SQL queries per request or contains at least 1 complex SQL statement, Agile Data is worth considering.
 
-You will find that handling security and access control is much simpler with Agile Data and through the use of extension you will be saving lots of time. The footprint of your code will be reduced significantly and you will be able to easily focus your test-suite on business rules rather then persistence rules.
+You will find that handling security and access control is much simpler with Agile Data and through the use of extension you will be saving lots of time. The footprint of your code will be reduced significantly and you will be able to easily build test-suite that focuses on your business rules rather then persistence rules.
 
 **Q: I already know various ORMs and SQL. Agile Data is similar, right?**
 
-No. Agile Data is not ORM. It has same features but it is designed from the ground-up in a different way. You would still need to learn the core concepts to understand how Agile Data operates.
+No. Agile Data is not ORM. It has comparable features but it is designed from the ground-up in a different way. You would need to start at the very beginning.
 
-Luckily we have designed Agile Data to be really easy-to-learn and use, so you will enjoy the experience.
+Luckily we have designed Agile Data to be really easy-to-learn and use, so you will enjoy the learning experience.
 
 ## Agile Data at a Glance
 
 Agile Data implements various advanced database access patterns such as Active Record, Persistence Mapping, Domain Model, Event sourcing, Actions, Hooks, DataSets and Query Building in a **practical way** that can be **easily learned**, used in any framework with SQL or NoSQL database and meeting all **enterprise**-specific requirements.
 
-You get to manipulate your objects first before query is invoked. The next code snippet will work with your existing database of Cliens, Orders and Order Lines and will query total amount of all orders placed by VIP clients. Looking at the resulting query you will  notice an implementation detail - Line total is not stored physically inside the database but is rather expressed as multiplication of price and quantity.
+You get to manipulate your objects first before query is invoked. The next code snippet will work with your existing database of Cliens, Orders and Order Lines and will query total amount of all orders placed by VIP clients. Looking at the resulting query you will  notice an implementation detail - Line total is not stored physically inside the database but is rather expressed as multiplication of price and quantity:
 
 ``` php
 $m = new Client($db);
@@ -78,23 +78,23 @@ My next example demonstrates how simple and clean your code looks when you store
 $m = new Client($db);
 $m->loadBy('name', 'Pear Company');
 $m->ref('Order')
-   ->save(['ref'=>'TBL1', 'due'=>new DateTime('+1 month')])
+   ->save(['ref'=>'TBL1', 'delivery'=>new DateTime('+1 month')])
    ->ref('Lines')->import([
       ['Table', 'category'=>'furniture', 'qty'=>2, 'price'=>10.50],
       ['Chair', 'category'=>'furniture', 'qty'=>10, 'price'=>3.25],
 ]);
 ```
 
-Resulting queries (I removed back-ticks and parametric variables for readability) use a consise syntax and demonstrate some of the "behind-the-scenes" logic:
+Resulting queries (I have removed back-ticks and parametric variables for readability) use a consise syntax and demonstrate some of the "behind-the-scenes" logic:
 
--   New order must belong to the Company. Also company must not be  deleted.
--   `due` is stored in field `due_date`, also the DateTime type is mapped into SQL-friendly date.
+-   New order must belong to the Company. Also company must not be soft-deleted.
+-   `delivery` is stored in field `deliery_date`, also the DateTime type is mapped into SQL-friendly date.
 -   `order_id` is automatically used with Lines.
--   `category` automatically looked up as part of insert query.
+-   `category_id` can be looked up directly inside the INSERT (standard feature of SQL reference fields).
 
 ```sql
 select id, name from client where name = "Pear Company" and is_deleted = 0;
-insert into order (company_id, ref, due_date)
+insert into order (company_id, ref, delivery_date)
   values (293, "TBL1", "2015-18-12");
 insert into order_lines (order_id, title, category_id, qty, price) values
   (201, "Table", (select id from category where name = "furniture"), 2, 10.50),
@@ -105,7 +105,7 @@ If you have enjoyed those examples and would like to try them yourself, continue
 
 ## Getting Started with Agile Data
 
-Depending on your preferences you can get find various guides:
+Depending on your learning preferences you can find the following resources useful:
 
 - Documentation: http://agile-data.readthedocs.io
 - Slides from the presentation: [Love and Hate Relationship between ORMs and Query Builders](http://www.slideshare.net/romaninsh/love-and-hate-relationship-between-orm-and-query-builders)" talk.
@@ -117,11 +117,11 @@ Depending on your preferences you can get find various guides:
 
 ![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4)[![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
 
-**Our community is still growing. You can help by telling your friends about Agile Data.**
+**Our community is still growing. HELP US GROW by telling your friends about Agile Data!!!**
 
 ### Learning the Concepts
 
-There are 3 fundamental principles that differ Agile Data from other data access frameworks:
+There are 3 fundamental principles that separate Agile Data from other data access frameworks:
 
 -   Smart Fields
 -   DataSets
@@ -153,7 +153,7 @@ class Client extends \atk4\data\Model {
 
  ![mapping](docs/images/mapping.png)
 
-Anything related to a Model (Field, Condition, Reference) lives is the realm of "Domain Model" inside PHP memory. When you  `save()`, frameworks generates an "Action" that will actually update your SQL table, invoke RestAPI request or write that file into persistent storage.
+Anything related to a Model (Field, Condition, Reference) is an object that lives is the realm of "Domain Model" inside PHP memory. When you  `save()`, frameworks generates an "Action" that will actually update your SQL table, invoke RestAPI request or write that file to disk.
 
 Each persistence implements actions differently. SQL is probably the most full-featured one:
 
@@ -163,7 +163,7 @@ Each persistence implements actions differently. SQL is probably the most full-f
 
 #### Introducing Expressions
 
-Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `Field_SQL_Expression` and `Field_Expression` can include custom SQL or PHP expressions:
+Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `Field_SQL_Expression` and `Field_Expression` can define field through custom SQL or PHP code:
 
 ![GitHub release](docs/images/expression.gif)
 
@@ -173,7 +173,7 @@ Smart Fields in Agile Toolkit are represented as objects. Because of inheritance
 
 Foreign keys and Relation are bread and butter of RDBMS. While it makes sense in "Persistence", not all databases support Relations.
 
-Agile Data takes a different approach by introducing "References". It allow you to define relationships between Domain Models that can work with non-relational databases, yet allow you to perform various operations such as importing or aggregating fields.
+Agile Data takes a different approach by introducing "References". It allow you to define relationships between Domain Models that can work with non-relational databases, yet allow you to perform various operations such as importing or aggregating fields. (use of JOIN is explained below)
 
 ![GitHub release](docs/images/import-field.gif)
 
@@ -193,16 +193,15 @@ Once condition is defined, it's will appear in actions and will also restrict yo
 
 With most frameworks when it comes to serious data aggregation you must make a choice - write in-efficient domain-model code or write RAW SQL query. Agile Data helps you tap into unique features of your DataBase while letting you stay inside Domain Model.
 
-How do we create an efficient query to display total budget from all the projects grouped by client's country while entirely remaining in domain model?
+How do we create an efficient query to display total budget from all the projects grouped by client's country while entirely remaining in domain model? One line of code in Agile Data:
 
 ![GitHub release](docs/images/domain-model-reports.gif)
 
-Did you notice that the amount excluded cancelled projects even though we never asked so
-explicitly?
+Did you notice the query has automatically excluded cancelled projects?
 
 #### Model-level join
 
-Most ORMs can define define models that only work with a single SQL table. If you have
+Most ORMs can define models that only work with a single SQL table. If you have
 to store logical entity data into multiple tables - tough luck, you'll have to do
 some linking yourself.
 
@@ -212,6 +211,8 @@ create a new record, data will automatically be distributed into the tables and
 records will be linked up correctly.
 
 ![GitHub release](docs/images/model-join.gif)
+
+The best part about joins is that you can add them to your existing model for specific queries. Some extensions can even do that.
 
 -   Documentation: http://agile-data.readthedocs.io/en/develop/joins.html
 
@@ -239,9 +240,17 @@ business logic around the very powerful concepts.
 One of the virtues we value the most in Agile Data is ability to abstract and
 add higher level features on our solid foundation.
 
+### Explorability
+
+If you pass a `$model` object inside any method, add-on or extension, it's possible for them to discover not only the data, but also field types and various meta-information, references to other models, supported actions and many more.
+
+With that, creating a Dynamic Form UI object that automatically includes DropDown with list of allowed values is possible.
+
+In fact - we have already stared work on [Agile UI](http://github.com/atk4/ui) project!
+
 ### Hooks
 
-You now have a domain-level and persistence-level hooks. With a domain-level ones (afterLoad, beforeSave) you get to operate with your field data before or after operation.
+You now have a domain-level and persistence-level hooks. With a domain-level ones (afterLoad, beforeSave) you get to operate with your field data before or after an operation.
 
 On other hand you can utilise persistence-level hooks ('beforeUpdateQuery', 'beforeSelectQuery') and you can interact with a powerful Query Builder to add a few SQL options (insert ignore or calc_found_rows)
 if you need.
@@ -282,35 +291,53 @@ foreach($client->ref('Project') as $project) {
 // is re-populated on each iteration.
 ```
 
-Nothing unnecessary is pre-fetched. Only requested columns are queried. Rows are streamed and never ever we will try to squeeze a large collection of IDs into a query!
+Nothing unnecessary is pre-fetched. Only requested columns are queried. Rows are streamed and never ever we will try to squeeze a large collection of IDs into a variable or a query.
 
-Agile Data works fast even if you have huge amount of records in the database.
+Agile Data works fast and efficient even if you have huge amount of records in the database.
 
 ### Security
 
 When ORM promise you "security" they don't really extend it to the cases where you wish to perform a sub-query of a sort. Then you have to deal with RAW query components and glue them together yourself.
 
-Agile Data provides a universal support for Expressions and each expression have supports for `escaping` and `parameters`;
+Agile Data provides a universal support for Expressions and each expression have support for `escaping` and `parameters`. My next example will add scope filtering the countries by their length. Automatic parameters will ensure that any nastiness will be properly escaped:
 
 ``` php
-$c->addCondition($c->expr('length([name]) = []', [20]))
+$country->addCondition($country->expr('length([name]) = []', [$_GET['len']])); // 2
 ```
 
-This is condition from our deep-traversal demo, where our custom condition
-fetches only 2-character long countries. Compare that to the generated query
-segment:
+Resulting query is:
 
 ``` php
-where length(`name`) = :a  [:a=20]
+where length(`name`) = :a  [:a=2]
 ```
 
-First of all - `[name]` is automatically mapped into SQL representation of your name field (in case it's field from a join or a sub-query). Secondly the number `2` is supplied as PDO parameter. And Agile Data takes extra care to join parameters between different expressions that make it into your query.
+Another great security feature is invoked when you try and add a new country:
 
-The final security measure are the Conditions. Once you load your Client, traversing into 'Project' model will imply a condition which will only expose projects of that specific Client.
+```php
+$country->insert('Latvia');
+```
 
-Even if you perform a multi-row opetation such as `action('update')` or `action('delete')` it will only apply to projects of that client. With the model object you won't be able to create a new project that does NOT belong to loaded client.
+This code will fail, because our earlier condition that "Latvia" does not satisfy. This makes variety of other uses safe:
 
-Those security measures are there to protect you against human factor.
+```php
+$client->load(3);
+$client->ref('Order')->insert($_POST);
+```
+
+Regardless of what's inside the `$_POST`, the new record will have `client_id = 3` .
+
+Finally, the following is also possible:
+
+``` php
+$client->addCondition('is_vip');
+$client->ref('Order')->insert($_POST);
+```
+
+
+
+Regardless of the content of the POST data, the order can only be created for the VIP client. Even if you perform a multi-row opetation such as `action('update')` or `action('delete')` it will only apply to records that match all of the conditions.
+
+Those security measures are there to protect you against human errors. We think that input sanitization is still quite important and you should do that.
 
 ## Installing into existing project
 
