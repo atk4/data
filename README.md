@@ -6,65 +6,132 @@
 [![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
 [![Version](https://badge.fury.io/gh/atk4%2Fdata.svg)](https://packagist.org/packages/atk4/data)
 
+**Data Access Framework for high-latency databases (Cloud SQL/NoSQL).**
 
-**PHP Framework for better Business Logic design and scalable database access.**
+The #1 reason, why so many developers prefer Query Building over Active Record / Object Relational Mappers is **query-efficiency**.
 
-Agile Data implements various advanced database access patterns such as Active Record, Persistence Mapping, Domain Model, Event sourcing, Actions, DataSets and Query Building in a **practical way** that can be **easily learned**, used in any framework with SQL or NoSQL database and meeting all **enterprise**-specific requirements.
+Agile Data implements an entirely new pattern for data abstraction, that is specifically designed for remote databases such as RDS, Cloud SQL, BigQuery and other distributed data storage architectures. It focuses on **reducing** number of requests your App have to send to the Database by using more sophisticated queries while also offering full Domain Model mapping and Database vendor abstraction.
+
+## Q&A
+
+**Q: I fine-tune all my SQL queries. Why should I care?**
+
+Agile Data is capable of fine-tuning queries for you, including being able to consistently use joins, sub-qureies, expressions and advanced SQL patterns such as UNION, full-text search conditions or aggregation without you explicitly wrating SQL code.
+
+Now, since your code is no longer SQL-reliant, it's much easier to transparently start using NoSQL vendors, such as Cloud Databases for storing "AuditLog" or In-memory database for caches.
+
+Extensions can now also participate in query building and transparently add features such as "Soft-Delete", "AuditTrail", "Undo", "Scopes" and many others.
+
+We are working on more extensions/vendor drivers, which you will be able to use without any code refactoring.
+
+**Q: How is Agile Data different to ORM or Active Record?**
+
+ORM is designed for persisting application data in local, low-latency storage such as SQLite. Most cloud applications are now separated from their databases through networks, virtual containers and are often stored elsewhere. This often cripples performance and forces use of hacks (such as eager-loading) to solve scalability problems.
+
+You may also run into memory problems when using ORM over extremely large databases. ORM are not designed to work with multi-user data shared inside same tables either.
+
+Agile Data [retains all of the basic and advanced ORM features](http://socialcompare.com/en/comparison/php-data-access-libraries-orm-activerecord-persistence) and has a very similar syntax, yet It's much easier to learn and customize.
+
+**Q: What are benefits and risks if I start using Agile Data in my existing app?**
+
+Agile Data has minimum dependencies and is designed to be compatible with any PHP architecture or application. You can use it along-side your existing Query logic and focus on areas with low performance in your existing app to gradually refactor without risks. If your current application executes more than 2 SQL queries per request or contains at least 1 complex SQL statement, it's worth the move.
+
+You will find that handling security and access control is much simpler with Agile Data and through the use of extension you will be saving lots of time. The footprint of your code will be reduced significantly and you will be able to easily focus your test-suite on business rules rather then persistence rules.
+
+**Q: I already know various ORMs and SQL. Agile Data is similar, right?**
+
+No. Agile Data is not ORM. It has same features but it is designed from the ground-up in a different way. You would still need to learn the core concepts to understand how Agile Data operates.
+
+Luckily we have designed Agile Data to be really easy-to-learn and use, so you will enjoy the experience.
+
+## Agile Data at a Glance
+
+Agile Data implements various advanced database access patterns such as Active Record, Persistence Mapping, Domain Model, Event sourcing, Actions, Hooks, DataSets and Query Building in a **practical way** that can be **easily learned**, used in any framework with SQL or NoSQL database and meeting all **enterprise**-specific requirements.
+
+You get to manipulate your objects first before query is invoked. The next code snippet will work with your existing database of Cliens, Orders and Order Lines and will query total amount of all orders placed by VIP clients. Looking at the resulting query you will  notice an implementation detail - Line total is not stored physically inside the database but is rather expressed as multiplication of price and quantity.
 
 ``` php
 $m = new Client($db);
 echo $m->addCondition('vip', true)
-  ->ref('Order')->ref('Line')->action('fx', ['sum', 'total']);
+  ->ref('Order')->ref('Line')->action('fx', ['sum', 'total'])->getOne();
 ```
 
-Resulting Query:
+Resulting Query will always use parametric variables if vendor driver supports them (such as PDO):
 
 ``` sql
 select sum(`price`*`qty`) from `order_line` `O_L` where `order_id` in (
   select `id` from `order` `O` where `client_id` in (
-    select `id` from `client` where `vip` = 'Y'
+    select `id` from `client` where `vip` = :a
   )
 )
+
+// :a is "Y"
 ```
 
-One of the goals is to keep your entire domain logic away from abstracted data-stores while using the advanced query patterns like JOIN, SUBQUERY, UNION to boost scalability. DataSet solve decade-old ORM problems such as `N+1`. All of that is achieved with a beautiful and consise syntax, that does not rely on extra XML files or annotations. Next snippet illustrates data import, that will automatically map into 3-related records across 2 or more SQL tables:
+Agile Data is not only for SQL databases. It can be used anywhere from decoding Form submission data ($_POST) or even work with custom RestAPIs.  Zero-configuration implementation for "AuditTrail", "ACL" and "Soft Delete" as well as new features such as "Undo", "Global Scoping" and "Cross-persistence" make your Agile Data code enterprise-ready out of the box.
+
+All of the above does not add complexity to your business logic code. You don't need to create XML, YAML files or annotations. There is no mandatory caching either. 
+
+My next example demonstrates how simple and clean your code looks when you store new Order data:
 
 ``` php
-$c = new Client($db);
-$c->loadBy('name', 'Pear Company');
-$c->ref('Invoice')
+$m = new Client($db);
+$m->loadBy('name', 'Pear Company');
+$m->ref('Order')
    ->save(['ref'=>'TBL1', 'due'=>new DateTime('+1 month')])
    ->ref('Lines')->import([
-      ['table', 'qty'=>2, 'price'=>10.50],
-      ['chair', 'qty'=>10, 'price'=>3.25],
+      ['Table', 'category'=>'furniture', 'qty'=>2, 'price'=>10.50],
+      ['Chair', 'category'=>'furniture', 'qty'=>10, 'price'=>3.25],
 ]);
 ```
 
-Agile Data is not only for SQL databases. It can be used from interpreting Form submission data from $_POST into domain model to RestAPI abstractions and proxying. Zero-configuration implementation for "AuditTrail", "ACL" and "Soft Delete" as well as new features such as "Undo", "Global Scoping" and "Cross-persistence" make your Agile Data code enterprise-ready out of the box.
+Resulting queries (I removed back-ticks and parametric variables for readability) use a consise syntax and demonstrate some of the "behind-the-scenes" logic:
 
-If you enjoy advanced examples, continue to https://github.com/atk4/data-primer.
+-   New order must belong to the Company. Also company must not be  deleted.
+-   `due` is stored in field `due_date`, also the DateTime type is mapped into SQL-friendly date.
+-   `order_id` is automatically used with Lines.
+-   `category` automatically looked up as part of insert query.
 
-## The Gentle Beginning
+```sql
+select id, name from client where name = "Pear Company" and is_deleted = 0;
+insert into order (company_id, ref, due_date)
+  values (293, "TBL1", "2015-18-12");
+insert into order_lines (order_id, title, category_id, qty, price) values
+  (201, "Table", (select id from category where name = "furniture"), 2, 10.50),
+  (201, "Chair", (select id from category where name = "furniture"), 19, 3.25);
+```
 
-You must be ready to learn, even if you are familiar with all of the Martin Fowler's works and several different PHP ORM implementations. Various features and patterns are exclusive to Agile Data. 
+If you have enjoyed those examples and would like to try them yourself, continue to https://github.com/atk4/data-primer.
 
-http://socialcompare.com/en/comparison/php-data-access-libraries-orm-activerecord-persistence
+## Getting Started with Agile Data
 
-Use Agile Data in your existing PHP Apps to boost scalability, performance, security and clean up your code.
+Depending on your preferences you can get find various guides:
 
-## Essential Links
-
+- Documentation: http://agile-data.readthedocs.io
 - Slides from the presentation: [Love and Hate Relationship between ORMs and Query Builders](http://www.slideshare.net/romaninsh/love-and-hate-relationship-between-orm-and-query-builders)" talk.
+- Download a sample application that uses Agile Data: https://github.com/atk4/data-primer
+- Watch series of 5-minute Videos explaining core concepts: https://www.youtube.com/playlist?list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS
+- If you are interested in using Agile Data commercially, email <u>info</u> @ <u>agiletoolkit.org</u> for a **free** Skype presentation.
 
-- (https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+### Community Support Channels
 
-- Agile Data is part of [Agile Toolkit](http://agiletoolkit.org/). See our list of commercial services and extensions for [Agile Data](http://agiletoolkit.org/data).
+![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4)[![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
 
-![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)[![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=develop)](http://agile-data.readthedocs.io/en/develop/?badge=latest)[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4)[![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
+**Our community is still growing. You can help by telling your friends about Agile Data.**
 
-### Introducing Models
+### Learning the Concepts
 
-Start by creating a new class that defines your Models. In Agile Data the `Model` class is a lightweight object, to augment your business entities.
+There are 3 fundamental principles that differ Agile Data from other data access frameworks:
+
+-   Smart Fields
+-   DataSets
+-   Actions
+
+The best way to learn is by reading through [Quick Start Guide](http://agile-data.readthedocs.io/en/develop/quickstart.html), however I'll include a brief descriptions below:
+
+#### Models
+
+Agile Data uses vendor-independent and lightweight `Model` class to describe your business entities:
 
 ``` php
 class Client extends \atk4\data\Model {
@@ -82,23 +149,27 @@ class Client extends \atk4\data\Model {
 -   Documentation: http://agile-data.readthedocs.io/en/develop/model.html
 -   Examples: https://github.com/atk4/data-primer/tree/master/src
 
-### Introducing Actions
+#### Introducing Actions
 
  ![mapping](docs/images/mapping.png)
 
-Anything related to a Model (Field, Condition, Reference) lives is the realm of "Domain Model" inside PHP memory. When you  `save()`, frameworks generates an "Action" that will actually update your SQL table, invoke RestAPI request or write that file to disk.
+Anything related to a Model (Field, Condition, Reference) lives is the realm of "Domain Model" inside PHP memory. When you  `save()`, frameworks generates an "Action" that will actually update your SQL table, invoke RestAPI request or write that file into persistent storage.
 
-For SQL-persistence, Actions obect are build using a powerful SQL Query Builder that gives you a window into all the features of Relational databases that many ORM simply choose to "lock away". Actions can either query or change the data and they can work with either SQL "fields" or DomainModel "fields":
+Each persistence implements actions differently. SQL is probably the most full-featured one:
 
 ![GitHub release](docs/images/action.gif)
 
-### Introducing Expressions
+-   Documentation: http://agile-data.readthedocs.io/en/develop/quickstart.html?highlight=action#actions
 
-In Agile Data your Domain Model Field (such as `$project['budget']`) can be defined through user-defined SQL expression. Currently only SQL Persistence fully suports expressions. Domain model "fields" that map into expression behave no different to the read-only physical field to the rest of your application.
+#### Introducing Expressions
+
+Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `Field_SQL_Expression` and `Field_Expression` can include custom SQL or PHP expressions:
 
 ![GitHub release](docs/images/expression.gif)
 
-### Introducing References
+-   Documentation: http://agile-data.readthedocs.io/en/develop/expressions.html
+
+#### Introducing References
 
 Foreign keys and Relation are bread and butter of RDBMS. While it makes sense in "Persistence", not all databases support Relations.
 
@@ -106,7 +177,9 @@ Agile Data takes a different approach by introducing "References". It allow you 
 
 ![GitHub release](docs/images/import-field.gif)
 
-### Model Conditions and DataSets
+-   Documentation: http://agile-data.readthedocs.io/en/develop/references.html
+
+#### Model Conditions and DataSets
 
 Conditions (or scopes) are rare and optional feature across ORMs but it is one of the most significant features in Agile Data. It allows you to create objects that represent multiple database records without actually loading them.  
 
@@ -114,8 +187,9 @@ Once condition is defined, it's will appear in actions and will also restrict yo
 
 ![GitHub release](docs/images/reference-magic.gif)
 
+-   Documentation: http://agile-data.readthedocs.io/en/develop/conditions.html
 
-### Build Reports inside Domain Model
+#### Build Reports inside Domain Model
 
 With most frameworks when it comes to serious data aggregation you must make a choice - write in-efficient domain-model code or write RAW SQL query. Agile Data helps you tap into unique features of your DataBase while letting you stay inside Domain Model.
 
@@ -126,7 +200,7 @@ How do we create an efficient query to display total budget from all the project
 Did you notice that the amount excluded cancelled projects even though we never asked so
 explicitly?
 
-### Model-level join
+#### Model-level join
 
 Most ORMs can define define models that only work with a single SQL table. If you have
 to store logical entity data into multiple tables - tough luck, you'll have to do
@@ -139,7 +213,9 @@ records will be linked up correctly.
 
 ![GitHub release](docs/images/model-join.gif)
 
-### Deep Model Traversal
+-   Documentation: http://agile-data.readthedocs.io/en/develop/joins.html
+
+#### Deep Model Traversal
 
 Probably one of the best feature of Agile Data is deep traversal. Remember how
 your ORM tried to implement varous many-to-many relationships? This is no longer
@@ -150,10 +226,11 @@ projects are there from the clients that are located in a country with 2-letter 
 
 Agile Data can answer with a query or with a result.
 
-
 ![GitHub release](docs/images/deep-traversal.gif)
 
-## Advanced Features
+-   Documentation: http://agile-data.readthedocs.io/en/develop/references.html#traversing-dataset
+
+## Advanced Features and Extensions
 
 The examples you saw so far are only a small fragment of the possibilities you can
 achieve with Agile Data. You now have a new playground where you can design your
@@ -171,6 +248,8 @@ if you need.
 
 And guess what - should your model be saved into NoSQL database, the domain-level hooks will be executed, but SQL-specific ones will not.
 
+-   Documentation: http://agile-data.readthedocs.io/en/develop/hooks.html
+
 ### Extensions
 
 Most ORMs hard-code features like soft-delete, audit-log, timestamps. In Agile Data the implementation of base model is incredibly lightweight and all the necessary features are added through external objects.
@@ -185,8 +264,9 @@ We are still working on our Extension library but we plan to include:
   stored in S3 (or other) but the references and meta-information remains in the database.
 - Soft-Delete, purge and undelete - several strategies, custom fields, permissions.
 
-If you are interested in early access to Extensions, please contact us at
-http://agiletoolkit.org/contact
+More details on extensions: http://www.agiletoolkit.org/data/extensions
+
+If you are interested in early access to Extensions, please contact us at <u>info</u> @ <u>agiletoolkit.org</u>.
 
 ### Performance
 
@@ -232,39 +312,20 @@ Even if you perform a multi-row opetation such as `action('update')` or `action(
 
 Those security measures are there to protect you against human factor.
 
-### Full documentation for Agile Data
-
-If you have missed link to documentation, then its [agile-data.readthedocs.io](http://agile-data.readthedocs.io).
-
-### Getting Started Guides
-
-* [Follow the Quick Start guides](http://agile-data.readthedocs.io/en/develop/quickstart.html)
-* [Watch short introduction video on Youtube](https://youtu.be/ZekgUxdPWwc)
-
 ## Installing into existing project
 
-Update your `composer.json` with 'require' and 'autoload' sections:
+Start by installing Agile Data through composer:
 
-``` json
-{
-  "type":"project",
-  "require":{
-    "atk4/data": "^1.0.0",
-    "psy/psysh": "*"
-  },
-  "autoload":{
-    "psr-4": {
-      "my\\": "src/my/"
-    }
-  }
-}
+``` bash
+composer require atk4/data
+composer g require psy/psysh:@stable  # optional, but handy for debugging!
 ```
 
-Run `composer update` and create your first business model inside `src/my/Model_User.php`:
+Define your first model class:
 
 ``` php
 namespace my;
-class Model_User extends \atk4\data\Model
+class User extends \atk4\data\Model
 {
     public $table = 'user';
     function init()
@@ -272,17 +333,17 @@ class Model_User extends \atk4\data\Model
         parent::init();
 
         $this->addFields(['email','name','password']);
+        // use your table fields here
     }
 }
 ```
 
-Use an existing table name and fields. Next create `console.php` file to start exploring Agile Data:
+Next create `console.php`:
 
 ``` php
 <?php
 include'vendor/autoload.php';
 $db = \atk4\data\Persistence::connect(PDO_DSN, USER, PASS);
-$m = new my\Model_User($db);
 eval(\Psy\sh());
 ```
 
@@ -295,7 +356,7 @@ $ php console.php
 Now you can explore. Try typing:
 
 ``` php
-> $m
+> $m = new \my\User($db);
 > $m->loadBy('email', 'example@example.com')
 > $m->get()
 > $m->export(['email','name'])
@@ -312,38 +373,21 @@ this project, you should also look into:
 - [Agile Core](https://github.com/atk4/core) - [![GitHub release](https://img.shields.io/github/release/atk4/core.svg?maxAge=2592000)]()
 
 
-## Help us make Agile Data better!!
+## Current Status
 
-We wish to take on your feedback and improve Agile Data further. Here is how you can connect with developer team:
+Agile Data is **Stable since Jul 2016**. For more recent updates see [Changelog](https://github.com/atk4/data/blob/develop/CHANGELOG.md).
 
-- chat with us on [Gitter](https://gitter.im/atk4/data) and ask your questions directly.
-- ask or post suggestions on our forum [https://forum.agiletoolkit.org](https://forum.agiletoolkit.org)
-- **share Agile Data with your friends**, we need more people to use it. Blog. Tweet. Share.
-- work on some of the tickets marked with [help wanted](https://github.com/atk4/data/labels/help%20wanted) tag.
+### Timeline to the first release
 
-See [www.agiletoolkit.org](http://www.agiletoolkit.org/) for more frameworks and libraries that can make your PHP Web Application even more efficient.
-
-## Roadmap
-
-Follow pull-request history and activity of repository to see what's going on.
-
-```
-1.1   Add support for derived models (unions).
-1.x   Add support for 3rd party vendor implementations.
-1.x   Add support for MongoDB.
-1.x   Add support and docs for Validators.
-```
-
-## Past Updates
-* 20 Jul: Release of 1.0 with a new QuickStart guide
-* 15 Jul: Rewrote README preparing for our first BETA release
-* 05 Jul: Released 0.5 Expressions, Conditions, Relations
-* 28 Jun: Released 0.4 join support for SQL and Array
-* 24 Jun: Released 0.3 with general improvements
-* 17 Jun: Finally shipping 0.2: With good starting support of SQL and Array
-* 29 May: Finished implementation of core logic for Business Model
-* 11 May: Released 0.1: Implemented code climate, test coverage and travis
-* 06 May: Revamped the concept, updated video and made it simpler
-* 22 Apr: Finalized concept, created presentation slides.
-* 17 Apr: Started working on concept draft (in wiki)
-* 14 Apr: [Posted my concept on Reddit](https://www.reddit.com/r/PHP/comments/4f2epw/reinventing_the_faulty_orm_concept_subqueries/)
+* 20 Jul 2016: Release of 1.0 with a new QuickStart guide
+* 15 Jul 2016: Rewrote README preparing for our first BETA release
+* 05 Jul 2016: Released 0.5 Expressions, Conditions, Relations
+* 28 Jun 2016: Released 0.4 join support for SQL and Array
+* 24 Jun 2016: Released 0.3 with general improvements
+* 17 Jun 2016: Finally shipping 0.2: With good starting support of SQL and Array
+* 29 May 2016: Finished implementation of core logic for Business Model
+* 11 May 2016: Released 0.1: Implemented code climate, test coverage and travis
+* 06 May 2016: Revamped the concept, updated video and made it simpler
+* 22 Apr 2016: Finalized concept, created presentation slides.
+* 17 Apr 2016: Started working on concept draft (in wiki)
+* 14 Apr 2016: [Posted my concept on Reddit](https://www.reddit.com/r/PHP/comments/4f2epw/reinventing_the_faulty_orm_concept_subqueries/)
