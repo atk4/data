@@ -158,7 +158,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * to set this property to an existing fields, it would enable several
      * shortcuts for you such as::.
      *
-     *    $model->importRows(['Bananas','Oranges']); // 2 records imported
+     *    $model->import(['Bananas','Oranges']); // 2 records imported
      *
      * @var string
      */
