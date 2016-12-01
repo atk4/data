@@ -108,7 +108,7 @@ If you have enjoyed those examples and would like to try them yourself, continue
 Depending on your learning preferences you can find the following resources useful:
 
 - Documentation: http://agile-data.readthedocs.io
-- Slides from the presentation: [Love and Hate Relationship between ORMs and Query Builders](http://www.slideshare.net/romaninsh/love-and-hate-relationship-between-orm-and-query-builders)" talk.
+- Slides from my presentation: [Love and Hate Relationship between ORMs and Query Builders](http://www.slideshare.net/romaninsh/agile-data-presentation-3-cambridge).
 - Download a sample application that uses Agile Data: https://github.com/atk4/data-primer
 - Watch series of 5-minute Videos explaining core concepts: https://www.youtube.com/playlist?list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS
 - If you are interested in using Agile Data commercially, email <u>info</u> @ <u>agiletoolkit.org</u> for a **free** Skype presentation.
