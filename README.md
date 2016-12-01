@@ -16,7 +16,7 @@ Agile Data implements an entirely new pattern for data abstraction, that is spec
 
 **Q: I fine-tune all my SQL queries. Why should I care?**
 
-Agile Data is capable of fine-tuning queries for you, including being able to consistently use joins, sub-qureies, expressions and advanced SQL patterns such as UNION, full-text search conditions or aggregation without you explicitly writing SQL code.
+Agile Data is capable of fine-tuning queries for you, including being able to consistently use joins, sub-queries, expressions and advanced SQL patterns such as UNION, full-text search conditions or aggregation without you explicitly writing SQL code.
 
 Now, since your code is no longer SQL-reliant, it's much easier to transparently start using NoSQL vendors, such as Cloud Databases for storing "AuditLog" or In-memory database for caches.
 
@@ -48,7 +48,7 @@ Luckily we have designed Agile Data to be really easy-to-learn and use, so you w
 
 Agile Data implements various advanced database access patterns such as Active Record, Persistence Mapping, Domain Model, Event sourcing, Actions, Hooks, DataSets and Query Building in a **practical way** that can be **easily learned**, used in any framework with SQL or NoSQL database and meeting all **enterprise**-specific requirements.
 
-You get to manipulate your objects first before query is invoked. The next code snippet will work with your existing database of Cliens, Orders and Order Lines and will query total amount of all orders placed by VIP clients. Looking at the resulting query you will  notice an implementation detail - Line total is not stored physically inside the database but is rather expressed as multiplication of price and quantity:
+You get to manipulate your objects first before query is invoked. The next code snippet will work with your existing database of Clients, Orders and Order Lines and will query total amount of all orders placed by VIP clients. Looking at the resulting query you will notice an implementation detail - Line total is not stored physically inside the database but is rather expressed as multiplication of price and quantity:
 
 ``` php
 $m = new Client($db);
@@ -68,7 +68,7 @@ select sum(`price`*`qty`) from `order_line` `O_L` where `order_id` in (
 // :a is "Y"
 ```
 
-Agile Data is not only for SQL databases. It can be used anywhere from decoding Form submission data ($_POST) or even work with custom RestAPIs.  Zero-configuration implementation for "AuditTrail", "ACL" and "Soft Delete" as well as new features such as "Undo", "Global Scoping" and "Cross-persistence" make your Agile Data code enterprise-ready out of the box.
+Agile Data is not only for SQL databases. It can be used anywhere from decoding Form submission data ($_POST) or even work with custom RestAPIs. Zero-configuration implementation for "AuditTrail", "ACL" and "Soft Delete" as well as new features such as "Undo", "Global Scoping" and "Cross-persistence" make your Agile Data code enterprise-ready out of the box.
 
 All of the above does not add complexity to your business logic code. You don't need to create XML, YAML files or annotations. There is no mandatory caching either. 
 
@@ -88,7 +88,7 @@ $m->ref('Order')
 Resulting queries (I have removed back-ticks and parametric variables for readability) use a consise syntax and demonstrate some of the "behind-the-scenes" logic:
 
 -   New order must belong to the Company. Also company must not be soft-deleted.
--   `delivery` is stored in field `deliery_date`, also the DateTime type is mapped into SQL-friendly date.
+-   `delivery` is stored in field `delivery_date`, also the DateTime type is mapped into SQL-friendly date.
 -   `order_id` is automatically used with Lines.
 -   `category_id` can be looked up directly inside the INSERT (standard feature of SQL reference fields).
 
@@ -153,7 +153,7 @@ class Client extends \atk4\data\Model {
 
  ![mapping](docs/images/mapping.png)
 
-Anything related to a Model (Field, Condition, Reference) is an object that lives is the realm of "Domain Model" inside PHP memory. When you  `save()`, frameworks generates an "Action" that will actually update your SQL table, invoke RestAPI request or write that file to disk.
+Anything related to a Model (Field, Condition, Reference) is an object that lives in the realm of "Domain Model" inside PHP memory. When you  `save()`, frameworks generates an "Action" that will actually update your SQL table, invoke RestAPI request or write that file to disk.
 
 Each persistence implements actions differently. SQL is probably the most full-featured one:
 
@@ -183,7 +183,7 @@ Agile Data takes a different approach by introducing "References". It allow you 
 
 Conditions (or scopes) are rare and optional feature across ORMs but it is one of the most significant features in Agile Data. It allows you to create objects that represent multiple database records without actually loading them.  
 
-Once condition is defined, it's will appear in actions and will also restrict you from adding non-compliant records.
+Once condition is defined, it will appear in actions and will also restrict you from adding non-compliant records.
 
 ![GitHub release](docs/images/reference-magic.gif)
 
@@ -335,7 +335,7 @@ $client->ref('Order')->insert($_POST);
 
 
 
-Regardless of the content of the POST data, the order can only be created for the VIP client. Even if you perform a multi-row opetation such as `action('update')` or `action('delete')` it will only apply to records that match all of the conditions.
+Regardless of the content of the POST data, the order can only be created for the VIP client. Even if you perform a multi-row operation such as `action('update')` or `action('delete')` it will only apply to records that match all of the conditions.
 
 Those security measures are there to protect you against human errors. We think that input sanitization is still quite important and you should do that.
 
