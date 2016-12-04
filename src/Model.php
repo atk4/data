@@ -134,7 +134,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public $dirty = [];
 
-
     /**
      * Contains ID of the current record. If the value is null then the record
      * is considered to be new.
@@ -1245,7 +1244,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             $this->hook('afterSave');
-
 
             if ($this->loaded()) {
                 $this->dirty = $this->_dirty_after_reload;

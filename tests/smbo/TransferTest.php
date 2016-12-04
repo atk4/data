@@ -16,7 +16,6 @@ class TransferTest extends SMBOTestCase
         $aib = (new Account($this->db))->save('AIB');
         $boi = (new Account($this->db))->save('BOI');
 
-
         $t = $aib->transfer($boi, 100); // create transfer between accounts
 
         $t->save();

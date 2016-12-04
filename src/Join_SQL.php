@@ -74,7 +74,6 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             $this->foreign_alias = (isset($this->owner->table_alias) ? $this->owner->table_alias : '').$this->short_name;
         }
 
-
         $this->owner->addhook('initSelectQuery', $this);
 
         // Add necessary hooks

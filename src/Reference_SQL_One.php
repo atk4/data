@@ -38,7 +38,6 @@ class Reference_SQL_One extends Reference_One
             $their_field = $field;
         }
 
-
         $e = $this->owner->addExpression($field, array_merge([
             function ($m) use ($their_field) {
                 return $m->refLink($this->link)->action('field', [$their_field]);

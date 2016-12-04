@@ -68,7 +68,6 @@ class PersistentSQLTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-
         $ids = [];
         foreach ($a['user'] as $id => $row) {
             $ids[] = $p->insert($m, $row);
@@ -107,7 +106,6 @@ class PersistentSQLTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-
         $ms = [];
         foreach ($a['user'] as $id => $row) {
             $ms[] = $m->insert($row);
@@ -136,7 +134,6 @@ class PersistentSQLTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
 
-
         $m->import($a['user']);
 
         $this->assertEquals(2, $m->action('count')->getOne());
@@ -159,7 +156,6 @@ class PersistentSQLTest extends TestCase
         $m = new Model($p, 'user');
         $m->addField('name');
         $m->addField('surname');
-
 
         $ids = [];
         foreach ($a['user'] as $id => $row) {

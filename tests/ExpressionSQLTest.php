@@ -107,7 +107,6 @@ class ExpressionSQLTest extends SQLTestCase
         $this->assertEquals(10, $i['total_net']);
         $this->assertEquals(30, $i['sum_net']);
 
-
         $q = $db->dsql();
         $q->field($i->action('count'), 'total_orders');
         $q->field($i->action('fx', ['sum', 'total_net']), 'total_net');
@@ -138,7 +137,6 @@ class ExpressionSQLTest extends SQLTestCase
             $m->action('select')->render()
         );
 
-
         $m->tryLoad(1);
         $this->assertEquals(null, $m['name']);
         $m->tryLoad(2);
@@ -166,7 +164,6 @@ class ExpressionSQLTest extends SQLTestCase
         $this->assertEquals(5, $m['sum']);
 
         $this->assertEquals(9, $m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
-
 
         $this->setDB($a);
         $m = new Model($db, ['math', 'reload_after_save' => false]);

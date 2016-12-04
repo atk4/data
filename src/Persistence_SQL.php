@@ -129,7 +129,6 @@ class Persistence_SQL extends Persistence
 
         $m = parent::add($m, $defaults);
 
-
         if (!isset($m->table) || (!is_string($m->table) && $m->table !== false)) {
             throw new Exception([
                 'Property $table must be specified for a model',
@@ -673,7 +672,6 @@ class Persistence_SQL extends Persistence
             ], null, $e);
         }
 
-
         if (!$data) {
             return;
         }
@@ -801,7 +799,6 @@ class Persistence_SQL extends Persistence
         // only apply fields that has been modified
         $update->set($data);
         $update->where($m->getElement($m->id_field), $id);
-
 
         $st = null;
 
