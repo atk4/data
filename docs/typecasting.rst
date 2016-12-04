@@ -51,7 +51,7 @@ additional options to it::
 Here is another example with booleans::
 
     $m->addField('is_married', [
-        'type' => boolean',
+        'type' => 'boolean',
         'enum' => ['No', 'Yes']
     ]);
 
