@@ -21,6 +21,14 @@ class Reference_One extends Reference
     public $type = null;
 
     /**
+     * Is it system field?
+     * System fields will be always loaded and saved.
+     *
+     * @var bool
+     */
+    public $system = false;
+
+    /**
      * Points to the join if we are part of one.
      *
      * @var Join|null
@@ -138,7 +146,7 @@ class Reference_One extends Reference
         if (!$this->owner->hasElement($this->our_field)) {
             $this->owner->addField($this->our_field, [
                 'type'              => $this->type, // $this->guessFieldType(),
-                //'system'          => true,
+                'system'            => $this->system,
                 'join'              => $this->join,
                 'default'           => $this->default,
                 'never_persist'     => $this->never_persist,
