@@ -167,14 +167,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * When using onlyFields() this property will contain list of desired
      * fields.
      *
-     * When you have used onlyFields() before loading the data for this
-     * model, then only that set of fields will be available. Attempt
-     * to access any other field will result in exception. This is to ensure
-     * that you do not accidentally access field that you have explicitly
-     * excluded.
+     * If you set onlyFields() before loading the data for this model, then
+     * only that set of fields will be available. Attempt to access any other
+     * field will result in exception. This is to ensure that you do not
+     * accidentally access field that you have explicitly excluded.
      *
      * The default behavior is to return NULL and allow you to set new
      * fields even if addField() was not used to set the field.
+     *
+     * onlyFields() always allows to access fields with system = true.
      *
      * @var false|array
      */
@@ -402,7 +403,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($this->only_fields) {
-            if (!in_array($field, $this->only_fields)) {
+            if (!in_array($field, $this->only_fields) && !$this->getElement($field)->system) {
                 throw new Exception([
                     'Attempt to use field outside of those set by onlyFields',
                     'field'       => $field,
