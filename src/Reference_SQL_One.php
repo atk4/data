@@ -107,6 +107,20 @@ class Reference_SQL_One extends Reference_One
         return $m;
     }
 
+    public function ref($defaults = [])
+    {
+        $m = parent::ref($defaults);
+
+        // If model is not loaded, then we are probably doing deep traversal
+        if (!$this->owner->loaded() && isset($this->owner->persistence) && $this->owner->persistence instanceof Persistence_SQL) {
+            $values = $this->owner->action('field', [$this->our_field]);
+
+            return $m->addCondition($this->their_field ?: $m->id_field, $values);
+        }
+
+        return $m;
+    }
+
     /**
      * Add a title of related entity as expression to our field.
      *
@@ -159,20 +173,6 @@ class Reference_SQL_One extends Reference_One
         }, null, 20);
 
         return $ex;
-    }
-
-    public function ref($defaults = [])
-    {
-        $m = parent::ref($defaults);
-
-        // If model is not loaded, then we are probably doing deep traversal
-        if (!$this->owner->loaded() && isset($this->owner->persistence) && $this->owner->persistence instanceof Persistence_SQL) {
-            $values = $this->owner->action('field', [$this->our_field]);
-
-            return $m->addCondition($this->their_field ?: $m->id_field, $values);
-        }
-
-        return $m;
     }
 
     /**
