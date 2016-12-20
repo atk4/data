@@ -617,10 +617,10 @@ class Persistence_SQL extends Persistence
         if (!isset($data[$m->id_field]) || is_null($data[$m->id_field])) {
             throw new Exception([
                 'Model uses "id_field" but it wasn\'t available in the database',
-                'model' => $m,
+                'model'       => $m,
                 'id_field'    => $m->id_field,
-                'id'    => $id,
-                'data'  => $data,
+                'id'          => $id,
+                'data'        => $data,
             ]);
         }
 
@@ -689,10 +689,10 @@ class Persistence_SQL extends Persistence
             } else {
                 throw new Exception([
                     'Model uses "id_field" but it wasn\'t available in the database',
-                    'model' => $m,
+                    'model'       => $m,
                     'id_field'    => $m->id_field,
-                    'id'    => $id,
-                    'data'  => $data,
+                    'id'          => $id,
+                    'data'        => $data,
                 ]);
             }
         }
@@ -803,7 +803,7 @@ class Persistence_SQL extends Persistence
     public function update(Model $m, $id, $data)
     {
         if (!$m->id_field) {
-            throw new Exception(["id_field of a model is not set. Unable to update record."]);
+            throw new Exception(['id_field of a model is not set. Unable to update record.']);
         }
 
         $update = $this->initQuery($m);
@@ -856,7 +856,7 @@ class Persistence_SQL extends Persistence
     public function delete(Model $m, $id)
     {
         if (!$m->id_field) {
-            throw new Exception(["id_field of a model is not set. Unable to delete record."]);
+            throw new Exception(['id_field of a model is not set. Unable to delete record.']);
         }
 
         $delete = $this->initQuery($m);

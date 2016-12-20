@@ -31,9 +31,10 @@ class ReadOnlyModeTest extends SQLTestCase
     }
 
     /**
-     * Basic operation should work just fine on model without ID
+     * Basic operation should work just fine on model without ID.
      */
-    function testBasic() {
+    public function testBasic()
+    {
         $this->m->tryLoadAny();
         $this->assertEquals('John', $this->m['name']);
 
@@ -42,63 +43,63 @@ class ReadOnlyModeTest extends SQLTestCase
         $this->assertEquals('Sue', $this->m['name']);
 
         $n = [];
-        foreach($this->m as $row){
+        foreach ($this->m as $row) {
             $n[] = $row['name'];
         }
         $this->assertEquals(['Sue', 'John'], $n);
-    } 
+    }
 
     /**
-     * Read only model can be loaded just fine
+     * Read only model can be loaded just fine.
      */
-    function testLoad()
+    public function testLoad()
     {
         $this->m->load(1);
     }
 
     /**
-     * Model cannot be saved 
+     * Model cannot be saved.
      *
      * @expectedException Exception
      */
-    function testLoadSave()
+    public function testLoadSave()
     {
         $this->m->load(1);
-        $this->m['name']='X';
+        $this->m['name'] = 'X';
         $this->m->save();
     }
 
     /**
-     * Insert should fail too
+     * Insert should fail too.
      *
      * @expectedException Exception
      */
-    function testInsert()
+    public function testInsert()
     {
         $this->m->insert(['name'=>'Joe']);
     }
 
     /**
-     * Different attempt that should also fail
+     * Different attempt that should also fail.
      *
      * @expectedException Exception
      */
-    function testSave1()
+    public function testSave1()
     {
         $this->m->tryLoadAny();
         $this->m->saveAndUnload();
     }
 
     /**
-     * Conditions should work fine
+     * Conditions should work fine.
      */
-    function testLoadBy()
+    public function testLoadBy()
     {
         $this->m->loadBy('name', 'Sue');
         $this->assertEquals('Sue', $this->m['name']);
     }
 
-    function testLoadCondition()
+    public function testLoadCondition()
     {
         $this->m->addCondition('name', 'Sue');
         $this->m->loadAny();
@@ -108,7 +109,7 @@ class ReadOnlyModeTest extends SQLTestCase
     /**
      * @expectedException Exception
      */
-    function testFailDelete1()
+    public function testFailDelete1()
     {
         $this->m->delete(1);
     }
