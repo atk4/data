@@ -20,7 +20,7 @@ Agile Data is capable of fine-tuning queries for you, including being able to co
 
 Now, since your code is no longer SQL-reliant, it's much easier to transparently start using NoSQL vendors, such as Cloud Databases for storing "AuditLog" or In-memory database for caches.
 
-Extensions can now also participate in query building and transparently add features such as "Soft-Delete", "AuditTrail", "Undo", "Scopes" and many others.
+[Extensions](https://agiletoolkit.org/data/extensions) can now also participate in query building and transparently add features such as "Soft-Delete", "AuditTrail", "Undo", "Scopes" and many others.
 
 We are working on more extensions/vendor drivers, which you will be able to use without any code refactoring.
 
