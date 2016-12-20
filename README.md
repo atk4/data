@@ -266,7 +266,7 @@ Most ORMs hard-code features like soft-delete, audit-log, timestamps. In Agile D
 We are still working on our Extension library but we plan to include:
 
 - [Audit Log](https://www.agiletoolkit.org/data/extensions/audit) - record all operations in a model (as well as previous field values), offers a reliable Undo functionality.
-- [Reporting](https://www.agiletoolkit.org/data/extensions/reporting) - offers UnionModel 
+- [Reporting](https://www.agiletoolkit.org/data/extensions/report) - offers UnionModel 
 - ACL - flexible system to restrict access to certain records, fields or models based on
   permissions of your logged-in user or custom logic.
 - Filestore - allow you to work with files inside your model. Files are actually
