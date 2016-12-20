@@ -111,7 +111,7 @@ Depending on your learning preferences you can find the following resources usef
 - Slides from my presentation: [Love and Hate Relationship between ORMs and Query Builders](http://www.slideshare.net/romaninsh/agile-data-presentation-3-cambridge).
 - Download a sample application that uses Agile Data: https://github.com/atk4/data-primer
 - Watch series of 5-minute Videos explaining core concepts: https://www.youtube.com/playlist?list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS
-- If you are interested in using Agile Data commercially, email <u>info</u> @ <u>agiletoolkit.org</u> for a **free** Skype presentation.
+- Agile Data community is growing rapidly, in a meantime, there is a commercial support available. https://www.agiletoolkit.org/data/enterprise
 
 ### Community Support Channels
 
@@ -127,7 +127,7 @@ There are 3 fundamental principles that separate Agile Data from other data acce
 -   DataSets
 -   Actions
 
-The best way to learn is by reading through [Quick Start Guide](http://agile-data.readthedocs.io/en/develop/quickstart.html), however I'll include a brief descriptions below:
+All other ORM features are then re-enginered on new fundamentials:
 
 #### Models
 
@@ -265,8 +265,8 @@ Most ORMs hard-code features like soft-delete, audit-log, timestamps. In Agile D
 
 We are still working on our Extension library but we plan to include:
 
-- Audit Log - record all operations in a model (as well as previous field values)
-- Undo - revert last few few operations on your model.
+- [Audit Log](https://www.agiletoolkit.org/data/extensions/audit) - record all operations in a model (as well as previous field values), offers a reliable Undo functionality.
+- [Reporting](https://www.agiletoolkit.org/data/extensions/reporting) - offers UnionModel 
 - ACL - flexible system to restrict access to certain records, fields or models based on
   permissions of your logged-in user or custom logic.
 - Filestore - allow you to work with files inside your model. Files are actually
@@ -274,8 +274,6 @@ We are still working on our Extension library but we plan to include:
 - Soft-Delete, purge and undelete - several strategies, custom fields, permissions.
 
 More details on extensions: http://www.agiletoolkit.org/data/extensions
-
-If you are interested in early access to Extensions, please contact us at <u>info</u> @ <u>agiletoolkit.org</u>.
 
 ### Performance
 
@@ -398,6 +396,7 @@ this project, you should also look into:
 
 - [DSQL](https://github.com/atk4/dsql) - [![GitHub release](https://img.shields.io/github/release/atk4/dsql.svg?maxAge=2592000)]()
 - [Agile Core](https://github.com/atk4/core) - [![GitHub release](https://img.shields.io/github/release/atk4/core.svg?maxAge=2592000)]()
+- [Agile Core](https://github.com/atk4/core) - ![GitHub release](https://img.shields.io/github/release/atk4/ui.svg?maxAge=2592000)
 
 
 ## Current Status
