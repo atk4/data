@@ -31,9 +31,10 @@ class ModelWithoutIDTest extends SQLTestCase
     }
 
     /**
-     * Basic operation should work just fine on model without ID
+     * Basic operation should work just fine on model without ID.
      */
-    function testBasic() {
+    public function testBasic()
+    {
         $this->m->tryLoadAny();
         $this->assertEquals('John', $this->m['name']);
 
@@ -42,25 +43,25 @@ class ModelWithoutIDTest extends SQLTestCase
         $this->assertEquals('Sue', $this->m['name']);
 
         $n = [];
-        foreach($this->m as $row){
+        foreach ($this->m as $row) {
             $n[] = $row['name'];
             $this->assertNull($row->id);
         }
         $this->assertEquals(['Sue', 'John'], $n);
-    } 
+    }
 
     /**
      * @expectedException Exception
      */
-    function testFail1()
+    public function testFail1()
     {
         $this->m->load(1);
     }
 
     /**
-     * Inserting into model without ID should be OK
+     * Inserting into model without ID should be OK.
      */
-    function testInsert()
+    public function testInsert()
     {
         $this->m->insert(['name'=>'Joe']);
         $this->assertEquals(3, $this->m->action('count')->getOne());
@@ -69,7 +70,7 @@ class ModelWithoutIDTest extends SQLTestCase
     /**
      * Since no ID is set, a new record will be created if saving is attempted.
      */
-    function testSave1()
+    public function testSave1()
     {
         $this->m->tryLoadAny();
         $this->m->saveAndUnload();
@@ -80,7 +81,7 @@ class ModelWithoutIDTest extends SQLTestCase
     /**
      * Calling save will always create new record.
      */
-    function testSave2()
+    public function testSave2()
     {
         $this->m->tryLoadAny();
         $this->m->save();
@@ -89,15 +90,15 @@ class ModelWithoutIDTest extends SQLTestCase
     }
 
     /**
-     * Conditions should work fine
+     * Conditions should work fine.
      */
-    function testLoadBy()
+    public function testLoadBy()
     {
         $this->m->loadBy('name', 'Sue');
         $this->assertEquals('Sue', $this->m['name']);
     }
 
-    function testLoadCondition()
+    public function testLoadCondition()
     {
         $this->m->addCondition('name', 'Sue');
         $this->m->loadAny();
@@ -107,28 +108,30 @@ class ModelWithoutIDTest extends SQLTestCase
     /**
      * @expectedException Exception
      */
-    function testFailDelete1()
+    public function testFailDelete1()
     {
         $this->m->delete(4);
     }
+
     /**
-     * Additional checks are done if ID is manually set
+     * Additional checks are done if ID is manually set.
      *
      * @expectedException Exception
      */
-    function testFailDelete2()
+    public function testFailDelete2()
     {
-        $this->m->id=4;
+        $this->m->id = 4;
         $this->m->delete();
     }
+
     /**
-     * Additional checks are done if ID is manually set
+     * Additional checks are done if ID is manually set.
      *
      * @expectedException Exception
      */
-    function testFailUpdate()
+    public function testFailUpdate()
     {
-        $this->m->id=1;
+        $this->m->id = 1;
         $this->m['name'] = 'foo';
         $this->m->saveAndUnload();
     }
