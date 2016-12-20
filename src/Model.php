@@ -135,6 +135,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $dirty = [];
 
     /**
+     * Setting model as read_only will protect you from accidentally
+     * updating the model. This property is intended for UI and other code
+     * detecting read-only models and acting accordingly.
+     *
+     * SECURITY WARNING: If you are looking for a RELIABLE way to restrict access
+     * to model data, please check Secure Enclave extension.
+     */
+    public $read_only = false;
+
+    /**
      * Contains ID of the current record. If the value is null then the record
      * is considered to be new.
      *
@@ -1072,7 +1082,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $this->data = $this->persistence->loadAny($this);
         if ($this->data) {
-            $this->id = $this->data[$this->id_field];
+            if ($this->id_field) {
+                $this->id = $this->data[$this->id_field];
+            }
             $this->hook('afterLoad');
         } else {
             $this->unload();
@@ -1099,7 +1111,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $this->data = $this->persistence->tryLoadAny($this);
         if ($this->data) {
-            $this->id = $this->data[$this->id_field];
+            if ($this->id_field) {
+                $this->id = $this->data[$this->id_field];
+            }
             $this->hook('afterLoad');
         } else {
             $this->unload();
@@ -1168,6 +1182,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             throw new Exception(['Model is not associated with any database']);
         }
 
+        if ($this->read_only) {
+            throw new Exception(['Model is read-only and cannot be saved']);
+        }
+
         if ($data) {
             $this->set($data);
         }
@@ -1233,14 +1251,24 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
                 // Collect all data of a new record
                 $this->id = $this->persistence->insert($this, $data);
-                $this->hook('afterInsert', [$this->id]);
 
-                if ($this->reload_after_save !== false) {
-                    $d = $this->dirty;
+                if (!$this->id_field) {
+                    // Model inserted without any ID fields. Theoretically
+                    // we should ignore $this->id even if it was returned.
+                    $this->id = null;
+                    $this->hook('afterInsert', [null]);
+
                     $this->dirty = [];
-                    $this->reload();
-                    $this->_dirty_after_reload = $this->dirty;
-                    $this->dirty = $d;
+                } else {
+                    $this->hook('afterInsert', [$this->id]);
+
+                    if ($this->reload_after_save !== false) {
+                        $d = $this->dirty;
+                        $this->dirty = [];
+                        $this->reload();
+                        $this->_dirty_after_reload = $this->dirty;
+                        $this->dirty = $d;
+                    }
                 }
             }
 
@@ -1376,6 +1404,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function delete($id = null)
     {
+        if ($this->read_only) {
+            throw new Exception(['Model is read-only and cannot be deleted']);
+        }
+
         if ($id == $this->id) {
             $id = null;
         }
