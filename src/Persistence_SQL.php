@@ -590,7 +590,7 @@ class Persistence_SQL extends Persistence
      */
     public function tryLoad(Model $m, $id)
     {
-        $load = $this->action($m, 'select');
+        $load = $m->action('select');
         $load->where($m->getElement($m->id_field), $id);
         $load->limit(1);
 
@@ -657,7 +657,7 @@ class Persistence_SQL extends Persistence
      */
     public function tryLoadAny(Model $m)
     {
-        $load = $this->action($m, 'select');
+        $load = $m->action('select');
         $load->limit(1);
 
         // execute action
@@ -721,7 +721,7 @@ class Persistence_SQL extends Persistence
      */
     public function insert(Model $m, $data)
     {
-        $insert = $this->action($m, 'insert');
+        $insert = $m->action('insert');
         $insert->set($this->typecastSaveRow($m, $data));
 
         $st = null;
@@ -752,7 +752,7 @@ class Persistence_SQL extends Persistence
      */
     public function export(Model $m, $fields = null)
     {
-        $export = $this->action($m, 'select', [$fields]);
+        $export = $m->action('select', [$fields]);
 
         return array_map(function ($r) use ($m) {
             return $this->typecastLoadRow($m, $r);
@@ -769,7 +769,7 @@ class Persistence_SQL extends Persistence
     public function prepareIterator(Model $m)
     {
         try {
-            $export = $this->action($m, 'select');
+            $export = $m->action('select');
 
             return $export->execute();
         } catch (\PDOException $e) {
