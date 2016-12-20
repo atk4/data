@@ -691,7 +691,6 @@ class Persistence_SQL extends Persistence
                     'Model uses "id_field" but it wasn\'t available in the database',
                     'model'       => $m,
                     'id_field'    => $m->id_field,
-                    'id'          => $id,
                     'data'        => $data,
                 ]);
             }
