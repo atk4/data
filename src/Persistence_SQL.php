@@ -238,6 +238,8 @@ class Persistence_SQL extends Persistence
             foreach ($fields as $field) {
                 $this->initField($q, $m->getElement($field));
             }
+        } elseif ($fields === false) {
+            // do nothing on purpose
         } elseif ($m->only_fields) {
             $added_fields = [];
 
