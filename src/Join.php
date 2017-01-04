@@ -91,6 +91,13 @@ class Join
     protected $foreign_field;
 
     /**
+     * A short symbolic name that will be used as an alias for the joined table.
+     *
+     * @var string
+     */
+    public $foreign_alias;
+
+    /**
      * When $prefix is set, then all the fields generated through
      * our wrappers will be automatically prefixed inside the model.
      *

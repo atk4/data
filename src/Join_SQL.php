@@ -10,13 +10,6 @@ namespace atk4\data;
 class Join_SQL extends Join implements \atk4\dsql\Expressionable
 {
     /**
-     * A short symbolic name that will be used as an alias for the joined table.
-     *
-     * @var string
-     */
-    public $foreign_alias;
-
-    /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
      * You can specify your own type of join by passing ['kind'=>'right']
      * as second argument to join().
