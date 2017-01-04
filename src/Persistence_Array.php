@@ -202,7 +202,7 @@ class Persistence_Array extends Persistence
         }
     }
 
-    function prepareIterator(Model $m)
+    public function prepareIterator(Model $m)
     {
         return $this->data[$m->table];
     }
