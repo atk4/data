@@ -201,4 +201,9 @@ class Persistence_Array extends Persistence
                 ]);
         }
     }
+
+    function prepareIterator(Model $m)
+    {
+        return $this->data[$m->table];
+    }
 }
