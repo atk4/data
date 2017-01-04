@@ -574,7 +574,7 @@ class Persistence_SQL extends Persistence
                 $m->hook('initSelectQuery', [$q, $type]);
                 if (isset($args['alias'])) {
                     $q->reset('field')->field($q->expr("$fx([])", [$field]), $args['alias']);
-                }else{
+                } else {
                     $q->reset('field')->field($q->expr("$fx([])", [$field]));
                 }
 

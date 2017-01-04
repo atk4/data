@@ -184,8 +184,9 @@ class Field
      *
      * @param mixed $value
      *
-     * @return mixed
      * @throws Exception
+     *
+     * @return mixed
      */
     public function normalize($value)
     {
@@ -193,14 +194,14 @@ class Field
             return $value;
         }
         if ($value === null) {
-            return null;
+            return;
         }
         $f = $this;
 
         // only string type fields can use empty string as legit value, for all
         // other field types empty value is the same as no-value, nothing or null
         if ($f->type && $f->type != 'string' && $value === '') {
-            return null;
+            return;
         }
 
         switch ($f->type) {

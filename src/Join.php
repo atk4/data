@@ -299,6 +299,7 @@ class Join
      * @todo NOT IMPLEMENTED! weakJoin method does not exist!
      *
      * @param array $defaults
+     *
      * @return
      */
     public function weakJoin($defaults = [])
