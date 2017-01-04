@@ -532,7 +532,11 @@ class Persistence_SQL extends Persistence
             case 'count':
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q]);
-                $q->reset('field')->field('count(*)');
+                if (isset($args['alias'])) {
+                    $q->reset('field')->field('count(*)', $args['alias']);
+                } else {
+                    $q->reset('field')->field('count(*)');
+                }
 
                 return $q;
 
@@ -546,7 +550,11 @@ class Persistence_SQL extends Persistence
 
                 $field = is_string($args[0]) ? $m->getElement($args[0]) : $args[0];
                 $m->hook('initSelectQuery', [$q, $type]);
-                $q->reset('field')->field($field);
+                if (isset($args['alias'])) {
+                    $q->reset('field')->field($field, $args['alias']);
+                } else {
+                    $q->reset('field')->field($field);
+                }
                 $this->initQueryConditions($m, $q);
                 $this->setLimitOrder($m, $q);
 
@@ -564,7 +572,11 @@ class Persistence_SQL extends Persistence
                 $field = is_string($args[1]) ? $m->getElement($args[1]) : $args[1];
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);
-                $q->reset('field')->field($q->expr("$fx([])", [$field]));
+                if (isset($args['alias'])) {
+                    $q->reset('field')->field($q->expr("$fx([])", [$field]), $args['alias']);
+                }else{
+                    $q->reset('field')->field($q->expr("$fx([])", [$field]));
+                }
 
                 return $q;
 
