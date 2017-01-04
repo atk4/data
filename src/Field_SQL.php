@@ -4,10 +4,13 @@
 
 namespace atk4\data;
 
+use atk4\dsql\Expression;
+use atk4\dsql\Expressionable;
+
 /**
  * Class description?
  */
-class Field_SQL extends Field implements \atk4\dsql\Expressionable
+class Field_SQL extends Field implements Expressionable
 {
     /**
      * Actual field name.
@@ -35,8 +38,8 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable
      */
     public function normalize($value)
     {
-        if ($value instanceof \atk4\dsql\Expression ||
-            $value instanceof \atk4\dsql\Expressionable) {
+        if ($value instanceof Expression ||
+            $value instanceof Expressionable) {
             return $value;
         }
 
@@ -46,9 +49,9 @@ class Field_SQL extends Field implements \atk4\dsql\Expressionable
     /**
      * When field is used as expression, this method will be called.
      *
-     * @param \atk\dsql\Expression $expression
+     * @param Expression $expression
      *
-     * @return \atk\dsql\Expression
+     * @return Expression
      */
     public function getDSQLExpression($expression)
     {

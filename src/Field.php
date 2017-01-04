@@ -4,12 +4,14 @@
 
 namespace atk4\data;
 
+use atk4\core\TrackableTrait;
+
 /**
  * Class description?
  */
 class Field
 {
-    use \atk4\core\TrackableTrait;
+    use TrackableTrait;
 //    use \atk4\core\HookTrait;
 
     /**
@@ -159,6 +161,8 @@ class Field
      * Constructor. You can pass field properties as array.
      *
      * @param array $defaults
+     *
+     * @throws Exception
      */
     public function __construct($defaults = [])
     {
@@ -181,6 +185,7 @@ class Field
      * @param mixed $value
      *
      * @return mixed
+     * @throws Exception
      */
     public function normalize($value)
     {
@@ -188,14 +193,14 @@ class Field
             return $value;
         }
         if ($value === null) {
-            return;
+            return null;
         }
         $f = $this;
 
         // only string type fields can use empty string as legit value, for all
         // other field types empty value is the same as no-value, nothing or null
         if ($f->type && $f->type != 'string' && $value === '') {
-            return;
+            return null;
         }
 
         switch ($f->type) {

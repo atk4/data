@@ -4,13 +4,16 @@
 
 namespace atk4\data;
 
+use atk4\core\InitializerTrait;
+use atk4\core\TrackableTrait;
+
 /**
  * Class description?
  */
 class Join
 {
-    use \atk4\core\TrackableTrait;
-    use \atk4\core\InitializerTrait {
+    use TrackableTrait;
+    use InitializerTrait {
         init as _init;
     }
 
@@ -287,6 +290,9 @@ class Join
      * weakJoin will be attached to a current join.
      *
      * @todo NOT IMPLEMENTED! weakJoin method does not exist!
+     *
+     * @param array $defaults
+     * @return
      */
     public function weakJoin($defaults = [])
     {
