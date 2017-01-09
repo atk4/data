@@ -13,7 +13,7 @@ In addition to normal operations you can extend and customise various queries.
 Default Model Classes
 =====================
 
-When using Persintence_SQL model building will use different clasess for fields, expressions, joins etc:
+When using Persistence_SQL model building will use different classes for fields, expressions, joins etc:
 
  - addField - :php:class:`Field_SQL` (field can be used as part of DSQL Expression)
  - hasOne - :php:class:`Reference_SQL_One` (allow importing fields)
@@ -39,7 +39,10 @@ SQL Field
 
     SQL Fields can be used inside other SQL expressions::
 
-        $q = new \atk4\dsql\Expression('[age] + [birth_year]', ['age'=>$m->getElement('age'), 'birth_year'=>$m->getElement('birth_year')]);
+        $q = new \atk4\dsql\Expression('[age] + [birth_year]', [
+                'age'        => $m->getElement('age'),
+                'birth_year' => $m->getElement('birth_year'),
+            ]);
 
 SQL Reference
 -------------
@@ -59,7 +62,6 @@ SQL Reference
 
         $model->hasOne('account_id', new Account())
             ->addField('account_balance', ['balance', 'type'=>'money']);
-
 
     Returns new field object.
 
@@ -101,7 +103,7 @@ SQL Reference
 
     While similar to :php:meth:`Reference_One::ref` this implementation implements deep traversal::
 
-        $country_model = $model->addCondition('is_vip', true)
+        $country_model = $customer_model->addCondition('is_vip', true)
             ->ref('country_id');           // $model was not loaded!
 
 .. php:method:: refLink
@@ -123,7 +125,7 @@ SQL Reference
         $model->hasOne('country_id', new Country())
             ->addTitle(['ui'=>['caption'=>'Country Name']]);
 
-    Returns new field object;
+    Returns new field object.
 
 .. php:method:: withTitle
 
@@ -143,6 +145,7 @@ Expression will map into the SQL code, but will perform as read-only field other
     Stores expression that you define through DSQL expression::
 
         $model->addExpression('age', 'year(now())-[birth_year]');
+        // tag [birth_year] will be automatically replaced by respective model field
 
 .. php:method:: getDSQLExpression
 
@@ -187,7 +190,7 @@ Custom Expressions
 
 .. php:method:: expr
 
-    This method is also injected into the model, tat is associated with Persistence_SQL so the most conveient
+    This method is also injected into the model, that is associated with Persistence_SQL so the most convenient
     way to use this method is by calling `$model->expr('foo')`.
 
 This method is quite similar to \atk4\dsql\Query::expr() method explained here: http://dsql.readthedocs.io/en/stable/expressions.html
@@ -219,7 +222,7 @@ Action: select
 
 This action returns a basic select query. You may pass one argument - array containing list of fields::
 
-    $action = $model->action('select', [['name', 'surname']]);
+    $action = $model->action('select', ['name', 'surname']);
     
 Passing false will not include any fields into select (so that you can include them yourself)::
 
@@ -235,21 +238,20 @@ Will prepare query for performing insert of a new record.
 Action: update, delete
 ----------------------
 
-Will prepare query for performing insert of a new record. Applies conditions.
+Will prepare query for performing update or delete of records. Applies conditions set.
 
 Action: count
 -------------
 
 Returns query for `count(*)`::
 
-    $action = $model->action('count', ['alias'=>'cc']);
+    $action = $model->action('count');
     $cnt = $action->getOne();
 
-You can alias result of this function::
+You can also specify alias::
 
     $action = $model->action('count', ['alias'=>'cc']);
-    $data = $cnt->getRow();
-
+    $data = $action->getRow();
     $cnt = $data['cc'];
 
 Action: field
