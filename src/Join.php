@@ -4,13 +4,16 @@
 
 namespace atk4\data;
 
+use atk4\core\InitializerTrait;
+use atk4\core\TrackableTrait;
+
 /**
  * Class description?
  */
 class Join
 {
-    use \atk4\core\TrackableTrait;
-    use \atk4\core\InitializerTrait {
+    use TrackableTrait;
+    use InitializerTrait {
         init as _init;
     }
 
@@ -86,6 +89,13 @@ class Join
      * @var string
      */
     protected $foreign_field;
+
+    /**
+     * A short symbolic name that will be used as an alias for the joined table.
+     *
+     * @var string
+     */
+    public $foreign_alias;
 
     /**
      * When $prefix is set, then all the fields generated through
@@ -287,6 +297,10 @@ class Join
      * weakJoin will be attached to a current join.
      *
      * @todo NOT IMPLEMENTED! weakJoin method does not exist!
+     *
+     * @param array $defaults
+     *
+     * @return
      */
     public function weakJoin($defaults = [])
     {
