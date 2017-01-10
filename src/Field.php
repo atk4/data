@@ -4,12 +4,14 @@
 
 namespace atk4\data;
 
+use atk4\core\TrackableTrait;
+
 /**
  * Class description?
  */
 class Field
 {
-    use \atk4\core\TrackableTrait;
+    use TrackableTrait;
 //    use \atk4\core\HookTrait;
 
     /**
@@ -159,6 +161,8 @@ class Field
      * Constructor. You can pass field properties as array.
      *
      * @param array $defaults
+     *
+     * @throws Exception
      */
     public function __construct($defaults = [])
     {
@@ -179,6 +183,8 @@ class Field
      * some normalization for strict types.
      *
      * @param mixed $value
+     *
+     * @throws Exception
      *
      * @return mixed
      */

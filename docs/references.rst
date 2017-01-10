@@ -561,4 +561,55 @@ $m['contact_id'] field and the final $m->save() will also store the reference.
 ID setting is implemented through a basic hook. Related model will have afterSave
 hook, which will update address_id field of the $m.
 
+Reference Classes
+=================
 
+References are implemented through several classes:
+
+.. php:class:: Reference_One
+
+    Defines generic reference, that is typically created by :php:meth:`Model::addRef`
+
+.. php:attr:: table_alias
+
+    Alias for related table. Because multiple references can point to the same table, ability
+    to have unique alias is pretty good.
+
+    You don't have to change this property, it is generated automatically.
+
+.. php:attr:: link 
+
+    What should we pass into owner->ref() to get through to this reference.
+    Each reference has a unique identifier, although it's stored
+    in Model's elements as '#ref-xx'.
+
+.. php:attr:: model
+
+    May store reference to related model, depending on implementation.
+
+.. php:attr:: our_field
+
+    This is an optional property which can be used by your implementation
+    to store field-level relationship based on a common field matching.
+
+.. php:attr:: their_filed
+
+    This is an optional property which can be used by your implementation
+    to store field-level relationship based on a common field matching.
+
+.. php:method:: getModel
+
+    Returns referenced model without conditions.
+
+.. php:method:: ref
+
+    Returns referenced model WITH conditions. (if possible)
+
+.. php:method:: guessFieldType
+
+    This method implementation is removed due to performance but may be
+    reconsidered. Attempts to initialize related model to find out more
+    about the field that is being referenced during the "definition time".
+
+    Normally this would happen only during query time and if the field is
+    included into query.

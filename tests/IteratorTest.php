@@ -119,7 +119,6 @@ class IteratorTest extends SQLTestCase
             $data[] = $row->get();
         }
 
-
         $this->assertEquals([
             ['total_net' => 10],
             ['total_net' => 15],
@@ -164,7 +163,6 @@ class IteratorTest extends SQLTestCase
         foreach ($i->rawIterator() as $row) {
             $data[] = $row;
         }
-
 
         $this->assertEquals([
             ['total_net' => 10, 'id' => 1],

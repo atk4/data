@@ -216,7 +216,6 @@ class FieldTest extends SQLTestCase
         $m['name'] = 'X';
         $m->save();
 
-
         $a['item'][1]['surname'] = 'X';
 
         $this->assertEquals($a, $this->getDB());
@@ -349,7 +348,6 @@ class FieldTest extends SQLTestCase
                 '_' => ['id' => 1, 'name' => 'John', 'secret' => 'Smith'],
             ], ];
         $this->setDB($a);
-
 
         $encrypt = function ($value, $field, $persistence) {
             if (!$persistence instanceof \atk4\data\Persistence_SQL) {

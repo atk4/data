@@ -178,17 +178,3 @@ display views by default.
 Returns true if UI should not render this field in views.
 
 
-.. php:class:: Field_SQL
-
-.. php:property:: actual
-
-:php:class:`Persistence_SQL` supports field name mapping. Your field could have
-different column name in your schema::
-
-    $this->addField('name', ['actual'=>'first_name']);
-
-This will apply to load / save operations as well as query mapping.
-
-.. php:method:: getDSQLExpression
-
-SQL Fields can be used inside other SQL expressions.

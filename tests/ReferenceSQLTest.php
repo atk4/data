@@ -145,7 +145,6 @@ class ReferenceSQLTest extends SQLTestCase
 
         $o->hasOne('user_id', $u);
 
-
         $this->assertEquals('John', $o->load(1)->ref('user_id')['name']);
         $this->assertEquals('Peter', $o->load(2)->ref('user_id')['name']);
         $this->assertEquals('John', $o->load(3)->ref('user_id')['name']);
@@ -192,7 +191,6 @@ class ReferenceSQLTest extends SQLTestCase
         $this->assertEquals('Peter', $o->load(2)['username']);
         $this->assertEquals('John', $o->load(3)['username']);
         $this->assertEquals('Joe', $o->load(5)['username']);
-
 
         // few more tests
         $o = (new Model($db, 'order'))->addFields(['amount']);
@@ -301,7 +299,6 @@ class ReferenceSQLTest extends SQLTestCase
 
         $u->hasOne('contact_id', $c)
             ->addField('address');
-
 
         $u->load(1);
         $this->assertEquals('John contact', $u['address']);

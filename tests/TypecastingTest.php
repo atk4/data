@@ -80,7 +80,6 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals([1, 2, 3], $m['array']);
         $this->assertSame(8.202343, $m['float']);
 
-
         $m->duplicate()->save();
 
         $a = [
@@ -525,7 +524,6 @@ class TypecastingTest extends SQLTestCase
 
         $m['i'] = '2';
         $this->assertSame(1, $m->dirty['i']);
-
 
         $m['i'] = '1';
         $this->assertSame(1, $m->dirty['i']);

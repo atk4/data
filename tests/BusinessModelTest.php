@@ -113,7 +113,6 @@ class BusinessModelTest extends TestCase
         $m['name'] = 15;
         $this->assertEquals(['name' => 5], $m->dirty);
 
-
         $m['name'] = 5;
         $this->assertEquals([], $m->dirty);
 
@@ -313,7 +312,6 @@ class BusinessModelTest extends TestCase
         $c->getElement('name')->addHook('get', function ($o, $f, &$v) {
             $v .= '123';
         });
-
 
         $c['name'] = '  jo hn ';
         $this->assertEquals(['name' => 'jo hn'], $c->data);

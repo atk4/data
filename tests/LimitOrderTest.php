@@ -108,7 +108,6 @@ class LimitOrderTest extends SQLTestCase
             ['total_net' => 20],
         ], $i->export());
 
-
         $ii = $i;
         $i = clone $ii;
         $i->setLimit(2);

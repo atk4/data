@@ -264,7 +264,6 @@ class JoinSQLTest extends SQLTestCase
         $m_u['name'] = 'XX';
         $m_u->save();
 
-
         $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],

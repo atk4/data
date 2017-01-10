@@ -4,12 +4,14 @@
 
 namespace atk4\data;
 
+use atk4\core\InitializerTrait;
+
 /**
  * Class description?
  */
 class Field_SQL_Expression extends Field_SQL
 {
-    use \atk4\core\InitializerTrait {
+    use InitializerTrait {
         init as _init;
     }
 
@@ -53,9 +55,9 @@ class Field_SQL_Expression extends Field_SQL
     /**
      * When field is used as expression, this method will be called.
      *
-     * @param \atk\dsql\Expression $expression
+     * @param \atk4\dsql\Expression $expression
      *
-     * @return \atk\dsql\Expression
+     * @return \atk4\dsql\Expression
      */
     public function getDSQLExpression($expression)
     {
