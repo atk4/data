@@ -129,7 +129,6 @@ class Persistence_SQL extends Persistence
 
         $m = parent::add($m, $defaults);
 
-
         if (!isset($m->table) || (!is_string($m->table) && $m->table !== false)) {
             throw new Exception([
                 'Property $table must be specified for a model',
@@ -239,6 +238,8 @@ class Persistence_SQL extends Persistence
             foreach ($fields as $field) {
                 $this->initField($q, $m->getElement($field));
             }
+        } elseif ($fields === false) {
+            // do nothing on purpose
         } elseif ($m->only_fields) {
             $added_fields = [];
 
@@ -531,7 +532,11 @@ class Persistence_SQL extends Persistence
             case 'count':
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q]);
-                $q->reset('field')->field('count(*)');
+                if (isset($args['alias'])) {
+                    $q->reset('field')->field('count(*)', $args['alias']);
+                } else {
+                    $q->reset('field')->field('count(*)');
+                }
 
                 return $q;
 
@@ -545,7 +550,11 @@ class Persistence_SQL extends Persistence
 
                 $field = is_string($args[0]) ? $m->getElement($args[0]) : $args[0];
                 $m->hook('initSelectQuery', [$q, $type]);
-                $q->reset('field')->field($field);
+                if (isset($args['alias'])) {
+                    $q->reset('field')->field($field, $args['alias']);
+                } else {
+                    $q->reset('field')->field($field);
+                }
                 $this->initQueryConditions($m, $q);
                 $this->setLimitOrder($m, $q);
 
@@ -563,7 +572,11 @@ class Persistence_SQL extends Persistence
                 $field = is_string($args[1]) ? $m->getElement($args[1]) : $args[1];
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);
-                $q->reset('field')->field($q->expr("$fx([])", [$field]));
+                if (isset($args['alias'])) {
+                    $q->reset('field')->field($q->expr("$fx([])", [$field]), $args['alias']);
+                } else {
+                    $q->reset('field')->field($q->expr("$fx([])", [$field]));
+                }
 
                 return $q;
 
@@ -591,7 +604,11 @@ class Persistence_SQL extends Persistence
      */
     public function tryLoad(Model $m, $id)
     {
-        $load = $this->action($m, 'select');
+        if (!$m->id_field) {
+            throw new Exception(['Unable to load field by "id" when Model->id_field is not defined.', 'id'=>$id]);
+        }
+
+        $load = $m->action('select');
         $load->where($m->getElement($m->id_field), $id);
         $load->limit(1);
 
@@ -611,16 +628,17 @@ class Persistence_SQL extends Persistence
             return;
         }
 
-        if (isset($data[$m->id_field])) {
-            $m->id = $data[$m->id_field];
-        } else {
+        if (!isset($data[$m->id_field]) || is_null($data[$m->id_field])) {
             throw new Exception([
-                'ID of the record is unavailable. Read-only mode is not supported',
-                'model' => $m,
-                'id'    => $id,
-                'data'  => $data,
+                'Model uses "id_field" but it wasn\'t available in the database',
+                'model'       => $m,
+                'id_field'    => $m->id_field,
+                'id'          => $id,
+                'data'        => $data,
             ]);
         }
+
+        $m->id = $data[$m->id_field];
 
         return $data;
     }
@@ -658,7 +676,7 @@ class Persistence_SQL extends Persistence
      */
     public function tryLoadAny(Model $m)
     {
-        $load = $this->action($m, 'select');
+        $load = $m->action('select');
         $load->limit(1);
 
         // execute action
@@ -673,19 +691,23 @@ class Persistence_SQL extends Persistence
             ], null, $e);
         }
 
-
         if (!$data) {
             return;
         }
 
-        if (isset($data[$m->id_field])) {
-            $m->id = $data[$m->id_field];
-        } else {
-            throw new Exception([
-                'ID of the record is unavailable. Read-only mode is not supported',
-                'model' => $m,
-                'data'  => $data,
-            ]);
+        if ($m->id_field) {
+
+            // If id_field is not set, model will be rea-donly
+            if (isset($data[$m->id_field])) {
+                $m->id = $data[$m->id_field];
+            } else {
+                throw new Exception([
+                    'Model uses "id_field" but it wasn\'t available in the database',
+                    'model'       => $m,
+                    'id_field'    => $m->id_field,
+                    'data'        => $data,
+                ]);
+            }
         }
 
         return $data;
@@ -723,7 +745,7 @@ class Persistence_SQL extends Persistence
      */
     public function insert(Model $m, $data)
     {
-        $insert = $this->action($m, 'insert');
+        $insert = $m->action('insert');
         $insert->set($this->typecastSaveRow($m, $data));
 
         $st = null;
@@ -754,7 +776,7 @@ class Persistence_SQL extends Persistence
      */
     public function export(Model $m, $fields = null)
     {
-        $export = $this->action($m, 'select', [$fields]);
+        $export = $m->action('select', [$fields]);
 
         return array_map(function ($r) use ($m) {
             return $this->typecastLoadRow($m, $r);
@@ -771,7 +793,7 @@ class Persistence_SQL extends Persistence
     public function prepareIterator(Model $m)
     {
         try {
-            $export = $this->action($m, 'select');
+            $export = $m->action('select');
 
             return $export->execute();
         } catch (\PDOException $e) {
@@ -793,6 +815,10 @@ class Persistence_SQL extends Persistence
      */
     public function update(Model $m, $id, $data)
     {
+        if (!$m->id_field) {
+            throw new Exception(['id_field of a model is not set. Unable to update record.']);
+        }
+
         $update = $this->initQuery($m);
         $update->mode('update');
 
@@ -801,7 +827,6 @@ class Persistence_SQL extends Persistence
         // only apply fields that has been modified
         $update->set($data);
         $update->where($m->getElement($m->id_field), $id);
-
 
         $st = null;
 
@@ -843,6 +868,10 @@ class Persistence_SQL extends Persistence
      */
     public function delete(Model $m, $id)
     {
+        if (!$m->id_field) {
+            throw new Exception(['id_field of a model is not set. Unable to delete record.']);
+        }
+
         $delete = $this->initQuery($m);
         $delete->mode('delete');
         $delete->where($m->id_field, $id);

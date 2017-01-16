@@ -10,6 +10,25 @@ namespace atk4\data;
 class Reference_One extends Reference
 {
     /**
+     * Field type.
+     *
+     * Values are: 'string', 'boolean', 'integer', 'money', 'float',
+     *             'date', 'datetime', 'time', 'array', 'object'.
+     * Can also be set to unspecified type for your own custom handling.
+     *
+     * @var string
+     */
+    public $type = null;
+
+    /**
+     * Is it system field?
+     * System fields will be always loaded and saved.
+     *
+     * @var bool
+     */
+    public $system = false;
+
+    /**
      * Points to the join if we are part of one.
      *
      * @var Join|null
@@ -126,8 +145,8 @@ class Reference_One extends Reference
 
         if (!$this->owner->hasElement($this->our_field)) {
             $this->owner->addField($this->our_field, [
-                'type'              => null, // $this->guessFieldType(),
-                //'system'          => true,
+                'type'              => $this->type, // $this->guessFieldType(),
+                'system'            => $this->system,
                 'join'              => $this->join,
                 'default'           => $this->default,
                 'never_persist'     => $this->never_persist,

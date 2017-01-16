@@ -16,7 +16,6 @@ class SMBOTestCase extends \atk4\data\tests\SQLTestCase
             ->field('name')
             ->create();
 
-
         $x = clone $s;
         $x->table('document')->drop()
             ->id()

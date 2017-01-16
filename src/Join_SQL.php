@@ -10,36 +10,39 @@ namespace atk4\data;
 class Join_SQL extends Join implements \atk4\dsql\Expressionable
 {
     /**
-     * A short symbolic name that will be used as an alias for the joined table.
-     */
-    public $foreign_alias;
-
-    /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
      * You can specify your own type of join by passing ['kind'=>'right']
      * as second argument to join().
+     *
+     * @var string
      */
     protected $kind;
 
     /**
      * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
+     *
+     * @var \atk4\dsql\Expression
      */
     protected $on = null;
 
     /**
-     * Query we are building.
-     */
-    //protected $dsql = null;
-
-    /**
      * Will use either foreign_alias or create #join_<table>.
+     *
+     * @return string
      */
     public function getDesiredName()
     {
         return '_'.($this->foreign_alias ?: $this->foreign_table[0]);
     }
 
+    /**
+     * Returns DSQL Expression.
+     *
+     * @param \atk4\dsql\Expression $q
+     *
+     * @return \atk4\dsql\Expression
+     */
     public function getDSQLExpression($q)
     {
         return $q->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
@@ -64,13 +67,12 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
             $this->foreign_alias = (isset($this->owner->table_alias) ? $this->owner->table_alias : '').$this->short_name;
         }
 
-
         $this->owner->addhook('initSelectQuery', $this);
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->owner->addHook('afterInsert', $this, null, -5);
-            $this->owner->addHook('beforeUpdate', $this, null, -5);
+            $this->owner->addHook('afterInsert', $this);
+            $this->owner->addHook('beforeUpdate', $this);
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
             $this->owner->addHook('afterLoad', $this);
         } else {
@@ -92,13 +94,18 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
                 }
             }
 
-            $this->owner->addHook('beforeInsert', $this);
+            $this->owner->addHook('beforeInsert', $this, null, -5);
             $this->owner->addHook('beforeUpdate', $this);
             $this->owner->addHook('afterDelete', [$this, 'doDelete']);
             $this->owner->addHook('afterLoad', $this);
         }
     }
 
+    /**
+     * Returns DSQL query.
+     *
+     * @return \atk4\dsql\Query
+     */
     public function dsql()
     {
         $dsql = $this->owner->persistence->initQuery($this->owner);
@@ -110,6 +117,9 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
     /**
      * Before query is executed, this method will be called.
+     *
+     * @param Model            $model
+     * @param \atk4\dsql\Query $query
      */
     public function initSelectQuery($model, $query)
     {
@@ -147,6 +157,11 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
          */
     }
 
+    /**
+     * Called from afterLoad hook.
+     *
+     * @param Model $model
+     */
     public function afterLoad($model)
     {
         // we need to collect ID
@@ -156,6 +171,12 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         }
     }
 
+    /**
+     * Called from beforeInsert hook.
+     *
+     * @param Model $model
+     * @param array $data
+     */
     public function beforeInsert($model, &$data)
     {
         if ($this->weak) {
@@ -175,9 +196,19 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         $insert->insert();
         $this->id = $insert->connection->lastInsertID();
 
-        $data[$this->master_field] = $this->id;
+        if ($this->join) {
+            $this->join->set($this->master_field, $this->id);
+        } else {
+            $data[$this->master_field] = $this->id;
+        }
     }
 
+    /**
+     * Called from afterInsert hook.
+     *
+     * @param Model $model
+     * @param mixed $id
+     */
     public function afterInsert($model, $id)
     {
         if ($this->weak) {
@@ -196,6 +227,12 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         $this->id = $insert->connection->lastInsertID();
     }
 
+    /**
+     * Called from beforeUpdate hook.
+     *
+     * @param Model $model
+     * @param array $data
+     */
     public function beforeUpdate($model, &$data)
     {
         if ($this->weak) {
@@ -211,14 +248,20 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         $this->save_buffer = [];
 
         if ($this->reverse) {
-            $update->where($this->foreign_field, $this->owner->id);
+            $update->where($this->foreign_field, $model->id);
         } else {
-            $update->where($this->foreign_field, $this->owner[$this->master_field]);
+            $update->where($this->foreign_field, $model[$this->master_field]);
         }
 
         $update->update();
     }
 
+    /**
+     * Called from beforeDelete and afterDelete hooks.
+     *
+     * @param Model $model
+     * @param mixed $id
+     */
     public function doDelete($model, $id)
     {
         if ($this->weak) {

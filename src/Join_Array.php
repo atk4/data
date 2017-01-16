@@ -34,6 +34,11 @@ class Join_Array extends Join
         }
     }
 
+    /**
+     * Called from afterLoad hook.
+     *
+     * @param Model $model
+     */
     public function afterLoad($model)
     {
         // we need to collect ID
@@ -54,6 +59,12 @@ class Join_Array extends Join
         $model->data = array_merge($data, $model->data);
     }
 
+    /**
+     * Called from beforeInsert hook.
+     *
+     * @param Model $model
+     * @param array $data
+     */
     public function beforeInsert($model, &$data)
     {
         if ($this->weak) {
@@ -83,6 +94,12 @@ class Join_Array extends Join
         //$this->owner->set($this->master_field, $this->id);
     }
 
+    /**
+     * Called from afterInsert hook.
+     *
+     * @param Model $model
+     * @param mixed $id
+     */
     public function afterInsert($model, $id)
     {
         if ($this->weak) {
@@ -102,6 +119,12 @@ class Join_Array extends Join
         );
     }
 
+    /**
+     * Called from beforeUpdate hook.
+     *
+     * @param Model $model
+     * @param array $data
+     */
     public function beforeUpdate($model, &$data)
     {
         if ($this->weak) {
@@ -119,6 +142,12 @@ class Join_Array extends Join
         );
     }
 
+    /**
+     * Called from beforeDelete and afterDelete hooks.
+     *
+     * @param Model $model
+     * @param mixed $id
+     */
     public function doDelete($model, $id)
     {
         if ($this->weak) {

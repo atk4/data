@@ -63,8 +63,6 @@ class Model_Item3 extends \atk4\data\Model
     }
 }
 
-
-
 /**
  * @coversDefaultClass \atk4\data\Model
  */

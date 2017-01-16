@@ -38,7 +38,6 @@ class Reference_SQL_One extends Reference_One
             $their_field = $field;
         }
 
-
         $e = $this->owner->addExpression($field, array_merge([
             function ($m) use ($their_field) {
                 return $m->refLink($this->link)->action('field', [$their_field]);
@@ -108,6 +107,20 @@ class Reference_SQL_One extends Reference_One
         return $m;
     }
 
+    public function ref($defaults = [])
+    {
+        $m = parent::ref($defaults);
+
+        // If model is not loaded, then we are probably doing deep traversal
+        if (!$this->owner->loaded() && isset($this->owner->persistence) && $this->owner->persistence instanceof Persistence_SQL) {
+            $values = $this->owner->action('field', [$this->our_field]);
+
+            return $m->addCondition($this->their_field ?: $m->id_field, $values);
+        }
+
+        return $m;
+    }
+
     /**
      * Add a title of related entity as expression to our field.
      *
@@ -123,6 +136,12 @@ class Reference_SQL_One extends Reference_One
      */
     public function addTitle($defaults = [])
     {
+        if (!is_array($defaults)) {
+            throw new Exception([
+                'Argument to addTitle should be an array',
+                'arg' => $defaults,
+            ]);
+        }
         $field = str_replace('_id', '', $this->link);
         $ex = $this->owner->addExpression($field, array_merge_recursive(
             [
@@ -143,6 +162,7 @@ class Reference_SQL_One extends Reference_One
             ]
         ));
 
+        // Will try to execute last
         $this->owner->addHook('beforeSave', function ($m) use ($field) {
             if ($m->isDirty($field) && !$m->isDirty($this->link)) {
                 $mm = $m->getRef($this->link)->getModel();
@@ -150,23 +170,9 @@ class Reference_SQL_One extends Reference_One
                 $mm->addCondition($mm->title_field, $m[$field]);
                 $m[$this->link] = $mm->action('field', [$mm->id_field]);
             }
-        });
+        }, null, 20);
 
         return $ex;
-    }
-
-    public function ref($defaults = [])
-    {
-        $m = parent::ref($defaults);
-
-        // If model is not loaded, then we are probably doing deep traversal
-        if (!$this->owner->loaded() && isset($this->owner->persistence) && $this->owner->persistence instanceof Persistence_SQL) {
-            $values = $this->owner->action('field', [$this->our_field]);
-
-            return $m->addCondition($this->their_field ?: $m->id_field, $values);
-        }
-
-        return $m;
     }
 
     /**

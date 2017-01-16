@@ -80,7 +80,6 @@ class SQLTestCase extends TestCase
             $tables = $this->tables;
         }
 
-
         if (is_string($tables)) {
             $tables = array_map('trim', explode(',', $tables));
         }

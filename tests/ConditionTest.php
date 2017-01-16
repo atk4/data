@@ -56,7 +56,6 @@ class ConditionTest extends TestCase
         $gender = new Model();
         $gender->addField('name');
 
-
         $m = new Model();
         $m->addField('name');
         $m->hasOne('gender_id', $gender);

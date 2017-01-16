@@ -35,7 +35,6 @@ class Transfer extends Payment
 
                 unset($m2['destination_account_id']);
 
-
                 /*/
 
                 // If clone is not working, then this is a current work-around

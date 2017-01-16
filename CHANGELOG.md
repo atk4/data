@@ -1,3 +1,20 @@
+## 1.1.7
+
+Minor updates and bugfixes.
+
+-   Impred support for ID-less and read-only models (#211)
+-   Improved compatibility with "UnionModel" extension
+-   Made source code more friendly with PhpStorm and IDEs
+-   Upadated README.md fixing some problems with examples
+-   Expanded documentation by including some missed methods
+-   Added "SQL Extensions" documentation section
+
+## 1.1.6
+
+-   added `Model->refModel` as a method to fetch model of a relation (no loading attempts) (#198)
+-   fixed ancient nasty problem when cloning (#199)
+-   fixed error with deep joins / inserting new records (#200, #201)
+
 ## 1.1.5
 
 -   Added documentation for TypeCasting (#189)

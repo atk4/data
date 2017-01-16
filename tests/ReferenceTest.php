@@ -20,7 +20,6 @@ class ReferenceTest extends TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-
         $user->hasMany('Orders', $order);
         $o = $user->ref('Orders');
 

@@ -495,19 +495,19 @@ layer to load or save anything. Next I need a beforeSave handler::
 
     $this->addHook('beforeSave', function($m) {
         if(isset($m['client_code']) && !isset($m['client_id'])) {
-            $cl = $this->getRef('client_id')->getModel();
+            $cl = $this->refModel('client_id');
             $cl->addCondition('code',$m['client_code']);
             $m['client_id'] = $cl->action('field',['id']);
         }
 
         if(isset($m['client_name']) && !isset($m['client_id'])) {
-            $cl = $this->getRef('client_id')->getModel();
+            $cl = $this->refModel('client_id');
             $cl->addCondition('name', 'like', $m['client_name']);
             $m['client_id'] = $cl->action('field',['id']);
         }
 
         if(isset($m['category']) && !isset($m['category_id'])) {
-            $c = $this->getRef('category_id')->getModel();
+            $c = $this->refModel('category_id');
             $c->addCondition($c->title_field, 'like', $m['category']);
             $m['category_id'] = $c->action('field',['id']);
         }
@@ -526,7 +526,7 @@ You might wonder, with the lookup like that, how the default values will work?
 What if the user-specified entry is not found? Lets look at the code::
 
     if(isset($m['category']) && !isset($m['category_id'])) {
-        $c = $this->getRef('category_id')->getModel();
+        $c = $this->refModel('category_id');
         $c->addCondition($c->title_field, 'like', $m['category']);
         $m['category_id'] = $c->action('field',['id']);
     }
@@ -535,7 +535,7 @@ So if category with a name is not found, then sub-query will return "NULL".
 If you wish to use a different value instead, you can create an expression::
 
     if(isset($m['category']) && !isset($m['category_id'])) {
-        $c = $this->getRef('category_id')->getModel();
+        $c = $this->refModel('category_id');
         $c->addCondition($c->title_field, 'like', $m['category']);
         $m['category_id'] = $this->expr('coalesce([],[])',[
             $c->action('field',['id']),
@@ -548,7 +548,7 @@ as a lookup query::
 
     $this->hasOne('category_id','Model_Category');
     $this->getElement('category_id')->default =
-        $this->getRef('category_id')->getModel()->addCondition('name','Other')
+        $this->refModel('category_id')->addCondition('name','Other')
             ->action('field',['id']);
 
 

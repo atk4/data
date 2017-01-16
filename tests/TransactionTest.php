@@ -25,7 +25,6 @@ class TransactionTest extends SQLTestCase
         $m->addField('name');
         $m->load(2);
 
-
         $m->addHook('afterSave', function ($m) {
             throw new \Exception('Awful thing happened');
         });
@@ -36,7 +35,6 @@ class TransactionTest extends SQLTestCase
         }
 
         $this->assertEquals('Sue', $this->getDB()['item'][2]['name']);
-
 
         $m->addHook('afterDelete', function ($m) {
             throw new \Exception('Awful thing happened');

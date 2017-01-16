@@ -16,7 +16,6 @@ class TransferTest extends SMBOTestCase
         $aib = (new Account($this->db))->save('AIB');
         $boi = (new Account($this->db))->save('BOI');
 
-
         $t = $aib->transfer($boi, 100); // create transfer between accounts
 
         $t->save();
@@ -26,8 +25,8 @@ class TransferTest extends SMBOTestCase
 
         $data = $t->export(['id', 'transfer_document_id']);
         $this->assertEquals([
-            ['id' => 1, 'transfer_document_id' => 2],
-            ['id' => 2, 'transfer_document_id' => 1],
+            ['id' => '1', 'transfer_document_id' => '2'],
+            ['id' => '2', 'transfer_document_id' => '1'],
         ], $data);
     }
 

@@ -167,13 +167,28 @@ class Reference
     }
 
     /**
-     * Returns referenced model without any extra conditions.
+     * Returns referenced model without any extra conditions. However other
+     * relationship types may override this to imply conditions.
      *
      * @param array $defaults Properties
      *
      * @return Model
      */
     public function ref($defaults = [])
+    {
+        return $this->getModel($defaults);
+    }
+
+    /**
+     * Returns referenced model without any extra conditions. Ever when extended
+     * must always respond with Model that does not look into current record
+     * or scope.
+     *
+     * @param array $defaults Properties
+     *
+     * @return Model
+     */
+    public function refModel($defaults = [])
     {
         return $this->getModel($defaults);
     }
