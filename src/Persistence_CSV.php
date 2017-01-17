@@ -64,6 +64,16 @@ class Persistence_CSV extends Persistence
     }
 
     /**
+     * Destructor. close files correctly.
+     */
+    public function __destruct()
+    {
+        if($this->handle) {
+            fclose($this->handle);
+        }
+    }
+
+    /**
      * Returns one line of CSV file as array.
      *
      * @return array
@@ -93,13 +103,43 @@ class Persistence_CSV extends Persistence
     }
 
     /**
+     * When load operation starts, this will open file and read
+     * the first line. This line is then used to identify columns.
+     */
+    public function saveHeader(Model $m)
+    {
+        // Override this method and open handle yourself if you want to
+        // reposition or load some extra columns on the top.
+        if (!$this->handle) {
+            $this->handle = fopen($this->file, 'w');
+        }
+
+        $header = [];
+        foreach($m->elements as $name=>$field) {
+            if (!$field instanceof Field) {
+                continue;
+            }
+
+            if($name == $m->id_field) {
+                continue;
+            }
+
+            $header[] = $name;
+
+        }
+
+        $data = fputcsv($this->handle, $header);
+
+        $this->initializeHeader($header);
+    }
+
+    /**
      * Remembers $this->header so that the data can be
      * easier mapped.
      */
     public function initializeHeader($header)
     {
         $this->header = $header;
-        $this->header_reverse = array_flip($header);
     }
 
     /**
@@ -112,7 +152,18 @@ class Persistence_CSV extends Persistence
      */
     public function typecastLoadRow(Model $m, $row)
     {
+        $id = null;
+        if (isset($row[$m->id_field])) {
+            // temporary remove id field
+            $id = $row[$m->id_field];
+            unset($row[$m->id_field]);
+        } else {
+            $id = null;
+        }
         $row = array_combine($this->header, $row);
+        if(isset($id)) {
+            $row[$m->id_field] = $id;
+        }
 
         foreach ($row as $key => &$value) {
             if ($value === null) {
@@ -158,6 +209,26 @@ class Persistence_CSV extends Persistence
         return $data;
     }
 
+    function prepareIterator(Model $m) {
+        if (!$this->mode) {
+            $this->mode = 'r';
+        } elseif ($this->mode == 'w') {
+            throw new Exception(['Currently writing records, so loading is not possible.']);
+        }
+
+        if (!$this->handle) {
+            $this->loadHeader();
+        }
+
+        while(true) {
+            $data = $this->getLine();
+            if (!$data) break;
+            $data[$m->id_field] = $this->line;
+
+            yield $data;
+        }
+    }
+
     /**
      * Loads any one record.
      *
@@ -197,14 +268,19 @@ class Persistence_CSV extends Persistence
         }
 
         if (!$this->handle) {
-            $this->saveHeader();
+            $this->saveHeader($m);
         }
 
-        $id = $this->generateNewID($m, $table);
-        $data[$m->id_field] = $id;
-        $this->data[$table][$id] = $data;
+        $line = [];
 
-        return $id;
+        foreach($this->header as $name) {
+            $line[] = $data[$name];
+        }
+
+
+        $data = fputcsv($this->handle, $line);
+
+        return null;
     }
 
     /**
@@ -219,17 +295,7 @@ class Persistence_CSV extends Persistence
      */
     public function update(Model $m, $id, $data, $table = null)
     {
-        if (!isset($table)) {
-            $table = $m->table;
-        }
-
-        $this->data[$table][$id] =
-            array_merge(
-                isset($this->data[$table][$id]) ? $this->data[$table][$id] : [],
-                $data
-            );
-
-        return $id;
+        throw new Exception('Updating records is not supported in CSV persistence');
     }
 
     /**
@@ -241,11 +307,7 @@ class Persistence_CSV extends Persistence
      */
     public function delete(Model $m, $id, $table = null)
     {
-        if (!isset($table)) {
-            $table = $m->table;
-        }
-
-        unset($this->data[$table][$id]);
+        throw new Exception('Deleting records is not supported int CSV persitence');
     }
 
     /**

@@ -478,6 +478,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
 
                 return $this;
+            } elseif ($field instanceof Model) {
+                $this->data = $field->data;
+                //$this->id = $field->id;
+
+                return $this;
             } else {
                 $value = $field;
                 $field = $this->title_field;
@@ -1020,6 +1025,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             ]);
         }
 
+        if(!$class) {
+            $class = get_class($this);
+        }
+
         $m = new $class($persistence);
 
         if ($id === true) {
@@ -1259,7 +1268,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     $this->hook('afterInsert', [null]);
 
                     $this->dirty = [];
-                } else {
+                } elseif ($this->id) {
                     $this->hook('afterInsert', [$this->id]);
 
                     if ($this->reload_after_save !== false) {
