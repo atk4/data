@@ -280,8 +280,6 @@ class Persistence_CSV extends Persistence
         }
 
         fputcsv($this->handle, $line);
-
-        return null;
     }
 
     /**
