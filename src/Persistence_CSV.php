@@ -128,7 +128,7 @@ class Persistence_CSV extends Persistence
 
         }
 
-        $data = fputcsv($this->handle, $header);
+        fputcsv($this->handle, $header);
 
         $this->initializeHeader($header);
     }
@@ -278,7 +278,7 @@ class Persistence_CSV extends Persistence
         }
 
 
-        $data = fputcsv($this->handle, $line);
+        fputcsv($this->handle, $line);
 
         return null;
     }
