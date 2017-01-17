@@ -8,7 +8,7 @@ use atk4\data\Persistence_CSV;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class CSVTest extends TestCase 
+class CSVTest extends TestCase
 {
     public $file = 'atk-test.csv';
     public $file2 = 'atk-test-2.csv';
@@ -26,7 +26,7 @@ class CSVTest extends TestCase
     public function tearDown()
     {
         unlink($this->file);
-        if(file_exists($this->file2)) {
+        if (file_exists($this->file2)) {
             unlink($this->file2);
         }
     }
@@ -117,7 +117,7 @@ class CSVTest extends TestCase
 
         $m2 = $m->withPersistence($p2);
 
-        foreach($m as $row) {
+        foreach ($m as $row) {
             $m2->save($m);
         }
 
