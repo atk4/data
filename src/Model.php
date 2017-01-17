@@ -478,7 +478,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
 
                 return $this;
-            } elseif ($field instanceof Model) {
+            } elseif ($field instanceof self) {
                 $this->data = $field->data;
                 //$this->id = $field->id;
 
@@ -1025,7 +1025,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             ]);
         }
 
-        if(!$class) {
+        if (!$class) {
             $class = get_class($this);
         }
 

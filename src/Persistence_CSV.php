@@ -68,7 +68,7 @@ class Persistence_CSV extends Persistence
      */
     public function __destruct()
     {
-        if($this->handle) {
+        if ($this->handle) {
             fclose($this->handle);
         }
     }
@@ -115,17 +115,16 @@ class Persistence_CSV extends Persistence
         }
 
         $header = [];
-        foreach($m->elements as $name=>$field) {
+        foreach ($m->elements as $name=>$field) {
             if (!$field instanceof Field) {
                 continue;
             }
 
-            if($name == $m->id_field) {
+            if ($name == $m->id_field) {
                 continue;
             }
 
             $header[] = $name;
-
         }
 
         fputcsv($this->handle, $header);
@@ -161,7 +160,7 @@ class Persistence_CSV extends Persistence
             $id = null;
         }
         $row = array_combine($this->header, $row);
-        if(isset($id)) {
+        if (isset($id)) {
             $row[$m->id_field] = $id;
         }
 
@@ -209,7 +208,8 @@ class Persistence_CSV extends Persistence
         return $data;
     }
 
-    function prepareIterator(Model $m) {
+    public function prepareIterator(Model $m)
+    {
         if (!$this->mode) {
             $this->mode = 'r';
         } elseif ($this->mode == 'w') {
@@ -220,9 +220,11 @@ class Persistence_CSV extends Persistence
             $this->loadHeader();
         }
 
-        while(true) {
+        while (true) {
             $data = $this->getLine();
-            if (!$data) break;
+            if (!$data) {
+                break;
+            }
             $data[$m->id_field] = $this->line;
 
             yield $data;
@@ -273,10 +275,9 @@ class Persistence_CSV extends Persistence
 
         $line = [];
 
-        foreach($this->header as $name) {
+        foreach ($this->header as $name) {
             $line[] = $data[$name];
         }
-
 
         fputcsv($this->handle, $line);
 
