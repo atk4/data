@@ -114,7 +114,7 @@ class Persistence_CSV extends Persistence
      *
      * @param array
      */
-    public function writeLine($data)
+    public function putLine($data)
     {
         $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escape_char);
         if ($ok === false) {
@@ -172,7 +172,7 @@ class Persistence_CSV extends Persistence
             $header[] = $name;
         }
 
-        $this->writeLine($header);
+        $this->putLine($header);
 
         $this->initializeHeader($header);
     }
@@ -331,7 +331,7 @@ class Persistence_CSV extends Persistence
             $line[] = $data[$name];
         }
 
-        $this->writeLine($line);
+        $this->putLine($line);
     }
 
     /**
