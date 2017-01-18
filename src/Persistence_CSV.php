@@ -52,21 +52,21 @@ class Persistence_CSV extends Persistence
      * @var string
      */
     public $mode = null;
-    
+
     /**
      * Delimiter in CSV file.
      *
      * @var string
      */
     public $delimiter = ',';
-    
+
     /**
      * Enclosure in CSV file.
      *
      * @var string
      */
     public $enclosure = '"';
-    
+
     /**
      * Escape character in CSV file.
      *
@@ -105,10 +105,10 @@ class Persistence_CSV extends Persistence
         if ($data) {
             $this->line++;
         }
-        
+
         return $data;
     }
-    
+
     /**
      * Writes array as one record to CSV file.
      *
@@ -134,7 +134,7 @@ class Persistence_CSV extends Persistence
             $this->handle = fopen($this->file, 'r');
             if ($this->handle === false) {
                 throw new Exception(['Can not open CSV file.', 'file' => $this->file]);
-            }        
+            }
         }
 
         $header = $this->getLine();
@@ -156,7 +156,7 @@ class Persistence_CSV extends Persistence
             $this->handle = fopen($this->file, 'w');
             if ($this->handle === false) {
                 throw new Exception(['Can not open CSV file.', 'file' => $this->file]);
-            }        
+            }
         }
 
         $header = [];
