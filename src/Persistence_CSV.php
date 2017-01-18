@@ -52,6 +52,27 @@ class Persistence_CSV extends Persistence
      * @var string
      */
     public $mode = null;
+    
+    /**
+     * Delimiter in CSV file.
+     *
+     * @var string
+     */
+    public $delimiter = ',';
+    
+    /**
+     * Enclosure in CSV file.
+     *
+     * @var string
+     */
+    public $enclosure = '"';
+    
+    /**
+     * Escape character in CSV file.
+     *
+     * @var string
+     */
+    public $escape_char = '\\';
 
     /**
      * Constructor. Can pass array of data in parameters.
@@ -80,9 +101,25 @@ class Persistence_CSV extends Persistence
      */
     public function getLine()
     {
-        $this->line++;
-
-        return fgetcsv($this->handle);
+        $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape_char);
+        if ($data) {
+            $this->line++;
+        }
+        
+        return $data;
+    }
+    
+    /**
+     * Writes array as one record to CSV file.
+     *
+     * @param array
+     */
+    public function writeLine($data)
+    {
+        $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escape_char);
+        if ($ok === false) {
+            throw new Exception(['Can not write to CSV file.']);
+        }
     }
 
     /**
@@ -95,6 +132,9 @@ class Persistence_CSV extends Persistence
         // reposition or load some extra columns on the top.
         if (!$this->handle) {
             $this->handle = fopen($this->file, 'r');
+            if ($this->handle === false) {
+                throw new Exception(['Can not open CSV file.', 'file' => $this->file]);
+            }        
         }
 
         $header = $this->getLine();
@@ -105,6 +145,8 @@ class Persistence_CSV extends Persistence
     /**
      * When load operation starts, this will open file and read
      * the first line. This line is then used to identify columns.
+     *
+     * @param Model $m
      */
     public function saveHeader(Model $m)
     {
@@ -112,6 +154,9 @@ class Persistence_CSV extends Persistence
         // reposition or load some extra columns on the top.
         if (!$this->handle) {
             $this->handle = fopen($this->file, 'w');
+            if ($this->handle === false) {
+                throw new Exception(['Can not open CSV file.', 'file' => $this->file]);
+            }        
         }
 
         $header = [];
@@ -127,7 +172,7 @@ class Persistence_CSV extends Persistence
             $header[] = $name;
         }
 
-        fputcsv($this->handle, $header);
+        $this->writeLine($header);
 
         $this->initializeHeader($header);
     }
@@ -197,7 +242,7 @@ class Persistence_CSV extends Persistence
             $this->loadHeader();
         }
 
-        $data = fgetcsv($this->handle);
+        $data = $this->getLine();
         if (!$data) {
             return;
         }
@@ -208,6 +253,13 @@ class Persistence_CSV extends Persistence
         return $data;
     }
 
+    /**
+     * Prepare iterator.
+     *
+     * @param Model $m
+     *
+     * @return array
+     */
     public function prepareIterator(Model $m)
     {
         if (!$this->mode) {
@@ -279,7 +331,7 @@ class Persistence_CSV extends Persistence
             $line[] = $data[$name];
         }
 
-        fputcsv($this->handle, $line);
+        $this->writeLine($line);
     }
 
     /**
@@ -289,12 +341,10 @@ class Persistence_CSV extends Persistence
      * @param mixed  $id
      * @param array  $data
      * @param string $table
-     *
-     * @return mixed
      */
     public function update(Model $m, $id, $data, $table = null)
     {
-        throw new Exception('Updating records is not supported in CSV persistence');
+        throw new Exception('Updating records is not supported in CSV persistence.');
     }
 
     /**
@@ -306,7 +356,7 @@ class Persistence_CSV extends Persistence
      */
     public function delete(Model $m, $id, $table = null)
     {
-        throw new Exception('Deleting records is not supported int CSV persitence');
+        throw new Exception('Deleting records is not supported in CSV persitence.');
     }
 
     /**
