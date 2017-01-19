@@ -59,7 +59,6 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
         $m->saveAs(new Model_Female());
         $m->delete();
 
-
         $this->assertEquals([
             'person' => [
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],

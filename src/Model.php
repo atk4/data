@@ -964,7 +964,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $m = $this->newInstance($class, $options);
 
-        foreach ($this->data as $field=>$value) {
+        foreach ($this->data as $field=> $value) {
             if ($value !== null && $value !== $this->getElement($field)->default) {
 
                 // Copying only non-default value
@@ -1192,7 +1192,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     public function save($data = [], Persistence $to_persistence = null)
     {
-
         if (!$to_persistence) {
             $to_persistence = $this->persistence;
         }
