@@ -44,23 +44,26 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
 
     public function testSaveAs()
     {
-        $this->markTestSkipped('TODO: see #146');
+        //$this->markTestSkipped('TODO: see #146');
         $a = [
-            'user' => [
+            'person' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
         ];
 
         $p = new Persistence_Array($a);
-        $m = new Model_Male($p, 'user');
+
+        $m = new Model_Male($p);
         $m->load(1);
         $m->saveAs(new Model_Female());
+        $m->delete();
+
 
         $this->assertEquals([
-            'user' => [
-                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
+            'person' => [
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
+                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F', 'id'=>3],
             ],
         ], $a);
     }

@@ -848,9 +848,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return $this
      */
-    public function load($id)
+    public function load($id, Persistence $from_persistence = null)
     {
-        if (!$this->persistence) {
+        if (!$from_persistence) {
+            $from_persistence = $this->persistence;
+        }
+
+        if (!$from_persistence) {
             throw new Exception(['Model is not associated with any database']);
         }
 
@@ -862,7 +866,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             return $this;
         }
 
-        $this->data = $this->persistence->load($this, $id);
+        $this->data = $from_persistence->load($this, $id);
         if (is_null($this->id)) {
             $this->id = $id;
         }
@@ -960,12 +964,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $m = $this->newInstance($class, $options);
 
-        // Warning. If condition is different on both models,
-        // but the respective field's value is un-changed
-        // there might be some related issues.
-        $m->data = $this->data;
-        $m->dirty = $this->dirty;
-        $m->id = $this->id;
+        foreach ($this->data as $field=>$value) {
+            if ($value !== null && $value !== $this->getElement($field)->default) {
+
+                // Copying only non-default value
+                $m[$field] = $value;
+            }
+        }
 
         // next we need to go over fields to see if any system
         // values have changed and mark them as dirty
@@ -1185,9 +1190,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public $_dirty_after_reload = [];
 
-    public function save($data = [])
+    public function save($data = [], Persistence $to_persistence = null)
     {
-        if (!$this->persistence) {
+
+        if (!$to_persistence) {
+            $to_persistence = $this->persistence;
+        }
+
+        if (!$to_persistence) {
             throw new Exception(['Model is not associated with any database']);
         }
 
@@ -1199,7 +1209,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->set($data);
         }
 
-        return $this->atomic(function () {
+        return $this->atomic(function () use ($to_persistence) {
             if ($this->hook('beforeSave') === false) {
                 return $this;
             }
@@ -1235,7 +1245,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     return $this;
                 }
 
-                $this->persistence->update($this, $this->id, $data);
+                $to_persistence->update($this, $this->id, $data);
 
                 $this->hook('afterUpdate', [&$data]);
             } else {
@@ -1259,7 +1269,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
 
                 // Collect all data of a new record
-                $this->id = $this->persistence->insert($this, $data);
+                $this->id = $to_persistence->insert($this, $data);
 
                 if (!$this->id_field) {
                     // Model inserted without any ID fields. Theoretically
@@ -1288,7 +1298,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             return $this;
-        });
+        }, $to_persistence);
     }
 
     /**
@@ -1451,9 +1461,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return mixed
      */
-    public function atomic($f)
+    public function atomic($f, Persistence $persistence = null)
     {
-        return $this->persistence->atomic($f);
+        if (!$persistence) {
+            $persistence = $this->persistence;
+        }
+
+        return $persistence->atomic($f);
     }
 
     // }}}
