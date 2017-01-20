@@ -24,6 +24,7 @@ Contents:
     deriving
     advanced
     extensions
+    persistence/csv
 
 
 
