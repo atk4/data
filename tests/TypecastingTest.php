@@ -74,7 +74,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertSame(true, $m['boolean']);
         $this->assertSame(8.20, $m['money']);
         $this->assertEquals(new \DateTime('2013-02-20'), $m['date']);
-        $this->assertEquals(new \DateTime('2013-02-21 05:00:12'), $m['datetime']);
+        $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $m['datetime']);
         $this->assertEquals(new \DateTime('12:00:50'), $m['time']);
         $this->assertSame(2940, $m['integer']);
         $this->assertEquals([1, 2, 3], $m['array']);
@@ -391,6 +391,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals(new \DateTime('22:52:01'), $db->typecastLoadField($t, '22:52:01'));
 
         date_default_timezone_set('Asia/Tokyo');
+
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
         $this->assertEquals('2005-08-16 00:52:01', $db->typecastSaveField($dt, $s));
         $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
@@ -400,6 +401,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals(new \DateTime('22:52:01'), $db->typecastLoadField($t, '22:52:01'));
 
         date_default_timezone_set('America/Los_Angeles');
+
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01'); // uses servers default timezone
         $this->assertEquals('2005-08-16 07:52:01', $db->typecastSaveField($dt, $s));
         $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));

@@ -3,6 +3,4 @@ docs/build
 /build
 /vendor
 .DS_Store
-
-atk-test.csv
 /.idea
