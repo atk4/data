@@ -93,7 +93,7 @@ SQL Reference
         $model->hasOne('account_id', new Account())
             ->addFields([
             [
-                ['opening_balance', 'ui'=>['caption'=>'The Opening Balance']],
+                ['opening_balance', 'caption'=>'The Opening Balance'],
                 'account_balance'=>'balance'
             ], ['type'=>'money']);
 
@@ -123,7 +123,7 @@ SQL Reference
     You may pass defaults::
 
         $model->hasOne('country_id', new Country())
-            ->addTitle(['ui'=>['caption'=>'Country Name']]);
+            ->addTitle(['caption'=>'Country Name']);
 
     Returns new field object.
 
