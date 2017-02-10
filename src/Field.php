@@ -356,8 +356,8 @@ class Field
 
     public function getCaption()
     {
-        return isset($this->caption) ? $this->ui['caption'] :
-            ucwords(str_replace('_', ' ', $this->short_name));
+        return $this->caption ?: (isset($this->ui['caption']) ? $this->ui['caption'] :
+            ucwords(str_replace('_', ' ', $this->short_name)));
     }
 
     // }}}
