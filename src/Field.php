@@ -12,7 +12,7 @@ use atk4\core\TrackableTrait;
 class Field
 {
     use TrackableTrait;
-    
+
     // {{{ Properties
 
     /**
@@ -169,7 +169,8 @@ class Field
 
     // }}}
 
-    // {{{ Core functionality 
+    // {{{ Core functionality
+
     /**
      * Constructor. You can pass field properties as array.
      *
@@ -322,6 +323,7 @@ class Field
     // }}}
 
     // {{{ Handy methods used by UI
+
     /**
      * Returns if field should be editable in UI.
      *
