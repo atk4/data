@@ -12,7 +12,8 @@ use atk4\core\TrackableTrait;
 class Field
 {
     use TrackableTrait;
-//    use \atk4\core\HookTrait;
+
+    // {{{ Properties
 
     /**
      * Default value of field.
@@ -89,6 +90,15 @@ class Field
     public $read_only = false;
 
     /**
+     * Defines a label to go along with this field. Use getCaption() which
+     * will always return meaningfull label (even if caption is null). Set
+     * this property to any string.
+     *
+     * @var string
+     */
+    public $caption = null;
+
+    /**
      * Array with UI flags like editable, visible and hidden.
      *
      * @var array
@@ -156,6 +166,10 @@ class Field
      * @param string
      */
     public $dateTimeZoneClass = 'DateTimeZone';
+
+    // }}}
+
+    // {{{ Core functionality
 
     /**
      * Constructor. You can pass field properties as array.
@@ -306,6 +320,10 @@ class Field
         return $this;
     }
 
+    // }}}
+
+    // {{{ Handy methods used by UI
+
     /**
      * Returns if field should be editable in UI.
      *
@@ -337,6 +355,14 @@ class Field
     {
         return isset($this->ui['hidden']) ? $this->ui['hidden'] : false;
     }
+
+    public function getCaption()
+    {
+        return $this->caption ?: (isset($this->ui['caption']) ? $this->ui['caption'] :
+            ucwords(str_replace('_', ' ', $this->short_name)));
+    }
+
+    // }}}
 
     // {{{ Debug Methods
 

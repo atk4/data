@@ -104,6 +104,22 @@ class FieldTest extends SQLTestCase
         $this->assertEquals($a, $this->getDB());
     }
 
+    public function testCaption()
+    {
+        $m = new Model();
+        $m->addField('foo');
+        $this->assertEquals('Foo', $m->getElement('foo')->getCaption());
+
+        $m->addField('user_defined_entity');
+        $this->assertEquals('User Defined Entity', $m->getElement('user_defined_entity')->getCaption());
+
+        $m->addField('foo2', ['caption'=>'My Foo']);
+        $this->assertEquals('My Foo', $m->getElement('foo2')->getCaption());
+
+        $m->addField('foo3', ['ui'=>['caption'=>'My Foo']]);
+        $this->assertEquals('My Foo', $m->getElement('foo2')->getCaption());
+    }
+
     /**
      * @expectedException Exception
      */
