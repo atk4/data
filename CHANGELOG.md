@@ -1,3 +1,11 @@
+## 1.1.9
+
+Added Field::getCaption()
+
+## 1.1.8
+
+Added CSV Persistence
+
 ## 1.1.7
 
 Minor updates and bugfixes.
