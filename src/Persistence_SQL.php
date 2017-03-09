@@ -577,7 +577,7 @@ class Persistence_SQL extends Persistence
                 if ($type == 'fx') {
                     $expr = "$fx([])";
                 } else {
-                    $expr = "ifnull($fx([]), 0)";
+                    $expr = "coalesce($fx([]), 0)";
                 }
 
                 if (isset($args['alias'])) {
