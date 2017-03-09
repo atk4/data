@@ -561,6 +561,7 @@ class Persistence_SQL extends Persistence
                 return $q;
 
             case 'fx':
+            case 'fx0':
                 if (!isset($args[0], $args[1])) {
                     throw new Exception([
                         'fx action needs 2 arguments, eg: ["sum", "amount"]',
@@ -572,10 +573,16 @@ class Persistence_SQL extends Persistence
                 $field = is_string($args[1]) ? $m->getElement($args[1]) : $args[1];
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);
+
+                $expr = "$fx([])";
+                if ($type=='fx0') {
+                    $expr = "ifnull($expr, 0)";
+                }
+
                 if (isset($args['alias'])) {
-                    $q->reset('field')->field($q->expr("$fx([])", [$field]), $args['alias']);
+                    $q->reset('field')->field($q->expr($expr, [$field]), $args['alias']);
                 } else {
-                    $q->reset('field')->field($q->expr("$fx([])", [$field]));
+                    $q->reset('field')->field($q->expr($expr, [$field]));
                 }
 
                 return $q;
