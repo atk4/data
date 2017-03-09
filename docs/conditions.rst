@@ -84,6 +84,32 @@ Normally, however, you would use a different fields::
 
 You can have as many conditions as you like.
 
+Adding OR Conditions
+--------------------
+
+In Agile Data all conditions are additive. This is done for security - no matter what
+condition you are adding, it will not allow you to circumvent previously added condition.
+
+You can, however, add condition that contains multiple clauses joined with OR operator::
+
+    $m->addCondition([
+        ['name', 'John'],
+        ['surname', 'Smith']
+    ]);
+
+This will add condition that will match against records with either name=John OR surname=Smith.
+If you are building multiple conditions against the same field, you can use this format::
+
+    $m->addCondition('name', ['John', 'Joe']);
+
+For all other cases you can implement them with :php:meth:`Model::expr`::
+
+    $m->addCondition($m->expr("(day([birth_date]) = day([registration_date]) or day([birth_date]) = [])", 10));
+
+This rather unusual condition will show user records who have registered on same date when they were born OR if
+they were born on 10th. (This is really silly condition, please don't judge, if you have a better example, I'd love
+to hear).
+
 Defining your classes
 ---------------------
 

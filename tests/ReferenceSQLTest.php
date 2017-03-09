@@ -161,6 +161,42 @@ class ReferenceSQLTest extends SQLTestCase
     }
 
     /**
+     * Tests OR conditions.
+     */
+    public function testOrConditions()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John'],
+                2 => ['id' => 2, 'name' => 'Peter'],
+                3 => ['id' => 3, 'name' => 'Joe'],
+            ], 'order' => [
+                ['amount' => '20', 'user_id' => 1],
+                ['amount' => '15', 'user_id' => 2],
+                ['amount' => '5', 'user_id' => 1],
+                ['amount' => '3', 'user_id' => 1],
+                ['amount' => '8', 'user_id' => 3],
+            ], ];
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $u = (new Model($db, 'user'))->addFields(['name']);
+
+        $u->addCondition([
+            ['name', 'John'],
+            ['name', 'Peter'],
+        ]);
+
+        $this->assertEquals(2, $u->action('count')->getOne());
+
+        $u->addCondition([
+            ['name', 'Peter'],
+            ['name', 'Joe'],
+        ]);
+        $this->assertEquals(1, $u->action('count')->getOne());
+    }
+
+    /**
      * Tests Join::addField's ability to create expressions from foreign fields.
      */
     public function testAddOneField()
