@@ -38,8 +38,6 @@ engines:
         enabled: false
       Design/LongClass:                # because we design carefully what is native and what is extension
         enabled: false
-      Design/LongMethod:               # because we sometime have longer methods than just 100 lines
-        enabled: false
       Controversial/CamelCaseMethodName:    # because we need certain method naming patterns, render_blah for rendering [blah]
         enabled: false
       Controversial/CamelCaseParameterName: #
