@@ -579,8 +579,6 @@ class Persistence_SQL extends Persistence
                     $expr = "$fx([])";
                 } elseif ($type=='fx0') {
                     $expr = "ifnull($fx([]), 0)";
-                } elseif ($type=='fx00') {
-                    $expr = "ifnull($fx(ifnull([], 0)), 0)";
                 } else {
                     throw new Exception(['Bug in Agile Data', 'type'=>$type]);
                 }
