@@ -20,9 +20,6 @@ class ConditionTest extends TestCase
         $m->addCondition('last_name', 'Smith');
     }
 
-    /**
-     *
-     */
     public function testBasicDiscrimination()
     {
         $m = new Model();
@@ -43,8 +40,6 @@ class ConditionTest extends TestCase
         $this->assertEquals(3, count($m->conditions));
     }
 
-    /**
-     */
     public function testEditableAfterCondition()
     {
         $m = new Model();
@@ -56,8 +51,6 @@ class ConditionTest extends TestCase
         $this->assertEquals(false, $m->getElement('gender')->isEditable());
     }
 
-    /**
-     */
     public function testEditableHasOne()
     {
         $gender = new Model();

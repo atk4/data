@@ -14,8 +14,6 @@ use atk4\data\Persistence_SQL;
  */
 class ReferenceSQLTest extends SQLTestCase
 {
-    /**
-     */
     public function testBasic()
     {
         $a = [
@@ -78,8 +76,6 @@ class ReferenceSQLTest extends SQLTestCase
         );
     }
 
-    /**
-     */
     public function testBasic2()
     {
         $a = [
@@ -109,8 +105,6 @@ class ReferenceSQLTest extends SQLTestCase
         $this->assertEquals('Pound', $cc['name']);
     }
 
-    /**
-     */
     public function testLink2()
     {
         $db = new Persistence_SQL($this->db->connection);
@@ -167,7 +161,7 @@ class ReferenceSQLTest extends SQLTestCase
     }
 
     /**
-     * Tests OR conditions
+     * Tests OR conditions.
      */
     public function testOrConditions()
     {
@@ -190,14 +184,14 @@ class ReferenceSQLTest extends SQLTestCase
 
         $u->addCondition([
             ['name', 'John'],
-            ['name', 'Peter']
+            ['name', 'Peter'],
         ]);
 
         $this->assertEquals(2, $u->action('count')->getOne());
 
         $u->addCondition([
             ['name', 'Peter'],
-            ['name', 'Joe']
+            ['name', 'Joe'],
         ]);
         $this->assertEquals(1, $u->action('count')->getOne());
     }
