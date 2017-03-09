@@ -562,6 +562,7 @@ class Persistence_SQL extends Persistence
 
             case 'fx':
             case 'fx0':
+            case 'fx00':
                 if (!isset($args[0], $args[1])) {
                     throw new Exception([
                         'fx action needs 2 arguments, eg: ["sum", "amount"]',
@@ -574,10 +575,14 @@ class Persistence_SQL extends Persistence
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);
 
-                if ($type=='fx0') {
-                    $expr = "ifnull($fx(ifnull([], 0)), 0)";
-                }else{
+                if ($type=='fx') {
                     $expr = "$fx([])";
+                } elseif ($type=='fx0') {
+                    $expr = "ifnull($fx([]), 0)";
+                } elseif ($type=='fx00') {
+                    $expr = "ifnull($fx(ifnull([], 0)), 0)";
+                } else {
+                    throw new Exception(['Bug in Agile Data', 'type'=>$type]);
                 }
 
                 if (isset($args['alias'])) {
