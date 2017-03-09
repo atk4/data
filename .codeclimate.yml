@@ -15,7 +15,6 @@ engines:
     - 80ef7f404dd4f054ca51d9ee12d9e9dd # we exit from toStrign() because it can't throw exceptions
     - ae61f5e0cda0328c140f3b7298dbb8af # don't complain about call to static connection, as it's a fallback
     - e71149b967391adfaf3347a53d3c0023 # don't complain about $junk used in foreach when we only need keys
-    - 26d65d6b7bfd58eba544a4669b552401 # Model::save can be longer than 100 lines
     checks:
       CyclomaticComplexity:            # because we solve complex stuff
         enabled: false
@@ -38,6 +37,8 @@ engines:
       Design/WeightedMethodCount:      # because we we solve complex stuff
         enabled: false
       Design/LongClass:                # because we design carefully what is native and what is extension
+        enabled: false
+      Design/LongMethod:               # because we sometime have longer methods than just 100 lines
         enabled: false
       Controversial/CamelCaseMethodName:    # because we need certain method naming patterns, render_blah for rendering [blah]
         enabled: false
