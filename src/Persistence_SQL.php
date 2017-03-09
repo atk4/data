@@ -574,9 +574,10 @@ class Persistence_SQL extends Persistence
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);
 
-                $expr = "$fx([])";
-                if ($type == 'fx0') {
-                    $expr = "ifnull($expr, 0)";
+                if ($type=='fx0') {
+                    $expr = "ifnull($fx(ifnull([], 0)), 0)";
+                }else{
+                    $expr = "$fx([])";
                 }
 
                 if (isset($args['alias'])) {
