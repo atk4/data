@@ -14,6 +14,8 @@ use atk4\data\Persistence_SQL;
  */
 class ReferenceSQLTest extends SQLTestCase
 {
+    /**
+     */
     public function testBasic()
     {
         $a = [
@@ -76,6 +78,8 @@ class ReferenceSQLTest extends SQLTestCase
         );
     }
 
+    /**
+     */
     public function testBasic2()
     {
         $a = [
@@ -105,6 +109,8 @@ class ReferenceSQLTest extends SQLTestCase
         $this->assertEquals('Pound', $cc['name']);
     }
 
+    /**
+     */
     public function testLink2()
     {
         $db = new Persistence_SQL($this->db->connection);
@@ -158,6 +164,42 @@ class ReferenceSQLTest extends SQLTestCase
             'select `id`,`name` from `user` where `id` in (select `user_id` from `order` where `amount` > :a and `amount` < :b)',
             $o->ref('user_id')->action('select')->render()
         );
+    }
+
+    /**
+     * Tests OR conditions
+     */
+    public function testOrConditions()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John'],
+                2 => ['id' => 2, 'name' => 'Peter'],
+                3 => ['id' => 3, 'name' => 'Joe'],
+            ], 'order' => [
+                ['amount' => '20', 'user_id' => 1],
+                ['amount' => '15', 'user_id' => 2],
+                ['amount' => '5', 'user_id' => 1],
+                ['amount' => '3', 'user_id' => 1],
+                ['amount' => '8', 'user_id' => 3],
+            ], ];
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $u = (new Model($db, 'user'))->addFields(['name']);
+
+        $u->addCondition([
+            ['name', 'John'],
+            ['name', 'Peter']
+        ]);
+
+        $this->assertEquals(2, $u->action('count')->getOne());
+
+        $u->addCondition([
+            ['name', 'Peter'],
+            ['name', 'Joe']
+        ]);
+        $this->assertEquals(1, $u->action('count')->getOne());
     }
 
     /**

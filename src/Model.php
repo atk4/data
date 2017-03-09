@@ -703,11 +703,34 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function addCondition($field, $operator = null, $value = null)
     {
         if (is_array($field)) {
-            array_map(function ($a) {
-                call_user_func_array([$this, 'addCondition'], $a);
-            }, $field);
+            $this->conditions[] = [$field];
 
             return $this;
+
+            /*
+            $or = $this->persistence->orExpr();
+
+            foreach ($field as list($field, $operator, $value)) {
+
+                if (is_string($field)) {
+                    $f = $this->hasElement($field);
+                    if (!$f) {
+                        throw new Exception([
+                            'Field does not exist',
+                            'model' => $this,
+                            'field' => $field,
+                        ]);
+                    }
+                } elseif ($field instanceof Field) {
+                    $f = $field;
+                }
+
+                $or->where($f, $operator, $value);
+            }
+
+
+            return $this;
+            */
         }
 
         $f = null;
