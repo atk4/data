@@ -98,7 +98,7 @@ class Reference_Many extends Reference
         $field = isset($defaults['field']) ? $defaults['field'] : $n;
 
         $e = $this->owner->addExpression($n, function () use ($defaults, $field) {
-            return $this->refLink()->action(isset($defaults['fx'])?$defaults['fx']:'fx0', [$defaults['aggregate'], $field]);
+            return $this->refLink()->action(isset($defaults['fx']) ? $defaults['fx'] : 'fx0', [$defaults['aggregate'], $field]);
         });
 
         if (isset($defaults['type'])) {

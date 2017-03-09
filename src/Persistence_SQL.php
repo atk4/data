@@ -575,11 +575,11 @@ class Persistence_SQL extends Persistence
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);
 
-                if ($type=='fx') {
+                if ($type == 'fx') {
                     $expr = "$fx([])";
-                } elseif ($type=='fx0') {
+                } elseif ($type == 'fx0') {
                     $expr = "ifnull($fx([]), 0)";
-                } elseif ($type=='fx00') {
+                } elseif ($type == 'fx00') {
                     $expr = "ifnull($fx(ifnull([], 0)), 0)";
                 } else {
                     throw new Exception(['Bug in Agile Data', 'type'=>$type]);
