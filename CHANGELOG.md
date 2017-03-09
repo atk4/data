@@ -1,3 +1,8 @@
+## 1.1.10
+
+Aggregate fields (hasMany->addField) will now coalesce results
+to automatically display 0 even if no related record exist.
+
 ## 1.1.9
 
 Added Field::getCaption()
