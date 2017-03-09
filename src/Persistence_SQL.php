@@ -562,7 +562,6 @@ class Persistence_SQL extends Persistence
 
             case 'fx':
             case 'fx0':
-            case 'fx00':
                 if (!isset($args[0], $args[1])) {
                     throw new Exception([
                         'fx action needs 2 arguments, eg: ["sum", "amount"]',
