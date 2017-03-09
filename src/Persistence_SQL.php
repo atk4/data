@@ -575,7 +575,7 @@ class Persistence_SQL extends Persistence
                 $m->hook('initSelectQuery', [$q, $type]);
 
                 $expr = "$fx([])";
-                if ($type=='fx0') {
+                if ($type == 'fx0') {
                     $expr = "ifnull($expr, 0)";
                 }
 
