@@ -1,3 +1,9 @@
+## 1.1.11
+
+Added support for OR conditions.
+
+http://agile-data.readthedocs.io/en/develop/conditions.html#adding-or-conditions
+
 ## 1.1.10
 
 Aggregate fields (hasMany->addField) will now coalesce results
