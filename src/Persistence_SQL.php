@@ -323,6 +323,16 @@ class Persistence_SQL extends Persistence
             // parameter inside where()
 
             if (count($cond) == 1) {
+
+                // OR conditions
+                if (is_array($cond[0])) {
+                    foreach ($cond[0] as &$row) {
+                        if (is_string($row[0])) {
+                            $row[0] = $m->getElement($row[0]);
+                        }
+                    }
+                }
+
                 $q->where($cond[0]);
                 continue;
             }

@@ -37,7 +37,7 @@ class ConditionTest extends TestCase
         $this->assertEquals(2, count($m->conditions));
 
         $m->addCondition([['gender', 'F'], ['foo', 'bar']]);
-        $this->assertEquals(4, count($m->conditions));
+        $this->assertEquals(3, count($m->conditions));
     }
 
     public function testEditableAfterCondition()
