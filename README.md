@@ -122,6 +122,9 @@ A new solution is needed and Agile Data is your solution. The popularity will in
 
 If you need a bit more reassurance, we're offering Agile Data Enterprise support: https://www.agiletoolkit.org/data/enterprise to answer your questions, help you transition and make sure Agile Data works perfectly for you.
 
+[Ask your question
+here](https://github.com/atk4/data/issues/new?labels=question)
+
 ## Agile Data at a Glance
 
 Agile Data implements various advanced database access patterns such as Active Record, Persistence Mapping, Domain Model, Event sourcing, Actions, Hooks, DataSets and Query Building in a **practical way** that can be **easily learned**, used in any framework with SQL or NoSQL database and meeting all **enterprise**-specific requirements.
