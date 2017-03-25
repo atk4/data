@@ -213,6 +213,7 @@ class TypecastingTest extends SQLTestCase
 
     public function testExportNull()
     {
+        $this->setDB(['test' => []]);
         $db = new Persistence_SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'test']);
