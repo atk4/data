@@ -211,6 +211,21 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals($a, $this->getDB());
     }
 
+    public function testExportNull()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+
+        $m = new Model($db, ['table' => 'test']);
+        $m->addField('a');
+        $m->addField('b');
+        $m->addField('c');
+        $m->set($v = ['a' => 1, 'b' => '', 'c' => null]);
+        $m->save();
+
+        $this->assertEquals($v, $m->export());
+
+    }
+
     public function testTypeCustom1()
     {
         $a = [
