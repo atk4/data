@@ -211,11 +211,11 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals($a, $this->getDB());
     }
 
-    public function testExportNull()
+    public function testTypecastNull()
     {
         $a = [
             'test' => [
-                1 => $v = ['id' => 1, 'a' => 1, 'b' => '', 'c' => null],
+                1 => $v = ['id' => '1', 'a' => 1, 'b' => '', 'c' => null],
             ],
         ];
         $this->setDB($a);
@@ -230,7 +230,7 @@ class TypecastingTest extends SQLTestCase
         $m->set($v);
         $m->save();
 
-        $a['test'][2] = array_merge(['id'=>2, $v]);
+        $a['test'][2] = array_merge(['id'=>'2'], $v);
 
         $this->assertEquals($a, $this->getDB());
     }
