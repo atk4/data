@@ -223,7 +223,6 @@ class TypecastingTest extends SQLTestCase
         $m->save();
 
         $this->assertEquals($v, $m->export());
-
     }
 
     public function testTypeCustom1()
