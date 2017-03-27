@@ -165,4 +165,27 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
             ],
         ], $a);
     }
+
+    public function testIterator()
+    {
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m = new Model($p, 'user');
+        $m->addField('name');
+        $m->addField('surname');
+
+        $output = '';
+
+        foreach($m as $row) {
+            $output .= $row['name'];
+        }
+
+        $this->assertEquals('JohnSarah', $output);
+    }
 }
