@@ -231,14 +231,14 @@ class Field
             // other field types empty value is the same as no-value, nothing or null
             if ($f->type && $f->type != 'string' && $value === '') {
                 if ($this->required && empty($value)) {
-                    throw new Exception('may not be a zero');
+                    throw new Exception('may not be a empty');
                 }
 
                 return;
             }
 
             switch ($f->type) {
-            case null:
+            case null: // loose comparison, but is OK here
                 if ($this->required && empty($value)) {
                     throw new Exception('must not be empty');
                 }
