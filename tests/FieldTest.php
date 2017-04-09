@@ -61,6 +61,17 @@ class FieldTest extends SQLTestCase
     /**
      * @expectedException Exception
      */
+    public function testRequired1_1()
+    {
+        $m = new Model();
+        $m->addField('foo', ['required' => true]);
+        $m['foo'] = null;
+        unset($m['foo']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
     public function testMandatory2()
     {
         $db = new Persistence_SQL($this->db->connection);
