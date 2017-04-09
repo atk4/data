@@ -106,12 +106,24 @@ class Field
     public $ui = [];
 
     /**
-     * Is field mandatory? By default fields are not mandatory.
+     * Mandatory field must not be null. The value must be set, even if 
+     * it's an empty value.
+     *
      * Can contain error message for UI.
      *
      * @var bool|string
      */
     public $mandatory = false;
+
+    /**
+     * Required field must have non-empty value. A null value can still be
+     * used.
+     *
+     * Can contain error message for UI.
+     *
+     * @var bool|string
+     */
+    public $required = false;
 
     /**
      * Should we use typecasting when saving/loading data to/from persistence.
@@ -194,7 +206,9 @@ class Field
 
     /**
      * Depending on the type of a current field, this will perform
-     * some normalization for strict types.
+     * some normalization for strict types. This method must also make
+     * sure that $f->required is respected when setting the value, e.g.
+     * you can't set value to '' if type=string and required=true
      *
      * @param mixed $value
      *
@@ -204,96 +218,133 @@ class Field
      */
     public function normalize($value)
     {
-        if (!$this->owner->strict_types) {
-            return $value;
-        }
-        if ($value === null) {
-            return;
-        }
-        $f = $this;
+        try {
 
-        // only string type fields can use empty string as legit value, for all
-        // other field types empty value is the same as no-value, nothing or null
-        if ($f->type && $f->type != 'string' && $value === '') {
-            return;
-        }
+            if (!$this->owner->strict_types) {
+                return $value;
+            }
+            if ($value === null) {
+                return;
+            }
+            $f = $this;
 
-        switch ($f->type) {
-        case 'string':
-            if (!is_scalar($value)) {
-                throw new Exception('Field value must be a string');
+            // only string type fields can use empty string as legit value, for all
+            // other field types empty value is the same as no-value, nothing or null
+            if ($f->type && $f->type != 'string' && $value === '') {
+                if ($this->required && empty($value)) {
+                    throw new Exception('may not be a zero');
+                }
+                return;
             }
-            $value = trim($value);
-            break;
-        case 'integer':
-            if (!is_numeric($value)) {
-                throw new Exception('Field value must be an integer');
-            }
-            $value = (int) $value;
-            break;
-        case 'float':
-            if (!is_numeric($value)) {
-                throw new Exception('Field value must be a float');
-            }
-            $value = (float) $value;
-            break;
-        case 'money':
-            if (!is_numeric($value)) {
-                throw new Exception('Field value must be numeric');
-            }
-            $value = round($value, 4);
-            break;
-        case 'boolean':
-            if (is_bool($value)) {
+
+            switch ($f->type) {
+            case null:
+                if ($this->required && empty($value)) {
+                    throw new Exception('must not be empty');
+                }
+                break;
+            case 'string':
+                if (!is_scalar($value)) {
+                    throw new Exception('must be a string');
+                }
+                $value = trim($value);
+                if ($this->required && empty($value)) {
+                    throw new Exception('must not be empty');
+                }
+                break;
+            case 'integer':
+                // we clear out thousand separator, but will change to 
+                // http://php.net/manual/en/numberformatter.parse.php
+                // in the future with the introduction of locale
+                $value = str_replace(',','',$value);
+                if (!is_numeric($value)) {
+                    throw new Exception('must be numeric');
+                }
+                $value = (int) $value;
+                if ($this->required && empty($value)) {
+                    throw new Exception('may not be a zero');
+                }
+                break;
+            case 'float':
+                $value = str_replace(',','',$value);
+                if (!is_numeric($value)) {
+                    throw new Exception('must be numeric');
+                }
+                $value = (float) $value;
+                if ($this->required && empty($value)) {
+                    throw new Exception('may not be a zero');
+                }
+                break;
+            case 'money':
+                $value = str_replace(',','',$value);
+                if (!is_numeric($value)) {
+                    throw new Exception('must be numeric');
+                }
+                $value = round($value, 4);
+                if ($this->required && empty($value)) {
+                    throw new Exception('may not be a zero');
+                }
+                break;
+            case 'boolean':
+                if (is_bool($value)) {
+                    break;
+                }
+                if (isset($f->enum) && is_array($f->enum)) {
+                    if (isset($f->enum[0]) && $value === $f->enum[0]) {
+                        $value = false;
+                    } elseif (isset($f->enum[1]) && $value === $f->enum[1]) {
+                        $value = true;
+                    }
+                } elseif (is_numeric($value)) {
+                    $value = (bool) $value;
+                }
+                if (!is_bool($value)) {
+                    throw new Exception('must be a boolean');
+                }
+                if ($this->required && empty($value)) {
+                    throw new Exception('must be selected');
+                }
+                break;
+            case 'date':
+            case 'datetime':
+            case 'time':
+
+                // we allow http://php.net/manual/en/datetime.formats.relative.php
+                $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+
+                if (is_numeric($value)) {
+                    $value = new $class('@'.$value);
+                } elseif (is_string($value)) {
+                    $value = new $class($value);
+                } elseif (!$value instanceof $class) {
+                    throw new Exception(['must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
+                }
+                break;
+            case 'array':
+                if (!is_array($value)) {
+                    throw new Exception('must be an array');
+                }
+                break;
+            case 'object':
+                if (!is_object($value)) {
+                    throw new Exception('must be an object');
+                }
+                break;
+            case 'int':
+            case 'str':
+            case 'bool':
+                throw new Exception([
+                    'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
+                    'type' => $f->type,
+                ]);
                 break;
             }
-            if (isset($f->enum) && is_array($f->enum)) {
-                if (isset($f->enum[0]) && $value === $f->enum[0]) {
-                    $value = false;
-                } elseif (isset($f->enum[1]) && $value === $f->enum[1]) {
-                    $value = true;
-                }
-            } elseif (is_numeric($value)) {
-                $value = (bool) $value;
-            }
-            if (!is_bool($value)) {
-                throw new Exception('Field value must be a boolean');
-            }
-            break;
-        case 'date':
-        case 'datetime':
-        case 'time':
-            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
 
-            if (is_numeric($value)) {
-                $value = new $class('@'.$value);
-            } elseif (is_string($value)) {
-                $value = new $class($value);
-            } elseif (!$value instanceof $class) {
-                throw new Exception(['Field value must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
-            }
-            break;
-        case 'array':
-            if (!is_array($value)) {
-                throw new Exception('Field value must be a array');
-            }
-            break;
-        case 'object':
-            if (!is_object($value)) {
-                throw new Exception('Field value must be a object');
-            }
-            break;
-        case 'int':
-        case 'str':
-        case 'bool':
-            throw new Exception([
-                'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
-                'type' => $f->type,
-            ]);
-            break;
+            return $value;
+        } catch (Exception $e) {
+            $e->addMoreInfo('field', $this);
+            throw $e;
         }
-
-        return $value;
     }
 
     /**

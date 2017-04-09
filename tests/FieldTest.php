@@ -43,6 +43,17 @@ class FieldTest extends SQLTestCase
         $m->addField('foo', ['mandatory' => true]);
         $m['foo'] = 'abc';
         $m['foo'] = null;
+        $m['foo'] = '';
+        unset($m['foo']);
+    }
+
+    public function testRequired1()
+    {
+        $m = new Model();
+        $m->addField('foo', ['required' => true]);
+        $m['foo'] = 'abc';
+        $m['foo'] = null;
+        $m['foo'] = '';
         unset($m['foo']);
     }
 
@@ -62,6 +73,24 @@ class FieldTest extends SQLTestCase
         $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
         $m->insert(['surname' => 'qq']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testRequired2()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'user');
+        $m->addField('name', ['required' => true]);
+        $m->addField('surname');
+        $m->insert(['surname' => 'qq', 'name'=>'']);
     }
 
     /**
