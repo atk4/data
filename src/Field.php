@@ -221,9 +221,15 @@ class Field
             if (!$this->owner->strict_types) {
                 return $value;
             }
+
             if ($value === null) {
+                if ($this->required) {
+                    throw new Exception('may not be null');
+                }
+
                 return;
             }
+
             $f = $this;
 
             // only string type fields can use empty string as legit value, for all
