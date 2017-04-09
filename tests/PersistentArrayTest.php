@@ -182,7 +182,7 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
 
         $output = '';
 
-        foreach($m as $row) {
+        foreach ($m as $row) {
             $output .= $row['name'];
         }
 

@@ -106,7 +106,7 @@ class Field
     public $ui = [];
 
     /**
-     * Mandatory field must not be null. The value must be set, even if 
+     * Mandatory field must not be null. The value must be set, even if
      * it's an empty value.
      *
      * Can contain error message for UI.
@@ -208,7 +208,7 @@ class Field
      * Depending on the type of a current field, this will perform
      * some normalization for strict types. This method must also make
      * sure that $f->required is respected when setting the value, e.g.
-     * you can't set value to '' if type=string and required=true
+     * you can't set value to '' if type=string and required=true.
      *
      * @param mixed $value
      *
@@ -219,7 +219,6 @@ class Field
     public function normalize($value)
     {
         try {
-
             if (!$this->owner->strict_types) {
                 return $value;
             }
@@ -234,6 +233,7 @@ class Field
                 if ($this->required && empty($value)) {
                     throw new Exception('may not be a zero');
                 }
+
                 return;
             }
 
@@ -253,10 +253,10 @@ class Field
                 }
                 break;
             case 'integer':
-                // we clear out thousand separator, but will change to 
+                // we clear out thousand separator, but will change to
                 // http://php.net/manual/en/numberformatter.parse.php
                 // in the future with the introduction of locale
-                $value = str_replace(',','',$value);
+                $value = str_replace(',', '', $value);
                 if (!is_numeric($value)) {
                     throw new Exception('must be numeric');
                 }
@@ -266,7 +266,7 @@ class Field
                 }
                 break;
             case 'float':
-                $value = str_replace(',','',$value);
+                $value = str_replace(',', '', $value);
                 if (!is_numeric($value)) {
                     throw new Exception('must be numeric');
                 }
@@ -276,7 +276,7 @@ class Field
                 }
                 break;
             case 'money':
-                $value = str_replace(',','',$value);
+                $value = str_replace(',', '', $value);
                 if (!is_numeric($value)) {
                     throw new Exception('must be numeric');
                 }
