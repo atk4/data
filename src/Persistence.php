@@ -224,6 +224,7 @@ class Persistence
 
             // ignore null values
             if ($value === null) {
+                $result[$key] = $value;
                 continue;
             }
 
