@@ -116,8 +116,7 @@ class Field
     public $mandatory = false;
 
     /**
-     * Required field must have non-empty value. A null value can still be
-     * used.
+     * Required field must have non-empty value. A null value is considered empty too.
      *
      * Can contain error message for UI.
      *
