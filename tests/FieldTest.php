@@ -47,12 +47,13 @@ class FieldTest extends SQLTestCase
         unset($m['foo']);
     }
 
+    /**
+     * @expectedException Exception
+     */
     public function testRequired1()
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
-        $m['foo'] = 'abc';
-        $m['foo'] = null;
         $m['foo'] = '';
         unset($m['foo']);
     }
