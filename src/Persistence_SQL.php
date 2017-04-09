@@ -463,7 +463,7 @@ class Persistence_SQL extends Persistence
                 $v = new $dt_class('@'.$v);
             } elseif (is_string($v)) {
                 // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
-                $format = ['date' => '+!Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+                $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
                 $format = $f->persist_format ?: $format[$f->type];
 
                 // datetime only - set from persisting timezone

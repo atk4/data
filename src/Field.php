@@ -256,7 +256,7 @@ class Field
                 // we clear out thousand separator, but will change to
                 // http://php.net/manual/en/numberformatter.parse.php
                 // in the future with the introduction of locale
-                $value = str_replace(',', '', $value);
+                $value = preg_replace('/[^0-9.-]/', '', $value);
                 if (!is_numeric($value)) {
                     throw new Exception('must be numeric');
                 }
@@ -276,7 +276,7 @@ class Field
                 }
                 break;
             case 'money':
-                $value = str_replace(',', '', $value);
+                $value = preg_replace('/[^0-9.-]/', '', $value);
                 if (!is_numeric($value)) {
                     throw new Exception('must be numeric');
                 }
