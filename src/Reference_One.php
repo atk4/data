@@ -61,6 +61,15 @@ class Reference_One extends Reference
     public $read_only = false;
 
     /**
+     * Defines a label to go along with this field. Use getCaption() which
+     * will always return meaningfull label (even if caption is null). Set
+     * this property to any string.
+     *
+     * @var string
+     */
+    public $caption = null;
+
+    /**
      * Array with UI flags like editable, visible and hidden.
      *
      * By default hasOne relation ID field should be editable in forms,
@@ -151,6 +160,7 @@ class Reference_One extends Reference
                 'default'           => $this->default,
                 'never_persist'     => $this->never_persist,
                 'read_only'         => $this->read_only,
+                'caption'           => $this->caption,
                 'ui'                => $this->ui,
                 'mandatory'         => $this->mandatory,
                 'typecast'          => $this->typecast,
