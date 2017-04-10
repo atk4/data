@@ -261,9 +261,6 @@ class Persistence
             return $t($value, $f, $this);
         }
 
-        // normalize value
-        $value = $f->normalize($value);
-
         // we respect null values
         if ($value === null) {
             return;
