@@ -224,6 +224,7 @@ class Persistence
 
             // ignore null values
             if ($value === null) {
+                $result[$key] = $value;
                 continue;
             }
 
@@ -259,9 +260,6 @@ class Persistence
         if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
             return $t($value, $f, $this);
         }
-
-        // normalize value
-        $value = $f->normalize($value);
 
         // we respect null values
         if ($value === null) {

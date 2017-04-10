@@ -75,7 +75,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertSame(8.20, $m['money']);
         $this->assertEquals(new \DateTime('2013-02-20'), $m['date']);
         $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $m['datetime']);
-        $this->assertEquals(new \DateTime('12:00:50'), $m['time']);
+        $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $m['time']);
         $this->assertSame(2940, $m['integer']);
         $this->assertEquals([1, 2, 3], $m['array']);
         $this->assertSame(8.202343, $m['float']);
@@ -207,6 +207,30 @@ class TypecastingTest extends SQLTestCase
                     'array'    => null,
                     'object'   => null,
         ];
+
+        $this->assertEquals($a, $this->getDB());
+    }
+
+    public function testTypecastNull()
+    {
+        $a = [
+            'test' => [
+                1 => $v = ['id' => '1', 'a' => 1, 'b' => '', 'c' => null],
+            ],
+        ];
+        $this->setDB($a);
+        $db = new Persistence_SQL($this->db->connection);
+
+        $m = new Model($db, ['table' => 'test']);
+        $m->addField('a');
+        $m->addField('b');
+        $m->addField('c');
+
+        unset($v['id']);
+        $m->set($v);
+        $m->save();
+
+        $a['test'][2] = array_merge(['id'=>'2'], $v);
 
         $this->assertEquals($a, $this->getDB());
     }
@@ -388,7 +412,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals('22:52:01', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
 
         date_default_timezone_set('Asia/Tokyo');
 
@@ -398,7 +422,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals('22:52:01', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
 
         date_default_timezone_set('America/Los_Angeles');
 
@@ -408,7 +432,7 @@ class TypecastingTest extends SQLTestCase
         $this->assertEquals('22:52:01', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $db->typecastLoadField($dt, '2005-08-16 07:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
     }
 
     public function testTimestamp()

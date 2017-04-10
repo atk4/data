@@ -1,3 +1,16 @@
+## 1.1.13
+
+- Add $required property for fields #225
+- Fix ID-less iteration of Arrays #222
+- When persistence lacks field data, previous record value should be reset #221
+- Fix caption for hasOne(.. ['caption'=>'blah']). #226
+- Added release script
+
+## 1.1.12
+
+- hasMany->addField() now correctly pass additional options to expression field.
+- Update README.
+
 ## 1.1.11
 
 Added support for OR conditions.

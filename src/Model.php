@@ -1397,7 +1397,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($this->persistence->prepareIterator($this) as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $this->id = $data[$this->id_field];
+                $this->id = isset($data[$this->id_field]) ? $data[$this->id_field] : null;
             }
             $this->hook('afterLoad');
             yield $this->id => $this;

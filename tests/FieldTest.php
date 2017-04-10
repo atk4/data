@@ -43,6 +43,29 @@ class FieldTest extends SQLTestCase
         $m->addField('foo', ['mandatory' => true]);
         $m['foo'] = 'abc';
         $m['foo'] = null;
+        $m['foo'] = '';
+        unset($m['foo']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testRequired1()
+    {
+        $m = new Model();
+        $m->addField('foo', ['required' => true]);
+        $m['foo'] = '';
+        unset($m['foo']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testRequired1_1()
+    {
+        $m = new Model();
+        $m->addField('foo', ['required' => true]);
+        $m['foo'] = null;
         unset($m['foo']);
     }
 
@@ -62,6 +85,24 @@ class FieldTest extends SQLTestCase
         $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
         $m->insert(['surname' => 'qq']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testRequired2()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'user');
+        $m->addField('name', ['required' => true]);
+        $m->addField('surname');
+        $m->insert(['surname' => 'qq', 'name'=>'']);
     }
 
     /**
@@ -107,17 +148,17 @@ class FieldTest extends SQLTestCase
     public function testCaption()
     {
         $m = new Model();
-        $m->addField('foo');
-        $this->assertEquals('Foo', $m->getElement('foo')->getCaption());
+        $f = $m->addField('foo');
+        $this->assertEquals('Foo', $f->getCaption());
 
-        $m->addField('user_defined_entity');
-        $this->assertEquals('User Defined Entity', $m->getElement('user_defined_entity')->getCaption());
+        $f = $m->addField('user_defined_entity');
+        $this->assertEquals('User Defined Entity', $f->getCaption());
 
-        $m->addField('foo2', ['caption'=>'My Foo']);
-        $this->assertEquals('My Foo', $m->getElement('foo2')->getCaption());
+        $f = $m->addField('foo2', ['caption'=>'My Foo']);
+        $this->assertEquals('My Foo', $f->getCaption());
 
-        $m->addField('foo3', ['ui'=>['caption'=>'My Foo']]);
-        $this->assertEquals('My Foo', $m->getElement('foo2')->getCaption());
+        $f = $m->addField('foo3', ['ui'=>['caption'=>'My Foo']]);
+        $this->assertEquals('My Foo', $f->getCaption());
     }
 
     /**
