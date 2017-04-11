@@ -69,6 +69,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $table = null;
 
     /**
+     * Use alias for $table
+     */
+    public $table_alias = null;
+
+    /**
      * Persistence driver inherited from atk4\data\Persistence.
      *
      * @var Persistence
