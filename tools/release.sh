@@ -50,7 +50,7 @@ done
 open "https://github.com/atk4/$product/compare/$prev_version...develop"
 
 # Update dependency versions
-sed -i -e '/atk4\/schema/d' composer.json # workaround composers inability to change both requries simultaniously
+sed -i "" -e '/atk4\/schema/s/dev-develop/\*/' composer.json # workaround composers inability to change both requries simultaniously
 composer require atk4/core atk4/dsql
 composer require-dev atk4/schema
 
