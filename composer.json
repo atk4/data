@@ -19,7 +19,7 @@
     },
     "require-dev": {
         "phpunit/phpunit": "4.*",
-        "atk4/schema": "*",
+        "atk4/schema": "dev-develop",
         "codeclimate/php-test-reporter": "*"
     },
     "autoload": {
