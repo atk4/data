@@ -4,7 +4,7 @@ namespace atk4\data\tests\smbo;
 
 class Transfer extends Payment
 {
-    protected $detached = false;
+    public $detached = false;
 
     public $other_leg_creation = null;
 
