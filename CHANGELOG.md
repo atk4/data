@@ -1,3 +1,8 @@
+## 1.1.14
+
+- Prevent warning by having $table_alias property defined in a model
+- Include a proper release script
+
 ## 1.1.13
 
 - Add $required property for fields #225
