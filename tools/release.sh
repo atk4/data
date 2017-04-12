@@ -51,6 +51,7 @@ open "https://github.com/atk4/$product/compare/$prev_version...develop"
 
 # Update dependency versions
 composer require atk4/core atk4/dsql
+composer require-dev atk4/schema
 
 composer update
 ./vendor/phpunit/phpunit/phpunit  --no-coverage
