@@ -18,7 +18,7 @@
         "atk4/core": "dev-develop"
     },
     "require-dev": {
-        "phpunit/phpunit": "~5.0",
+        "phpunit/phpunit": "<6",
         "atk4/schema": "dev-develop",
         "codeclimate/php-test-reporter": "*"
     },
