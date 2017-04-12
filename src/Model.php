@@ -69,7 +69,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $table = null;
 
     /**
-     * Use alias for $table
+     * Use alias for $table.
      */
     public $table_alias = null;
 
