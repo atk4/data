@@ -205,8 +205,8 @@ sub-queries::
     $m->hasMany('Orders', new Model_Order($db_sql));
     $m->addCondition('is_vip', true);
 
-    $sum = $m->refLink('Orders')->action('sum', ['amount']);
-    $m->addExpression('sum_amount')->set($action);
+    $sum = $m->refLink('Orders')->action('fx0', ['sum', 'amount']);
+    $m->addExpression('sum_amount')->set($sum);
 
 The refLink would define a condition on a query like this:
 
