@@ -55,6 +55,10 @@ class Persistence_Array extends Persistence
             }
         }
 
+        if (!isset($this->data[$m->table])) {
+            $this->data[$m->table] = [];
+        }
+
         return $m;
     }
 
