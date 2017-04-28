@@ -1,3 +1,7 @@
+## 1.1.16
+
+Update some bugs in documentation and fix #229.
+
 ## 1.1.14
 
 - Upgrade to Agile Core 1.2 branch
