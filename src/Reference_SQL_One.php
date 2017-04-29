@@ -24,10 +24,10 @@ class Reference_SQL_One extends Reference_One
         if (is_array($field)) {
             $defaults = $field;
             if (!isset($defaults[0])) {
-                throw new Exception(
+                throw new Exception([
                     'Field name must be specified',
-                    ['field' => $field]
-                );
+                    'field' => $field,
+                ]);
             }
             $field = $defaults[0];
         } else {
@@ -70,10 +70,11 @@ class Reference_SQL_One extends Reference_One
             if (is_array($alias)) {
                 $d = array_merge($defaults, $alias);
                 if (!isset($alias[0])) {
-                    throw new Exception(
+                    throw new Exception([
                         'Incorrect definition for addFields. Field name must be specified',
-                        ['field' => $field, 'alias' => $alias]
-                    );
+                        'field' => $field,
+                        'alias' => $alias,
+                    ]);
                 }
                 $alias = $alias[0];
             } else {
