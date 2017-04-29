@@ -74,7 +74,7 @@ class Persistence_Array extends Persistence
     public function load(Model $m, $id, $table = null)
     {
         if (!isset($this->data[$m->table]) && !isset($table)) {
-            throw Exception([
+            throw new Exception([
                 'Table was not found in the array data source',
                 'table' => $m->table,
             ]);
