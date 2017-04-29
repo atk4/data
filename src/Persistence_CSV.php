@@ -297,7 +297,7 @@ class Persistence_CSV extends Persistence
         if (!$data) {
             throw new Exception([
                 'No more records',
-                'model'      => $m,
+                'model' => $m,
             ], 404);
         }
 
@@ -344,7 +344,7 @@ class Persistence_CSV extends Persistence
      */
     public function update(Model $m, $id, $data, $table = null)
     {
-        throw new Exception('Updating records is not supported in CSV persistence.');
+        throw new Exception(['Updating records is not supported in CSV persistence.']);
     }
 
     /**
@@ -356,7 +356,7 @@ class Persistence_CSV extends Persistence
      */
     public function delete(Model $m, $id, $table = null)
     {
-        throw new Exception('Deleting records is not supported in CSV persitence.');
+        throw new Exception(['Deleting records is not supported in CSV persitence.']);
     }
 
     /**
