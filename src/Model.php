@@ -898,7 +898,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if (is_null($this->id)) {
             $this->id = $id;
         }
-        $this->hook('afterLoad');
+
+        if ($this->hook('afterLoad') === false) {
+            $this->unload();
+        }
 
         return $this;
     }
@@ -1099,7 +1102,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->data = $this->persistence->tryLoad($this, $id);
         if ($this->data) {
             $this->id = $id;
-            $this->hook('afterLoad');
+
+            if ($this->hook('afterLoad') === false) {
+                $this->unload();
+            }
         } else {
             $this->unload();
         }
@@ -1127,7 +1133,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             if ($this->id_field) {
                 $this->id = $this->data[$this->id_field];
             }
-            $this->hook('afterLoad');
+
+            if ($this->hook('afterLoad') === false) {
+                $this->unload();
+            }
         } else {
             $this->unload();
         }
@@ -1156,7 +1165,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             if ($this->id_field) {
                 $this->id = $this->data[$this->id_field];
             }
-            $this->hook('afterLoad');
+
+            if ($this->hook('afterLoad') === false) {
+                $this->unload();
+            }
         } else {
             $this->unload();
         }
@@ -1404,9 +1416,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
             if ($this->id_field) {
                 $this->id = isset($data[$this->id_field]) ? $data[$this->id_field] : null;
             }
-            $this->hook('afterLoad');
-            yield $this->id => $this;
+
+            // you can return false in afterLoad hook to prevent to yield this data row
+            // use it like this:
+            // $model->addHook('afterLoad', function ($m) {
+            //     if ($m['date'] < $m->date_from) $m->breakHook(false);
+            // })
+            if ($this->hook('afterLoad') !== false) {
+                yield $this->id => $this;
+            }
         }
+
         $this->unload();
     }
 
