@@ -42,7 +42,7 @@ class Field
 
     /**
      * If value of this field can be described by a model, this property
-     * will contain reference to that model
+     * will contain reference to that model.
      */
     public $reference = null;
 
