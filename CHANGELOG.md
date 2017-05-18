@@ -1,3 +1,9 @@
+## 1.1.17
+
+Add support for $reference property on field, which will link 'country_id'
+field created by hasOne() with reference object. This is important to properly
+display dropdowns in UI
+
 ## 1.1.16
 
 Update some bugs in documentation and fix #229.
