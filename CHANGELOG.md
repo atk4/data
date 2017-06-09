@@ -1,3 +1,8 @@
+## 1.1.18
+
+ - If return false from afterLoad hook then prevent yielding data row (#231)
+ - add ability to override title name to addTitle(['field'=>'currency_name']);
+
 ## 1.1.17
 
 Add support for $reference property on field, which will link 'country_id'
