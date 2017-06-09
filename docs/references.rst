@@ -353,6 +353,12 @@ Unlike addField() which creates fields read-only, title field can in fact be mod
 This behaviour is awesome when you are importing large amounts of data, because the
 lookup for the currency_id is entirely done in a database.
 
+By default name of the field will be calculated by removing "_id" from the end of hasOne
+field, but to override this, you can specify name of the title field explicitly::
+
+    $i->hasOne('currency_id', new Currency())
+        ->addTitle(['field'=>'currency_name']);
+
 User-defined Reference
 ======================
 

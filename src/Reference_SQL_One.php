@@ -143,7 +143,7 @@ class Reference_SQL_One extends Reference_One
                 'arg' => $defaults,
             ]);
         }
-        $field = str_replace('_id', '', $this->link);
+        $field = isset($defaults['field']) ? $defaults['field'] : str_replace('_id', '', $this->link);
         $ex = $this->owner->addExpression($field, array_merge_recursive(
             [
                 function ($m) {
