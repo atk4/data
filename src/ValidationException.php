@@ -8,16 +8,16 @@ class ValidationException extends Exception
 {
     public $errors = [];
 
-
-    public function __construct($errors, $intent = null) {
+    public function __construct($errors, $intent = null)
+    {
         $this->errors = $errors;
 
         $c = count($errors);
         if ($c > 1) {
             return parent::__construct([
-                'Multiple unhandled validation errors', 
-                'errors'=>$errors,
-                'intent'=>$intent
+                'Multiple unhandled validation errors',
+                'errors'=> $errors,
+                'intent'=> $intent,
             ]);
         }
         if ($c === 1) {
@@ -26,16 +26,15 @@ class ValidationException extends Exception
             foreach ($errors as $field=>$error) {
                 return parent::__construct([
                     $error,
-                    'field'=>$field
+                    'field'=> $field,
                 ]);
             }
         }
 
         return parent::__construct([
             'Incorrectly use of ValidationException, argument should be an array',
-            'errors'=>$errors,
-            'intent'=>$intent
+            'errors'=> $errors,
+            'intent'=> $intent,
         ]);
-
     }
 }

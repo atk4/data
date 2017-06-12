@@ -329,7 +329,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * You may also use format:
      *  ['field'=>['must not have character [ch]', 'ch'=>$bad_character']] for better localization of error message.
      *
-     * Always use 
+     * Always use
      *   return array_merge(parent::validate($intent), $errors);
      *
      * @param string $intent By default only 'save' is used (from beforeSave) but you can use other intents yourself.
@@ -339,11 +339,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function validate($intent = null)
     {
         $errors = [];
-        foreach($this->hook('validate') as $handler_error) {
-            if($handler_error) {
+        foreach ($this->hook('validate') as $handler_error) {
+            if ($handler_error) {
                 $errors = array_merge($errors, $handler_error);
             }
         }
+
         return $errors;
     }
 
