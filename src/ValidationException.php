@@ -32,7 +32,7 @@ class ValidationException extends Exception
         }
 
         return parent::__construct([
-            'Incorrectly use of ValidationException, argument should be an array',
+            'Incorrect use of ValidationException, argument should be an array',
             'errors'=> $errors,
             'intent'=> $intent,
         ]);
