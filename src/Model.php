@@ -323,6 +323,32 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Perform validation on a currently loaded values, must return Array in format:
+     *  ['field'=>'must be 4 digits exactly'] or empty array if no errors were present.
+     *
+     * You may also use format:
+     *  ['field'=>['must not have character [ch]', 'ch'=>$bad_character']] for better localization of error message.
+     *
+     * Always use
+     *   return array_merge(parent::validate($intent), $errors);
+     *
+     * @param string $intent By default only 'save' is used (from beforeSave) but you can use other intents yourself.
+     *
+     * @return array ['field'=> err_spec]
+     */
+    public function validate($intent = null)
+    {
+        $errors = [];
+        foreach ($this->hook('validate') as $handler_error) {
+            if ($handler_error) {
+                $errors = array_merge($errors, $handler_error);
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
      * Adds new field into model.
      *
      * @param string $name
@@ -1249,6 +1275,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         return $this->atomic(function () use ($to_persistence) {
+            if (($errors = $this->validate('save')) !== []) {
+                throw new ValidationException($errors);
+            }
             if ($this->hook('beforeSave') === false) {
                 return $this;
             }
