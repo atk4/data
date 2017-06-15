@@ -56,7 +56,7 @@ class Persistence_Array extends Persistence
         }
 
         if (!$m->table) {
-            $m->table=0;
+            $m->table = 0;
             $this->data[0] = $this->data;
         }
 

@@ -190,7 +190,7 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test short format
+     * Test short format.
      */
     public function testShortFormat()
     {

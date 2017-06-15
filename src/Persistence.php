@@ -20,7 +20,7 @@ class Persistence
     /**
      * Connects database.
      *
-     * @param string $dsn Format as PDO DSN or use "mysql://user:pass@host/db;option=blah", leaving user and password = null
+     * @param string $dsn      Format as PDO DSN or use "mysql://user:pass@host/db;option=blah", leaving user and password = null
      * @param string $user
      * @param string $password
      * @param array  $args
@@ -39,14 +39,14 @@ class Persistence
         // If parts are usable, convert DSN format
         if ($parts !== false && isset($parts['host']) && isset($parts['path']) && $user === null && $password === null) {
             // DSN is using URL-like format, so we need to convert it
-            $dsn = $parts['scheme'].':host='.$parts['host'].';dbname='.substr($parts['path'],1);
+            $dsn = $parts['scheme'].':host='.$parts['host'].';dbname='.substr($parts['path'], 1);
             $user = $parts['user'];
             $password = $parts['pass'];
         }
 
         // Omitting UTF8 is always a bad problem, so unless it's specified we will do that to prevent nasty problems.
         if (strpos($dsn, ';charset=') === false) {
-            $dsn.=';charset=utf8';
+            $dsn .= ';charset=utf8';
         }
 
         if (strpos($dsn, ':') === false) {
