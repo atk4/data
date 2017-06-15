@@ -31,6 +31,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinxcontrib.phpdomain'
+    #'sphinxcontrib_phpautodoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

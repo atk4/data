@@ -9,15 +9,17 @@ of other ORM, ActiveRecord and QueryBuilder tools could be helpful, but
 you should carefully go through the basics if you want to know how to use
 Agile Data efficiently.
 
-Documentation for Agile Data is organized into chapters where each chapter
-is dedicated to provide full documentation on all functionality of Agile
-Data.
+The distinctive goal for Agile Data is ability to "execute" complex opeartions
+on the database server directly, such as aggregation, sub-queries, joins and
+unions but only if the database server supports those operations.
 
-In this chapter, I'll only introduce you to the basics. You can use the rest
-of the documentation as a reference.
+Developer would normally create a declaration like this::
 
-.. warning:: If any examples in this guide do not work as expected, this is
-    most probably a bug. Please report it so that our team could look into it.
+    $user->hasMany('Order')->addField('total', ['aggregate'=>'sum']);
+
+It is up to Agile Data to decide what's the most efficient way to implement
+the aggregation. Currently only SQL persistence is capable of constructing
+aggregate sub-query.
 
 Requirements
 ============
@@ -74,6 +76,10 @@ Persistence (see :ref:`Persistence`)
     Object representing a connection to database. Linking your Business Model
     to a persistence allows you to load/save individual records as well as
     execute multi-record operations (Actions)
+
+    For developer, persistence should be a secondary concern, after all it is
+    possible to switch from one persistence to another and compensate for the
+    feature differences without major refactoring.
 
 DataSet (see :ref:`DataSet`)
     A set of physical records stored on your database server that correspond
@@ -170,9 +176,10 @@ following categories:
 Persistence
 ^^^^^^^^^^^
 
-When you first create model using `new Model` it will just exist as an
-independent container. By passing `$db` as a parameter you are also
-associating your model with that specific persistence.
+When you create instance of a model (`new Model`) you need to specify
+:php:class:`Persistence` as a parameter. If you don't you can still use
+the model, but it won't be able to :php:meth:`Model::load()` or
+:php:meth:`Model::save()` data.
 
 Once model is associated with one persistence, you cannot re-associate it.
 Method :php:meth:`Model::init()` will be executed only after persistence is
@@ -377,11 +384,23 @@ To make things simple, console has already created persistence
 inside variable `$db`. Load up `console.php` in your editor to look
 at how persistence is set up::
 
-    $app->db = new \atk4\data\Persistence::connect($dsn, $user, pass);
+    $app->db = \atk4\data\Persistence::connect($dsn, $user, $pass);
 
-    // or
+The `$dsn` can also be using the PEAR-style DSN format, such as:
+"mysql://user:pass@db/host", in which case you do not need to
+specify $user and $pass. 
 
-    $app->db = new \atk4\data\Persistence_SQL($pdo, $user, $pass);
+For some persistence classes, you should use constructor directly::
+
+    $array = [];
+    $array[1] = ['name'=>'John'];
+    $array[2] = ['name'=>'Peter'];
+
+    $db = new \atk4\data\Persistence_Array($array);
+    $m = new \atk4\data\Model($db);
+    $m->addField('name');
+    $m->load(2);
+    echo $m['name'];  // Peter
 
 There are several Persistence classes that deal with different
 data sources. Lets load up our console and try out a different
