@@ -55,6 +55,11 @@ class Persistence_Array extends Persistence
             }
         }
 
+        if (!$m->table) {
+            $m->table = 0;
+            $this->data[0] = $this->data;
+        }
+
         if (!isset($this->data[$m->table])) {
             $this->data[$m->table] = [];
         }
@@ -73,7 +78,7 @@ class Persistence_Array extends Persistence
      */
     public function load(Model $m, $id, $table = null)
     {
-        if (!isset($this->data[$m->table]) && !isset($table)) {
+        if (isset($m->table) && !isset($this->data[$m->table])) {
             throw new Exception([
                 'Table was not found in the array data source',
                 'table' => $m->table,

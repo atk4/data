@@ -188,4 +188,34 @@ class PersistentArrayTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('JohnSarah', $output);
     }
+
+    /**
+     * Test short format.
+     */
+    public function testShortFormat()
+    {
+        $a = [
+            1 => ['name' => 'John', 'surname' => 'Smith'],
+            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+
+        $m->load(1);
+        $this->assertEquals('John', $m['name']);
+
+        $m->load(2);
+        $this->assertEquals('Jones', $m['surname']);
+        $m['surname'] = 'Smith';
+        $m->save();
+
+        $m->load(1);
+        $this->assertEquals('John', $m['name']);
+
+        $m->load(2);
+        $this->assertEquals('Smith', $m['surname']);
+    }
 }
