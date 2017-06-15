@@ -1,3 +1,14 @@
+## 1.2.0
+
+When upgrading to 1.2.x branch watch out if your "Model" has a validate() method. The
+database connection will now use "utf8" so if you used non-utf8 before you might need
+to convert chartsets.
+
+ - Added support for validate() in your Models
+ - Added support for classic DSN format (mysql://..)
+ - Added support for single-table Array Persistence
+ - Using charset=utf8 connection by default
+
 ## 1.1.18
 
  - If return false from afterLoad hook then prevent yielding data row (#231)
