@@ -1,9 +1,9 @@
 
 .. _Model:
 
-============================
-Working With Business Models
-============================
+=====
+Model
+=====
 
 .. note:: This documentation needs to be reworked to be easier to read!
 
