@@ -64,7 +64,7 @@ This now re-shifts the balance and makes it possible to implement any generic UI
 It's important to note, that glue may also interact with the model preparing it for a specific use-case:
 
 ``` php
-$grid = new \atk4\ui\Grid();
+$grid = new \atk4\ui\Table();
 $data = new Order($db);
 $data->addCondition('is_new', true);
 $data->addCondition('client_id', $_GET['client_id']);
@@ -154,7 +154,7 @@ $html = $chart->html();
 
 In both cases you end up executing **just one** SQL query. 
 
-### Enterprise Applications
+### Large Application and Enterprise use
 
 #### Refactoring
 
@@ -187,6 +187,10 @@ Agile Data has a usage patters that will automatically restrict access by this c
 With Agile Data you can move your data from one persistence to another seamlessly. If you rely on some feature that your new persistence does not support (e.g. Expression) you can replace them a callback calculation, that executes on your App server. 
 
 As usual - the rest of your application is not affected and you can even use multiple types of different persistences and still navigate through references.
+
+#### Support
+
+Because our team have implemented Agile Data, we have trained experts who can offer commercial consultancy, training and support. Use our Contact form: http://www.agiletoolkit.org/contact for inquiries.
 
 ## Framework Integrations
 
@@ -233,6 +237,10 @@ We are working on it. For now - visit our [gitter.im](https://gitter.im/atk4/atk
 Say hi. We enjoy meeting new people regardless of how good they are with PHP and the framework (https://gitter.im/atk4/atk4).
 
 If you want to help, we have a special tag [Help Wanted](https://github.com/atk4/data/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) in our issue system:
+
+-----------------
+
+some of the information below may be out of date and needs to be cleaned up.
 
 ## Agile Data at a Glance
 
