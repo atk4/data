@@ -242,6 +242,7 @@ class RandomSQLTests extends SQLTestCase
         $this->setDB($a);
 
         $m['name'] = 'Peter';
+
         try {
             $m->save();
             $e = null;

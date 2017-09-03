@@ -767,6 +767,7 @@ class Persistence_SQL extends Persistence
         $insert->set($this->typecastSaveRow($m, $data));
 
         $st = null;
+
         try {
             $m->hook('beforeInsertQuery', [$insert]);
             $st = $insert->execute();

@@ -16,6 +16,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         init as _init;
     }
     use \atk4\core\NameTrait;
+    use \atk4\core\DIContainerTrait;
 
     // {{{ Properties of the class
 
@@ -295,20 +296,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Set default properties of model.
-     *
-     * @param array $defaults
-     */
-    public function setDefaults($defaults)
-    {
-        foreach ($defaults as $key => $val) {
-            if ($val !== null) {
-                $this->$key = $val;
-            }
-        }
-    }
-
-    /**
      * Extend this method to define fields of your choice.
      */
     public function init()
@@ -532,6 +519,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $e->addMoreInfo('field', $field);
             $e->addMoreInfo('value', $value);
             $e->addMoreInfo('f', $f);
+
             throw $e;
         }
 
@@ -1213,10 +1201,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function loadBy($field, $value)
     {
         $this->addCondition($field, $value);
+
         try {
             $this->loadAny();
         } catch (\Exception $e) {
             array_pop($this->conditions);
+
             throw $e;
         }
         array_pop($this->conditions);
@@ -1236,10 +1226,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function tryLoadBy($field, $value)
     {
         $this->addCondition($field, $value);
+
         try {
             $this->tryLoadAny();
         } catch (\Exception $e) {
             array_pop($this->conditions);
+
             throw $e;
         }
         array_pop($this->conditions);
