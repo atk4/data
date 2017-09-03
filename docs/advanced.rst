@@ -86,6 +86,8 @@ new record is inserted, so those fields will be left as "null" after initial ins
 
 If you wish, you can modify the code and insert historical records into other table.
 
+.. _soft_delete:
+
 Soft Delete
 ===========
 
