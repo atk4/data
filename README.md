@@ -7,6 +7,8 @@
 [![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 [![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
+[![codecov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
+
 
 **Data Access Framework for high-latency databases (Cloud SQL/NoSQL).**
 
