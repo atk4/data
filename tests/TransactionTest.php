@@ -29,6 +29,7 @@ class TransactionTest extends SQLTestCase
             throw new \Exception('Awful thing happened');
         });
         $m['name'] = 'XXX';
+
         try {
             $m->save();
         } catch (\Exception $e) {
@@ -39,6 +40,7 @@ class TransactionTest extends SQLTestCase
         $m->addHook('afterDelete', function ($m) {
             throw new \Exception('Awful thing happened');
         });
+
         try {
             $m->delete();
         } catch (\Exception $e) {
