@@ -11,6 +11,7 @@ to convert chartsets.
 
 
 
+
 ## 1.1.18
 
  - If return false from afterLoad hook then prevent yielding data row (#231)
