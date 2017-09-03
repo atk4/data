@@ -8,7 +8,7 @@ use atk4\data\Persistence_Array;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class PersistentArrayTest extends \PHPUnit_Framework_TestCase
+class PersistentArrayTest extends TestCase
 {
     /**
      * Test constructor.

@@ -16,6 +16,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         init as _init;
     }
     use \atk4\core\NameTrait;
+    use \atk4\core\DIContainerTrait;
 
     // {{{ Properties of the class
 
@@ -290,20 +291,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 $el = clone $el;
                 $this->elements[$id] = $el;
                 $el->owner = $this;
-            }
-        }
-    }
-
-    /**
-     * Set default properties of model.
-     *
-     * @param array $defaults
-     */
-    public function setDefaults($defaults)
-    {
-        foreach ($defaults as $key => $val) {
-            if ($val !== null) {
-                $this->$key = $val;
             }
         }
     }
