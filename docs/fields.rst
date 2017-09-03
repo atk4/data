@@ -17,12 +17,12 @@ mapping into persistence-logic.
 
 .. php:class:: Field
 
-.. php:property:: default
+.. php:attr:: default
 
 When no value is specified for a field, default value is used
 when inserting.
 
-.. php:property:: type
+.. php:attr:: type
 
 Valid types are: string, integer, boolean, datetime, date, time.
 
@@ -37,33 +37,60 @@ Those are responsible for converting PHP native types to persistence
 specific formats as defined in fields. Those methods will also change
 name of the field if needed (see Field::actual)
 
-.. php:property:: enum
+.. php:attr:: enum
 
 Specifies array containing all the possible options for the value.
 You can set only to one of the values (loosely typed comparison
 is used)
 
-.. php:property:: mandatory
+.. php:attr:: mandatory
 
-Set this to true if field property is mandatory and must be non-null in order
-for model to properly exist. Note that you can still set the NULL value to the
+Set this to true if field value must not be NULL. You can set the NULL value to the
 field, but you won't be able to save it.
 
-.. php:property:: read_only
+Example::
+
+    $model['age'] = 0;
+    $model->save();
+
+    $model['age'] = null;
+    $model->save();  // exception
+
+
+.. php:attr:: required
+
+Set this to true for field that may not contain "empty" value. You can't use NULL
+or any value that is considered ``empty()`` by PHP. Some examples that are not
+allowed are: 
+
+ - empty string ""
+ - 0 numerical value or 0.00
+ - boolean false
+
+Example::
+
+    $model['age'] = 0;
+    $model->save();  // exception
+
+    $model['age'] = null;
+    $model->save();  // exception
+
+
+.. php:attr:: read_only
 
 Modifying field that is read-only through set() methods (or array access) will
 result in exception. :php:class:`Field_SQL_Expression` is read-only by default.
 
-.. php:property:: actual
+.. php:attr:: actual
 
 Specify name of the Table Row Field under which field will be persisted.
 
-.. php:property:: join
+.. php:attr:: join
 
 This property will point to :php:class:`Join` object if field is associated
 with a joined table row.
 
-.. php:property:: system
+.. php:attr:: system
 
 System flag is intended for fields that are important to have inside hooks
 or some core logic of a model. System fields will always be appended to
@@ -72,25 +99,25 @@ or grids (see :php:meth:`Model::isVisible`, :php:meth:`Model::isEditable`).
 
 Adding condition on a field will also make it system.
 
-.. php:property:: never_persist
+.. php:attr:: never_persist
 
 Field will never be loaded or saved into persistence. You can use this flag
 for fields that physically are not located in the database, yet you want
 to see this field in beforeSave hooks.
 
-.. php:property:: never_save
+.. php:attr:: never_save
 
 This field will be loaded normally, but will not be saved in a database.
 Unlike "read_only" which has a similar effect, you can still change the
 value of this field. It will simply be ignored on save. You can create
 some logic in beforeSave hook to read this value.
 
-.. php:property:: ui
+.. php:attr:: ui
 
 This field contains certain arguments that may be needed by the UI layer
 to know if user should be allowed to edit this field.
 
-.. php:property:: loadCallback
+.. php:attr:: loadCallback
 
 Specify a callback that will be executed when the field is loaded and
 it is necessary to decode or do something else with loaded the value.
@@ -118,7 +145,7 @@ Note that if you use a call-back this will by-pass normal field typecasting.
 
 See :ref:`Advanced::EncryptedField` for full example.
 
-.. php:property:: saveCallback
+.. php:attr:: saveCallback
 
 Same as loadCallback property but will be executed when saving data. Arguments
 are still the same::
