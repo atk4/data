@@ -34,7 +34,9 @@ class Field_SQL_Expression extends Field_SQL
      */
     public function init()
     {
-        $this->_init();
+        if (!$this->_initialized) {
+            $this->_init();
+        }
 
         if ($this->owner->reload_after_save === null) {
             $this->owner->reload_after_save = true;
