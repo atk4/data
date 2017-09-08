@@ -163,7 +163,7 @@ class Reference
 
         $p = $this->owner->persistence;
 
-        return $p->add($p->normalizeClassName($model, 'Model'), $defaults);
+        return $p->add($model, $defaults);
     }
 
     /**
