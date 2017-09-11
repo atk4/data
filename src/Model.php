@@ -272,11 +272,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $persistence = null;
         }
 
-        foreach ($defaults as $key => $val) {
-            if ($val !== null) {
-                $this->$key = $val;
-            }
-        }
+        $this->setDefaults($defaults);
 
         if ($persistence) {
             $persistence->add($this, $defaults);
