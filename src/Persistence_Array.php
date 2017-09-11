@@ -25,7 +25,7 @@ class Persistence_Array extends Persistence
      */
     public function __construct(&$data)
     {
-        $this->data = &$data;
+        $this->data = $data;
     }
 
     /**
