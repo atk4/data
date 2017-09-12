@@ -263,13 +263,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function __construct($persistence = null, $defaults = [])
     {
-        if (is_string($defaults) || $defaults === false) {
-            $defaults = [$defaults];
-        }
-
+        // persistence is optional
         if (is_array($persistence)) {
             $defaults = $persistence;
             $persistence = null;
+        }
+
+        if (is_string($defaults) || $defaults === false) {
+            $defaults = ['table' => $defaults];
         }
 
         if (isset($defaults[0])) {
