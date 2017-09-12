@@ -55,11 +55,14 @@ class Persistence_Array extends Persistence
             }
         }
 
+        // if there is no model table specified, then create fake one named 'data'
+        // and put all persistence data in there
         if (!$m->table) {
-            $m->table = 0;
-            $this->data[0] = $this->data;
+            $m->table = 'data'; // fake table name 'data'
+            $this->data = [$m->table => $this->data];
         }
 
+        // if there is no such table in persistence, then create empty one
         if (!isset($this->data[$m->table])) {
             $this->data[$m->table] = [];
         }
