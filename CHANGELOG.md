@@ -9,29 +9,125 @@ to convert chartsets.
  - Added support for single-table Array Persistence
  - Using charset=utf8 connection by default
 
+## 1.2.1
+
+IMPORTANT: Agile Data will on longer prefix model class with `Model_` is specified as string:
+
+``` php
+$this->hasOne('client_id', 'Client'); // refers to Client, not Model_Client
+```
+
+For more info see #244
+
+- Now support Agile Core 1.3.0 #240
+- Migrate to CodeCov and improve coverage #241 #242
+- Improved [documentation for $mandatory and $required](http://agile-data.readthedocs.io/en/develop/fields.html#Field::$mandatory) #233
+- Added [documentation for Hooks](http://agile-data.readthedocs.io/en/develop/hooks.html) #238
+- Fix Persistence_Array usage without table #245 #246
+
+## 1.1
+
+The main feature of this release is introduction of strong types. See [Type Converting](http://agile-data.readthedocs.io/en/develop/persistence.html?highlight=typecasting#type-converting).
+
+- Added support for load_normalization (off by default) and typecasting #94, #109, #125, #129, #131, #140, #144, #160, #161, #162, #167, #168, #169, 
+- Improved support for field flags (read_only, never_persist etc) #105, #106, #123, #166, #170
+- Refactored join implementation #98, #99, #107
+- Improved integration with Agile Toolkit UI #95
+- Added support for strict_field_check (on by default)
+- Refactoring load() and save() code.
+- Added methods: duplicate, saveAs, saveAndUnload, asModel, newInstance, withPersistence, #111, #112
+- Refactored references. Reference addField will inherit type. #157, #163, 
+- Implemented $model->atomic(). CRUD operations are now atomic. #116
+- Improved ref('link_id') for loaded models. added hasRef() method. #124, #164
+- Huge number of new unit-tests (278->369), and added some advanced tests.
+- Added documentation for Fields [link](http://agile-data.readthedocs.io/en/develop/fields.html) #117
+- Expanded Persistence section [link](http://agile-data.readthedocs.io/en/develop/persistence.html?highlight=persistence#inserting-record-with-a-specific-id) (from insert records with specific id, down to actions)
+- Removed use of 'relations'. We use 'References' everywhere now. #120, #127, #134, #135, #139
+- Added documentation on Title field importing [link](http://agile-data.readthedocs.io/en/develop/references.html#importing-hasone-title) #122, #137
+- Other documentation (typos)
+- Dependencies updated (dsql, core) #121
+- PRs: #79, #82, #83, #85, #88, #90, #94, #95, #97, #130, #151, #156, #171
 
 
 
-## 1.1.18
+## 1.1.1
 
- - If return false from afterLoad hook then prevent yielding data row (#231)
- - add ability to override title name to addTitle(['field'=>'currency_name']);
+- disabled type fetching from related entities when using ref->addField due to performance degradation
+- hotfixed situations where never_persist fields are loaded when specified as part as onlyFields
 
-## 1.1.17
+## 1.1.2
 
-Add support for $reference property on field, which will link 'country_id'
-field created by hasOne() with reference object. This is important to properly
-display dropdowns in UI
+Minimum stability fixes after the release #172, #173
 
-## 1.1.16
+## 1.1.3
 
-Update some bugs in documentation and fix #229.
+Don't mark fields as dirty value has a fuzzy-match (4=="4"). Fix each() typecasting.
 
-## 1.1.14
+## 1.1.4
 
-- Upgrade to Agile Core 1.2 branch
+- Added implementation for addRef(). #176
+- Improve boolean handling. #181
+- Fix matching of incompatible types. #187
+- Don't assume ID is int for SQL types #191
 
-## 1.1.14
+## 1.1.5
+
+- Added documentation for TypeCasting (#189)
+- Added 'typecast' and 'serialise' properties for fields (#184)
+- Renamed 'struct' into 'object' and added 'array' to avoid confusion
+- ID fields for SQL are no longer 'integer'. They can be anything now. (#191)
+- General typecasting is now moved into generic Persistence
+- Improved normalisaton, so that fields don't become dirty for no reason (#187, #195)
+- Added persist_timezone and persist_format (#193)
+- Added date_time_class so that you can use Carbon if you want
+- Many new tests added
+- Minor fixes (#177, #188)
+
+
+## 1.1.6
+
+- added `Model->refModel` as a method to fetch model of a relation (no loading attempts) (#198)
+- fixed ancient nasty problem when cloning (#199)
+- fixed error with deep joins / inserting new records (#200, #201)
+
+## 1.1.7
+
+Minor updates and bugfixes.
+
+- Impred support for ID-less and read-only models (#211)
+- Improved compatibility with "UnionModel" extension
+- Made source code more friendly with PhpStorm and IDEs
+- Upadated README.md fixing some problems with examples
+- Expanded documentation by including some missed methods
+- Added "SQL Extensions" documentation section
+
+
+## 1.1.8
+
+Added CSV Persistence
+
+
+## 1.1.9
+
+Added Field::getCaption()
+
+## 1.1.10
+
+Aggregate fields (hasMany->addField) will now coalesce results
+to automatically display 0 even if no related record exist.
+
+
+## 1.1.11
+
+Added support for OR conditions.
+
+http://agile-data.readthedocs.io/en/develop/conditions.html#adding-or-conditions
+
+
+## 1.1.12
+
+- hasMany->addField() now correctly pass additional options to expression field.
+- Update README.
 
 - Prevent warning by having $table_alias property defined in a model
 - Include a proper release script
@@ -44,102 +140,52 @@ Update some bugs in documentation and fix #229.
 - Fix caption for hasOne(.. ['caption'=>'blah']). #226
 - Added release script
 
-## 1.1.12
+## 1.1.14
 
-- hasMany->addField() now correctly pass additional options to expression field.
-- Update README.
+- Upgrade to Agile Core 1.2 branch
 
-## 1.1.11
+## 1.1.16
 
-Added support for OR conditions.
+Update some bugs in documentation and fix #229.
 
-http://agile-data.readthedocs.io/en/develop/conditions.html#adding-or-conditions
 
-## 1.1.10
+## 1.1.17
 
-Aggregate fields (hasMany->addField) will now coalesce results
-to automatically display 0 even if no related record exist.
+Add support for $reference property on field, which will link 'country_id'
+field created by hasOne() with reference object. This is important to properly
+display dropdowns in UI
 
-## 1.1.9
+## 1.1.18
 
-Added Field::getCaption()
+ - If return false from afterLoad hook then prevent yielding data row (#231)
+ - add ability to override title name to addTitle(['field'=>'currency_name']);
 
-## 1.1.8
+# 1.0
 
-Added CSV Persistence
+This is our first stable version release for Agile Data. The class and
+method structure has sufficiently matured and will not be changed much
+anymore. Further 1.0.x versions will be focused on increasing stability
+and bugfixes. Versions 1.x will add more notable features, but if any
+incompatibilities will occur, then they will be mentioned in release
+notes and CHAGELOG.md
 
-## 1.1.7
-
-Minor updates and bugfixes.
-
--   Impred support for ID-less and read-only models (#211)
--   Improved compatibility with "UnionModel" extension
--   Made source code more friendly with PhpStorm and IDEs
--   Upadated README.md fixing some problems with examples
--   Expanded documentation by including some missed methods
--   Added "SQL Extensions" documentation section
-
-## 1.1.6
-
--   added `Model->refModel` as a method to fetch model of a relation (no loading attempts) (#198)
--   fixed ancient nasty problem when cloning (#199)
--   fixed error with deep joins / inserting new records (#200, #201)
-
-## 1.1.5
-
--   Added documentation for TypeCasting (#189)
--   Added 'typecast' and 'serialise' properties for fields (#184)
--   Renamed 'struct' into 'object' and added 'array' to avoid confusion
--   ID fields for SQL are no longer 'integer'. They can be anything now. (#191)
--   General typecasting is now moved into generic Persistence
--   Improved normalisaton, so that fields don't become dirty for no reason (#187, #195)
--   Added persist_timezone and persist_format (#193)
--   Added date_time_class so that you can use Carbon if you want
--   Many new tests added
--   Minor fixes (#177, #188)
-
-## 1.1.4
-
-* Added implementation for addRef(). #176
-* Improve boolean handling. #181
-* Fix matching of incompatible types. #187
-* Don't assume ID is int for SQL types #191
-
-## 1.1.3
-
-Don't mark fields as dirty value has a fuzzy-match (4=="4"). Fix each() typecasting.
-
-## 1.1.2
-
-Minimum stability fixes after the release #172, #173
-
-## 1.1.1
-
-* disabled type fetching from related entities when using ref->addField due to performance degradation
-* hotfixed situations where never_persist fields are loaded when specified as part as onlyFields
-
-## 1.1.0
-
-The main feature of this release is introduction of strong types. See [Type Converting](http://agile-data.readthedocs.io/en/develop/persistence.html?highlight=typecasting#type-converting).
-
-* Added support for load_normalization (off by default) and typecasting #94, #109, #125, #129, #131, #140, #144, #160, #161, #162, #167, #168, #169, 
-* Improved support for field flags (read_only, never_persist etc) #105, #106, #123, #166, #170
-* Refactored join implementation #98, #99, #107
-* Improved integration with Agile Toolkit UI #95
-* Added support for strict_field_check (on by default)
-* Refactoring load() and save() code.
-* Added methods: duplicate, saveAs, saveAndUnload, asModel, newInstance, withPersistence, #111, #112
-* Refactored references. Reference addField will inherit type. #157, #163, 
-* Implemented $model->atomic(). CRUD operations are now atomic. #116
-* Improved ref('link_id') for loaded models. added hasRef() method. #124, #164
-* Huge number of new unit-tests (278->369), and added some advanced tests.
-* Added documentation for Fields [link](http://agile-data.readthedocs.io/en/develop/fields.html) #117
-* Expanded Persistence section [link](http://agile-data.readthedocs.io/en/develop/persistence.html?highlight=persistence#inserting-record-with-a-specific-id) (from insert records with specific id, down to actions)
-* Removed use of 'relations'. We use 'References' everywhere now. #120, #127, #134, #135, #139
-* Added documentation on Title field importing [link](http://agile-data.readthedocs.io/en/develop/references.html#importing-hasone-title) #122, #137
-* Other documentation (typos)
-* Dependencies updated (dsql, core) #121
-* PRs: #79, #82, #83, #85, #88, #90, #94, #95, #97, #130, #151, #156, #171
+* Rewrote QuickStart guide and README.md, so everyone should re-read them
+* added Model::setLimit, setOrder
+* added Model::export([])
+* added Model iterator
+* added Model::each
+* added concise var_dump() support for most objects
+* added Model::getRef() and Model::getRefs()
+* added Field_SQL_One::addFields() and addTitle()
+* added support for nested joins in model
+* added Model::withID
+* added Model::loadAny()
+* added Model::loadBy() and tryLoadBy()
+* added Model::rawIterator()
+* field consistency improvement in action('select') and action('fx')
+* Model::ref() added 2nd argument as model defaults
+* defaults with value of NULL are ignored
+* improved coding style with StyleCI
 
 ## 1.0.2
 
@@ -186,32 +232,7 @@ This is our first maintenance release that solves several important issues.
 
 Included PRs: #75, #74, #73, #72, #71, #70, #65, #63, #61, #58, #55
 
-# 1.0
-
-This is our first stable version release for Agile Data. The class and
-method structure has sufficiently matured and will not be changed much
-anymore. Further 1.0.x versions will be focused on increasing stability
-and bugfixes. Versions 1.x will add more notable features, but if any
-incompatibilities will occur, then they will be mentioned in release
-notes and CHAGELOG.md
-
-* Rewrote QuickStart guide and README.md, so everyone should re-read them
-* added Model::setLimit, setOrder
-* added Model::export([])
-* added Model iterator
-* added Model::each
-* added concise var_dump() support for most objects
-* added Model::getRef() and Model::getRefs()
-* added Field_SQL_One::addFields() and addTitle()
-* added support for nested joins in model
-* added Model::withID
-* added Model::loadAny()
-* added Model::loadBy() and tryLoadBy()
-* added Model::rawIterator()
-* field consistency improvement in action('select') and action('fx')
-* Model::ref() added 2nd argument as model defaults
-* defaults with value of NULL are ignored
-* improved coding style with StyleCI
+# Pre-releases
 
 ## 0.5.1 Minor Cleanups
 
