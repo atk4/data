@@ -272,6 +272,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $persistence = null;
         }
 
+        if (isset($defaults[0]) {
+            $defaults['table'] = $defaults[0];
+            unset($defaults[0]);
+        }
+
         $this->setDefaults($defaults);
 
         if ($persistence) {
