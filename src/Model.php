@@ -349,7 +349,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $c = $this->_default_class_addField;
         $field = new $c($defaults);
-        $this->add($field, $name);
+        $this->add([$field, 'desired_name'=>$name]);
 
         return $field;
     }
@@ -1783,7 +1783,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $c = $this->_default_class_addExpression;
 
-        return $this->add(new $c($defaults), $name);
+        return $this->add([new $c($defaults), 'desired_name'=>$name]);
     }
 
     // }}}
