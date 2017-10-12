@@ -276,3 +276,234 @@ Executes single-argument SQL function on field::
     $avg_age = $action->getOne();
 
 This method also supports alias. Use of alias is handy if you are using those actions as part of other query (e.g. UNION)
+
+Stored Prodecures
+=================
+
+SQL servers allow to create and use stored procedures and there are several ways to invoke them:
+
+1. `CALL` procedure. No data / output.
+2. Specify `OUT` params.
+3. Stored `FUNCTION`, e.g. `select myfunc(123)`
+4. Stored prodecures that return data.
+
+Agile Data has various ways to deal with above scenarios:
+
+    1. Custom expression through DSQL
+    2. Model Method
+    3. Model Field
+    4. Model Source
+
+Here I'll try to look into each of those approaches but closely pay attention to the following:
+
+    - Abstraction and concern separation.
+    - Security and protecting against injeciton.
+    - Performance and scalability.
+    - When to refactor away stored procedures.
+
+Compatibility Warning
+---------------------
+
+Agile Data is designed to be cross-database agnostic. That means you should be able to swap
+your SQL to NoSQL or RestAPI at any moment. My relying on stored procedures you will loose
+portability of your application.
+
+We do have our legacy applications to maintain, so Stored Procedures and SQL extensions
+are here to stay. By making your Model rely on those extensions you will loose ability
+to use the same model with non-sql persistences.
+
+Sometimes you can fence the code like this::
+
+    if ($this->persistence instanceof \atk4\data\Persistence_SQL) {
+        .. sql code ..
+    }
+
+Or define your pure model, then extend it to add SQL capabilities. Note that using single
+model with cross-persistences should still be possible, so you should be able to retrieve
+model data from stored procedure then cache it.
+
+as a Model method
+-----------------
+
+You should be familiar with http://dsql.readthedocs.io/en/develop/expressions.html.
+
+In short this should allow you to bulid and execute any SQL statement::
+
+    $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
+        $this->app->system->id,
+        $this->app->system['contractor_id']
+    ])->execute();
+
+Depending on the statement you can also use your statement to retrieve data::
+
+    $data = $this->expr("call get_client_report_data([client_id])", [
+        'client_id'=>$client_id
+    ])->get();
+
+This can be handy if you wish to create a method for your Model to abstract away
+the data::
+
+    class Client extends \atk4\data\Model {
+        funciton init() {
+            ...
+        }
+
+        function getReportData($arg) {
+            if (!$this->loaded()) {
+                throw new Exception('Client must be loaded');
+            }
+
+            return $this->expr("call get_client_report_data([client_id, arg])", [
+                'arg'       => $arg,
+                'client_id' => $client_id,
+            ])->get();
+        }
+    }
+
+Here is another example using PHP generator::
+
+    class Client extends \atk4\data\Model {
+        funciton init() {
+            ...
+        }
+
+        function fetchReportData($arg) {
+            if (!$this->loaded()) {
+                throw new Exception('Client must be loaded');
+            }
+
+            foreach($this->expr("call get_client_report_data([client_id, arg])", [
+                'arg'       => $arg,
+                'client_id' => $client_id,
+            ]) as $row) {
+                yeld $row;
+            }
+        }
+    }
+
+as a Model Field
+----------------
+
+.. important:: Not all SQL vendors may support this approach.
+
+:php:meth:`Model::addExpression` is a SQL extension that allow you to define any
+expression for your field query. You can use SQL stored function for data fetching
+like this::
+
+    class Category extends \atk4\data\Model {
+        public $table = 'category';
+        function init() {
+            parent::init();
+
+            $this->hasOne('parent_id', new self());
+            $this->addField('name');
+
+            $this->addExpression('path', 'get_path([id])');
+        }
+    }
+
+This should translate into SQL query::
+
+    select parent_id, name, get_path(id) from category;
+
+where once again, stored function is hidden. 
+
+
+as an Action
+------------
+
+.. important:: Not all SQL vendors may support this approach.
+
+Method :php:meth:`Persistence_SQL::action` and :php:meth:`Model::action` generates queries
+for most of model operations.  By re-defining this method, you can significantly affect
+the query building of an SQL model::
+
+    class CompanyProfit extends \atk4\data\Model {
+
+        public $company_id = null; // inject company_id, which will act as a condition/argument
+        pubilc $read_only  = true; // instructs rest of the app, that this model is read-only
+
+        function init() {
+            parent::init();
+
+            $this->addField('date_period');
+            $this->addfield('profit');
+        }
+
+        public function action($mode, $args = [])
+
+            if ($mode == 'select') {
+
+                // must return DSQL object here
+                return $this->expr("call get_company_profit([company_id])", [
+                    'company_id' => $this->company_id,
+                ]);
+            }
+
+            if ($mode == 'count') {
+
+                // optionally - expression for counting data rows, for pagination support
+                return $this->expr("select count(*) from (call get_company_profit([company_id]))", [
+                    'company_id' => $this->company_id,
+                ]);
+            }
+
+            throw new \atk4\core\Exception([
+                'You may only perform "select" or "count" action on this model', 
+                'action' => $mode
+            ]);
+        }
+    }
+
+as a Temporary Table
+--------------------
+
+A most convenient (although inefficient) way for stored procedures is to place output data inside
+a temporary table. You can perform an actuall call to stored procedure inside Model::init() then
+set $table property to a temporary table::
+
+    class NominalReport extends \atk4\data\Model {
+        public $table = 'temp_nominal_sheet';
+        pubilc $read_only = true; // instructs rest of the app, that this model is read-only
+
+        function init() {
+            parent::init();
+
+            $q = $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
+                $this->app->system->id,
+                $this->app->system['contractor_id']
+            ])->execute();
+
+            $this->addField('date', ['type'=>'date']);
+            $this->addField('items', ['type'=>'integer']);
+            ...
+        }
+    }
+
+
+as an Model Source
+------------------
+
+.. important:: Not all SQL vendors may support this approach.
+
+Technically you can also specify expression as a $table property of your model::
+
+    class ClientReport extends \atk4\data\Model {
+
+        public $table = null; // will be set in init()
+        pubilc $read_only = true; // instructs rest of the app, that this model is read-only
+
+        function init() {
+            parent::init();
+
+            $this->init = $this->expr("call get_report_data()");
+
+            $this->addField('date', ['type'=>'date']);
+            $this->addField('items', ['type'=>'integer']);
+            ...
+        }
+    }
+
+Technically this will give you `select date,items from (call get_report_data())`.
+
+
