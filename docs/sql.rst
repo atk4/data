@@ -277,7 +277,7 @@ Executes single-argument SQL function on field::
 
 This method also supports alias. Use of alias is handy if you are using those actions as part of other query (e.g. UNION)
 
-Stored Prodecures
+Stored Procedures
 =================
 
 SQL servers allow to create and use stored procedures and there are several ways to invoke them:
