@@ -31,7 +31,9 @@ class ValidationException extends Exception
                 'errors' => $errors,
                 'intent' => $intent,
             ]);
-        } elseif ($c === 1) {
+        }
+
+        if ($c === 1) {
             // foreach here just to get key/value from a single member
             foreach ($errors as $field=>$error) {
                 return parent::__construct([
