@@ -392,7 +392,7 @@ class ReferenceSQLTest extends SQLTestCase
         $this->assertEquals($o->getElement('user_id')->isVisible(), true);
 
         $o->getRef('user_id')->addTitle();
-        $this->assertEquals((bool)$o->hasElement('user'), true);
+        $this->assertEquals((bool) $o->hasElement('user'), true);
         $this->assertEquals($o->getElement('user')->isVisible(), true);
         $this->assertEquals($o->getElement('user_id')->isVisible(), false);
 
