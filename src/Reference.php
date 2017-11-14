@@ -200,7 +200,7 @@ class Reference
      *
      * @param string $their_field
      *
-     * @return string
+     * @return string|null
      */
     public function guessFieldType($their_field = null)
     {

@@ -368,4 +368,40 @@ class ReferenceSQLTest extends SQLTestCase
         $o = $user->ref('Orders');
         $this->assertEquals('order', $o->table);
     }
+
+    /**
+     * Few tests to test Reference_SQL_One addTitle() method.
+     */
+    public function testAddTitle()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John'],
+            ], 'order' => [
+                ['amount' => '20', 'user_id' => 1],
+                ['amount' => '15', 'user_id' => 2],
+            ], ];
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $u = (new Model($db, 'user'))->addFields(['name']);
+        $o = (new Model($db, 'order'))->addFields(['amount']);
+
+        // by default not set
+        $o->hasOne('user_id', $u);
+        $this->assertEquals($o->getElement('user_id')->isVisible(), true);
+
+        $o->getRef('user_id')->addTitle();
+        $this->assertEquals((bool)$o->hasElement('user'), true);
+        $this->assertEquals($o->getElement('user')->isVisible(), true);
+        $this->assertEquals($o->getElement('user_id')->isVisible(), false);
+
+        // if it is set manually then it will not be changed
+        $o = (new Model($db, 'order'))->addFields(['amount']);
+        $o->hasOne('user_id', $u);
+        $o->getElement('user_id')->ui['visible'] = true;
+        $o->getRef('user_id')->addTitle();
+
+        $this->assertEquals($o->getElement('user_id')->isVisible(), true);
+    }
 }
