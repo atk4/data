@@ -175,8 +175,8 @@ class Reference_SQL_One extends Reference_One
         }, null, 20);
 
         // Set ID field as not visible in grid by default
-        if (!isset($this->owner($this->link)->ui['visible'])) {
-            $this->owner($this->link)->ui['visible'] = false;
+        if (!isset($this->owner->getElement($this->link)->ui['visible'])) {
+            $this->owner->getElement($this->link)->ui['visible'] = false;
         }
 
         return $ex;
