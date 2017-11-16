@@ -82,6 +82,15 @@ class ValidationTests extends TestCase
         }
     }
 
+    /**
+     * @expectedException        \atk4\data\ValidationException
+     * @expectedExceptionMessage Incorrect use of ValidationException, argument should be an array
+     */
+    public function testValidate5()
+    {
+        $e = new \atk4\data\ValidationException('This parameter should be array');
+    }
+
     public function testValidateHook()
     {
         $this->m->addHook('validate', function ($m) {
