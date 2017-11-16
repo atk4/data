@@ -83,7 +83,7 @@ class ValidationTests extends TestCase
     }
 
     /**
-     * @expectedException        \atk4\data\ValidationException
+     * @expectedException        \Exception
      * @expectedExceptionMessage Incorrect use of ValidationException, argument should be an array
      */
     public function testValidate5()

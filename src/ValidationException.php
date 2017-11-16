@@ -18,13 +18,13 @@ class ValidationException extends Exception
      * @param array $errors Array of errors
      * @param mixed $intent
      *
-     * @return null
+     * @return \Exception
      */
     public function __construct($errors, $intent = null)
     {
         $this->errors = $errors;
 
-        $c = count($errors);
+        $c = is_array($errors) ? count($errors) : 0;
         if ($c > 1) {
             return parent::__construct([
                 'Multiple unhandled validation errors',
