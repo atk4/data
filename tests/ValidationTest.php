@@ -83,8 +83,6 @@ class ValidationTests extends TestCase
     }
 
     /**
-     * @expectedException        \Exception
-     * @expectedExceptionMessage Incorrect use of ValidationException, argument should be an array
      */
     public function testValidate5()
     {
