@@ -143,6 +143,7 @@ class Reference_SQL_One extends Reference_One
                 'arg' => $defaults,
             ]);
         }
+
         $field = isset($defaults['field']) ? $defaults['field'] : str_replace('_id', '', $this->link);
         $ex = $this->owner->addExpression($field, array_merge_recursive(
             [
@@ -156,7 +157,7 @@ class Reference_SQL_One extends Reference_One
             ],
             $defaults,
             [
-                // to be able to change title field, but not save and
+                // to be able to change title field, but not save it
                 // afterSave hook will take care of the rest
                 'read_only'  => false,
                 'never_save' => true,
@@ -172,6 +173,11 @@ class Reference_SQL_One extends Reference_One
                 $m[$this->link] = $mm->action('field', [$mm->id_field]);
             }
         }, null, 20);
+
+        // Set ID field as not visible in grid by default
+        if (!isset($this->owner->getElement($this->link)->ui['visible'])) {
+            $this->owner->getElement($this->link)->ui['visible'] = false;
+        }
 
         return $ex;
     }

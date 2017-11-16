@@ -29,6 +29,21 @@ class MyValidationModel extends Model
     }
 }
 
+class BadValidationModel extends Model
+{
+    public function init()
+    {
+        parent::init();
+
+        $this->addField('name');
+    }
+
+    public function validate($intent = null)
+    {
+        return 'This should be array';
+    }
+}
+
 class ValidationTests extends TestCase
 {
     public $m;
@@ -80,6 +95,20 @@ class ValidationTests extends TestCase
 
             return;
         }
+    }
+
+    /**
+     * @expectedException        \Exception
+     * @expectedExceptionMessage Incorrect use of ValidationException, argument should be an array
+     */
+    public function testValidate5()
+    {
+        $a = [];
+        $p = new Persistence_Array($a);
+        $m = new BadValidationModel($p);
+
+        $m['name'] = 'john';
+        $m->save();
     }
 
     public function testValidateHook()
