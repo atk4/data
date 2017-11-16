@@ -82,8 +82,6 @@ class ValidationTests extends TestCase
         }
     }
 
-    /**
-     */
     public function testValidate5()
     {
         $e = new \atk4\data\ValidationException('This parameter should be array');
