@@ -133,11 +133,12 @@ class Reference_SQL_One extends Reference_One
      *
      * This method returns newly created expression field.
      *
-     * @param array $defaults Properties
+     * @param array $defaults       Properties for field
+     * @param array $model_defaults Properties for model
      *
      * @return Field_SQL_Expression
      */
-    public function addTitle($defaults = [])
+    public function addTitle($defaults = [], $model_defaults = [])
     {
         if (!is_array($defaults)) {
             throw new Exception([
@@ -149,8 +150,8 @@ class Reference_SQL_One extends Reference_One
         $field = isset($defaults['field']) ? $defaults['field'] : str_replace('_id', '', $this->link);
         $ex = $this->owner->addExpression($field, array_merge_recursive(
             [
-                function ($m) {
-                    $mm = $m->refLink($this->link);
+                function ($m) use ($model_defaults) {
+                    $mm = $m->refLink($this->link, $model_defaults);
 
                     return $mm->action('field', [$mm->title_field]);
                 },
@@ -191,13 +192,14 @@ class Reference_SQL_One extends Reference_One
      *
      * This will add expression 'user' equal to ref('user_id')['name'];
      *
-     * @param array $defaults Properties
+     * @param array $defaults       Properties for field
+     * @param array $model_defaults Properties for model
      *
      * @return $this
      */
-    public function withTitle($defaults = [])
+    public function withTitle($defaults = [], $model_defaults = [])
     {
-        $this->addTitle($defaults);
+        $this->addTitle($defaults, $model_defaults);
 
         return $this;
     }
