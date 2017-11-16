@@ -19,7 +19,7 @@ class Account extends \atk4\data\Model
     /**
      * create and return a trasnfer model.
      */
-    public function transfer(Account $a, $amount)
+    public function transfer(self $a, $amount)
     {
         $t = new Transfer($this->persistence, ['detached' => true]);
         $t['account_id'] = $this->id;
