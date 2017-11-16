@@ -95,11 +95,13 @@ class Reference_SQL_One extends Reference_One
     /**
      * Creates model that can be used for generating sub-query actions.
      *
+     * @param array $defaults Properties
+     *
      * @return Model
      */
-    public function refLink()
+    public function refLink($defaults = [])
     {
-        $m = $this->getModel();
+        $m = $this->getModel($defaults);
         $m->addCondition(
             $this->their_field ?: ($m->id_field),
             $this->referenceOurValue($m)
