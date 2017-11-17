@@ -44,11 +44,6 @@ class Persistence
             $password = $parts['pass'];
         }
 
-        // Omitting UTF8 is always a bad problem, so unless it's specified we will do that to prevent nasty problems.
-        if (strpos($dsn, ';charset=') === false) {
-            $dsn .= ';charset=utf8';
-        }
-
         if (strpos($dsn, ':') === false) {
             throw new Exception(["Your DSN format is invalid. Must be in 'driver:host:options' format", 'dsn' => $dsn]);
         }
@@ -56,6 +51,13 @@ class Persistence
 
         switch (strtolower(isset($args['driver']) ?: $driver)) {
             case 'mysql':
+                // Omitting UTF8 is always a bad problem, so unless it's specified we will do that
+                // to prevent nasty problems. This is un-tested on other databases, so moving it here.
+                // It gives problem with sqlite
+                if (strpos($dsn, ';charset=') === false) {
+                    $dsn .= ';charset=utf8';
+                }
+
             case 'dumper':
             case 'counter':
             case 'sqlite':
