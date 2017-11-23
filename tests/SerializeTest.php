@@ -3,8 +3,8 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
 use atk4\data\Persistence_Array;
+use atk4\data\Persistence_SQL;
 
 class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
@@ -30,7 +30,6 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-
         $db = new Persistence_SQL($this->db->connection);
         $m = new Model($db, 'user');
 
@@ -39,13 +38,11 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->loadBy('name', 'john');
         $m['password'] = 'john321';
 
-        var_Dump($m['password']);
+        var_dump($m['password']);
         $m->save();
-        var_Dump($m['password']);
+        var_dump($m['password']);
 
-
-
-        var_Dump($this->getDB());
+        var_dump($this->getDB());
 
         /*
         $this->assertEquals(['data' => 'a:1:{s:3:"foo";s:3:"bar";}'], $db->typecastSaveRow($m, ['data' => ['foo' => 'bar']]));
@@ -64,8 +61,7 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $f = $m->addField('data', ['serialize' => 'serialize']);
         $m->save(['data'=>'foo']);
 
-        var_Dump($data);
-
+        var_dump($data);
 
         /*
         $this->assertEquals(['data' => 'a:1:{s:3:"foo";s:3:"bar";}'], $db->typecastSaveRow($m, ['data' => ['foo' => 'bar']]));
