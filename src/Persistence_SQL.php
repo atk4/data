@@ -841,7 +841,10 @@ class Persistence_SQL extends Persistence
         $update = $this->initQuery($m);
         $update->mode('update');
 
+
         $data = $this->typecastSaveRow($m, $data);
+        var_dump($data);
+        exit;
 
         // only apply fields that has been modified
         $update->set($data);
