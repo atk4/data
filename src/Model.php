@@ -1446,7 +1446,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
             //     if ($m['date'] < $m->date_from) $m->breakHook(false);
             // })
             if ($this->hook('afterLoad') !== false) {
-                yield $this->id => $this;
+                if ($this->id_field) {
+                    yield $this->id => $this;
+                } else {
+                    yield $this;
+                }
             }
         }
 
