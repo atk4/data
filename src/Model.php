@@ -17,6 +17,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
     use \atk4\core\NameTrait;
     use \atk4\core\DIContainerTrait;
+    use \atk4\core\FactoryTrait;
 
     // {{{ Properties of the class
 
@@ -25,35 +26,35 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var string
      */
-    public $_default_class_addField = 'atk4\data\Field';
+    public $_default_class_addField = ['\atk4\data\Field'];
 
     /**
      * The class used by hasOne() method.
      *
      * @var string
      */
-    public $_default_class_hasOne = 'atk4\data\Reference_One';
+    public $_default_class_hasOne = ['\atk4\data\Reference_One'];
 
     /**
      * The class used by hasMany() method.
      *
      * @var string
      */
-    public $_default_class_hasMany = 'atk4\data\Reference_Many';
+    public $_default_class_hasMany = ['\atk4\data\Reference_Many'];
 
     /**
      * The class used by addField() method.
      *
      * @var string
      */
-    public $_default_class_addExpression = 'atk4\data\Field_Callback';
+    public $_default_class_addExpression = ['\atk4\data\Field_Callback'];
 
     /**
      * The class used by join() method.
      *
      * @var string
      */
-    public $_default_class_join = 'atk4\data\Join';
+    public $_default_class_join = ['\atk4\data\Join'];
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -347,8 +348,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addField($name, $defaults = [])
     {
-        $c = $this->_default_class_addField;
-        $field = new $c($defaults);
+        $field = $this->factory([$this->_default_class_addField], $defaults, 'Field'); 
         $this->add($field, $name);
 
         return $field;
