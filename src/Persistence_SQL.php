@@ -21,35 +21,35 @@ class Persistence_SQL extends Persistence
      *
      * @var string
      */
-    public $_default_class_addField = ['\atk4\data\Field_SQL'];
+    public $_default_seed_addField = ['\atk4\data\Field_SQL'];
 
     /**
      * Default class when adding hasOne field.
      *
      * @var string
      */
-    public $_default_class_hasOne = ['\atk4\data\Reference_SQL_One'];
+    public $_default_seed_hasOne = ['\atk4\data\Reference_SQL_One'];
 
     /**
      * Default class when adding hasMany field.
      *
      * @var string
      */
-    public $_default_class_hasMany = null; //'atk4\data\Reference_Many';
+    public $_default_seed_hasMany = null; //'atk4\data\Reference_Many';
 
     /**
      * Default class when adding Expression field.
      *
      * @var string
      */
-    public $_default_class_addExpression = ['\atk4\data\Field_SQL_Expression'];
+    public $_default_seed_addExpression = ['\atk4\data\Field_SQL_Expression'];
 
     /**
      * Default class when adding join.
      *
      * @var string
      */
-    public $_default_class_join = ['\atk4\data\Join_SQL'];
+    public $_default_seed_join = ['\atk4\data\Join_SQL'];
 
     /**
      * Constructor.
@@ -120,11 +120,11 @@ class Persistence_SQL extends Persistence
         // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
         $defaults = array_merge([
-            '_default_class_addField'      => $this->_default_class_addField,
-            '_default_class_hasOne'        => $this->_default_class_hasOne,
-            '_default_class_hasMany'       => $this->_default_class_hasMany,
-            '_default_class_addExpression' => $this->_default_class_addExpression,
-            '_default_class_join'          => $this->_default_class_join,
+            '_default_seed_addField'      => $this->_default_seed_addField,
+            '_default_seed_hasOne'        => $this->_default_seed_hasOne,
+            '_default_seed_hasMany'       => $this->_default_seed_hasMany,
+            '_default_seed_addExpression' => $this->_default_seed_addExpression,
+            '_default_seed_join'          => $this->_default_seed_join,
         ], $defaults);
 
         $m = parent::add($m, $defaults);

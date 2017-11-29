@@ -26,35 +26,35 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var string
      */
-    public $_default_class_addField = ['\atk4\data\Field'];
+    public $_default_seed_addField = ['\atk4\data\Field'];
 
     /**
      * The class used by hasOne() method.
      *
      * @var string
      */
-    public $_default_class_hasOne = ['\atk4\data\Reference_One'];
+    public $_default_seed_hasOne = ['\atk4\data\Reference_One'];
 
     /**
      * The class used by hasMany() method.
      *
      * @var string
      */
-    public $_default_class_hasMany = ['\atk4\data\Reference_Many'];
+    public $_default_seed_hasMany = ['\atk4\data\Reference_Many'];
 
     /**
      * The class used by addField() method.
      *
      * @var string
      */
-    public $_default_class_addExpression = ['\atk4\data\Field_Callback'];
+    public $_default_seed_addExpression = ['\atk4\data\Field_Callback'];
 
     /**
      * The class used by join() method.
      *
      * @var string
      */
-    public $_default_class_join = ['\atk4\data\Join'];
+    public $_default_seed_join = ['\atk4\data\Join'];
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -258,31 +258,25 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * The second use actually calls add() but is preferred usage because:
      *  - it's shorter
      *  - type hinting will work;
+     *  - you can also override table
      *
      * @param Persistence|array $persistence
-     * @param array             $defaults
+     * @param string            $table
      */
-    public function __construct($persistence = null, $defaults = [])
+    public function __construct($persistence = null, $table = null)
     {
-        // persistence is optional
-        if (is_array($persistence)) {
-            $defaults = $persistence;
+        if (is_string($persistence)) {
+            $table = $persistence;
             $persistence = null;
         }
 
-        if (is_string($defaults) || $defaults === false) {
-            $defaults = ['table' => $defaults];
-        }
 
-        if (isset($defaults[0])) {
-            $defaults['table'] = $defaults[0];
-            unset($defaults[0]);
+        if ($table) {
+            $this->table = $table;
         }
-
-        $this->setDefaults($defaults);
 
         if ($persistence) {
-            $persistence->add($this, $defaults);
+            $persistence->add($this);
         }
     }
 
@@ -348,7 +342,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addField($name, $defaults = [])
     {
-        $field = $this->factory([$this->_default_class_addField], $defaults, 'Field'); 
+        var_dump($this->_default_seed_addField);
+        var_dump($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field'); 
+        $field = $this->factory($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field'); 
         $this->add($field, $name);
 
         return $field;
@@ -1592,7 +1588,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $defaults[0] = $foreign_table;
 
-        $c = $this->_default_class_join;
+        $c = $this->_default_seed_join;
 
         return $this->add(new $c($defaults));
     }
@@ -1668,7 +1664,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function hasOne($link, $defaults = [])
     {
-        return $this->_hasReference($this->_default_class_hasOne, $link, $defaults);
+        return $this->_hasReference($this->_default_seed_hasOne, $link, $defaults);
     }
 
     /**
@@ -1681,7 +1677,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function hasMany($link, $defaults = [])
     {
-        return $this->_hasReference($this->_default_class_hasMany, $link, $defaults);
+        return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults);
     }
 
     /**
@@ -1785,7 +1781,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             unset($defaults[0]);
         }
 
-        $c = $this->_default_class_addExpression;
+        $c = $this->_default_seed_addExpression;
 
         return $this->add(new $c($defaults), $name);
     }

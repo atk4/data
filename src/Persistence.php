@@ -80,10 +80,12 @@ class Persistence
      */
     public function add($m, $defaults = [])
     {
+        /*
         if (isset($defaults[0])) {
             $m->table = $defaults[0];
             unset($defaults[0]);
         }
+         */
 
         $m = $this->factory($m, $defaults);
 
@@ -97,11 +99,11 @@ class Persistence
             ]);
         }
 
-        $m->setDefaults($defaults);
+        //$m->setDefaults($defaults);
         $m->persistence = $this;
         $m->persistence_data = [];
         $this->initPersistence($m);
-        $m = $this->_add($m, $defaults);
+        $m = $this->_add($m);//, $defaults);
 
         $this->hook('afterAdd', [$m]);
 
