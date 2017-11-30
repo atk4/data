@@ -66,7 +66,7 @@ class Reference
     /**
      * Default constructor. Will copy argument into properties.
      *
-     * @param array $defaults
+     * @param string $link a short_name component
      */
     public function __construct($link)
     {

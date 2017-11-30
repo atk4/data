@@ -263,7 +263,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param Persistence|array $persistence
      * @param string|array      $defaults
      */
-    public function __construct($persistence = null, $defaults = null)
+    public function __construct($persistence = null, $defaults = [])
     {
         if (is_string($persistence) || is_array($persistence)) {
             $defaults = $persistence;
