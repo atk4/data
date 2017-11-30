@@ -391,7 +391,7 @@ class Field
      *
      * @param mixed $value
      *
-     * @return boolean
+     * @return bool
      */
     public function compare($value)
     {

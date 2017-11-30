@@ -352,7 +352,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addField($name, $defaults = [])
     {
-        $field = $this->factory($x=$this->mergeSeeds($defaults, $this->_default_seed_addField), null, '\atk4\data\Field');
+        $field = $this->factory($x = $this->mergeSeeds($defaults, $this->_default_seed_addField), null, '\atk4\data\Field');
         $this->add($field, $name);
 
         return $field;
@@ -626,16 +626,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * You can compare new value of the field with existing one without
      * retrieving. In the trivial case it's same as ($value == $model[$name])
-     * but this method can be used for:
+     * but this method can be used for:.
      *
      *  - comparing values that can't be received - passwords, encrypted data
      *  - comparing images
      *  - if get() is expensive (e.g. retrieve object)
      *
-     * @param string  $field
-     * @param mixed   $value
+     * @param string $field
+     * @param mixed  $value
      *
-     * @return boolean true if $value matches saved one
+     * @return bool true if $value matches saved one
      */
     public function compare($name, $value)
     {
