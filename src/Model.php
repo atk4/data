@@ -352,7 +352,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addField($name, $defaults = [])
     {
-        $field = $this->factory($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field');
+        $field = $this->factory($this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field');
         $this->add($field, $name);
 
         return $field;
