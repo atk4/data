@@ -6,7 +6,7 @@ use atk4\data\Model;
 use atk4\data\Persistence_SQL;
 use atk4\data\Persistence_Array;
 
-class PasswordTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class PasswordTest extends TestCase
 {
     public function testPasswordField()
     {
@@ -40,8 +40,10 @@ class PasswordTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m->save();
 
-        $this->assertTrue(is_string($a['data'][1]['p']));
-        $this->assertNotEquals('mypass', $a['data'][1]['p']);
+        $enc = $a['data'][1]['p'];
+
+        $this->assertTrue(is_string($enc));
+        $this->assertNotEquals('mypass', $enc);
 
         // should have reloaded also
 
@@ -49,5 +51,19 @@ class PasswordTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertFalse($m->compare('p', 'badpass'));
         $this->assertTrue($m->compare('p', 'mypass'));
+
+        // password shouldnt be dirty here
+        $this->assertFalse($m->isDirty('p'));
+
+        $m['p'] = 'newpass';
+
+        $this->assertTrue($m->isDirty('p'));
+        $this->assertFalse($m->compare('p', 'mypass'));
+        $this->assertTrue($m->compare('p', 'newpass'));
+
+        $m->save();
+
+        // will have new hash
+        $this->assertNotEquals($enc, $a['data'][1]['p']);
     }
 }

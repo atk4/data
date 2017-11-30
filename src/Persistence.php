@@ -172,7 +172,7 @@ class Persistence
             $f = $m->hasElement($key);
 
             // Figure out the name of the destination field
-            $field = $f->actual ?: $key;
+            $field = isset($f->actual) && $f->actual ? $f->actual : $key;
 
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.

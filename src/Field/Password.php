@@ -31,6 +31,12 @@ class Password extends \atk4\data\Field
         ];
     }
 
+    public function normalize($value)
+    {
+        $this->password_hash = null;
+        return parent::normalize($value);
+    }
+
     /**
      * When storing password to persistance, it will be encrypted. We will
      * also update $this->password_hash, in case you'll want to perform
@@ -52,7 +58,16 @@ class Password extends \atk4\data\Field
     public function compare($password)
     {
         if (is_null($this->password_hash)) {
-            throw new Exception(['Password was not set, so verification is not possible', 'field'=>$this->name]);
+
+            // perhaps we currently hold a password and it's not saved yet.
+            $v = $this->get();
+
+            if ($v) {
+                return $v === $password;
+            }
+
+
+            throw new \atk4\data\Exception(['Password was not set, so verification is not possible', 'field'=>$this->name]);
         }
 
         return password_verify($password, $this->password_hash);
