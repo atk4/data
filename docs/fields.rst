@@ -102,11 +102,11 @@ Basic Properties
 ----------------
 
 Fields have properties, which define its behaviour. Some properties apply
-on how the values is handled or restrictions on interraction, other values
+on how the values are handled or restrictions on interraction, other values
 can even help with data vizualization. For example if :php:attr:`Field::enum`
 is used with Agile UI form, it will be displayed as radio button or a drop-down::
 
-    $model->addField('gender', ['F', 'M']);
+    $model->addField('gender', ['enum' => ['F', 'M']]);
 
     // Agile UI code:
     $app = new \atk4\ui\App('my app');

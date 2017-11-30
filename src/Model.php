@@ -632,7 +632,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *  - comparing images
      *  - if get() is expensive (e.g. retrieve object)
      *
-     * @param string $field
+     * @param string $name
      * @param mixed  $value
      *
      * @return bool true if $value matches saved one

@@ -14,6 +14,12 @@ class Password extends \atk4\data\Field
 
     public $type = 'password';
 
+    /**
+     * Keeping the actual hash protected, in case we have to validate password with
+     * compare()
+     *
+     * @var string
+     */
     protected $password_hash = null;
 
     public function init()
@@ -39,9 +45,16 @@ class Password extends \atk4\data\Field
     }
 
     /**
+     * DO NOT CALL THIS METHOD. It is automatically invoked when you save
+     * your model.
+     *
      * When storing password to persistance, it will be encrypted. We will
      * also update $this->password_hash, in case you'll want to perform
      * verify right after.
+     *
+     * @param string $password plaintext password
+     *
+     * @return string encrypted password
      */
     public function encrypt($password)
     {
@@ -56,6 +69,10 @@ class Password extends \atk4\data\Field
 
     /**
      * Verify if the password user have suppplied you with is correct.
+     *
+     * @param string $password plain text password
+     *
+     * @return boolean true if passwords match
      */
     public function compare($password)
     {
