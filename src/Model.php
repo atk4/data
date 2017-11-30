@@ -263,7 +263,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param Persistence|array $persistence
      * @param string|array      $defaults
      */
-    public function __construct($persistence = null, $defaults = null)
+    public function __construct($persistence = null, $defaults = [])
     {
         if (is_string($persistence) || is_array($persistence)) {
             $defaults = $persistence;
@@ -1656,7 +1656,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     protected function _hasReference($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model\\'.$link];
+            $defaults = ['model' => $defaults ?: 'Model_'.$link];
         } elseif (isset($defaults[0])) {
             $defaults['model'] = $defaults[0];
             unset($defaults[0]);
