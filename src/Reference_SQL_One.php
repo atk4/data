@@ -30,6 +30,7 @@ class Reference_SQL_One extends Reference_One
                 ]);
             }
             $field = $defaults[0];
+            unset($defaults[0]);
         } else {
             $defaults = [];
         }

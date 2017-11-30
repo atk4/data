@@ -17,6 +17,7 @@ class Reference
         init as _init;
     }
     use \atk4\core\TrackableTrait;
+    use \atk4\core\DIContainerTrait;
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -65,26 +66,11 @@ class Reference
     /**
      * Default constructor. Will copy argument into properties.
      *
-     * @param array $defaults
+     * @param string $link a short_name component
      */
-    public function __construct($defaults = [])
+    public function __construct($link)
     {
-        if (isset($defaults[0])) {
-            $this->link = $defaults[0];
-            unset($defaults[0]);
-        }
-
-        foreach ($defaults as $key => $val) {
-            if (is_array($val)) {
-                $this->$key = array_merge(isset($this->$key) && is_array($this->$key) ? $this->$key : [], $val);
-            } else {
-                $this->$key = $val;
-            }
-        }
-
-        if (!$this->model) {
-            $this->model = $this->link;
-        }
+        $this->link = $link;
     }
 
     /**
