@@ -3,14 +3,13 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
 use atk4\data\Persistence_Array;
 
 class PasswordTest extends TestCase
 {
     public function testPasswordField()
     {
-        $m = new Model();//$db, 'job');
+        $m = new Model(); //$db, 'job');
 
         $m->addField('p', ['Password']);
 

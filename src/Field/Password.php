@@ -8,8 +8,6 @@ use atk4\core\InitializerTrait;
 
 class Password extends \atk4\data\Field
 {
-
-
     use InitializerTrait {
         init as _init;
     }
@@ -18,16 +16,15 @@ class Password extends \atk4\data\Field
 
     protected $password_hash = null;
 
-    function init()
+    public function init()
     {
         $this->_init();
 
         $this->typecast = [
             [$this, 'encrypt'],
-            function($v) { 
+            function ($v) {
                 $this->password_hash = $v;
-                return null;
-            }
+            },
         ];
     }
 
@@ -40,20 +37,21 @@ class Password extends \atk4\data\Field
     /**
      * When storing password to persistance, it will be encrypted. We will
      * also update $this->password_hash, in case you'll want to perform
-     * verify right after
+     * verify right after.
      */
     public function encrypt($password)
     {
         if (is_null($password)) {
-            return null;
+            return;
         }
 
         $this->password_hash = password_hash($password, PASSWORD_DEFAULT);
+
         return $this->password_hash;
     }
 
     /**
-     * Verify if the password user have suppplied you with is correct
+     * Verify if the password user have suppplied you with is correct.
      */
     public function compare($password)
     {
@@ -72,5 +70,4 @@ class Password extends \atk4\data\Field
 
         return password_verify($password, $this->password_hash);
     }
-
 }
