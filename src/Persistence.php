@@ -196,6 +196,7 @@ class Persistence
                 continue;
             }
 
+
             // typecast if we explicitly want that or there is not serialization enabled
             if ($f->typecast || ($f->typecast === null && $f->serialize === null)) {
                 $value = $this->typecastSaveField($f, $value);

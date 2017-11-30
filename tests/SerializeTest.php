@@ -21,37 +21,6 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(['data' => '{"foo":"bar"}'], $db->typecastSaveRow($m, ['data' => ['foo' => 'bar']]));
     }
 
-    public function testSerializeIntegratinon()
-    {
-        $a = [
-            'user' => [
-                1 => ['id' => 1, 'name' => 'john', 'password' => 'john123'],
-                2 => ['id' => 2, 'name' => 'sue', 'password' => password_hash('sue123', PASSWORD_DEFAULT)],
-            ], ];
-        $this->setDB($a);
-
-        $db = new Persistence_SQL($this->db->connection);
-        $m = new Model($db, 'user');
-
-        $f = $m->addField('name');
-        $f = $m->addField('password', ['serialize' => 'paoussword']);
-        $m->loadBy('name', 'john');
-        $m['password'] = 'john321';
-
-        var_dump($m['password']);
-        $m->save();
-        var_dump($m['password']);
-
-        var_dump($this->getDB());
-
-        /*
-        $this->assertEquals(['data' => 'a:1:{s:3:"foo";s:3:"bar";}'], $db->typecastSaveRow($m, ['data' => ['foo' => 'bar']]));
-
-        $f->serialize = 'json';
-        $this->assertEquals(['data' => '{"foo":"bar"}'], $db->typecastSaveRow($m, ['data' => ['foo' => 'bar']]));
-         */
-    }
-
     public function testIntegratino()
     {
         $data = [];
