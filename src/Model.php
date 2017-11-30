@@ -258,10 +258,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * The second use actually calls add() but is preferred usage because:
      *  - it's shorter
      *  - type hinting will work;
-     *  - you can also override table
+     *  - you can specify string for a table
      *
      * @param Persistence|array $persistence
-     * @param string            $defaults
+     * @param string|array      $defaults
      */
     public function __construct($persistence = null, $defaults = null)
     {
