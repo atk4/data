@@ -99,11 +99,10 @@ class Persistence
             ]);
         }
 
-        //$m->setDefaults($defaults);
         $m->persistence = $this;
         $m->persistence_data = [];
         $this->initPersistence($m);
-        $m = $this->_add($m); //, $defaults);
+        $m = $this->_add($m);
 
         $this->hook('afterAdd', [$m]);
 

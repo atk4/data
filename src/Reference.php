@@ -71,10 +71,6 @@ class Reference
     public function __construct($link)
     {
         $this->link = $link;
-
-        //if (!$this->model) {
-            //$this->model = $this->link;
-        //}
     }
 
     /**
