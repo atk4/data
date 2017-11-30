@@ -31,6 +31,7 @@ class Password extends \atk4\data\Field
     public function normalize($value)
     {
         $this->password_hash = null;
+
         return parent::normalize($value);
     }
 
@@ -63,7 +64,6 @@ class Password extends \atk4\data\Field
             if ($v) {
                 return $v === $password;
             }
-
 
             throw new \atk4\data\Exception(['Password was not set, so verification is not possible', 'field'=>$this->name]);
         }

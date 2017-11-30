@@ -3,7 +3,6 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_Array;
 use atk4\data\Persistence_SQL;
 
 class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
@@ -20,5 +19,4 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $f->serialize = 'json';
         $this->assertEquals(['data' => '{"foo":"bar"}'], $db->typecastSaveRow($m, ['data' => ['foo' => 'bar']]));
     }
-
 }
