@@ -16,7 +16,7 @@ class Password extends \atk4\data\Field
 
     /**
      * Keeping the actual hash protected, in case we have to validate password with
-     * compare()
+     * compare().
      *
      * @var string
      */
@@ -72,7 +72,7 @@ class Password extends \atk4\data\Field
      *
      * @param string $password plain text password
      *
-     * @return boolean true if passwords match
+     * @return bool true if passwords match
      */
     public function compare($password)
     {
