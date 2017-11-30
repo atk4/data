@@ -261,18 +261,28 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *  - you can also override table
      *
      * @param Persistence|array $persistence
-     * @param string            $table
+     * @param string            $defaults
      */
-    public function __construct($persistence = null, $table = null)
+    public function __construct($persistence = null, $defaults = null)
     {
-        if (is_string($persistence)) {
-            $table = $persistence;
+        if (is_string($persistence) || is_array($persistence)) {
+            $defaults = $persistence;
             $persistence = null;
         }
 
+        if (is_string($defaults) || $defaults === false) {
+            $defaults = ['table' => $defaults];
+        }
 
-        if ($table) {
-            $this->table = $table;
+        if (isset($defaults[0])) {
+             $defaults['table'] = $defaults[0];
+             unset($defaults[0]);
+         }
+
+        $this->setDefaults($defaults);
+
+        if (is_array($persistence)) {
+            throw new Exception(['$persistence must not be array', 'persistence'=>$persistence]);
         }
 
         if ($persistence) {
@@ -342,8 +352,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addField($name, $defaults = [])
     {
-        var_dump($this->_default_seed_addField);
-        var_dump($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field'); 
         $field = $this->factory($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field'); 
         $this->add($field, $name);
 
@@ -1590,7 +1598,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $c = $this->_default_seed_join;
 
-        return $this->add(new $c($defaults));
+        return $this->add($this->factory($c, $defaults));
     }
 
     /**
@@ -1629,7 +1637,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     protected function _hasReference($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model_'.$link];
+            $defaults = ['model' => $defaults ?: 'Model\\'.$link];
         } elseif (isset($defaults[0])) {
             $defaults['model'] = $defaults[0];
             unset($defaults[0]);
@@ -1637,7 +1645,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $defaults[0] = $link;
 
-        return $this->add(new $c($defaults));
+        return $this->add($this->factory($c, $defaults));
     }
 
     /**
@@ -1783,7 +1791,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $c = $this->_default_seed_addExpression;
 
-        return $this->add(new $c($defaults), $name);
+        return $this->add($this->factory($c, $defaults), $name);
     }
 
     // }}}
