@@ -1637,7 +1637,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     protected function _hasReference($c, $link, $defaults = [])
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model\\'.$link];
+            $defaults = ['model' => $defaults ?: 'Model_'.$link];
         } elseif (isset($defaults[0])) {
             $defaults['model'] = $defaults[0];
             unset($defaults[0]);
