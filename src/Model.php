@@ -270,7 +270,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $persistence = null;
         }
 
-
         if ($table) {
             $this->table = $table;
         }
@@ -343,8 +342,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function addField($name, $defaults = [])
     {
         var_dump($this->_default_seed_addField);
-        var_dump($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field'); 
-        $field = $this->factory($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field'); 
+        var_dump($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field');
+        $field = $this->factory($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field');
         $this->add($field, $name);
 
         return $field;
