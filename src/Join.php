@@ -4,9 +4,9 @@
 
 namespace atk4\data;
 
+use atk4\core\DIContainerTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
-use atk4\core\DIContainerTrait;
 
 /**
  * Class description?
@@ -128,7 +128,6 @@ class Join
      */
     public function __construct($foreign_table = null)
     {
-
         if (isset($foreign_table)) {
             $this->foreign_table = $foreign_table;
         }

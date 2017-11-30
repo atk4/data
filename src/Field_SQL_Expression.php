@@ -30,12 +30,12 @@ class Field_SQL_Expression extends Field_SQL
     public $read_only = true;
 
     /**
-     * Specifies how to aggregate this
+     * Specifies how to aggregate this.
      */
     public $aggregate = null;
 
     /**
-     * Specifies which field to use
+     * Specifies which field to use.
      */
     public $field = null;
 

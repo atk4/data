@@ -275,9 +275,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if (isset($defaults[0])) {
-             $defaults['table'] = $defaults[0];
-             unset($defaults[0]);
-         }
+            $defaults['table'] = $defaults[0];
+            unset($defaults[0]);
+        }
 
         $this->setDefaults($defaults);
 
@@ -352,7 +352,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addField($name, $defaults = [])
     {
-        $field = $this->factory($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field'); 
+        $field = $this->factory($x = $this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field');
         $this->add($field, $name);
 
         return $field;
