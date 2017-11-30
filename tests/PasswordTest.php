@@ -65,4 +65,17 @@ class PasswordTest extends TestCase
         // will have new hash
         $this->assertNotEquals($enc, $a['data'][1]['p']);
     }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testPasswordCompareException1()
+    {
+        $a = [];
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+
+        $m->addField('p', ['Password']);
+        $m->compare('p', 'mypass');
+    }
 }
