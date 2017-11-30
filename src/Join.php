@@ -4,6 +4,7 @@
 
 namespace atk4\data;
 
+use atk4\core\DIContainerTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
 
@@ -16,6 +17,7 @@ class Join
     use InitializerTrait {
         init as _init;
     }
+    use DIContainerTrait;
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
@@ -124,15 +126,10 @@ class Join
      *
      * @param array $defaults
      */
-    public function __construct($defaults = [])
+    public function __construct($foreign_table = null)
     {
-        if (isset($defaults[0])) {
-            $this->foreign_table = $defaults[0];
-            unset($defaults[0]);
-        }
-
-        foreach ($defaults as $key => $val) {
-            $this->$key = $val;
+        if (isset($foreign_table)) {
+            $this->foreign_table = $foreign_table;
         }
     }
 

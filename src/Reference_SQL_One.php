@@ -30,6 +30,7 @@ class Reference_SQL_One extends Reference_One
                 ]);
             }
             $field = $defaults[0];
+            unset($defaults[0]);
         } else {
             $defaults = [];
         }
@@ -177,8 +178,8 @@ class Reference_SQL_One extends Reference_One
         }, null, 20);
 
         // Set ID field as not visible in grid by default
-        if (!isset($this->owner->getElement($this->link)->ui['visible'])) {
-            $this->owner->getElement($this->link)->ui['visible'] = false;
+        if (!isset($this->owner->getElement($this->our_field)->ui['visible'])) {
+            $this->owner->getElement($this->our_field)->ui['visible'] = false;
         }
 
         return $ex;
