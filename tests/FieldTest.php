@@ -37,6 +37,18 @@ class FieldTest extends SQLTestCase
         $this->assertEquals(false, $m->isDirty('foo'));
     }
 
+    public function testCompare()
+    {
+        $m = new Model();
+        $m->addField('foo', ['default' => 'abc']);
+
+        $this->assertEquals(true, $m->compare('foo', 'abc'));
+        $m['foo'] = 'zzz';
+
+        $this->assertEquals(false, $m->compare('foo', 'abc'));
+        $this->assertEquals(true, $m->compare('foo', 'zzz'));
+    }
+
     public function testMandatory1()
     {
         $m = new Model();
