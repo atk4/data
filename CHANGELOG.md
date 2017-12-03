@@ -25,6 +25,22 @@ For more info see #244
 - Added [documentation for Hooks](http://agile-data.readthedocs.io/en/develop/hooks.html) #238
 - Fix Persistence_Array usage without table #245 #246
 
+## 1.2.2
+
+Agile Data was created some time ago, before factory() implementation was completed in Agile Core. At
+that time we had to make a decision how to better set the default class for the field, so we used
+propreties such as `_default_class_addField`. Now that Agile Core allows us to specify `Seed`, we
+have refactored some of that internal functionality to rely on factory(). This should not impact
+your applications unless you are using custom persistence. #261
+
+Additional fixes:
+
+- Persistence to hold Model Prefix #152
+- adding addTitle() now hides 'id' field #252 #253
+- refLink() to pass $defaults #254
+- couldn't connect to sqlite due to ;charset postfix in DSN #256 #257
+- improve iterating models without id field #260
+
 ## 1.1
 
 The main feature of this release is introduction of strong types. See [Type Converting](http://agile-data.readthedocs.io/en/develop/persistence.html?highlight=typecasting#type-converting).
