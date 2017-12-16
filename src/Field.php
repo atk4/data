@@ -385,6 +385,19 @@ class Field
         return $this;
     }
 
+    /**
+     * This method can be extended. See Model::compare for
+     * use examples.
+     *
+     * @param mixed $value
+     *
+     * @return bool
+     */
+    public function compare($value)
+    {
+        return $this->owner[$this->short_name] == $value;
+    }
+
     // }}}
 
     // {{{ Handy methods used by UI

@@ -6,27 +6,82 @@
 Fields
 ======
 
-Field represents a model `property` which we do refer to as field throughout
-Agile Data, to distinguish it from object properties. Fields inside a model
-normally have a corresponding instance of Field class.
-
-See :php:meth:`Model::addField()` on how fields are added. By default,
-persistence sets the property _default_seed_addField which should correspond
-to a field object that has enough capabilities for performing field-specific
-mapping into persistence-logic.
+.. php:namespace:: atk4\data
 
 .. php:class:: Field
 
-.. php:attr:: default
 
-When no value is specified for a field, default value is used
-when inserting.
+Field represents a `property` of your business entity or `column` if you think
+of your data in a tabular way. Once you have defined Field for your Model, you can
+set and read value of that field::
+
+    $model->addField('name');
+    $model->set('name', 'John');
+
+    echo $model->get('name');  // john
+
+Agile Data supports and prefers a ArrayAccess format of interracting with fields::
+
+    $model->addField('age');
+    $model['age'] = 29;
+
+    echo $model['age'];
+
+Just like you can reuse :php:class:`Model` to access multiple data records, :php:class:`Field`
+object will be reused also.
+
+Purpose of Field
+================
+
+Implementation of Field in Agile Data is a very powerful and distinctive feature.
+While :php:attr:`Model::data` store your field values, the job of :php:class:`Field`
+is to interpret that value, normalize it, type-cast it, validate it and decide
+on how to store or present it.
+
+The implementation of Fields is tightly integrated with :php:class:`Model` and 
+:php:class:`Persistence`.
+
+Field Type
+----------
 
 .. php:attr:: type
 
+
+Probably a most useful quality of Field is that it has a clear type::
+
+    $model->addField('age', ['type'=>'integer']);
+    $model['age'] = "123";
+
+    var_dump($model['age']);   // int(123)
+
+Agile Data defines some basic types to make sure that values:
+
+ - can be safely stored and manipulated.
+ - can be saved (Persistence)
+ - can be presented to user (UI)
+
+A good example would be a `date` type::
+
+    $model->addField('birth', ['type' => 'date']);
+    $model['birth'] = DateTime::createFromFormat('m/d/Y', '1/10/2014');
+
+    $model->save(); 
+
+When used with SQL persistence the value will be automatically converted into a format
+preferred by the database `2014-10-01`. Because PHP has only a single type for storing
+date, time and datetime, this can lead to various problems such as handling of
+timezones or DST. Agile Data takes care of those issues for you automatically.
+
+Conversions between types is what we call :ref:`Typecasting` and there is a documentation
+section dedicated to it.
+
+Finally, because Field is a class, it can be further extended. For some interesting
+examples, check out :php:class:`Field\Password`. I'll explain how to create your
+own field classes and where they can be benificial.
+
 Valid types are: string, integer, boolean, datetime, date, time.
 
-You can specify unsupported type. It will be untouched by Agile Data
+You can specify unsupported type too. It will be untouched by Agile Data
 so you would have to implement your own handling of a new type.
 
 Persistence implements two methods:
@@ -36,6 +91,38 @@ Persistence implements two methods:
 Those are responsible for converting PHP native types to persistence
 specific formats as defined in fields. Those methods will also change
 name of the field if needed (see Field::actual)
+
+.. php:attr:: typecast
+
+This property can be used to override typecasting for your field. See
+:ref:`Typecasting`
+
+
+Basic Properties
+----------------
+
+Fields have properties, which define its behaviour. Some properties apply
+on how the values are handled or restrictions on interraction, other values
+can even help with data vizualization. For example if :php:attr:`Field::enum`
+is used with Agile UI form, it will be displayed as radio button or a drop-down::
+
+    $model->addField('gender', ['enum' => ['F', 'M']]);
+
+    // Agile UI code:
+    $app = new \atk4\ui\App('my app');
+    $app->initLayout('Centered');
+    $app->add('Form')->setModel($model);
+
+You will also not be able to set value which is not one of the `enum` values
+even if you don't use UI.
+
+This allows you to define your data fields once and have those rules respected
+everywhere in your app - in your manual code, in UI and in API.
+
+.. php:attr:: default
+
+When no value is specified for a field, default value is used
+when inserting. This value will also appear pre-filled inside a Form.
 
 .. php:attr:: enum
 
@@ -203,5 +290,44 @@ display views by default.
 .. php:method:: isHidden
 
 Returns true if UI should not render this field in views.
+
+
+Password
+========
+
+.. php:namespace:: atk4\data\Field
+
+.. php:class:: Password
+
+Field\Password is a class that implements proper handling of data passwords. Without this
+class your password will be stored **unencrypted**. Here is how to use it properly::
+
+    $user->addField('mypass', ['Password']);
+
+    $user['mypass'] = 'secret';
+    $user->save();
+
+Password is automatically hashed with `password_encrypt` before storing. If you attempt to
+load existing record from database and `$user->get('mypass')` you will always get `NULL`.
+
+There is another way to verify passwords using :php:meth:`Model::compare`::
+
+    $user->loadBy('email', $email);
+    return $user->compare('password', $password);
+
+This should return `true` if your supplied password matches the one that is stored. Final
+example::
+
+    // class User extends Model
+
+    function changePass($old_pass, $new_pass) {
+
+        if (!$this->compare('password', $old_pass)) {
+            throw new Exception('Old password is incorrect');
+        }
+
+        $this['password'] = $new_pass;
+        $this->save();
+    }
 
 
