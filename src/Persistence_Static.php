@@ -5,7 +5,7 @@
 namespace atk4\data;
 
 /**
- * Implements a very basic array-access pattern:
+ * Implements a very basic array-access pattern:.
  *
  * $m = new Model(Persistence_Static(['hello', 'world']));
  * $m->load(1);
@@ -22,11 +22,13 @@ class Persistence_Static extends Persistence_Array
     public function __construct($data = null)
     {
         $data2 = [];
-        if ($data) foreach($data as $id=>$name) {
-            $data2[$id] = ['id'=>$id, 'name'=>$name];
+        if ($data) {
+            foreach ($data as $id=>$name) {
+                $data2[$id] = ['id'=>$id, 'name'=>$name];
+            }
         }
 
-        $this->addHook('afterAdd', function($p, $m) {
+        $this->addHook('afterAdd', function ($p, $m) {
             if (!$m->hasElement($m->title_field)) {
                 $m->addField($m->title_field);
             }

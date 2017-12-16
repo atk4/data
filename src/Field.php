@@ -36,15 +36,15 @@ class Field
     public $type = null;
 
     /**
-     * For several types enum can provide list of available options. ['blue', 'red']
+     * For several types enum can provide list of available options. ['blue', 'red'].
      *
      * @var array|null
      */
     public $enum = null;
 
     /**
-     * For fields that can be selected, values can represent interpretation of the values, 
-     * for instance ['F'=>'Female', 'M'=>'Male'];  
+     * For fields that can be selected, values can represent interpretation of the values,
+     * for instance ['F'=>'Female', 'M'=>'Male'];.
      *
      * @var array|null
      */

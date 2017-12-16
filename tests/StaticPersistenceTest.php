@@ -12,7 +12,6 @@ class StaticPersistenceTest extends TestCase
      */
     public function testBasicStatic()
     {
-
         $p = new \atk4\data\Persistence_Static(['hello', 'world']);
         $m = new \atk4\data\Model($p);
 
