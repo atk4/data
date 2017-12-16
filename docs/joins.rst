@@ -262,6 +262,6 @@ multiple tables have same first character so the prefixes will be named '_c' ,'_
 
 Additional arguments accepted by SQL joins are:
 
-- 'type' - will be "inner" for strong join and "left" for weak join, but you can specify
-  other type of join.
+- 'kind' - will be "inner" for strong join and "left" for weak join, but you can specify
+  other kind of join, for example, "right"'.
 
