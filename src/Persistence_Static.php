@@ -17,17 +17,16 @@ class Persistence_Static extends Persistence_Array
     /**
      * Constructor. Can pass array of data in parameters.
      *
-     * @param array &$data
+     * @param array $data
      */
     public function __construct($data = null)
     {
-        $data2 = [];
-        if ($data) {
-            foreach ($data as $id=>$name) {
-                $data2[$id] = ['id'=>$id, 'name'=>$name];
-            }
-        }
+        // nomalize data array
+        $data = array_map(function ($id, $name) {
+            return ['id' => $id, 'name' => $name];
+        }, array_keys($data), $data);        
 
+        // automatically add title_field in model when it is added in persistence
         $this->addHook('afterAdd', function ($p, $m) {
             if (!$m->hasElement($m->title_field)) {
                 $m->addField($m->title_field);
@@ -35,6 +34,6 @@ class Persistence_Static extends Persistence_Array
         });
 
         // convert array
-        parent::__construct($data2);
+        parent::__construct($data);
     }
 }
