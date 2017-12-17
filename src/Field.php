@@ -388,7 +388,7 @@ class Field
      */
     public function set($value)
     {
-        $this->owner[$this->short_name] = $value;
+        $this->owner->set($this->short_name, $value);
 
         return $this;
     }
