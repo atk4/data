@@ -261,6 +261,7 @@ class FieldTest extends SQLTestCase
         $m->addField('foo', ['values' => [1=>'bar']]);
         $m['foo'] = true;
     }
+
     /**
      * @expectedException Exception
      */
