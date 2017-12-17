@@ -22,9 +22,9 @@ class Persistence_Static extends Persistence_Array
     public function __construct($data = null)
     {
         // nomalize data array
-        $data = array_map(function ($id, $name) {
-            return ['id' => $id, 'name' => $name];
-        }, array_keys($data), $data);
+        array_walk($data, function (&$name, $id) {
+            $name = ['id' => $id, 'name' => $name];
+        });
 
         // automatically add title_field in model when it is added in persistence
         $this->addHook('afterAdd', function ($p, $m) {
