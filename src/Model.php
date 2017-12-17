@@ -551,17 +551,43 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 ]);
             }
 
+            // enum property support
             if ($f->enum && $f->type != 'boolean') {
                 if ($value === '') {
                     $value = null;
                 }
-                if (!in_array($value, $f->enum, true) && $value !== null) {
+                if ($value !== null && !in_array($value, $f->enum, true)) {
                     throw new Exception([
                         'This is not one of the allowed values for the field',
                         'field' => $field,
                         'model' => $this,
                         'value' => $value,
                         'enum'  => $f->enum,
+                    ]);
+                }
+            }
+
+            // values property support
+            if ($f->values) {
+                if ($value === '') {
+                    $value = null;
+                } elseif ($value === null) {
+                    // all is good
+                } elseif (!is_string($value) && !is_int($value)) {
+                    throw new Exception([
+                        'Field can be only one of pre-defined value, so only "string" and "int" keys are supported',
+                        'field' => $field,
+                        'model' => $this,
+                        'value' => $value,
+                        'values'=> $f->values,
+                    ]);
+                } elseif (!array_key_exists($value, $f->values)) {
+                    throw new Exception([
+                        'This is not one of the allowed values for the field',
+                        'field'   => $field,
+                        'model'   => $this,
+                        'value'   => $value,
+                        'values'  => $f->values,
                     ]);
                 }
             }
