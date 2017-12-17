@@ -551,6 +551,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 ]);
             }
 
+            // enum property support
             if ($f->enum && $f->type != 'boolean') {
                 if ($value === '') {
                     $value = null;
@@ -566,11 +567,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
             }
 
+            // values property support
             if ($f->values) {
                 if ($value === '') {
                     $value = null;
-                } elseif (is_null($value)) {
-                    // all is good.
+                } elseif ($value === null) {
+                    // all is good
                 } elseif (!is_string($value) && !is_int($value)) {
                     throw new Exception([
                         'Field can be only one of pre-defined value, so only "string" and "int" keys are supported',
@@ -579,7 +581,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                         'value' => $value,
                         'values'=> $f->values,
                     ]);
-                } elseif ($value !== null && !array_key_exists($value, $f->values)) {
+                } elseif (!array_key_exists($value, $f->values)) {
                     throw new Exception([
                         'This is not one of the allowed values for the field',
                         'field'   => $field,
