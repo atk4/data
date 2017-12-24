@@ -37,6 +37,18 @@ class FieldTest extends SQLTestCase
         $this->assertEquals(false, $m->isDirty('foo'));
     }
 
+    public function testCompare()
+    {
+        $m = new Model();
+        $m->addField('foo', ['default' => 'abc']);
+
+        $this->assertEquals(true, $m->compare('foo', 'abc'));
+        $m['foo'] = 'zzz';
+
+        $this->assertEquals(false, $m->compare('foo', 'abc'));
+        $this->assertEquals(true, $m->compare('foo', 'zzz'));
+    }
+
     public function testMandatory1()
     {
         $m = new Model();
@@ -228,6 +240,58 @@ class FieldTest extends SQLTestCase
         $m['foo'] = null;
 
         $this->assertSame(null, $m['foo']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testValues1()
+    {
+        $m = new Model();
+        $m->addField('foo', ['values' => ['foo', 'bar']]);
+        $m['foo'] = 4;
+    }
+
+    public function testValues2()
+    {
+        $m = new Model();
+        $m->addField('foo', ['values' => [3=>'bar']]);
+        $m['foo'] = 3;
+
+        $this->assertSame(3, $m['foo']);
+
+        $m['foo'] = null;
+        $this->assertSame(null, $m['foo']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testValues3()
+    {
+        $m = new Model();
+        $m->addField('foo', ['values' => [1=>'bar']]);
+        $m['foo'] = true;
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testValues3a()
+    {
+        $m = new Model();
+        $m->addField('foo', ['values' => [1=>'bar']]);
+        $m['foo'] = 'bar';
+    }
+
+    public function testValues4()
+    {
+        // PHP type control is really crappy...
+        // This test has no purpose but it stands testament
+        // to a weird behaviours of PHP
+        $m = new Model();
+        $m->addField('foo', ['values' => ['1a'=>'bar']]);
+        $m['foo'] = '1a';
     }
 
     public function testPersist()

@@ -352,7 +352,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addField($name, $defaults = [])
     {
-        $field = $this->factory($this->mergeSeeds($this->_default_seed_addField, $defaults), null, 'Field');
+        $field = $this->factory($this->mergeSeeds($defaults, $this->_default_seed_addField), null, '\atk4\data\Field');
         $this->add($field, $name);
 
         return $field;
@@ -551,17 +551,43 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 ]);
             }
 
+            // enum property support
             if ($f->enum && $f->type != 'boolean') {
                 if ($value === '') {
                     $value = null;
                 }
-                if (!in_array($value, $f->enum, true) && $value !== null) {
+                if ($value !== null && !in_array($value, $f->enum, true)) {
                     throw new Exception([
                         'This is not one of the allowed values for the field',
                         'field' => $field,
                         'model' => $this,
                         'value' => $value,
                         'enum'  => $f->enum,
+                    ]);
+                }
+            }
+
+            // values property support
+            if ($f->values) {
+                if ($value === '') {
+                    $value = null;
+                } elseif ($value === null) {
+                    // all is good
+                } elseif (!is_string($value) && !is_int($value)) {
+                    throw new Exception([
+                        'Field can be only one of pre-defined value, so only "string" and "int" keys are supported',
+                        'field' => $field,
+                        'model' => $this,
+                        'value' => $value,
+                        'values'=> $f->values,
+                    ]);
+                } elseif (!array_key_exists($value, $f->values)) {
+                    throw new Exception([
+                        'This is not one of the allowed values for the field',
+                        'field'   => $field,
+                        'model'   => $this,
+                        'value'   => $value,
+                        'values'  => $f->values,
                     ]);
                 }
             }
@@ -621,6 +647,25 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $f = $this->hasElement($field);
 
         return $f ? $f->default : null;
+    }
+
+    /**
+     * You can compare new value of the field with existing one without
+     * retrieving. In the trivial case it's same as ($value == $model[$name])
+     * but this method can be used for:.
+     *
+     *  - comparing values that can't be received - passwords, encrypted data
+     *  - comparing images
+     *  - if get() is expensive (e.g. retrieve object)
+     *
+     * @param string $name
+     * @param mixed  $value
+     *
+     * @return bool true if $value matches saved one
+     */
+    public function compare($name, $value)
+    {
+        return $this->getElement($name)->compare($value);
     }
 
     /**

@@ -53,6 +53,15 @@ class Join
     protected $id_field = 'id';
 
     /**
+     * By default this will be either "inner" (for strong) or "left" for weak joins.
+     * You can specify your own type of join by passing ['kind'=>'right']
+     * as second argument to join().
+     *
+     * @var string
+     */
+    protected $kind;
+
+    /**
      * Is our join weak? Weak join will stop you from touching foreign table.
      *
      * @var bool

@@ -119,7 +119,7 @@ class Persistence_Array extends Persistence
             return false;
         }
 
-        return $this->data[$table][$id];
+        return $this->typecastLoadRow($m, $this->data[$table][$id]);
     }
 
     /**
@@ -136,6 +136,8 @@ class Persistence_Array extends Persistence
         if (!isset($table)) {
             $table = $m->table;
         }
+
+        $data = $this->typecastSaveRow($m, $data);
 
         $id = $this->generateNewID($m, $table);
         $data[$m->id_field] = $id;
@@ -159,6 +161,8 @@ class Persistence_Array extends Persistence
         if (!isset($table)) {
             $table = $m->table;
         }
+
+        $data = $this->typecastSaveRow($m, $data);
 
         $this->data[$table][$id] =
             array_merge(

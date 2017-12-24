@@ -10,15 +10,6 @@ namespace atk4\data;
 class Join_SQL extends Join implements \atk4\dsql\Expressionable
 {
     /**
-     * By default this will be either "inner" (for strong) or "left" for weak joins.
-     * You can specify your own type of join by passing ['kind'=>'right']
-     * as second argument to join().
-     *
-     * @var string
-     */
-    protected $kind;
-
-    /**
      * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
      *
