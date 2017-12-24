@@ -20,7 +20,7 @@ class StaticPersistenceTest extends TestCase
         $this->assertEquals('world', $m['name']);
 
         // custom title field and try loading from same static twice
-        $m = new \atk4\data\Model($p);//, ['title_field' => 'foo']);
+        $m = new \atk4\data\Model($p); //, ['title_field' => 'foo']);
         $m->load(1);
         $this->assertEquals('world', $m['name']); // still 'name' here not 'foo'
     }
@@ -95,9 +95,12 @@ class StaticPersistenceTest extends TestCase
     }
 }
 
-class StaticPersistenceModel extends \atk4\data\Model {
-    public $title_field='foo';
-    function init() {
+class StaticPersistenceModel extends \atk4\data\Model
+{
+    public $title_field = 'foo';
+
+    public function init()
+    {
         parent::init();
 
         $this->addField('foo', ['caption'=>'custom field']);

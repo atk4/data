@@ -14,14 +14,13 @@ namespace atk4\data;
  */
 class Persistence_Static extends Persistence_Array
 {
-
     /**
-     * This will be the title for the model
+     * This will be the title for the model.
      */
     public $titleForModel = null;
 
     /**
-     * Populate the following fields for the model
+     * Populate the following fields for the model.
      */
     public $fieldsForModel = [];
 
@@ -32,7 +31,6 @@ class Persistence_Static extends Persistence_Array
      */
     public function __construct($data = null)
     {
-
         if (!is_array($data)) {
             throw new Exception(['Static data should be array of strings or array of hashes', 'data'=>$data]);
         }
@@ -44,15 +42,15 @@ class Persistence_Static extends Persistence_Array
 
         if (is_string($row1)) {
             // We are dealing with array of strings. Convert it into array of hashes
-            array_walk($data, function(&$str, $key) {
+            array_walk($data, function (&$str, $key) {
                 $str = ['id'=>$key, 'name'=>$str];
             });
 
             $this->titleForModel = 'name';
             $this->fieldsForModel = ['name'=>[]];
+
             return parent::__construct($data);
         }
-
 
         if (isset($row1['name'])) {
             $this->titleForModel = 'name';
@@ -64,9 +62,8 @@ class Persistence_Static extends Persistence_Array
         $def_types = [];
         $must_override = false;
 
-        foreach($row1 as $key=>$value) {
+        foreach ($row1 as $key=>$value) {
             // if title is not set, use first key
-
 
             // id information present, use it instead
             if ($key == 'id') {
@@ -82,7 +79,6 @@ class Persistence_Static extends Persistence_Array
             } else {
                 $def_types[] = [];
             }
-
 
             if (!$this->titleForModel) {
                 if (is_int($key)) {
@@ -107,7 +103,7 @@ class Persistence_Static extends Persistence_Array
         if ($must_override) {
             $data2 = [];
 
-            foreach($data as $key=>$row) {
+            foreach ($data as $key=>$row) {
                 $row = array_combine($key_override, $row);
                 if (isset($row['id'])) {
                     $key = $row['id'];
@@ -121,7 +117,8 @@ class Persistence_Static extends Persistence_Array
         parent::__construct($data);
     }
 
-    function afterAdd($p, $m, $arg = null) {
+    public function afterAdd($p, $m, $arg = null)
+    {
         if ($p->titleForModel) {
             $m->title_field = $p->titleForModel;
         }
