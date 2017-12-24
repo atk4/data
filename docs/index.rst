@@ -17,6 +17,7 @@ Contents:
     fields
     conditions
     sql
+    static
     references
     expressions
     joins
