@@ -59,7 +59,7 @@ class Persistence_Array extends Persistence
         // and put all persistence data in there
         if (!$m->table) {
             $m->table = 'data'; // fake table name 'data'
-            if (!isset($this->data['data']) || count($this->data) != 1) {
+            if (!isset($this->data[$m->table]) || count($this->data) != 1) {
                 $this->data = [$m->table => $this->data];
             }
         }
