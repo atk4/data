@@ -109,15 +109,17 @@ class StaticPersistenceTest extends TestCase
         ]]);
         $m = new \atk4\data\Model($p);
 
-        $this->assertEquals('string', $m->getElement('name')->type);
         $this->assertEquals('integer', $m->getElement('test_int')->type);
         $this->assertEquals('float', $m->getElement('test_float')->type);
         $this->assertEquals('datetime', $m->getElement('test_date')->type);
         $this->assertEquals('array', $m->getElement('test_array')->type);
         $this->assertEquals('object', $m->getElement('test_object')->type);
-        $this->assertEquals('string', $m->getElement('test_str_1')->type);
-        $this->assertEquals('string', $m->getElement('test_str_2')->type);
-        $this->assertEquals('string', $m->getElement('test_str_3')->type);
+        
+        // string is default type, so it is null
+        $this->assertNull($m->getElement('name')->type);
+        $this->assertNull($m->getElement('test_str_1')->type);
+        $this->assertNull($m->getElement('test_str_2')->type);
+        $this->assertNull($m->getElement('test_str_3')->type);
     }
 }
 
