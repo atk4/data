@@ -2,11 +2,23 @@
 
 .. _Fields:
 
-======
-Fields
-======
-
 .. php:namespace:: atk4\data
+
+.. php:class:: Field
+
+
+=====
+Field
+=====
+
+Field represents a model `property` that can hold informaiton about your entity.
+In Agile Data we call it a Field, to distinguish it from object properties. Fields
+inside a model normally have a corresponding instance of Field class.
+
+See :php:meth:`Model::addField()` on how fields are added. By default,
+persistence sets the property _default_seed_addField which should correspond
+to a field object that has enough capabilities for performing field-specific
+mapping into persistence-logic.
 
 .. php:class:: Field
 

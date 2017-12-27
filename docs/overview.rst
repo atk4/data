@@ -16,71 +16,251 @@ and teach them correct patterns through clever architectural design.
 
 Agile Data carries the spirit of PHP language in general and gives developer ability
 to make choices. The framework can be beneficial even in small applications, but the
-true power can be drawn out of Agile Toolkit.
+true power of Agile Data is realised when it's paired with Agile UI or Agile API projects.
+(https://github.com/atk4/ui, https://github.com/atk4/api).
 
-Fresh Concepts
-==============
+Not a traditional ORM
+=====================
 
-In common data mapping techniques developer operates with objects that represent
-individual entities. Whenever he has to work with multiple records, he is presented with
-array of those objects.
+Agile Data implementation has several significant differences to a tradditional ORM
+(Hibernate / Doctrine style). I will discuss those in more detail further in documentation,
+however it's importan to note the reason of not following ORM pattern:
 
-Agile Data introduces fresh concept for "DataSet" that represent collection of entities
-stored inside a database. A concept of "Action" allows developer to execute operations
-that will affect all records in a DataSet.
+ - More suitable for mapping remote databases
+ - Give developer control over generated queries
+ - Better support for Persistence-specific features (e.g. SQL expressions)
+ - True many-to-many deep traversal and avoiding (explicit eager pre-loading)
+ - Better aggregation abstraction
 
-Separation of Business Logic and Persistence
-============================================
+To find out more, how Agile Data compares to other PHP data mappers and ORM frameworks, see
+https://medium.com/@romaninsh/objectively-comparing-orm-dal-libraries-e4f095de80b5
 
-We educate developer about separating their Domain logic from persistence following the
-best practices of enterprise software. We offer the solution that works really well for
-most people and those who have extreme requirements can extend.
 
-For example, you can customize persistence logic of Data Model with your own query logic
-where necessary.
+Concern Separation
+==================
 
-Major Databases are Supported
-=============================
+Design of Agile Data follows principle of "concern separation", but all of the basic functionality
+is divided into 3 major areas:
 
-The classic approach of record mapping puts low requirements on the database, but as
-result sacrifice performance. The abstraction of queries leads to your code being reliant
-on SQL vendor.
+ - Fields (or Columns)
+ - DataSets (or Rows)
+ - Databases (or Persistences)
 
-Agile Data introduces concepts that can be implemented across multiple database vendors
-regardless of their support for SQL. Agile Data even works with NoSQL databases like MongoDB.
+Each of the above corresponds to a PHP class, which may use composition principle to hide
+implementation details. 
 
-If you use SQL vendor, the standard operations will be more efficient, but if you operate
-with a very basic database such as MemCache, then you can still simulate basic functionality.
+By design, you will be able to mix and match any any Field with any Database to work with your DataSets.
+If you have worked with other ORMs, read the following sections to avoid confusion:
 
-We make it our goal to define a matrix of basic functionality and extended functionality
-and educate developer how to write code that is both high performance and cross-compatible.
+Class: Field
+------------
 
-Extensibility
-=============
+ - Represent logical data column (e.g. "date_of_birth")
+ - Stores column meta-information (e.g. "type" => "date", "caption"=>"Birth Date")
+ - Handles value normalization
+ - Documentation: :php:class:`Field`
 
-Agile Data is designed to be extremely extensive. The framework already includes all the
-basic functionality that you would normally need, but there are more awesome things
-that are built as extensions:
+.. note:: Meta-information may be a persistence detail, (:php:attr:`Field::actual`) or presentation
+    detail (:php:attr:`Field::ui`). Field class does not interpret the value, it only stores it.
 
- - join support - Map your Business Model to multiple tables
- - aggregate models - Build your Report Models on top of Domain models and forget about custom queries
- - more vendors - Add support for more vendors and your existing application code will just work
- - validation - Perform data validation on Domain level
+Class: Model
+------------
 
-Great for UI Frameworks
-=======================
+ - Represent logical Data Set (e.g. Active Users)
+ - Stores data location and criteria
+ - Stores list of Fields
+ - Stores individual row
+ - Handle operations over single or all records from Data Set
+ - Documentation: :php:class:`Model`
 
-Agile Data does not approach Business Models just as property bags. Each field has some useful
-meta-information such as:
+.. note:: Model object is defined in such a way to contain enough information to fully provide all
+    information for generic UI, or generic API, and generic persintence implementations.
 
- - type
- - caption
- - hint
- - etc
+.. note:: Unlike ORMs Model instances are never created during iterating. Also, in most cases, you
+    never instantiate multiple instances of a model class.
 
-This information is useful if you are using UI framework. `Agile Toolkit <http://agiletoolkit.org/>`_
-takes advantage of this information to automatically populate your form / grid fields and is able
-to work directly with your models.
+Class: Persistence
+------------------
 
+ - Represent external data storage (e.g. MySQL database)
+ - Stores connection information
+ - Translate single or multi-record operations into vendor-specific language
+ - Type-casts standard data types into vendor-specific format
+ - Documentation: :php:class:`Persistence`
+
+
+
+Code Layers
+===========
+
+How is code::
+
+    select name from user where id = 1
+
+is different to the code?::
+
+    $user->load(1)->get('name');
+
+While both achieve similar things, the SQL-like code is what we call "persistence-specific" code. The
+second example is "domain model" code. The job of Agile Data is to map "domain model" code into
+"persistence-specifc" code.
+
+The design and features of Agile Data allow you to perform wider range of operations, be more expressive
+and efficient while remaining in "domain model".
+
+In normal applicaiton, all the database operations can be expressed in domain model without
+any degradation in performance due to large data volume or higher database latency.
+
+It's typical for a web application that uses Agile Data in "domain model" to execute no more than 3-4 requests
+per page even for highly complex data pages (such as dashboards) and without use of stored procedures.
+
+Next I'll show you how code from different "code layers" may look like:
+
+Domain-Model Code
+-----------------
+
+Code is unaware of physical location of your data or which persistence are you using::
+
+    $user = new User($db);
+
+    $user->load(20);            // load specific user record into PHP
+    echo $user['name'].': ';    // access field values
+
+    $gross = $user->ref('Invoice')
+        ->addCondition('status', 'due')
+        ->ref('Lines')
+        ->action('sum', 'gross')
+        ->getOne();
+                                // get sum of all gross fields for due invoces
+
+Another important aspect of Domain-model code is that fields such as `gross` or `name`
+can be either a physical values in the database or can be mapped to expressions (such as
+`vat`+`net`).
+
+A typical method of your model class will be written in "domain-model" code.
+
+.. note:: the actual execution and number of queries may vary based on capabilities of
+    persistence. The above example excutes a total of 2 queries if used with SQL database.
+
+Persistence-specific code
+-------------------------
+
+This is a type of code which may change if you decide to switch from one persistence
+to another. For example, this is how you would define `gross` field for SQL::
+
+    $model->addExpression('gross', '[net]+[vat]');
+
+If your persistence does not support expressions (e.g. you are using Redis or MongoDB),
+you would need to define the field differently::
+
+    $model->addField('gross');
+    $model->addHook('beforeSave', function($m) { 
+        $m['gross'] = $m['net'] + $m['vat'];
+    });
+
+When you use persistence-specific code, you must be aware that it will not map into
+persistences that does not support features you have used.
+
+In most cases that is OK as if you prefer to stay with same database type, for instance,
+the above expression will still be usable with any SQL vendor, but if you want it to work
+with NoSQL, then your solution might be::
+
+    if ($model->hasMethod('addExpression')) {
+
+        // method is injected by Persistence
+        $model->addExpression('gross', '[net]+[vat]');
+
+    } else {
+
+        // persistence does not support expressions
+        $model->addField('gross');
+        $model->addHook('beforeSave', function($m) { 
+            $m['gross'] = $m['net'] + $m['vat'];
+        });
+
+    }
+
+Generic Persistence-code
+------------------------
+
+A final type of code is also persistence-specific, but it is agnostic to your data-model.
+The example would be implementation of aggregation with "GROUP BY" feature in SQL.
+
+https://github.com/atk4/report/blob/develop/src/GroupModel.php
+
+This code is specific to SQL databases, but can be used with any Model, so in order
+to use grouping with Agile Data, your code would be::
+
+    $m = new \atk4\report\GroupModel(new Sale($db));
+    $m->groupBy(['contractor_to', 'type'], [      // groups by 2 columns
+        'c'                     => 'count(*)',    // defines aggregate formulas for fields
+        'qty'                   => 'sum([])',     // [] refers back to qty
+        'total'                 => 'sum([amount])', // can specify any field here
+    ]);
+
+
+
+Persistence Scaling
+===================
+
+Although in most cases you would be executing operationg against SQL persistence, Agile Data
+makes it very easy to use models with a simpler persistences. 
+
+For example, consider you want to output a "table" to the user using HTML by using Agile UI::
+
+    $htmltable = new \atk4\ui\Table();
+    $htmltable->init();
+
+    $htmltable->setModel(new User($db));
+
+    echo $htmltable->render();
+
+Class "\atk4\ui\Table" here is designed to work with persistences and models - it will populate
+columns of correct type, fetch data, calculate totals if needed. But what if you have your data
+inside an array? You can use :php:class:`Persistence_Static` for that::
+
+    $htmltable = new \atk4\ui\Table();
+    $htmltable->init();
+
+    $htmltable->setModel(new User(new Persistence_Static([
+        ['name'=>'John', 'is_admin'=>false, 'salary'=>34400.00],
+        ['name'=>'Peter', 'is_admin'=>false, 'salary'=>42720.00],
+    ])));
+
+    echo $htmltable->render();
+
+Even if you don't have a model, you can use Static persistence with Generic model class to 
+display VAT breakdown table::
+
+    $htmltable = new \atk4\ui\Table();
+    $htmltable->init();
+
+    $htmltable->setModel(new Model(new Persistence_Static([
+        ['VAT_rate'=>'12.0%', 'VAT'=>'36.00', 'Net'=>'300.00'],
+        ['VAT_rate'=>'10.0%', 'VAT'=>'52.00', 'Net'=>'520.00'],
+    ])));
+
+    echo $htmltable->render();
+
+It can be made even simpler::
+
+    $htmltable = new \atk4\ui\Table();
+    $htmltable->init();
+
+    $htmltable->setModel(new Model(new Persistence_Static([
+        'John',
+        'Peter'
+    ])));
+
+    echo $htmltable->render();
+
+Agile UI even offers a wrapper for static persistence::
+
+    $htmltable = new \atk4\ui\Table();
+    $htmltable->init();
+
+    $htmltable->setSource([ 'John', 'Peter' ]);
+
+    echo $htmltable->render();
 
 
