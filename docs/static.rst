@@ -42,7 +42,8 @@ If neither are present you can still manually specify title field for your model
 Finally, static persistence (unlike :php:class:Persistence_Array) will automatically
 populate fields for the model and will even attempt to deduce field types.
 
-Currently it recognizes dates, and booleans, other fields will appear as-is.
+Currently it recognizes integer, date, boolean, float, array and object types.
+Other fields will appear as-is.
 
 
 
