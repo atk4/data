@@ -93,22 +93,22 @@ class StaticPersistenceTest extends TestCase
         $m = new \atk4\data\Model($p);
         $this->assertEquals('title', $m->title_field);
     }
-    
+
     public function testFieldTypes()
     {
         $p = new \atk4\data\Persistence_Static([[
-            'name' => 'hello',
+            'name'        => 'hello',
             'test_int'    => 123,
             'test_float'  => 123.45,
             'test_date'   => new \DateTime(),
-            'test_array'  => ['a','b','c'],
+            'test_array'  => ['a', 'b', 'c'],
             'test_object' => new \DateInterval('P1Y'),
             'test_str_1'  => 'abc',
             'test_str_2'  => '123',
             'test_str_3'  => '123.45',
         ]]);
         $m = new \atk4\data\Model($p);
-        
+
         $this->assertEquals('string', $m->getElement('name')->type);
         $this->assertEquals('integer', $m->getElement('test_int')->type);
         $this->assertEquals('float', $m->getElement('test_float')->type);
