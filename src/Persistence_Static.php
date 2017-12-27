@@ -16,11 +16,15 @@ class Persistence_Static extends Persistence_Array
 {
     /**
      * This will be the title for the model.
+     *
+     * @var string
      */
     public $titleForModel = null;
 
     /**
      * Populate the following fields for the model.
+     *
+     * @var array
      */
     public $fieldsForModel = [];
 
@@ -63,23 +67,30 @@ class Persistence_Static extends Persistence_Array
         $must_override = false;
 
         foreach ($row1 as $key=>$value) {
-            // if title is not set, use first key
 
             // id information present, use it instead
             if ($key == 'id') {
                 $must_override = true;
             }
 
+            // try to detect type of field by its value
             if (is_int($value)) {
                 $def_types[] = ['type'=>'int'];
             } elseif ($value instanceof \DateTime) {
                 $def_types[] = ['type'=>'datetime'];
             } elseif (is_bool($value)) {
                 $def_types[] = ['type'=>'boolean'];
+            } elseif (is_float($value)) {
+                $def_types[] = ['type'=>'float'];
+            } elseif (is_array($value)) {
+                $def_types[] = ['type'=>'array'];
+            } elseif (is_object($value)) {
+                $def_types[] = ['type'=>'object'];
             } else {
                 $def_types[] = [];
             }
 
+            // if title is not set, use first key
             if (!$this->titleForModel) {
                 if (is_int($key)) {
                     $key_override[] = 'name';
@@ -117,7 +128,14 @@ class Persistence_Static extends Persistence_Array
         parent::__construct($data);
     }
 
-    public function afterAdd($p, $m, $arg = null)
+    /**
+     * Automatically adds missing model fields.
+     * Called from AfterAdd hook.
+     *
+     * @param Persistence_Static $p
+     * @param Model              $m
+     */
+    public function afterAdd($p, $m)
     {
         if ($p->titleForModel) {
             $m->title_field = $p->titleForModel;
