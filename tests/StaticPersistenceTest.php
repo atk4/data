@@ -114,7 +114,7 @@ class StaticPersistenceTest extends TestCase
         $this->assertEquals('datetime', $m->getElement('test_date')->type);
         $this->assertEquals('array', $m->getElement('test_array')->type);
         $this->assertEquals('object', $m->getElement('test_object')->type);
-        
+
         // string is default type, so it is null
         $this->assertNull($m->getElement('name')->type);
         $this->assertNull($m->getElement('test_str_1')->type);
