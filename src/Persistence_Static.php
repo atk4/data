@@ -75,7 +75,7 @@ class Persistence_Static extends Persistence_Array
 
             // try to detect type of field by its value
             if (is_int($value)) {
-                $def_types[] = ['type'=>'int'];
+                $def_types[] = ['type'=>'integer'];
             } elseif ($value instanceof \DateTime) {
                 $def_types[] = ['type'=>'datetime'];
             } elseif (is_bool($value)) {
