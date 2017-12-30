@@ -217,8 +217,10 @@ class Persistence_SQL extends Persistence
     {
         if ($field instanceof Field_SQL && $field->useAlias()) {
             $q->field($field, $field->short_name);
-        } else {
+        } elseif ($field instanceof Field_SQL) {
             $q->field($field);
+        } else {
+            $q->field($field->short_name);
         }
     }
 
