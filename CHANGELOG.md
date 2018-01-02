@@ -41,6 +41,29 @@ Additional fixes:
 - couldn't connect to sqlite due to ;charset postfix in DSN #256 #257
 - improve iterating models without id field #260
 
+
+## 1.2.3
+
+This version focuses on enabling you to define your own Field classes, such as more advanced Password
+handling field. See example: https://github.com/atk4/login/blob/master/src/Field/Password.php
+
+Introduced new way to verify field values with `$model->compare('age', 20);` which returs boolean. Also
+in addition to `enum` property, you can use `values` property with a field now.
+
+Rewrote Overview section of documentation and added new information on Fields and Static Persistence.
+
+ - Added `Persistence_Static` #265
+ - Implemented `$field->values` property #266
+ - Added `Field->compare()` and `Model->compare()`
+ - Improved support for user-defined fields (nee `Field\Password` from https://github.com/atk4/login) #259
+ - Allow to specify join kind
+ - Allow fields extended from `Field` class to be loaded from SQL #269
+ - Started official support of 7.2.
+ - Fixed typecasting when using Array persistence
+ - Extra docs on: Fields, Static Persistence
+ - Docs rewrite of Overiew section.
+ 
+
 ## 1.1
 
 The main feature of this release is introduction of strong types. See [Type Converting](http://agile-data.readthedocs.io/en/develop/persistence.html?highlight=typecasting#type-converting).
