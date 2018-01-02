@@ -215,10 +215,12 @@ class Persistence_SQL extends Persistence
      */
     public function initField($q, $field)
     {
-        if ($field->useAlias()) {
+        if ($field instanceof Field_SQL && $field->useAlias()) {
             $q->field($field, $field->short_name);
-        } else {
+        } elseif ($field instanceof Field_SQL) {
             $q->field($field);
+        } else {
+            $q->field($field->short_name);
         }
     }
 
@@ -258,13 +260,13 @@ class Persistence_SQL extends Persistence
                 if ($f_object instanceof Field && $f_object->never_persist) {
                     continue;
                 }
-                if ($f_object instanceof Field_SQL && $f_object->system && !isset($added_fields[$field])) {
+                if ($f_object instanceof Field && $f_object->system && !isset($added_fields[$field])) {
                     $this->initField($q, $f_object);
                 }
             }
         } else {
             foreach ($m->elements as $field => $f_object) {
-                if ($f_object instanceof Field_SQL) {
+                if ($f_object instanceof Field) {
                     if ($f_object->never_persist) {
                         continue;
                     }

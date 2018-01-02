@@ -298,4 +298,24 @@ class RandomSQLTests extends SQLTestCase
         $m->hasOne('Person', 'atk4/data/tests/Model_Person');
         $person = $m->ref('Person');
     }
+
+    public function testNonSQLFieldClass()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'rate' => [
+                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1'=>'y1', 'x2'=>'y2'],
+            ],
+        ];
+        $this->setDB($a);
+
+        $m = new Model_Rate($db);
+        $m->addField('x1', new \atk4\data\Field_SQL());
+        $m->addField('x2', new \atk4\data\Field());
+        $m->load(1);
+
+        $this->assertEquals(3.4, $m['bid']);
+        $this->assertEquals('y1', $m['x1']);
+        $this->assertEquals('y2', $m['x2']);
+    }
 }
