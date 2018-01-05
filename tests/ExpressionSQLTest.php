@@ -33,7 +33,7 @@ class ExpressionSQLTest extends SQLTestCase
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $this->assertEquals(
-            'select `id`,`total_net`,`total_vat`,(`total_net`+`total_vat`) `total_gross` from `invoice`',
+            'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
             $i->action('select')->render()
         );
 
@@ -48,7 +48,7 @@ class ExpressionSQLTest extends SQLTestCase
         $i->addExpression('double_total_gross', '[total_gross]*2');
 
         $this->assertEquals(
-            'select `id`,`total_net`,`total_vat`,(`total_net`+`total_vat`) `total_gross`,((`total_net`+`total_vat`)*2) `double_total_gross` from `invoice`',
+            'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross",(("total_net"+"total_vat")*2) "double_total_gross" from "invoice"',
             $i->action('select')->render()
         );
 
@@ -72,7 +72,7 @@ class ExpressionSQLTest extends SQLTestCase
         });
 
         $this->assertEquals(
-            'select `id`,`total_net`,`total_vat`,(`total_net`+`total_vat`) `total_gross` from `invoice`',
+            'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
             $i->action('select')->render()
         );
 
@@ -99,7 +99,7 @@ class ExpressionSQLTest extends SQLTestCase
         $i->addExpression('sum_net', $i->action('fx', ['sum', 'total_net']));
 
         $this->assertEquals(
-            'select `id`,`total_net`,`total_vat`,(select sum(`total_net`) from `invoice`) `sum_net` from `invoice`',
+            'select "id","total_net","total_vat",(select sum("total_net") from "invoice") "sum_net" from "invoice"',
             $i->action('select')->render()
         );
 
@@ -133,7 +133,7 @@ class ExpressionSQLTest extends SQLTestCase
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
         $this->assertEquals(
-            'select `id`,`name`,`surname`,`cached_name`,(`name` || " " || `surname`) `full_name` from `user` where (`name` || " " || `surname`) != `cached_name`',
+            'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where ("name" || " " || "surname") != "cached_name"',
             $m->action('select')->render()
         );
 

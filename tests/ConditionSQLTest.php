@@ -36,7 +36,7 @@ class ConditionSQLTest extends SQLTestCase
         $this->assertEquals(null, $mm['name']);
 
         $this->assertEquals(
-            'select `id`,`name`,`gender` from `user` where `gender` = :a',
+            'select "id","name","gender" from "user" where "gender" = :a',
             $mm->action('select')->render()
         );
 
