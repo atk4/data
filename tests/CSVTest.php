@@ -25,10 +25,12 @@ class CSVTest extends TestCase
 
     public function tearDown()
     {
-        unlink($this->file);
-        if (file_exists($this->file2)) {
-            unlink($this->file2);
-        }
+        try {
+            unlink($this->file);
+            if (file_exists($this->file2)) {
+                unlink($this->file2);
+            }
+        } catch (\Exception $e) {}
     }
 
     public function getDB()
