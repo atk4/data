@@ -5,9 +5,9 @@
 Typecasting
 ===========
 
-Typecasting is envoked when you are attempting to save or load the
-record. Unlike strict types and normalization, typecasting is a
-persistence-specific operation. Here is the sequence and sample::
+Typecasting is evoked when you are attempting to save or load the record.
+Unlike strict types and normalization, typecasting is a persistence-specific
+operation. Here is the sequence and sample::
 
     $m->addField('birthday', ['type'=>'date']);
     // type has a number of pre-defined values. Using 'date'
@@ -25,22 +25,20 @@ persistence-specific operation. Here is the sequence and sample::
     // type if you're persisting with MongoDB. This does not affect
     // value of a model field.
 
-Typecasting is necessary to save the values inside the database and
-restore them back just as they were before. When modifying a
-record, typecasting will only be invoked on the fields which were
-dirty.
+Typecasting is necessary to save the values inside the database and restore
+them back just as they were before. When modifying a record, typecasting will
+only be invoked on the fields which were dirty.
 
-The purpose of a flexible typecasting system is to allow you to
-store your date in a compatible format or even fine-tune it to
-match your database settings (e.g. timezone) without affecting
-your domain code.
+The purpose of a flexible typecasting system is to allow you to store your date
+in a compatible format or even fine-tune it to match your database settings
+(e.g. timezone) without affecting your domain code.
 
-You must remember that type-casting is a two-way operation. If
-you are introducing your own types, you will need to make sure they
-can be saved and loaded correctly.
+You must remember that type-casting is a two-way operation. If you are
+introducing your own types, you will need to make sure they can be saved and
+loaded correctly.
 
-Some formats such as `date`, `time` and `datetime` may have
-additional options to it::
+Some formats such as `date`, `time` and `datetime` may have additional options
+to it::
 
     $m->addField('registered', [
         'type'=>'date',
@@ -70,8 +68,8 @@ Any type can have a value of `null`::
         // either null or false
     }
 
-If value is passed which is not compatible with field type, Agile Data
-will try to normalize value::
+If value is passed which is not compatible with field type, Agile Data will try
+to normalize value::
 
     $m->addField('age', ['type'=>'integer']);
     $m->addField('name', ['type'=>'string']);
@@ -84,28 +82,26 @@ will try to normalize value::
 
 Undefined type
 --------------
-If you do not set type for a field, Agile Data will not normalize
-and type-cast its value.
+If you do not set type for a field, Agile Data will not normalize and type-cast
+its value.
 
-Because of the loose PHP types, you can encounter situations
-where undefined type is changed from `'4'` to `4`. This change
-is still considered "dirty".
+Because of the loose PHP types, you can encounter situations where undefined
+type is changed from `'4'` to `4`. This change is still considered "dirty".
 
-If you use numeric value with a type-less field, the response
-from SQL does not distinguish between integers and strings, so
-your value will be stored as "string" inside the model.
+If you use numeric value with a type-less field, the response from SQL does
+not distinguish between integers and strings, so your value will be stored as
+"string" inside the model.
 
-The same can be said about forms, which submit all their data
-through POST request that has no types, so undefined type
-fields should work relatively good with the standard setup
-of Agile Data + Agile Toolkit + SQL.
+The same can be said about forms, which submit all their data through POST
+request that has no types, so undefined type fields should work relatively
+good with the standard setup of Agile Data + Agile Toolkit + SQL.
 
 Type of IDs
 -----------
 
 Many databases will allow you to use different types for ID fields.
-In SQL the 'id' column will usually be "integer", but sometimes it
-can be of a different type.
+In SQL the 'id' column will usually be "integer", but sometimes it can be of
+a different type.
 
 The same applies for references ($m->hasOne()).
 
@@ -127,28 +123,26 @@ Supported types
 Types and UI
 ------------
 
-UI framework such as Agile Toolkit will typically rely on field type
-information to properly present data for views (forms and tables)
-without you having to explicitly specify the `ui` property.
+UI framework such as Agile Toolkit will typically rely on field type information
+to properly present data for views (forms and tables) without you having to
+explicitly specify the `ui` property.
 
 Serialization
 =============
 
-Some types cannot be stored natively. For example, generic objects
-and arrays have no native type in SQL database. This is where
-serialization feature is used.
+Some types cannot be stored natively. For example, generic objects and arrays
+have no native type in SQL database. This is where serialization feature is used.
 
-Field may use serialization to further encode field value for the
-storage purpose::
+Field may use serialization to further encode field value for the storage purpose::
 
     $this->addField('private_key', [
         'serialize'=>'base64',
         'system'=>true,
     ]);
 
-This is one way to store binary data. Type is unspecified but the
-binary value of a field will be encoded with base64 before storing and
-automatically decoded when you load this value back from persistence.
+This is one way to store binary data. Type is unspecified but the binary value
+of a field will be encoded with base64 before storing an automatically decoded
+when you load this value back from persistence.
 
 Supported algorithms
 --------------------
@@ -161,9 +155,9 @@ Supported algorithms
 Storing unsupported types
 -------------------------
 
-Here is another example defining the field that stores monetary
-value containing both the amount and the currency. The domain model
-will use an object and we are specifying our callbacks for converting::
+Here is another example defining the field that stores monetary value containing
+both the amount and the currency. The domain model will use an object and we are
+specifying our callbacks for converting::
 
     $money_encode = function($x) {
         return $x->amount.' '.$x->currency;
@@ -181,11 +175,9 @@ will use an object and we are specifying our callbacks for converting::
 Array and Object types
 ----------------------
 
-Some types may require serialisaion for some persistences, for instance
-types 'array' and 'object' cannot be stored in SQL natively. That's
-why they will use `json_encode` and `json_decode` by default. If you
-specify a different serialisation technique, then it will be used instead
-of JSON.
+Some types may require serialization for some persistences, for instance types
+'array' and 'object' cannot be stored in SQL natively. That's why they will
+use `json_encode` and `json_decode` by default. If you specify a different
+serialization technique, then it will be used instead of JSON.
 
 This is handy when mapping JSON data into native PHP structures.
-

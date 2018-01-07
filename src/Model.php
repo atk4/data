@@ -1027,7 +1027,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Store the data into database, but will never attempt to
      * reload the data. Additionally any data will be unloaded.
-     * Use this instead of save() if you want to squezee a
+     * Use this instead of save() if you want to squeeze a
      * little more performance out.
      *
      * @param array $data

@@ -107,7 +107,7 @@ class Field
 
     /**
      * Defines a label to go along with this field. Use getCaption() which
-     * will always return meaningfull label (even if caption is null). Set
+     * will always return meaningful label (even if caption is null). Set
      * this property to any string.
      *
      * @var string

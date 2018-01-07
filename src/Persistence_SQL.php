@@ -717,12 +717,12 @@ class Persistence_SQL extends Persistence
 
         if ($m->id_field) {
 
-            // If id_field is not set, model will be rea-donly
+            // If id_field is not set, model will be read-only
             if (isset($data[$m->id_field])) {
                 $m->id = $data[$m->id_field];
             } else {
                 throw new Exception([
-                    'Model uses "id_field" but it wasn\'t available in the database',
+                    'Model uses "id_field" but it was not available in the database',
                     'model'       => $m,
                     'id_field'    => $m->id_field,
                     'data'        => $data,

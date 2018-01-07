@@ -12,14 +12,14 @@ Model
 Initialization
 ==============
 
-Model class implements your Business Model - single entity of your business logic. When
-you plan your business application you should create classes for all your possible
-business entities by extending from "Model" class.
+Model class implements your Business Model - single entity of your business logic.
+When you plan your business application you should create classes for all your
+possible business entities by extending from "Model" class.
 
 .. php:method:: init
 
-Method init() will automatically be called when your Model is associated with persistence
-driver. Use it to define fields of your model::
+Method init() will automatically be called when your Model is associated with
+persistence driver. Use it to define fields of your model::
 
     class Model_User extends atk4\data\Model
     {
@@ -46,8 +46,8 @@ Read more about :php:class:`Field`
 
     By default model will only allow you to operate with values for the fields
     that have been defined through addField(). If you attempt to get, set or
-    otherwise access th evalue of any other field that has not been properly
-    defined, you'll get exception. ead more about :php:class:`Field`
+    otherwise access the value of any other field that has not been properly
+    defined, you'll get exception. Read more about :php:class:`Field`
 
     If you set strict_field to false, then the check will not be performed.
 
@@ -56,8 +56,8 @@ Populating Data
 
 .. php:method:: insert($row)
 
-    Inserts a new record into the database and returns $id. It does not
-    affect currently loaded record and in practice would be similar to::
+    Inserts a new record into the database and returns $id. It does not affect
+    currently loaded record and in practice would be similar to::
 
         $m_x = $m;
         $m_x->unload();
@@ -65,32 +65,31 @@ Populating Data
         $m_x->save();
         return $m_x;
 
-    The main goal for insert() method is to be as fast as possible, while
-    still performing data validation. After inserting method will return
-    cloned model.
+    The main goal for insert() method is to be as fast as possible, while still
+    performing data validation. After inserting method will return cloned model.
 
 .. php:method:: import($data)
 
-    Similar to insert() however works across array of rows. This method
-    will not return any IDs or models and is optimized for importing large
-    amounts of data.
+    Similar to insert() however works across array of rows. This method will
+    not return any IDs or models and is optimized for importing large amounts
+    of data.
 
     The method will still convert the data needed and operate with joined
-    tables as needed. If you wish to access tables directly, you'll
-    have to look into Persistence::insert($m, $data, $table);
+    tables as needed. If you wish to access tables directly, you'll have to look
+    into Persistence::insert($m, $data, $table);
 
 Associating Model with Database
 ===============================
 
-Normally you should always associate your model with persistence layer (database) when
-you create the instance like this::
+Normally you should always associate your model with persistence layer (database)
+when you create the instance like this::
 
     $m = new Model_User($db);
 
 .. php:attr:: persistence
 
-    Refers to the persistence driver in use by current model. Calling certain methods
-    such as save(), addCondition() or action() will rely on this property.
+    Refers to the persistence driver in use by current model. Calling certain
+    methods such as save(), addCondition() or action() will rely on this property.
 
 .. php:attr:: persistence_data
 
@@ -138,8 +137,8 @@ of fields.
 Setting and Getting active record data
 ======================================
 
-When your record is loaded from database, record data is stored inside
-the $data property:
+When your record is loaded from database, record data is stored inside the $data
+property:
 
 .. php:attr:: data
 
@@ -151,8 +150,7 @@ use the following syntax when accessing fields of an active record::
     $m['name'] = 'John';
     $m['surname'] = 'Peter';
 
-When you modify active record, it keeps the original value in the $dirty
-array:
+When you modify active record, it keeps the original value in the $dirty array:
 
 .. php:method:: set
 
@@ -198,9 +196,9 @@ array:
            $m['full_name'] = $m['name'].' '.$m['surname'];
         }
 
-    When the code above is placed in beforeSave hook, it will only be executed when
-    certain fields have been changed. If your recalculations are expensive, it's
-    pretty handy to rely on "dirty" fields to avoid some complex logic.
+    When the code above is placed in beforeSave hook, it will only be executed
+    when certain fields have been changed. If your recalculations are expensive,
+    it's pretty handy to rely on "dirty" fields to avoid some complex logic.
 
 .. php:attr:: dirty
 
@@ -246,7 +244,8 @@ Full example::
 Title Field and ID Field
 ========================
 
-Those are to properties that you can specify in the model or pass it through defaults::
+Those are to properties that you can specify in the model or pass it through
+defaults::
 
     class MyModel ..
         public $title_field = 'full_name';
@@ -261,21 +260,22 @@ ID Field
 
 .. php:attr:: id_field
 
-    If your data storage uses field different than ``id`` to keep the ID of your records, then you can
-    specify that in $id_field property.
+    If your data storage uses field different than ``id`` to keep the ID of your
+    records, then you can specify that in $id_field property.
 
 .. tip:: You can change ID field of the current ID field by calling::
 
         $m['id'] = $new_id;
         $m->save();
 
-    This will update existing record with new $id. If you want to save your current field over another
-    existing record then::
+    This will update existing record with new $id. If you want to save your
+    current field over another existing record then::
 
         $m->id = $new_id;
         $m->save();
 
-    You must remember that only dirty fields are saved, though. (We might add replace() function though).
+    You must remember that only dirty fields are saved, though. (We might add
+    replace() function though).
 
 .. _title_field:
 
@@ -284,12 +284,14 @@ Title Field
 
 .. php:attr:: title_field
 
-    This field by default is set to 'name' will act as a primary title field of your table. This is
-    especially handy if you use model inside UI framework, which can automatically display value of
-    your title field in the header, or inside drop-down.
+    This field by default is set to 'name' will act as a primary title field of
+    your table. This is especially handy if you use model inside UI framework,
+    which can automatically display value of your title field in the header,
+    or inside drop-down.
 
-    If you don't have field 'name' but you want some other field to be title, you can specify that in
-    the property. If title_field is not needed, set it to false or point towards a non-existent field.
+    If you don't have field 'name' but you want some other field to be title,
+    you can specify that in the property. If title_field is not needed, set it
+    to false or point towards a non-existent field.
 
     See: :php:meth::`hasOne::addTitle()` and :php:meth::`hasOne::withTitle()`
 
@@ -319,11 +321,10 @@ How to verify Updates
 ---------------------
 
 The model is only being saved if any fields have been changed (dirty).
-Sometimes it's possible that the record in the database is no longer
-available and your update() may not actually update anything. This
-does not normally generate an error, however if you want to actually
-make sure that update() was effective, you can implement this through
-a hook::
+Sometimes it's possible that the record in the database is no longer available
+and your update() may not actually update anything. This does not normally
+generate an error, however if you want to actually make sure that update() was
+effective, you can implement this through a hook::
 
     $m->addHook('afterUpdateQuery',function($m, $update, $st) {
         if (!$st->rowCount()) {
@@ -342,9 +343,8 @@ How to prevent actions
 ----------------------
 
 In some cases you want to prevent default actions from executing.
-Suppose you want to check 'memcache' before actually loading the
-record from the database. Here is how you can implement this
-functionality::
+Suppose you want to check 'memcache' before actually loading the record from
+the database. Here is how you can implement this functionality::
 
     $m->addHook('beforeLoad',function($m, $id) {
         $data = $m->app->cacheFetch($m->table, $id);
@@ -355,13 +355,10 @@ functionality::
         }
     });
 
-$app property is injected through your $db object and is passed
-around to all the models. This hook, if successful, will prevent
-further execution of other beforeLoad hooks and by specifying
-argument as 'false' it will also prevent call to $persistence
-for actual loading of the data.
+$app property is injected through your $db object and is passed around to all
+the models. This hook, if successful, will prevent further execution of other
+beforeLoad hooks and by specifying argument as 'false' it will also prevent call
+to $persistence for actual loading of the data.
 
 Similarly you can prevent deletion if you wish to implement
 :ref:`soft-delete` or stop insert/modify from occurring.
-
-

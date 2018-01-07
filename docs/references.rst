@@ -9,9 +9,9 @@ References
 
 .. php:method:: ref($link, $details = []);
 
-Models can relate one to another. The logic of traversing references, however, is
-slightly different to the traditional ORM implementation, because in Agile Data
-traversing also imposes :ref:`conditions`
+Models can relate one to another. The logic of traversing references, however,
+is slightly different to the traditional ORM implementation, because in Agile
+Data traversing also imposes :ref:`conditions`
 
 There are two basic types of references: hasOne() and hasMany(), but it's also
 possible to add other reference types. The basic ones are really easy to
@@ -79,9 +79,9 @@ be retrieved from memory.
 Safety and Performance
 ----------------------
 
-When using ref() on hasMany reference, it will always return a fresh clone
-of the model. You can perform actions on the clone and next time you execute
-ref() you will get a fresh copy.
+When using ref() on hasMany reference, it will always return a fresh clone of
+the model. You can perform actions on the clone and next time you execute ref()
+you will get a fresh copy.
 
 If you are worried about performance you can keep 2 models in memory::
 
@@ -93,9 +93,8 @@ If you are worried about performance you can keep 2 models in memory::
     }
 
 .. warning:: This code is seriously flawed and is called "N+1 Problem".
-    Agile Data discourages you from using this and instead offers you
-    many other tools: field importing, model joins, field actions and
-    refLink().
+    Agile Data discourages you from using this and instead offers you many
+    other tools: field importing, model joins, field actions and refLink().
 
 
 hasMany Reference
@@ -105,13 +104,13 @@ hasMany Reference
 
 There are several ways how to link models with hasMany::
 
-    $m->hasMany('Orders', new Model_Order());  // using object
+    $m->hasMany('Orders', new Model_Order()); // using object
 
-    $m->hasMany('Order', function($m, $r) {    // using callback
+    $m->hasMany('Order', function($m, $r) {   // using callback
         return new Model_Order();
     });
 
-    $m->hasMany('Order');                      // will use factory new Model_Order
+    $m->hasMany('Order'); // will use factory new Model_Order
 
 
 Dealing with many-to-many references
@@ -226,8 +225,9 @@ then it now makes sense for generating expression:
 
 .. php:method:: refModel($link)
 
-There are many situations when you need to get referenced model instead of reference itself.
-In such case refModel() comes in as handy shortcut of doing `$model->refLink($link)->getModel()`.
+There are many situations when you need to get referenced model instead of
+reference itself. In such case refModel() comes in as handy shortcut of doing
+`$model->refLink($link)->getModel()`.
 
 hasOne reference
 ================
@@ -244,8 +244,9 @@ This reference allows you to attach a related model to a foreign key::
 
     $o->hasOne('user_id', $u);
 
-This reference is similar to hasMany, but it does behave slightly different. Also this
-reference will define a system new field ``user_id`` if you haven't done so already.
+This reference is similar to hasMany, but it does behave slightly different.
+Also this reference will define a system new field ``user_id`` if you haven't
+done so already.
 
 
 Traversing loaded model
@@ -254,13 +255,13 @@ Traversing loaded model
 If your ``$o`` model is loaded, then traversing into user will also load the user,
 because we specifically know the ID of that user. No conditions will be set::
 
-    echo $o->load(3)->ref('user_id')['name'];   // will show name of the user, of order #3
+    echo $o->load(3)->ref('user_id')['name']; // will show name of the user, of order #3
 
 Traversing DataSet
 ------------------
 
-If your model is not loaded then using ref() will traverse by conditioning DataSet of the
-user model::
+If your model is not loaded then using ref() will traverse by conditioning
+DataSet of the user model::
 
     $o->unload(); // just to be sure!
     $o->addCondition('status', 'failed');
@@ -269,8 +270,8 @@ user model::
 
     $u->loadAny();  // will load some user who has at least one failed order
 
-The important point here is that no additional queries are generated in the process and
-the loadAny() will look like this:
+The important point here is that no additional queries are generated in the
+process and the loadAny() will look like this:
 
 .. code-block:: sql
 
@@ -284,14 +285,16 @@ By passing options to hasOne() you can also differentiate field name::
 
     $o->load(1)->ref('User')['name'];
 
-You can also use ``their_field`` if you need non-id matching (see example above for hasMany()).
+You can also use ``their_field`` if you need non-id matching (see example above
+for hasMany()).
 
 Importing Fields
 ----------------
 
-You can import some fields from related model. For example if you have list of invoices, and
-each invoice contains "currency_id", but in order to get the currency name you need another
-table, you can use this syntax to easily import the field::
+You can import some fields from related model. For example if you have list
+of invoices, and each invoice contains "currency_id", but in order to get the
+currency name you need another table, you can use this syntax to easily import
+the field::
 
     $i = new Model_Invoice($db)
     $c = new Model_Currency($db);
@@ -300,11 +303,12 @@ table, you can use this syntax to easily import the field::
         ->addField('currency_name', 'name');
 
 
-This code also resolves problem with a duplicate 'name' field. Since you might have a 'name' field
-inside 'Invoice' already, you can name the field 'currency_name' which will reference 'name' field inside
-Currency. You can also import multiple fields but keep in mind that this may make your query much longer.
-The argument is associative array and if key is specified, then the field will be renamed, just as we
-did above::
+This code also resolves problem with a duplicate 'name' field. Since you might have
+a 'name' field inside 'Invoice' already, you can name the field 'currency_name'
+which will reference 'name' field inside Currency. You can also import multiple
+fields but keep in mind that this may make your query much longer.
+The argument is associative array and if key is specified, then the field will
+be renamed, just as we did above::
 
     $u = new Model_User($db)
     $a = new Model_Address($db);
@@ -317,44 +321,48 @@ did above::
             'address_notes'=>['notes', 'type'=>'text']
         ]);
 
-Above, all ``address_`` fields are copied with the same name, however field 'notes' from Address model
-will be called 'address_notes' inside user model.
+Above, all ``address_`` fields are copied with the same name, however field
+'notes' from Address model will be called 'address_notes' inside user model.
 
 .. important::
-    When importing fields, they will preserve type, e.g. if you are importing 'date' then the type
-    of your imported field will also be date. Imported fields are also marked as "read-only" and
-    attempt to change them will result in exception.
+    When importing fields, they will preserve type, e.g. if you are importing
+    'date' then the type of your imported field will also be date. Imported
+    fields are also marked as "read-only" and attempt to change them will result
+    in exception.
 
 Importing hasOne Title
 ----------------------
 
-When you are using hasOne() in most cases the referenced object will be addressed through "ID" but
-will have a human-readable field as well. In the example above `Model_Currency` has a title field
-called `name`. Agile Data provides you an easier way how to define currency title::
+When you are using hasOne() in most cases the referenced object will be addressed
+through "ID" but will have a human-readable field as well. In the example above
+`Model_Currency` has a title field called `name`. Agile Data provides you an
+easier way how to define currency title::
 
     $i = new Invoice($db)
 
     $i->hasOne('currency_id', new Currency())
         ->addTitle();
 
-This would create 'currency' field containing name of the curerncy::
+This would create 'currency' field containing name of the currency::
 
     $i->load(20);
 
     echo "Currency for invoice 20 is ".$i['currency'];   // EUR
 
-Unlike addField() which creates fields read-only, title field can in fact be modified::
+Unlike addField() which creates fields read-only, title field can in fact be
+modified::
 
     $i['currency'] = 'GBP';
     $i->save();
 
     // will update $i['currency_id'] to the corresponding ID for currency with name GBP.
 
-This behaviour is awesome when you are importing large amounts of data, because the
-lookup for the currency_id is entirely done in a database.
+This behavior is awesome when you are importing large amounts of data, because
+the lookup for the currency_id is entirely done in a database.
 
-By default name of the field will be calculated by removing "_id" from the end of hasOne
-field, but to override this, you can specify name of the title field explicitly::
+By default name of the field will be calculated by removing "_id" from the end
+of hasOne field, but to override this, you can specify name of the title field
+explicitly::
 
     $i->hasOne('currency_id', new Currency())
         ->addTitle(['field'=>'currency_name']);
@@ -364,20 +372,21 @@ User-defined Reference
 
 .. php:method:: addRef($link, $callback)
 
-Sometimes you would want to have a different type of relation between models, so with
-`addRef` you can define whatever reference you want::
+Sometimes you would want to have a different type of relation between models,
+so with `addRef` you can define whatever reference you want::
 
     $m->addRef('Archive', function($m) {
         return $m->newInstance(null, ['table' => $m->table.'_archive']);
     });
 
-The above example will work for a table structure where a main table `user` is shadowed by
-a archive table `user_archive`. Structure of both tables are same, and if you wish to
-look into an archive of a User you would do::
+The above example will work for a table structure where a main table `user` is
+shadowed by a archive table `user_archive`. Structure of both tables are same,
+and if you wish to look into an archive of a User you would do::
 
     $user->ref('Archive');
 
-Note that you can create one-to-many or many-to-one relations, by using your custom logic.
+Note that you can create one-to-many or many-to-one relations, by using your
+custom logic.
 No condition will be applied by default so it's all up to you::
 
     $m->addRef('Archive', function($m) {
@@ -407,12 +416,13 @@ While :php:meth:`Model::ref()` returns a related model, :php:meth:`Model::getRef
 gives you the reference object itself so that you could perform some changes on it,
 such as import more fields with :php:meth:`Model::addField()`.
 
-Or you can use :php:meth:`Model::refModel()` which will simply return referenced model
-and you can do fancy things with it.
+Or you can use :php:meth:`Model::refModel()` which will simply return referenced
+model and you can do fancy things with it.
 
     $ref_model = $model->refModel('owner_id');
 
-You can also use :php:meth:`Model::hasRef()` to check if particular reference exists in model::
+You can also use :php:meth:`Model::hasRef()` to check if particular reference
+exists in model::
 
     $ref = $model->hasRef('owner_id');
 
@@ -429,8 +439,8 @@ a loaded model. To perform a single query instead, you can use::
 
     echo $o->withID(1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
 
-Here ``withID()`` will only set a condition without actually loading the record and traversal
-will encapsulate sub-queries resulting in a query like this:
+Here ``withID()`` will only set a condition without actually loading the record
+and traversal will encapsulate sub-queries resulting in a query like this:
 
 .. code-block:: sql
 
@@ -442,29 +452,29 @@ will encapsulate sub-queries resulting in a query like this:
 Reference Aliases
 =================
 
-When related entity relies on the same table it is possible to run into problem when SQL is
-confused about which table to use.
+When related entity relies on the same table it is possible to run into problem
+when SQL is confused about which table to use.
 
 .. code-block:: sql
 
     select name, (select name from item where item.parent_id = item.id) parent_name from item
 
-To avoid this problem Agile Data will automatically alias tables in sub-queries. Here is how
-it works::
+To avoid this problem Agile Data will automatically alias tables in sub-queries.
+Here is how it works::
 
     $item->hasMany('parent_item_id', new Model_Item())
         ->addField('parent', 'name');
 
-When generating expression for 'parent', the sub-query will use alias ``pi`` consisting of
-first letters in 'parent_item_id'. (except _id). You can actually specify a custom table alias
-if you want::
+When generating expression for 'parent', the sub-query will use alias ``pi``
+consisting of first letters in 'parent_item_id'. (except _id). You can actually
+specify a custom table alias if you want::
 
     $item->hasMany('parent_item_id', [new Model_Item(), 'table_alias'=>'mypi'])
         ->addField('parent', 'name');
 
-Additionally you can pass table_alias as second argument into :php:meth:`Model::ref()` or
-:php:meth:`Model::refLink()`. This can help you in creating a recursive models that relate
-to itself. Here is example::
+Additionally you can pass table_alias as second argument into :php:meth:`Model::ref()`
+or :php:meth:`Model::refLink()`. This can help you in creating a recursive models
+that relate to itself. Here is example::
 
     class Model_Item3 extends \atk4\data\Model {
         public $table='item';
@@ -509,20 +519,24 @@ When calling `hasOne()->addFields()` there are various ways to pass options:
 - `addFields(['name', 'dob'])` - no options are passed, use defaults. Note that
   reference will not fetch the type of foreign field due to performance consideration.
 
-- `addFields(['first_name' => 'name'])` - this indicates aliasing. Field `name` will be
-  added as `first_name`.
+- `addFields(['first_name' => 'name'])` - this indicates aliasing. Field `name`
+  will be added as `first_name`.
 
-- `addFields([['dob', 'type'=>'date']])` - wrap inside array to pass options to field
+- `addFields([['dob', 'type'=>'date']])` - wrap inside array to pass options to
+  field
 
-- `addFields(['the_date' => ['dob', 'type'=>'date']])` - combination of aliasing and options
+- `addFields(['the_date' => ['dob', 'type'=>'date']])` - combination of aliasing
+  and options
 
-- `addFields(['dob', 'dod'], ['type'=>'date'])` - passing defaults for multiple fields
+- `addFields(['dob', 'dod'], ['type'=>'date'])` - passing defaults for multiple
+  fields
 
 
 References with New Records
 ===========================
 
-Agile Data takes extra care to help you link your new records with new related entities.
+Agile Data takes extra care to help you link your new records with new related
+entities.
 Consider the following two models::
 
     class Model_User extends \atk4\data\Model {
@@ -544,16 +558,16 @@ Consider the following two models::
         }
     }
 
-This is a classic one to one reference, but let's look what happens when you are working with
-a new model::
+This is a classic one to one reference, but let's look what happens when you are
+working with a new model::
 
     $m = new Model_User($db);
 
     $m['name'] = 'John';
     $m->save();
 
-In this scenario, a new record will be added into 'user' with 'contact_id' equal to null. The
-next example will traverse into the contact to set it up::
+In this scenario, a new record will be added into 'user' with 'contact_id' equal
+to null. The next example will traverse into the contact to set it up::
 
     $m = new Model_User($db);
 
@@ -561,8 +575,8 @@ next example will traverse into the contact to set it up::
     $m->ref('address_id')->save(['address'=>'street']);
     $m->save();
 
-When entity which you have referenced through ref() is saved, it will automatically populate
-$m['contact_id'] field and the final $m->save() will also store the reference.
+When entity which you have referenced through ref() is saved, it will automatically
+populate $m['contact_id'] field and the final $m->save() will also store the reference.
 
 ID setting is implemented through a basic hook. Related model will have afterSave
 hook, which will update address_id field of the $m.
@@ -578,12 +592,12 @@ References are implemented through several classes:
 
 .. php:attr:: table_alias
 
-    Alias for related table. Because multiple references can point to the same table, ability
-    to have unique alias is pretty good.
+    Alias for related table. Because multiple references can point to the same
+    table, ability to have unique alias is pretty good.
 
     You don't have to change this property, it is generated automatically.
 
-.. php:attr:: link 
+.. php:attr:: link
 
     What should we pass into owner->ref() to get through to this reference.
     Each reference has a unique identifier, although it's stored

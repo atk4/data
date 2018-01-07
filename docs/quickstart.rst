@@ -4,12 +4,12 @@
 Quickstart
 ==========
 
-Agile Data Framework is built around some unique concepts. Your knowledge
-of other ORM, ActiveRecord and QueryBuilder tools could be helpful, but
-you should carefully go through the basics if you want to know how to use
-Agile Data efficiently.
+Agile Data Framework is built around some unique concepts. Your knowledge of
+other ORM, ActiveRecord and QueryBuilder tools could be helpful, but you should
+carefully go through the basics if you want to know how to use Agile Data
+efficiently.
 
-The distinctive goal for Agile Data is ability to "execute" complex opeartions
+The distinctive goal for Agile Data is ability to "execute" complex operations
 on the database server directly, such as aggregation, sub-queries, joins and
 unions but only if the database server supports those operations.
 
@@ -26,7 +26,7 @@ Requirements
 
 If you wish to try out some examples in this guide, you will need the following:
 
-- PHP 5.5 or above.
+- PHP 5.6 or above.
 - MySQL or MariaDB
 - Install `Agile Data Primer <https://github.com/atk4/data-primer/>`_
 
@@ -42,7 +42,8 @@ If you wish to try out some examples in this guide, you will need the following:
 
     php console.php
 
-Console is using `Psysh <http://psysh.org>`_ to help you interact with objects like this::
+Console is using `Psysh <http://psysh.org>`_ to help you interact with objects
+like this::
 
     > $db
     => atk4\data\Persistence_SQL {...}
@@ -50,14 +51,14 @@ Console is using `Psysh <http://psysh.org>`_ to help you interact with objects l
     > exit
 
 .. note:: I recommend that you enter statements into console one-by-one and
-    carefully observe results. You should also experiment where possible,
-    try different conditions or no conditions at all.
+    carefully observe results. You should also experiment where possible, try
+    different conditions or no conditions at all.
 
     You can always create new model object if you mess up. If you change any
     of the classes, you'll have to restart console.
 
-    There seem to be a bug inside Psysh where it looses MySQL connection,
-    in this case restart the console.
+    There seem to be a bug inside Psysh where it looses MySQL connection, in
+    this case restart the console.
 
 
 Core Concepts
@@ -86,9 +87,8 @@ DataSet (see :ref:`DataSet`)
     to the Business Model.
 
 Active Record (see :ref:`Active Record`)
-    Model can load individual record from DataSet, work with it and save
-    it back into DataSet. While the record is loaded, we call it an Active
-    Record.
+    Model can load individual record from DataSet, work with it and save it back
+    into DataSet. While the record is loaded, we call it an Active Record.
 
 Action (see :ref:`Action`)
     Operation that Model performs on all of DataSet records without loading
@@ -105,24 +105,24 @@ to your data. If you have used ORM, ActiveRecord or QueryBuilders, you will be
 thinking in terms of "Persistence Domain". That means that you think in terms
 of "tables", "fields", "foreign keys" and "group by" operations.
 
-In larger application developers does not necessarily have to know the
-details of your database structure. In fact - structure can often change and
-code that depend on specific field names or types can break.
+In larger application developers does not necessarily have to know the details
+of your database structure. In fact - structure can often change and code that
+depend on specific field names or types can break.
 
 More importantly, if you decide to store some data in different database either
 for caching (memcache), unique features (full-text search) or to handle large
-amounts of data (BigData) you suddenly have to carefully consider that in
-your application.
+amounts of data (BigData) you suddenly have to carefully consider that in your
+application.
 
 Business Domain is a layer that is designed to hide all the logic of data
 storage and focus on representing your business model in great detail. In other
-words - Business Logic is an API you and the rest of your developer team
-can use without concerning about data storage.
+words - Business Logic is an API you and the rest of your developer team can use
+without concerning about data storage.
 
-Agile Data has a rich set of features to define how Business Domain maps
-into Persistence Domain. It also allows you to perform most actions with
-only knowledge of Business Domain, keeping the rest of your application
-independent from your database choice, structure or patterns.
+Agile Data has a rich set of features to define how Business Domain maps into
+Persistence Domain. It also allows you to perform most actions with only
+knowledge of Business Domain, keeping the rest of your application independent
+from your database choice, structure or patterns.
 
 Class vs In-Line definition
 ---------------------------
@@ -163,8 +163,8 @@ Save, exit and run console again. You can now type this::
 
 .. note:: Should the "addCondition" be located inside model definition or
     inside your inline code? To answer this question - think - would
-    Model_ContactInfo have application without the condition? If yes
-    then either use addCondition in-line or create 2 classes.
+    Model_ContactInfo have application without the condition? If yes then
+    either use addCondition in-line or create 2 classes.
 
 Model State
 -----------
@@ -193,9 +193,9 @@ not be recreated.
 DataSet (Conditions)
 ^^^^^^^^^^^^^^^^^^^^
 
-Model object may have one or several conditions applied. Conditions will
-limit which records model can load (make active) and save. Once the condition
-is added, it cannot be removed for safety reasons.
+Model object may have one or several conditions applied. Conditions will limit
+which records model can load (make active) and save. Once the condition is added,
+it cannot be removed for safety reasons.
 
 Suppose you have a method that converts DataSet into JSON. Ability to add
 conditions is your way to specify which records to operate on::
@@ -210,14 +210,14 @@ conditions is your way to specify which records to operate on::
 
     myexport($m, ['id','username','country_id']);
 
-If you want to temporarily add conditions, then you can either clone the
-model or use :php:meth:`Model::tryLoadBy`.
+If you want to temporarily add conditions, then you can either clone the model
+or use :php:meth:`Model::tryLoadBy`.
 
 Active Record
 ^^^^^^^^^^^^^
 
-Active Record is a third essential piece of information that your model
-stores. You can load / unload records like this::
+Active Record is a third essential piece of information that your model stores.
+You can load / unload records like this::
 
     $m = new Model_User($db);
     $m->loadAny();
@@ -227,15 +227,14 @@ stores. You can load / unload records like this::
     $m['email'] = 'test@example.com';
     $m->save();
 
-You can call `$m->loaded()` to see if there is active record and `$m->id`
-will store the ID of active record. You can also un-load the record with
-`$m->unload()`.
+You can call `$m->loaded()` to see if there is active record and `$m->id` will
+store the ID of active record. You can also un-load the record with `$m->unload()`.
 
 By default no records are loaded and if you modify some field and attempt
 to save unloaded model, it will create a new record.
 
-Model may use some default values in order to make sure that your record
-will be saved inside DataSet::
+Model may use some default values in order to make sure that your record will
+be saved inside DataSet::
 
     $m = new Model_User($db);
     $m->addCondition('country_id', 2);
@@ -269,8 +268,8 @@ This can be used internally for all sorts of decisions for model behavior.
 Getting Started
 ===============
 
-It's time to create the first Model. Open `src/Model_User.php` which
-should look like this::
+It's time to create the first Model. Open `src/Model_User.php` which should look
+like this::
 
     class Model_User extends \atk4\data\Model
     {
@@ -291,11 +290,10 @@ should look like this::
         }
     }
 
-Extend either the base Model class or one of your existing classes
-(like Model_Client). Define $table property unless it is already defined by
-parent class. All the properties defined inside your model class are
-considered "default" you can re-define them when you create model
-instances::
+Extend either the base Model class or one of your existing classes (like
+Model_Client). Define $table property unless it is already defined by parent
+class. All the properties defined inside your model class are considered
+"default" you can re-define them when you create model instances::
 
     $m = new Model_User($db, 'user2'); // will use a different table
 
@@ -314,8 +312,7 @@ later::
 
     $db->add($m); // calls $m->init()
 
-You cannot add conditions just yet, although you can pass in some
-of the defaults::
+You cannot add conditions just yet, although you can pass in some of the defaults::
 
     $m = new Model_User(['table'=>'user2']);
 
@@ -338,18 +335,18 @@ your field, but it also participates in some field-related activity.
 Table Joins
 -----------
 
-Similarly, :php:meth:`Model::join()` creates a Join object and stores it in
-$j. The Join object defines a relationship between the master
-:php:attr:`Model::table` and some other table inside persistence domain. It
-makes sure relationship is maintained when objects are saved / loaded::
+Similarly, :php:meth:`Model::join()` creates a Join object and stores it in $j.
+The Join object defines a relationship between the master :php:attr:`Model::table`
+and some other table inside persistence domain. It makes sure relationship is
+maintained when objects are saved / loaded::
 
     $j = $this->join('contact_info', 'contact_info_id');
     $j->addField('address_1');
     $j->addField('address_2');
 
 That means that your business model will contain 'address_1' and 'address_2'
-fields, but when it comes to storing those values, they will be sent
-into a different database table and the records will be automatically linked.
+fields, but when it comes to storing those values, they will be sent into a
+different database table and the records will be automatically linked.
 
 Lets once again load up the console for some exercises::
 
@@ -359,36 +356,32 @@ Lets once again load up the console for some exercises::
     $m->get();
 
 At this point you'll see that address has also been loaded for the user.
-Agile Data makes management of related records transparent. In fact
-you can introduce additional joins depending on class. See classes
-Model_Invoice and Model_Payment that join table `document` with either
-`payment` or `invoice`.
+Agile Data makes management of related records transparent. In fact you can
+introduce additional joins depending on class. See classes Model_Invoice and
+Model_Payment that join table `document` with either `payment` or `invoice`.
 
-As you load or save models you should see actual queries in the console,
-that should give you some idea what kind of information is sent to the
-database.
+As you load or save models you should see actual queries in the console, that
+should give you some idea what kind of information is sent to the database.
 
-Adding Fields, Joins, Expressions and References creates more objects
-and 'adds' them into Model (to better understand how Model can behave
-like a container for these objects, see `documentation on Agile Core
-Containers <http://agile-core.readthedocs.io/en/develop/container.html>`_).
-This architecture of
-Agile Data allows database persistence to implement different logic that
-will properly manipulate features of that specific database engine.
+Adding Fields, Joins, Expressions and References creates more objects and
+'adds' them into Model (to better understand how Model can behave like a
+container for these objects, see `documentation on Agile Core Containers
+<http://agile-core.readthedocs.io/en/develop/container.html>`_).
+This architecture of Agile Data allows database persistence to implement
+different logic that will properly manipulate features of that specific
+database engine.
 
 
 Understanding Persistence
 -------------------------
 
-To make things simple, console has already created persistence
-inside variable `$db`. Load up `console.php` in your editor to look
-at how persistence is set up::
+To make things simple, console has already created persistence inside variable
+`$db`. Load up `console.php` in your editor to look at how persistence is set up::
 
     $app->db = \atk4\data\Persistence::connect($dsn, $user, $pass);
 
 The `$dsn` can also be using the PEAR-style DSN format, such as:
-"mysql://user:pass@db/host", in which case you do not need to
-specify $user and $pass. 
+"mysql://user:pass@db/host", in which case you do not need to specify $user and $pass.
 
 For some persistence classes, you should use constructor directly::
 
@@ -402,9 +395,8 @@ For some persistence classes, you should use constructor directly::
     $m->load(2);
     echo $m['name'];  // Peter
 
-There are several Persistence classes that deal with different
-data sources. Lets load up our console and try out a different
-persistence::
+There are several Persistence classes that deal with different data sources.
+Lets load up our console and try out a different persistence::
 
     $a=['user'=>[],'contact_info'=>[]];
     $ar = new \atk4\data\Persistence_Array($a);
@@ -427,11 +419,11 @@ persistence logic.
 References between Models
 =========================
 
-Your application normally uses multiple business entities and they can be related
-to each-other.
+Your application normally uses multiple business entities and they can be
+related to each-other.
 
-.. warning:: Do not mix-up business model references with database relations (foreign
-    keys).
+.. warning:: Do not mix-up business model references with database relations
+    (foreign keys).
 
 References are defined by calling :php:meth:`Model::hasOne()` or
 :php:meth:`Model::hasMany()`. You always specify destination model and you can
@@ -468,7 +460,8 @@ to see number of records in DataSet or export DataSet::
 Many to Many
 ------------
 
-Agile Data also supports another type of traversal - 'DataSet to DataSet' or Many to Many::
+Agile Data also supports another type of traversal - 'DataSet to DataSet' or
+Many to Many::
 
     $c = $m->ref('System')->ref('Client');
 
@@ -493,8 +486,8 @@ The third and final reference traversal type is "Active Record to Active Record"
 
     $cc = $m->ref('country_id');
 
-This results in an instance of Model_Country with Active Record set to the country of
-user john::
+This results in an instance of Model_Country with Active Record set to the
+country of user john::
 
     $cc->loaded();
     $cc->id;
@@ -505,10 +498,10 @@ Implementation of References
 
 When reference is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
 the new object is created and added into Model of class :php:class:`Reference_Many`
-or :php:class:`Reference_One` (or :php:class:`Reference_SQL_One` in case you use SQL
-database). The object itself is quite simple and you can fetch it from the model if
-you keep the return value of hasOne() / hasMany() or call :php:meth:`Model::getRef()`
-with the same identifier later on.
+or :php:class:`Reference_One` (or :php:class:`Reference_SQL_One` in case you
+use SQL database). The object itself is quite simple and you can fetch it from
+the model if you keep the return value of hasOne() / hasMany() or call
+:php:meth:`Model::getRef()` with the same identifier later on.
 You can also use :php:meth:`Model::hasRef()` to check if reference exists in model.
 
 Calling :php:meth:`Model::ref()` will proxy into the ref() method of reference
@@ -524,45 +517,47 @@ adjust it's DataSet or set the active record.
 Actions
 =======
 
-Since NoSQL databases will always have some specific features, Agile Data uses the
-concept of 'action' to map into vendor-specific operations.
+Since NoSQL databases will always have some specific features, Agile Data uses
+the concept of 'action' to map into vendor-specific operations.
 
 Aggregation actions
 -------------------
 
-SQL implements methods such as sum(), count() or max() that can offer you some basic
-aggregation without grouping. This type of aggregation provides some specific value from
-a data-set. SQL persistence implements some of the operations::
+SQL implements methods such as sum(), count() or max() that can offer you some
+basic aggregation without grouping. This type of aggregation provides some
+specific value from a data-set. SQL persistence implements some of the operations::
 
     $m = new Model_Invoice($db);
     $m->action('count')->getOne();
     $m->action('fx', ['sum', 'total'])->getOne();
     $m->action('fx', ['max', 'shipping'])->getOne();
 
-Aggregation actions can be used in Expressions with hasMany references and they can
-be brought into the original model as fields::
+Aggregation actions can be used in Expressions with hasMany references and they
+can be brought into the original model as fields::
 
     $m = new Model_Client($db);
     $m->getRef('Invoice')->addField('max_delivery', ['aggregate'=>'max', 'field'=>'shipping']);
     $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
     $m->export(['name','max_delivery','total_paid']);
 
-The above code is more concise and can be used together with reference declaration, although
-this is how it works::
+The above code is more concise and can be used together with reference declaration,
+although this is how it works::
 
     $m = new Model_Client($db);
     $m->addExpression('max_delivery', $m->refLink('Invoice')->action('fx', ['max', 'shipping']));
     $m->addExpression('total_paid', $m->refLink('Payment')->action('fx', ['sum', 'amount']));
     $m->export(['name','max_delivery','total_paid']);
 
-In this example calling refLink is similar to traversing reference but instead of calculating
-DataSet based on Active Record or DataSet it references the actual field, making it ideal for
-placing into sub-query which SQL action is using. So when calling like above, action() will
-produce expression for calculating max/sum for the specific record of Client and those calculation
-are used inside an Expression().
+In this example calling refLink is similar to traversing reference but instead
+of calculating DataSet based on Active Record or DataSet it references the actual
+field, making it ideal for placing into sub-query which SQL action is using.
+So when calling like above, action() will produce expression for calculating
+max/sum for the specific record of Client and those calculation are used inside
+an Expression().
 
-Expression is a special type of read-only Field that uses sub-query or a more complex SQL expression
-instead of a physical field. (See :ref:`Expressions` and :ref:`References`)
+Expression is a special type of read-only Field that uses sub-query or a more
+complex SQL expression instead of a physical field. (See :ref:`Expressions` and
+:ref:`References`)
 
 Field-reference actions
 -----------------------
@@ -580,18 +575,18 @@ This is useful with hasMany references::
     $m->loadAny();
     $m->get();  // look for 'country' field
 
-hasMany::addField() again is a short-cut for creating expression, which you can also build
-manually::
+hasMany::addField() again is a short-cut for creating expression, which you can
+also build manually::
 
     $m->addExpression('country', $m->refLink('country_id')->action('field',['name']));
 
 Multi-record actions
 --------------------
 
-Actions also allow you to perform operations on multiple records. This can be very
-handy with some deep traversal to improve query efficiency. Suppose you need to change
-Client/Supplier status to 'suspended' for a specific user. Fire up a console once
-away::
+Actions also allow you to perform operations on multiple records. This can be
+very handy with some deep traversal to improve query efficiency. Suppose you need
+to change Client/Supplier status to 'suspended' for a specific user. Fire up a
+console once away::
 
     $m = new Model_User($db);
     $m->loadBy('username','john');
@@ -602,16 +597,16 @@ away::
     $c->action('update')->set('status', 'suspended')->execute();
     $s->action('update')->set('status', 'suspended')->execute();
 
-Note that I had to perform 2 updates here, because Agile Data considers Client and
-Supplier as separate models. In our implementation they happened to be in a same
-table, but technically that could also be implemented differently by persistence
-layer.
+Note that I had to perform 2 updates here, because Agile Data considers Client
+and Supplier as separate models. In our implementation they happened to be in
+a same table, but technically that could also be implemented differently by
+persistence layer.
 
 Advanced Use of Actions
 -----------------------
 
-Actions prove to be very useful in various situations. For instance, if
-you are looking to add a new user::
+Actions prove to be very useful in various situations. For instance, if you are
+looking to add a new user::
 
     $m = new Model_User($db);
     $m['username'] = 'peter';
@@ -636,8 +631,8 @@ Expressions
 ===========
 
 Expressions that are defined based on Actions (such as aggregate or field-reference)
-will continue to work even without SQL (although might be more performance-expensive), however
-if you're stuck with SQL you can use free-form pattern-based expressions::
+will continue to work even without SQL (although might be more performance-expensive),
+however if you're stuck with SQL you can use free-form pattern-based expressions::
 
     $m = new Model_Client($db);
     $m->getRef('Invoice')->addField('total_purchase', ['aggregate'=>'sum', 'field'=>'total']);
@@ -650,10 +645,10 @@ if you're stuck with SQL you can use free-form pattern-based expressions::
 Conclusion
 ==========
 
-You should now be familiar with the basics of Agile Data. To find more information on
-specific topics, use the rest of the documentation.
+You should now be familiar with the basics of Agile Data. To find more
+information on specific topics, use the rest of the documentation.
 
-Agile Data is designed in an extensive pattern - by adding more objects inside Model a new
-functionality can be introduced. The described functionality is never a limitation
-and 3rd party code or you can add features that Agile Data authors are not even considered.
-
+Agile Data is designed in an extensive pattern - by adding more objects inside
+Model a new functionality can be introduced. The described functionality is never
+a limitation and 3rd party code or you can add features that Agile Data authors
+are not even considered.
