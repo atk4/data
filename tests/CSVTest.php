@@ -30,7 +30,8 @@ class CSVTest extends TestCase
             if (file_exists($this->file2)) {
                 unlink($this->file2);
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
     }
 
     public function getDB()
