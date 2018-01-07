@@ -36,6 +36,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
      */
     public function getDSQLExpression($q)
     {
+        /*
         // If our Model has expr() method (inherited from Persistence_SQL) then use it
         if ($this->owner->hasMethod('expr')) {
             return $this->owner->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
@@ -43,6 +44,10 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         // Otherwise call it from expression itself
         return $q->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
+        */
+
+        // Romans: join_sql shouldn't even be called if expr is undefined. I think we should leave it here to produce error.
+        return $this->owner->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
     }
 
     /**
