@@ -9,8 +9,9 @@ Agile Data allow you to implement various tricks.
 Audit Fields
 ============
 
-If you wish to have a certain field inside your models that will be automatically changed
-when the record is being updated, this can be easily implemented in Agile Data.
+If you wish to have a certain field inside your models that will be automatically
+changed when the record is being updated, this can be easily implemented in
+Agile Data.
 
 I will be looking to create the following fields:
 
@@ -31,10 +32,10 @@ To implement the above, I'll create a new class::
 
     }
 
-TrackableTrait means that I'll be able to add this object inside model
-with ``$model->add(new Controller_Audit())`` and that will automatically
-populate $owner, and $app values (due to AppScopeTrait) as well as
-execute init() method, which I want to define like this::
+TrackableTrait means that I'll be able to add this object inside model with
+``$model->add(new Controller_Audit())`` and that will automatically populate
+$owner, and $app values (due to AppScopeTrait) as well as execute init() method,
+which I want to define like this::
 
 
     public function init() {
@@ -63,36 +64,39 @@ execute init() method, which I want to define like this::
         });
     }
 
-In order to add your defined behavior to the model. The first check actually allows you to define
-models that will bypass audit altogether::
+In order to add your defined behavior to the model. The first check actually
+allows you to define models that will bypass audit altogether::
 
     $u1 = new Model_User($db);   // Model_User::init() includes audit
 
     $u2 = new Model_User($db, ['no_audit' => true]);  // will exclude audit features
 
-Next we are going to define 'created_dts' field which will default to the current date and time.
+Next we are going to define 'created_dts' field which will default to the
+current date and time.
 
-The default value for our 'created_by_user_id' field would depend on a currently-logged in user,
-which would typically be accessible through your application. AppScope allows you to pass
-$app around through all the objects, which means that your Audit Controller will be able
-to get the current user.
+The default value for our 'created_by_user_id' field would depend on a currently
+logged-in user, which would typically be accessible through your application.
+AppScope allows you to pass $app around through all the objects, which means
+that your Audit Controller will be able to get the current user.
 
-Of course if the application is not defined, no default is set. This would be handy for
-unit tests where you could manually specify the value for this field.
+Of course if the application is not defined, no default is set. This would be
+handy for unit tests where you could manually specify the value for this field.
 
-The last 2 fields (update_*) will be updated through a hook - beforeUpdate() and will
-provide the values to be saved during ``save()``. beforeUpdate() will not be called when
-new record is inserted, so those fields will be left as "null" after initial insert.
+The last 2 fields (update_*) will be updated through a hook - beforeUpdate() and
+will provide the values to be saved during ``save()``. beforeUpdate() will not
+be called when new record is inserted, so those fields will be left as "null"
+after initial insert.
 
-If you wish, you can modify the code and insert historical records into other table.
+If you wish, you can modify the code and insert historical records into other
+table.
 
 .. _soft_delete:
 
 Soft Delete
 ===========
 
-Most of the data frameworks provide some way to enable 'soft-delete' for tables as
-a core feature. Design of Agile Data makes it possible to implement soft-delete
+Most of the data frameworks provide some way to enable 'soft-delete' for tables
+as a core feature. Design of Agile Data makes it possible to implement soft-delete
 through external controller. There may be a 3rd party controller for comprehensive
 soft-delete, but in this section I'll explain how you can easily build your own
 soft-delete controller for Agile Data (for educational purposes).
@@ -163,32 +167,37 @@ Start by creating a class::
         }
     }
 
-This implementation of soft-delete can be turned off by setting model's property 'deleted_only'
-to true (if you want to recover a record).
+This implementation of soft-delete can be turned off by setting model's property
+'deleted_only' to true (if you want to recover a record).
 
-When active, a new field will be defined 'is_deleted' and a new dynamic method will be added into
-a model, allowing you to do this::
+When active, a new field will be defined 'is_deleted' and a new dynamic method
+will be added into a model, allowing you to do this::
 
     $m = new Model_Invoice($db);
     $m->load(10);
     $m->softDelete();
 
-The method body is actually defined in our controller. Notice that we have defined 2
-hooks - beforeSoftDelete and afterSoftDelete that work similarly to beforeDelete and afterDelete.
+The method body is actually defined in our controller. Notice that we have
+defined 2 hooks - beforeSoftDelete and afterSoftDelete that work similarly to
+beforeDelete and afterDelete.
 
-beforeSoftDelete will allow you to "break" it in certain cases to bypass the rest of method, again,
-this is to maintain consistency with the rest of before* hooks in Agile Data.
+beforeSoftDelete will allow you to "break" it in certain cases to bypass the
+rest of method, again, this is to maintain consistency with the rest of before*
+hooks in Agile Data.
 
-Hooks are called through the model, so your call-back will automatically receive first argument
-$m, and afterSoftDelete will pass second argument - $id of deleted record.
+Hooks are called through the model, so your call-back will automatically receive
+first argument $m, and afterSoftDelete will pass second argument - $id of deleted
+record.
 
-I am then setting reload_after_save value to false, because after I set 'is_deleted' to false,
-$m will no longer be able to load the record - it will fall outside of the DataSet. (We
-might implement a better method for saving records outside of DataSet in the future).
+I am then setting reload_after_save value to false, because after I set
+'is_deleted' to false, $m will no longer be able to load the record - it will
+fall outside of the DataSet. (We might implement a better method for saving
+records outside of DataSet in the future).
 
 After softDelete active record is unloaded, mimicking behavior of delete().
 
-It's also possible for you to easily look at deleted records and even restore them::
+It's also possible for you to easily look at deleted records and even restore
+them::
 
     $m = new Model_Invoice($db, ['deleted_only'=>true]);
     $m->load(10);
@@ -199,9 +208,9 @@ Note that you can call $m->delete() still on any record to permanently delete it
 Soft Delete that overrides default delete()
 -------------------------------------------
 
-In case you want $m->delete() to perform soft-delete for you - this can also be achieved through
-a pretty simple controller. In fact I'm reusing the one from before and just slightly modifying
-it::
+In case you want $m->delete() to perform soft-delete for you - this can also be
+achieved through a pretty simple controller. In fact I'm reusing the one from
+before and just slightly modifying it::
 
     class Controller_SoftDelete {
 
@@ -265,9 +274,10 @@ it::
         }
     }
 
-Implementation of this controller is similar to the one above, however instead of creating softDelete()
-it overrides the delete() method through a hook. It will still call 'afterDelete' to mimic the
-behavior of regular delete() after the record is marked as deleted and unloaded.
+Implementation of this controller is similar to the one above, however instead
+of creating softDelete() it overrides the delete() method through a hook.
+It will still call 'afterDelete' to mimic the behavior of regular delete() after
+the record is marked as deleted and unloaded.
 
 You can still access the deleted records::
 
@@ -275,17 +285,19 @@ You can still access the deleted records::
     $m->load(10);
     $m->restore();
 
-Calling delete() on the model with 'deleted_only' property will delete it permanently.
+Calling delete() on the model with 'deleted_only' property will delete it
+permanently.
 
 Creating Unique Field
 =====================
 
-Database can has UNIQUE constraint, but this does work if you use DataSet. For instance, you
-may be only able to create one 'Category'  with name 'Book', but what if there is a
-soft-deleted record with same name or record that belongs to another user?
+Database can has UNIQUE constraint, but this does work if you use DataSet.
+For instance, you may be only able to create one 'Category' with name 'Book',
+but what if there is a soft-deleted record with same name or record that belongs
+to another user?
 
-With Agile Data you can create controller that will ensure that certain fields inside
-your model are unique::
+With Agile Data you can create controller that will ensure that certain fields
+inside your model are unique::
 
     class Controller_UniqueFields {
         use \atk4\core\InitializerTrait {
@@ -322,15 +334,19 @@ your model are unique::
         }
     }
 
-As expected - when you add a new model the new values are checked against existing records. You can also slightly modify the logic
-to make addCondition additive if you are verifying for the combination of matched fields.
+As expected - when you add a new model the new values are checked against
+existing records. You can also slightly modify the logic to make addCondition
+additive if you are verifying for the combination of matched fields.
 
 Creating Many to Many relationship
 ==================================
 
-Depending on the use-case many-to-many relationships can be implemented differently in Agile Data. I will be focusing on the
-practical approach. My system has "Invoice" and "Payment" document and I'd like to introduce "invoice_payment" that can
-link both entities together with fields ('invoice_id', 'payment_id', and 'amount_closed'). Here is what I need to do:
+Depending on the use-case many-to-many relationships can be implemented
+differently in Agile Data. I will be focusing on the practical approach.
+My system has "Invoice" and "Payment" document and I'd like to introduce
+"invoice_payment" that can link both entities together with fields
+('invoice_id', 'payment_id', and 'amount_closed').
+Here is what I need to do:
 
 1. Create Intermediate Entity - InvoicePayment
 ----------------------------------------------
@@ -393,9 +409,9 @@ that shows how much amount is closed and `amount_due`::
         ->addField('total_payments', ['aggregate'=>'sum', 'field'=>'amount_closed']);
     $this->addExpression('amount_due', '[total]-coalesce([total_payments],0)');
 
-Note that I'm using coalesce because without InvoicePayments the aggregate sum will
-return NULL. Finally let's build allocation method, that allocates new payment
-towards a most suitable invoice::
+Note that I'm using coalesce because without InvoicePayments the aggregate sum
+will return NULL. Finally let's build allocation method, that allocates new
+payment towards a most suitable invoice::
 
 
     // Add to Model_Payment
@@ -436,19 +452,21 @@ towards a most suitable invoice::
         }
     }
 
-The method here will prioritize oldest invoices unless it finds the one that has a matching
-reference. Additionally it will allocate your payment towards multiple invoices. Finally
-if invoice is partially paid it will only allocate what is due.
+The method here will prioritize oldest invoices unless it finds the one that
+has a matching reference. Additionally it will allocate your payment towards
+multiple invoices. Finally if invoice is partially paid it will only allocate
+what is due.
 
 
 
 Creating Related Entity Lookup
 ==============================
 
-Sometimes when you add a record inside your model you want to specify some related records
-not through ID but through other means. For instance, when adding invoice, I want to make
-it possible to specify 'Category' through the name, not only category_id. First, let me
-illustrate how can I do that with category_id::
+Sometimes when you add a record inside your model you want to specify some
+related records not through ID but through other means. For instance, when
+adding invoice, I want to make it possible to specify 'Category' through the
+name, not only category_id. First, let me illustrate how can I do that with
+category_id::
 
     class Model_Invoice extends \atk4\data\Model {
         function init() {
@@ -466,8 +484,8 @@ illustrate how can I do that with category_id::
     $m = new Model_Invoice($db);
     $m->insert(['total'=>20, 'client_id'=>402, 'category_id'=>6]);
 
-So in situations when client_id and category_id is not known (such as import or API call)
-this approach will require us to perform 2 extra queries::
+So in situations when client_id and category_id is not known (such as import or
+API call) this approach will require us to perform 2 extra queries::
 
     $m = new Model_Invoice($db);
     $m->insert([
@@ -476,8 +494,8 @@ this approach will require us to perform 2 extra queries::
         'category_id'=>$m->ref('category_id')->loadBy('name', $category)->id,
     ]);
 
-The ideal way would be to create some "non-persistable" fields that can be used to make
-things easier::
+The ideal way would be to create some "non-persistable" fields that can be used
+to make things easier::
 
     $m = new Model_Invoice($db);
     $m->insert([
@@ -492,8 +510,8 @@ Here is how to add them. First you need to create fields::
     $this->addField('client_name', ['never_persist'=>true]);
     $this->addField('category', ['never_persist'=>true]);
 
-I have declared those fields with never_persist so they will never be used by persistence
-layer to load or save anything. Next I need a beforeSave handler::
+I have declared those fields with never_persist so they will never be used by
+persistence layer to load or save anything. Next I need a beforeSave handler::
 
     $this->addHook('beforeSave', function($m) {
         if(isset($m['client_code']) && !isset($m['client_id'])) {
@@ -518,8 +536,8 @@ layer to load or save anything. Next I need a beforeSave handler::
 Note that isset() here will be true for modified fields only and behaves
 differently from PHP's default behavior. See documentation for Model::isset
 
-This technique allows you to hide the complexity of the lookups and also embed the
-necessary queries inside your "insert" query.
+This technique allows you to hide the complexity of the lookups and also embed
+the necessary queries inside your "insert" query.
 
 Fallback to default value
 -------------------------
@@ -573,8 +591,8 @@ information. Here is usage example::
         ],
     ]);
 
-Not only 'insert' but 'set' and 'save' should be able to use those fields
-for 'payment' and 'lines', so we need to first define those as 'never_persist'.
+Not only 'insert' but 'set' and 'save' should be able to use those fields for
+'payment' and 'lines', so we need to first define those as 'never_persist'.
 If you curious about client lookup by-name, I have explained it in the previous
 section. Add this into your Invoice Model::
 
@@ -632,10 +650,9 @@ Combined with our "Audit" handler above, this should allow you to relate
 with deleted clients.
 
 The final use case is when some value inside the existing model should be
-passed into the related model. Let's say we have 'Model_Invoice' and we
-want to add 'payment_invoice_id' that points to 'Model_Payment'. However
-we want this field only to offer payments made by the same client. Inside
-Model_Invoice add::
+passed into the related model. Let's say we have 'Model_Invoice' and we want to
+add 'payment_invoice_id' that points to 'Model_Payment'. However we want this
+field only to offer payments made by the same client. Inside Model_Invoice add::
 
     $this->hasOne('client_id', 'Client');
 

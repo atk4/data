@@ -1,5 +1,4 @@
 
-
 .. _Expressions:
 
 ===========
@@ -8,10 +7,10 @@ Expressions
 
 .. php:class:: Model
 
-You already know that you can define fields inside your Model with addField. While
-a regular field maps to physical field inside your database, sometimes you want
-to do something different - execute expression or function inside SQL and use
-result as an output.
+You already know that you can define fields inside your Model with addField.
+While a regular field maps to physical field inside your database, sometimes you
+want to do something different - execute expression or function inside SQL and
+use result as an output.
 
 Expressions solve this problem by adding a read-only field to your model that
 corresponds to an expression:
@@ -60,9 +59,9 @@ No-table Model Expression
 -------------------------
 
 Agile Data allows you to define a model without table. While this may have
-no purpose initially, it does come in handy in some cases, when you need
-to unite a few statistical queries. Let's start by looking a at a very
-basic example::
+no purpose initially, it does come in handy in some cases, when you need to
+unite a few statistical queries. Let's start by looking a at a very basic
+example::
 
     $m = new Model($db, false);
     $m->addExpression('now', 'now()');

@@ -5,7 +5,7 @@
 namespace atk4\data;
 
 /**
- * Reference implements a link between one model and anothre. The basic components for
+ * Reference implements a link between one model and another. The basic components for
  * a reference is ability to generate the destination model, which is returned through
  * getModel() and that's pretty much it.
  *
@@ -22,7 +22,7 @@ class Reference
     /**
      * Use this alias for related entity by default. This can help you
      * if you create sub-queries or joins to separate this from main
-     * table. The table_alias will be uniquelly generated.
+     * table. The table_alias will be uniquely generated.
      *
      * @var string
      */

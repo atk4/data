@@ -45,7 +45,7 @@ class Persistence_CSV extends Persistence
     public $handle = null;
 
     /**
-     * Mode of opeation. 'r' for reading and 'w' for writing.
+     * Mode of operation. 'r' for reading and 'w' for writing.
      * If you manually set this operation, it will be used
      * for file opening.
      *
@@ -356,7 +356,7 @@ class Persistence_CSV extends Persistence
      */
     public function delete(Model $m, $id, $table = null)
     {
-        throw new Exception(['Deleting records is not supported in CSV persitence.']);
+        throw new Exception(['Deleting records is not supported in CSV persistence.']);
     }
 
     /**

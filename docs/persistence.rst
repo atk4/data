@@ -7,8 +7,8 @@ Loading and Saving (Persistence)
 
 .. php:class:: Model
 
-In order to load and store data of your model inside the database your model should be
-"associated" with persistence layer.
+In order to load and store data of your model inside the database your model
+should be "associated" with persistence layer.
 
 Associating with Persistence
 ============================
@@ -36,7 +36,8 @@ There are several ways to link your model up with the persistence::
 
 .. php:method:: save($data = [])
 
-    Store active record back into DataSet. If record wasn't loaded, store it as a new record::
+    Store active record back into DataSet. If record wasn't loaded, store it as
+    a new record::
 
         $m->load(10);
         $m['name'] = 'John';
@@ -63,14 +64,16 @@ There are several ways to link your model up with the persistence::
 
 .. php:method:: loadAny
 
-    Attempt to load any matching record. You can use this in conjunction with setOrder()::
+    Attempt to load any matching record. You can use this in conjunction with
+    setOrder()::
 
         $m->loadAny();
         echo $m['name'];
 
 .. php:method:: tryLoadAny
 
-    Attempt to load any record, but silently fail if there are no records in the DataSet.
+    Attempt to load any record, but silently fail if there are no records in
+    the DataSet.
 
 .. php:method:: unload
 
@@ -84,21 +87,23 @@ There are several ways to link your model up with the persistence::
 
 .. php:method:: delete($id = null)
 
-    Remove current record from DataSet. You can optionally pass ID if you wish to delete
-    a different record. If you pass ID of a currently loaded record, it will be unloaded.
+    Remove current record from DataSet. You can optionally pass ID if you wish
+    to delete a different record. If you pass ID of a currently loaded record,
+    it will be unloaded.
 
 Inserting Record with a specific ID
 -----------------------------------
 
-When you add a new record with save(), insert() or import, you can specify ID explicitly::
+When you add a new record with save(), insert() or import, you can specify ID
+explicitly::
 
     $m['id'] = 123;
     $m->save();
 
     // or $m->insert(['Record with ID=123', 'id'=>123']);
 
-However if you change the ID for record that was loaded, then your
-database record will also have its ID changed. Here is example::
+However if you change the ID for record that was loaded, then your database
+record will also have its ID changed. Here is example::
 
     $m->load(123);
     $m[$m->id_field] = 321;
@@ -109,12 +114,12 @@ After this your database won't have a record with ID 123 anymore.
 Type Converting
 ===============
 
-PHP operates with a handful of scalar types such as integer, string,
-booleans etc. There are more advanced types such as DateTime. Finally
-user may introduce more useful types.
+PHP operates with a handful of scalar types such as integer, string, booleans
+etc. There are more advanced types such as DateTime. Finally user may introduce
+more useful types.
 
-Agile Data ensures that regardless of the selected database, types
-are converted correctly for saving and restored as they were when loading::
+Agile Data ensures that regardless of the selected database, types are converted
+correctly for saving and restored as they were when loading::
 
     $m->addField('is_admin', ['type'=>'boolean']);
     $m['is_admin'] = false;
@@ -126,9 +131,8 @@ are converted correctly for saving and restored as they were when loading::
 
     $m['is_admin'];  // converted back to `false`
 
-Behind a two simple lines might be a long path for the value. The
-various components are essential and as developer you must understand
-the full sequence::
+Behind a two simple lines might be a long path for the value. The various
+components are essential and as developer you must understand the full sequence::
 
     $m['is_admin'] = false;
     $m->save();
@@ -136,12 +140,12 @@ the full sequence::
 Strict Types an Normalization
 -----------------------------
 
-PHP does not have strict types for variables, however if you specify type
-for your model fields, the type will be enforced.
+PHP does not have strict types for variables, however if you specify type for
+your model fields, the type will be enforced.
 
-Calling "set()" or using array-access to set the value will start by
-casting the value to an appropriate data-type. If it is impossible to
-cast the value, then exception will be generated::
+Calling "set()" or using array-access to set the value will start by casting
+the value to an appropriate data-type. If it is impossible to cast the value,
+then exception will be generated::
 
     $m['is_admin'] = "1"; // OK, but stores as `true`
 
@@ -205,9 +209,9 @@ Note that `read_only` can still have a default value::
     $m->save();  // stores creation time just fine and also will loade it.
 
 
-.. note:: If you have been following our "Domain" vs "Persistence" then
-    you can probably see that all of the above functionality described
-    in this section apply only to the "Domain" model.
+.. note:: If you have been following our "Domain" vs "Persistence" then you can
+    probably see that all of the above functionality described in this section
+    apply only to the "Domain" model.
 
 Typecasting
 -----------
@@ -217,35 +221,31 @@ For full documentation on type-casting see :ref:`typecasting`
 Validation
 ----------
 
-Validation in application always depends on business logic
-For example, if you want `age` field to be
-above `14` for the user registration you may have to ask
-yourself some questions:
+Validation in application always depends on business logic.
+For example, if you want `age` field to be above `14` for the user registration
+you may have to ask yourself some questions:
 
  - Can user store `12` inside a age field?
  - If yes, Can user persist age with value of `12`?
  - If yes, Can user complete registration with age of `12`?
 
-If 12 cannot be stored at all, then exception would be
-generated during set(), before you even get a chance to look
-at other fields.
+If 12 cannot be stored at all, then exception would be generated during set(),
+before you even get a chance to look at other fields.
 
-If storing of `12` in the model field is OK validation can
-be called from beforeSave() hook. This might be a better way
-if your validation rules depends on multiple field conditions
-which you need to be able to access.
+If storing of `12` in the model field is OK validation can be called from
+beforeSave() hook. This might be a better way if your validation rules depends
+on multiple field conditions which you need to be able to access.
 
-Finally you may allow persistence to store `12` value, but
-validate before a user-defined operation. `completeRegistration`
-method could perform the validation. In this case you can
-create a confirmation page, that actually stores your
-in-complete registration inside the database.
+Finally you may allow persistence to store `12` value, but validate before
+a user-defined operation. `completeRegistration` method could perform the
+validation. In this case you can create a confirmation page, that actually
+stores your in-complete registration inside the database.
 
 You may also make a decision to store registration-in-progress inside
 a session, so your validation should be aware of this logic.
 
-Agile Data relies on 3rd party validation libraries, and
-you should be able to find more information on how to integrate them.
+Agile Data relies on 3rd party validation libraries, and you should be able
+to find more information on how to integrate them.
 
 Multi-column fields
 -------------------
@@ -255,16 +255,16 @@ Lets talk more about this currency field::
     $m->add(new Field_Currency(), 'balance');
     $m['balance'] = '12,200.00 EUR';
 
-It may be designed to split up the value by using two
-fields in the database: `balance_amount` and `balance_currency_id`.
-Both values must be loaded otherwise it will be impossible
-to re-construct the value.
+It may be designed to split up the value by using two fields in the database:
+`balance_amount` and `balance_currency_id`.
+Both values must be loaded otherwise it will be impossible to re-construct
+the value.
 
-On other hand, we would prefer to hide those two columns
-for the rest of application.
+On other hand, we would prefer to hide those two columns for the rest
+of application.
 
-Finally, even though we are storing "id" for the currency
-we want to make use of References.
+Finally, even though we are storing "id" for the currency we want to make use
+of References.
 
 Your init() method for a Field_Currency might look like this::
 
@@ -290,9 +290,8 @@ Your init() method for a Field_Currency might look like this::
         );
     }
 
-There are more work to be done until Field_Currency could be
-a valid field, but I wanted to draw your attention to the use
-of field flags:
+There are more work to be done until Field_Currency could be a valid field, but
+I wanted to draw your attention to the use of field flags:
 
  - system flag is used to hide `balance_amount` and `balance_currency_id` in UI.
  - never_persist flag is used because there are no `balance` column in persistence.
@@ -325,7 +324,7 @@ Type Matrix
 +----+----+----------------------------------------------------------+------+----+-----+
 | mo |    | Will convert loosly-specified currency into float or     | "£3, | 38 |     |
 | ne |    | dedicated format for storage. Optionally support 'fmt'   | 294. | 29 |     |
-| y  |    | proprety.                                                | 48", | 4. |     |
+| y  |    | property.                                                | 48", | 4. |     |
 |    |    |                                                          | 3.99 | 48 |     |
 |    |    |                                                          | 999  | ,  |     |
 |    |    |                                                          |      | 4  |     |
@@ -353,7 +352,7 @@ Type Matrix
 Dates and Time
 --------------
 
-.. todo:: this section might neet cleanup
+.. todo:: this section might need cleanup
 
 There are 4 date formats supported:
 
@@ -373,9 +372,9 @@ There are 4 date formats supported:
 Customizations
 --------------
 
-Process which converts field values in native PHP format to/from database-specific formats
-is called _`typecasting`. Persistence driver implements a necessary type-casting through the
-following two methods:
+Process which converts field values in native PHP format to/from
+database-specific formats is called _`typecasting`. Persistence driver
+implements a necessary type-casting through the following two methods:
 
 .. php:method:: typecastLoadRow($model, $row);
 
@@ -400,21 +399,21 @@ Row persisting may rely on additional methods, such as:
 Duplicating and Replacing Records
 =================================
 
-In normal operation, once you store a record inside your database, your interaction
-will always update this existing record. Sometimes you want to perform operations that may
-affect other records.
+In normal operation, once you store a record inside your database, your
+interaction will always update this existing record. Sometimes you want
+to perform operations that may affect other records.
 
 Create copy of existing record
 ------------------------------
 
 .. php:method:: duplicate($id = null)
 
-    Normally, active record stores "id", but when you call duplicate() it forgets
-    current ID and as result it will be inserted as new record when you execute
-    `save()` next time.
+    Normally, active record stores "id", but when you call duplicate() it
+    forgets current ID and as result it will be inserted as new record when you
+    execute `save()` next time.
 
-    If you pass the `$id` parameter, then the new record will be saved under a new
-    ID::
+    If you pass the `$id` parameter, then the new record will be saved under
+    a new ID::
 
         // First, lets delete all records except 123
         (clone $m)->addCondition('id', '!=', 123)->action('delete')->execute();
@@ -429,8 +428,8 @@ Create copy of existing record
 Duplicate then save under a new ID
 ----------------------------------
 
-Assuming you have 2 different records in your database: 123 and 124,
-how can you take values of 123 and write it on top of 124?
+Assuming you have 2 different records in your database: 123 and 124, how can you
+take values of 123 and write it on top of 124?
 
 Here is how::
 
@@ -442,9 +441,9 @@ For SQL that means calling 'replace into x'.
 .. warning::
 
     You might be wondering how join() logic would work. Well there are no
-    special treatment for joins() when duplicating records, so your new
-    record will end up referencing a same joined record. If join is
-    reverse, then your new record may not load.
+    special treatment for joins() when duplicating records, so your new record
+    will end up referencing a same joined record. If join is reverse, then your
+    new record may not load.
 
     This will be properly addressed in future versions of Agile Data.
 
@@ -452,18 +451,18 @@ For SQL that means calling 'replace into x'.
 Working with Multiple DataSets
 ==============================
 
-When you load a model, conditions are applied that make it impossible
-for you to load record from outside of a data-set. In some cases you
-do want to store the model outside of a data-set. This section focuses
-on various use-cases like that.
+When you load a model, conditions are applied that make it impossible for you
+to load record from outside of a data-set. In some cases you do want to store
+the model outside of a data-set. This section focuses on various use-cases like
+that.
 
 Cloning versus New Instance
 ---------------------------
 
-When you clone a model, the new copy will inherit pretty much all the
-conditions and any in-line modifications that you have applied on
-the original model. If you decide to create new instance, it will
-provide a `vanilla` copy of model without any in-line modifications.
+When you clone a model, the new copy will inherit pretty much all the conditions
+and any in-line modifications that you have applied on the original model.
+If you decide to create new instance, it will provide a `vanilla` copy of model
+without any in-line modifications.
 This can be used in conjunction to escape data-set.
 
 .. php:method:: newInstance($class = null, $options = [])
@@ -471,14 +470,14 @@ This can be used in conjunction to escape data-set.
 Looking for duplicates
 ----------------------
 
-We have a model 'Order' with a field 'ref', which must be unique
-within the context of a client. However, orders are also stored
-in a 'Basket'. Consider the following code::
+We have a model 'Order' with a field 'ref', which must be unique within
+the context of a client. However, orders are also stored in a 'Basket'.
+Consider the following code::
 
     $basket->ref('Order')->insert(['ref'=>123]);
 
-You need to verify that the specific client wouldn't have another
-order with this ref, how do you do it?
+You need to verify that the specific client wouldn't have another order with
+this ref, how do you do it?
 
 Start by creating a beforeSave handler for Order::
 
@@ -574,8 +573,8 @@ an extra database query.
 Using Model casting and saveAs
 ------------------------------
 
-There is another method that can help with escaping the DataSet that does
-not involve record loading:
+There is another method that can help with escaping the DataSet that does not
+involve record loading:
 
 .. php:method:: asModel($class = null, $options = [])
 
@@ -626,11 +625,11 @@ with `new Order()`.
 Working with Multiple Persistences
 ==================================
 
-Normally when you load the model and save it later, it ends up in the same database
-from which you have loaded it. There are cases, however, when you want to store
-the record inside a different database. As we are looking into use-cases, you
-should keep in mind that with Agile Data Persistence can be pretty much anything
-including 'RestAPI', 'File', 'Memcache' or 'MongoDB'.
+Normally when you load the model and save it later, it ends up in the same
+database from which you have loaded it. There are cases, however, when you
+want to store the record inside a different database. As we are looking into
+use-cases, you should keep in mind that with Agile Data Persistence can be
+pretty much anything including 'RestAPI', 'File', 'Memcache' or 'MongoDB'.
 
 .. important::
 
@@ -680,8 +679,8 @@ application::
         return $m;
     }
 
-The above logic provides a simple caching framework for all of your models. To use
-it with any model::
+The above logic provides a simple caching framework for all of your models.
+To use it with any model::
 
     $m = $app->loadQuick(new Order(), 123);
 
@@ -693,9 +692,10 @@ To look in more details into the actual method, I have broken it down into chunk
     // first, try to load it from MemCache:
     $m = $this->mdb->add(clone $class)->tryLoad($id);
 
-The $class will be an uninitialized instance of a model (although you can also use
-a string). It will first be associated with the MemCache DB persistence and we will
-attempt to load a corresponding ID. Next, if no record is found in the cache::
+The $class will be an uninitialized instance of a model (although you can also
+use a string). It will first be associated with the MemCache DB persistence and
+we will attempt to load a corresponding ID. Next, if no record is found in the
+cache::
 
     if (!$m->loaded()) {
 
@@ -706,9 +706,10 @@ attempt to load a corresponding ID. Next, if no record is found in the cache::
         $m = $m->withPersistence($this->mdb)->replace();
     }
 
-Load the record from the SQL database and store it into $m. Next, save $m into the
-MemCache persistence by replacing (or creating new) record. The `$m` at the end will
-be associated with the MemCache persistence for consistency with cached records.
+Load the record from the SQL database and store it into $m. Next, save $m into
+the MemCache persistence by replacing (or creating new) record. The `$m` at the
+end will be associated with the MemCache persistence for consistency with cached
+records.
 The last two hooks are in order to replicate any changes into the SQL database
 also::
 
@@ -733,9 +734,9 @@ In some cases your application have to deal with read and write replicas of
 the same database. In this case all the operations would be done on the read
 replica, except for certain changes.
 
-In theory you can use hooks (that have option to cancel default action)
-to create a comprehensive system-wide solution, I'll illustrate how this
-can be done with a single record::
+In theory you can use hooks (that have option to cancel default action) to
+create a comprehensive system-wide solution, I'll illustrate how this can be
+done with a single record::
 
     $m = new Order($read_replica);
 
@@ -748,10 +749,9 @@ can be done with a single record::
     // $m->reload();
 
 By changing 'completed' field value, it creates a dirty field inside `$m`,
-which will be saved inside a `$write_replica`. Although the proper
-approach would be to reload the `$m`, if there is chance that your
-update to a write replica may not propagate to read replica, you can
-simply reset the dirty flags.
+which will be saved inside a `$write_replica`. Although the proper approach
+would be to reload the `$m`, if there is chance that your update to a write
+replica may not propagate to read replica, you can simply reset the dirty flags.
 
 If you need further optimization, make sure `reload_after_save` is disabled
 for the write replica::
@@ -813,13 +813,14 @@ How to add record inside session, e.g. log the user in? Here is the code::
 Actions
 =======
 
-Action is a multi-row operation that will affect all the records inside DataSet. Actions
-will not affect records outside of DataSet (records that do not match conditions)
+Action is a multi-row operation that will affect all the records inside DataSet.
+Actions will not affect records outside of DataSet (records that do not match
+conditions)
 
 .. php:method:: action($action, $args = [])
 
-    Prepares a special object representing "action" of a persistence layer based around
-    your current model::
+    Prepares a special object representing "action" of a persistence layer based
+    around your current model::
 
         $m = Model_User();
         $m->addCondition('last_login', '<', date('Y-m-d', strtotime('-2 months')));
@@ -830,9 +831,9 @@ will not affect records outside of DataSet (records that do not match conditions
 Action Types
 ------------
 
-Actions can be grouped by their result. Some action will be executed and will not
-produce any results. Others will respond with either one value or multiple rows of
-data.
+Actions can be grouped by their result. Some action will be executed and will
+not produce any results. Others will respond with either one value or multiple
+rows of data.
 
  - no results
  - single value
@@ -845,13 +846,14 @@ Action can be executed at any time and that will return an expected result::
     $m = Model_Invoice();
     $val = $m->action('count')->getOne();
 
-Most actions are sufficiently smart to understand what type of result you are expecting,
-so you can have the following code::
+Most actions are sufficiently smart to understand what type of result you are
+expecting, so you can have the following code::
 
     $m = Model_Invoice();
     $val = $m->action('count')();
 
-When used inside the same Persistence, sometimes actions can be used without executing::
+When used inside the same Persistence, sometimes actions can be used without
+executing::
 
     $m = Model_Product($db);
     $m->addCondition('name', $product_name);
@@ -860,11 +862,12 @@ When used inside the same Persistence, sometimes actions can be used without exe
     $m = Model_Invoice($db);
     $m->insert(['qty'=>20, 'product_id'=>$id_query_action]);
 
-Insert operation will check if you are using same persistence. If the persistence object
-is different, it will execute action and will use result instead.
+Insert operation will check if you are using same persistence.
+If the persistence object is different, it will execute action and will use
+result instead.
 
-Being able to embed actions inside next query allows Agile Data to reduce number of
-queries issued.
+Being able to embed actions inside next query allows Agile Data to reduce number
+of queries issued.
 
 The default action type can be set when executing action, for example::
 
@@ -880,8 +883,8 @@ The following actions are currently supported by Persistence_SQL:
  - select - produces query that returns DataSet  (array of hashes)
  - delete - produces query for deleting DataSet (no result)
 
-The following two queries returns un-populated query, which means if you wish to use
-it, you'll have to populate it yourself with some values:
+The following two queries returns un-populated query, which means if you wish
+to use it, you'll have to populate it yourself with some values:
 
  - insert - produces an un-populated insert query (no result).
  - update - produces query for updating DataSet (no result)
@@ -925,7 +928,8 @@ sub-selects. The functionality is nicely wrapped inside Field_SQL_Many::addField
 This operation is actually consisting of 3 following operations::
 
 1. Related model is created and linked up using refLink that essentially places
-   a condition between $client and $invoice assuming they will appear inside same query.
+   a condition between $client and $invoice assuming they will appear inside
+   same query.
 
 2. Action is created from $invoice using 'fx' and requested method / field.
 
@@ -942,7 +946,8 @@ Here is a way how to intervene with the process::
 
     });
 
-The code above uses refLink and also creates expression, but it tweaks the action used.
+The code above uses refLink and also creates expression, but it tweaks
+the action used.
 
 
 Action Matrix
