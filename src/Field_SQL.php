@@ -4,6 +4,7 @@
 
 namespace atk4\data;
 
+use atk4\dsql\Connection;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
@@ -56,7 +57,8 @@ class Field_SQL extends Field implements Expressionable
     public function getDSQLExpression($expression)
     {
         if (isset($this->owner->persistence_data['use_table_prefixes'])) {
-            return $expression->expr('{}.{}', [
+            $mask = '{}.{}';
+            $prop = [
                 $this->join
                     ? (isset($this->join->foreign_alias)
                         ? $this->join->foreign_alias
@@ -65,12 +67,21 @@ class Field_SQL extends Field implements Expressionable
                         ? $this->owner->table_alias
                         : $this->owner->table),
                 $this->actual ?: $this->short_name,
-            ]);
+            ];
         } else {
             // references set flag use_table_prefixes, so no need to check them here
-            return $expression->expr('{}', [
+            $mask = '{}';
+            $prop = [
                 $this->actual ?: $this->short_name,
-            ]);
+            ];
         }
+
+        // If we have DSQL Connection, then use expr() from there
+        if (isset($this->owner->persistence->connection) && $this->owner->persistence->connection instanceof Connection) {
+            $this->owner->persistence->connection->expr($mask, $prop);
+        }
+
+        // Otherwise call method from expression
+        return $expression->expr($mask, $prop);
     }
 }
