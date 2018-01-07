@@ -76,9 +76,9 @@ class Field_SQL extends Field implements Expressionable
             ];
         }
 
-        // If we have DSQL Connection, then use expr() from there
-        if (isset($this->owner->persistence->connection) && $this->owner->persistence->connection instanceof Connection) {
-            $this->owner->persistence->connection->expr($mask, $prop);
+        // If our Model has expr() method (inherited from Persistence_SQL) then use it
+        if ($this->owner->hasMethod('expr')) {
+            $this->owner->expr($mask, $prop);
         }
 
         // Otherwise call method from expression

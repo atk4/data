@@ -36,6 +36,12 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
      */
     public function getDSQLExpression($q)
     {
+        // If our Model has expr() method (inherited from Persistence_SQL) then use it
+        if ($this->owner->hasMethod('expr')) {
+            return $this->owner->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
+        }
+
+        // Otherwise call it from expression itself
         return $q->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
     }
 
