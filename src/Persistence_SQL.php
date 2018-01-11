@@ -233,7 +233,7 @@ class Persistence_SQL extends Persistence
      */
     public function initQueryFields($m, $q, $fields = null)
     {
-        if ($fields) {
+        if (is_array($fields)) {
 
             // Set of fields is strictly defined for purposes of export,
             // so we will ignore even system fields.
