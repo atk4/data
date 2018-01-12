@@ -18,6 +18,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use \atk4\core\NameTrait;
     use \atk4\core\DIContainerTrait;
     use \atk4\core\FactoryTrait;
+    use \atk4\core\AppScopeTrait;
 
     // {{{ Properties of the class
 
