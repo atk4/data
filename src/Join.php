@@ -194,11 +194,11 @@ class Join
         } else {
             $this->reverse = false;
             if (!$this->master_field) {
-                $this->master_field = $this->foreign_table.'_id';
+                $this->master_field = $this->foreign_table.'_'.$this->owner->id_field;
             }
 
             if (!$this->foreign_field) {
-                $this->foreign_field = 'id';
+                $this->foreign_field = $this->owner->id_field;
             }
         }
 
