@@ -25,6 +25,7 @@ class CSVTest extends TestCase
 
     public function tearDown()
     {
+        // see: https://github.com/atk4/data/issues/271
         try {
             unlink($this->file);
             if (file_exists($this->file2)) {
