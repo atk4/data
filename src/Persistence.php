@@ -48,6 +48,7 @@ class Persistence
         switch (strtolower(isset($args['driver']) ?: $driver)) {
             case 'mysql':
             case 'oci':
+            case 'oci12':
                 // Omitting UTF8 is always a bad problem, so unless it's specified we will do that
                 // to prevent nasty problems. This is un-tested on other databases, so moving it here.
                 // It gives problem with sqlite
