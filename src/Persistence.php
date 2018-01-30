@@ -30,11 +30,7 @@ class Persistence
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {
         // Try to dissect DSN into parts
-        if (is_array($dsn)) {
-            $parts = $dsn;
-        } else {
-            $parts = parse_url($dsn);
-        }
+        $parts = is_array($dsn) ? $dsn : parse_url($dsn);
 
         // If parts are usable, convert DSN format
         if ($parts !== false && isset($parts['host']) && isset($parts['path']) && $user === null && $password === null) {
