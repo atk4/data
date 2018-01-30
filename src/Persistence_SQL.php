@@ -766,6 +766,9 @@ class Persistence_SQL extends Persistence
     public function insert(Model $m, $data)
     {
         $insert = $m->action('insert');
+        if ($m->id_field && array_key_exists($m->id_field, $data) && $data[$m->id_field] === null) {
+            unset($data[$m->id_field]);
+        }
         $insert->set($this->typecastSaveRow($m, $data));
 
         $st = null;
