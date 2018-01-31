@@ -159,7 +159,7 @@ class Reference_SQL_One extends Reference_One
                 function ($m) {
                     $mm = $m->refLink($this->link);
 
-                    return $mm->action('field', [$mm->title_field]);
+                    return $mm->action('field', [$mm->title_field])->reset('order');
                 },
                 'type' => null,
                 'ui'   => ['editable' => false, 'visible' => true],
