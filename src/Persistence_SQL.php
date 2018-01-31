@@ -795,7 +795,7 @@ class Persistence_SQL extends Persistence
 
         $m->hook('afterInsertQuery', [$insert, $st]);
 
-        return $this->connection->lastInsertID($m);
+        return $m->lastInsertID();
     }
 
     /**

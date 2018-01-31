@@ -1851,6 +1851,20 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     // }}}
 
+    // {{{ Misc methods
+
+    /**
+     * Last ID inserted.
+     *
+     * @return mixed
+     */
+    public function lastInsertID()
+    {
+        return $this->persistence->connection->lastInsertId($this);
+    }
+
+    // }}}
+
     // {{{ Debug Methods
 
     /**
