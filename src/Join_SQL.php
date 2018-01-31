@@ -129,7 +129,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
         if ($this->on) {
             $query->join(
                 $this->foreign_table.' '.$this->foreign_alias,
-                $this->on instanceof \atk4\dsql\Expression ? $this->on : $query->expr($this->on),
+                $this->on instanceof \atk4\dsql\Expression ? $this->on : $model->expr($this->on),
                 $this->kind
             );
 
@@ -138,7 +138,7 @@ class Join_SQL extends Join implements \atk4\dsql\Expressionable
 
         $query->join(
             $this->foreign_table.(isset($this->foreign_alias) ? (' '.$this->foreign_alias) : ''),
-            $query->expr('{}.{} = {}', [
+            $model->expr('{}.{} = {}', [
                 (isset($this->foreign_alias) ? $this->foreign_alias : $this->foreign_table),
                 $this->foreign_field,
                 $this->owner->getElement($this->master_field),
