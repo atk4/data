@@ -73,8 +73,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     /**
      * Use alias for $table.
+     *
+     * @var string
      */
     public $table_alias = null;
+
+    /**
+     * Sequence name. Some DB engines use sequence for generating auto_increment IDs.
+     *
+     * @var string
+     */
+    public $sequence = null;
 
     /**
      * Persistence driver inherited from atk4\data\Persistence.
@@ -1838,6 +1847,20 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $c = $this->_default_seed_addExpression;
 
         return $this->add($this->factory($c, $defaults), $name);
+    }
+
+    // }}}
+
+    // {{{ Misc methods
+
+    /**
+     * Last ID inserted.
+     *
+     * @return mixed
+     */
+    public function lastInsertID()
+    {
+        return $this->persistence->connection->lastInsertId($this);
     }
 
     // }}}

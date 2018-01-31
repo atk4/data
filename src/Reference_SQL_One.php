@@ -41,7 +41,9 @@ class Reference_SQL_One extends Reference_One
 
         $e = $this->owner->addExpression($field, array_merge([
             function ($m) use ($their_field) {
-                return $m->refLink($this->link)->action('field', [$their_field]);
+                // remove order if we just select one field from hasOne model
+                // that is mandatory for Oracle
+                return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
             }, ],
             $defaults
         ));
@@ -103,6 +105,7 @@ class Reference_SQL_One extends Reference_One
     public function refLink($defaults = [])
     {
         $m = $this->getModel($defaults);
+
         $m->addCondition(
             $this->their_field ?: ($m->id_field),
             $this->referenceOurValue($m)
@@ -147,13 +150,16 @@ class Reference_SQL_One extends Reference_One
             ]);
         }
 
-        $field = isset($defaults['field']) ? $defaults['field'] : str_replace('_'.$this->owner->id_field, '', $this->link);
+        $field = isset($defaults['field'])
+                    ? $defaults['field']
+                    : preg_replace('/_'.$this->owner->id_field.'$/i', '', $this->link);
+
         $ex = $this->owner->addExpression($field, array_merge_recursive(
             [
                 function ($m) {
                     $mm = $m->refLink($this->link);
 
-                    return $mm->action('field', [$mm->title_field]);
+                    return $mm->action('field', [$mm->title_field])->reset('order');
                 },
                 'type' => null,
                 'ui'   => ['editable' => false, 'visible' => true],
