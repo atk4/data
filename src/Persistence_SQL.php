@@ -138,11 +138,16 @@ class Persistence_SQL extends Persistence
 
         // When we work without table, we can't have any IDs
         if ($m->table === false) {
-            $m->getElement('id')->destroy();
-            $m->addExpression('id', '1');
+            $m->getElement($m->id_field)->destroy();
+            $m->addExpression($m->id_field, '1');
         } else {
             // SQL databases use ID of int by default
-            //$m->getElement('id')->type = 'integer';
+            //$m->getElement($m->id_field)->type = 'integer';
+        }
+
+        // Sequence support
+        if ($m->sequence && $id_field = $m->hasElement($m->id_field)) {
+            $id_field->default = $this->dsql()->mode('seq_nextval')->sequence($m->sequence);
         }
 
         return $m;
@@ -170,7 +175,7 @@ class Persistence_SQL extends Persistence
     public function expr(Model $m, $expr, $args = [])
     {
         preg_replace_callback(
-            '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/',
+            '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
             function ($matches) use (&$args, $m) {
                 $identifier = substr($matches[0], 1, -1);
                 if ($identifier && !isset($args[$identifier])) {
@@ -766,9 +771,12 @@ class Persistence_SQL extends Persistence
     public function insert(Model $m, $data)
     {
         $insert = $m->action('insert');
+
+        // don't set id field at all if it's NULL
         if ($m->id_field && array_key_exists($m->id_field, $data) && $data[$m->id_field] === null) {
             unset($data[$m->id_field]);
         }
+
         $insert->set($this->typecastSaveRow($m, $data));
 
         $st = null;
@@ -787,7 +795,7 @@ class Persistence_SQL extends Persistence
 
         $m->hook('afterInsertQuery', [$insert, $st]);
 
-        return $insert->connection->lastInsertID();
+        return $this->connection->lastInsertID($m);
     }
 
     /**

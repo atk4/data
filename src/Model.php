@@ -73,8 +73,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     /**
      * Use alias for $table.
+     *
+     * @var string
      */
     public $table_alias = null;
+
+    /**
+     * Sequence name. Some DB engines use sequence for generating auto_increment IDs.
+     *
+     * @var string
+     */
+    public $sequence = null;
 
     /**
      * Persistence driver inherited from atk4\data\Persistence.
