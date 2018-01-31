@@ -207,7 +207,6 @@ class Reference_One extends Reference
     public function ref($defaults = [])
     {
         $m = $this->getModel($defaults);
-        $m->order = []; // no need to order in reference_one model
 
         // add hook to set our_field = null when record of referenced model is deleted
         $m->addHook('afterDelete', function ($m) {

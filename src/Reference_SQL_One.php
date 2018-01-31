@@ -41,7 +41,9 @@ class Reference_SQL_One extends Reference_One
 
         $e = $this->owner->addExpression($field, array_merge([
             function ($m) use ($their_field) {
-                return $m->refLink($this->link)->action('field', [$their_field]);
+                // remove order if we just select one field from hasOne model
+                // that is mandatory for Oracle
+                return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
             }, ],
             $defaults
         ));
@@ -103,7 +105,6 @@ class Reference_SQL_One extends Reference_One
     public function refLink($defaults = [])
     {
         $m = $this->getModel($defaults);
-        $m->order = []; // no need to order in reference_one model
 
         $m->addCondition(
             $this->their_field ?: ($m->id_field),
