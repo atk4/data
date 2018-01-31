@@ -103,6 +103,8 @@ class Reference_SQL_One extends Reference_One
     public function refLink($defaults = [])
     {
         $m = $this->getModel($defaults);
+        $m->order = []; // no need to order in reference_one model
+
         $m->addCondition(
             $this->their_field ?: ($m->id_field),
             $this->referenceOurValue($m)
