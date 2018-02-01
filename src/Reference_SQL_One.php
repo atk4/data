@@ -152,7 +152,7 @@ class Reference_SQL_One extends Reference_One
 
         $field = isset($defaults['field'])
                     ? $defaults['field']
-                    : preg_replace('/_'.$this->owner->id_field.'$/i', '', $this->link);
+                    : preg_replace('/_'.($this->owner->id_field ?: 'id').'$/i', '', $this->link);
 
         $ex = $this->owner->addExpression($field, array_merge_recursive(
             [
