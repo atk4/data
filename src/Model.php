@@ -1863,6 +1863,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this->persistence->connection->lastInsertId($this);
     }
 
+    /**
+     * Creates new Expression object from expression.
+     *
+     * @param string $expr
+     * @param array  $args
+     *
+     * @return \atk4\dsql\Expression
+     */
+    public function expr($expr, $args = [])
+    {
+        return $this->persistence->expr($this, $expr, $args);
+    }
+
     // }}}
 
     // {{{ Debug Methods
