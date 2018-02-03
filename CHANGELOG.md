@@ -1,4 +1,29 @@
-# 1.2
+# 1.3.0
+
+Add support for Oracle and PostgreSQL, adding support for sequences and migrate to ATK Data 1.2.x
+
+**Fixed bugs:**
+
+- Tests of CSV persistence fail on Windows [\#271](https://github.com/atk4/data/issues/271)
+
+**Closed issues:**
+
+- Problem with oracle insert [\#280](https://github.com/atk4/data/issues/280)
+- Oracle dates not working properly [\#279](https://github.com/atk4/data/issues/279)
+- After latest composer update, warning is thrown in Persistence\_SQL-\>initQueryFields\(\) [\#274](https://github.com/atk4/data/issues/274)
+- \[epic\] Implement support for Oracle [\#270](https://github.com/atk4/data/issues/270)
+
+**Merged pull requests:**
+
+- Model Sequence, lastInserId and other fixes [\#285](https://github.com/atk4/data/pull/285) ([DarkSide666](https://github.com/DarkSide666))
+- Feature/dont supply null [\#284](https://github.com/atk4/data/pull/284) ([romaninsh](https://github.com/romaninsh))
+- Don't hardcode "id" - use owner model $id\_field property [\#278](https://github.com/atk4/data/pull/278) ([DarkSide666](https://github.com/DarkSide666))
+- Make model use AppScopeTrait thus inheriting $app property from the persistence [\#277](https://github.com/atk4/data/pull/277) ([romaninsh](https://github.com/romaninsh))
+- Fix initQueryFields \(274\) [\#275](https://github.com/atk4/data/pull/275) ([DarkSide666](https://github.com/DarkSide666))
+- Feature/spellcheck [\#273](https://github.com/atk4/data/pull/273) ([DarkSide666](https://github.com/DarkSide666))
+- Feature/oracle support [\#272](https://github.com/atk4/data/pull/272) ([DarkSide666](https://github.com/DarkSide666))
+
+# 1.2.0
 
 When upgrading to 1.2.x branch watch out if your "Model" has a validate() method. The
 database connection will now use "utf8" so if you used non-utf8 before you might need
