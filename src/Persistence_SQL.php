@@ -199,7 +199,7 @@ class Persistence_SQL extends Persistence
      */
     public function initQuery($m)
     {
-        $d = $m->persistence_data['dsql'] = $this->connection->dsql();
+        $d = $m->persistence_data['dsql'] = $this->dsql();
 
         if ($m->table) {
             if (isset($m->table_alias)) {
