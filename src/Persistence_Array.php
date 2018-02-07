@@ -123,7 +123,7 @@ class Persistence_Array extends Persistence
     }
 
     /**
-     * Loads first available record
+     * Loads first available record.
      */
     public function tryLoadAny(Model $m, $table = null)
     {
@@ -140,6 +140,7 @@ class Persistence_Array extends Persistence
 
         $res = $this->load($m, $key, $table);
         $m->id = $key;
+
         return $res;
     }
 
