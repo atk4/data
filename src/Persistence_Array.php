@@ -123,6 +123,27 @@ class Persistence_Array extends Persistence
     }
 
     /**
+     * Loads first available record
+     */
+    public function tryLoadAny(Model $m, $table = null)
+    {
+        if (!isset($table)) {
+            $table = $m->table;
+        }
+
+        if (!$this->data[$table]) {
+            return false; // no records at all;
+        }
+
+        reset($this->data[$table]);
+        $key = key($this->data[$table]);
+
+        $res = $this->load($m, $key, $table);
+        $m->id = $key;
+        return $res;
+    }
+
+    /**
      * Inserts record in data array and returns new record ID.
      *
      * @param Model  $m

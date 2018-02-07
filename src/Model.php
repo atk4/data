@@ -1238,7 +1238,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->data = $this->persistence->tryLoadAny($this);
         if ($this->data) {
             if ($this->id_field) {
-                $this->id = $this->data[$this->id_field];
+                if (isset($this->data[$this->id_field])) {
+                    $this->id = $this->data[$this->id_field];
+                }
             }
 
             if ($this->hook('afterLoad') === false) {
