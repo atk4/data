@@ -79,7 +79,7 @@ class Persistence_Array extends Persistence
      * @param mixed  $id
      * @param string $table
      *
-     * @return array
+     * @return array|false
      */
     public function load(Model $m, $id, $table = null)
     {
@@ -89,6 +89,7 @@ class Persistence_Array extends Persistence
                 'table' => $m->table,
             ]);
         }
+
         if (!isset($this->data[$table ?: $m->table][$id])) {
             throw new Exception([
                 'Record with specified ID was not found',
@@ -107,7 +108,7 @@ class Persistence_Array extends Persistence
      * @param mixed  $id
      * @param string $table
      *
-     * @return array
+     * @return array|false
      */
     public function tryLoad(Model $m, $id, $table = null)
     {
@@ -116,14 +117,20 @@ class Persistence_Array extends Persistence
         }
 
         if (!isset($this->data[$table][$id])) {
-            return false;
+            return false; // no record with such id in table
         }
 
         return $this->typecastLoadRow($m, $this->data[$table][$id]);
     }
 
     /**
-     * Loads first available record.
+     * Tries to load first available record and return data record.
+     * Doesn't throw exception if model can't be loaded or there are no data records.
+     *
+     * @param Model $m
+     * @param mixed $table
+     *
+     * @return array|false
      */
     public function tryLoadAny(Model $m, $table = null)
     {
@@ -132,16 +139,16 @@ class Persistence_Array extends Persistence
         }
 
         if (!$this->data[$table]) {
-            return false; // no records at all;
+            return false; // no records at all in table
         }
 
         reset($this->data[$table]);
         $key = key($this->data[$table]);
 
-        $res = $this->load($m, $key, $table);
+        $row = $this->load($m, $key, $table);
         $m->id = $key;
 
-        return $res;
+        return $row;
     }
 
     /**
