@@ -67,6 +67,16 @@ class StaticPersistenceTest extends TestCase
         $this->assertEquals('world', $m['foo']);
     }
 
+    public function testEmpty()
+    {
+        $p = new \atk4\data\Persistence_Static([]);
+        $m = new \atk4\data\Model($p);
+
+        $m->tryLoadAny();
+
+        $this->assertFalse($m->loaded());
+    }
+
     public function testCustomField()
     {
         $p = new \atk4\data\Persistence_Static([['foo'=>'hello'], ['foo'=>'world']]);

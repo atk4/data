@@ -44,7 +44,7 @@ class Persistence_Static extends Persistence_Array
 
         $this->addHook('afterAdd', [$this, 'afterAdd']);
 
-        if (is_string($row1)) {
+        if (!is_array($row1)) {
             // We are dealing with array of strings. Convert it into array of hashes
             array_walk($data, function (&$str, $key) {
                 $str = ['id'=>$key, 'name'=>$str];

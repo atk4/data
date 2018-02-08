@@ -30,6 +30,12 @@ class PersistentArrayTest extends TestCase
         $m->load(1);
         $this->assertEquals('John', $m['name']);
 
+        $m->unload();
+        $this->assertFalse($m->loaded());
+
+        $m->tryLoadAny();
+        $this->assertTrue($m->loaded());
+
         $m->load(2);
         $this->assertEquals('Jones', $m['surname']);
         $m['surname'] = 'Smith';
