@@ -31,11 +31,20 @@ class Structure extends Expression
 
     public function id($name = null)
     {
+        $driver = $this->connection->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
         if (!$name) {
             $name = 'id';
         }
 
-        $val = $this->expr('integer primary key autoincrement');
+        switch ($driver) {
+            case 'pgsql':
+                $val = $this->expr('serial primary key');
+                break;
+
+            default:
+                $val = $this->expr('integer primary key autoincrement');
+        }
 
         $this->args['field'] =
             [$name => $val] + (isset($this->args['field']) ? $this->args['field'] : []);
