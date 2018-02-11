@@ -17,7 +17,7 @@ class SQLTestCase extends TestCase
     {
         parent::setUp();
         // establish connection
-        $this->db = new Persistence_SQL(($this->debug ? ('dumper:') : '').'sqlite::memory:');
+        $this->db = new Persistence_SQL(($this->debug ? ('dumper:') : '').$GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
     }
 
     /**
