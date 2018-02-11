@@ -33,7 +33,6 @@ class SQLTestCase extends TestCase
             $s->table($table)->drop();
 
             $first_row = current($data);
-
             foreach ($first_row as $field => $row) {
                 if ($field === 'id') {
                     $s->id('id');
@@ -42,6 +41,9 @@ class SQLTestCase extends TestCase
 
                 if (is_int($row)) {
                     $s->field($field, ['type' => 'integer']);
+                    continue;
+                } else if (is_float($row)) {
+                    $s->field($field, ['type' => 'float']);
                     continue;
                 }
 
