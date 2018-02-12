@@ -3,7 +3,6 @@
 namespace atk4\data\tests;
 
 use atk4\data\Persistence_SQL;
-use atk4\dsql\Query;
 
 class SQLTestCase extends TestCase
 {
@@ -26,7 +25,7 @@ class SQLTestCase extends TestCase
     public function setDB($db_data)
     {
         $queryClass = $this->getProtected($this->db->connection, 'query_class');
-        $escapeChar = $this->getProtected(new $queryClass, 'escape_char');
+        $escapeChar = $this->getProtected(new $queryClass(), 'escape_char');
 
         $this->tables = array_keys($db_data);
 
@@ -47,8 +46,8 @@ class SQLTestCase extends TestCase
                 if (is_int($row)) {
                     $s->field($field, ['type' => 'integer']);
                     continue;
-                } else if (is_float($row)) {
-                    $s->field($field, ['type' => 'float']);
+                } elseif (is_float($row)) {
+                    $s->field($field, ['type' => 'numeric(10,5)']);
                     continue;
                 }
 
