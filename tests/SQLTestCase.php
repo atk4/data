@@ -25,11 +25,16 @@ class SQLTestCase extends TestCase
      */
     public function setDB($db_data)
     {
+        $queryClass = $this->getProtected($this->db->connection, 'query_class');
+        $escapeChar = $this->getProtected(new $queryClass, 'escape_char');
+
         $this->tables = array_keys($db_data);
 
         // create databases
         foreach ($db_data as $table => $data) {
             $s = new Structure(['connection' => $this->db->connection]);
+            $s->setEscapeChar($escapeChar);
+
             $s->table($table)->drop();
 
             $first_row = current($data);
@@ -59,7 +64,7 @@ class SQLTestCase extends TestCase
             $has_id = (bool) key($data);
 
             foreach ($data as $id => $row) {
-                $s = new Query(['connection' => $this->db->connection]);
+                $s = new $queryClass(['connection' => $this->db->connection]);
                 if ($id === '_') {
                     continue;
                 }
@@ -78,6 +83,9 @@ class SQLTestCase extends TestCase
 
     public function getDB($tables = null, $noid = false)
     {
+        $queryClass = $this->getProtected($this->db->connection, 'query_class');
+        //$escapeChar = $this->getProtected(new $queryClass, 'escape_char');
+
         if (!$tables) {
             $tables = $this->tables;
         }
@@ -91,7 +99,7 @@ class SQLTestCase extends TestCase
         foreach ($tables as $table) {
             $data2 = [];
 
-            $s = new Query(['connection' => $this->db->connection]);
+            $s = new $queryClass(['connection' => $this->db->connection]);
             $data = $s->table($table)->get();
 
             foreach ($data as &$row) {
