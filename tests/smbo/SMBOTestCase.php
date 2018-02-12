@@ -8,11 +8,11 @@ class SMBOTestCase extends \atk4\data\tests\SQLTestCase
     {
         parent::setUp();
         $queryClass = $this->getProtected($this->db->connection, 'query_class');
-        $escapeChar = $this->getProtected(new $queryClass, 'escape_char');
+        $escapeChar = $this->getProtected(new $queryClass(), 'escape_char');
 
         $s = new \atk4\data\tests\Structure(['connection' => $this->db->connection]);
         $s->setEscapeChar($escapeChar);
-        
+
         $x = clone $s;
         $x->table('account')->drop()
             ->id()
