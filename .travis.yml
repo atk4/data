@@ -6,12 +6,17 @@ php:
     - '7.1'
     - '7.2'
 
-#services:
-#    - mysql
+addons:
+  postgresql: "9.3"
+
+services:
+    - mysql
+    - pgsql
 
 before_script:
     - composer install
-#    - mysql -e 'create database dsql_test;'
+    - mysql -e 'create database dsql_test;'
+    - psql -c 'create database "atk4-dsql-test";' -U postgres
 
 after_script:
     - echo $TRAVIS_PHP_VERSION
@@ -21,6 +26,8 @@ after_script:
 script:
     - if [[ ${TRAVIS_PHP_VERSION:0:3} != "7.0" ]]; then NC="--no-coverage"; fi
     - ./vendor/phpunit/phpunit/phpunit $NC
+    - ./vendor/bin/phpunit --configuration phpunit-mysql.xml $NC
+    - ./vendor/bin/phpunit --configuration phpunit-pgsql.xml $NC
 
 cache:
   directories:
