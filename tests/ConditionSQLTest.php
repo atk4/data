@@ -35,10 +35,13 @@ class ConditionSQLTest extends SQLTestCase
         $mm->tryLoad(2);
         $this->assertEquals(null, $mm['name']);
 
-        $this->assertEquals(
-            'select "id","name","gender" from "user" where "gender" = :a',
-            $mm->action('select')->render()
-        );
+        if ($this->testQueries) {
+            $this->assertEquals(
+                'select "id","name","gender" from "user" where "gender" = :a',
+                $mm->action('select')->render()
+            );
+        }
+
 
         $mm = clone $m;
         $mm->withID(2); // = addCondition(id, 2)

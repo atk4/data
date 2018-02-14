@@ -12,10 +12,15 @@ class SQLTestCase extends TestCase
 
     public $debug = false;
 
+    public $testQueries = false;
+
     public function setUp()
     {
         parent::setUp();
         // establish connection
+        if ($GLOBALS['DB_DSN'] == 'sqlite::memory:') {
+            $this->testQueries = true;
+        }
         $this->db = new Persistence_SQL(($this->debug ? ('dumper:') : '').$GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
     }
 

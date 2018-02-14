@@ -32,10 +32,12 @@ class ExpressionSQLTest extends SQLTestCase
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
-        $this->assertEquals(
-            'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
-            $i->action('select')->render()
-        );
+        if ($this->testQueries) {
+            $this->assertEquals(
+                'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
+                $i->action('select')->render()
+            );
+        }
 
         $i->tryLoad(1);
         $this->assertEquals(10, $i['total_net']);
@@ -47,10 +49,12 @@ class ExpressionSQLTest extends SQLTestCase
 
         $i->addExpression('double_total_gross', '[total_gross]*2');
 
-        $this->assertEquals(
-            'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross",(("total_net"+"total_vat")*2) "double_total_gross" from "invoice"',
-            $i->action('select')->render()
-        );
+        if ($this->testQueries) {
+            $this->assertEquals(
+                'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross",(("total_net"+"total_vat")*2) "double_total_gross" from "invoice"',
+                $i->action('select')->render()
+            );
+        }
 
         $i->tryLoad(1);
         $this->assertEquals(($i['total_net'] + $i['total_vat']) * 2, $i['double_total_gross']);
@@ -71,10 +75,12 @@ class ExpressionSQLTest extends SQLTestCase
             return '[total_net]+[total_vat]';
         });
 
-        $this->assertEquals(
-            'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
-            $i->action('select')->render()
-        );
+        if ($this->testQueries) {
+            $this->assertEquals(
+                'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
+                $i->action('select')->render()
+            );
+        }
 
         $i->tryLoad(1);
         $this->assertEquals(10, $i['total_net']);
@@ -98,10 +104,12 @@ class ExpressionSQLTest extends SQLTestCase
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('sum_net', $i->action('fx', ['sum', 'total_net']));
 
-        $this->assertEquals(
-            'select "id","total_net","total_vat",(select sum("total_net") from "invoice") "sum_net" from "invoice"',
-            $i->action('select')->render()
-        );
+        if ($this->testQueries) {
+            $this->assertEquals(
+                'select "id","total_net","total_vat",(select sum("total_net") from "invoice") "sum_net" from "invoice"',
+                $i->action('select')->render()
+            );
+        }
 
         $i->tryLoad(1);
         $this->assertEquals(10, $i['total_net']);
@@ -132,10 +140,12 @@ class ExpressionSQLTest extends SQLTestCase
         $m->addExpression('full_name', '[name] || " " || [surname]');
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
-        $this->assertEquals(
-            'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where ("name" || " " || "surname") != "cached_name"',
-            $m->action('select')->render()
-        );
+        if ($this->testQueries) {
+            $this->assertEquals(
+                'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where ("name" || " " || "surname") != "cached_name"',
+                $m->action('select')->render()
+            );
+        }
 
         $m->tryLoad(1);
         $this->assertEquals(null, $m['name']);
