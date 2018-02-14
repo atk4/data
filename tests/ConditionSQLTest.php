@@ -42,7 +42,6 @@ class ConditionSQLTest extends SQLTestCase
             );
         }
 
-
         $mm = clone $m;
         $mm->withID(2); // = addCondition(id, 2)
         $mm->tryLoad(1);
