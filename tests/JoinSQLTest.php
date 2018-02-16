@@ -57,7 +57,7 @@ class JoinSQLTest extends SQLTestCase
     public function testJoinSaving1()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $a = [
@@ -162,7 +162,7 @@ class JoinSQLTest extends SQLTestCase
     public function testJoinSaving3()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $a = [
@@ -231,7 +231,7 @@ class JoinSQLTest extends SQLTestCase
     public function testJoinUpdate()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $a = [
@@ -392,7 +392,7 @@ class JoinSQLTest extends SQLTestCase
     public function testDoubleJoin()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $a = [

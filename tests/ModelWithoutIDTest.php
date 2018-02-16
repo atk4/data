@@ -64,7 +64,7 @@ class ModelWithoutIDTest extends SQLTestCase
     public function testInsert()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $this->m->insert(['name'=>'Joe']);
@@ -77,7 +77,7 @@ class ModelWithoutIDTest extends SQLTestCase
     public function testSave1()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $this->m->tryLoadAny();
@@ -92,7 +92,7 @@ class ModelWithoutIDTest extends SQLTestCase
     public function testSave2()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $this->m->tryLoadAny();

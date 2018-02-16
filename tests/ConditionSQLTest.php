@@ -180,7 +180,7 @@ class ConditionSQLTest extends SQLTestCase
     public function testExpressionJoin()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $a = [

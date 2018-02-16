@@ -111,7 +111,7 @@ class RandomSQLTests extends SQLTestCase
     public function testAddFields()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $a = [
@@ -138,7 +138,7 @@ class RandomSQLTests extends SQLTestCase
     public function testSameTable()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $db = new Persistence_SQL($this->db->connection);
@@ -161,7 +161,7 @@ class RandomSQLTests extends SQLTestCase
     public function testSameTable2()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $db = new Persistence_SQL($this->db->connection);
@@ -190,7 +190,7 @@ class RandomSQLTests extends SQLTestCase
     public function testSameTable3()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $db = new Persistence_SQL($this->db->connection);

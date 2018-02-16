@@ -139,7 +139,7 @@ class FieldTest extends SQLTestCase
     public function testMandatory3()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $db = new Persistence_SQL($this->db->connection);
@@ -358,7 +358,7 @@ class FieldTest extends SQLTestCase
     public function testTitle()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $db = new Persistence_SQL($this->db->connection);
@@ -423,7 +423,7 @@ class FieldTest extends SQLTestCase
     public function testActual()
     {
         if ($this->isPostgresql) {
-            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $db = new Persistence_SQL($this->db->connection);

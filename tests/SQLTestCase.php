@@ -24,7 +24,7 @@ class SQLTestCase extends TestCase
             $this->testQueries = true;
         }
         $this->db = new Persistence_SQL(($this->debug ? ('dumper:') : '').$GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
-        $this->isPostgresql = ("pgsql" == $this->db->connection->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME));
+        $this->isPostgresql = ('pgsql' == $this->db->connection->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME));
     }
 
     /**
