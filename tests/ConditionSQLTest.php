@@ -179,6 +179,10 @@ class ConditionSQLTest extends SQLTestCase
 
     public function testExpressionJoin()
     {
+        if ($this->isPostgresql) {
+            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+        }
+
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],

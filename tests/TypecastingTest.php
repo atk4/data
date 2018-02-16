@@ -121,6 +121,10 @@ class TypecastingTest extends SQLTestCase
 
     public function testEmptyValues()
     {
+        if ($this->isPostgresql) {
+            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+        }
+
         $a = [
             'types' => [
                 1 => $v = [
@@ -213,6 +217,10 @@ class TypecastingTest extends SQLTestCase
 
     public function testTypecastNull()
     {
+        if ($this->isPostgresql) {
+            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+        }
+
         $a = [
             'test' => [
                 1 => $v = ['id' => '1', 'a' => 1, 'b' => '', 'c' => null],

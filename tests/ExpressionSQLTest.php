@@ -126,6 +126,10 @@ class ExpressionSQLTest extends SQLTestCase
 
     public function testExpressions()
     {
+        if ($this->isPostgresql) {
+            $this->markTestIncomplete("This test is not supported on PostgreSQL");
+        }
+
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'cached_name' => 'John Smith'],
