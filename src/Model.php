@@ -1088,7 +1088,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if ($class === null) {
             $class = get_class($this);
-        } elseif ($class instanceof Model) {
+        } elseif ($class instanceof self) {
             $class = get_class($class);
         }
 
