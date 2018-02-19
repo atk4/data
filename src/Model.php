@@ -1015,8 +1015,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * but will assume that both models are compatible,
      * therefore will not perform any loading.
      *
-     * @param string $class
-     * @param array  $options
+     * @param string|Model $class
+     * @param array        $options
      *
      * @return Model
      */
@@ -1052,8 +1052,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * This will cast Model into another class without
      * loosing state of your active record.
      *
-     * @param string $class
-     * @param array  $options
+     * @param string|Model $class
+     * @param array        $options
      *
      * @return Model
      */
@@ -1079,8 +1079,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Create new model from the same base class
      * as $this.
      *
-     * @param string $class
-     * @param array  $options
+     * @param string|Model $class
+     * @param array        $options
      *
      * @return Model
      */
@@ -1088,7 +1088,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if ($class === null) {
             $class = get_class($this);
+        } elseif ($class instanceof Model) {
+            $class = get_class($class);
         }
+
         $m = $this->persistence->add('\\'.ltrim($class, '\\'), $options);
 
         return $m;
