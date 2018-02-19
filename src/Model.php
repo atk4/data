@@ -1089,7 +1089,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($class === null) {
             $class = get_class($this);
         }
-        $m = $this->persistence->add('\\'.$class, $options);
+        $m = $this->persistence->add('\\'.ltrim($class, '\\'), $options);
 
         return $m;
     }
