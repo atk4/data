@@ -73,8 +73,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     /**
      * Use alias for $table.
+     *
+     * @var string
      */
     public $table_alias = null;
+
+    /**
+     * Sequence name. Some DB engines use sequence for generating auto_increment IDs.
+     *
+     * @var string
+     */
+    public $sequence = null;
 
     /**
      * Persistence driver inherited from atk4\data\Persistence.
@@ -1015,8 +1024,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * but will assume that both models are compatible,
      * therefore will not perform any loading.
      *
-     * @param string $class
-     * @param array  $options
+     * @param string|Model $class
+     * @param array        $options
      *
      * @return Model
      */
@@ -1052,8 +1061,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * This will cast Model into another class without
      * loosing state of your active record.
      *
-     * @param string $class
-     * @param array  $options
+     * @param string|Model $class
+     * @param array        $options
      *
      * @return Model
      */
@@ -1079,8 +1088,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Create new model from the same base class
      * as $this.
      *
-     * @param string $class
-     * @param array  $options
+     * @param string|Model $class
+     * @param array        $options
      *
      * @return Model
      */
@@ -1088,6 +1097,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if ($class === null) {
             $class = get_class($this);
+        } elseif ($class instanceof self) {
+            $class = get_class($class);
         }
         if (is_string($class) && $class[0] != '\\') {
             $class = '\\'.$class;
@@ -1232,7 +1243,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->data = $this->persistence->tryLoadAny($this);
         if ($this->data) {
             if ($this->id_field) {
-                $this->id = $this->data[$this->id_field];
+                if (isset($this->data[$this->id_field])) {
+                    $this->id = $this->data[$this->id_field];
+                }
             }
 
             if ($this->hook('afterLoad') === false) {
@@ -1841,6 +1854,20 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $c = $this->_default_seed_addExpression;
 
         return $this->add($this->factory($c, $defaults), $name);
+    }
+
+    // }}}
+
+    // {{{ Misc methods
+
+    /**
+     * Last ID inserted.
+     *
+     * @return mixed
+     */
+    public function lastInsertID()
+    {
+        return $this->persistence->connection->lastInsertId($this);
     }
 
     // }}}

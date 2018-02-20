@@ -193,12 +193,13 @@ class Join
             }
         } else {
             $this->reverse = false;
+            $id_field = $this->owner->id_field ?: 'id';
             if (!$this->master_field) {
-                $this->master_field = $this->foreign_table.'_'.$this->owner->id_field;
+                $this->master_field = $this->foreign_table.'_'.$id_field;
             }
 
             if (!$this->foreign_field) {
-                $this->foreign_field = $this->owner->id_field;
+                $this->foreign_field = $id_field;
             }
         }
 

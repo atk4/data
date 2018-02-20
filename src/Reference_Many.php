@@ -54,7 +54,7 @@ class Reference_Many extends Reference
     {
         return $this->getModel($defaults)
             ->addCondition(
-                $this->their_field ?: ($this->owner->table.'_'.$this->owner->id_field),
+                $this->their_field ?: ($this->owner->table.'_'.($this->owner->id_field ?: 'id')),
                 $this->getOurValue()
             );
     }
@@ -70,7 +70,7 @@ class Reference_Many extends Reference
     {
         return $this->getModel($defaults)
             ->addCondition(
-                $this->their_field ?: ($this->owner->table.'_'.$this->owner->id_field),
+                $this->their_field ?: ($this->owner->table.'_'.($this->owner->id_field ?: 'id')),
                 $this->referenceOurValue()
             );
     }

@@ -56,6 +56,7 @@ class Persistence
                     $dsn .= ';charset=utf8';
                 }
 
+            case 'pgsql':
             case 'dumper':
             case 'counter':
             case 'sqlite':
