@@ -1096,9 +1096,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function newInstance($class = null, $options = [])
     {
         if ($class === null) {
-            $class = get_class($this);
-        } elseif ($class instanceof self) {
-            $class = get_class($class);
+            $class = $this;
         }
         if (is_string($class) && $class[0] != '\\') {
             $class = '\\'.$class;
