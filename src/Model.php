@@ -1096,12 +1096,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function newInstance($class = null, $options = [])
     {
         if ($class === null) {
-            $class = get_class($this);
-        } elseif ($class instanceof self) {
-            $class = get_class($class);
+            $class = $this;
         }
-
-        $m = $this->persistence->add('\\'.ltrim($class, '\\'), $options);
+        if (is_string($class) && $class[0] != '\\') {
+            $class = '\\'.$class;
+        }
+        $m = $this->persistence->add($class, $options);
 
         return $m;
     }
