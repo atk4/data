@@ -129,6 +129,9 @@ class ExpressionSQLTest extends SQLTestCase
         if ($this->isPostgresql) {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
+        if ($this->isMysql) {
+            $this->markTestIncomplete('This test is not supported on Mysql (|| does not concatenate strings on mysql)');
+        }
 
         $a = [
             'user' => [

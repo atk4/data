@@ -16,6 +16,8 @@ class SQLTestCase extends TestCase
 
     public $isPostgresql = false;
 
+    public $isMysql = false;
+
     public function setUp()
     {
         parent::setUp();
@@ -25,6 +27,7 @@ class SQLTestCase extends TestCase
         }
         $this->db = new Persistence_SQL(($this->debug ? ('dumper:') : '').$GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
         $this->isPostgresql = ('pgsql' == $this->db->connection->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME));
+        $this->isMysql = ('mysql' == $this->db->connection->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME));
     }
 
     /**
