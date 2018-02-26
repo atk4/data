@@ -3,7 +3,6 @@
 namespace atk4\data\tests;
 
 use atk4\data\Persistence_SQL;
-use atk4\dsql\Query;
 
 class SQLTestCase extends TestCase
 {
@@ -13,11 +12,22 @@ class SQLTestCase extends TestCase
 
     public $debug = false;
 
+    public $testQueries = false;
+
+    public $isPostgresql = false;
+
+    public $isMysql = false;
+
     public function setUp()
     {
         parent::setUp();
         // establish connection
-        $this->db = new Persistence_SQL(($this->debug ? ('dumper:') : '').'sqlite::memory:');
+        if ($GLOBALS['DB_DSN'] == 'sqlite::memory:') {
+            $this->testQueries = true;
+        }
+        $this->db = new Persistence_SQL(($this->debug ? ('dumper:') : '').$GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
+        $this->isPostgresql = ('pgsql' == $this->db->connection->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME));
+        $this->isMysql = ('mysql' == $this->db->connection->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME));
     }
 
     /**
@@ -25,15 +35,19 @@ class SQLTestCase extends TestCase
      */
     public function setDB($db_data)
     {
+        $queryClass = $this->getProtected($this->db->connection, 'query_class');
+        $escapeChar = $this->getProtected(new $queryClass(), 'escape_char');
+
         $this->tables = array_keys($db_data);
 
         // create databases
         foreach ($db_data as $table => $data) {
             $s = new Structure(['connection' => $this->db->connection]);
+            $s->setEscapeChar($escapeChar);
+
             $s->table($table)->drop();
 
             $first_row = current($data);
-
             foreach ($first_row as $field => $row) {
                 if ($field === 'id') {
                     $s->id('id');
@@ -42,6 +56,9 @@ class SQLTestCase extends TestCase
 
                 if (is_int($row)) {
                     $s->field($field, ['type' => 'integer']);
+                    continue;
+                } elseif (is_float($row)) {
+                    $s->field($field, ['type' => 'numeric(10,5)']);
                     continue;
                 }
 
@@ -57,7 +74,7 @@ class SQLTestCase extends TestCase
             $has_id = (bool) key($data);
 
             foreach ($data as $id => $row) {
-                $s = new Query(['connection' => $this->db->connection]);
+                $s = new $queryClass(['connection' => $this->db->connection]);
                 if ($id === '_') {
                     continue;
                 }
@@ -76,6 +93,9 @@ class SQLTestCase extends TestCase
 
     public function getDB($tables = null, $noid = false)
     {
+        $queryClass = $this->getProtected($this->db->connection, 'query_class');
+        //$escapeChar = $this->getProtected(new $queryClass, 'escape_char');
+
         if (!$tables) {
             $tables = $this->tables;
         }
@@ -89,7 +109,7 @@ class SQLTestCase extends TestCase
         foreach ($tables as $table) {
             $data2 = [];
 
-            $s = new Query(['connection' => $this->db->connection]);
+            $s = new $queryClass(['connection' => $this->db->connection]);
             $data = $s->table($table)->get();
 
             foreach ($data as &$row) {

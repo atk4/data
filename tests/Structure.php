@@ -14,6 +14,11 @@ class Structure extends Expression
         'drop'   => 'drop table if exists {table}',
     ];
 
+    public function setEscapeChar($char)
+    {
+        $this->escape_char = $char;
+    }
+
     public function table($table)
     {
         $this['table'] = $table;
@@ -31,11 +36,24 @@ class Structure extends Expression
 
     public function id($name = null)
     {
+        $driver = $this->connection->connection()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
         if (!$name) {
             $name = 'id';
         }
 
-        $val = $this->expr('integer primary key autoincrement');
+        switch ($driver) {
+            case 'pgsql':
+                $val = $this->expr('serial primary key');
+                break;
+
+            case 'mysql':
+                $val = $this->expr('integer primary key auto_increment');
+                break;
+
+            default:
+                $val = $this->expr('integer primary key autoincrement');
+        }
 
         $this->args['field'] =
             [$name => $val] + (isset($this->args['field']) ? $this->args['field'] : []);
@@ -61,7 +79,7 @@ class Structure extends Expression
 
             $type = strtolower(isset($options['type']) ?
                 $options['type'] : 'varchar');
-            $type = preg_replace('/[^a-z0-9]+/', '', $type);
+            $type = preg_replace('/[^(),\'a-z0-9]+/', '', $type);
 
             $len = isset($options['len']) ?
                 $options['len'] :

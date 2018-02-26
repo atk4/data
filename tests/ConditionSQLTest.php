@@ -35,10 +35,12 @@ class ConditionSQLTest extends SQLTestCase
         $mm->tryLoad(2);
         $this->assertEquals(null, $mm['name']);
 
-        $this->assertEquals(
-            'select "id","name","gender" from "user" where "gender" = :a',
-            $mm->action('select')->render()
-        );
+        if ($this->testQueries) {
+            $this->assertEquals(
+                'select "id","name","gender" from "user" where "gender" = :a',
+                $mm->action('select')->render()
+            );
+        }
 
         $mm = clone $m;
         $mm->withID(2); // = addCondition(id, 2)
@@ -177,6 +179,10 @@ class ConditionSQLTest extends SQLTestCase
 
     public function testExpressionJoin()
     {
+        if ($this->isPostgresql) {
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        }
+
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
