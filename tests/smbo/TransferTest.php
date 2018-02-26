@@ -24,8 +24,8 @@ class TransferTest extends SMBOTestCase
         $this->assertEquals(100, $boi->reload()['balance']);
 
         $data = $t->export(['id', 'transfer_document_id']);
-        usort($data, function($e1, $e2) {
-            return ($e1['id'] < $e2['id'] ? -1 : 1);
+        usort($data, function ($e1, $e2) {
+            return $e1['id'] < $e2['id'] ? -1 : 1;
         });
         $this->assertEquals([
             ['id' => '1', 'transfer_document_id' => '2'],
