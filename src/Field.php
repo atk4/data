@@ -227,7 +227,7 @@ class Field
      *
      * @param mixed $value
      *
-     * @throws Exception
+     * @throws ValidationException
      *
      * @return mixed
      */
@@ -240,7 +240,7 @@ class Field
 
             if ($value === null) {
                 if ($this->required) {
-                    throw new Exception('may not be null');
+                    throw new ValidationException([$this->name => 'Must not be null']);
                 }
 
                 return;
@@ -252,7 +252,7 @@ class Field
             // other field types empty value is the same as no-value, nothing or null
             if ($f->type && $f->type != 'string' && $value === '') {
                 if ($this->required && empty($value)) {
-                    throw new Exception('may not be a empty');
+                    throw new ValidationException([$this->name => 'Must not be a empty']);
                 }
 
                 return;
@@ -261,16 +261,16 @@ class Field
             switch ($f->type) {
             case null: // loose comparison, but is OK here
                 if ($this->required && empty($value)) {
-                    throw new Exception('must not be empty');
+                    throw new ValidationException([$this->name => 'Must not be empty']);
                 }
                 break;
             case 'string':
                 if (!is_scalar($value)) {
-                    throw new Exception('must be a string');
+                    throw new ValidationException([$this->name => 'Must be a string']);
                 }
                 $value = trim($value);
                 if ($this->required && empty($value)) {
-                    throw new Exception('must not be empty');
+                    throw new ValidationException([$this->name => 'Must not be empty']);
                 }
                 break;
             case 'integer':
@@ -279,31 +279,31 @@ class Field
                 // in the future with the introduction of locale
                 $value = preg_replace('/[^0-9.-]/', '', $value);
                 if (!is_numeric($value)) {
-                    throw new Exception('must be numeric');
+                    throw new ValidationException([$this->name => 'Must be numeric']);
                 }
                 $value = (int) $value;
                 if ($this->required && empty($value)) {
-                    throw new Exception('may not be a zero');
+                    throw new ValidationException([$this->name => 'Must not be a zero']);
                 }
                 break;
             case 'float':
                 $value = str_replace(',', '', $value);
                 if (!is_numeric($value)) {
-                    throw new Exception('must be numeric');
+                    throw new ValidationException([$this->name => 'Must be numeric']);
                 }
                 $value = (float) $value;
                 if ($this->required && empty($value)) {
-                    throw new Exception('may not be a zero');
+                    throw new ValidationException([$this->name => 'Must not be a zero']);
                 }
                 break;
             case 'money':
                 $value = preg_replace('/[^0-9.-]/', '', $value);
                 if (!is_numeric($value)) {
-                    throw new Exception('must be numeric');
+                    throw new ValidationException([$this->name => 'Must be numeric']);
                 }
                 $value = round($value, 4);
                 if ($this->required && empty($value)) {
-                    throw new Exception('may not be a zero');
+                    throw new ValidationException([$this->name => 'Must not be a zero']);
                 }
                 break;
             case 'boolean':
@@ -320,10 +320,10 @@ class Field
                     $value = (bool) $value;
                 }
                 if (!is_bool($value)) {
-                    throw new Exception('must be a boolean');
+                    throw new ValidationException([$this->name => 'Must be a boolean value']);
                 }
                 if ($this->required && empty($value)) {
-                    throw new Exception('must be selected');
+                    throw new ValidationException([$this->name => 'Must be selected']);
                 }
                 break;
             case 'date':
@@ -343,12 +343,12 @@ class Field
                 break;
             case 'array':
                 if (!is_array($value)) {
-                    throw new Exception('must be an array');
+                    throw new ValidationException([$this->name => 'Must be an array']);
                 }
                 break;
             case 'object':
                 if (!is_object($value)) {
-                    throw new Exception('must be an object');
+                    throw new ValidationException([$this->name => 'Must be an object']);
                 }
                 break;
             case 'int':

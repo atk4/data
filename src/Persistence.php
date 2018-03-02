@@ -182,7 +182,7 @@ class Persistence
 
             // check null values for mandatory fields
             if ($value === null && $f->mandatory) {
-                throw new Exception(['Mandatory field value cannot be null', 'field' => $key]);
+                throw new ValidationException([$key => 'Mandatory field value cannot be null']);
             }
 
             // Expression and null cannot be converted.
