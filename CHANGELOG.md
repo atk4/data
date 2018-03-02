@@ -23,6 +23,23 @@ Add support for Oracle and PostgreSQL, adding support for sequences and migrate 
 - Feature/spellcheck [\#273](https://github.com/atk4/data/pull/273) ([DarkSide666](https://github.com/DarkSide666))
 - Feature/oracle support [\#272](https://github.com/atk4/data/pull/272) ([DarkSide666](https://github.com/DarkSide666))
 
+## 1.3.1
+
+**Closed issues:**
+
+- Typecasting for id field [\#293](https://github.com/atk4/data/issues/293)
+- Should action\('xyz'\)-\>execute\(\) trigger hooks? [\#291](https://github.com/atk4/data/issues/291)
+
+**Merged pull requests:**
+
+- Feature/various improvements [\#297](https://github.com/atk4/data/pull/297) ([romaninsh](https://github.com/romaninsh))
+- use ValidationException [\#296](https://github.com/atk4/data/pull/296) ([DarkSide666](https://github.com/DarkSide666))
+- works better with namespaces [\#295](https://github.com/atk4/data/pull/295) ([romaninsh](https://github.com/romaninsh))
+- works better with namespaces [\#294](https://github.com/atk4/data/pull/294) ([romaninsh](https://github.com/romaninsh))
+- Travis db testing [\#292](https://github.com/atk4/data/pull/292) ([gartner](https://github.com/gartner))
+- Although we have added PostgreSQL, persistence does not recognize it [\#287](https://github.com/atk4/data/pull/287) ([romaninsh](https://github.com/romaninsh))
+- Allows static persistence to use empty array [\#286](https://github.com/atk4/data/pull/286) ([romaninsh](https://github.com/romaninsh))
+
 # 1.2.0
 
 When upgrading to 1.2.x branch watch out if your "Model" has a validate() method. The
