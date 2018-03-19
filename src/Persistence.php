@@ -20,7 +20,7 @@ class Persistence
     /**
      * Connects database.
      *
-     * @param string $dsn      Format as PDO DSN or use "mysql://user:pass@host/db;option=blah", leaving user and password = null
+     * @param string $dsn      Format as PDO DSN or use "mysql://user:pass@host/db;option=blah", leaving user and password arguments = null
      * @param string $user
      * @param string $password
      * @param array  $args
@@ -29,42 +29,29 @@ class Persistence
      */
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {
-        // Try to dissect DSN into parts
-        $parts = is_array($dsn) ? $dsn : parse_url($dsn);
+        // Process DSN string
+        $dsn = \atk4\dsql\Connection::normalizeDSN($dsn, $user, $password);
 
-        // If parts are usable, convert DSN format
-        if ($parts !== false && isset($parts['host']) && isset($parts['path']) && $user === null && $password === null) {
-            // DSN is using URL-like format, so we need to convert it
-            $dsn = $parts['scheme'].':host='.$parts['host'].';dbname='.substr($parts['path'], 1);
-            $user = $parts['user'];
-            $password = $parts['pass'];
-        }
-
-        if (strpos($dsn, ':') === false) {
-            throw new Exception(["Your DSN format is invalid. Must be in 'driver:host:options' format", 'dsn' => $dsn]);
-        }
-        $driver = explode(':', $dsn, 2)[0];
-
-        switch (strtolower(isset($args['driver']) ?: $driver)) {
+        switch (isset($args['driver']) ? strtolower($args['driver']) : $dsn['driver']) {
             case 'mysql':
             case 'oci':
             case 'oci12':
                 // Omitting UTF8 is always a bad problem, so unless it's specified we will do that
                 // to prevent nasty problems. This is un-tested on other databases, so moving it here.
                 // It gives problem with sqlite
-                if (strpos($dsn, ';charset=') === false) {
-                    $dsn .= ';charset=utf8';
+                if (strpos($dsn['dsn'], ';charset=') === false) {
+                    $dsn['dsn'] .= ';charset=utf8';
                 }
 
             case 'pgsql':
             case 'dumper':
             case 'counter':
             case 'sqlite':
-                return new Persistence_SQL($dsn, $user, $password, $args);
+                return new Persistence_SQL($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
             default:
                 throw new Exception([
                     'Unable to determine persistence driver from DSN',
-                    'dsn' => $dsn,
+                    'dsn' => $dsn['dsn'],
                 ]);
         }
     }
