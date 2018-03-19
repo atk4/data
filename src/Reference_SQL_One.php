@@ -162,7 +162,7 @@ class Reference_SQL_One extends Reference_One
                     : preg_replace('/_'.($this->owner->id_field ?: 'id').'$/i', '', $this->link);
 
         if ($this->owner->hasElement($field)) {
-                throw new Exception([
+            throw new Exception([
                     'Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])',
                     'field' => $field,
                 ]);
