@@ -695,7 +695,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function getTitle()
     {
-        return $this->hasElement($this->title_field) && $this->getElement($this->title_field) instanceof \atk4\data\Field ? $this[$this->title_field] : $this->id;
+        return
+            $this->hasElement($this->title_field)
+            && $this->getElement($this->title_field) instanceof \atk4\data\Field
+                ? $this[$this->title_field]
+                : $this->id;
     }
 
     /**

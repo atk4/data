@@ -15,7 +15,7 @@ namespace atk4\data;
 class Persistence_Static extends Persistence_Array
 {
     /**
-     * This will be the title for the model.
+     * This will be the title field for the model.
      *
      * @var string
      */
