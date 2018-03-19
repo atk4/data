@@ -1762,8 +1762,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->hasElement($name = $obj->getDesiredName())) {
             throw new Exception([
                 'Reference with such name already exists',
-                'name' => $name,
-                'link' => $link,
+                'name'     => $name,
+                'link'     => $link,
                 'defaults' => 'defaults',
             ]);
         }
