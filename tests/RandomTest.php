@@ -334,4 +334,54 @@ class RandomSQLTests extends SQLTestCase
         $this->assertEquals('y1', $m['x1']);
         $this->assertEquals('y2', $m['x2']);
     }
+
+    public function testCaption()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model($db, 'user');
+
+        // caption is not set, so generate it from class name \atk4\data\Model
+        $this->assertEquals('Atk4 Data Model', $m->getModelCaption());
+
+        // caption is set
+        $m->caption = 'test';
+        $this->assertEquals('test', $m->getModelCaption());
+    }
+
+    public function testGetTitle()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'item' => [
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => '1'],
+                2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => '1'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model_Item($db, 'item');
+
+        // default title_field = name
+        $this->assertEquals(null, $m->getTitle()); // not loaded model returns null
+
+        $m->load(2);
+        $this->assertEquals('Sue', $m->getTitle()); // loaded returns title_field value
+
+        // set custom title_field
+        $m->title_field = 'parent_item_id';
+        $this->assertEquals(1, $m->getTitle()); // returns parent_item_id value
+
+        // set custom title_field as title_field from linked model
+        $m->title_field = 'parent_item';
+        $this->assertEquals('John', $m->getTitle()); // returns parent record title_field
+
+        // no title_field set - return id value
+        $m->title_field = null;
+        $this->assertEquals(2, $m->getTitle()); // loaded returns id value
+
+        // expression as title field
+        $m->addExpression('my_name', '[id]');
+        $m->title_field = 'my_name';
+        $m->load(2);
+        $this->assertEquals(2, $m->getTitle()); // loaded returns id value
+    }
 }
