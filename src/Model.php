@@ -191,6 +191,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $title_field = 'name';
 
     /**
+     * Caption of the model. Can be used in UI components, for example.
+     * Should be iun plain English and ready for proper localization.
+     *
+     * @var string
+     */
+    public $caption = null;
+
+    /**
      * When using onlyFields() this property will contain list of desired
      * fields.
      *
@@ -660,6 +668,41 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Return (possibly localized) $model->caption.
+     *
+     * @return string
+     */
+    public function getModelCaption()
+    {
+        if ($this->caption) {
+            return $this->caption;
+        }
+
+        // if caption is not set, then generate it from model class name
+        $s = strtolower(get_class($this));
+        //$s = str_replace('model', '', $s);
+        $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
+        $s = array_map('trim', $s);
+        $s = ucwords(implode(' ', $s));
+
+        return $s;
+    }
+
+    /**
+     * Return value of $model[$model->title_field]. If not set, returns id value.
+     *
+     * @return mixed
+     */
+    public function getTitle()
+    {
+        return
+            $this->hasElement($this->title_field)
+            && $this->getElement($this->title_field) instanceof \atk4\data\Field
+                ? $this[$this->title_field]
+                : $this->id;
+    }
+
+    /**
      * You can compare new value of the field with existing one without
      * retrieving. In the trivial case it's same as ($value == $model[$name])
      * but this method can be used for:.
@@ -1007,7 +1050,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function duplicate($new_id = null)
     {
         $this->id = null;
-        $this[$this->id_field] = $new_id;
+
+        if ($this->id_field) {
+            $this[$this->id_field] = $new_id;
+        }
 
         return $this;
     }
@@ -1145,12 +1191,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $m = new $class($persistence);
 
-        if ($id === true) {
-            $m->id = $this->id;
-            $m[$m->id_field] = $this[$this->id_field];
-        } elseif ($id) {
-            $m->id = null; // record shouldn't exist yet
-            $m[$m->id_field] = $id;
+        if ($this->id_field) {
+            if ($id === true) {
+                $m->id = $this->id;
+                $m[$m->id_field] = $this[$this->id_field];
+            } elseif ($id) {
+                $m->id = null; // record shouldn't exist yet
+                $m[$m->id_field] = $id;
+            }
         }
 
         $m->data = $this->data;
@@ -1439,7 +1487,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $m->reload_after_save = false;
         $m->unload();
         $m->save($row);
-        $m->data[$m->id_field] = $m->id;
+
+        if ($this->id_field) {
+            $m->data[$m->id_field] = $m->id;
+        }
     }
 
     /**

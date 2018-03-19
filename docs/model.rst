@@ -241,10 +241,10 @@ Full example::
 
     Verify and convert first argument got get / set;
 
-Title Field and ID Field
-========================
+Title Field, ID Field and Model Caption
+=======================================
 
-Those are to properties that you can specify in the model or pass it through
+Those are three properties that you can specify in the model or pass it through
 defaults::
 
     class MyModel ..
@@ -255,6 +255,8 @@ or as defaults::
     $m = new MyModel($db, ['title_field'=>'full_name']);
 
 
+.. _id_field:
+
 ID Field
 --------
 
@@ -263,7 +265,7 @@ ID Field
     If your data storage uses field different than ``id`` to keep the ID of your
     records, then you can specify that in $id_field property.
 
-.. tip:: You can change ID field of the current ID field by calling::
+.. tip:: You can change ID value of the current ID field by calling::
 
         $m['id'] = $new_id;
         $m->save();
@@ -294,6 +296,25 @@ Title Field
     to false or point towards a non-existent field.
 
     See: :php:meth::`hasOne::addTitle()` and :php:meth::`hasOne::withTitle()`
+
+.. php:method:: public getTitle
+
+    Return title field value of currently loaded record.
+
+.. _caption:
+
+Model Caption
+-------------
+
+.. php:attr:: caption
+
+    This is caption of your model. You can use it in your UI components.
+
+.. php:method:: public getModelCaption
+
+    Returns model caption. If caption is not set, then try to generate one from
+    model class name.
+
 
 Hooks
 =====
