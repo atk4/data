@@ -683,7 +683,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         //$s = str_replace('model', '', $s);
         $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
         $s = array_map('trim', $s);
-        $s = ucwords(join(' ', $s));
+        $s = ucwords(implode(' ', $s));
 
         return $s;
     }
