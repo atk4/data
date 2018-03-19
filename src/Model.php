@@ -1007,7 +1007,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function duplicate($new_id = null)
     {
         $this->id = null;
-        $this[$this->id_field] = $new_id;
+
+        if ($this->id_field) {
+            $this[$this->id_field] = $new_id;
+        }
 
         return $this;
     }
@@ -1145,12 +1148,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $m = new $class($persistence);
 
-        if ($id === true) {
-            $m->id = $this->id;
-            $m[$m->id_field] = $this[$this->id_field];
-        } elseif ($id) {
-            $m->id = null; // record shouldn't exist yet
-            $m[$m->id_field] = $id;
+        if ($this->id_field) {
+            if ($id === true) {
+                $m->id = $this->id;
+                $m[$m->id_field] = $this[$this->id_field];
+            } elseif ($id) {
+                $m->id = null; // record shouldn't exist yet
+                $m[$m->id_field] = $id;
+            }
         }
 
         $m->data = $this->data;
@@ -1439,7 +1444,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $m->reload_after_save = false;
         $m->unload();
         $m->save($row);
-        $m->data[$m->id_field] = $m->id;
+
+        if ($this->id_field) {
+            $m->data[$m->id_field] = $m->id;
+        }
     }
 
     /**
