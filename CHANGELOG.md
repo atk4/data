@@ -40,6 +40,21 @@ Add support for Oracle and PostgreSQL, adding support for sequences and migrate 
 - Although we have added PostgreSQL, persistence does not recognize it [\#287](https://github.com/atk4/data/pull/287) ([romaninsh](https://github.com/romaninsh))
 - Allows static persistence to use empty array [\#286](https://github.com/atk4/data/pull/286) ([romaninsh](https://github.com/romaninsh))
 
+## 1.3.2
+
+**Implemented enhancements:**
+
+- add $caption, getModelCaption\(\) and getTitle\(\)  [\#290](https://github.com/atk4/data/issues/290)
+- Easier access to title of a current record [\#289](https://github.com/atk4/data/issues/289)
+
+**Closed issues:**
+
+- add travis testing for postgresql [\#288](https://github.com/atk4/data/issues/288)
+
+**Merged pull requests:**
+
+- Implement caption, getTitle, getModelCaption [\#299](https://github.com/atk4/data/pull/299) ([DarkSide666](https://github.com/DarkSide666))
+
 # 1.2.0
 
 When upgrading to 1.2.x branch watch out if your "Model" has a validate() method. The
