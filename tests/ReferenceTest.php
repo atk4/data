@@ -47,6 +47,45 @@ class ReferenceTest extends TestCase
         $this->assertEquals('order', $o->table);
     }
 
+    /**
+     * @expectedException Exception
+     */
+    public function testRefName1()
+    {
+        $user = new Model(['table' => 'user']);
+        $order = new Model();
+        $order->addField('user_id');
+
+        $user->hasMany('Orders', $order);
+        $user->hasMany('Orders', $order);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testRefName2()
+    {
+        $order = new Model(['table' => 'order']);
+        $user = new Model(['table' => 'user']);
+
+        $user->hasOne('user_id', $user);
+        $user->hasOne('user_id', $user);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testRefName3()
+    {
+        $order = new Model(['table' => 'order']);
+        $order->addRef('archive', function ($m) {
+            return $m->newInstance(null, ['table' => $m->table.'_archive']);
+        });
+        $order->addRef('archive', function ($m) {
+            return $m->newInstance(null, ['table' => $m->table.'_archive']);
+        });
+    }
+
     public function testCustomRef()
     {
         $a = [];
