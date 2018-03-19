@@ -163,9 +163,9 @@ class Reference_SQL_One extends Reference_One
 
         if ($this->owner->hasElement($field)) {
             throw new Exception([
-                    'Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])',
-                    'field' => $field,
-                ]);
+                'Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])',
+                'field' => $field,
+            ]);
         }
 
         $ex = $this->owner->addExpression($field, array_merge_recursive(
