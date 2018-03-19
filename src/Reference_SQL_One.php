@@ -114,6 +114,13 @@ class Reference_SQL_One extends Reference_One
         return $m;
     }
 
+    /**
+     * Navigate to referenced model.
+     *
+     * @param array $defaults Properties
+     *
+     * @return Model
+     */
     public function ref($defaults = [])
     {
         $m = parent::ref($defaults);
@@ -153,6 +160,13 @@ class Reference_SQL_One extends Reference_One
         $field = isset($defaults['field'])
                     ? $defaults['field']
                     : preg_replace('/_'.($this->owner->id_field ?: 'id').'$/i', '', $this->link);
+
+        if ($this->owner->hasElement($field)) {
+                throw new Exception([
+                    'Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])',
+                    'field' => $field,
+                ]);
+        }
 
         $ex = $this->owner->addExpression($field, array_merge_recursive(
             [
