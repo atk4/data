@@ -350,6 +350,10 @@ class RandomSQLTests extends SQLTestCase
 
     public function testGetTitle()
     {
+        if ($this->isPostgresql) {
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        }
+
         $db = new Persistence_SQL($this->db->connection);
         $a = [
             'item' => [
