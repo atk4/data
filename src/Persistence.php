@@ -17,6 +17,9 @@ class Persistence
     use \atk4\core\AppScopeTrait;
     use \atk4\core\NameTrait;
 
+    /** @var string Connection driver name, for example, mysql, pgsql, oci etc. */
+    public $driver;
+
     /**
      * Connects database.
      *
@@ -32,7 +35,9 @@ class Persistence
         // Process DSN string
         $dsn = \atk4\dsql\Connection::normalizeDSN($dsn, $user, $password);
 
-        switch (isset($args['driver']) ? strtolower($args['driver']) : $dsn['driver']) {
+        $this->driver = isset($args['driver']) ? strtolower($args['driver']) : $dsn['driver'];
+
+        switch ($this->driver) {
             case 'mysql':
             case 'oci':
             case 'oci12':
