@@ -569,6 +569,8 @@ class Persistence_SQL extends Persistence
                 $m->hook('initSelectQuery', [$q, $type]);
                 if (isset($args['alias'])) {
                     $q->reset('field')->field($field, $args['alias']);
+                } elseif ($field instanceof Field_SQL_Expression) {
+                    $q->reset('field')->field($field, $field->short_name);
                 } else {
                     $q->reset('field')->field($field);
                 }
@@ -599,6 +601,8 @@ class Persistence_SQL extends Persistence
 
                 if (isset($args['alias'])) {
                     $q->reset('field')->field($q->expr($expr, [$field]), $args['alias']);
+                } elseif ($field instanceof Field_SQL_Expression) {
+                    $q->reset('field')->field($field, $fx.'_'.$field->short_name);
                 } else {
                     $q->reset('field')->field($q->expr($expr, [$field]));
                 }
