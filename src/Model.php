@@ -1756,7 +1756,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $defaults[0] = $link;
 
-        return $this->add($this->factory($c, $defaults));
+        $obj = $this->factory($c, $defaults);
+
+        // if reference with such name already exists, then throw exception
+        if ($this->hasElement($name = $obj->getDesiredName())) {
+            throw new Exception([
+                'Reference with such name already exists',
+                'name'     => $name,
+                'link'     => $link,
+                'defaults' => 'defaults',
+            ]);
+        }
+
+        return $this->add($obj);
     }
 
     /**
