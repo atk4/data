@@ -306,6 +306,18 @@ class RandomSQLTests extends SQLTestCase
         $m->delete();
     }
 
+    /**
+     * @expectedException Exception
+     */
+    public function testIssue220()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model_Item($db);
+
+        $m->hasOne('foo', '\atk4\data\tests\Model_Item')
+            ->addTitle(); // field foo already exists, so we can't add title with same name
+    }
+
     public function testIssue163()
     {
         $db = new Persistence_SQL($this->db->connection);
