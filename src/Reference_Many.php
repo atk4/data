@@ -25,7 +25,7 @@ class Reference_Many extends Reference
             return $this->owner->action(
                 'field',
                 [
-                    $this->our_field ?: $this->owner->id_field,
+                    $this->our_field ?: ($this->owner->id_field ?: 'id'),
                 ]
             );
         }
@@ -40,7 +40,7 @@ class Reference_Many extends Reference
     {
         $this->owner->persistence_data['use_table_prefixes'] = true;
 
-        return $this->owner->getElement($this->our_field ?: $this->owner->id_field);
+        return $this->owner->getElement($this->our_field ?: ($this->owner->id_field ?: 'id'));
     }
 
     /**

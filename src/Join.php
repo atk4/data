@@ -346,7 +346,7 @@ class Join
     {
         $defaults = array_merge([
             'our_field'   => $this->id_field,
-            'their_field' => $this->table.'_id',
+            'their_field' => $this->table.'_'.$this->id_field,
         ], $defaults);
 
         return parent::hasMany($model, $defaults);
