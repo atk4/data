@@ -133,13 +133,13 @@ Remember that it had nothing to do with your database structure, right?
 
 A code to declare a model::
 
-    class Model_User extends data\Model { }
+    class Model_User extends \atk4\data\Model { }
 
     class Model_Client extends Model_User { }
 
     class Model_Admin extends Model_User { }
 
-    class Model_Order extends data\Model { }
+    class Model_Order extends \atk4\data\Model { }
 
 Domain Model Methods
 --------------------
@@ -160,7 +160,7 @@ about object inheritance.
 Code::
 
     class Model_Client extends Model_User {
-        function sendPasswordReminder() {
+        public function sendPasswordReminder() {
 
             mail($this['email'], 'Your password is: '.$this['password']);
         }
@@ -192,7 +192,7 @@ field contain information about field name, caption, type, validation rules,
 persistence rules, presentation rules and more. Meta information is optional and
 it can be used by automated processes (such as presentation or persistence).
 
-For instance, is_paid has a `type('boolean')` which means it will be stored as
+For instance, `is_paid` has a `type('boolean')` which means it will be stored as
 1/0 in MySQL, but will use true/false in MongoDB. It will be displayed as a
 checkbox.
 Those decisions are made by the framework and will simplify your life, however
@@ -201,8 +201,8 @@ behavior.
 
 Code to declare fields::
 
-    class Model_Order extends data\Model {
-        function init() {
+    class Model_Order extends \atk4\data\Model {
+        public function init() {
             parent::init();
 
             $this->addField('description');
@@ -233,18 +233,18 @@ work from a specific record, but more on that later.
 Code (add inside `init()`)::
 
     class Model_Client extends Model_User {
-        function init() {
+        public function init() {
             parent::init();
 
-            $this->hasMany('Order');
+            $this->hasMany('Order', new Model_Order());
         }
     }
 
-    class Model_Order extends data\Model {
-        function init() {
+    class Model_Order extends \atk4\data\Model {
+        public function init() {
             parent::init();
 
-            $this->hasOne('Client');
+            $this->hasOne('Client', new Model_Client());
 
             // addField declarations
         }
@@ -311,23 +311,17 @@ This is, however, a good point for you to write the initial batch of the code.
 
 Code::
 
-    class Model_User extends data\Model {
-        function init() {
+    class Model_User extends \atk4\data\Model {
+        public function init() {
             parent::init();
 
             $this->addField('password');
             $this->addField('password_change_date');
 
-
-            if ($this->supports('sql-expression')) {
-
-                $this->addExpression('is_password_expired')
-                    ->set(
-                        '{} < NOW() - INTERVAL 1 MONTH',
-                        [$this->getElement('password_change_date')]
-                    );
-            }
-
+            $this->addExpression('is_password_expired', [
+                '[password_change_date] < (NOW() - INTERVAL 1 MONTH)',
+                'type' => 'boolean',
+            ]);
         }
     }
 
@@ -337,8 +331,8 @@ Persistence Hooks
 Hooks can help you perform operations when object is being persisted::
 
 
-    class Model_User extends data\Model {
-        function init() {
+    class Model_User extends \atk4\data\Model {
+        public function init() {
             parent::init();
 
             // addField() declaration
@@ -399,8 +393,7 @@ iterating it will simply make it load different values.
 
 At this point, I'll jump ahead a bit and will show you an alternative code::
 
-    $sum = 0;
-    $sum = $db->add('Model_Order')->sum('amount')->getOne();
+    $sum = $db->add('Model_Order')->fx0(['sum','amount'])->getOne();
 
 It will have same effect as the code above, but will perform operation of
 adding up all order amounts inside the database and save you a lot of CPU cycles.
@@ -428,6 +421,15 @@ a restriction::
         $sum += $order['amount'];
     }
 
+And again it's much more effective to do this on database side::
+
+
+    $sum = $db->add('Model_Order')
+                ->addCondition('is_paid', true)
+                ->fx0(['sum','amount'])
+                ->getOne();
+
+
 Related DataSets
 ================
 
@@ -448,17 +450,17 @@ Agile Data implements traversal as a simple operation that converts one DataSet
 into another::
 
     $user_dataset->addCondition('is_vip', true);
-    $vip_orders = $user_dataset -> refSet('Order');
+    $vip_orders = $user_dataset->ref('Order');
 
-    $sum = $vip_orders->sum('amount')->getOne();
+    $sum = $vip_orders->fx0(['sum','amount'])->getOne();
 
-The implementation of refSet is pretty powerful - $user_dataset can address 3
+The implementation of `ref()` is pretty powerful - $user_dataset can address 3
 users in the database and only 2 of those users are VIP. Typical ORM would
 require you to fetch all VIP records and then perform additional queries to find
 their orders.
 
 Agile Data, however, perform traversal without accessing database at all.
-After `refSet()` is executed, you have a new DataSet with a condition based on
+After `ref()` is executed, you have a new DataSet with a condition based on
 user sub-query. The actual implementation may be different depending on vendor,
 but Agile Data will prefer not to fetch list of "user_id"s without need.
 
@@ -471,7 +473,7 @@ into DatabaseVendor-specific operations.
 To continue my example from above, I'll use a query method to calculate number
 of orders placed by VIP clients::
 
-    $vip_order_count = $vip_orders->count()->getOne();
+    $vip_order_count = $vip_orders->fx(['count'])->getOne();
 
 This code will attempt to execute a single-query only, however the ability to
 optimize your request relies on the capabilities of database vendor.
@@ -489,29 +491,33 @@ While with MongoDB, the query could be different::
 
 Finally the code above will work even if you use a simple Array as a data source::
 
-    $db = new data\Persistence\Array([
-      'client'=>[[
-        'name'=>'Joe',
-        'email'=>'joe@yahoo.com',
-        'Orders'=>[
-           ['amount'=>10], ['amount'=>20]
+    $db = new \atk4\data\Persistence_Array([
+        'client'=>[
+            [
+                'name'=>'Joe',
+                'email'=>'joe@yahoo.com',
+                'Orders'=>[
+                    ['amount'=>10],
+                    ['amount'=>20]
+                ]
+            ],[
+                'name'=>'Bill',
+                'email'=>'bill@yahoo.com',
+                'Orders'=>[
+                    ['amount'=>35]
+                ]
+            ]
         ]
-      ],[
-        'name'=>'Bill',
-        'email'=>'bill@yahoo.com',
-        'Orders'=>[
-           ['amount'=>35]
-         ]
-      ]]
     ]);
 
 So getting back to the operation above, lets look at it in more details::
 
-    $vip_order_count = $vip_orders->count()->getOne();
+    $vip_order_count = $vip_orders->fx(['count'])->getOne();
 
 While "vip_orders" is actually a DataSet, executing count() will cross you over
-into persistence layer. However this method is returning a new object called
-"Action", which is then executed when you call getOne().
+into persistence layer. However this method is returning a new object, which is then
+executed when you call getOne(). For SQL persistences it returns \atk4\dsql\Query
+object, for example.
 
 Even though for a brief moment you had your hands on a "database-vendor specific"
 object, you have immediately converted Action into an actual value. As result
