@@ -99,6 +99,9 @@ import another model fields, you can actually use this syntax::
 When joining model like that, all the fields will be prefixed automatically
 using Country::$table property.
 
+Note that weak joins are not yet fully implemented !!!
+
+
 Join relationship definitions
 -----------------------------
 
@@ -155,6 +158,8 @@ with a foreign table.
     same as :php:meth:`Model::weakJoin` but links new table with this foreign
     table.
 
+    Not yet implemented !
+
 .. php:method:: hasOne
 
     same as :php:meth:`Model::hasOne` but reference ID field will be associated
@@ -168,13 +173,18 @@ with a foreign table.
 
 .. php:method:: containsOne
 
-    same as :php:meth:`Model::containsOne` but the data will be stored in
+    same as :php:meth:`Model::hasOne` but the data will be stored in
     a field inside foreign table.
+
+    Not yet implemented !
 
 .. php:method:: containsMany
 
-    same as :php:meth:`Model::containsMany` but the data will be stored in
+    same as :php:meth:`Model::hasMany` but the data will be stored in
     a field inside foreign table.
+
+    Not yet implemented !
+
 
 Create and Delete behavior
 --------------------------
