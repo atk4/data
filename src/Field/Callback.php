@@ -7,7 +7,7 @@ namespace atk4\data\Field;
 use atk4\core\InitializerTrait;
 
 /**
- * Evaluate php expression after load
+ * Evaluate php expression after load.
  */
 class Callback extends \atk4\data\Field
 {
@@ -16,7 +16,7 @@ class Callback extends \atk4\data\Field
     }
 
     /**
-     * Method to execute for evaluation
+     * Method to execute for evaluation.
      *
      * @var mixed
      */
@@ -30,11 +30,12 @@ class Callback extends \atk4\data\Field
     public $read_only = true;
 
     /**
-     * Never persist this field
+     * Never persist this field.
      */
     public $never_persist = true;
 
-    public function __construct($callback) {
+    public function __construct($callback)
+    {
         $this->expr = $callback;
     }
 
@@ -45,7 +46,7 @@ class Callback extends \atk4\data\Field
     {
         $this->_init();
 
-        $this->owner->addHook('afterLoad', function($m) {
+        $this->owner->addHook('afterLoad', function ($m) {
             $m->data[$this->short_name] = call_user_func($this->expr, $m);
         });
     }
