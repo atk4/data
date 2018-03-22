@@ -8,7 +8,7 @@ use atk4\data\Persistence;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ReferenceTest extends TestCase
+class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
 {
     public function testBasicReferences()
     {

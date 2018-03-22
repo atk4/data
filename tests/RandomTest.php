@@ -66,7 +66,7 @@ class Model_Item3 extends \atk4\data\Model
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class RandomSQLTests extends SQLTestCase
+class RandomSQLTests extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testRate()
     {
@@ -110,7 +110,7 @@ class RandomSQLTests extends SQLTestCase
 
     public function testAddFields()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -137,7 +137,7 @@ class RandomSQLTests extends SQLTestCase
 
     public function testSameTable()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -160,7 +160,7 @@ class RandomSQLTests extends SQLTestCase
 
     public function testSameTable2()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -189,7 +189,7 @@ class RandomSQLTests extends SQLTestCase
 
     public function testSameTable3()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -323,7 +323,7 @@ class RandomSQLTests extends SQLTestCase
         $db = new Persistence_SQL($this->db->connection);
         $m = new Model_Item($db);
 
-        $m->hasOne('Person', 'atk4/data/tests/Model_Person');
+        $m->hasOne('Person', 'atk4/data/tests/Model/Person');
         $person = $m->ref('Person');
     }
 
@@ -362,7 +362,7 @@ class RandomSQLTests extends SQLTestCase
 
     public function testGetTitle()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 

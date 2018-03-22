@@ -27,7 +27,7 @@ class Folder extends \atk4\data\Model
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class FolderTest extends SQLTestCase
+class FolderTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testRate()
     {

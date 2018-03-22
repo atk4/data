@@ -1,8 +1,8 @@
 <?php
 
-namespace atk4\data\tests;
+namespace atk4\data\tests\Model;
 
-class Model_Client extends Model_User
+class Client extends User
 {
     public function init()
     {

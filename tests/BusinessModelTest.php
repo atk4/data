@@ -5,11 +5,13 @@ namespace atk4\data\tests;
 use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use atk4\data\tests\Model\Client as Client;
+use atk4\data\tests\Model\User as User;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class BusinessModelTest extends TestCase
+class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
 {
     /**
      * Test constructor.
@@ -296,7 +298,7 @@ class BusinessModelTest extends TestCase
     public function testClass1()
     {
         $p = new Persistence();
-        $c = new Model_Client($p);
+        $c = new Client($p);
         $this->assertEquals(10, $c['order']);
     }
 
@@ -319,7 +321,7 @@ class BusinessModelTest extends TestCase
 
     public function testExampleFromDoc()
     {
-        $m = new Model_User();
+        $m = new User();
 
         $m->addField('salary', ['default' => 1000]);
 

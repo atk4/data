@@ -5,7 +5,7 @@ namespace atk4\data\tests;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class StaticPersistenceTest extends TestCase
+class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 {
     /**
      * Test constructor.

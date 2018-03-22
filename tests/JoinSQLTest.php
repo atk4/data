@@ -8,7 +8,7 @@ use atk4\data\Persistence_SQL;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class JoinSQLTest extends SQLTestCase
+class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testDirection()
     {
@@ -56,7 +56,7 @@ class JoinSQLTest extends SQLTestCase
 
     public function testJoinSaving1()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -161,7 +161,7 @@ class JoinSQLTest extends SQLTestCase
 
     public function testJoinSaving3()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -230,7 +230,7 @@ class JoinSQLTest extends SQLTestCase
 
     public function testJoinUpdate()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -391,7 +391,7 @@ class JoinSQLTest extends SQLTestCase
 
     public function testDoubleJoin()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 

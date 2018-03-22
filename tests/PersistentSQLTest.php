@@ -8,7 +8,7 @@ use atk4\data\Persistence_SQL;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class PersistentSQLTest extends TestCase
+class PersistentSQLTest extends \atk4\core\PHPUnit_AgileTestCase
 {
     /**
      * Test constructor.

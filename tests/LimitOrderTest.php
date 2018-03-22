@@ -8,7 +8,7 @@ use atk4\data\Persistence_SQL;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class LimitOrderTest extends SQLTestCase
+class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testBasic()
     {

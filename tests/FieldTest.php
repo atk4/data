@@ -5,7 +5,7 @@ namespace atk4\data\tests;
 use atk4\data\Model;
 use atk4\data\Persistence_SQL;
 
-class FieldTest extends SQLTestCase
+class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testDirty1()
     {
@@ -138,7 +138,7 @@ class FieldTest extends SQLTestCase
 
     public function testMandatory3()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -357,7 +357,7 @@ class FieldTest extends SQLTestCase
 
     public function testTitle()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -422,7 +422,7 @@ class FieldTest extends SQLTestCase
 
     public function testActual()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 

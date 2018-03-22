@@ -4,11 +4,13 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence_Array;
+use atk4\data\tests\Model\Female as Female;
+use atk4\data\tests\Model\Male as Male;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class PersistentArrayTest extends TestCase
+class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
 {
     /**
      * Test constructor.
@@ -60,9 +62,9 @@ class PersistentArrayTest extends TestCase
 
         $p = new Persistence_Array($a);
 
-        $m = new Model_Male($p);
+        $m = new Male($p);
         $m->load(1);
-        $m->saveAs(new Model_Female());
+        $m->saveAs(new Female());
         $m->delete();
 
         $this->assertEquals([
@@ -83,7 +85,7 @@ class PersistentArrayTest extends TestCase
         ];
 
         $p = new Persistence_Array($a);
-        $m = new Model_Male($p, 'user');
+        $m = new Male($p, 'user');
 
         $m->load(1);
         $this->assertTrue($m->loaded());
@@ -91,7 +93,7 @@ class PersistentArrayTest extends TestCase
         $m->saveAndUnload();
         $this->assertFalse($m->loaded());
 
-        $m = new Model_Female($p, 'user');
+        $m = new Female($p, 'user');
         $m->load(1);
         $this->assertTrue($m->loaded());
 

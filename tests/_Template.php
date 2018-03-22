@@ -9,7 +9,7 @@ use atk4\data\Persistence_SQL;
  * THIS IS NOT A TEST. This file is a template which you can duplicate
  * to create a new TestCase.
  */
-class _Template extends SQLTestCase
+class _Template extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function sampleTest()
     {

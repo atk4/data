@@ -4,11 +4,12 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence_CSV;
+use atk4\data\tests\Model\Person as Person;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class CSVTest extends TestCase
+class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
 {
     public $file = 'atk-test.csv';
     public $file2 = 'atk-test-2.csv';
@@ -117,7 +118,7 @@ class CSVTest extends TestCase
         $p = new Persistence_CSV($this->file);
         $p2 = new Persistence_CSV($this->file2);
 
-        $m = new Model_Person($p);
+        $m = new Person($p);
 
         $m2 = $m->withPersistence($p2);
 

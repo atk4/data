@@ -32,7 +32,7 @@ class MyDateTime extends \DateTime
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class TypecastingTest extends SQLTestCase
+class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     //    public $debug = true;
     public function testType()
@@ -121,7 +121,7 @@ class TypecastingTest extends SQLTestCase
 
     public function testEmptyValues()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -217,7 +217,7 @@ class TypecastingTest extends SQLTestCase
 
     public function testTypecastNull()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 

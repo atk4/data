@@ -44,7 +44,7 @@ class BadValidationModel extends Model
     }
 }
 
-class ValidationTests extends TestCase
+class ValidationTests extends \atk4\core\PHPUnit_AgileTestCase
 {
     public $m;
 

@@ -10,7 +10,7 @@ use atk4\data\Persistence_SQL;
  *
  * Tests cases when model have to work with data that does not have ID field
  */
-class ReadOnlyModeTest extends SQLTestCase
+class ReadOnlyModeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public $m;
 

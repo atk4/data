@@ -8,7 +8,7 @@ use atk4\data\Persistence_SQL;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ConditionSQLTest extends SQLTestCase
+class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testBasic()
     {
@@ -35,7 +35,7 @@ class ConditionSQLTest extends SQLTestCase
         $mm->tryLoad(2);
         $this->assertEquals(null, $mm['name']);
 
-        if ($this->testQueries) {
+        if ($this->driver == 'sqlite') {
             $this->assertEquals(
                 'select "id","name","gender" from "user" where "gender" = :a',
                 $mm->action('select')->render()
@@ -179,7 +179,7 @@ class ConditionSQLTest extends SQLTestCase
 
     public function testExpressionJoin()
     {
-        if ($this->isPostgresql) {
+        if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 

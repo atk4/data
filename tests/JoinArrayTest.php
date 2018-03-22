@@ -8,7 +8,7 @@ use atk4\data\Persistence_Array;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class JoinArrayTest extends TestCase
+class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
 {
     public function testDirection()
     {

@@ -7,7 +7,7 @@ use atk4\data\Model;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ConditionTest extends TestCase
+class ConditionTest extends \atk4\core\PHPUnit_AgileTestCase
 {
     /**
      * @expectedException Exception

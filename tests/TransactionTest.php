@@ -8,7 +8,7 @@ use atk4\data\Persistence_SQL;
 /**
  * Various tests to make sure transactions work OK.
  */
-class TransactionTest extends SQLTestCase
+class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testAtomicOperations()
     {

@@ -2,16 +2,13 @@
 
 namespace atk4\data\tests\smbo;
 
-class SMBOTestCase extends \atk4\data\tests\SQLTestCase
+class SMBOTestCase extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function setUp()
     {
         parent::setUp();
-        $queryClass = $this->getProtected($this->db->connection, 'query_class');
-        $escapeChar = $this->getProtected(new $queryClass(), 'escape_char');
 
-        $s = new \atk4\data\tests\Structure(['connection' => $this->db->connection]);
-        $s->setEscapeChar($escapeChar);
+        $s = $this->getMigration();
 
         $x = clone $s;
         $x->table('account')->drop()

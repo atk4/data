@@ -8,7 +8,7 @@ use atk4\data\Persistence_SQL;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class IteratorTest extends SQLTestCase
+class IteratorTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     /**
      * If first argument is array, then second argument should not be used.
