@@ -19,8 +19,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
 
         $m->tryLoad(1);
@@ -59,8 +58,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
 
         $m->tryLoad(1);
@@ -106,8 +104,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
 
         $m->tryLoad(1);
@@ -139,8 +136,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender', 'surname']);
 
         $m->tryLoad(1);
@@ -194,8 +190,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender', 'surname']);
 
         $m->join('contact')->addField('contact_phone');
@@ -242,8 +237,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('date', ['type'=>'date']);
 
@@ -263,8 +257,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('date', ['type'=>'date']);
 

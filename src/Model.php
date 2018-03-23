@@ -1533,13 +1533,52 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $fields
+     * @param array|null $fields Names of fields to export
      *
      * @return array
      */
     public function export($fields = null)
     {
         return $this->persistence->export($this, $fields);
+    }
+
+    /**
+     * Export DataSet as array of hashes. Uses id_field values as array keys.
+     *
+     * @param array|string $fields Names of fields to export
+     *
+     * @return array
+     */
+    public function exportById($fields) {
+        if(is_string($fields)) {
+            $fields = [$fields];
+        }
+        if(!is_array($fields)) {
+            throw new Exception(['exportById needs an array with field names as parameter', 'fields' => $fields]);
+        }
+        if(!$this->id_field) {
+            throw new Exception(['This model does not have an ID field defined']);
+        }
+
+        // add id_field if it's not already there
+        if ($id_field_added = !in_array($this->id_field, $fields)) {
+            array_unshift($fields, $this->id_field);
+        }
+
+        $res = $this->export($fields);
+
+        $return = [];
+        if ($res) {
+            foreach ($res as $r) {
+                $id = $r[$this->id_field];
+                if ($id_field_added) {
+                    unset($r[$this->id_field]);
+                }
+                $return[$id] = $r;
+            }
+        }
+
+        return $return;
     }
 
     /**

@@ -819,7 +819,7 @@ class Persistence_SQL extends Persistence
         }, $export->get());
     }
 
-    /**
+     /**
      * Prepare iterator.
      *
      * @param Model $m

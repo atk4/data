@@ -20,8 +20,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
         $i->getElement('id')->system = false;
 
@@ -44,8 +43,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $ii = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $ii = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
         $ii->getElement('id')->system = false;
 
@@ -95,8 +93,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
         $i->getElement('id')->system = false;
 

@@ -8,8 +8,66 @@ use atk4\data\Persistence_SQL;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class PersistentSQLTest extends \atk4\core\PHPUnit_AgileTestCase
+class PersistentSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
+    /**
+     * Test export.
+     */
+    public function testExport()
+    {
+        $a = [
+            'user' => [
+                2 => ['name' => 'John'],
+                5 => ['name' => 'Sarah'],
+            ], ];
+        $this->setDB($a);
+
+        // model without id field
+        $m = new Model($this->db, ['table'=>'user', 'id_field'=>false]);
+        $m->addField('name');
+
+        $this->assertEquals([
+            0 => ['name' => 'John'],
+            1 => ['name' => 'Sarah'],
+        ], $m->export());
+
+        // model with id field
+        $m = new Model($this->db, 'user');
+        $m->addField('name');
+
+        $this->assertEquals([
+            0 => ['id' => 2, 'name' => 'John'],
+            1 => ['id' => 5, 'name' => 'Sarah'],
+        ], $m->export());
+
+        $this->assertEquals([
+            2 => ['id' => 2, 'name' => 'John'],
+            5 => ['id' => 5, 'name' => 'Sarah'],
+        ], $m->exportById(['id','name']));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testExportException1()
+    {
+        $a = [
+            'user' => [
+                2 => ['name' => 'John'],
+                5 => ['name' => 'Sarah'],
+            ], ];
+        $this->setDB($a);
+
+        // model without id field
+        $m = new Model($this->db, ['table'=>'user', 'id_field'=>false]);
+        $m->addField('name');
+
+        $this->assertEquals([
+            2 => ['id' => 2, 'name' => 'John'],
+            5 => ['id' => 5, 'name' => 'Sarah'],
+        ], $m->exportById(['id','name']));
+    }
+
     /**
      * Test constructor.
      */
@@ -19,19 +77,10 @@ class PersistentSQLTest extends \atk4\core\PHPUnit_AgileTestCase
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-            ],
-        ];
+            ], ];
+        $this->setDB($a);
 
-        $p = new Persistence_SQL('sqlite::memory:');
-
-        $p->connection->expr('drop table if exists user')->execute();
-        $p->connection->expr('create table user(id int, name varchar(255), surname varchar(255))')->execute();
-        foreach ($a['user'] as $id => $row) {
-            $row['id'] = $id;
-            $p->connection->expr('insert into user values([id], [name], [surname])', $row)->execute();
-        }
-
-        $m = new Model($p, 'user');
+        $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('surname');
 
@@ -59,18 +108,15 @@ class PersistentSQLTest extends \atk4\core\PHPUnit_AgileTestCase
             ],
         ];
 
-        $p = new Persistence_SQL('sqlite::memory:');
+        $this->setDB($a);
 
-        $p->connection->expr('drop table if exists user')->execute();
-        $p->connection->expr('create table user(id integer primary key autoincrement, name varchar(255), surname varchar(255))')->execute();
-
-        $m = new Model($p, 'user');
+        $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('surname');
 
         $ids = [];
         foreach ($a['user'] as $id => $row) {
-            $ids[] = $p->insert($m, $row);
+            $ids[] = $this->db->insert($m, $row);
         }
 
         $m->load($ids[0]);
@@ -96,13 +142,9 @@ class PersistentSQLTest extends \atk4\core\PHPUnit_AgileTestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
+        $this->setDB($a);
 
-        $p = new Persistence_SQL('sqlite::memory:');
-
-        $p->connection->expr('drop table if exists user')->execute();
-        $p->connection->expr('create table user(id integer primary key autoincrement, name varchar(255), surname varchar(255))')->execute();
-
-        $m = new Model($p, 'user');
+        $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('surname');
 
@@ -124,17 +166,13 @@ class PersistentSQLTest extends \atk4\core\PHPUnit_AgileTestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
+        $this->setDB($a, false); // create empty table
 
-        $p = new Persistence_SQL('sqlite::memory:');
-
-        $p->connection->expr('drop table if exists user')->execute();
-        $p->connection->expr('create table user(id integer primary key autoincrement, name varchar(255), surname varchar(255))')->execute();
-
-        $m = new Model($p, 'user');
+        $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('surname');
 
-        $m->import($a['user']);
+        $m->import($a['user']); // import data
 
         $this->assertEquals(2, $m->action('count')->getOne());
     }
@@ -147,19 +185,15 @@ class PersistentSQLTest extends \atk4\core\PHPUnit_AgileTestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
+        $this->setDB($a);
 
-        $p = new Persistence_SQL('sqlite::memory:');
-
-        $p->connection->expr('drop table if exists user')->execute();
-        $p->connection->expr('create table user(id integer primary key autoincrement, name varchar(255), surname varchar(255))')->execute();
-
-        $m = new Model($p, 'user');
+        $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('surname');
 
         $ids = [];
         foreach ($a['user'] as $id => $row) {
-            $ids[] = $p->insert($m, $row);
+            $ids[] = $this->db->insert($m, $row);
         }
         $this->assertEquals(false, $m->loaded());
 
