@@ -3,7 +3,6 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -43,7 +42,7 @@ class PersistentSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals([
             2 => ['id' => 2, 'name' => 'John'],
             5 => ['id' => 5, 'name' => 'Sarah'],
-        ], $m->exportById(['id','name']));
+        ], $m->exportById(['id', 'name']));
     }
 
     /**
@@ -65,7 +64,7 @@ class PersistentSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals([
             2 => ['id' => 2, 'name' => 'John'],
             5 => ['id' => 5, 'name' => 'Sarah'],
-        ], $m->exportById(['id','name']));
+        ], $m->exportById(['id', 'name']));
     }
 
     /**

@@ -1549,14 +1549,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return array
      */
-    public function exportById($fields) {
-        if(is_string($fields)) {
+    public function exportById($fields)
+    {
+        if (is_string($fields)) {
             $fields = [$fields];
         }
-        if(!is_array($fields)) {
+        if (!is_array($fields)) {
             throw new Exception(['exportById needs an array with field names as parameter', 'fields' => $fields]);
         }
-        if(!$this->id_field) {
+        if (!$this->id_field) {
             throw new Exception(['This model does not have an ID field defined']);
         }
 
