@@ -86,6 +86,7 @@ ATK Data prior to 1.5 supports the following types:
  - date ([':php:class:`DateTime`'])
  - datetime ([':php:class:`DateTime`'])
  - time ([':php:class:`DateTime`'])
+ - password ([':php:class:`Password`])
  - array
  - object
 
