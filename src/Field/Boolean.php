@@ -8,7 +8,7 @@ use atk4\core\InitializerTrait;
 use atk4\data\ValidationException;
 
 /**
- * Your favourite nullable binary type
+ * Your favourite nullable binary type.
  */
 class Boolean extends \atk4\data\Field
 {
@@ -50,7 +50,6 @@ class Boolean extends \atk4\data\Field
 
         throw new ValidationException([$this->name => 'Must be a boolean value']);
     }
-
 
     // TODO: REVIEW
     public function validate($value)
