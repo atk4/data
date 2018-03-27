@@ -10,64 +10,6 @@ use atk4\data\Model;
 class PersistentSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     /**
-     * Test export.
-     */
-    public function testExport()
-    {
-        $a = [
-            'user' => [
-                2 => ['name' => 'John'],
-                5 => ['name' => 'Sarah'],
-            ], ];
-        $this->setDB($a);
-
-        // model without id field
-        $m = new Model($this->db, ['table'=>'user', 'id_field'=>false]);
-        $m->addField('name');
-
-        $this->assertEquals([
-            0 => ['name' => 'John'],
-            1 => ['name' => 'Sarah'],
-        ], $m->export());
-
-        // model with id field
-        $m = new Model($this->db, 'user');
-        $m->addField('name');
-
-        $this->assertEquals([
-            0 => ['id' => 2, 'name' => 'John'],
-            1 => ['id' => 5, 'name' => 'Sarah'],
-        ], $m->export());
-
-        $this->assertEquals([
-            2 => ['id' => 2, 'name' => 'John'],
-            5 => ['id' => 5, 'name' => 'Sarah'],
-        ], $m->exportById(['id', 'name']));
-    }
-
-    /**
-     * @expectedException Exception
-     */
-    public function testExportException1()
-    {
-        $a = [
-            'user' => [
-                2 => ['name' => 'John'],
-                5 => ['name' => 'Sarah'],
-            ], ];
-        $this->setDB($a);
-
-        // model without id field
-        $m = new Model($this->db, ['table'=>'user', 'id_field'=>false]);
-        $m->addField('name');
-
-        $this->assertEquals([
-            2 => ['id' => 2, 'name' => 'John'],
-            5 => ['id' => 5, 'name' => 'Sarah'],
-        ], $m->exportById(['id', 'name']));
-    }
-
-    /**
      * Test constructor.
      */
     public function testLoadArray()
