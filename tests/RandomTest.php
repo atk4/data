@@ -423,7 +423,6 @@ class RandomSQLTests extends \atk4\schema\PHPUnit_SchemaTestCase
         $m2->addField('code');
         $m2->addField('name');
 
-
         // normal export
         $this->assertEquals([
             0 => ['code' => 10, 'name' => 'John'],

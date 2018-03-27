@@ -1577,7 +1577,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
 
                 $fields = array_keys($fields);
-
             } else {
 
                 // Add all model fields
@@ -1590,7 +1589,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     }
                 }
             }
-
         }
 
         // add key_field to array if it's not there
