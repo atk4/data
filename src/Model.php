@@ -1533,13 +1533,84 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $fields
+     * @param array|null $fields    Names of fields to export
+     * @param string     $key_field Optional name of field which value we will use as array key
      *
      * @return array
      */
-    public function export($fields = null)
+    public function export($fields = null, $key_field = null)
     {
-        return $this->persistence->export($this, $fields);
+        // no key field - then just do export
+        if ($key_field === null) {
+            return $this->persistence->export($this, $fields);
+        }
+
+        // do we have added key field in fields list?
+        // if so, then will have to remove it afterwards
+        $key_field_added = false;
+
+        // prepare array with field names
+        if (!is_array($fields)) {
+            $fields = [];
+
+            if ($this->only_fields) {
+
+                // Add requested fields first
+                foreach ($this->only_fields as $field) {
+                    $f_object = $this->getElement($field);
+                    if ($f_object instanceof Field && $f_object->never_persist) {
+                        continue;
+                    }
+                    $fields[$field] = true;
+                }
+
+                // now add system fields, if they were not added
+                foreach ($this->elements as $field => $f_object) {
+                    if ($f_object instanceof Field) {
+                        if ($f_object->never_persist) {
+                            continue;
+                        }
+                        if ($f_object->system && !isset($fields[$field])) {
+                            $fields[$field] = true;
+                        }
+                    }
+                }
+
+                $fields = array_keys($fields);
+            } else {
+
+                // Add all model fields
+                foreach ($this->elements as $field => $f_object) {
+                    if ($f_object instanceof Field) {
+                        if ($f_object->never_persist) {
+                            continue;
+                        }
+                        $fields[] = $field;
+                    }
+                }
+            }
+        }
+
+        // add key_field to array if it's not there
+        if (!in_array($key_field, $fields)) {
+            $fields[] = $key_field;
+            $key_field_added = true;
+        }
+
+        // export
+        $data = $this->persistence->export($this, $fields);
+
+        // prepare resulting array
+        $return = [];
+        foreach ($data as $row) {
+            $key = $row[$key_field];
+            if ($key_field_added) {
+                unset($row[$key_field]);
+            }
+            $return[$key] = $row;
+        }
+
+        return $return;
     }
 
     /**

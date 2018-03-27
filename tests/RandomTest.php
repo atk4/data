@@ -400,4 +400,82 @@ class RandomSQLTests extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->load(2);
         $this->assertEquals(2, $m->getTitle()); // loaded returns id value
     }
+
+    /**
+     * Test export.
+     */
+    public function testExport()
+    {
+        $a = [
+            'user' => [
+                2 => ['code' => 10, 'name' => 'John'],
+                5 => ['code' => 20, 'name' => 'Sarah'],
+            ], ];
+        $this->setDB($a);
+
+        // model without id field
+        $m1 = new Model($this->db, ['table'=>'user', 'id_field'=>false]);
+        $m1->addField('code');
+        $m1->addField('name');
+
+        // model with id field
+        $m2 = new Model($this->db, 'user');
+        $m2->addField('code');
+        $m2->addField('name');
+
+        // normal export
+        $this->assertEquals([
+            0 => ['code' => 10, 'name' => 'John'],
+            1 => ['code' => 20, 'name' => 'Sarah'],
+        ], $m1->export());
+
+        $this->assertEquals([
+            0 => ['id' => 2, 'code' => 10, 'name' => 'John'],
+            1 => ['id' => 5, 'code' => 20, 'name' => 'Sarah'],
+        ], $m2->export());
+
+        // export fields explicitly set
+        $this->assertEquals([
+            0 => ['name' => 'John'],
+            1 => ['name' => 'Sarah'],
+        ], $m1->export(['name']));
+
+        $this->assertEquals([
+            0 => ['name' => 'John'],
+            1 => ['name' => 'Sarah'],
+        ], $m2->export(['name']));
+
+        // key field explicitly set
+        $this->assertEquals([
+            10 => ['code' => 10, 'name' => 'John'],
+            20 => ['code' => 20, 'name' => 'Sarah'],
+        ], $m1->export(null, 'code'));
+
+        $this->assertEquals([
+            10 => ['id' => 2, 'code' => 10, 'name' => 'John'],
+            20 => ['id' => 5, 'code' => 20, 'name' => 'Sarah'],
+        ], $m2->export(null, 'code'));
+
+        // field names and key field explicitly set
+        $this->assertEquals([
+            10 => ['name' => 'John'],
+            20 => ['name' => 'Sarah'],
+        ], $m1->export(['name'], 'code'));
+
+        $this->assertEquals([
+            10 => ['name' => 'John'],
+            20 => ['name' => 'Sarah'],
+        ], $m2->export(['name'], 'code'));
+
+        // field names include key field
+        $this->assertEquals([
+            10 => ['code' => 10, 'name' => 'John'],
+            20 => ['code' => 20, 'name' => 'Sarah'],
+        ], $m1->export(['code', 'name'], 'code'));
+
+        $this->assertEquals([
+            10 => ['code' => 10, 'name' => 'John'],
+            20 => ['code' => 20, 'name' => 'Sarah'],
+        ], $m2->export(['code', 'name'], 'code'));
+    }
 }
