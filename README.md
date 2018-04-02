@@ -1,14 +1,12 @@
 # Data Access PHP framework for High-Latency databases
 
-The reason you hate Object Relational Mapper (ORM) is because it's slow, clumsy, limiting and flawed. The reason you *have to* use it is because of consistency, compatibility and abstraction.
+The reason you hate Object Relational Mapper (ORM) is because it's [slow, clumsy, limited and flawed](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3). The reason you *have to* use it is because of consistency, compatibility and abstraction it offers.
 
-**ATK Data provides a PHP framework, an alternative to ORM, which comes with same and more benefits without inheriting any of the design flaws.**
+**ATK Data provides a PHP framework, an alternative to ORM, which comes with [same and more features](https://socialcompare.com/en/comparison/php-data-access-libraries-orm-activerecord-persistence) without inheriting any design flaws of ORM pattern.**
 
 ATK Data is focused on reducing number of database queries, moving CPU-intensive tasks into your database (if possible). It is well suited for Amazon RDS, Google Cloud SQL and ClearDB but thanks to abstraction will work transparently with Static data, NoSQL or RestAPIs backends.
 
-ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation](https://github.com/atk4/report) all the way to [Web UI](https://github.com/atk4/ui). Minimalistic interface allows you to use ATK Data in your legacy apps or with modern PHP frameworks.
-
-Suggested further reading: [Pragmatic approach to reinventing ORM](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3)
+ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation](https://github.com/atk4/report) all the way to [Web UI](https://github.com/atk4/ui) and [RestAPI](https://github.com/atk4/api). Minimalistic interface allows you to use ATK Data in your legacy apps or with modern PHP frameworks.
 
 [![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
