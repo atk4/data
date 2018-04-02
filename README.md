@@ -1,6 +1,6 @@
 # Data Access PHP framework for High-Latency databases
 
-The reason you hate Object Relational Mapper (ORM) is because it's [slow, clumsy, limited and flawed](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3). The reason you *have to* use it is because of consistency, compatibility and abstraction it offers.
+The reason you hate Object Relational Mapper (ORM) is because it's [slow, clumsy, limited and flawed](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3). The reason you *have to* use it is because of consistency, compatibility and abstraction it offers to larger projects.
 
 **ATK Data provides a PHP framework, an alternative to ORM, which comes with [same and more features](https://socialcompare.com/en/comparison/php-data-access-libraries-orm-activerecord-persistence) without inheriting any design flaws of ORM pattern.**
 
