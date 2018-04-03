@@ -55,6 +55,35 @@ Add support for Oracle and PostgreSQL, adding support for sequences and migrate 
 
 - Implement caption, getTitle, getModelCaption [\#299](https://github.com/atk4/data/pull/299) ([DarkSide666](https://github.com/DarkSide666))
 
+## 1.3.3
+
+**Fixed bugs:**
+
+- DSN without password [\#298](https://github.com/atk4/data/issues/298)
+- adding reference multiple times does not produce error [\#239](https://github.com/atk4/data/issues/239)
+- addTitle\(\) doesn't work for fields without \_id suffix [\#220](https://github.com/atk4/data/issues/220)
+- looks like misspelled -\>table [\#212](https://github.com/atk4/data/issues/212)
+
+**Closed issues:**
+
+- Model-\>export: using ID as first level array key? [\#311](https://github.com/atk4/data/issues/311)
+- Refactor to use SQLTestCase from atk4/core [\#258](https://github.com/atk4/data/issues/258)
+- Docs: There is wrong description and examples [\#204](https://github.com/atk4/data/issues/204)
+- action\('field'\) on expression should alias it to name of field. [\#190](https://github.com/atk4/data/issues/190)
+- Typecast use of 'actual' clashes with persistence-\>update\(\) [\#186](https://github.com/atk4/data/issues/186)
+
+**Merged pull requests:**
+
+- Implement export\(\) with field values used as array keys [\#313](https://github.com/atk4/data/pull/313) ([DarkSide666](https://github.com/DarkSide666))
+- Feature/add php callback field [\#310](https://github.com/atk4/data/pull/310) ([romaninsh](https://github.com/romaninsh))
+- fix some docs [\#309](https://github.com/atk4/data/pull/309) ([DarkSide666](https://github.com/DarkSide666))
+- Action field, fx and fx0 generate nice aliases [\#305](https://github.com/atk4/data/pull/305) ([DarkSide666](https://github.com/DarkSide666))
+- fix \#212 [\#304](https://github.com/atk4/data/pull/304) ([DarkSide666](https://github.com/DarkSide666))
+- fix \#239 [\#303](https://github.com/atk4/data/pull/303) ([DarkSide666](https://github.com/DarkSide666))
+- Fix addTitle\(\) [\#302](https://github.com/atk4/data/pull/302) ([DarkSide666](https://github.com/DarkSide666))
+- add driver property [\#301](https://github.com/atk4/data/pull/301) ([DarkSide666](https://github.com/DarkSide666))
+- use normalizeDSN\(\) [\#300](https://github.com/atk4/data/pull/300) ([DarkSide666](https://github.com/DarkSide666))
+
 # 1.2.0
 
 When upgrading to 1.2.x branch watch out if your "Model" has a validate() method. The
