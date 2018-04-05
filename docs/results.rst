@@ -32,6 +32,11 @@ each iteration like this::
         $item->sendReminder();
     }
 
+.. warning:: Currently ATK Data does not create new copy of your model object for
+    every row. Instead the same object is re-used, simply $item->data is modified
+    by the iterator. For new users this may be surprising that $item is the same
+    object through the iterator, but for now it's the most CPU-efficient way.
+
 Additionally model will execute necessary after-load hooks that might trigger some
 other calculation or validations.
 
