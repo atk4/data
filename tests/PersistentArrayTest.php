@@ -3,6 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
+use atk4\data\Persistence;
 use atk4\data\Persistence_Array;
 use atk4\data\tests\Model\Female as Female;
 use atk4\data\tests\Model\Male as Male;
@@ -232,7 +233,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
      *
      * @expectedException Exception
      */
-    public function testActionIsNotSupportedException()
+    public function testActionNotSupportedException()
     {
         $a = [
             1 => ['name' => 'John'],
@@ -244,5 +245,49 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('name');
 
         $m->action('count');
+    }
+
+    /**
+     * Some persistences don't support tryLoad() method.
+     *
+     * @expectedException Exception
+     */
+    public function testTryLoadNotSupportedException()
+    {
+        $m = new Model(new Persistence());
+        $m->tryLoad(1);
+    }
+
+    /**
+     * Some persistences don't support loadAny() method.
+     *
+     * @expectedException Exception
+     */
+    public function testLoadAnyNotSupportedException()
+    {
+        $m = new Model(new Persistence());
+        $m->loadAny();
+    }
+
+    /**
+     * Some persistences don't support tryLoadAny() method.
+     *
+     * @expectedException Exception
+     */
+    public function testTryLoadAnyNotSupportedException()
+    {
+        $m = new Model(new Persistence());
+        $m->tryLoadAny();
+    }
+
+    /**
+     * Some persistences don't support export() method.
+     *
+     * @expectedException Exception
+     */
+    public function testExportNotSupportedException()
+    {
+        $m = new Model(new Persistence());
+        $m->export();
     }
 }
