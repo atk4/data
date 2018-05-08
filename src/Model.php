@@ -1219,6 +1219,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             throw new Exception(['Model is not associated with any database']);
         }
 
+        if (!$this->persistence->hasMethod('tryLoad')) {
+            throw new Exception('Persistence does not support tryLoad()');
+        }
+
         if ($this->loaded()) {
             $this->unload();
         }
@@ -1246,6 +1250,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if (!$this->persistence) {
             throw new Exception(['Model is not associated with any database']);
+        }
+
+        if (!$this->persistence->hasMethod('loadAny')) {
+            throw new Exception('Persistence does not support loadAny()');
         }
 
         if ($this->loaded()) {
@@ -1278,6 +1286,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if (!$this->persistence) {
             throw new Exception(['Model is not associated with any database']);
+        }
+
+        if (!$this->persistence->hasMethod('tryLoadAny')) {
+            throw new Exception('Persistence does not support tryLoadAny()');
         }
 
         if ($this->loaded()) {
@@ -1538,6 +1550,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function export($fields = null, $key_field = null)
     {
+        if (!$this->persistence->hasMethod('export')) {
+            throw new Exception('Persistence does not support export()');
+        }
+
         // no key field - then just do export
         if ($key_field === null) {
             return $this->persistence->export($this, $fields);
@@ -1618,7 +1634,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function getIterator()
     {
-        foreach ($this->persistence->prepareIterator($this) as $data) {
+        foreach ($this->rawIterator() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
                 $this->id = isset($data[$this->id_field]) ? $data[$this->id_field] : null;
@@ -1747,7 +1763,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if (!$this->persistence->hasMethod('action')) {
-            throw new Exception(['Persistence do not have action() method.']);
+            throw new Exception('Persistence does not support action()');
         }
 
         return $this->persistence->action($this, $mode, $args);
