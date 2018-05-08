@@ -226,4 +226,24 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->load(2);
         $this->assertEquals('Smith', $m['surname']);
     }
+
+    /**
+     * Non SQL persistences don't support action() method.
+     *
+     * @expectedException Exception
+     */
+    public function testActionIsNotSupportedException()
+    {
+        $a = [
+            1 => ['name' => 'John'],
+            2 => ['name' => 'Sarah'],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('name');
+
+        $m->action('count');
+
+    }
 }
