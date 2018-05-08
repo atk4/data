@@ -1746,6 +1746,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             throw new Exception(['action() requires model to be associated with db']);
         }
 
+        if (!$this->persistence->hasMethod('action')) {
+            throw new Exception(['Persistence do not have action() method.']);
+        }
+
         return $this->persistence->action($this, $mode, $args);
     }
 
