@@ -244,6 +244,5 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('name');
 
         $m->action('count');
-
     }
 }
