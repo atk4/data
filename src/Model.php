@@ -299,10 +299,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $this->setDefaults($defaults);
 
-        if (is_array($persistence)) {
-            throw new Exception(['$persistence must not be array', 'persistence'=>$persistence]);
-        }
-
         if ($persistence) {
             $persistence->add($this);
         }
