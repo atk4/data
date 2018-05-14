@@ -84,6 +84,23 @@ Add support for Oracle and PostgreSQL, adding support for sequences and migrate 
 - add driver property [\#301](https://github.com/atk4/data/pull/301) ([DarkSide666](https://github.com/DarkSide666))
 - use normalizeDSN\(\) [\#300](https://github.com/atk4/data/pull/300) ([DarkSide666](https://github.com/DarkSide666))
 
+## 1.3.4
+
+
+**Closed issues:**
+
+- Model with properties: when iterating over several loaded Items, changes to property are done on all Items [\#318](https://github.com/atk4/data/issues/318)
+
+**Merged pull requests:**
+
+- validate if methods exist in persistence before calling them [\#324](https://github.com/atk4/data/pull/324) ([DarkSide666](https://github.com/DarkSide666))
+- validate if persistence have action\(\) method [\#323](https://github.com/atk4/data/pull/323) ([DarkSide666](https://github.com/DarkSide666))
+- if it's array then it's treated as defaults. [\#322](https://github.com/atk4/data/pull/322) ([DarkSide666](https://github.com/DarkSide666))
+- Support LOB fields loading [\#321](https://github.com/atk4/data/pull/321) ([DarkSide666](https://github.com/DarkSide666))
+- fix newInstance\(\) [\#320](https://github.com/atk4/data/pull/320) ([DarkSide666](https://github.com/DarkSide666))
+
+
+
 # 1.2.0
 
 When upgrading to 1.2.x branch watch out if your "Model" has a validate() method. The
