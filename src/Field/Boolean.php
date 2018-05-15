@@ -5,7 +5,6 @@
 namespace atk4\data\Field;
 
 use atk4\core\InitializerTrait;
-use atk4\data\Exception;
 use atk4\data\ValidationException;
 
 /**
