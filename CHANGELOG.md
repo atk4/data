@@ -100,6 +100,15 @@ Add support for Oracle and PostgreSQL, adding support for sequences and migrate 
 - fix newInstance\(\) [\#320](https://github.com/atk4/data/pull/320) ([DarkSide666](https://github.com/DarkSide666))
 
 
+## 1.3.5
+
+**Fixed bugs:**
+
+- REGRESSION: unable to aggregate aggregate fields [\#326](https://github.com/atk4/data/issues/326)
+
+**Merged pull requests:**
+
+- fix \#326 [\#327](https://github.com/atk4/data/pull/327) ([romaninsh](https://github.com/romaninsh))
 
 # 1.2.0
 
