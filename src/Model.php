@@ -299,10 +299,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $this->setDefaults($defaults);
 
-        if (is_array($persistence)) {
-            throw new Exception(['$persistence must not be array', 'persistence'=>$persistence]);
-        }
-
         if ($persistence) {
             $persistence->add($this);
         }
@@ -1142,14 +1138,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function newInstance($class = null, $options = [])
     {
         if ($class === null) {
-            $class = $this;
+            $class = get_class($this);
+        } elseif ($class instanceof self) {
+            $class = get_class($class);
         }
+
         if (is_string($class) && $class[0] != '\\') {
             $class = '\\'.$class;
         }
-        $m = $this->persistence->add($class, $options);
 
-        return $m;
+        return $this->persistence->add($class, $options);
     }
 
     /**
@@ -1221,6 +1219,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             throw new Exception(['Model is not associated with any database']);
         }
 
+        if (!$this->persistence->hasMethod('tryLoad')) {
+            throw new Exception('Persistence does not support tryLoad()');
+        }
+
         if ($this->loaded()) {
             $this->unload();
         }
@@ -1248,6 +1250,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if (!$this->persistence) {
             throw new Exception(['Model is not associated with any database']);
+        }
+
+        if (!$this->persistence->hasMethod('loadAny')) {
+            throw new Exception('Persistence does not support loadAny()');
         }
 
         if ($this->loaded()) {
@@ -1280,6 +1286,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if (!$this->persistence) {
             throw new Exception(['Model is not associated with any database']);
+        }
+
+        if (!$this->persistence->hasMethod('tryLoadAny')) {
+            throw new Exception('Persistence does not support tryLoadAny()');
         }
 
         if ($this->loaded()) {
@@ -1533,13 +1543,88 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $fields
+     * @param array|null $fields    Names of fields to export
+     * @param string     $key_field Optional name of field which value we will use as array key
      *
      * @return array
      */
-    public function export($fields = null)
+    public function export($fields = null, $key_field = null)
     {
-        return $this->persistence->export($this, $fields);
+        if (!$this->persistence->hasMethod('export')) {
+            throw new Exception('Persistence does not support export()');
+        }
+
+        // no key field - then just do export
+        if ($key_field === null) {
+            return $this->persistence->export($this, $fields);
+        }
+
+        // do we have added key field in fields list?
+        // if so, then will have to remove it afterwards
+        $key_field_added = false;
+
+        // prepare array with field names
+        if (!is_array($fields)) {
+            $fields = [];
+
+            if ($this->only_fields) {
+
+                // Add requested fields first
+                foreach ($this->only_fields as $field) {
+                    $f_object = $this->getElement($field);
+                    if ($f_object instanceof Field && $f_object->never_persist) {
+                        continue;
+                    }
+                    $fields[$field] = true;
+                }
+
+                // now add system fields, if they were not added
+                foreach ($this->elements as $field => $f_object) {
+                    if ($f_object instanceof Field) {
+                        if ($f_object->never_persist) {
+                            continue;
+                        }
+                        if ($f_object->system && !isset($fields[$field])) {
+                            $fields[$field] = true;
+                        }
+                    }
+                }
+
+                $fields = array_keys($fields);
+            } else {
+
+                // Add all model fields
+                foreach ($this->elements as $field => $f_object) {
+                    if ($f_object instanceof Field) {
+                        if ($f_object->never_persist) {
+                            continue;
+                        }
+                        $fields[] = $field;
+                    }
+                }
+            }
+        }
+
+        // add key_field to array if it's not there
+        if (!in_array($key_field, $fields)) {
+            $fields[] = $key_field;
+            $key_field_added = true;
+        }
+
+        // export
+        $data = $this->persistence->export($this, $fields);
+
+        // prepare resulting array
+        $return = [];
+        foreach ($data as $row) {
+            $key = $row[$key_field];
+            if ($key_field_added) {
+                unset($row[$key_field]);
+            }
+            $return[$key] = $row;
+        }
+
+        return $return;
     }
 
     /**
@@ -1549,7 +1634,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function getIterator()
     {
-        foreach ($this->persistence->prepareIterator($this) as $data) {
+        foreach ($this->rawIterator() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
                 $this->id = isset($data[$this->id_field]) ? $data[$this->id_field] : null;
@@ -1675,6 +1760,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if (!$this->persistence) {
             throw new Exception(['action() requires model to be associated with db']);
+        }
+
+        if (!$this->persistence->hasMethod('action')) {
+            throw new Exception('Persistence does not support action()');
         }
 
         return $this->persistence->action($this, $mode, $args);
