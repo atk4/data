@@ -1,19 +1,17 @@
-# ATK Data - Data Access framework for High-Latency databases
+# Data Access PHP framework for High-Latency databases
 
-The reason you hate Object Relational Mapper (ORM) is because it's slow, clumsy, limiting and flawed. The reason you *have to* use it is because of consistency, compatibility and abstraction.
+The reason you hate Object Relational Mapper (ORM) is because it's [slow, clumsy, limited and flawed](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3). The reason you *have to* use it is because of consistency, compatibility and abstraction it offers to larger projects.
 
-**ATK Data is a data access abstraction framework, an alternative to ORM. It is based on a more modern concept of "DataSets" designed for high-latency database use, query optimization and better scaling**
+**ATK Data provides a PHP framework, an alternative to ORM, which comes with [same and more features](https://socialcompare.com/en/comparison/php-data-access-libraries-orm-activerecord-persistence) without inheriting any design flaws of ORM pattern.**
 
 ATK Data is focused on reducing number of database queries, moving CPU-intensive tasks into your database (if possible). It is well suited for Amazon RDS, Google Cloud SQL and ClearDB but thanks to abstraction will work transparently with Static data, NoSQL or RestAPIs backends.
 
-ATK Data is extensive and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation](https://github.com/atk4/report) all the way to [Web UI](https://github.com/atk4/ui). Small footprint of ATK Data and lack of dependencies comes in handy if you wish to use ATK Data in your legacy projects or with framework of your choice.
-
-Suggested further reading: [Pragmatic approach to reinventing ORM](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3)
+ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation](https://github.com/atk4/report) all the way to [Web UI](https://github.com/atk4/ui) and [RestAPI](https://github.com/atk4/api). Minimalistic interface allows you to use ATK Data in your legacy apps or with modern PHP frameworks.
 
 [![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 [![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
-[![codecov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
+[![codecov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)[![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
 
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
 

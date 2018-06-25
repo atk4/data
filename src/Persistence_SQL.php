@@ -234,10 +234,16 @@ class Persistence_SQL extends Persistence
      *
      * @param Model            $m
      * @param \atk4\dsql\Query $q
-     * @param array|null       $fields
+     * @param array|null|false $fields
      */
     public function initQueryFields($m, $q, $fields = null)
     {
+        // do nothing on purpose
+        if ($fields === false) {
+            return;
+        }
+
+        // init fields
         if (is_array($fields)) {
 
             // Set of fields is strictly defined for purposes of export,
@@ -245,8 +251,6 @@ class Persistence_SQL extends Persistence
             foreach ($fields as $field) {
                 $this->initField($q, $m->getElement($field));
             }
-        } elseif ($fields === false) {
-            // do nothing on purpose
         } elseif ($m->only_fields) {
             $added_fields = [];
 
@@ -262,11 +266,13 @@ class Persistence_SQL extends Persistence
 
             // now add system fields, if they were not added
             foreach ($m->elements as $field => $f_object) {
-                if ($f_object instanceof Field && $f_object->never_persist) {
-                    continue;
-                }
-                if ($f_object instanceof Field && $f_object->system && !isset($added_fields[$field])) {
-                    $this->initField($q, $f_object);
+                if ($f_object instanceof Field) {
+                    if ($f_object->never_persist) {
+                        continue;
+                    }
+                    if ($f_object->system && !isset($added_fields[$field])) {
+                        $this->initField($q, $f_object);
+                    }
                 }
             }
         } else {
@@ -434,6 +440,11 @@ class Persistence_SQL extends Persistence
      */
     public function _typecastLoadField(Field $f, $value)
     {
+        // LOB fields return resource stream
+        if (is_resource($value)) {
+            $value = stream_get_contents($value);
+        }
+
         // work only on copied value not real one !!!
         $v = is_object($value) ? clone $value : $value;
 
