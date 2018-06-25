@@ -2,11 +2,11 @@
 
 The reason you hate Object Relational Mapper (ORM) is because it's slow, clumsy, limiting and flawed. The reason you *have to* use it is because of consistency, compatibility and abstraction.
 
-**ATK Data provides a PHP framework, an alternative to ORM, which comes with same and more benefits without inheriting any of the design flaws.**
+**ATK Data is a data access abstraction framework, an alternative to ORM. It is based on a more modern concept of "DataSets" designed for high-latency database use, query optimization and better scaling**
 
 ATK Data is focused on reducing number of database queries, moving CPU-intensive tasks into your database (if possible). It is well suited for Amazon RDS, Google Cloud SQL and ClearDB but thanks to abstraction will work transparently with Static data, NoSQL or RestAPIs backends.
 
-ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation](https://github.com/atk4/report) all the way to [Web UI](https://github.com/atk4/ui). Minimalistic interface allows you to use ATK Data in your legacy apps or with modern PHP frameworks.
+ATK Data is extensive and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation](https://github.com/atk4/report) all the way to [Web UI](https://github.com/atk4/ui). Small footprint of ATK Data and lack of dependencies comes in handy if you wish to use ATK Data in your legacy projects or with framework of your choice.
 
 Suggested further reading: [Pragmatic approach to reinventing ORM](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3)
 
@@ -17,9 +17,9 @@ Suggested further reading: [Pragmatic approach to reinventing ORM](https://mediu
 
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
 
-Quick-Links: [Documentation](http://agile-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK Data](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413).
+Quick-Links: [Documentation](http://agile-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
 
-### Benefits of using ATK Data (former Agile Data)
+### Benefits of using ATK Data
 
 Designed for medium to large PHP applications and frameworks, ATK Data is a clean implementation of Data Mapper that will:
 
@@ -37,7 +37,7 @@ Since the initial introduction of Agile Data back in [2016](https://www.reddit.c
 
 Watch [Quick Start](http://agile-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](http://agile-data.readthedocs.io) ([PDF](https://media.readthedocs.org/pdf/agile-data/develop/agile-data.pdf)). 
 
-ATK Data relies on ATK Core and ATK UI:
+ATK Data relies on ATK Core and can be greatly complimented by ATK UI:
 
 -   [Agile Core](http://agile-core.readthedocs.io/en/develop/) - documents various low-level traits and features such as Containers, Hooks or Exceptions ([PDF](https://media.readthedocs.org/pdf/agile-core/develop/agile-core.pdf))
 -   [Agile UI](http://agile-ui.readthedocs.io/en/latest/) - documents optional UI components and how to build Web App with them. ([PDF](http://readthedocs.org/projects/agile-ui/downloads/pdf/latest/))
