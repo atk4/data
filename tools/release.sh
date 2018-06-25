@@ -44,7 +44,7 @@ git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(
 
 git log --pretty=full $prev_version... | grep '#[0-9]*' | sed 's/.*#\([0-9]*\).*/\1/' | sort | uniq | while read i; do
     echo "-[ $i ]-------------------------------------------------------------------------------"
-    ghi --color show $i | head -50
+#    ghi --color show $i | head -50
 done
 
 open "https://github.com/atk4/$product/compare/$prev_version...develop"

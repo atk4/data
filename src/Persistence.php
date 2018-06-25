@@ -15,6 +15,7 @@ class Persistence
     use \atk4\core\FactoryTrait;
     use \atk4\core\HookTrait;
     use \atk4\core\AppScopeTrait;
+    use \atk4\core\DynamicMethodTrait;
     use \atk4\core\NameTrait;
 
     /** @var string Connection driver name, for example, mysql, pgsql, oci etc. */
