@@ -86,22 +86,45 @@ class Reference_Many extends Reference
      */
     public function addField($n, $defaults = [])
     {
-        if (!isset($defaults['aggregate'])) {
+        if (!isset($defaults['aggregate']) && !isset($defaults['expr'])) {
             throw new Exception([
-                '"aggregate" strategy should be defined for oneToMany field',
+                '"aggregate" strategy (or "expr") should be defined for oneToMany field',
                 'field'    => $n,
                 'defaults' => $defaults,
             ]);
         }
 
-        $field = isset($defaults['field']) ? $defaults['field'] : $n;
+        $field_n = isset($defaults['field']) ? $defaults['field'] : $n;
+        $field = isset($defaults['field']) ? $defaults['field'] : null;
 
-        $e = $this->owner->addExpression($n, array_merge([
-            function () use ($defaults, $field) {
-                return $this->refLink()->action('fx0', [$defaults['aggregate'], $field]);
-            }, ],
-            $defaults
-        ));
+        if (isset($defaults['expr'])) {
+            $cb = function () use ($defaults, $field) {
+                $r = $this->refLink();
+                return $r->action('field', [$r->expr(
+                    $defaults['expr'],
+                    isset($defaults['args']) ? $defaults['args'] : null
+                ), 'alias'=>$field]);
+            };
+            unset($defaults['args']);
+        } elseif (is_object($defaults['aggregate'])) {
+            $cb = function () use ($defaults, $field) {
+                return $this->refLink()->action('field', [$defaults['aggregate'], 'alias'=>$field]);
+            };
+        } elseif ($defaults['aggregate'] == 'count' && !isset($defaults['field'])) {
+            $cb = function () use ($defaults, $field) {
+                return $this->refLink()->action('count', ['alias'=>$field]);
+            };
+        } elseif (in_array($defaults['aggregate'], ['sum','avg','min','max','count'])) {
+            $cb = function () use ($defaults, $field_n) {
+                return $this->refLink()->action('fx0', [$defaults['aggregate'], $field_n]);
+            };
+        } else {
+            $cb = function () use ($defaults, $field_n) {
+                return $this->refLink()->action('fx', [$defaults['aggregate'], $field_n]);
+            };
+        }
+
+        $e = $this->owner->addExpression($n, array_merge([$cb], $defaults));
 
         if (isset($defaults['type'])) {
             $e->type = $defaults['type'];

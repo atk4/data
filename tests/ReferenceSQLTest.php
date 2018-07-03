@@ -322,6 +322,63 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals($n = 43, $i['total_net']);
         $this->assertEquals($n * $vat, $i['total_vat']);
         $this->assertEquals($n * ($vat + 1), $i['total_gross']);
+
+        $i->ref('line')->import([
+                ['total_net' => null, 'total_vat' => null, 'total_gross' => 1]
+            ]);
+        $i->reload();
+
+        $this->assertEquals($n = 43, $i['total_net']);
+        $this->assertEquals($n * $vat, $i['total_vat']);
+        $this->assertEquals($n * ($vat + 1) + 1, $i['total_gross']);
+
+    }
+
+    public function testOtherAggregates()
+    {
+        $vat = 0.23;
+        $a = [
+            'list' => [
+                1 => ['id' => 1, 'name' => 'Meat'],
+                2 => ['id' => 2, 'name' => 'Veg'],
+                3 => ['id' => 3, 'name' => 'Fruit'],
+            ], 'item' => [
+                ['name' => 'Apple',  'list_id'=>3],
+                ['name' => 'Banana', 'list_id'=>3],
+                ['name' => 'Pork',   'list_id'=>1],
+                ['name' => 'Chicken','list_id'=>1],
+                ['name' => 'Pear',   'list_id'=>3],
+            ], ];
+
+        $this->setDB($a);
+
+        $db = new Persistence_SQL($this->db->connection);
+        $l = (new Model($db, 'list'))->addFields(['name']);
+        $i = (new Model($db, 'item'))->addFields(['list_id', 'name']);
+        $l->hasMany('Items', $i)
+            ->addFields([
+                ['items',   'aggregate' => 'count', 'field'=>'name'],
+                ['items_c', 'aggregate' => 'group_concat', 'field'=>'name'],
+                ['items_c-', 'aggregate' => $i->expr('group_concat([name], [])', ['-'])],
+                ['len', 'aggregate' => $i->expr('sum(length([name]))')],
+                ['len2', 'expr' => 'sum(length([name]))'],
+                ['chicken5', 'expr' => 'sum([])', 'args'=>['5']],
+        ]);
+        $l->load(1);
+
+        $this->assertEquals(2, $l['items']);
+        $this->assertEquals('Pork,Chicken', $l['items_c']);
+        $this->assertEquals('Pork-Chicken', $l['items_c-']);
+        $this->assertEquals(strlen('Chicken')+strlen('Pork'), $l['len']);
+        $this->assertEquals(strlen('Chicken')+strlen('Pork'), $l['len2']);
+        $this->assertEquals(10, $l['chicken5']);
+
+        $l->load(2);
+        $this->assertEquals(0, $l['items']);
+        $this->assertEquals('', $l['items_c']);
+        $this->assertEquals(null, $l['len']);
+        $this->assertEquals(null, $l['len2']);
+        $this->assertEquals(null, $l['chicken5']);
     }
 
     public function testReferenceHook()
