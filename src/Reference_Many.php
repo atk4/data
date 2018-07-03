@@ -100,6 +100,7 @@ class Reference_Many extends Reference
         if (isset($defaults['expr'])) {
             $cb = function () use ($defaults, $field) {
                 $r = $this->refLink();
+
                 return $r->action('field', [$r->expr(
                     $defaults['expr'],
                     isset($defaults['args']) ? $defaults['args'] : null
@@ -114,7 +115,7 @@ class Reference_Many extends Reference
             $cb = function () use ($defaults, $field) {
                 return $this->refLink()->action('count', ['alias'=>$field]);
             };
-        } elseif (in_array($defaults['aggregate'], ['sum','avg','min','max','count'])) {
+        } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'])) {
             $cb = function () use ($defaults, $field_n) {
                 return $this->refLink()->action('fx0', [$defaults['aggregate'], $field_n]);
             };
