@@ -356,9 +356,9 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i = (new Model($db, 'item'))->addFields(['list_id', 'name', 'code']);
         $l->hasMany('Items', $i)
             ->addFields([
-                ['items_name','aggregate' => 'count', 'field' => 'name'],
-                ['items_code','aggregate' => 'count', 'field' => 'code'], // counts only not-null values
-                ['items_star','aggregate' => 'count'], // no field set, counts all rows with count(*)
+                ['items_name', 'aggregate' => 'count', 'field' => 'name'],
+                ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
+                ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
                 ['items_c',   'aggregate' => 'group_concat', 'field'=>'name'],
                 ['items_c-',  'aggregate' => $i->expr('group_concat([name], [])', ['-'])],
                 ['len',       'aggregate' => $i->expr('sum(length([name]))')],
