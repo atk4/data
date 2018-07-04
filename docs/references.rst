@@ -674,11 +674,3 @@ References are implemented through several classes:
 
     Returns referenced model WITH conditions. (if possible)
 
-.. php:method:: guessFieldType
-
-    This method implementation is removed due to performance but may be
-    reconsidered. Attempts to initialize related model to find out more
-    about the field that is being referenced during the "definition time".
-
-    Normally this would happen only during query time and if the field is
-    included into query.

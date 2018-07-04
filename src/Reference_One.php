@@ -161,7 +161,7 @@ class Reference_One extends Reference
 
         if (!$this->owner->hasElement($this->our_field)) {
             $this->owner->addField($this->our_field, [
-                'type'              => $this->type, // $this->guessFieldType(),
+                'type'              => $this->type,
                 'reference'         => $this,
                 'system'            => $this->system,
                 'join'              => $this->join,
