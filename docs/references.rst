@@ -198,15 +198,17 @@ change them (`$m['paid_amount'] = 123;`), you will receive exception.
 Available Aggregation Functions
 -------------------------------
 
-The mathematical aggregates such as sum, avg, min, max and count will automatically
+The mathematical aggregate `sum` will automatically
 default to 0 if no respective rows were provided. The default SQL behaviour is to
 return NULL, but this does go well with the cascading formulas::
 
     coalesce(sum([field]), 0);
 
-For other functions, such as 'group_concat' no coalesce will be used, so the empty
-string will be the result. When you specify `'aggregate'=>'count'` field defaults
-to '*'.
+For other functions, such as `min`, `max`, `avg` and non mathematical aggregates such
+as `group_concat` no zero-coalesce will be used. Expect that result could be zero or
+null.
+
+When you specify `'aggregate'=>'count'` field defaults.
 
 Aggregate Expressions
 ---------------------

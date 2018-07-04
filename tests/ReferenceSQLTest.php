@@ -300,14 +300,26 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $db = new Persistence_SQL($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['ref_no']);
-        $l = (new Model($db, 'invoice_line'))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
+        $l = (new Model($db, 'invoice_line'))->addFields([
+            'invoice_id', 
+            ['total_net', 'type'=>'money'],
+            ['total_vat', 'type'=>'money'],
+            ['total_gross', 'type'=>'money']
+        ]);
         $i->hasMany('line', $l)
             ->addFields([
-                ['total_vat', 'aggregate' => 'sum'],
+                ['total_vat', 'aggregate' => 'sum', 'type'=>'money'],
                 ['total_net', 'aggregate' => 'sum'],
                 ['total_gross', 'aggregate' => 'sum'],
         ]);
         $i->load('1');
+
+        // type was set explicitly
+        $this->assertEquals('money', $i->getElement('total_vat')->type);
+
+        // type was not set and is not inherited
+        $this->assertEquals(null, $i->getElement('total_net')->type);
+
 
         $this->assertEquals(40, $i['total_net']);
         $this->assertEquals(9.2, $i['total_vat']);

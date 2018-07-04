@@ -127,12 +127,6 @@ class Reference_Many extends Reference
 
         $e = $this->owner->addExpression($n, array_merge([$cb], $defaults));
 
-        if (isset($defaults['type'])) {
-            $e->type = $defaults['type'];
-        } else {
-            $e->type = $this->guessFieldType($field);
-        }
-
         return $e;
     }
 
