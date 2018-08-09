@@ -1853,7 +1853,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 'Reference with such name already exists',
                 'name'     => $name,
                 'link'     => $link,
-                'defaults' => 'defaults',
+                'defaults' => $defaults,
             ]);
         }
 
