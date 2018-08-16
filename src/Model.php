@@ -869,11 +869,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($f) {
-            $f->system = true;
             if ($operator === '=' || func_num_args() == 2) {
                 $v = $operator === '=' ? $value : $operator;
 
                 if (!is_object($v) && !is_array($v)) {
+                    $f->system = true;
                     $f->default = $v;
                 }
             }
