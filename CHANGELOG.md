@@ -135,6 +135,10 @@ $this->hasMany('Items', new Item())->addField('list', ['expr'=>'group_concat([na
 - remove method guessFieldType - it was disabled for some time now [\#331](https://github.com/atk4/data/pull/331) ([romaninsh](https://github.com/romaninsh))
 - Significantly improve flexibility of aggregates [\#330](https://github.com/atk4/data/pull/330) ([romaninsh](https://github.com/romaninsh))
 
+## 1.3.7
+
+Minor release. Calling `addCondition('age', '>', 30)` will no longer mark field `age` as system.
+
 # 1.2.0
 
 When upgrading to 1.2.x branch watch out if your "Model" has a validate() method. The
