@@ -108,8 +108,8 @@ The same applies for references ($m->hasOne()).
 Supported types
 ---------------
 
-- 'string' - for storing short strings, such as name of a person.
-  Normalize will trim the value.
+- 'string' - for storing short strings, such as name of a person. Normalize will trim the value.
+- 'text' - for storing long strings, suchas notes or description. Normalize will trim the value.
 - 'boolean' - normalize will cast value to boolean.
 - 'integer' - normalize will cast value to integer.
 - 'money' - normalize will round value with 4 digits after dot.

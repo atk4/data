@@ -449,6 +449,10 @@ class Persistence_SQL extends Persistence
         $v = is_object($value) ? clone $value : $value;
 
         switch ($f->type) {
+        case 'string':
+        case 'text':
+            // do nothing - it's ok as it is
+            break;
         case 'integer':
             $v = (int) $v;
             break;

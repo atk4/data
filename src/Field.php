@@ -27,7 +27,7 @@ class Field
     /**
      * Field type.
      *
-     * Values are: 'string', 'boolean', 'integer', 'money', 'float',
+     * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
      *             'date', 'datetime', 'time', 'array', 'object'.
      * Can also be set to unspecified type for your own custom handling.
      *
@@ -265,10 +265,11 @@ class Field
                 }
                 break;
             case 'string':
+            case 'text':
                 if (!is_scalar($value)) {
                     throw new ValidationException([$this->name => 'Must be a string']);
                 }
-                $value = trim($value);
+                $value = trim(str_replace(["\r\n","\r"], "\n", $value));
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
                 }
