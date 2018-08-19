@@ -269,7 +269,7 @@ class Field
                 if (!is_scalar($value)) {
                     throw new ValidationException([$this->name => 'Must be a string']);
                 }
-                $value = trim(str_replace(["\r\n","\r"], "\n", $value));
+                $value = trim(str_replace(["\r\n", "\r"], "\n", $value));
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
                 }
