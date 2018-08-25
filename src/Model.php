@@ -1864,8 +1864,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Add generic relation. Provide your own call-back that will
      * return the model.
      *
-     * @param string $link     Link
-     * @param array|closure  $callback Callback
+     * @param string        $link     Link
+     * @param array|closure $callback Callback
      *
      * @return object
      */
