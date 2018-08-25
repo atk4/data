@@ -1865,7 +1865,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * return the model.
      *
      * @param string $link     Link
-     * @param array  $callback Callback
+     * @param array|closure  $callback Callback
      *
      * @return object
      */
