@@ -359,15 +359,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Adds new field into model.
      *
-     * @param string $name
+     * @param string $field
      * @param array  $defaults
      *
      * @return Field
      */
-    public function addField($name, $defaults = [])
+    public function addField($field, $defaults = [])
     {
         $field = $this->factory($this->mergeSeeds($defaults, $this->_default_seed_addField), null, '\atk4\data\Field');
-        $this->add($field, $name);
+        $this->add($field, $field);
 
         return $field;
     }
@@ -1988,22 +1988,22 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Add expression field.
      *
      * @param string $name
-     * @param array  $defaults
+     * @param string|array  $expression
      *
      * @return Field_Callback
      */
-    public function addExpression($name, $defaults)
+    public function addExpression($name, $expression)
     {
-        if (!is_array($defaults)) {
-            $defaults = ['expr' => $defaults];
-        } elseif (isset($defaults[0])) {
-            $defaults['expr'] = $defaults[0];
-            unset($defaults[0]);
+        if (!is_array($expression)) {
+            $expression = ['expr' => $expression];
+        } elseif (isset($expression[0])) {
+            $expression['expr'] = $expression[0];
+            unset($expression[0]);
         }
 
         $c = $this->_default_seed_addExpression;
 
-        return $this->add($this->factory($c, $defaults), $name);
+        return $this->add($this->factory($c, $expression), $name);
     }
 
     // }}}
