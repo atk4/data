@@ -1987,8 +1987,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string $name
-     * @param string|array  $expression
+     * @param string       $name
+     * @param string|array $expression
      *
      * @return Field_Callback
      */
