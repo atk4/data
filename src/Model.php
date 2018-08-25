@@ -366,10 +366,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addField($field, $defaults = [])
     {
-        $field = $this->factory($this->mergeSeeds($defaults, $this->_default_seed_addField), null, '\atk4\data\Field');
-        $this->add($field, $field);
+        $field_object = $this->factory($this->mergeSeeds($defaults, $this->_default_seed_addField), null, '\atk4\data\Field');
+        $this->add($field_object, $field);
 
-        return $field;
+        return $field_object;
     }
 
     /**
