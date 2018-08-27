@@ -429,14 +429,15 @@ class Persistence
         case 'serialize':
             return unserialize($value);
         case 'json':
-            switch ($f->type) {
-            case 'array':
-                return json_decode($value, true);
-            case 'object':
-                return json_decode($value, false);
+            if(!defined('JSON_THROW_ON_ERROR')){
+                define('JSON_THROW_ON_ERROR', 0);
             }
+            $res = json_decode($value, $f->type == 'array', 512, JSON_THROW_ON_ERROR);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \Exception(json_last_error_msg());
 
-            return json_decode($value, true);
+            }
+            return $res;
         case 'base64':
             return base64_decode($value);
         }
