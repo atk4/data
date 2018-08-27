@@ -15,27 +15,22 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $f = $m->addField('data', ['serialize' => 'serialize']);
 
         $this->assertEquals(
-            ['data' => 'a:1:{s:3:"foo";s:3:"bar";}']
-            , $db->typecastSaveRow($m, 
+            ['data' => 'a:1:{s:3:"foo";s:3:"bar";}'], $db->typecastSaveRow($m,
             ['data' => ['foo' => 'bar']]
         ));
         $this->assertEquals(
-            ['data' => ['foo' => 'bar']]
-            , $db->typecastLoadRow($m, 
+            ['data' => ['foo' => 'bar']], $db->typecastLoadRow($m,
             ['data' => 'a:1:{s:3:"foo";s:3:"bar";}']
         ));
-
 
         $f->serialize = 'json';
         $f->type = 'array';
         $this->assertEquals(
-            ['data' => '{"foo":"bar"}']
-            , $db->typecastSaveRow($m, 
+            ['data' => '{"foo":"bar"}'], $db->typecastSaveRow($m,
             ['data' => ['foo' => 'bar']]
         ));
         $this->assertEquals(
-            ['data' => ['foo' => 'bar']]
-            , $db->typecastLoadRow($m, 
+            ['data' => ['foo' => 'bar']], $db->typecastLoadRow($m,
             ['data' => '{"foo":"bar"}']
         ));
     }
@@ -52,13 +47,12 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $f->serialize = 'json';
         $f->type = 'array';
         $this->assertEquals(
-            ['data' => ['foo' => 'bar']]
-            , $db->typecastLoadRow($m, 
+            ['data' => ['foo' => 'bar']], $db->typecastLoadRow($m,
             ['data' => '{"foo":"bar" OPS']
         ));
     }
 
-    /**
+    /*
      * @expectedException Exception
      *
      * THIS IS NOT POSSIBLE BECAUSE unserialize() produces error
@@ -74,7 +68,7 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $f = $m->addField('data', ['serialize' => 'serialize']);
         $this->assertEquals(
             ['data' => ['foo' => 'bar']]
-            , $db->typecastLoadRow($m, 
+            , $db->typecastLoadRow($m,
             ['data' => 'a:1:{s:3:"foo";s:3:"bar"; OPS']
         ));
     }
