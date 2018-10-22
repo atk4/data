@@ -86,9 +86,10 @@ class Reference_Many extends Reference
      */
     public function addField($n, $defaults = [])
     {
-        if (!isset($defaults['aggregate']) && !isset($defaults['expr'])) {
+        if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
+
             throw new Exception([
-                '"aggregate" strategy (or "expr") should be defined for oneToMany field',
+                'Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()',
                 'field'    => $n,
                 'defaults' => $defaults,
             ]);
@@ -96,6 +97,11 @@ class Reference_Many extends Reference
 
         $field_n = isset($defaults['field']) ? $defaults['field'] : $n;
         $field = isset($defaults['field']) ? $defaults['field'] : null;
+
+        if (isset($defaults['concat'])) {
+            $defaults['expr'] = "group_concat([$field_n], [])";
+            $defaults['args'] = [$defaults['concat']];
+        }
 
         if (isset($defaults['expr'])) {
             $cb = function () use ($defaults, $field) {

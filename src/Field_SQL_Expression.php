@@ -35,6 +35,11 @@ class Field_SQL_Expression extends Field_SQL
     public $aggregate = null;
 
     /**
+     * Aggregation by concatination
+     */
+    public $concat = null;
+
+    /**
      * Specifies which field to use.
      */
     public $field = null;

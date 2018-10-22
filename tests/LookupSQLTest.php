@@ -140,6 +140,14 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         parent::setUp();
 
+        // populate database for our three models
+        $this->getMigration(new LCountry($this->db))->create();
+        $this->getMigration(new LUser($this->db))->create();
+        $this->getMigration(new LFriend($this->db))->create();
+
+
+        return;
+
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'code'=>'JN'],
@@ -161,7 +169,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
     /**
      * test various ways to import countries
      */
-    public function importCountriesBasic()
+    public function testImportCountriesBasic()
     {
         $c = new LCountry($this->db);
 
@@ -188,7 +196,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // $this->getDB()
     }
 
-    public function importInternationalUsers()
+    public function testImportInternationalUsers()
     {
         $c = new LCountry($this->db);
 
@@ -199,7 +207,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $c->insert(['Latvia', 'user_names'=>'imants,juris']);
     }
 
-    public function importInternationalFriends()
+    public function testImportInternationalFriends()
     {
         $c = new LCountry($this->db);
 
