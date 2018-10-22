@@ -179,6 +179,20 @@ class Reference
         return $this->getModel($defaults);
     }
 
+    /**
+     * Getter for protected property our_field.
+     */
+    public function getOurField() {
+        return $this->our_field;
+    }
+
+    /**
+     * Getter for protected property their_field.
+     */
+    public function getTheirField() {
+        return $this->their_field;
+    }
+    
     // {{{ Debug Methods
 
     /**
