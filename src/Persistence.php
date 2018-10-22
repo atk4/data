@@ -460,7 +460,7 @@ class Persistence
      *
      * @return mixed
      */
-    protected function jsonDecode(Field $f, string $value, bool $assoc = true)
+    protected function jsonDecode(Field $f, $value, $assoc = true)
     {
         // constant supported only starting PHP 7.3
         if (!defined('JSON_THROW_ON_ERROR')) {
