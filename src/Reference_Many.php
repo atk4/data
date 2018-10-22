@@ -9,6 +9,24 @@ namespace atk4\data;
  */
 class Reference_Many extends Reference
 {
+    function init() {
+        parent::init();
+
+        $this->owner->addField($this->link, ['never_persist'=>true]);
+        $this->owner->addHook('afterInsert', $this);
+    }
+
+    protected $insert_related = null;
+
+    function afterInsert($m) {
+        if ($m[$this->link]) {
+            echo "------------------------------------------------------------------------\n";
+            var_Dump($m->ref($this->link), $this->link, $m[$this->link]);
+            $m->ref($this->link)
+                ->import($m[$this->link]);
+        }
+    }
+
     /**
      * Returns our field value or id.
      *
@@ -101,6 +119,8 @@ class Reference_Many extends Reference
         if (isset($defaults['concat'])) {
             $defaults['expr'] = "group_concat([$field_n], [])";
             $defaults['args'] = [$defaults['concat']];
+            $defaults['read_only'] = false;
+            $defaults['never_persist'] = true;
         }
 
         if (isset($defaults['expr'])) {

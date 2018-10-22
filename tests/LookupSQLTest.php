@@ -31,7 +31,7 @@ class LCountry extends \atk4\data\Model {
         $this->addField('is_eu', ['type'=>'boolean', 'default'=>false]);
 
         $this->hasMany('Users', new LUser())
-            ->addField('user_names', 'name');
+            ->addField('user_names', ['field'=>'name', 'concat'=>',']);
     }
 }
 
@@ -60,13 +60,14 @@ class LUser extends \atk4\data\Model {
         parent::init();
 
         $this->addField('name');
+        $this->addField('is_vip', ['type'=>'boolean', 'default'=>false]);
 
         $this->hasOne('country_id', new LCountry())
             ->withTitle()
             ->addFields(['country_code'=>'code', 'is_eu']);
 
         $this->hasMany('Friends', new LFriend())
-            ->addField('user_names', 'friend_name');
+            ->addField('friend_names', ['field'=>'friend_name', 'concat'=>',']);
     }
 }
 
@@ -85,19 +86,19 @@ class LUser extends \atk4\data\Model {
 class LFriend extends \atk4\data\Model {
 
     public $skip_reverse = false;
+    public $table = 'friend';
+    public $title_field = 'friend_name';
 
     function init() {
         parent::init();
 
-        $this->addField('name');
-        $this->addField('is_vip', ['type'=>'boolean', 'default'=>false]);
-
-        $this->hasOne('user_id', new User())
+        $this->hasOne('user_id', new LUser())
             ->addField('my_name', 'name');
-        $this->hasOne('friend_id', new User())
+        $this->hasOne('friend_id', new LUser())
             ->addField('friend_name', 'name');
 
         // add or remove reverse friendships
+        /*
         $this->addHook('afterInsert', function($m) {
             if ($m->skip_reverse) {
                 return;
@@ -126,6 +127,7 @@ class LFriend extends \atk4\data\Model {
 
 
         });
+         */
     }
 }
 
@@ -222,8 +224,8 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $c->insert(['UK', 'Users'=>[
             ['Romans', 'Friends'=>[
                 ['friend_id'=>1], 
-                ['friend_name'=>'Juris']
-                ['Alain']
+                ['friend_name'=>'Juris'],
+                'Alain'
             ]]
         ]]);
 
