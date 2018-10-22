@@ -43,13 +43,26 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $db = new Persistence_SQL($this->db->connection);
         $m = new Model($db, 'job');
 
-        $f = $m->addField('data', ['serialize' => 'serialize']);
-        $f->serialize = 'json';
-        $f->type = 'array';
-        $this->assertEquals(
-            ['data' => ['foo' => 'bar']], $db->typecastLoadRow($m,
-            ['data' => '{"foo":"bar" OPS']
-        ));
+        $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
+        
+        $db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testSerializeErrorJSON2()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $m = new Model($db, 'job');
+
+        $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
+        
+        // recursive array - json can't encode that
+        $a =[];
+        $a[] = &$a;
+        
+        $db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $a]]);
     }
 
     /*
