@@ -274,18 +274,22 @@ class Persistence
      */
     public function typecastSaveField(Field $f, $value)
     {
-        // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-        if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
-            return $t($value, $f, $this);
-        }
+        try {
+            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
+            if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
+                return $t($value, $f, $this);
+            }
 
-        // we respect null values
-        if ($value === null) {
-            return;
-        }
+            // we respect null values
+            if ($value === null) {
+                return;
+            }
 
-        // run persistence-specific typecasting of field value
-        return $this->_typecastSaveField($f, $value);
+            // run persistence-specific typecasting of field value
+            return $this->_typecastSaveField($f, $value);
+        } catch (\Exception $e) {
+            throw new Exception(['Unable to serialize field value on save', 'field' => $f->name], null, $e);
+        }
     }
 
     /**
@@ -299,24 +303,28 @@ class Persistence
      */
     public function typecastLoadField(Field $f, $value)
     {
-        // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-        if (is_array($f->typecast) && isset($f->typecast[1]) && is_callable($t = $f->typecast[1])) {
-            return $t($value, $f, $this);
-        }
+        try {
+            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
+            if (is_array($f->typecast) && isset($f->typecast[1]) && is_callable($t = $f->typecast[1])) {
+                return $t($value, $f, $this);
+            }
 
-        // only string type fields can use empty string as legit value, for all
-        // other field types empty value is the same as no-value, nothing or null
-        if ($f->type && $f->type != 'string' && $value === '') {
-            return;
-        }
+            // only string type fields can use empty string as legit value, for all
+            // other field types empty value is the same as no-value, nothing or null
+            if ($f->type && $f->type != 'string' && $value === '') {
+                return;
+            }
 
-        // we respect null values
-        if ($value === null) {
-            return;
-        }
+            // we respect null values
+            if ($value === null) {
+                return;
+            }
 
-        // run persistence-specific typecasting of field value
-        return $this->_typecastLoadField($f, $value);
+            // run persistence-specific typecasting of field value
+            return $this->_typecastLoadField($f, $value);
+        } catch (\Exception $e) {
+            throw new Exception(['Unable to typecast field value on load', 'field' => $f->name], null, $e);
+        }
     }
 
     /**
@@ -358,13 +366,17 @@ class Persistence
      */
     public function serializeSaveField(Field $f, $value)
     {
-        // use $f->serialize = [encode_callback, decode_callback]
-        if (is_array($f->serialize) && isset($f->serialize[0]) && is_callable($t = $f->serialize[0])) {
-            return $t($f, $value, $this);
-        }
+        try {
+            // use $f->serialize = [encode_callback, decode_callback]
+            if (is_array($f->serialize) && isset($f->serialize[0]) && is_callable($t = $f->serialize[0])) {
+                return $t($f, $value, $this);
+            }
 
-        // run persistence-specific serialization of field value
-        return $this->_serializeSaveField($f, $value);
+            // run persistence-specific serialization of field value
+            return $this->_serializeSaveField($f, $value);
+        } catch (\Exception $e) {
+            throw new Exception(['Unable to serialize field value on save', 'field' => $f->name], null, $e);
+        }
     }
 
     /**
@@ -378,13 +390,17 @@ class Persistence
      */
     public function serializeLoadField(Field $f, $value)
     {
-        // use $f->serialize = [encode_callback, decode_callback]
-        if (is_array($f->serialize) && isset($f->serialize[1]) && is_callable($t = $f->serialize[1])) {
-            return $t($f, $value, $this);
-        }
+        try {
+            // use $f->serialize = [encode_callback, decode_callback]
+            if (is_array($f->serialize) && isset($f->serialize[1]) && is_callable($t = $f->serialize[1])) {
+                return $t($f, $value, $this);
+            }
 
-        // run persistence-specific un-serialization of field value
-        return $this->_serializeLoadField($f, $value);
+            // run persistence-specific un-serialization of field value
+            return $this->_serializeLoadField($f, $value);
+        } catch (\Exception $e) {
+            throw new Exception(['Unable to serialize field value on load', 'field' => $f->name], null, $e);
+        }
     }
 
     /**
@@ -452,10 +468,9 @@ class Persistence
         }
         
         $res = json_decode($value, $assoc, 512, JSON_THROW_ON_ERROR);
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if (JSON_THROW_ON_ERROR == 0 && json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception([
                 'There was error while decoding JSON',
-                'field' => $f->name,
                 'code' => json_last_error(),
                 'error' => json_last_error_msg(),
             ]);
@@ -480,10 +495,9 @@ class Persistence
         }
         
         $res = json_encode($value, JSON_THROW_ON_ERROR, 512);
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if (JSON_THROW_ON_ERROR == 0 && json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception([
                 'There was error while encoding JSON',
-                'field' => $f->name,
                 'code' => json_last_error(),
                 'error' => json_last_error_msg(),
             ]);
