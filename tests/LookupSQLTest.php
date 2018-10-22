@@ -3,15 +3,13 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
-
 
 /**
- * Country. 
+ * Country.
  *
  * We will have few of them. You can lookup country by name or by code. We will also try looking up country by
  * multiple fields (e.g. code and 'is_eu') to see if those work are used as AND conditions. For instance
- * is_eu=true, code='US', should not be able to lookup the country. 
+ * is_eu=true, code='US', should not be able to lookup the country.
  *
  * Users is a reference. You can specify it as an array containing import data for and that will be inserted
  * recursively.
@@ -19,10 +17,12 @@ use atk4\data\Persistence_SQL;
  * We also introduced 'user_names' field, which will concatinate all user names for said country. It can also be
  * used when importing, simply provide a comma-separated string of user names and they will be CREATED for you.
  */
-class LCountry extends \atk4\data\Model {
+class LCountry extends \atk4\data\Model
+{
     public $table = 'country';
 
-    function init() {
+    public function init()
+    {
         parent::init();
 
         $this->addField('name');
@@ -36,11 +36,11 @@ class LCountry extends \atk4\data\Model {
 }
 
 /**
- * User. 
+ * User.
  *
  * User has one country and may have friends. Friend is a many-to-many relationship between users.
  *
- * When importing users, you should be able to specify country using 'country_id' or using some of the 
+ * When importing users, you should be able to specify country using 'country_id' or using some of the
  * lookup fields: 'country', 'country_code' or 'is_eu'.
  *
  * If ID is not specified (unlike specifying null!) we will rely on the lookup fields to try and find
@@ -53,10 +53,12 @@ class LCountry extends \atk4\data\Model {
  *
  * Like before Friends can also be specified as an array.
  */
-class LUser extends \atk4\data\Model {
+class LUser extends \atk4\data\Model
+{
     public $table = 'user';
 
-    function init() {
+    public function init()
+    {
         parent::init();
 
         $this->addField('name');
@@ -83,13 +85,14 @@ class LUser extends \atk4\data\Model {
  * The challenge here is to make sure that those handlers are executed automatically
  * while importing User and Friends.
  */
-class LFriend extends \atk4\data\Model {
-
+class LFriend extends \atk4\data\Model
+{
     public $skip_reverse = false;
     public $table = 'friend';
     public $title_field = 'friend_name';
 
-    function init() {
+    public function init()
+    {
         parent::init();
 
         $this->hasOne('user_id', new LUser())
@@ -107,7 +110,7 @@ class LFriend extends \atk4\data\Model {
             $c = clone $m;
             $c->skip_reverse = true;
             $this->insert([
-                'user_id'=>$m['friend_id'], 
+                'user_id'=>$m['friend_id'],
                 'friend_id'=>$m['user_id']
             ]);
         });
@@ -147,7 +150,6 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->getMigration(new LUser($this->db))->create();
         $this->getMigration(new LFriend($this->db))->create();
 
-
         return;
 
         $a = [
@@ -165,11 +167,10 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                  */
             ], ];
         $this->setDB($a);
-
     }
 
     /**
-     * test various ways to import countries
+     * test various ways to import countries.
      */
     public function testImportCountriesBasic()
     {
@@ -216,20 +217,18 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // Specifying hasMany here will perform input
         $c->insert(['Canada', 'Users'=>['Alain', ['Duncan', 'is_vip'=>true]]]);
 
-
         // Inserting Users into Latvia can also specify Friends. In this case Friend name will be looked up
         $c->insert(['Latvia', 'Users'=>['Imants', ['Juris', 'friend_names'=>'Alain,Imants']]]);
 
         // Inserting This time explicitly specify friend attributes
         $c->insert(['UK', 'Users'=>[
             ['Romans', 'Friends'=>[
-                ['friend_id'=>1], 
-                ['friend_name'=>'Juris'],
-                'Alain'
-            ]]
+                ['friend_id'=>1],
+                ['friend_name'=> 'Juris'],
+                'Alain',
+            ]],
         ]]);
 
         // BTW - Alain should have 3 friends here
     }
-
 }

@@ -9,7 +9,8 @@ namespace atk4\data;
  */
 class Reference_Many extends Reference
 {
-    function init() {
+    public function init()
+    {
         parent::init();
 
         $this->owner->addField($this->link, ['never_persist'=>true]);
@@ -18,10 +19,11 @@ class Reference_Many extends Reference
 
     protected $insert_related = null;
 
-    function afterInsert($m) {
+    public function afterInsert($m)
+    {
         if ($m[$this->link]) {
             echo "------------------------------------------------------------------------\n";
-            var_Dump($m->ref($this->link), $this->link, $m[$this->link]);
+            var_dump($m->ref($this->link), $this->link, $m[$this->link]);
             $m->ref($this->link)
                 ->import($m[$this->link]);
         }
@@ -105,7 +107,6 @@ class Reference_Many extends Reference
     public function addField($n, $defaults = [])
     {
         if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
-
             throw new Exception([
                 'Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()',
                 'field'    => $n,
