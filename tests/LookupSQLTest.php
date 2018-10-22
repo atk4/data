@@ -163,7 +163,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function importCountriesBasic()
     {
-        $country = new LCountry($this->db);
+        $c = new LCountry($this->db);
 
         // should be OK, will set country name, rest of fields will be null
         $c->save('Canada');
@@ -190,7 +190,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function importInternationalUsers()
     {
-        $country = new LCountry($this->db);
+        $c = new LCountry($this->db);
 
         // Specifying hasMany here will perform input
         $c->insert(['Canada', 'Users'=>['Alain', ['Duncan', 'is_vip'=>true]]]);
@@ -201,7 +201,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function importInternationalFriends()
     {
-        $country = new LCountry($this->db);
+        $c = new LCountry($this->db);
 
         // Specifying hasMany here will perform input
         $c->insert(['Canada', 'Users'=>['Alain', ['Duncan', 'is_vip'=>true]]]);
