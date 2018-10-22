@@ -401,7 +401,7 @@ class Persistence
         case 'serialize':
             return serialize($value);
         case 'json':
-            return json_encode($value);
+            return $this->jsonEncode($f, $value);
         case 'base64':
             if (!is_string($value)) {
                 throw new Exception([
@@ -429,17 +429,66 @@ class Persistence
         case 'serialize':
             return unserialize($value);
         case 'json':
-            if (!defined('JSON_THROW_ON_ERROR')) {
-                define('JSON_THROW_ON_ERROR', 0);
-            }
-            $res = json_decode($value, $f->type == 'array', 512, JSON_THROW_ON_ERROR);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception(json_last_error_msg());
-            }
-
-            return $res;
+            return $this->jsonDecode($f, $value, $f->type == 'array');
         case 'base64':
             return base64_decode($value);
         }
+    }
+    
+    /**
+     * JSON decoding with proper error treatment.
+     *
+     * @param Field  $f
+     * @param string $value
+     * @param bool   $assoc
+     *
+     * @return mixed
+     */
+    protected function jsonDecode(Field $f, string $value, bool $assoc = true)
+    {
+        // constant supported only starting PHP 7.3
+        if (!defined('JSON_THROW_ON_ERROR')) {
+            define('JSON_THROW_ON_ERROR', 0);
+        }
+        
+        $res = json_decode($value, $assoc, 512, JSON_THROW_ON_ERROR);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception([
+                'There was error while decoding JSON',
+                'field' => $f->name,
+                'code' => json_last_error(),
+                'error' => json_last_error_msg(),
+            ]);
+        }
+        
+        return $res;
+    }
+
+    /**
+     * JSON encoding with proper error treatment.
+     *
+     * @param Field  $f
+     * @param mixed $value
+     *
+     * @return string
+     */
+    protected function jsonEncode(Field $f, $value)
+    {
+        // constant supported only starting PHP 7.3
+        if (!defined('JSON_THROW_ON_ERROR')) {
+            define('JSON_THROW_ON_ERROR', 0);
+        }
+        
+        $res = json_encode($value, JSON_THROW_ON_ERROR, 512);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception([
+                'There was error while encoding JSON',
+                'field' => $f->name,
+                'code' => json_last_error(),
+                'error' => json_last_error_msg(),
+            ]);
+        }
+        
+        return $res;
     }
 }

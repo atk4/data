@@ -422,7 +422,7 @@ class Persistence_SQL extends Persistence
         case 'array':
         case 'object':
             // don't encode if we already use some kind of serialization
-            $v = $f->serialize ? $v : json_encode($v);
+            $v = $f->serialize ? $v : $this->jsonEncode($f, $v);
             break;
         }
 
@@ -511,11 +511,11 @@ class Persistence_SQL extends Persistence
             break;
         case 'array':
             // don't decode if we already use some kind of serialization
-            $v = $f->serialize ? $v : json_decode($v, true);
+            $v = $f->serialize ? $v : $this->jsonDecode($f, $v, true);
             break;
         case 'object':
             // don't decode if we already use some kind of serialization
-            $v = $f->serialize ? $v : json_decode($v, false);
+            $v = $f->serialize ? $v : $this->jsonDecode($f, $v, false);
             break;
         }
 
