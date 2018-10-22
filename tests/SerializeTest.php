@@ -44,7 +44,7 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m = new Model($db, 'job');
 
         $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
-        
+
         $db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
     }
 
@@ -57,11 +57,11 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m = new Model($db, 'job');
 
         $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
-        
+
         // recursive array - json can't encode that
-        $a =[];
+        $a = [];
         $a[] = &$a;
-        
+
         $db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $a]]);
     }
 

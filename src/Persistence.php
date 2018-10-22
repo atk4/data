@@ -450,7 +450,7 @@ class Persistence
             return base64_decode($value);
         }
     }
-    
+
     /**
      * JSON decoding with proper error treatment.
      *
@@ -466,23 +466,23 @@ class Persistence
         if (!defined('JSON_THROW_ON_ERROR')) {
             define('JSON_THROW_ON_ERROR', 0);
         }
-        
+
         $res = json_decode($value, $assoc, 512, JSON_THROW_ON_ERROR);
         if (JSON_THROW_ON_ERROR == 0 && json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception([
                 'There was error while decoding JSON',
-                'code' => json_last_error(),
+                'code'  => json_last_error(),
                 'error' => json_last_error_msg(),
             ]);
         }
-        
+
         return $res;
     }
 
     /**
      * JSON encoding with proper error treatment.
      *
-     * @param Field  $f
+     * @param Field $f
      * @param mixed $value
      *
      * @return string
@@ -493,16 +493,16 @@ class Persistence
         if (!defined('JSON_THROW_ON_ERROR')) {
             define('JSON_THROW_ON_ERROR', 0);
         }
-        
+
         $res = json_encode($value, JSON_THROW_ON_ERROR, 512);
         if (JSON_THROW_ON_ERROR == 0 && json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception([
                 'There was error while encoding JSON',
-                'code' => json_last_error(),
+                'code'  => json_last_error(),
                 'error' => json_last_error_msg(),
             ]);
         }
-        
+
         return $res;
     }
 }
