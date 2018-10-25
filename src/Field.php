@@ -265,10 +265,20 @@ class Field
                 }
                 break;
             case 'string':
+                if (!is_scalar($value)) {
+                    throw new ValidationException([$this->name => 'Must be a string']);
+                }
+                // remove all line-ends
+                $value = trim(str_replace(["\r", "\n"], "", $value));
+                if ($this->required && empty($value)) {
+                    throw new ValidationException([$this->name => 'Must not be empty']);
+                }
+                break;
             case 'text':
                 if (!is_scalar($value)) {
                     throw new ValidationException([$this->name => 'Must be a string']);
                 }
+                // normalize line-ends to LF
                 $value = trim(str_replace(["\r\n", "\r"], "\n", $value));
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
