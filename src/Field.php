@@ -269,7 +269,7 @@ class Field
                     throw new ValidationException([$this->name => 'Must be a string']);
                 }
                 // remove all line-ends
-                $value = trim(str_replace(["\r", "\n"], "", $value));
+                $value = trim(str_replace(["\r", "\n"], '', $value));
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
                 }
