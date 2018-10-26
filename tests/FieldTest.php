@@ -120,7 +120,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
     /**
      * @expectedException Exception
      */
-    public function testMandatory4()
+    public function testMandatory3()
     {
         $db = new Persistence_SQL($this->db->connection);
         $a = [
@@ -136,7 +136,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->save(['name' => null]);
     }
 
-    public function testMandatory3()
+    public function testMandatory4()
     {
         if ($this->driver == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
@@ -526,5 +526,214 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m->unload()->load(1);
         $this->assertEquals('i am a woman', $m['secret']);
+    }
+
+    public function testNormalize()
+    {
+        $m = new Model(['strict_types' => true]);
+        
+        // Field types: 'string', 'text', 'integer', 'money', 'float', 'boolean', 
+        //              'date', 'datetime', 'time', 'array', 'object'
+        $m->addField('string', ['type' => 'string']);
+        $m->addField('text', ['type' => 'text']);
+        $m->addField('integer', ['type' => 'integer']);
+        $m->addField('money', ['type' => 'money']);
+        $m->addField('float', ['type' => 'float']);
+        $m->addField('boolean', ['type' => 'boolean']);
+        $m->addField('boolean_enum', ['type' => 'boolean', 'enum'=>['N', 'Y']]);
+        $m->addField('date', ['type' => 'date']);
+        $m->addField('datetime', ['type' => 'datetime']);
+        $m->addField('time', ['type' => 'time']);
+        $m->addField('array', ['type' => 'array']);
+        $m->addField('object', ['type' => 'object']);
+
+        // string
+        $m['string'] = "Two\r\nLines  ";
+        $this->assertSame("TwoLines", $m['string']);
+
+        $m['string'] = "Two\rLines  ";
+        $this->assertSame("TwoLines", $m['string']);
+
+        $m['string'] = "Two\nLines  ";
+        $this->assertSame("TwoLines", $m['string']);
+
+        // text
+        $m['text'] = "Two\r\nLines  ";
+        $this->assertSame("Two\nLines", $m['text']);
+
+        $m['text'] = "Two\rLines  ";
+        $this->assertSame("Two\nLines", $m['text']);
+
+        $m['text'] = "Two\nLines  ";
+        $this->assertSame("Two\nLines", $m['text']);
+
+        // integer, money, float
+        $m['integer'] = "12,345.67676767"; // no digits after dot
+        $this->assertSame(12345, $m['integer']);
+
+        $m['money'] = "12,345.67676767"; // 4 digits after dot
+        $this->assertSame(12345.6768, $m['money']);
+
+        $m['float'] = "12,345.67676767"; // don't round
+        $this->assertSame(12345.67676767, $m['float']);
+        
+        // boolean
+        $m['boolean'] = 0;
+        $this->assertSame(false, $m['boolean']);
+        $m['boolean'] = 1;
+        $this->assertSame(true, $m['boolean']);
+
+        $m['boolean_enum'] = 'N';
+        $this->assertSame(false, $m['boolean_enum']);
+        $m['boolean_enum'] = 'Y';
+        $this->assertSame(true, $m['boolean_enum']);
+
+        // date, datetime, time
+        $m['date'] = 123;
+        $this->assertInstanceof('DateTime', $m['date']);
+        $m['date'] = '123';
+        $this->assertInstanceof('DateTime', $m['date']);
+        $m['date'] = '2018-05-31';
+        $this->assertInstanceof('DateTime', $m['date']);
+        $m['datetime'] = 123;
+        $this->assertInstanceof('DateTime', $m['datetime']);
+        $m['datetime'] = '123';
+        $this->assertInstanceof('DateTime', $m['datetime']);
+        $m['datetime'] = '2018-05-31 12:13:14';
+        $this->assertInstanceof('DateTime', $m['datetime']);
+        $m['time'] = 123;
+        $this->assertInstanceof('DateTime', $m['time']);
+        $m['time'] = '123';
+        $this->assertInstanceof('DateTime', $m['time']);
+        $m['time'] = '12:13:14';
+        $this->assertInstanceof('DateTime', $m['time']);
+    }
+
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException1()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'string']);
+        $m['foo'] = [];
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException2()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'text']);
+        $m['foo'] = [];
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException3()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'integer']);
+        $m['foo'] = [];
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException4()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'money']);
+        $m['foo'] = [];
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException5()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'float']);
+        $m['foo'] = [];
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException6()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'date']);
+        $m['foo'] = [];
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException7()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'datetime']);
+        $m['foo'] = [];
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException8()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'time']);
+        $m['foo'] = [];
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException9()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'integer']);
+        $m['foo'] = '123---456';
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException10()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'money']);
+        $m['foo'] = '123---456';
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException11()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'float']);
+        $m['foo'] = '123---456';
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException12()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'array']);
+        $m['foo'] = 'ABC';
+    }
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException13()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'object']);
+        $m['foo'] = 'ABC';
+    }
+
+    /**
+     * @expectedException \atk4\data\ValidationException
+     */
+    public function testNormalizeException14()
+    {
+        $m = new Model(['strict_types' => true]);
+        $m->addField('foo', ['type' => 'boolean']);
+        $m['foo'] = 'ABC';
     }
 }
