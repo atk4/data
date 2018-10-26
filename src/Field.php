@@ -257,7 +257,7 @@ class Field
 
                 return;
             }
-            
+
             // validate scalar values
             if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float']) && !is_scalar($value)) {
                 throw new ValidationException([$this->name => 'Must use scalar value']);
@@ -351,6 +351,7 @@ class Field
                     if (is_object($value)) {
                         throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
                     }
+
                     throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value type' => gettype($value)]);
                 }
                 break;

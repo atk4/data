@@ -531,8 +531,8 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
     public function testNormalize()
     {
         $m = new Model(['strict_types' => true]);
-        
-        // Field types: 'string', 'text', 'integer', 'money', 'float', 'boolean', 
+
+        // Field types: 'string', 'text', 'integer', 'money', 'float', 'boolean',
         //              'date', 'datetime', 'time', 'array', 'object'
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
@@ -549,13 +549,13 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // string
         $m['string'] = "Two\r\nLines  ";
-        $this->assertSame("TwoLines", $m['string']);
+        $this->assertSame('TwoLines', $m['string']);
 
         $m['string'] = "Two\rLines  ";
-        $this->assertSame("TwoLines", $m['string']);
+        $this->assertSame('TwoLines', $m['string']);
 
         $m['string'] = "Two\nLines  ";
-        $this->assertSame("TwoLines", $m['string']);
+        $this->assertSame('TwoLines', $m['string']);
 
         // text
         $m['text'] = "Two\r\nLines  ";
@@ -568,15 +568,15 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertSame("Two\nLines", $m['text']);
 
         // integer, money, float
-        $m['integer'] = "12,345.67676767"; // no digits after dot
+        $m['integer'] = '12,345.67676767'; // no digits after dot
         $this->assertSame(12345, $m['integer']);
 
-        $m['money'] = "12,345.67676767"; // 4 digits after dot
+        $m['money'] = '12,345.67676767'; // 4 digits after dot
         $this->assertSame(12345.6768, $m['money']);
 
-        $m['float'] = "12,345.67676767"; // don't round
+        $m['float'] = '12,345.67676767'; // don't round
         $this->assertSame(12345.67676767, $m['float']);
-        
+
         // boolean
         $m['boolean'] = 0;
         $this->assertSame(false, $m['boolean']);
@@ -618,6 +618,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'string']);
         $m['foo'] = [];
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -627,6 +628,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'text']);
         $m['foo'] = [];
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -636,6 +638,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'integer']);
         $m['foo'] = [];
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -645,6 +648,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'money']);
         $m['foo'] = [];
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -654,6 +658,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'float']);
         $m['foo'] = [];
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -663,6 +668,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'date']);
         $m['foo'] = [];
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -672,6 +678,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'datetime']);
         $m['foo'] = [];
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -681,6 +688,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'time']);
         $m['foo'] = [];
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -690,6 +698,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'integer']);
         $m['foo'] = '123---456';
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -699,6 +708,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'money']);
         $m['foo'] = '123---456';
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -708,6 +718,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'float']);
         $m['foo'] = '123---456';
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
@@ -717,6 +728,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'array']);
         $m['foo'] = 'ABC';
     }
+
     /**
      * @expectedException \atk4\data\ValidationException
      */
