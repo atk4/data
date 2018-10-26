@@ -258,6 +258,12 @@ class Field
                 return;
             }
 
+            // validate scalar values
+            if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float']) && !is_scalar($value)) {
+                throw new ValidationException([$this->name => 'Must use scalar value']);
+            }
+
+            // normalize
             switch ($f->type) {
             case null: // loose comparison, but is OK here
                 if ($this->required && empty($value)) {
@@ -265,10 +271,14 @@ class Field
                 }
                 break;
             case 'string':
-            case 'text':
-                if (!is_scalar($value)) {
-                    throw new ValidationException([$this->name => 'Must be a string']);
+                // remove all line-ends and trim
+                $value = trim(str_replace(["\r", "\n"], '', $value));
+                if ($this->required && empty($value)) {
+                    throw new ValidationException([$this->name => 'Must not be empty']);
                 }
+                break;
+            case 'text':
+                // normalize line-ends to LF and trim
                 $value = trim(str_replace(["\r\n", "\r"], "\n", $value));
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
@@ -288,7 +298,7 @@ class Field
                 }
                 break;
             case 'float':
-                $value = str_replace(',', '', $value);
+                $value = preg_replace('/[^0-9.-]/', '', $value);
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
                 }
@@ -312,9 +322,9 @@ class Field
                     break;
                 }
                 if (isset($f->enum) && is_array($f->enum)) {
-                    if (isset($f->enum[0]) && $value === $f->enum[0]) {
+                    if (isset($f->enum[0]) && strtolower($value) === strtolower($f->enum[0])) {
                         $value = false;
-                    } elseif (isset($f->enum[1]) && $value === $f->enum[1]) {
+                    } elseif (isset($f->enum[1]) && strtolower($value) === strtolower($f->enum[1])) {
                         $value = true;
                     }
                 } elseif (is_numeric($value)) {
@@ -330,7 +340,6 @@ class Field
             case 'date':
             case 'datetime':
             case 'time':
-
                 // we allow http://php.net/manual/en/datetime.formats.relative.php
                 $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
 
@@ -339,7 +348,11 @@ class Field
                 } elseif (is_string($value)) {
                     $value = new $class($value);
                 } elseif (!$value instanceof $class) {
-                    throw new Exception(['must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
+                    if (is_object($value)) {
+                        throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
+                    }
+
+                    throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value type' => gettype($value)]);
                 }
                 break;
             case 'array':
