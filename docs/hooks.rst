@@ -105,7 +105,8 @@ state of :php:meth:`Model::loaded`:
 The $data argument will contain array of actual data (field=>value) to be saved,
 which you can use to withdraw certain fields from actually being saved into the
 database (by unsetting it's value).
-
+Note that altering data via $m->set() does not work in beforeInsert and beforeUpdate
+hooks, only by altering $data.
 afterInsert will receive either $id of new record or null if model couldn't
 provide ID field. Also, afterInsert is actually called before
 :php:meth:`Model::_reload_after_save` reloading is done.
