@@ -33,14 +33,14 @@ script:
 
 after_script:
   - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then
-      echo "Merging coverage reports:";
-      vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
-      echo "We now have these coverage files:";
-      ls -l build/logs;
-      echo "Sending codeclimate report:";
-      vendor/bin/test-reporter --coverage-report build/logs/cc.xml;
-      echo "Sending codecov report:";
-      TRAVIS_CMD="" bash <(curl -s https://codecov.io/bash) -f build/logs/cc.xml;
+    echo "Merging coverage reports:";
+    vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
+    echo "We now have these coverage files:";
+    ls -l build/logs;
+    echo "Sending codeclimate report:";
+    vendor/bin/test-reporter --coverage-report build/logs/cc.xml;
+    echo "Sending codecov report:";
+    TRAVIS_CMD="" bash <(curl -s https://codecov.io/bash) -f build/logs/cc.xml;
     fi
 
 notifications:
