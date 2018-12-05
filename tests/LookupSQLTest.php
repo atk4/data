@@ -14,10 +14,10 @@ use atk4\data\Model;
  * Users is a reference. You can specify it as an array containing import data for and that will be inserted
  * recursively.
  *
- * We also introduced 'user_names' field, which will concatinate all user names for said country. It can also be
+ * We also introduced 'user_names' field, which will concatenate all user names for said country. It can also be
  * used when importing, simply provide a comma-separated string of user names and they will be CREATED for you.
  */
-class LCountry extends \atk4\data\Model
+class LCountry extends Model
 {
     public $table = 'country';
 
@@ -53,7 +53,7 @@ class LCountry extends \atk4\data\Model
  *
  * Like before Friends can also be specified as an array.
  */
-class LUser extends \atk4\data\Model
+class LUser extends Model
 {
     public $table = 'user';
 
@@ -76,7 +76,7 @@ class LUser extends \atk4\data\Model
 /**
  * Friend is a many-to-many binder that connects User with another User.
  *
- * In our case, however, we want each friendship to be reciprocial. If John
+ * In our case, however, we want each friendship to be reciprocal. If John
  * is a friend of Sue, then Sue must be a friend of John.
  *
  * To implement that, we include insert / delete handlers which would create
@@ -85,7 +85,7 @@ class LUser extends \atk4\data\Model
  * The challenge here is to make sure that those handlers are executed automatically
  * while importing User and Friends.
  */
-class LFriend extends \atk4\data\Model
+class LFriend extends Model
 {
     public $skip_reverse = false;
     public $table = 'friend';
@@ -135,12 +135,23 @@ class LFriend extends \atk4\data\Model
 }
 
 /**
- * @coversDefaultClass \atk4\data\Model
+ * @coversDefaultClass Model
  *
  * ATK Data has an option to lookup ID values if their "lookup" values are specified.
  */
 class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
+
+    function varexport($expression, $return=FALSE) {
+        $export = var_export($expression, TRUE);
+        $export = preg_replace("/^([ ]*)(.*)/m", '$1$1$2', $export);
+        $array = preg_split("/\r\n|\n|\r/", $export);
+        $array = preg_replace(["/\s*array\s\($/", "/\)(,)?$/", "/\s=>\s$/"], [NULL, ']$1', ' => ['], $array);
+        $export = join(PHP_EOL, array_filter(["["] + $array));
+        if ((bool)$return) return $export; else echo $export;
+    }
+
+
     public function setUp()
     {
         parent::setUp();
@@ -149,24 +160,6 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->getMigration(new LCountry($this->db))->create();
         $this->getMigration(new LUser($this->db))->create();
         $this->getMigration(new LFriend($this->db))->create();
-
-        return;
-
-        $a = [
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'code'=>'JN'],
-                2 => ['id' => 2, 'name' => 'Peter', 'code'=>'PT'],
-                3 => ['id' => 3, 'name' => 'Joe', 'code'=>'JN'],
-            ], 'order' => [
-                ['amount' => '20', 'user_id' => 1],
-                /*
-                ['amount' => '15', 'user_id' => 2],
-                ['amount' => '5', 'user_id' => 1],
-                ['amount' => '3', 'user_id' => 1],
-                ['amount' => '8', 'user_id' => 3],
-                 */
-            ], ];
-        $this->setDB($a);
     }
 
     /**
@@ -176,13 +169,16 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $c = new LCountry($this->db);
 
+        $results = [];
+
         // should be OK, will set country name, rest of fields will be null
-        $c->save('Canada');
+        $c->saveAndUnload('Canada');
 
-        // adds another country
-        $c->save(['Latvia', 'code'=>'LV', 'is_eu'=>true]);
+        // adds another country, but with more fields
+        $c->saveAndUnload(['Latvia', 'code'=>'LV', 'is_eu'=>true]);
 
-        // is_eu will BLEED into this record, because save() is just set+save
+        // setting field prior will affect save()
+        $c['is_eu'] = true;
         $c->save(['Estonia', 'code'=>'ES']);
 
         // is_eu will NOT BLEED into this record, because insert() does not make use of current model values.
@@ -195,21 +191,103 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ['Russia', 'code'=>'KR'],
         ]);
 
-        // Test DB contents here
-        // $this->getDB()
+        $this->assertEquals([
+            'country' => [
+                1 => [
+                    'id' => '1',
+                    'name' => 'Canada',
+                    'code' => null,
+                    'is_eu' => '0',
+                ],
+                2 => [
+                    'id' => '2',
+                    'name' => 'Latvia',
+                    'code' => 'LV',
+                    'is_eu' => '1',
+                ],
+                3 => [
+                    'id' => '3',
+                    'name' => 'Estonia',
+                    'code' => 'ES',
+                    'is_eu' => '1',
+                ],
+                4 => [
+                    'id' => '4',
+                    'name' => 'Korea',
+                    'code' => 'KR',
+                    'is_eu' => '0',
+                ],
+                5 => [
+                    'id' => '5',
+                    'name' => 'Japan',
+                    'code' => 'JP',
+                    'is_eu' => '0',
+                ],
+                6 => [
+                    'id' => '6',
+                    'name' => 'Lithuania',
+                    'code' => 'LT',
+                    'is_eu' => '1',
+                ],
+                7 => [
+                    'id' => '7',
+                    'name' => 'Russia',
+                    'code' => 'KR',
+                    'is_eu' => '0',
+                ],
+            ],
+        ], $this->getDB('country'));
     }
+
+
 
     public function testImportInternationalUsers()
     {
         $c = new LCountry($this->db);
 
         // Specifying hasMany here will perform input
-        $c->insert(['Canada', 'Users'=>['Alain', ['Duncan', 'is_vip'=>true]]]);
+        $c->insert(['name'=>'Canada', 'Users'=>['Alain', ['Duncan', 'is_vip'=>true]]]);
 
         // Both lines will work quite similar
         $c->insert(['Latvia', 'user_names'=>'imants,juris']);
+
+        $this->assertEquals([
+            'country' => [
+                1 => [
+                    'id' => '1',
+                    'name' => 'Canada',
+                    'code' => NULL,
+                    'is_eu' => '0',
+                ],
+                2 => [
+                    'id' => '2',
+                    'name' => 'Latvia',
+                    'code' => NULL,
+                    'is_eu' => '0',
+                ],
+            ],
+            'user' => [
+                1 => [
+                    'id' => '1',
+                    'name' => 'Alain',
+                    'is_vip' => '0',
+                    'country_id' => '1',
+                ],
+                2 => [
+                    'id' => '2',
+                    'name' => 'Duncan',
+                    'is_vip' => '1',
+                    'country_id' => '1',
+                ],
+            ]
+        ], $this->getDB(['country', 'user']));
+        //$this->varexport($this->getDB(['country','user']));
     }
 
+    /*
+     *
+     * TODO - that's left for hasMTM implementation..., to be coming later
+     *
     public function testImportInternationalFriends()
     {
         $c = new LCountry($this->db);
@@ -231,4 +309,5 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // BTW - Alain should have 3 friends here
     }
+    */
 }

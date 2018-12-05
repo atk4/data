@@ -24,12 +24,14 @@ class Persistence
     /**
      * Connects database.
      *
-     * @param string $dsn      Format as PDO DSN or use "mysql://user:pass@host/db;option=blah", leaving user and password arguments = null
+     * @param string $dsn Format as PDO DSN or use "mysql://user:pass@host/db;option=blah", leaving user and password arguments = null
      * @param string $user
      * @param string $password
-     * @param array  $args
+     * @param array $args
      *
      * @return Persistence
+     * @throws Exception
+     * @throws \atk4\dsql\Exception
      */
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {

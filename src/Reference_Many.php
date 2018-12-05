@@ -9,26 +9,6 @@ namespace atk4\data;
  */
 class Reference_Many extends Reference
 {
-    public function init()
-    {
-        parent::init();
-
-        $this->owner->addField($this->link, ['never_persist'=>true]);
-        $this->owner->addHook('afterInsert', $this);
-    }
-
-    protected $insert_related = null;
-
-    public function afterInsert($m)
-    {
-        if ($m[$this->link]) {
-            echo "------------------------------------------------------------------------\n";
-            var_dump($m->ref($this->link), $this->link, $m[$this->link]);
-            $m->ref($this->link)
-                ->import($m[$this->link]);
-        }
-    }
-
     /**
      * Returns our field value or id.
      *
@@ -69,6 +49,7 @@ class Reference_Many extends Reference
      * @param array $defaults Properties
      *
      * @return Model
+     * @throws Exception
      */
     public function ref($defaults = [])
     {
@@ -85,6 +66,7 @@ class Reference_Many extends Reference
      * @param array $defaults Properties
      *
      * @return Model
+     * @throws Exception
      */
     public function refLink($defaults = [])
     {
@@ -99,10 +81,11 @@ class Reference_Many extends Reference
      * Adds field as expression to owner model.
      * Used in aggregate strategy.
      *
-     * @param string $n        Field name
-     * @param array  $defaults Properties
+     * @param string $n Field name
+     * @param array $defaults Properties
      *
      * @return Field_Callback
+     * @throws Exception
      */
     public function addField($n, $defaults = [])
     {
@@ -121,7 +104,7 @@ class Reference_Many extends Reference
             $defaults['expr'] = "group_concat([$field_n], [])";
             $defaults['args'] = [$defaults['concat']];
             $defaults['read_only'] = false;
-            $defaults['never_persist'] = true;
+            $defaults['never_save'] = true;
         }
 
         if (isset($defaults['expr'])) {
@@ -165,6 +148,7 @@ class Reference_Many extends Reference
      * @param array $fields Array of fields
      *
      * @return $this
+     * @throws Exception
      */
     public function addFields($fields = [])
     {
