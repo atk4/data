@@ -1504,7 +1504,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         // Find any row values that do not correspond to fields, and they may correspond to
         // references instead
         $refs = [];
-        foreach($row as $key => $value) {
+        foreach ($row as $key => $value) {
 
             // no field exists
             if ($this->hasField($key)) {
@@ -1531,11 +1531,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($refs) {
-            foreach($refs as $key => $value) {
+            foreach ($refs as $key => $value) {
                 $m->ref($key)->import($value);
             }
         }
-
     }
 
     /**
@@ -1665,8 +1664,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Returns iterator (yield values).
      *
-     * @return mixed
      * @throws \atk4\core\Exception
+     *
+     * @return mixed
      */
     public function getIterator()
     {
@@ -1729,8 +1729,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param mixed $id
      *
-     * @return $this
      * @throws Exception
+     *
+     * @return $this
      */
     public function delete($id = null)
     {
@@ -1789,10 +1790,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Execute action.
      *
      * @param string $mode
-     * @param array $args
+     * @param array  $args
+     *
+     * @throws Exception
      *
      * @return \atk4\dsql\Query
-     * @throws Exception
      */
     public function action($mode, $args = [])
     {
@@ -1819,10 +1821,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * the record will be also added inside $foreign_table and relationship will be maintained.
      *
      * @param string $foreign_table
-     * @param array $defaults
+     * @param array  $defaults
+     *
+     * @throws \atk4\core\Exception
      *
      * @return Join
-     * @throws \atk4\core\Exception
      */
     public function join($foreign_table, $defaults = [])
     {
@@ -1846,10 +1849,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @see join()
      *
      * @param string $foreign_table
-     * @param array $defaults
+     * @param array  $defaults
+     *
+     * @throws \atk4\core\Exception
      *
      * @return Join
-     * @throws \atk4\core\Exception
      */
     public function leftJoin($foreign_table, $defaults = [])
     {
@@ -1868,13 +1872,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Private method.
      *
-     * @param string $c Class name
-     * @param string $link Link
-     * @param array $defaults Properties which we will pass to Reference object constructor
+     * @param string $c        Class name
+     * @param string $link     Link
+     * @param array  $defaults Properties which we will pass to Reference object constructor
      *
-     * @return object
      * @throws Exception
      * @throws \atk4\core\Exception
+     *
+     * @return object
      */
     protected function _hasReference($c, $link, $defaults = [])
     {
@@ -1906,12 +1911,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Add generic relation. Provide your own call-back that will
      * return the model.
      *
-     * @param string $link Link
+     * @param string         $link     Link
      * @param array|callable $callback Callback
      *
-     * @return object
      * @throws Exception
      * @throws \atk4\core\Exception
+     *
+     * @return object
      */
     public function addRef($link, $callback)
     {
@@ -1922,11 +1928,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Add hasOne field.
      *
      * @param string $link
-     * @param array $defaults
+     * @param array  $defaults
      *
-     * @return Reference_One
      * @throws Exception
      * @throws \atk4\core\Exception
+     *
+     * @return Reference_One
      */
     public function hasOne($link, $defaults = [])
     {
@@ -1937,11 +1944,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Add hasMany field.
      *
      * @param string $link
-     * @param array $defaults
+     * @param array  $defaults
      *
-     * @return Reference_Many
      * @throws Exception
      * @throws \atk4\core\Exception
+     *
+     * @return Reference_Many
      */
     public function hasMany($link, $defaults = [])
     {
@@ -1952,10 +1960,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Traverse to related model.
      *
      * @param string $link
-     * @param array $defaults
+     * @param array  $defaults
+     *
+     * @throws \atk4\core\Exception
      *
      * @return Model
-     * @throws \atk4\core\Exception
      */
     public function ref($link, $defaults = [])
     {
@@ -1966,10 +1975,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Return related model.
      *
      * @param string $link
-     * @param array $defaults
+     * @param array  $defaults
+     *
+     * @throws \atk4\core\Exception
      *
      * @return Model
-     * @throws \atk4\core\Exception
      */
     public function refModel($link, $defaults = [])
     {
@@ -1980,10 +1990,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Returns model that can be used for generating sub-query actions.
      *
      * @param string $link
-     * @param array $defaults
+     * @param array  $defaults
+     *
+     * @throws \atk4\core\Exception
      *
      * @return Model
-     * @throws \atk4\core\Exception
      */
     public function refLink($link, $defaults = [])
     {
@@ -1995,8 +2006,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param string $link
      *
-     * @return Field
      * @throws \atk4\core\Exception
+     *
+     * @return Field
      */
     public function getRef($link)
     {
@@ -2038,6 +2050,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * getting.
      *
      * @param $name
+     *
      * @return Field|bool
      */
     public function hasField($name)
@@ -2057,11 +2070,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string $name
+     * @param string       $name
      * @param string|array $expression
      *
-     * @return Field_Callback
      * @throws \atk4\core\Exception
+     *
+     * @return Field_Callback
      */
     public function addExpression($name, $expression)
     {
@@ -2084,15 +2098,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Last ID inserted.
      *
-     * @return mixed
      * @throws Exception
+     *
+     * @return mixed
      */
     public function lastInsertID()
     {
         if (isset($this->persistence) && $this->persistence instanceof Persistence_SQL) {
             return $this->persistence->connection->lastInsertId($this);
         }
-        throw new Exception("Model is not associated with SQL-enabled persistence");
+
+        throw new Exception('Model is not associated with SQL-enabled persistence');
     }
 
     // }}}

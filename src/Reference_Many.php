@@ -48,8 +48,9 @@ class Reference_Many extends Reference
      *
      * @param array $defaults Properties
      *
-     * @return Model
      * @throws Exception
+     *
+     * @return Model
      */
     public function ref($defaults = [])
     {
@@ -65,8 +66,9 @@ class Reference_Many extends Reference
      *
      * @param array $defaults Properties
      *
-     * @return Model
      * @throws Exception
+     *
+     * @return Model
      */
     public function refLink($defaults = [])
     {
@@ -81,11 +83,12 @@ class Reference_Many extends Reference
      * Adds field as expression to owner model.
      * Used in aggregate strategy.
      *
-     * @param string $n Field name
-     * @param array $defaults Properties
+     * @param string $n        Field name
+     * @param array  $defaults Properties
+     *
+     * @throws Exception
      *
      * @return Field_Callback
-     * @throws Exception
      */
     public function addField($n, $defaults = [])
     {
@@ -147,8 +150,9 @@ class Reference_Many extends Reference
      *
      * @param array $fields Array of fields
      *
-     * @return $this
      * @throws Exception
+     *
+     * @return $this
      */
     public function addFields($fields = [])
     {

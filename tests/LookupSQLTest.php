@@ -141,16 +141,19 @@ class LFriend extends Model
  */
 class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
-
-    function varexport($expression, $return=FALSE) {
-        $export = var_export($expression, TRUE);
-        $export = preg_replace("/^([ ]*)(.*)/m", '$1$1$2', $export);
+    public function varexport($expression, $return = false)
+    {
+        $export = var_export($expression, true);
+        $export = preg_replace('/^([ ]*)(.*)/m', '$1$1$2', $export);
         $array = preg_split("/\r\n|\n|\r/", $export);
-        $array = preg_replace(["/\s*array\s\($/", "/\)(,)?$/", "/\s=>\s$/"], [NULL, ']$1', ' => ['], $array);
-        $export = join(PHP_EOL, array_filter(["["] + $array));
-        if ((bool)$return) return $export; else echo $export;
+        $array = preg_replace(["/\s*array\s\($/", "/\)(,)?$/", "/\s=>\s$/"], [null, ']$1', ' => ['], $array);
+        $export = implode(PHP_EOL, array_filter(['['] + $array));
+        if ((bool) $return) {
+            return $export;
+        } else {
+            echo $export;
+        }
     }
-
 
     public function setUp()
     {
@@ -194,52 +197,50 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals([
             'country' => [
                 1 => [
-                    'id' => '1',
-                    'name' => 'Canada',
-                    'code' => null,
+                    'id'    => '1',
+                    'name'  => 'Canada',
+                    'code'  => null,
                     'is_eu' => '0',
                 ],
                 2 => [
-                    'id' => '2',
-                    'name' => 'Latvia',
-                    'code' => 'LV',
+                    'id'    => '2',
+                    'name'  => 'Latvia',
+                    'code'  => 'LV',
                     'is_eu' => '1',
                 ],
                 3 => [
-                    'id' => '3',
-                    'name' => 'Estonia',
-                    'code' => 'ES',
+                    'id'    => '3',
+                    'name'  => 'Estonia',
+                    'code'  => 'ES',
                     'is_eu' => '1',
                 ],
                 4 => [
-                    'id' => '4',
-                    'name' => 'Korea',
-                    'code' => 'KR',
+                    'id'    => '4',
+                    'name'  => 'Korea',
+                    'code'  => 'KR',
                     'is_eu' => '0',
                 ],
                 5 => [
-                    'id' => '5',
-                    'name' => 'Japan',
-                    'code' => 'JP',
+                    'id'    => '5',
+                    'name'  => 'Japan',
+                    'code'  => 'JP',
                     'is_eu' => '0',
                 ],
                 6 => [
-                    'id' => '6',
-                    'name' => 'Lithuania',
-                    'code' => 'LT',
+                    'id'    => '6',
+                    'name'  => 'Lithuania',
+                    'code'  => 'LT',
                     'is_eu' => '1',
                 ],
                 7 => [
-                    'id' => '7',
-                    'name' => 'Russia',
-                    'code' => 'KR',
+                    'id'    => '7',
+                    'name'  => 'Russia',
+                    'code'  => 'KR',
                     'is_eu' => '0',
                 ],
             ],
         ], $this->getDB('country'));
     }
-
-
 
     public function testImportInternationalUsers()
     {
@@ -254,32 +255,32 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals([
             'country' => [
                 1 => [
-                    'id' => '1',
-                    'name' => 'Canada',
-                    'code' => NULL,
+                    'id'    => '1',
+                    'name'  => 'Canada',
+                    'code'  => null,
                     'is_eu' => '0',
                 ],
                 2 => [
-                    'id' => '2',
-                    'name' => 'Latvia',
-                    'code' => NULL,
+                    'id'    => '2',
+                    'name'  => 'Latvia',
+                    'code'  => null,
                     'is_eu' => '0',
                 ],
             ],
             'user' => [
                 1 => [
-                    'id' => '1',
-                    'name' => 'Alain',
-                    'is_vip' => '0',
+                    'id'         => '1',
+                    'name'       => 'Alain',
+                    'is_vip'     => '0',
                     'country_id' => '1',
                 ],
                 2 => [
-                    'id' => '2',
-                    'name' => 'Duncan',
-                    'is_vip' => '1',
+                    'id'         => '2',
+                    'name'       => 'Duncan',
+                    'is_vip'     => '1',
                     'country_id' => '1',
                 ],
-            ]
+            ],
         ], $this->getDB(['country', 'user']));
         //$this->varexport($this->getDB(['country','user']));
     }
