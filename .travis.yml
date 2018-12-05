@@ -21,8 +21,10 @@ services:
 before_script:
     - composer self-update
     - composer install --no-ansi
-    - mysql -e 'create database dsql_test;'
-    - psql -c 'create database "atk4-dsql-test";' -U postgres
+    - mysql -e 'CREATE DATABASE dsql_test;'
+    - mysql -e 'SET GLOBAL max_connections = 1000;'
+    - psql -c 'CREATE DATABASE "atk4-dsql-test";' -U postgres
+    - psql -c 'ALTER ROLE travis CONNECTION LIMIT -1;' -U postgres
     - mkdir -p build/logs
 
 script:
