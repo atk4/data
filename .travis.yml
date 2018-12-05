@@ -12,7 +12,15 @@ cache:
     - $HOME/.composer/cache
 
 addons:
-  postgresql: "9.3"
+  #postgresql: "9.3"
+  postgresql: "10"
+  apt:
+    packages:
+    - postgresql-10
+    - postgresql-client-10
+env:
+  global:
+  - PGPORT=5433
 
 services:
     - mysql
