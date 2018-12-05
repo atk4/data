@@ -5,33 +5,43 @@ php:
     - '7.0'
     - '7.1'
     - '7.2'
+    - '7.3'
+
+cache:
+  directories:
+    - $HOME/.composer/cache
 
 addons:
   postgresql: "9.3"
 
 services:
     - mysql
-    - pgsql
+    - postgresql
 
 before_script:
-    - composer install
+    - composer self-update
+    - composer install --no-ansi
     - mysql -e 'create database dsql_test;'
     - psql -c 'create database "atk4-dsql-test";' -U postgres
-
-after_script:
-    - echo $TRAVIS_PHP_VERSION
-    - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.0" ]]; then echo "Sending coverage report"; vendor/bin/test-reporter; fi
-    - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.0" ]]; then echo "Sending codecov report"; TRAVIS_CMD="" bash <(curl -s https://codecov.io/bash); fi
+    - mkdir -p build/logs
 
 script:
-    - if [[ ${TRAVIS_PHP_VERSION:0:3} != "7.0" ]]; then NC="--no-coverage"; fi
-    - ./vendor/phpunit/phpunit/phpunit $NC
-    - ./vendor/bin/phpunit --configuration phpunit-mysql.xml $NC
-    - ./vendor/bin/phpunit --configuration phpunit-pgsql.xml $NC
+    - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then CM=""; NC=""; else CM=""; NC="--no-coverage"; fi
+    - $CM ./vendor/bin/phpunit --configuration phpunit.xml $NC
+    - $CM ./vendor/bin/phpunit --configuration phpunit-mysql.xml $NC
+    - $CM ./vendor/bin/phpunit --configuration phpunit-pgsql.xml $NC
 
-cache:
-  directories:
-    - $HOME/.composer/cache
+after_script:
+  - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then
+      echo "Merging coverage reports:";
+      vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
+      echo "We now have these coverage files:";
+      ls -l build/logs;
+      echo "Sending codeclimate report:";
+      vendor/bin/test-reporter --coverage-report build/logs/cc.xml;
+      echo "Sending codecov report:";
+      TRAVIS_CMD="" bash <(curl -s https://codecov.io/bash) -f build/logs/cc.xml;
+    fi
 
 notifications:
     slack:
