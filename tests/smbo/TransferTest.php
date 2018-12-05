@@ -33,6 +33,42 @@ class TransferTest extends SMBOTestCase
         ], $data);
     }
 
+    public function testRef()
+    {
+        // create accounts and payments
+        $a = new Account($this->db);
+
+        $a->save('AIB');
+        $a->ref('Payment')->save(['amount'=>10]);
+        $a->ref('Payment')->save(['amount'=>20]);
+        $a->unload();
+
+        $a->save('BOI');
+        $a->ref('Payment')->save(['amount'=>30]);
+        $a->unload();
+
+        // create payment without link to account
+        $p = new Payment($this->db);
+        $p->saveAndUnload(['amount'=>40]);
+
+        // Account is not loaded, will dump all Payments related to ANY Account
+        $data = $a->ref('Payment')->export(['amount']);
+        $this->assertEquals([
+            ['amount' => 10],
+            ['amount' => 20],
+            ['amount' => 30],
+            //['amount' => 40], // will not select this because it is not related to any Account
+        ], $data);
+
+        // Account is loaded, will dump all Payments related to that particular Account
+        $a->load(1);
+        $data = $a->ref('Payment')->export(['amount']);
+        $this->assertEquals([
+            ['amount' => 10],
+            ['amount' => 20],
+        ], $data);
+    }
+
     /*
     public function testBasicEntities()
     {
