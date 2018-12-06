@@ -25,24 +25,28 @@ env:
   - PGUSER=travis
   - PGHOST=""
 
+sudo: required
 services:
-    - mysql
-    - postgresql
+  - mysql
+  - postgresql
 
 before_script:
-    - composer self-update
-    - composer install --no-ansi
-    - mysql -e 'CREATE DATABASE dsql_test;'
-    - mysql -e 'SET GLOBAL max_connections = 1000;'
-    - psql -U travis -c 'CREATE DATABASE "atk4-dsql-test";'
-    - psql -U travis -c 'ALTER ROLE travis CONNECTION LIMIT -1;'
-    - mkdir -p build/logs
+  - composer self-update
+  - composer install --no-ansi
+  - mysql -e 'CREATE DATABASE dsql_test;'
+  - mysql -e 'SET GLOBAL max_connections = 1000;'
+  - echo "Copying Postgres 9.x config to Postgres 10 and Restarting Postgres 10"
+  - sudo cp /etc/postgresql/{9.6,10}/main/pg_hba.conf
+  - sudo service postgresql restart
+  - psql -U travis -c 'CREATE DATABASE "atk4-dsql-test";'
+  - psql -U travis -c 'ALTER ROLE travis CONNECTION LIMIT -1;'
+  - mkdir -p build/logs
 
 script:
-    - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then CM=""; NC=""; else CM=""; NC="--no-coverage"; fi
-    - $CM ./vendor/bin/phpunit --configuration phpunit.xml $NC
-    - $CM ./vendor/bin/phpunit --configuration phpunit-mysql.xml $NC
-    - $CM ./vendor/bin/phpunit --configuration phpunit-pgsql.xml $NC
+  - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then CM=""; NC=""; else CM=""; NC="--no-coverage"; fi
+  - $CM ./vendor/bin/phpunit --configuration phpunit.xml $NC
+  - $CM ./vendor/bin/phpunit --configuration phpunit-mysql.xml $NC
+  - $CM ./vendor/bin/phpunit --configuration phpunit-pgsql.xml $NC
 
 after_script:
   - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then
@@ -57,16 +61,16 @@ after_script:
     fi
 
 notifications:
-    slack:
-        rooms:
-            - agiletoolkit:bjrKuPBf1h4cYiNxPBQ1kF6c#dsql
-        on_success: change
+  slack:
+    rooms:
+      - agiletoolkit:bjrKuPBf1h4cYiNxPBQ1kF6c#dsql
+    on_success: change
 
-    urls:
-      - https://webhooks.gitter.im/e/b33a2db0c636f34bafa9
+  urls:
+    - https://webhooks.gitter.im/e/b33a2db0c636f34bafa9
 
-    on_success: change  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: never     # options: [always|never|change] default: always
+  on_success: change  # options: [always|never|change] default: always
+  on_failure: always  # options: [always|never|change] default: always
+  on_start: never     # options: [always|never|change] default: always
 
-    email: false
+  email: false
