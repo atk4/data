@@ -13,6 +13,7 @@ cache:
 
 addons:
   #postgresql: "9.3"
+  #https://docs.travis-ci.com/user/database-setup/#using-a-different-postgresql-version
   postgresql: "10"
   apt:
     packages:
@@ -21,6 +22,8 @@ addons:
 env:
   global:
   - PGPORT=5433
+  - PGUSER=travis
+  - PGHOST=""
 
 services:
     - mysql
@@ -31,8 +34,8 @@ before_script:
     - composer install --no-ansi
     - mysql -e 'CREATE DATABASE dsql_test;'
     - mysql -e 'SET GLOBAL max_connections = 1000;'
-    - psql -c 'CREATE DATABASE "atk4-dsql-test";' -U postgres
-    - psql -c 'ALTER ROLE travis CONNECTION LIMIT -1;' -U postgres
+    - psql -U travis -c 'CREATE DATABASE "atk4-dsql-test";'
+    - psql -U travis -c 'ALTER ROLE travis CONNECTION LIMIT -1;' -U postgres
     - mkdir -p build/logs
 
 script:
