@@ -35,7 +35,7 @@ before_script:
     - mysql -e 'CREATE DATABASE dsql_test;'
     - mysql -e 'SET GLOBAL max_connections = 1000;'
     - psql -U travis -c 'CREATE DATABASE "atk4-dsql-test";'
-    - psql -U travis -c 'ALTER ROLE travis CONNECTION LIMIT -1;' -U postgres
+    - psql -U travis -c 'ALTER ROLE travis CONNECTION LIMIT -1;'
     - mkdir -p build/logs
 
 script:
