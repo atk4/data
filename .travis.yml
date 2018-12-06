@@ -35,18 +35,18 @@ before_script:
   - composer install --no-ansi
   - mysql -e 'CREATE DATABASE dsql_test;'
   - mysql -e 'SET GLOBAL max_connections = 1000;'
-  - echo "Copying Postgres 9.x config to Postgres 10 and Restarting Postgres 10"
-  - sudo cp /etc/postgresql/{9.6,10}/main/pg_hba.conf
-  - sudo service postgresql restart
-  - psql -U travis -c 'CREATE DATABASE "atk4-dsql-test";'
-  - psql -U travis -c 'ALTER ROLE travis CONNECTION LIMIT -1;'
+  #- echo "Copying Postgres 9.x config to Postgres 10 and Restarting Postgres 10"
+  #- sudo cp /etc/postgresql/{9.6,10}/main/pg_hba.conf
+  #- sudo service postgresql restart
+  #- psql -U travis -c 'CREATE DATABASE "atk4-dsql-test";'
+  #- psql -U travis -c 'ALTER ROLE travis CONNECTION LIMIT -1;'
   - mkdir -p build/logs
 
 script:
   - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then CM=""; NC=""; else CM=""; NC="--no-coverage"; fi
   - $CM ./vendor/bin/phpunit --configuration phpunit.xml $NC
   - $CM ./vendor/bin/phpunit --configuration phpunit-mysql.xml $NC
-  - $CM ./vendor/bin/phpunit --configuration phpunit-pgsql.xml $NC
+  #- $CM ./vendor/bin/phpunit --configuration phpunit-pgsql.xml $NC
 
 after_script:
   - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then
