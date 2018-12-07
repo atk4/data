@@ -10,6 +10,8 @@ use atk4\data\Persistence_SQL;
  */
 class ExpressionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
+    public $debug = true;
+
     public function testNakedExpression()
     {
         $db = new Persistence_SQL($this->db->connection);
