@@ -34,7 +34,6 @@ class MyDateTime extends \DateTime
  */
 class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
-    //    public $debug = true;
     public function testType()
     {
         $a = [

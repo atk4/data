@@ -6,8 +6,6 @@ use atk4\data\Persistence;
 
 class TransferTest extends SMBOTestCase
 {
-    public $debug = false;
-
     /**
      * Testing transfer between two accounts.
      */
