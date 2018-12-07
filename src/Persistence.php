@@ -69,6 +69,13 @@ class Persistence
     }
 
     /**
+     * Disconnect from database explicitly
+     */
+    public function disconnect()
+    {
+    }
+
+    /**
      * Associate model with the data driver.
      *
      * @param Model|string $m        Model which will use this persistence

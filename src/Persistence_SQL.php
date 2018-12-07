@@ -83,6 +83,13 @@ class Persistence_SQL extends Persistence
         );
     }
 
+    public function disconnect()
+    {
+        parent::disconnect();
+
+        unset($this->connection);
+    }
+
     /**
      * Returns Query instance.
      *
