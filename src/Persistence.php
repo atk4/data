@@ -69,7 +69,7 @@ class Persistence
     }
 
     /**
-     * Disconnect from database explicitly
+     * Disconnect from database explicitly.
      */
     public function disconnect()
     {
