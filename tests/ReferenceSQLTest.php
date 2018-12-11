@@ -372,7 +372,7 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
                 ['items_c',   'aggregate' => 'group_concat', 'field'=>'name'],
                 ['items_c:',  'concat' => '::', 'field'=>'name'],
-                ['items_c-',  'aggregate' => $i->expr('group_concat([name], [])', ['-'])],
+                ['items_c-',  'aggregate' => $i->dsql()->groupConcat($i->expr('[name]'),'-')],
                 ['len',       'aggregate' => $i->expr('sum(length([name]))')],
                 ['len2',      'expr' => 'sum(length([name]))'],
                 ['chicken5',  'expr' => 'sum([])', 'args'=>['5']],

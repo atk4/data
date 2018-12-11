@@ -104,8 +104,7 @@ class Reference_Many extends Reference
         $field = isset($defaults['field']) ? $defaults['field'] : null;
 
         if (isset($defaults['concat'])) {
-            $defaults['expr'] = "group_concat([$field_n], [])";
-            $defaults['args'] = [$defaults['concat']];
+            $defaults['aggregate'] = $this->owner->dsql()->groupConcat($field_n, $defaults['concat']);
             $defaults['read_only'] = false;
             $defaults['never_save'] = true;
         }

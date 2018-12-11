@@ -168,6 +168,7 @@ class Persistence_SQL extends Persistence
     protected function initPersistence(Model $m)
     {
         $m->addMethod('expr', $this);
+        $m->addMethod('dsql', $this);
     }
 
     /**
@@ -181,6 +182,9 @@ class Persistence_SQL extends Persistence
      */
     public function expr(Model $m, $expr, $args = [])
     {
+        if (!is_string($expr)) {
+            return $this->connection->expr($expr, $args);
+        }
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
             function ($matches) use (&$args, $m) {
