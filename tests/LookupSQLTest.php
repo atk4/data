@@ -160,9 +160,9 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigration(new LCountry($this->db))->create();
-        $this->getMigration(new LUser($this->db))->create();
-        $this->getMigration(new LFriend($this->db))->create();
+        $this->getMigration(new LCountry($this->db))->drop()->create();
+        $this->getMigration(new LUser($this->db))->drop()->create();
+        $this->getMigration(new LFriend($this->db))->drop()->create();
     }
 
     /**
