@@ -47,8 +47,8 @@ class LCountry extends Model
  * a country. If multiple lookup fields are set, we should find a country that matches them all. If country
  * cannot be found then null should be set for country_id.
  *
- * Fiends is many-to-many relationship. We have 'user_names' field which may be similar to the one we had
- * for a country. However specifying user_names as a comma-separated value will not create any friends.
+ * Friends is many-to-many relationship. We have 'friend_names' field which may be similar to the one we had
+ * for a country. However specifying friend_names as a comma-separated value will not create any friends.
  * Instead it will look up existing records and will create "Friend" record for all of them.
  *
  * Like before Friends can also be specified as an array.
@@ -191,7 +191,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $c->import([
             ['Japan', 'code'=>'JP'],
             ['Lithuania', 'code'=>'LT', 'is_eu'=>true],
-            ['Russia', 'code'=>'KR'],
+            ['Russia', 'code'=>'RU'],
         ]);
 
         $this->assertEquals([
@@ -235,7 +235,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 7 => [
                     'id'    => '7',
                     'name'  => 'Russia',
-                    'code'  => 'KR',
+                    'code'  => 'RU',
                     'is_eu' => '0',
                 ],
             ],

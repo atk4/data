@@ -9,6 +9,9 @@ namespace atk4\data;
  */
 class Reference_SQL_One extends Reference_One
 {
+    /**
+     * Initializing.
+     */
     public function init()
     {
         parent::init();
@@ -17,6 +20,11 @@ class Reference_SQL_One extends Reference_One
         $this->owner->addHook('beforeSave', $this, null, 20);
     }
 
+    /**
+     * Before save hook.
+     *
+     * @param \atk4\data\Model $m
+     */
     public function beforeSave($m)
     {
         $field = $this->link;
