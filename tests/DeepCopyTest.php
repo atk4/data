@@ -3,13 +3,14 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
 use atk4\data\Util\DeepCopy;
 
-
-class DCInvoice extends Model {
+class DCInvoice extends Model
+{
     public $table = 'invoice';
-    function init() {
+
+    public function init()
+    {
         parent::init();
 
         $this->hasMany('Lines', [new DCInvoiceLine(), 'their_field'=>'parent_id'])
@@ -21,9 +22,12 @@ class DCInvoice extends Model {
     }
 }
 
-class DCQuote extends Model {
+class DCQuote extends Model
+{
     public $table = 'quote';
-    function init() {
+
+    public function init()
+    {
         parent::init();
 
         $this->hasMany('Lines', [new DCQuoteLine(), 'their_field'=>'parent_id'])
@@ -35,16 +39,19 @@ class DCQuote extends Model {
     }
 }
 
-class DCInvoiceLine extends Model {
+class DCInvoiceLine extends Model
+{
     public $table = 'line';
-    function init() {
+
+    public function init()
+    {
         parent::init();
         $this->hasOne('parent_id', new DCInvoice());
 
         $this->addField('name');
 
-        $this->addField('type', ['enum'=>['invoice','quote']]);
-        $this->addCondition('type', '=',  'invoice');
+        $this->addField('type', ['enum'=>['invoice', 'quote']]);
+        $this->addCondition('type', '=', 'invoice');
 
         $this->addField('qty', ['type'=>'integer']);
         $this->addField('price', ['type'=>'money']);
@@ -55,17 +62,20 @@ class DCInvoiceLine extends Model {
     }
 }
 
-class DCQuoteLine extends Model {
+class DCQuoteLine extends Model
+{
     public $table = 'line';
-    function init() {
+
+    public function init()
+    {
         parent::init();
 
         $this->hasOne('parent_id', new DCQuote());
 
         $this->addField('name');
 
-        $this->addField('type', ['enum'=>['invoice','quote']]);
-        $this->addCondition('type', '=',  'quote');
+        $this->addField('type', ['enum'=>['invoice', 'quote']]);
+        $this->addCondition('type', '=', 'quote');
 
         $this->addField('qty', ['type'=>'integer']);
         $this->addField('price', ['type'=>'money']);
@@ -75,12 +85,8 @@ class DCQuoteLine extends Model {
     }
 }
 
-
-
-
-
 /**
- * Implements various tests for deep copying objects
+ * Implements various tests for deep copying objects.
  */
 class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
@@ -94,12 +100,11 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->getMigration(new DCInvoiceLine($this->db))->create();
     }
 
-
     public function testBasic()
     {
         $q = new DCQuote($this->db);
 
-        $q->insert(['ref'=>'q1', 'Lines'=> [
+        $q->insert(['ref'=> 'q1', 'Lines'=> [
             ['tools', 'qty'=>5, 'price'=>10],
             ['work', 'qty'=>1, 'price'=>40],
         ]]);

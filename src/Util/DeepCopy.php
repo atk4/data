@@ -7,7 +7,7 @@ use atk4\data\Reference_Many;
 use atk4\data\Reference_One;
 
 /**
- * Class DeepCopy implements copying records between two models:
+ * Class DeepCopy implements copying records between two models:.
  *
  * $dc = new DeepCopy();
  *
@@ -15,11 +15,9 @@ use atk4\data\Reference_One;
  * $dc->to(new ArchivedUser());
  * $dc->with('AuditLog');
  * $dc->copy();
- *
- * @package atk4\data\Util
  */
-class DeepCopy {
-
+class DeepCopy
+{
     protected $source;
     protected $destination;
 
@@ -33,29 +31,32 @@ class DeepCopy {
      */
     public $mapping = [];
 
-    function from(Model $source)
+    public function from(Model $source)
     {
         $this->source = $source;
+
         return $this;
     }
 
-    function to(Model $destination)
+    public function to(Model $destination)
     {
         $this->destination = $destination;
 
         if (!$this->destination->persistence) {
             $this->source->persistence->add($this->destination);
         }
+
         return $this;
     }
 
-    function with(array $references)
+    public function with(array $references)
     {
         $this->references = array_merge_recursive($this->references, $references);
+
         return $this;
     }
 
-    function _copy(Model $source, Model $destination, array $references)
+    public function _copy(Model $source, Model $destination, array $references)
     {
         // Perhaps source was already copied
         if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->id])) {
@@ -71,7 +72,7 @@ class DeepCopy {
         // foreach($destination->unique fields) { try load by
 
         // Copy fields as they are
-        foreach($data as $key=>$val){
+        foreach ($data as $key=>$val) {
             if (
                 ($field = $destination->hasField($key)) &&
                 $field->isEditable()
@@ -81,7 +82,7 @@ class DeepCopy {
         }
 
         // Look for hasOne references that needs to be mapped. Make sure records can be mapped, or copy them
-        foreach($references as $ref_key=>$ref_val) {
+        foreach ($references as $ref_key=>$ref_val) {
             if (is_numeric($ref_key)) {
                 $ref_key = $ref_val;
                 $ref_val = [];
@@ -99,7 +100,6 @@ class DeepCopy {
                     // pointing to non-existant record. Would need to copy
                     $destination[$ref_key] = $this->_copy($source->ref($ref_key), $destination->refModel($ref_key), $ref_val)->id;
                 }
-
             }
         }
 
@@ -111,7 +111,7 @@ class DeepCopy {
 
         // Next look for hasMany relationships and copy those too
 
-        foreach($references as $ref_key=>$ref_val) {
+        foreach ($references as $ref_key=>$ref_val) {
             if (is_numeric($ref_key)) {
                 $ref_key = $ref_val;
                 $ref_val = [];
@@ -120,19 +120,17 @@ class DeepCopy {
             if (($ref = $source->hasRef($ref_key)) && $ref instanceof Reference_Many) {
 
                 // No mapping, will always copy
-                foreach($source->ref($ref_key) as $ref_model) {
+                foreach ($source->ref($ref_key) as $ref_model) {
                     $this->_copy($ref_model, $destination->refModel($ref_key), $ref_val);
                 }
             }
         }
 
         return $destination;
-
     }
 
-    function copy()
+    public function copy()
     {
         return $this->_copy($this->source, $this->destination, $this->references)->reload();
     }
-
 }
