@@ -2051,16 +2051,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param $name
      *
-     * @return Field|bool
+     * @return Field|false
      */
     public function hasField($name)
     {
         $f_object = $this->hasElement($name);
-        if (!$f_object) {
+        if (!$f_object || !$f_object instanceof Field) {
             return false;
         }
 
-        return $f_object instanceof Field;
+        return $f_object;
     }
 
     // }}}
