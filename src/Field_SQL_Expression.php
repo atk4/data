@@ -40,7 +40,7 @@ class Field_SQL_Expression extends Field_SQL
     public $concat = null;
 
     /**
-     * When defining as aggregate, this will point to relation object
+     * When defining as aggregate, this will point to relation object.
      */
     public $aggregate_relation = null;
 
@@ -67,13 +67,12 @@ class Field_SQL_Expression extends Field_SQL
 
     /**
      * Possibly that user will attempt to insert values here. If that is the case, then
-     * we would need to inject it into related hasMany relationship
+     * we would need to inject it into related hasMany relationship.
      *
      * @param $m
      */
     public function afterSave($m)
     {
-
     }
 
     /**
