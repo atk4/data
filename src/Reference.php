@@ -35,7 +35,7 @@ class Reference
      *
      * @var string
      */
-    protected $link;
+    public $link;
 
     /**
      * Definition of the destination model, that can be either an object, a

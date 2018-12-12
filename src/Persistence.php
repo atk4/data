@@ -29,6 +29,9 @@ class Persistence
      * @param string $password
      * @param array  $args
      *
+     * @throws Exception
+     * @throws \atk4\dsql\Exception
+     *
      * @return Persistence
      */
     public static function connect($dsn, $user = null, $password = null, $args = [])
@@ -63,6 +66,13 @@ class Persistence
                     'dsn' => $dsn['dsn'],
                 ]);
         }
+    }
+
+    /**
+     * Disconnect from database explicitly.
+     */
+    public function disconnect()
+    {
     }
 
     /**

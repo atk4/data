@@ -84,6 +84,16 @@ class Persistence_SQL extends Persistence
     }
 
     /**
+     * Disconnect from database explicitly.
+     */
+    public function disconnect()
+    {
+        parent::disconnect();
+
+        unset($this->connection);
+    }
+
+    /**
      * Returns Query instance.
      *
      * @return \atk4\dsql\Query
@@ -161,19 +171,23 @@ class Persistence_SQL extends Persistence
     protected function initPersistence(Model $m)
     {
         $m->addMethod('expr', $this);
+        $m->addMethod('dsql', $this);
     }
 
     /**
-     * Creates new Expression object from expression.
+     * Creates new Expression object from expression string.
      *
-     * @param Model  $m
-     * @param string $expr
-     * @param array  $args
+     * @param Model $m
+     * @param mixed $expr
+     * @param array $args
      *
      * @return \atk4\dsql\Expression
      */
     public function expr(Model $m, $expr, $args = [])
     {
+        if (!is_string($expr)) {
+            return $this->connection->expr($expr, $args);
+        }
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
             function ($matches) use (&$args, $m) {
