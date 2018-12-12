@@ -127,6 +127,7 @@ class DeepCopy
                 $destination->set($key, $val);
             }
         }
+        $destination->hook('afterCopy', [$source]);
 
         // Look for hasOne references that needs to be mapped. Make sure records can be mapped, or copy them
         foreach ($references as $ref_key=>$ref_val) {

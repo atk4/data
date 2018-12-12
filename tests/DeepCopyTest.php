@@ -42,6 +42,12 @@ class DCInvoice extends Model
         $this->addField('ref');
 
         $this->addField('is_paid', ['type'=>'boolean', 'default'=>false]);
+
+        $this->addHook('afterCopy', function($m, $s) {
+            if (get_class($s) == get_class($this)) {
+                $m['ref'] = $m['ref'] . '_copy';
+            }
+        });
     }
 }
 
@@ -165,6 +171,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ->copy();
 
         // price now will be with VAT
+        $this->assertEquals('q1', $invoice['ref']);
         $this->assertEquals(108.90, $invoice['total']);
         $this->assertEquals(1, $invoice->id);
 
@@ -192,6 +199,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // Invoice copy receives a new ID
         $this->assertNotEquals($invoice->id, $invoice_copy->id);
+        $this->assertEquals('q1_copy', $invoice_copy['ref']);
 
         // ..however the due amount is the same - 5
         $this->assertEquals(5, $invoice_copy['due']);
