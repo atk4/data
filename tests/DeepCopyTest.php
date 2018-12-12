@@ -130,7 +130,6 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // it returns destination model with previously copied record loaded
         $this->assertEquals(1, $invoice->id); // same id as above (previous invoice)
 
-
         // and now create new quote and copy it
         $quote->insert(['ref'=> 'q2', 'Lines'=> [
             ['tools', 'qty'=>3, 'price'=>15],
