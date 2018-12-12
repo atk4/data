@@ -92,16 +92,16 @@ class DCQuoteLine extends Model
 
 class DCPayment extends Model
 {
-   public $table = 'payment';
+    public $table = 'payment';
 
-   public function init()
-   {
-       parent::init();
+    public function init()
+    {
+        parent::init();
 
-       $this->hasOne('invoice_id', new DCInvoice());
+        $this->hasOne('invoice_id', new DCInvoice());
 
-       $this->addField('amount', ['type'=>'money']);
-   }
+        $this->addField('amount', ['type'=>'money']);
+    }
 }
 
 /**
@@ -145,14 +145,13 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(1, $invoice->id);
 
         // now to add payment for the invoice
-        $invoice->ref('Payments')->insert(['amount'=>$invoice['total']-5]);
+        $invoice->ref('Payments')->insert(['amount'=>$invoice['total'] - 5]);
 
         $invoice->reload();
 
         $this->assertEquals(5, $invoice['due']);
 
         $dc = new DeepCopy();
-        $dc->debug = true;
         $invoice_copy = $dc
             ->from($invoice)
             ->to(new DCInvoice())

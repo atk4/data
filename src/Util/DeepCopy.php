@@ -18,9 +18,6 @@ use atk4\data\Reference_One;
  */
 class DeepCopy
 {
-    public $debug = false;
-
-
     /**
      * @var \atk4\data\Model from which we want to copy records.
      */
