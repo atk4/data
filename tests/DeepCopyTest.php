@@ -152,11 +152,11 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(5, $invoice['due']);
 
         $dc = new DeepCopy();
-        return; ## DEADLOOP!!!!!
+        $dc->debug = true;
         $invoice_copy = $dc
             ->from($invoice)
             ->to(new DCInvoice())
-            ->with(['Lines'])
+            ->with(['Lines', 'Payments'])
             ->copy();
 
         $this->assertEquals(2, $invoice_copy->id);
