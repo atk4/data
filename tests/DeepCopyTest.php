@@ -5,6 +5,23 @@ namespace atk4\data\tests;
 use atk4\data\Model;
 use atk4\data\Util\DeepCopy;
 
+class DCClient extends Model
+{
+    public $table = 'client';
+
+    public function init()
+    {
+        parent::init();
+
+        $this->addField('name');
+
+        $this->hasMany('Invoices', new DCInvoice());
+        $this->hasMany('Quotes', new DCQuote());
+    }
+
+}
+
+
 class DCInvoice extends Model
 {
     public $table = 'invoice';
@@ -12,6 +29,8 @@ class DCInvoice extends Model
     public function init()
     {
         parent::init();
+
+        $this->hasOne('client_id', new DCClient());
 
         $this->hasMany('Lines', [new DCInvoiceLine(), 'their_field'=>'parent_id'])
             ->addField('total', ['aggregate'=>'sum', 'field'=>'total']);
@@ -34,6 +53,7 @@ class DCQuote extends Model
     public function init()
     {
         parent::init();
+        $this->hasOne('client_id', new DCClient());
 
         $this->hasMany('Lines', [new DCQuoteLine(), 'their_field'=>'parent_id'])
             ->addField('total', ['aggregate'=>'sum', 'field'=>'total']);
@@ -97,6 +117,7 @@ class DCPayment extends Model
     public function init()
     {
         parent::init();
+        $this->hasOne('client_id', new DCClient());
 
         $this->hasOne('invoice_id', new DCInvoice());
 
@@ -114,6 +135,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         parent::setUp();
 
         // populate database for our three models
+        $this->getMigration(new DCClient($this->db))->drop()->create();
         $this->getMigration(new DCInvoice($this->db))->drop()->create();
         $this->getMigration(new DCQuote($this->db))->drop()->create();
         $this->getMigration(new DCInvoiceLine($this->db))->drop()->create();
@@ -122,9 +144,13 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testBasic()
     {
+        $client = new DCClient($this->db);
+        $client_id = $client->insert('John');
+
         $quote = new DCQuote($this->db);
 
-        $quote->insert(['ref'=> 'q1', 'Lines'=> [
+
+        $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
             ['tools', 'qty'=>5, 'price'=>10],
             ['work', 'qty'=>1, 'price'=>40],
         ]]);
@@ -137,15 +163,17 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $invoice = $dc
             ->from($quote)
             ->to(new DCInvoice())
-            ->with(['Lines'])
+            ->with(['Lines', 'client_id'])
             ->copy();
 
         // price now will be with VAT
         $this->assertEquals(108.90, $invoice['total']);
         $this->assertEquals(1, $invoice->id);
+        $this->assertEquals('John', $invoice->ref('client_id')['name']);
+        $this->assertNotEquals($quote['client_id'], $invoice['client_id']);
 
         // now to add payment for the invoice
-        $invoice->ref('Payments')->insert(['amount'=>$invoice['total'] - 5]);
+        $invoice->ref('Payments')->insert(['amount'=>$invoice['total'] - 5, 'client_id'=>$invoice['client_id']]);
 
         $invoice->reload();
 
@@ -155,10 +183,12 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $invoice_copy = $dc
             ->from($invoice)
             ->to(new DCInvoice())
-            ->with(['Lines', 'Payments'])
+            ->with(['Lines', 'client_id', 'Payments'=>['client_id']])
             ->copy();
 
         $this->assertEquals(2, $invoice_copy->id);
         $this->assertEquals(5, $invoice_copy['due']);
+
+        $this->assertEquals($invoice_copy['client_id'], $invoice_copy->ref('Payments')->loadAny()['client_id']);
     }
 }

@@ -147,6 +147,12 @@ class DeepCopy
                     // no need to deep copy, simply alter ID
                     $destination[$ref_key] = $this->mapping[$source_table][$source[$ref_key]];
                 } else {
+                    // hasOne points to null!
+                    if (!$source[$ref_key]) {
+                        $destination[$ref_key] = $source[$ref_key];
+                        continue;
+                    }
+
                     // pointing to non-existent record. Would need to copy
                     $destination[$ref_key] = $this->_copy($source->ref($ref_key), $destination->refModel($ref_key), $ref_val)->id;
                 }
