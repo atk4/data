@@ -100,6 +100,8 @@ class Reference_Many extends Reference
             ]);
         }
 
+        $defaults['aggregate_relation'] = $this;
+
         $field_n = isset($defaults['field']) ? $defaults['field'] : $n;
         $field = isset($defaults['field']) ? $defaults['field'] : null;
 

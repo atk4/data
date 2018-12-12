@@ -40,6 +40,11 @@ class Field_SQL_Expression extends Field_SQL
     public $concat = null;
 
     /**
+     * When defining as aggregate, this will point to relation object
+     */
+    public $aggregate_relation = null;
+
+    /**
      * Specifies which field to use.
      */
     public $field = null;
@@ -54,6 +59,21 @@ class Field_SQL_Expression extends Field_SQL
         if ($this->owner->reload_after_save === null) {
             $this->owner->reload_after_save = true;
         }
+
+        if ($this->concat) {
+            $this->owner->addHook('afterSave', $this);
+        }
+    }
+
+    /**
+     * Possibly that user will attempt to insert values here. If that is the case, then
+     * we would need to inject it into related hasMany relationship
+     *
+     * @param $m
+     */
+    public function afterSave($m)
+    {
+
     }
 
     /**

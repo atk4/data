@@ -252,6 +252,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // Both lines will work quite similar
         $c->insert(['Latvia', 'user_names'=>'imants,juris']);
 
+        //$this->varexport($this->getDB(['country','user']));
         $this->assertEquals([
             'country' => [
                 1 => [
@@ -280,9 +281,20 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                     'is_vip'     => '1',
                     'country_id' => '1',
                 ],
+                3 => [
+                    'id' => '3',
+                    'name' => 'imants',
+                    'is_vip' => '0',
+                    'country_id' => '2',
+                ],
+                4 => [
+                    'id' => '4',
+                    'name' => 'juris',
+                    'is_vip' => '0',
+                    'country_id' => '2',
+                ],
             ],
         ], $this->getDB(['country', 'user']));
-        //$this->varexport($this->getDB(['country','user']));
     }
 
     /*
