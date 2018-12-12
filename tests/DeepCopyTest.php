@@ -19,9 +19,7 @@ class DCClient extends Model
         $this->hasMany('Quotes', new DCQuote());
         $this->hasMany('Payments', new DCPayment());
     }
-
 }
-
 
 class DCInvoice extends Model
 {
@@ -150,7 +148,6 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $quote = new DCQuote($this->db);
 
-
         $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
             ['tools', 'qty'=>5, 'price'=>10],
             ['work', 'qty'=>1, 'price'=>40],
@@ -208,9 +205,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // finally, the client_id used for newly created payment and new invoice correspond
         $this->assertEquals($invoice_copy['client_id'], $invoice_copy->ref('Payments')->loadAny()['client_id']);
 
-
         // the final test is to copy client entirely!
-
 
         $dc = new DeepCopy();
         $client3 = $dc
@@ -219,17 +214,17 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ->with([
 
                 // Invoices are copied, but unless we also copy lines, totals won't be there!
-                'Invoices'=>[
-                    'Lines'
+                'Invoices'=> [
+                    'Lines',
                 ],
-                'Quotes'=>[
-                    'Lines'
+                'Quotes'=> [
+                    'Lines',
                 ],
-                'Payments'=>[
+                'Payments'=> [
 
                     // this is important to have here, because we want copied payments to be linked with NEW invoices!
-                    'invoice_id'
-                ]
+                    'invoice_id',
+                ],
             ])
             ->copy();
 
