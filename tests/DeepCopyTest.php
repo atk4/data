@@ -95,9 +95,9 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigration(new DCInvoice($this->db))->create();
-        $this->getMigration(new DCQuote($this->db))->create();
-        $this->getMigration(new DCInvoiceLine($this->db))->create();
+        $this->getMigration(new DCInvoice($this->db))->drop()->create();
+        $this->getMigration(new DCQuote($this->db))->drop()->create();
+        $this->getMigration(new DCInvoiceLine($this->db))->drop()->create();
     }
 
     public function testBasic()
