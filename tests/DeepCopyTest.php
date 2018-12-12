@@ -102,25 +102,53 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testBasic()
     {
-        $q = new DCQuote($this->db);
+        $quote = new DCQuote($this->db);
 
-        $q->insert(['ref'=> 'q1', 'Lines'=> [
+        $quote->insert(['ref'=> 'q1', 'Lines'=> [
             ['tools', 'qty'=>5, 'price'=>10],
             ['work', 'qty'=>1, 'price'=>40],
         ]]);
-        $q->loadAny();
+        $quote->loadAny();
 
         // total price should match
-        $this->assertEquals(90, $q['total']);
+        $this->assertEquals(90.00, $quote['total']);
 
         $dc = new DeepCopy();
         $invoice = $dc
-            ->from($q)
+            ->from($quote)
             ->to(new DCInvoice())
             ->with(['Lines'])
             ->copy();
 
         // price now will be with VAT
-        $this->assertEquals(108.9, $invoice['total']);
+        $this->assertEquals(108.90, $invoice['total']);
+        $this->assertEquals(1, $invoice->id);
+
+        // try to copy same record one more time
+        $invoice = $dc->copy();
+
+        // it returns destination model with previously copied record loaded
+        $this->assertEquals(1, $invoice->id); // same id as above (previous invoice)
+
+
+        // and now create new quote and copy it
+        $quote->insert(['ref'=> 'q2', 'Lines'=> [
+            ['tools', 'qty'=>3, 'price'=>15],
+            ['work', 'qty'=>2, 'price'=>35],
+        ]]);
+        $quote->load(2);
+
+        // total price should match
+        $this->assertEquals(115.00, $quote['total']);
+
+        $invoice = $dc
+            ->from($quote)
+            ->to(new DCInvoice())
+            ->with(['Lines'])
+            ->copy();
+
+        // price now will be with VAT and id will be 2 (new invoice)
+        $this->assertEquals(139.15, $invoice['total']);
+        $this->assertEquals(2, $invoice->id);
     }
 }

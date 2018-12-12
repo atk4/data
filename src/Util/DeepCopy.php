@@ -18,7 +18,14 @@ use atk4\data\Reference_One;
  */
 class DeepCopy
 {
+    /**
+     * @var \atk4\data\Model from which we want to copy records.
+     */
     protected $source;
+
+    /**
+     * @var \atk4\data\Model in which we want to copy records into.
+     */
     protected $destination;
 
     /**
@@ -31,6 +38,13 @@ class DeepCopy
      */
     public $mapping = [];
 
+    /**
+     * Set model from which to copy records.
+     *
+     * @param Model $source
+     *
+     * @return $this
+     */
     public function from(Model $source)
     {
         $this->source = $source;
@@ -38,6 +52,13 @@ class DeepCopy
         return $this;
     }
 
+    /**
+     * Set model in which to copy records into.
+     *
+     * @param Model $destination
+     *
+     * @return $this
+     */
     public function to(Model $destination)
     {
         $this->destination = $destination;
@@ -49,6 +70,13 @@ class DeepCopy
         return $this;
     }
 
+    /**
+     * Set references to copy.
+     *
+     * @param array $references
+     *
+     * @return $this
+     */
     public function with(array $references)
     {
         $this->references = array_merge_recursive($this->references, $references);
@@ -56,11 +84,30 @@ class DeepCopy
         return $this;
     }
 
-    public function _copy(Model $source, Model $destination, array $references)
+    /**
+     * Copy records.
+     *
+     * @return Model Destination model
+     */
+    public function copy()
     {
-        // Perhaps source was already copied
+        return $this->_copy($this->source, $this->destination, $this->references)->reload();
+    }
+
+    /**
+     * Internal method for copying records.
+     *
+     * @param Model $source
+     * @param Model $destination
+     * @param array $references
+     *
+     * @return Model Destination model
+     */
+    protected function _copy(Model $source, Model $destination, array $references)
+    {
+        // Perhaps source was already copied, then simply load destination model and return
         if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->id])) {
-            return $this->mapping[$source->table][$source->id];
+            return $destination->load($this->mapping[$source->table][$source->id]);
         }
 
         // TODO transform data from source to destination with a possible callback
@@ -97,7 +144,7 @@ class DeepCopy
                     // no need to deep copy, simply alter ID
                     $destination[$ref_key] = $this->mapping[$source_table][$source[$ref_key]];
                 } else {
-                    // pointing to non-existant record. Would need to copy
+                    // pointing to non-existent record. Would need to copy
                     $destination[$ref_key] = $this->_copy($source->ref($ref_key), $destination->refModel($ref_key), $ref_val)->id;
                 }
             }
@@ -127,10 +174,5 @@ class DeepCopy
         }
 
         return $destination;
-    }
-
-    public function copy()
-    {
-        return $this->_copy($this->source, $this->destination, $this->references)->reload();
     }
 }
