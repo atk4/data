@@ -177,12 +177,10 @@ class DeepCopy
 
                 // No mapping, will always copy
                 foreach ($source->ref($ref_key) as $ref_model) {
-
                     $this->_copy($ref_model, $destination->ref($ref_key), $ref_val);
                 }
             }
         }
-
 
         return $destination;
     }
