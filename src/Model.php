@@ -1511,6 +1511,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
                 // In certain cases, there may be exceptions when providing field values
                 if ($field instanceof Field_SQL_Expression && $field->concat && is_string($value) && $field->aggregate_relation) {
+
                     $refs[$field->aggregate_relation->link] = explode($field->concat, $value);
                     unset($row[$key]);
                 }
@@ -2064,11 +2065,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function hasField($name)
     {
         $f_object = $this->hasElement($name);
-        if (!$f_object) {
+        if (!$f_object || !$f_object instanceof Field) {
             return false;
         }
 
-        return $f_object instanceof Field;
+        return $f_object;
     }
 
     // }}}
