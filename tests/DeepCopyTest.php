@@ -43,9 +43,9 @@ class DCInvoice extends Model
 
         $this->addField('is_paid', ['type'=>'boolean', 'default'=>false]);
 
-        $this->addHook('afterCopy', function($m, $s) {
+        $this->addHook('afterCopy', function ($m, $s) {
             if (get_class($s) == get_class($this)) {
-                $m['ref'] = $m['ref'] . '_copy';
+                $m['ref'] = $m['ref'].'_copy';
             }
         });
     }
