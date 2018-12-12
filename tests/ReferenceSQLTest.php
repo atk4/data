@@ -370,7 +370,6 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ['items_name', 'aggregate' => 'count', 'field' => 'name'],
                 ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
                 ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
-                ['items_c',   'aggregate' => 'group_concat', 'field'=>'name'],
                 ['items_c:',  'concat' => '::', 'field'=>'name'],
                 ['items_c-',  'aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
                 ['len',       'aggregate' => $i->expr('sum(length([name]))')],
@@ -382,7 +381,6 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(2, $l['items_name']); // 2 not-null values
         $this->assertEquals(1, $l['items_code']); // only 1 not-null value
         $this->assertEquals(2, $l['items_star']); // 2 rows in total
-        $this->assertEquals('Pork,Chicken', $l['items_c']);
         $this->assertEquals('Pork::Chicken', $l['items_c:']);
         $this->assertEquals('Pork-Chicken', $l['items_c-']);
         $this->assertEquals(strlen('Chicken') + strlen('Pork'), $l['len']);
@@ -393,7 +391,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(0, $l['items_name']);
         $this->assertEquals(0, $l['items_code']);
         $this->assertEquals(0, $l['items_star']);
-        $this->assertEquals('', $l['items_c']);
+        $this->assertEquals('', $l['items_c:']);
+        $this->assertEquals('', $l['items_c-']);
         $this->assertEquals(null, $l['len']);
         $this->assertEquals(null, $l['len2']);
         $this->assertEquals(null, $l['chicken5']);

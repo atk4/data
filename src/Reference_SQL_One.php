@@ -29,13 +29,13 @@ class Reference_SQL_One extends Reference_One
     {
         $field = $this->link;
 
-        if ($m->isDirty($field) && !$m->isDirty($this->link)) {
-            $mm = $m->getRef($this->link)->getModel();
+        if ($m->isDirty($field) && !$m->isDirty($field)) {
+            $mm = $m->getRef($field)->getModel();
 
             $mm->addCondition($mm->title_field, $m[$field]);
             // TODO - add extra conditions, in case lookup fields are set
 
-            $m[$this->link] = $mm->action('field', [$mm->id_field]);
+            $m[$field] = $mm->action('field', [$mm->id_field]);
         }
     }
 
