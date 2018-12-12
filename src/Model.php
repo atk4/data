@@ -1489,8 +1489,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * This is a temporary method to avoid code duplication, but insert / import should
      * be implemented differently.
      *
-     * @param Model       $m
-     * @param array|Model $row
+     * @param Model        $m   Model where to insert
+     * @param array|string $row Data row to insert or title field value
      */
     protected function _rawInsert($m, $row)
     {
@@ -1525,15 +1525,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $refs[$key] = $value;
             unset($row[$key]);
         }
+
+        // save data fields
         $m->save($row);
+
+        // store id value
         if ($this->id_field) {
             $m->data[$m->id_field] = $m->id;
         }
 
-        if ($refs) {
-            foreach ($refs as $key => $value) {
-                $m->ref($key)->import($value);
-            }
+        // if there was referenced data, then import it
+        foreach ($refs as $key => $value) {
+            $m->ref($key)->import($value);
         }
     }
 

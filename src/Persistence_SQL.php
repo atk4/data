@@ -83,6 +83,9 @@ class Persistence_SQL extends Persistence
         );
     }
 
+    /**
+     * Disconnect from database explicitly.
+     */
     public function disconnect()
     {
         parent::disconnect();
@@ -172,11 +175,11 @@ class Persistence_SQL extends Persistence
     }
 
     /**
-     * Creates new Expression object from expression.
+     * Creates new Expression object from expression string.
      *
-     * @param Model  $m
-     * @param string $expr
-     * @param array  $args
+     * @param Model $m
+     * @param mixed $expr
+     * @param array $args
      *
      * @return \atk4\dsql\Expression
      */
