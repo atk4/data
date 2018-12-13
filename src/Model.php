@@ -347,7 +347,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function validate($intent = null)
     {
         $errors = [];
-        foreach ($this->hook('validate') as $handler_error) {
+        foreach ($this->hook('validate', [$intent]) as $handler_error) {
             if ($handler_error) {
                 $errors = array_merge($errors, $handler_error);
             }
