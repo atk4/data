@@ -3,7 +3,6 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Util\DeepCopy;
 
 class STAccount extends Model
 {
@@ -27,25 +26,30 @@ class STAccount extends Model
         $this->hasMany('Transactions:TransferIn', new STTransaction_TransferIn());
     }
 
-    static function open($persistence, $name, $amount = 0) {
+    public static function open($persistence, $name, $amount = 0)
+    {
         $m = new self($persistence);
         $m->save($name);
 
         if ($amount) {
             $m->ref('Transactions:OB')->save(['amount'=>$amount]);
         }
+
         return $m;
     }
 
-    public function deposit($amount) {
+    public function deposit($amount)
+    {
         return $this->ref('Transactions:Deposit')->save(['amount'=>$amount]);
     }
 
-    public function withdraw($amount) {
+    public function withdraw($amount)
+    {
         return $this->ref('Transactions:Withdrawal')->save(['amount'=>$amount]);
     }
 
-    public function transferTo(STAccount $account, $amount) {
+    public function transferTo(self $account, $amount)
+    {
         $out = $this->ref('Transactions:TransferOut')->save(['amount'=>$amount]);
         $in = $account->ref('Transactions:TransferIn')->save(['amount'=>$amount, 'link_id'=>$out->id]);
         $out['link_id'] = $in->id;
@@ -70,17 +74,14 @@ class STGenericTransaction extends Model
         }
         $this->addField('amount');
 
-        $this->addHook('afterLoad', function(STGenericTransaction $m) {
-
+        $this->addHook('afterLoad', function (STGenericTransaction $m) {
             if (get_class($this) != $m->getClassName()) {
-
                 $cl = '\\'.$this->getClassName();
                 $cl = new $cl($this->persistence);
                 $cl->load($m->id);
 
                 $this->breakHook($cl);
             }
-
         });
     }
 
@@ -108,27 +109,26 @@ class STTransaction_Withdrawal extends STGenericTransaction
 class STTransaction_TransferOut extends STGenericTransaction
 {
     public $type = 'TransferOut';
+
     public function init()
     {
         parent::init();
         $this->hasOne('link_id', new STTransaction_TransferIn());
 
         //$this->join('transaction','linked_transaction');
-
-
     }
 }
 
 class STTransaction_TransferIn extends STGenericTransaction
 {
     public $type = 'TransferIn';
+
     public function init()
     {
         parent::init();
         $this->hasOne('link_id', new STTransaction_TransferOut());
     }
 }
-
 
 /**
  * Implements various tests for deep copying objects.
@@ -146,9 +146,6 @@ class SubTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testBasic()
     {
-
-
-
         $inheritance = STAccount::open($this->db, 'inheritance', 1000);
         $current = STAccount::open($this->db, 'current');
 
@@ -161,7 +158,7 @@ class SubTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('atk4\data\tests\STTransaction_Withdrawal', get_class($current->ref('Transactions')->load(4)));
 
         $cl = [];
-        foreach($current->ref('Transactions') as $tr) {
+        foreach ($current->ref('Transactions') as $tr) {
             $cl[] = get_class($tr);
         }
 

@@ -1014,8 +1014,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $ret = $this->hook('afterLoad');
-        if ($ret === false)
-        {
+        if ($ret === false) {
             return $this->unload();
         } elseif (is_object($ret)) {
             return $ret;
@@ -1235,7 +1234,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->id = $id;
 
             $ret = $this->hook('afterLoad');
-            if ($ret=== false) {
+            if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
                 return $ret;
