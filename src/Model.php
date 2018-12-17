@@ -919,7 +919,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             foreach (array_reverse($field) as $o) {
-                $this->setOrder($o);
+                if (is_array($o)) {
+                    $this->setOrder(...$o);
+                } else {
+                    $this->setOrder($o);
+                }
             }
 
             return $this;

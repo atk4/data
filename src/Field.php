@@ -252,7 +252,7 @@ class Field
             // other field types empty value is the same as no-value, nothing or null
             if ($f->type && $f->type != 'string' && $value === '') {
                 if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a empty']);
+                    throw new ValidationException([$this->name => 'Must not be empty']);
                 }
 
                 return;
