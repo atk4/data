@@ -1,4 +1,5 @@
 docs/build
+phpunit-mysql-local.xml
 /composer.lock
 /build
 /vendor

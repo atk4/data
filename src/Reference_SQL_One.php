@@ -10,6 +10,36 @@ namespace atk4\data;
 class Reference_SQL_One extends Reference_One
 {
     /**
+     * Initializing.
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Will try to execute last
+        $this->owner->addHook('beforeSave', $this, null, 20);
+    }
+
+    /**
+     * Before save hook.
+     *
+     * @param \atk4\data\Model $m
+     */
+    public function beforeSave($m)
+    {
+        $field = $this->link;
+
+        if ($m->isDirty($field) && !$m->isDirty($field)) {
+            $mm = $m->getRef($field)->getModel();
+
+            $mm->addCondition($mm->title_field, $m[$field]);
+            // TODO - add extra conditions, in case lookup fields are set
+
+            $m[$field] = $mm->action('field', [$mm->id_field]);
+        }
+    }
+
+    /**
      * Creates expression which sub-selects a field inside related model.
      *
      * Returns Expression in case you want to do something else with it.

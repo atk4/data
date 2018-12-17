@@ -84,6 +84,16 @@ class Persistence_SQL extends Persistence
     }
 
     /**
+     * Disconnect from database explicitly.
+     */
+    public function disconnect()
+    {
+        parent::disconnect();
+
+        unset($this->connection);
+    }
+
+    /**
      * Returns Query instance.
      *
      * @return \atk4\dsql\Query
@@ -161,19 +171,23 @@ class Persistence_SQL extends Persistence
     protected function initPersistence(Model $m)
     {
         $m->addMethod('expr', $this);
+        $m->addMethod('dsql', $this);
     }
 
     /**
-     * Creates new Expression object from expression.
+     * Creates new Expression object from expression string.
      *
-     * @param Model  $m
-     * @param string $expr
-     * @param array  $args
+     * @param Model $m
+     * @param mixed $expr
+     * @param array $args
      *
      * @return \atk4\dsql\Expression
      */
     public function expr(Model $m, $expr, $args = [])
     {
+        if (!is_string($expr)) {
+            return $this->connection->expr($expr, $args);
+        }
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
             function ($matches) use (&$args, $m) {
@@ -422,7 +436,7 @@ class Persistence_SQL extends Persistence
         case 'array':
         case 'object':
             // don't encode if we already use some kind of serialization
-            $v = $f->serialize ? $v : json_encode($v);
+            $v = $f->serialize ? $v : $this->jsonEncode($f, $v);
             break;
         }
 
@@ -449,6 +463,10 @@ class Persistence_SQL extends Persistence
         $v = is_object($value) ? clone $value : $value;
 
         switch ($f->type) {
+        case 'string':
+        case 'text':
+            // do nothing - it's ok as it is
+            break;
         case 'integer':
             $v = (int) $v;
             break;
@@ -507,11 +525,11 @@ class Persistence_SQL extends Persistence
             break;
         case 'array':
             // don't decode if we already use some kind of serialization
-            $v = $f->serialize ? $v : json_decode($v, true);
+            $v = $f->serialize ? $v : $this->jsonDecode($f, $v, true);
             break;
         case 'object':
             // don't decode if we already use some kind of serialization
-            $v = $f->serialize ? $v : json_decode($v, false);
+            $v = $f->serialize ? $v : $this->jsonDecode($f, $v, false);
             break;
         }
 

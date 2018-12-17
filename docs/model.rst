@@ -205,6 +205,13 @@ When you modify active record, it keeps the original value in the $dirty array:
     Contains list of modified fields since last loading and their original
     values.
 
+.. php:method:: hasField($field)
+
+    Finds a field with a corresponding name. Returns false if field not found. Similar
+    to hasElement() but with extra checks to make sure it's certainly a field you are
+    getting.
+
+
 Full example::
 
     $m = new Model_User($db, 'user');
