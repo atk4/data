@@ -906,11 +906,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function setOrder($field, $desc = null)
     {
+        // fields passed as CSV string
         if (is_string($field) && strpos($field, ',') !== false) {
             $field = explode(',', $field);
         }
+
+        // fields passed as array
         if (is_array($field)) {
-            if (!is_null($desc)) {
+            if (null !== $desc) {
                 throw new Exception([
                     'If first argument is array, second argument must not be used',
                     'arg1' => $field,
@@ -918,18 +921,26 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 ]);
             }
 
-            foreach (array_reverse($field) as $o) {
-                if (is_array($o)) {
-                    $this->setOrder(...$o);
+            foreach (array_reverse($field) as $key=>$o) {
+                if (is_int($key)) {
+                    if (is_array($o)) {
+                        // format [field,order]
+                        $this->setOrder(...$o);
+                    } else {
+                        // format "field order"
+                        $this->setOrder($o);
+                    }
                 } else {
-                    $this->setOrder($o);
+                    // format "field"=>order
+                    $this->setOrder($key, $o);
                 }
             }
 
             return $this;
         }
 
-        if (is_null($desc) && is_string($field)) {
+        // extract sort order from field name string
+        if (null === $desc && is_string($field)) {
             // no realistic workaround in PHP for 2nd argument being null
             $field = trim($field);
             if (strpos($field, ' ') !== false) {
@@ -937,6 +948,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
         }
 
+        // finally set order
         $this->order[] = [$field, $desc];
 
         return $this;
@@ -1013,7 +1025,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $this->data = $from_persistence->load($this, $id);
-        if (is_null($this->id)) {
+        if (null === $this->id) {
             $this->id = $id;
         }
 

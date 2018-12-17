@@ -36,9 +36,9 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $a = [
             'invoice' => [
-                ['total_net' => 10, 'total_vat' => 5],
-                ['total_net' => 10, 'total_vat' => 4],
-                ['total_net' => 15, 'total_vat' => 4],
+                ['total_net' => 10, 'total_vat' => 5], // total_gross 15
+                ['total_net' => 10, 'total_vat' => 4], // total_gross 14
+                ['total_net' => 15, 'total_vat' => 4], // total_gross 19
             ], ];
         $this->setDB($a);
 
@@ -46,6 +46,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
         $ii->getElement('id')->system = false;
 
+        // pass parameters as CSV string
         $i = clone $ii;
         $i->setOrder('total_net desc, total_gross desc');
         $i->onlyFields(['total_net', 'total_gross']);
@@ -54,6 +55,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ['total_net' => 10, 'total_gross' => 15],
             ['total_net' => 10, 'total_gross' => 14],
         ], $i->export());
+
         $i = clone $ii;
         $i->setOrder('total_net desc, total_gross');
         $i->onlyFields(['total_net', 'total_gross']);
@@ -79,6 +81,50 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ['total_net' => 15, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 5],
             ['total_net' => 10, 'total_vat' => 4],
+        ], $i->export());
+    }
+
+    public function testArrayParameters()
+    {
+        $a = [
+            'invoice' => [
+                ['net' => 10, 'vat' => 5],
+                ['net' => 10, 'vat' => 4],
+                ['net' => 15, 'vat' => 4],
+            ], ];
+        $this->setDB($a);
+
+        $ii = (new Model($this->db, 'invoice'))->addFields(['net', 'vat']);
+        $ii->getElement('id')->system = false;
+
+        // pass parameters as array elements [field,order]
+        $i = clone $ii;
+        $i->setOrder([ ['net', 'desc'], ['vat'] ]);
+        $i->onlyFields(['net', 'vat']);
+        $this->assertEquals([
+            ['net' => 15, 'vat' => 4],
+            ['net' => 10, 'vat' => 4],
+            ['net' => 10, 'vat' => 5],
+        ], $i->export());
+
+        // pass parameters as array elements [field=>order]
+        $i = clone $ii;
+        $i->setOrder(['net'=>true, 'vat'=>false]);
+        $i->onlyFields(['net', 'vat']);
+        $this->assertEquals([
+            ['net' => 15, 'vat' => 4],
+            ['net' => 10, 'vat' => 4],
+            ['net' => 10, 'vat' => 5],
+        ], $i->export());
+
+        // pass parameters as array elements [field=>order], same as above but use 'desc' instead of true
+        $i = clone $ii;
+        $i->setOrder(['net'=>'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
+        $i->onlyFields(['net', 'vat']);
+        $this->assertEquals([
+            ['net' => 15, 'vat' => 4],
+            ['net' => 10, 'vat' => 4],
+            ['net' => 10, 'vat' => 5],
         ], $i->export());
     }
 
