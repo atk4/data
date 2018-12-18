@@ -110,7 +110,7 @@ class PersistentSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->setDB($a);
 
         $m = new Model($this->db, 'user');
-        $m->reload_after_save=false;
+        $m->reload_after_save = false;
         $m->addField('name');
         $m->addField('surname');
 
