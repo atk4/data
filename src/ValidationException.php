@@ -30,7 +30,7 @@ class ValidationException extends Exception
                 'Multiple unhandled validation errors',
                 'errors' => $errors,
                 'intent' => $intent,
-                'model' => $model,
+                'model'  => $model,
             ]);
         }
 
@@ -49,7 +49,7 @@ class ValidationException extends Exception
             'Incorrect use of ValidationException, argument should be an array',
             'errors' => $errors,
             'intent' => $intent,
-            'model' => $model,
+            'model'  => $model,
         ]);
     }
 }
