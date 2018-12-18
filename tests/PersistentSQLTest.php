@@ -99,6 +99,30 @@ class PersistentSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('Jones', $m->load($ms[1])['surname']);
     }
 
+    public function testModelSaveNoReload()
+    {
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
+        ];
+        $this->setDB($a);
+
+        $m = new Model($this->db, 'user');
+        $m->reload_after_save=false;
+        $m->addField('name');
+        $m->addField('surname');
+
+        $m->save(['name'=>'John', 'surname'=>'Smith']);
+
+        $this->assertEquals('John', $m['name']);
+
+        $this->assertEquals('Smith', $m['surname']);
+        $this->assertNotEmpty($m->id);
+        $this->assertNotEmpty($m[$m->id_field]);
+    }
+
     public function testModelInsertRows()
     {
         $a = [
