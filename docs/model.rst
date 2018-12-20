@@ -323,6 +323,31 @@ Model Caption
     model class name.
 
 
+Setting limit and sort order
+============================
+
+.. php:method:: public setLimit($count, $offset = null)
+
+    Sets limit on how many records to select. Will select only $count records
+    starting from $offset record.
+    
+.. php:method:: public setOrder($field, $desc = null)
+
+    Sets sorting order of returned data records. Here are some usage examples.
+    All these syntaxes work the same::
+    
+        $m->setOrder('name, salary desc');
+        $m->setOrder(['name', 'salary desc']);
+        $m->setOrder(['name', 'salary'=>true]);
+        $m->setOrder(['name'=>false, 'salary'=>true]);
+        $m->setOrder([ ['name'], ['salary','desc'] ]);
+        $m->setOrder([ ['name'], ['salary',true] ]);
+        $m->setOrder([ ['name'], ['salary desc'] ]);
+        // and there can be many more similar combinations how to call this
+
+    Keep in mind - `true` means `desc`, desc means descending. Otherwise it will be ascending order by default.
+
+
 Hooks
 =====
 
