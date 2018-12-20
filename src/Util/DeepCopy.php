@@ -244,6 +244,8 @@ class DeepCopy
             }
 
             return $destination;
+        } catch (DeepCopyException $e) {
+            throw $e;
         } catch (\atk4\core\Exception $e) {
             throw new DeepCopyException([
                 'Problem cloning model',
