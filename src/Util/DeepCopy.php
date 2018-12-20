@@ -179,11 +179,7 @@ class DeepCopy
             $destination->hook('afterCopy', [$source]);
 
             // Look for hasOne references that needs to be mapped. Make sure records can be mapped, or copy them
-            foreach ($references as $ref_key => $ref_val) {
-                if (is_numeric($ref_key)) {
-                    $ref_key = $ref_val;
-                    $ref_val = [];
-                }
+            foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
                 $this->debug("Considering $ref_key");
 
                 if (($ref = $source->hasRef($ref_key)) && $ref instanceof Reference_One) {
