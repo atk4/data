@@ -1419,7 +1419,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         return $this->atomic(function () use ($to_persistence) {
             if (($errors = $this->validate('save')) !== []) {
-                throw new ValidationException($errors);
+                throw new ValidationException($errors, $this);
             }
             if ($this->hook('beforeSave') === false) {
                 return $this;

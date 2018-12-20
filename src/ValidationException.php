@@ -20,7 +20,7 @@ class ValidationException extends Exception
      *
      * @return \Exception
      */
-    public function __construct($errors, $intent = null)
+    public function __construct($errors, $model = null, $intent = null)
     {
         $this->errors = $errors;
 
@@ -30,6 +30,7 @@ class ValidationException extends Exception
                 'Multiple unhandled validation errors',
                 'errors' => $errors,
                 'intent' => $intent,
+                'model'  => $model,
             ]);
         }
 
@@ -39,6 +40,7 @@ class ValidationException extends Exception
                 return parent::__construct([
                     $error,
                     'field' => $field,
+                    'model' => $model,
                 ]);
             }
         }
@@ -47,6 +49,7 @@ class ValidationException extends Exception
             'Incorrect use of ValidationException, argument should be an array',
             'errors' => $errors,
             'intent' => $intent,
+            'model'  => $model,
         ]);
     }
 }

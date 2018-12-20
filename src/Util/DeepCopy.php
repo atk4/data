@@ -19,6 +19,8 @@ use atk4\data\Reference_One;
  */
 class DeepCopy
 {
+    use \atk4\core\DebugTrait;
+
     /**
      * @var \atk4\data\Model from which we want to copy records.
      */
@@ -155,6 +157,7 @@ class DeepCopy
             foreach ($this->extractKeys($exclusions) as $key => $val) {
                 unset($data[$key]);
             }
+            $this->debug("Considering $ref_key");
 
             // TODO add a way here to look for duplicates based on unique fields
             // foreach($destination->unique fields) { try load by
