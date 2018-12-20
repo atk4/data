@@ -38,7 +38,7 @@ class DeepCopy
 
     /**
      * @var array contains array similar to references but containing list of excluded fields:
-     * e.g. ['Invoices'=>['Lines'=>['vat_rate_id']]]
+     *            e.g. ['Invoices'=>['Lines'=>['vat_rate_id']]]
      */
     protected $exclusions = [];
 
@@ -101,21 +101,23 @@ class DeepCopy
     }
 
     /**
-     * Will extract non-numeric keys from the array
+     * Will extract non-numeric keys from the array.
      *
      * @param $array
+     *
      * @return array
      */
     protected function extractKeys($array): array
     {
         $result = [];
-        foreach($array as $key=>$val) {
+        foreach ($array as $key=>$val) {
             if (is_numeric($key)) {
                 $result[$val] = [];
             } else {
                 $result[$key] = $val;
             }
         }
+
         return $result;
     }
 
@@ -135,7 +137,7 @@ class DeepCopy
      * @param Model $source
      * @param Model $destination
      * @param array $references
-     * @param array $exclusions of fields to exclude
+     * @param array $exclusions  of fields to exclude
      *
      * @throws DeepCopyException
      * @throws Exception
@@ -240,9 +242,9 @@ class DeepCopy
         } catch (\atk4\core\Exception $e) {
             throw new DeepCopyException([
                 'Problem cloning model',
-                'source'=>$source,
-                'destination'=>$destination,
-                'depth'=>'.'
+                'source'     => $source,
+                'destination'=> $destination,
+                'depth'      => '.',
                 ], null, $e);
         }
     }
