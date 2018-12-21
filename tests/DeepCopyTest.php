@@ -257,7 +257,6 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(5, $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
     }
 
-
     /**
      * @expectedException \atk4\data\Util\DeepCopyException
      */
@@ -275,15 +274,17 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $quote->loadAny();
 
         $invoice = new DCInvoice();
-        $invoice->addHook('afterCopy', function($m) {
-            if(!$m['ref'])
+        $invoice->addHook('afterCopy', function ($m) {
+            if (!$m['ref']) {
                 throw new \atk4\core\Exception('no ref');
+            }
         });
 
         // total price should match
         $this->assertEquals(90.00, $quote['total']);
 
         $dc = new DeepCopy();
+
         try {
             $invoice = $dc
                 ->from($quote)
@@ -292,7 +293,8 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ->with(['Lines'])
                 ->copy();
         } catch (\atk4\data\Util\DeepCopyException $e) {
-            $this->assertEquals("no ref", $e->getPrevious()->getMessage());
+            $this->assertEquals('no ref', $e->getPrevious()->getMessage());
+
             throw $e;
         }
     }
