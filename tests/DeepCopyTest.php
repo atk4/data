@@ -266,6 +266,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $client_id = $client->insert('John');
 
         $quote = new DCQuote($this->db);
+        $quote->hasMany('Lines2', [new DCQuoteLine(), 'their_field'=>'parent_id']);
 
         $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
             ['tools', 'qty'=>5, 'price'=>10],
@@ -290,7 +291,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ->from($quote)
                 ->excluding(['ref'])
                 ->to($invoice)
-                ->with(['Lines'])
+                ->with(['Lines', 'Lines2'])
                 ->copy();
         } catch (\atk4\data\Util\DeepCopyException $e) {
             $this->assertEquals('no ref', $e->getPrevious()->getMessage());
