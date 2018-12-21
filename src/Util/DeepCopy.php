@@ -213,6 +213,7 @@ class DeepCopy
                             )->id;
                             $this->debug(' ... mapped into '.$destination[$ref_key]);
                         } catch (DeepCopyException $e) {
+                            $this->debug('escalating a problem from '.$ref_key);
                             throw $e->addDepth($ref_key);
                         }
                     }
@@ -247,11 +248,15 @@ class DeepCopy
         } catch (DeepCopyException $e) {
             throw $e;
         } catch (\atk4\core\Exception $e) {
+            $this->debug('noticed a problem');
             throw new DeepCopyException([
                 'Problem cloning model',
                 'source'     => $source,
+                'source_info'     => $source->__debugInfo(),
+                'source_data'     => $source->get(),
                 'destination'=> $destination,
-                'depth'      => '.',
+                'destination_info'=> $destination->__debugInfo(),
+                'depth'      => $e->getParams()['field'] ?? '?',
                 ], null, $e);
         }
     }
