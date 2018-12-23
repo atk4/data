@@ -113,7 +113,7 @@ class PersistentSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('name');
         $m->addField('surname');
 
-        // insert new record, model id field 
+        // insert new record, model id field
         $m->reload_after_save = false;
         $m->save(['name'=>'Jane', 'surname'=>'Doe']);
         $this->assertEquals('Jane', $m['name']);
