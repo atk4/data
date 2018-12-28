@@ -271,6 +271,7 @@ Getting Started
 It's time to create the first Model. Open `src/Model_User.php` which should look
 like this::
 
+    <?php
     class Model_User extends \atk4\data\Model
     {
         public $table = 'user';

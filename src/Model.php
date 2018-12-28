@@ -1490,6 +1490,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
                     $this->dirty = [];
                 } elseif ($this->id) {
+                    $this->set($this->id_field, $this->id);
                     $this->hook('afterInsert', [$this->id]);
 
                     if ($this->reload_after_save !== false) {
