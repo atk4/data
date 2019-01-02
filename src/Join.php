@@ -349,7 +349,8 @@ class Join
             'their_field' => $this->table.'_'.$this->id_field,
         ], $defaults);
 
-        return parent::hasMany($model, $defaults);
+        //return parent::hasMany($model, $defaults);
+        return $this->owner->hasMany($model, $defaults);
     }
 
     /**
@@ -363,6 +364,7 @@ class Join
      *
      * @return ???
      */
+    /*
     public function containsOne($model, $defaults = [])
     {
         if (!is_array($defaults)) {
@@ -375,6 +377,7 @@ class Join
 
         return parent::containsOne($model, $defaults);
     }
+    */
 
     /**
      * Wrapper for containsMany that will associate field
@@ -387,6 +390,7 @@ class Join
      *
      * @return ???
      */
+    /*
     public function containsMany($model, $defaults = [])
     {
         if (!is_array($defaults)) {
@@ -399,6 +403,7 @@ class Join
 
         return parent::containsMany($model, $defaults);
     }
+    */
 
     /**
      * Will iterate through this model by pulling
