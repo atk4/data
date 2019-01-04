@@ -507,4 +507,79 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ], $this->getDB()
         );
     }
+
+    /**
+     * Test hasOne and hasMany trough Join.
+     */
+    public function testJoinHasOneHasMany()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'contact_id' => 10],
+                2 => ['id' => 2, 'name' => 'Jane', 'contact_id' => 11],
+            ], 'contact' => [ // join User 1:1
+                10 => ['id' => 10, 'phone_id' => 20],
+                11 => ['id' => 11, 'phone_id' => 21],
+            ], 'phone' => [ // each Contact hasOne phone
+                20 => ['id' => 20, 'number' => '+123'],
+                21 => ['id' => 21, 'number' => '+456'],
+            ], 'token' => [ // each User hassMany Token
+                30 => ['id' => 30, 'user_id' => 1, 'token' => 'ABC'],
+                31 => ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
+                32 => ['id' => 32, 'user_id' => 2, 'token' => 'GHI'],
+            ], 'email' => [ // each Contact hasMany Email
+                40 => ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
+                41 => ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
+                42 => ['id' => 42, 'contact_id' => 11, 'address' => 'jane@foo.net'],
+            ], ];
+
+        $db = new Persistence_SQL($this->db->connection);
+        $this->setDB($a);
+
+        // main user model joined to contact table
+        $m_u = new Model($db, 'user');
+        $m_u->addField('contact_id');
+        $m_u->addField('name');
+        $j = $m_u->join('contact');
+
+        $m_u->load(1);
+        $this->assertEquals([
+            'id' => 1, 'name' => 'John', 'contact_id' => 10,
+        ], $m_u->get());
+
+        // hasOne phone model
+        $m_p = new Model($db, 'phone');
+        $m_p->addField('number');
+        $ref = $j->hasOne('phone_id', $m_p); // hasOne on JOIN
+        $ref->addField('number');
+
+        $m_u->load(1);
+        $this->assertEquals([
+            'id' => 1, 'name' => 'John', 'contact_id' => 10, 'phone_id' => 20, 'number' => '+123',
+        ], $m_u->get());
+
+        // hasMany token model (uses default our_field, their_field)
+        $m_t = new Model($db, 'token');
+        $m_t->addField('user_id');
+        $m_t->addField('token');
+        $ref = $j->hasMany('Token', $m_t); // hasMany on JOIN (use default our_field, their_field)
+
+        $m_u->load(1);
+        $this->assertEquals([
+            ['id' => 30, 'user_id' => 1, 'token' => 'ABC'],
+            ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
+        ], $m_u->ref('Token')->export());
+
+        // hasMany email model (uses custom our_field, their_field)
+        $m_e = new Model($db, 'email');
+        $m_e->addField('contact_id');
+        $m_e->addField('address');
+        $ref = $j->hasMany('Email', [$m_e, 'our_field'=>'contact_id', 'their_field'=>'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+
+        $m_u->load(1);
+        $this->assertEquals([
+            ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
+            ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
+        ], $m_u->ref('Email')->export());
+    }
 }
