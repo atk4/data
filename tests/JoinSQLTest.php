@@ -484,7 +484,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
         $c = $j->join('country');
-        $c->addFields([ ['country_name', ['actual' => 'name']] ]);
+        $c->addFields([['country_name', ['actual' => 'name']]]);
 
         $m_u->load(10);
         $m_u->delete();
