@@ -273,7 +273,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
                 3 => ['id' => 3, 'name' => 'Joe'],
-            ]
+            ],
         ];
         $this->setDB($a);
 

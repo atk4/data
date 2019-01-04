@@ -3,7 +3,6 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -475,7 +474,6 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $o->reload();
         $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
 
-
         // restore DB
         $this->setDB($a);
 
@@ -493,7 +491,6 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $o->reload();
         $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
 
-
         // restore DB
         $this->setDB($a);
 
@@ -510,7 +507,6 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
         $o->reload();
         $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
-
 
         // restore DB
         $this->setDB($a);
