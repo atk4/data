@@ -10,36 +10,6 @@ namespace atk4\data;
 class Reference_SQL_One extends Reference_One
 {
     /**
-     * Initializing.
-     */
-    public function init()
-    {
-        parent::init();
-
-        // Will try to execute last
-        $this->owner->addHook('beforeSave', $this, null, 20);
-    }
-
-    /**
-     * Before save hook.
-     *
-     * @param \atk4\data\Model $m
-     */
-    public function beforeSave($m)
-    {
-        $field = $this->link;
-
-        if ($m->isDirty($field) && !$m->isDirty($this->link)) {
-            $mm = $m->getRef($field)->getModel();
-
-            $mm->addCondition($mm->title_field, $m[$field]);
-            // TODO - add extra conditions, in case lookup fields are set
-
-            $m[$field] = $mm->action('field', [$mm->id_field]);
-        }
-    }
-
-    /**
      * Creates expression which sub-selects a field inside related model.
      *
      * Returns Expression in case you want to do something else with it.
@@ -219,16 +189,18 @@ class Reference_SQL_One extends Reference_One
 
         // Will try to execute last
         $this->owner->addHook('beforeSave', function ($m) use ($field) {
-            if ($m->isDirty($field) && !$m->isDirty($this->link)) {
-                $mm = $m->getRef($this->link)->getModel();
+            // if title field is changed, but reference ID field (our_field)
+            // is not changed, then update reference ID field value
+            if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
+                $mm = $this->getModel();
 
                 $mm->addCondition($mm->title_field, $m[$field]);
-                $m[$this->link] = $mm->action('field', [$mm->id_field]);
+                $m[$this->our_field] = $mm->action('field', [$mm->id_field]);
             }
         }, null, 20);
 
         // Set ID field as not visible in grid by default
-        if (!isset($this->owner->getElement($this->our_field)->ui['visible'])) {
+        if (!array_key_exists('visible', $this->owner->getElement($this->our_field)->ui)) {
             $this->owner->getElement($this->our_field)->ui['visible'] = false;
         }
 
