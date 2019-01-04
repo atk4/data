@@ -309,12 +309,14 @@ class Join
      *
      * @return
      */
+    /*
     public function weakJoin($defaults = [])
     {
         $defaults['join'] = $this;
 
         return $this->owner->weakJoin($defaults);
     }
+    */
 
     /**
      * Creates reference based on a field from the join.
@@ -340,7 +342,7 @@ class Join
      * @param Model $model
      * @param array $defaults
      *
-     * @return Reference_One
+     * @return Reference_Many
      */
     public function hasMany($model, $defaults = [])
     {
@@ -420,10 +422,12 @@ class Join
      * @param Model $model
      * @param array $defaults
      */
+    /*
     public function importModel($model, $defaults = [])
     {
         // not implemented yet !!!
     }
+    */
 
     /**
      * Joins with the primary table of the model and
@@ -434,6 +438,7 @@ class Join
      * @param Model $model
      * @param array $fields
      */
+    /*
     public function weakJoinModel($model, $fields = [])
     {
         if (!is_object($model)) {
@@ -445,6 +450,7 @@ class Join
 
         return $j;
     }
+    */
 
     /**
      * Set value.
