@@ -117,7 +117,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->setDB($a);
         $m_u->addField('name');
         $j = $m_u->join('contact.test_id');
-        $j->addField('contact_phone');
+        $j->addFields(['contact_phone']);
 
         $m_u['name'] = 'John';
         $m_u['contact_phone'] = '+123';
@@ -484,7 +484,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
         $c = $j->join('country');
-        $c->addField('country_name', ['actual' => 'name']);
+        $c->addFields([ ['country_name', ['actual' => 'name']] ]);
 
         $m_u->load(10);
         $m_u->delete();
