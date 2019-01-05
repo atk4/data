@@ -309,11 +309,11 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->assertEquals([
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-        ],$m->export());
+        ], $m->export());
 
         $this->assertEquals([
             1 => ['surname' => 'Smith'],
             2 => ['surname' => 'Jones'],
-        ],$m->export(['surname']));
+        ], $m->export(['surname']));
     }
 }
