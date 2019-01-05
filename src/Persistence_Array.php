@@ -253,4 +253,21 @@ class Persistence_Array extends Persistence
     {
         return $this->data[$m->table];
     }
+
+    /**
+     * Export all DataSet.
+     *
+     * @param Model      $m
+     * @param array|null $fields
+     *
+     * @return array
+     */
+    public function export(Model $m, $fields = null)
+    {
+        $keys = $fields ? array_flip($fields) : null;
+
+        return array_map(function ($r) use ($m, $keys) {
+            return $this->typecastLoadRow($m, $keys ? array_intersect_key($r, $keys) : $r);
+        }, $this->data[$m->table]);
+    }
 }

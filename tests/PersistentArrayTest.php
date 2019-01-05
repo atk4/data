@@ -290,4 +290,30 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m = new Model(new Persistence());
         $m->export();
     }
+
+    /**
+     * Test export.
+     */
+    public function testExport()
+    {
+        $a = [
+            1 => ['name' => 'John', 'surname' => 'Smith'],
+            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+
+        $this->assertEquals([
+            1 => ['name' => 'John', 'surname' => 'Smith'],
+            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+        ],$m->export());
+
+        $this->assertEquals([
+            1 => ['surname' => 'Smith'],
+            2 => ['surname' => 'Jones'],
+        ],$m->export(['surname']));
+    }
 }

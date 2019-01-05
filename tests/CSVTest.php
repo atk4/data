@@ -131,4 +131,31 @@ class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
             file_get_contents($this->file)
         );
     }
+
+    /**
+     * Test export.
+     */
+    public function testExport()
+    {
+        $data = [
+                ['name' => 'John', 'surname' => 'Smith'],
+                ['name' => 'Sarah', 'surname' => 'Jones'],
+            ];
+        $this->setDB($data);
+
+        $p = new Persistence_CSV($this->file);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+
+        $this->assertEquals([
+            ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
+        ],$m->export());
+
+        $this->assertEquals([
+            ['surname' => 'Smith'],
+            ['surname' => 'Jones'],
+        ],$m->export(['surname']));
+    }
 }
