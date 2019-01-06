@@ -176,4 +176,31 @@ class PersistentSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->load($ids[1]);
         $this->assertEquals('Smith', $m['surname']);
     }
+
+    /**
+     * Test export.
+     */
+    public function testExport()
+    {
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($this->db, 'user');
+        $m->addField('name');
+        $m->addField('surname');
+
+        $this->assertEquals([
+            ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
+        ], $m->export());
+
+        $this->assertEquals([
+            ['surname' => 'Smith'],
+            ['surname' => 'Jones'],
+        ], $m->export(['surname']));
+    }
 }
