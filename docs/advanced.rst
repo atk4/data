@@ -6,6 +6,116 @@ Advanced Topics
 Agile Data allow you to implement various tricks.
 
 
+SubTypes
+========
+
+Disjoint subtypes is a concept where you give your database just a little bit of
+OOP by allowing to extend addional types without duplicating columns. For example,
+if you are implementing "Account" and "Transaction" models. You may want to have
+multiple transaction types. Some of those types would even require additional
+fields. The pattern suggest you should add a new table "transaction_transfer" and
+store extra fields there. In your code::
+
+    class Transaction_Transfer extends Transaction {
+        function init() {
+            parent::init();
+            $j = $this->join('transaction_transfer.transaction_id');
+            $j->addField('destination_account');
+        }
+    }
+
+(See also: http://nearly.guru/blog/data/disjoint-subtypes-in-php)
+
+As you implement single Account and multiple Transaction types, you want to relate
+both::
+
+    $account->hasMany('Transactions', new Transaction());
+
+There are however two difficulties here:
+
+ 1. sometimes you want to operate with specific sub-type.
+ 2. when iterating, you want to have appropriate class, not Transaction()
+
+Best practice for specifying relation type
+------------------------------------------
+
+Although there is no magic behind it, I recommend that you use the following
+code pattern when dealing with multiple types::
+
+    $account->hasMany('Transactions', new Transaction());
+    $account->hasMany('Transactions:Deposit', new Transaction\Deposit());
+    $account->hasMany('Transactions:Transfer', new Transaction\Transfer());
+
+You can then use type-specific reference::
+
+    $account->ref('Transaction:Deposit')->insert(['amount'=>10]);
+
+and the code would be clean. If you introduce new type, you would have to add
+extra line to your "Account" model, but it will not be impacting anything, so
+that should be pretty safe.
+
+Type substitution on loading
+----------------------------
+
+Another technique is for ATK Data to replace your object when data is being
+loaded. You can treat "Transaction" class as a "shim"::
+
+    $obj = $account->ref('Transactions')->load(123);
+
+Normally $obj would be instance of `Transaction` class, however we want this
+class to be selected based on transaction type. Therefore a more broad
+record for 'Transaction' should be loaded first and then, if necessary,
+replaced with the correct class transparently, so that the code above
+would work without a change.
+
+Another scenario which could benefit by type substitution would be::
+
+    foreach($accoutn->ref('Transactions') as $tr) {
+        echo get_class($tr)."\n";
+    }
+
+ATK Data allow class substitution during load and iteration by breaking "afterLoad"
+hook. Place the following inside Transaction::init()::
+
+    $this->addHook('afterLoad', function ($m) {
+        if (get_class($this) != $m->getClassName()) {
+            $cl = '\\'.$this->getClassName();
+            $cl = new $cl($this->persistence);
+            $cl->load($m->id);
+
+            $this->breakHook($cl);
+        }
+    });
+
+You would need to implement method "getClassName" which would return DESIRED class
+of the record. Finally to help with performance, you can implement a switch::
+
+    public $typeSubstitution = false;
+
+    ...
+
+    function init() {
+        ..
+
+        if ($this->typeSubstitution) {
+            $this->addHook('afterLoad',
+                ..........
+            )
+        }
+    }
+
+Now, every time you iterate (or load) you can decide if you want to invoke type
+substitution::
+
+    foreach($account->ref('Transactions', ['typeSubstitution'=>true]) as $tr) {
+
+        $tr->verify();  // verify() method can be overloaded!
+    }
+
+
+    // however, for export, we don't need expensive substitution
+    $transaction_data = $account->ref('Transaction')->export();
+
 Audit Fields
 ============
 

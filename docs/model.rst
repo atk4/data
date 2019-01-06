@@ -205,6 +205,13 @@ When you modify active record, it keeps the original value in the $dirty array:
     Contains list of modified fields since last loading and their original
     values.
 
+.. php:method:: hasField($field)
+
+    Finds a field with a corresponding name. Returns false if field not found. Similar
+    to hasElement() but with extra checks to make sure it's certainly a field you are
+    getting.
+
+
 Full example::
 
     $m = new Model_User($db, 'user');
@@ -314,6 +321,31 @@ Model Caption
 
     Returns model caption. If caption is not set, then try to generate one from
     model class name.
+
+
+Setting limit and sort order
+============================
+
+.. php:method:: public setLimit($count, $offset = null)
+
+    Sets limit on how many records to select. Will select only $count records
+    starting from $offset record.
+    
+.. php:method:: public setOrder($field, $desc = null)
+
+    Sets sorting order of returned data records. Here are some usage examples.
+    All these syntaxes work the same::
+    
+        $m->setOrder('name, salary desc');
+        $m->setOrder(['name', 'salary desc']);
+        $m->setOrder(['name', 'salary'=>true]);
+        $m->setOrder(['name'=>false, 'salary'=>true]);
+        $m->setOrder([ ['name'], ['salary','desc'] ]);
+        $m->setOrder([ ['name'], ['salary',true] ]);
+        $m->setOrder([ ['name'], ['salary desc'] ]);
+        // and there can be many more similar combinations how to call this
+
+    Keep in mind - `true` means `desc`, desc means descending. Otherwise it will be ascending order by default.
 
 
 Hooks

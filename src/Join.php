@@ -309,47 +309,54 @@ class Join
      *
      * @return
      */
+    /*
     public function weakJoin($defaults = [])
     {
         $defaults['join'] = $this;
 
         return $this->owner->weakJoin($defaults);
     }
+    */
 
     /**
      * Creates reference based on a field from the join.
      *
-     * @param Model $model
-     * @param array $defaults
+     * @param string $link
+     * @param array  $defaults
      *
      * @return Reference_One
      */
-    public function hasOne($model, $defaults = [])
+    public function hasOne($link, $defaults = [])
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults];
+            $defaults = ['model' => $defaults ?: 'Model_'.$link];
         }
+
         $defaults['join'] = $this;
 
-        return $this->owner->hasOne($model, $defaults);
+        return $this->owner->hasOne($link, $defaults);
     }
 
     /**
      * Creates reference based on the field from the join.
      *
-     * @param Model $model
-     * @param array $defaults
+     * @param string $link
+     * @param array  $defaults
      *
-     * @return Reference_One
+     * @return Reference_Many
      */
-    public function hasMany($model, $defaults = [])
+    public function hasMany($link, $defaults = [])
     {
+        if (!is_array($defaults)) {
+            $defaults = ['model' => $defaults ?: 'Model_'.$link];
+        }
+
         $defaults = array_merge([
             'our_field'   => $this->id_field,
-            'their_field' => $this->table.'_'.$this->id_field,
+            'their_field' => $this->owner->table.'_'.$this->id_field,
         ], $defaults);
 
-        return parent::hasMany($model, $defaults);
+        return $this->owner->hasMany($link, $defaults);
     }
 
     /**
@@ -363,6 +370,7 @@ class Join
      *
      * @return ???
      */
+    /*
     public function containsOne($model, $defaults = [])
     {
         if (!is_array($defaults)) {
@@ -375,6 +383,7 @@ class Join
 
         return parent::containsOne($model, $defaults);
     }
+    */
 
     /**
      * Wrapper for containsMany that will associate field
@@ -387,6 +396,7 @@ class Join
      *
      * @return ???
      */
+    /*
     public function containsMany($model, $defaults = [])
     {
         if (!is_array($defaults)) {
@@ -399,6 +409,7 @@ class Join
 
         return parent::containsMany($model, $defaults);
     }
+    */
 
     /**
      * Will iterate through this model by pulling
@@ -415,10 +426,12 @@ class Join
      * @param Model $model
      * @param array $defaults
      */
+    /*
     public function importModel($model, $defaults = [])
     {
         // not implemented yet !!!
     }
+    */
 
     /**
      * Joins with the primary table of the model and
@@ -429,6 +442,7 @@ class Join
      * @param Model $model
      * @param array $fields
      */
+    /*
     public function weakJoinModel($model, $fields = [])
     {
         if (!is_object($model)) {
@@ -440,6 +454,7 @@ class Join
 
         return $j;
     }
+    */
 
     /**
      * Set value.

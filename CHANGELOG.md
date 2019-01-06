@@ -110,6 +110,35 @@ Add support for Oracle and PostgreSQL, adding support for sequences and migrate 
 
 - fix \#326 [\#327](https://github.com/atk4/data/pull/327) ([romaninsh](https://github.com/romaninsh))
 
+## 1.3.6
+
+This release adds some great improvements to the aggregate fields. The most notable change is that
+you no longer need to specify 'field' for 'count' aggregation, it has been a thorn:
+
+``` php
+$this->hasMany('Invoices', new Invoice())->addField('invoice_count', ['aggregate'=>'count']);
+```
+
+Now the alternative syntax is available, where you can just define your expression explicitly:
+
+```
+$this->hasMany('Items', new Item())->addField('list', ['expr'=>'group_concat([name] separator "+")']);
+```
+
+**Closed issues:**
+
+- Documentation atk4/data not meet atk/data-primer repository [\#328](https://github.com/atk4/data/issues/328)
+
+**Merged pull requests:**
+
+- fix doc typo [\#332](https://github.com/atk4/data/pull/332) ([DarkSide666](https://github.com/DarkSide666))
+- remove method guessFieldType - it was disabled for some time now [\#331](https://github.com/atk4/data/pull/331) ([romaninsh](https://github.com/romaninsh))
+- Significantly improve flexibility of aggregates [\#330](https://github.com/atk4/data/pull/330) ([romaninsh](https://github.com/romaninsh))
+
+## 1.3.7
+
+Minor release. Calling `addCondition('age', '>', 30)` will no longer mark field `age` as system.
+
 # 1.2.0
 
 When upgrading to 1.2.x branch watch out if your "Model" has a validate() method. The

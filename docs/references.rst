@@ -157,6 +157,17 @@ This will produce the following query:
         (select code form currency where is_convertable=1)
 
 
+Concatenating Fields
+--------------------
+
+You may want to display want to list your related entities by concatenating. For example::
+
+    $user->hasMany('Tags', new Tag())
+        ->addField('tags', ['concat'=>',', 'field'=>'name']);
+
+This will create a new field for your user, ``tags`` which will contain all comma-separated
+tag names.
+
 Add Aggregate Fields
 --------------------
 
@@ -184,12 +195,61 @@ keep making your query bigger and bigger::
             ['total_gross', 'aggregate'=>'sum'],
         ]);
 
-.. important::
-    Imported fields will preserve format of the field the reference. In the example,
-    if 'Invoice_line' field total_vat has type `money` then it will also be used
-    for a sum. Aggregate fields are always declared read-only, and if you try to
-    change them, you will receive exception.
+Imported fields will preserve format of the field they reference. In the example,
+if 'Invoice_line' field total_vat has type `money` then it will also be used
+for a sum. 
 
+You can also specify a type yourself::
+
+    ->addField('paid_amount', ['aggregate'=>'sum', 'field'=>'amount', 'type'=>'money']);
+
+Aggregate fields are always declared read-only, and if you try to
+change them (`$m['paid_amount'] = 123;`), you will receive exception.
+
+Available Aggregation Functions
+-------------------------------
+
+The mathematical aggregate `sum` will automatically
+default to 0 if no respective rows were provided. The default SQL behaviour is to
+return NULL, but this does go well with the cascading formulas::
+
+    coalesce(sum([field]), 0);
+
+For other functions, such as `min`, `max`, `avg` and non mathematical aggregates such
+as `group_concat` no zero-coalesce will be used. Expect that result could be zero or
+null.
+
+When you specify `'aggregate'=>'count'` field defaults.
+
+Aggregate Expressions
+---------------------
+
+Sometimes you want to use a more complex formula, and you may do so by specifying
+expression into 'aggregate'::
+
+    ->addField('len', ['expr' => 'sum(length([name]))']),
+
+You can reference fields by using square brackets here. Also you may pass `args`
+containing your optional arguments::
+
+    ->addField('len', [
+        'expr' => 'sum(if([date] = [exp_date], 1, 0))', 
+        'args'=>['exp_date'=>'2003-03-04]
+        ]),
+
+Alternatively you may also specify either 'aggregate'::
+
+    $book->hasMany('Pages', new Page())
+        ->addField('page_list', [
+            'aggregate'=>$book->refModel('Pages')->expr('group_concat([number], [])', ['-'])
+        ]);
+
+
+or 'field'::
+
+    ->addField('paid_amount', ['aggregate'=>'count', 'field'=>new \atk4\dsql\Expression('*')]);
+
+.. note:: as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 
 hasMany / refLink / refModel
 ============================
@@ -625,11 +685,3 @@ References are implemented through several classes:
 
     Returns referenced model WITH conditions. (if possible)
 
-.. php:method:: guessFieldType
-
-    This method implementation is removed due to performance but may be
-    reconsidered. Attempts to initialize related model to find out more
-    about the field that is being referenced during the "definition time".
-
-    Normally this would happen only during query time and if the field is
-    included into query.

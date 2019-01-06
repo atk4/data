@@ -141,6 +141,13 @@ This value will also appear pre-filled inside a Form.
 Specifies array containing all the possible options for the value.
 You can set only to one of the values (loosely typed comparison is used).
 
+.. php:attr:: values
+
+Specifies array containing all the possible options for the value.
+Similar with $enum, but difference is that this array is a hash array so
+array keys will be used as values and array values will be used as titles
+for these values.
+
 .. php:attr:: mandatory
 
 Set this to true if field value must not be NULL. You can set the NULL value to
