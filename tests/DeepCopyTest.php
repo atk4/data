@@ -83,7 +83,7 @@ class DCInvoiceLine extends Model
         $this->addField('type', ['enum'=>['invoice', 'quote']]);
         $this->addCondition('type', '=', 'invoice');
 
-        $this->addField('qty', ['type'=>'integer']);
+        $this->addField('qty', ['type'=>'integer', 'mandatory'=>true]);
         $this->addField('price', ['type'=>'money']);
         $this->addField('vat', ['type'=>'numeric', 'default'=>0.21]);
 
@@ -255,5 +255,90 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // If copied payments are properly allocated against copied invoices, then due amount will be 5
         $this->assertEquals(5, $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
+    }
+
+    /**
+     * @expectedException \atk4\data\Util\DeepCopyException
+     */
+    public function testError()
+    {
+        $client = new DCClient($this->db);
+        $client_id = $client->insert('John');
+
+        $quote = new DCQuote($this->db);
+        $quote->hasMany('Lines2', [new DCQuoteLine(), 'their_field'=>'parent_id']);
+
+        $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
+            ['tools', 'qty'=>5, 'price'=>10],
+            ['work', 'qty'=>1, 'price'=>40],
+        ]]);
+        $quote->loadAny();
+
+        $invoice = new DCInvoice();
+        $invoice->addHook('afterCopy', function ($m) {
+            if (!$m['ref']) {
+                throw new \atk4\core\Exception('no ref');
+            }
+        });
+
+        // total price should match
+        $this->assertEquals(90.00, $quote['total']);
+
+        $dc = new DeepCopy();
+
+        try {
+            $invoice = $dc
+                ->from($quote)
+                ->excluding(['ref'])
+                ->to($invoice)
+                ->with(['Lines', 'Lines2'])
+                ->copy();
+        } catch (\atk4\data\Util\DeepCopyException $e) {
+            $this->assertEquals('no ref', $e->getPrevious()->getMessage());
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @expectedException \atk4\data\Util\DeepCopyException
+     */
+    public function testDeepError()
+    {
+        $client = new DCClient($this->db);
+        $client_id = $client->insert('John');
+
+        $quote = new DCQuote($this->db);
+
+        $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
+            ['tools', 'qty'=>5, 'price'=>10],
+            ['work', 'qty'=>1, 'price'=>40],
+        ]]);
+        $quote->loadAny();
+
+        $invoice = new DCInvoice();
+        $invoice->addHook('afterCopy', function ($m) {
+            if (!$m['ref']) {
+                throw new \atk4\core\Exception('no ref');
+            }
+        });
+
+        // total price should match
+        $this->assertEquals(90.00, $quote['total']);
+
+        $dc = new DeepCopy();
+
+        try {
+            $invoice = $dc
+                ->from($quote)
+                ->excluding(['Lines'=>['qty']])
+                ->to($invoice)
+                ->with(['Lines'])
+                ->copy();
+        } catch (\atk4\data\Util\DeepCopyException $e) {
+            $this->assertEquals('Mandatory field value cannot be null', $e->getPrevious()->getMessage());
+
+            throw $e;
+        }
     }
 }
