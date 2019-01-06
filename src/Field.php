@@ -320,25 +320,8 @@ class Field implements Expressionable
                 }
                 break;
             case 'boolean':
-                if (is_bool($value)) {
-                    break;
-                }
-                if (isset($f->enum) && is_array($f->enum)) {
-                    if (isset($f->enum[0]) && strtolower($value) === strtolower($f->enum[0])) {
-                        $value = false;
-                    } elseif (isset($f->enum[1]) && strtolower($value) === strtolower($f->enum[1])) {
-                        $value = true;
-                    }
-                } elseif (is_numeric($value)) {
-                    $value = (bool) $value;
-                }
-                if (!is_bool($value)) {
-                    throw new ValidationException([$this->name => 'Must be a boolean value']);
-                }
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must be selected']);
-                }
-                break;
+                throw Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
+
             case 'date':
             case 'datetime':
             case 'time':
