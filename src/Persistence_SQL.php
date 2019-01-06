@@ -487,7 +487,7 @@ class Persistence_SQL extends Persistence
                 } else {
                     $v = null;
                 }
-            } elseif ($v === "") {
+            } elseif ($v === '') {
                 $v = null;
             } else {
                 $v = (bool) $v;

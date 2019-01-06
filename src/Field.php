@@ -479,14 +479,12 @@ class Field implements Expressionable
         if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence_SQL) {
             throw new Exception([
                 'Field must have SQL persistence if it is used as part of expression',
-                'persistence'=>$this->owner->persistence ?? null
+                'persistence'=> $this->owner->persistence ?? null,
             ]);
         }
 
         return $this->owner->persistence->getFieldSQLExpression($this, $expression);
-
     }
-
 
     // {{{ Debug Methods
 

@@ -31,7 +31,7 @@ class Boolean extends \atk4\data\Field
     public $valueFalse = false;
 
     /**
-     * Backward compatible way to specify value for true / false:
+     * Backward compatible way to specify value for true / false:.
      *
      * $enum = ['N', 'Y']
      *
@@ -59,13 +59,14 @@ class Boolean extends \atk4\data\Field
      *
      * @param mixed $value
      *
-     * @return bool
      * @throws ValidationException
+     *
+     * @return bool
      */
     public function normalize($value)
     {
         if (is_null($value) || $value === '') {
-            return null;
+            return;
         }
         if (is_bool($value)) {
             return $value;

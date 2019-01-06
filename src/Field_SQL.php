@@ -45,5 +45,4 @@ class Field_SQL extends Field implements Expressionable
 
         return parent::normalize($value);
     }
-
 }
