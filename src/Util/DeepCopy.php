@@ -96,9 +96,10 @@ class DeepCopy
     /**
      * Specifies which fields shouldn't be copied. May also contain arrays
      * for related entries.
-     * ->excluding(['name', 'address_id'=>['city']]);
+     * ->excluding(['name', 'address_id'=>['city']]);.
      *
      * @param array $exclusions
+     *
      * @return $this
      */
     public function excluding(array $exclusions)
@@ -132,10 +133,10 @@ class DeepCopy
     /**
      * Copy records.
      *
-     * @return Model Destination model
-     *
      * @throws DeepCopyException
      * @throws Exception
+     *
+     * @return Model Destination model
      */
     public function copy()
     {
