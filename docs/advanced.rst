@@ -62,13 +62,13 @@ loaded. You can treat "Transaction" class as a "shim"::
 
     $obj = $account->ref('Transactions')->load(123);
 
-Normally $obj would be instance of `Transaciton` class, however we want this
+Normally $obj would be instance of `Transaction` class, however we want this
 class to be selected based on transaction type. Therefore a more broad
 record for 'Transaction' should be loaded first and then, if necessary,
 replaced with the correct class transparently, so that the code above
-would work without change.
+would work without a change.
 
-The other code which must work::
+Another scenario which could benefit by type substitution would be::
 
     foreach($accoutn->ref('Transactions') as $tr) {
         echo get_class($tr)."\n";
@@ -98,7 +98,7 @@ of the record. Finally to help with performance, you can implement a switch::
         ..
 
         if ($this->typeSubstitution) {
-            $this->addHook('afterAdd', 
+            $this->addHook('afterLoad',
                 ..........
             )
         }
@@ -114,9 +114,7 @@ substitution::
 
 
     // however, for export, we don't need expensive substitution
-    $stats = $account->ref('Transaction')->export();
-
-
+    $transaction_data = $account->ref('Transaction')->export();
 
 Audit Fields
 ============
