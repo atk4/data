@@ -262,4 +262,34 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
+
+    /**
+     * Tests OR conditions.
+     */
+    public function testOrConditions()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John'],
+                2 => ['id' => 2, 'name' => 'Peter'],
+                3 => ['id' => 3, 'name' => 'Joe'],
+            ],
+        ];
+        $this->setDB($a);
+
+        $u = (new Model($this->db, 'user'))->addFields(['name']);
+
+        $u->addCondition([
+            ['name', 'John'],
+            ['name', 'Peter'],
+        ]);
+
+        $this->assertEquals(2, $u->action('count')->getOne());
+
+        $u->addCondition([
+            ['name', 'Peter'],
+            ['name', 'Joe'],
+        ]);
+        $this->assertEquals(1, $u->action('count')->getOne());
+    }
 }

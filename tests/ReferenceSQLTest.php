@@ -3,7 +3,6 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -30,9 +29,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name']);
-        $o = (new Model($db, 'order'))->addFields(['amount', 'user_id']);
+        $u = (new Model($this->db, 'user'))->addFields(['name']);
+        $o = (new Model($this->db, 'order'))->addFields(['amount', 'user_id']);
 
         $u->hasMany('Orders', $o);
 
@@ -66,9 +64,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testLink()
     {
-        $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name']);
-        $o = (new Model($db, 'order'))->addFields(['amount', 'user_id']);
+        $u = (new Model($this->db, 'user'))->addFields(['name']);
+        $o = (new Model($this->db, 'order'))->addFields(['amount', 'user_id']);
 
         $u->hasMany('Orders', $o);
 
@@ -94,9 +91,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name', 'currency']);
-        $c = (new Model($db, 'currency'))->addFields(['currency', 'name']);
+        $u = (new Model($this->db, 'user'))->addFields(['name', 'currency']);
+        $c = (new Model($this->db, 'currency'))->addFields(['currency', 'name']);
 
         $u->hasMany('cur', [$c, 'our_field' => 'currency', 'their_field' => 'currency']);
 
@@ -111,9 +107,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testLink2()
     {
-        $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name', 'currency_code']);
-        $c = (new Model($db, 'currency'))->addFields(['code', 'name']);
+        $u = (new Model($this->db, 'user'))->addFields(['name', 'currency_code']);
+        $c = (new Model($this->db, 'currency'))->addFields(['code', 'name']);
 
         $u->hasMany('cur', [$c, 'our_field' => 'currency_code', 'their_field' => 'code']);
 
@@ -145,9 +140,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name']);
-        $o = (new Model($db, 'order'))->addFields(['amount']);
+        $u = (new Model($this->db, 'user'))->addFields(['name']);
+        $o = (new Model($this->db, 'order'))->addFields(['amount']);
 
         $o->hasOne('user_id', $u);
 
@@ -169,42 +163,6 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
     }
 
     /**
-     * Tests OR conditions.
-     */
-    public function testOrConditions()
-    {
-        $a = [
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Joe'],
-            ], 'order' => [
-                ['amount' => '20', 'user_id' => 1],
-                ['amount' => '15', 'user_id' => 2],
-                ['amount' => '5', 'user_id' => 1],
-                ['amount' => '3', 'user_id' => 1],
-                ['amount' => '8', 'user_id' => 3],
-            ], ];
-        $this->setDB($a);
-
-        $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name']);
-
-        $u->addCondition([
-            ['name', 'John'],
-            ['name', 'Peter'],
-        ]);
-
-        $this->assertEquals(2, $u->action('count')->getOne());
-
-        $u->addCondition([
-            ['name', 'Peter'],
-            ['name', 'Joe'],
-        ]);
-        $this->assertEquals(1, $u->action('count')->getOne());
-    }
-
-    /**
      * Tests Join::addField's ability to create expressions from foreign fields.
      */
     public function testAddOneField()
@@ -223,10 +181,9 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name', ['date', 'type' => 'date']]);
+        $u = (new Model($this->db, 'user'))->addFields(['name', ['date', 'type' => 'date']]);
 
-        $o = (new Model($db, 'order'))->addFields(['amount']);
+        $o = (new Model($this->db, 'order'))->addFields(['amount']);
         $o->hasOne('user_id', $u)->addFields(['username' => 'name', ['date', 'type' => 'date']]);
 
         $this->assertEquals('John', $o->load(1)['username']);
@@ -237,12 +194,12 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('Joe', $o->load(5)['username']);
 
         // few more tests
-        $o = (new Model($db, 'order'))->addFields(['amount']);
+        $o = (new Model($this->db, 'order'))->addFields(['amount']);
         $o->hasOne('user_id', $u)->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
         $this->assertEquals('John', $o->load(1)['username']);
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['thedate']);
 
-        $o = (new Model($db, 'order'))->addFields(['amount']);
+        $o = (new Model($this->db, 'order'))->addFields(['amount']);
         $o->hasOne('user_id', $u)->addFields(['date'], ['type' => 'date']);
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['date']);
     }
@@ -265,9 +222,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['ref_no']);
-        $l = (new Model($db, 'invoice_line'))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
+        $i = (new Model($this->db, 'invoice'))->addFields(['ref_no']);
+        $l = (new Model($this->db, 'invoice_line'))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
         $i->hasMany('line', $l);
 
         $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
@@ -298,9 +254,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['ref_no']);
-        $l = (new Model($db, 'invoice_line'))->addFields([
+        $i = (new Model($this->db, 'invoice'))->addFields(['ref_no']);
+        $l = (new Model($this->db, 'invoice_line'))->addFields([
             'invoice_id',
             ['total_net', 'type'=>'money'],
             ['total_vat', 'type'=>'money'],
@@ -362,9 +317,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $l = (new Model($db, 'list'))->addFields(['name']);
-        $i = (new Model($db, 'item'))->addFields(['list_id', 'name', 'code']);
+        $l = (new Model($this->db, 'list'))->addFields(['name']);
+        $i = (new Model($this->db, 'item'))->addFields(['list_id', 'name', 'code']);
         $l->hasMany('Items', $i)
             ->addFields([
                 ['items_name', 'aggregate' => 'count', 'field' => 'name'],
@@ -413,9 +367,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name']);
-        $c = (new Model($db, 'contact'))->addFields(['address']);
+        $u = (new Model($this->db, 'user'))->addFields(['name']);
+        $c = (new Model($this->db, 'contact'))->addFields(['address']);
 
         $u->hasOne('contact_id', $c)
             ->addField('address');
@@ -446,8 +399,7 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testModelProperty()
     {
-        $db = new Persistence_SQL($this->db->connection);
-        $user = new Model($db, ['table' => 'user']);
+        $user = new Model($this->db, ['table' => 'user']);
         $user->hasMany('Orders', ['model' => ['atk4/data/Model', 'table' => 'order'], 'their_field' => 'id']);
         $o = $user->ref('Orders');
         $this->assertEquals('order', $o->table);
@@ -467,9 +419,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
-        $u = (new Model($db, 'user'))->addFields(['name']);
-        $o = (new Model($db, 'order'))->addFields(['amount']);
+        $u = (new Model($this->db, 'user'))->addFields(['name']);
+        $o = (new Model($this->db, 'order'))->addFields(['amount']);
 
         // by default not set
         $o->hasOne('user_id', $u);
@@ -481,11 +432,98 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals($o->getElement('user_id')->isVisible(), false);
 
         // if it is set manually then it will not be changed
-        $o = (new Model($db, 'order'))->addFields(['amount']);
+        $o = (new Model($this->db, 'order'))->addFields(['amount']);
         $o->hasOne('user_id', $u);
         $o->getElement('user_id')->ui['visible'] = true;
         $o->getRef('user_id')->addTitle();
 
         $this->assertEquals($o->getElement('user_id')->isVisible(), true);
+    }
+
+    /**
+     * Tests that if we change hasOne->addTitle() field value then it will also update
+     * link field value when saved.
+     */
+    public function testHasOneTitleSet()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
+                2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
+                3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
+            ], 'order' => [
+                1 => ['id' => 1, 'user_id' => 1],
+                2 => ['id' => 2, 'user_id' => 2],
+                3 => ['id' => 3, 'user_id' => 1],
+            ], ];
+
+        // restore DB
+        $this->setDB($a);
+
+        // with default title_field='name'
+        $u = (new Model($this->db, 'user'))->addFields(['name', 'last_name']);
+        $o = (new Model($this->db, 'order'));
+        $o->hasOne('user_id', $u)->addTitle();
+
+        // change order user by changing title_field value
+        $o->load(1);
+        $o->set('user', 'Peter');
+        $this->assertEquals(1, $o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
+        $o->reload();
+        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+
+        // restore DB
+        $this->setDB($a);
+
+        // with custom title_field='last_name'
+        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $o = (new Model($this->db, 'order'));
+        $o->hasOne('user_id', $u)->addTitle();
+
+        // change order user by changing title_field value
+        $o->load(1);
+        $o->set('user', 'Foo');
+        $this->assertEquals(1, $o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
+        $o->reload();
+        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+
+        // restore DB
+        $this->setDB($a);
+
+        // with custom title_field='last_name' and custom link name
+        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $o = (new Model($this->db, 'order'));
+        $o->hasOne('my_user', [$u, 'our_field'=>'user_id'])->addTitle();
+
+        // change order user by changing ref field value
+        $o->load(1);
+        $o->set('my_user', 'Foo');
+        $this->assertEquals(1, $o->get('user_id'));
+        $o->save();
+        $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
+        $o->reload();
+        $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
+
+        // restore DB
+        $this->setDB($a);
+
+        // with custom title_field='last_name' and custom link name
+        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $o = (new Model($this->db, 'order'));
+        $o->hasOne('my_user', [$u, 'our_field'=>'user_id'])->addTitle();
+
+        // change order user by changing ref field value
+        $o->load(1);
+        $o->set('my_user', 'Foo'); // user_id=2
+        $o->set('user_id', 3);     // user_id=3 (this will take precedence)
+        $this->assertEquals(3, $o->get('user_id'));
+        $o->save();
+        $this->assertEquals(3, $o->get('user_id')); // user_id changed to Goofy ID
+        $o->reload();
+        $this->assertEquals(3, $o->get('user_id')); // and it's really saved like that
     }
 }
