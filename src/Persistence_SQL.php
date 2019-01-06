@@ -4,6 +4,8 @@
 
 namespace atk4\data;
 
+use atk4\dsql\Expression;
+
 /**
  * Class description?
  */
@@ -485,6 +487,8 @@ class Persistence_SQL extends Persistence
                 } else {
                     $v = null;
                 }
+            } elseif ($v === "") {
+                $v = null;
             } else {
                 $v = (bool) $v;
             }
@@ -952,5 +956,36 @@ class Persistence_SQL extends Persistence
                 'conditions' => $m->conditions,
             ], null, $e);
         }
+    }
+
+    public function getFieldSQLExpression(Field $field, Expression $expression)
+    {
+        if (isset($field->owner->persistence_data['use_table_prefixes'])) {
+            $mask = '{}.{}';
+            $prop = [
+                $field->join
+                    ? (isset($field->join->foreign_alias)
+                    ? $field->join->foreign_alias
+                    : $field->join->short_name)
+                    : (isset($field->owner->table_alias)
+                    ? $field->owner->table_alias
+                    : $field->owner->table),
+                $field->actual ?: $field->short_name,
+            ];
+        } else {
+            // references set flag use_table_prefixes, so no need to check them here
+            $mask = '{}';
+            $prop = [
+                $field->actual ?: $field->short_name,
+            ];
+        }
+
+        // If our Model has expr() method (inherited from Persistence_SQL) then use it
+        if ($field->owner->hasMethod('expr')) {
+            $field->owner->expr($mask, $prop);
+        }
+
+        // Otherwise call method from expression
+        return $expression->expr($mask, $prop);
     }
 }

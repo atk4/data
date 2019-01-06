@@ -368,7 +368,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         // compatibility: for field types
         $class = $this->_default_seed_addField;
-        if (isset($defaults['type'])) {
+        if (is_array($defaults) && isset($defaults['type'])) {
             switch (strtolower($defaults['type'])) {
                 case 'boolean':
                     $class = 'Boolean';
@@ -576,7 +576,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             // enum property support
-            if ($f->enum && $f->type != 'boolean') {
+            if (isset($f->enum) && $f->enum && $f->type != 'boolean') {
                 if ($value === '') {
                     $value = null;
                 }

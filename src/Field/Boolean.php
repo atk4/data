@@ -31,15 +31,26 @@ class Boolean extends \atk4\data\Field
     public $valueFalse = false;
 
     /**
+     * Backward compatible way to specify value for true / false:
+     *
+     * $enum = ['N', 'Y']
+     *
+     * @var array
+     */
+    public $enum = null;
+
+    /**
      * Constructor.
      */
-    public function __construct()
+    public function init()
     {
+        $this->_init();
+
         // Backwards compatibility
-        if (isset($this->enum)) {
+        if ($this->enum) {
             $this->valueFalse = $this->enum[0];
             $this->valueTrue = $this->enum[1];
-            unset($this->enum);
+            //unset($this->enum);
         }
     }
 
@@ -49,9 +60,13 @@ class Boolean extends \atk4\data\Field
      * @param mixed $value
      *
      * @return bool
+     * @throws ValidationException
      */
     public function normalize($value)
     {
+        if (is_null($value) || $value === '') {
+            return null;
+        }
         if (is_bool($value)) {
             return $value;
         }
