@@ -4,7 +4,6 @@
 
 namespace atk4\data\Field;
 
-
 use atk4\data\Field;
 
 class Number extends Field
@@ -45,11 +44,9 @@ class Number extends Field
     public $base = 10;
 
     /**
-     * Format current field into user-friendly format
+     * Format current field into user-friendly format.
      */
     public function format()
     {
-
     }
-
 }
