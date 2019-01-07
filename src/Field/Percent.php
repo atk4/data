@@ -1,8 +1,6 @@
 <?php
 
-
 namespace atk4\data\Field;
-
 
 class Percent extends Number
 {
@@ -11,7 +9,8 @@ class Percent extends Number
      */
     public $decimalNumbers = 2;
 
-    function format() {
-        return ($this->value()*100).'%';
+    public function format()
+    {
+        return ($this->value() * 100).'%';
     }
 }
