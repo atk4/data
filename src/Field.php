@@ -321,7 +321,6 @@ class Field implements Expressionable
                 break;
             case 'boolean':
                 throw Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
-
             case 'date':
             case 'datetime':
             case 'time':
