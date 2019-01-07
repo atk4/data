@@ -288,6 +288,7 @@ class Field
                 // we clear out thousand separator, but will change to
                 // http://php.net/manual/en/numberformatter.parse.php
                 // in the future with the introduction of locale
+                $value = trim(str_replace(["\r", "\n"], '', $value));
                 $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
@@ -298,6 +299,7 @@ class Field
                 }
                 break;
             case 'float':
+                $value = trim(str_replace(["\r", "\n"], '', $value));
                 $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
@@ -308,6 +310,7 @@ class Field
                 }
                 break;
             case 'money':
+                $value = trim(str_replace(["\r", "\n"], '', $value));
                 $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
