@@ -336,21 +336,20 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
                 1 => ['name' => 'John', 'surname' => 'Smith', 'country_id'=>1],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id'=>2],
             ],
-            'country'=>[
+            'country'=> [
                 1 => ['name' => 'Latvia'],
                 2 => ['name' => 'UK'],
-            ]
+            ],
         ];
 
         $p = new Persistence_Array($a);
-
 
         $user = new Model($p, 'user');
         $user->addField('name');
         $user->addField('surname');
 
         $country = new Model();
-        $country->table='country';
+        $country->table = 'country';
         $country->addField('name');
 
         $user->hasOne('country_id', $country);
