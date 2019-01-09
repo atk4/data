@@ -1924,9 +1924,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Private method.
      *
-     * @param string $c        Class name
-     * @param string $link     Link
-     * @param array  $defaults Properties which we will pass to Reference object constructor
+     * @param string         $c        Class name
+     * @param string         $link     Link
+     * @param array|callable $defaults Properties which we will pass to Reference object constructor
      *
      * @throws Exception
      * @throws \atk4\core\Exception
@@ -1935,6 +1935,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     protected function _hasReference($c, $link, $defaults = [])
     {
+        if (is_callable($defaults)) {
+            $defaults = call_user_func($defaults, $this);
+        }
+
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_'.$link];
         } elseif (isset($defaults[0])) {
