@@ -1165,7 +1165,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $class = '\\'.$class;
         }
 
-        return $this->persistence->add($class, $options);
+        if ($this->persistence) {
+            return $this->persistence->add($class, $options);
+        }
+
+        return new $class($options);
     }
 
     /**
