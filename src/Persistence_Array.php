@@ -264,10 +264,146 @@ class Persistence_Array extends Persistence
      */
     public function export(Model $m, $fields = null)
     {
+        $action = $this->initAction($m, $fields);
+        $this->applyConditions($m, $action);
+        return $action->get();
+    }
+
+    /**
+     * @param Model $m
+     * @param array $fields
+     *
+     * @return Action\Iterator
+     */
+    public function initAction(Model $m, $fields = null)
+    {
+
         $keys = $fields ? array_flip($fields) : null;
 
-        return array_map(function ($r) use ($m, $keys) {
+        $data = array_map(function ($r) use ($m, $keys) {
             return $this->typecastLoadRow($m, $keys ? array_intersect_key($r, $keys) : $r);
         }, $this->data[$m->table]);
+
+        return new Action\Iterator($data);
     }
+
+    /**
+     * Will apply conditions defined inside $m onto query $q.
+     *
+     * @param Model            $m
+     * @param \atk4\dsql\Query $q
+     *
+     * @return \atk4\dsql\Query
+     */
+    public function applyConditions(Model $m, Action\Iterator $q)
+    {
+        if (!isset($m->conditions)) {
+            // no conditions are set in the model
+            return $q;
+        }
+
+        foreach ($m->conditions as $cond) {
+
+            // Options here are:
+            // count($cond) == 1, we will pass the only
+            // parameter inside where()
+
+            if (count($cond) == 1) {
+
+                throw new Exception([
+                    'Condition not acceptable for Array persistence',
+                    'condition'=>$cond
+                ]);
+                /*
+                // OR conditions
+                if (is_array($cond[0])) {
+                    foreach ($cond[0] as &$row) {
+                        if (is_string($row[0])) {
+                            $row[0] = $m->getElement($row[0]);
+                        }
+                    }
+                }
+
+                $q->where($cond[0]);
+                continue;
+                */
+            }
+
+            if (is_string($cond[0])) {
+                $cond[0] = $m->getElement($cond[0]);
+            }
+
+            if (count($cond) == 2) {
+                if ($cond[0] instanceof Field) {
+                    $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
+                }
+                $q->where(is_string($cond[0]) ? $cond[0]: $cond[0]->short_name, $cond[1]);
+            } else {
+                throw new Exception([
+                    'Condition not acceptable for Array persistence',
+                    'condition'=>$cond
+                ]);
+
+                /*
+                if ($cond[0] instanceof Field) {
+                    $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
+                }
+                $q->where($cond[0], $cond[1], $cond[2]);
+                */
+            }
+        }
+    }
+
+    /**
+     * Various actions possible here, mostly for compatibility for SQLs
+     *
+     * @param Model  $m
+     * @param string $type
+     * @param array  $args
+     *
+     * @return \atk4\dsql\Query,Iterator\Action
+     */
+    public function action($m, $type, $args = [])
+    {
+        if (!is_array($args)) {
+            throw new Exception([
+                '$args must be an array',
+                'args' => $args,
+            ]);
+        }
+
+        $action = $this->initAction($m);
+
+        $this->applyConditions($m, $action);
+
+        switch ($type) {
+            case 'select':
+
+                return $action;
+
+            case 'count':
+
+                return $action->count();
+
+            case 'field':
+
+                $field = is_string($args[0]) ? $m->getElement($args[0]) : $args[0];
+
+                return $action->filterField($field->short_name);
+
+            case 'fx':
+            case 'fx0':
+
+                return $action->aggregate($field->short_name, $fx);
+
+            default:
+                throw new Exception([
+                    'Unsupported action mode',
+                    'type' => $type,
+                ]);
+        }
+
+    }
+
+
 }

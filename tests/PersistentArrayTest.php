@@ -229,25 +229,6 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     }
 
     /**
-     * Non SQL persistences don't support action() method.
-     *
-     * @expectedException Exception
-     */
-    public function testActionNotSupportedException()
-    {
-        $a = [
-            1 => ['name' => 'John'],
-            2 => ['name' => 'Sarah'],
-        ];
-
-        $p = new Persistence_Array($a);
-        $m = new Model($p);
-        $m->addField('name');
-
-        $m->action('count');
-    }
-
-    /**
      * Some persistences don't support tryLoad() method.
      *
      * @expectedException Exception
@@ -281,17 +262,6 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     }
 
     /**
-     * Some persistences don't support export() method.
-     *
-     * @expectedException Exception
-     */
-    public function testExportNotSupportedException()
-    {
-        $m = new Model(new Persistence());
-        $m->export();
-    }
-
-    /**
      * Test export.
      */
     public function testExport()
@@ -316,6 +286,48 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             2 => ['surname' => 'Jones'],
         ], $m->export(['surname']));
     }
+
+    public function testCount()
+    {
+        $a = [
+            1 => ['name' => 'John', 'surname' => 'Smith'],
+            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+
+        $this->assertEquals(2, $m->action('count')->getOne());
+    }
+
+    public function testCondition()
+    {
+        $a = [
+            1 => ['name' => 'John', 'surname' => 'Smith'],
+            2 => ['name' => 'Sarah', 'surname' => 'QQ'],
+            3 => ['name' => 'Sarah', 'surname' => 'XX'],
+            4 => ['name' => 'Sarah', 'surname' => 'Smith'],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+
+        $this->assertEquals(4, $m->action('count')->getOne());
+        $m->addCondition('name', 'Sarah');
+        $this->assertEquals(3, $m->action('count')->getOne());
+        $m->addCondition('surname', 'Smith');
+
+        $this->assertEquals([4=>['name'=>'Sarah', 'surname'=>'Smith']], $m->export());
+
+        $this->assertEquals(1, $m->action('count')->getOne());
+        $m->addCondition('surname', 'Siiiith');
+        $this->assertEquals(0, $m->action('count')->getOne());
+    }
+
 
     public function testHasOne()
     {
@@ -348,6 +360,41 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $user->load(2);
         $this->assertEquals('UK', $user->ref('country_id')['name']);
+    }
 
+    public function testHasMany()
+    {
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith', 'country_id'=>1],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id'=>2],
+                3 => ['name' => 'Janis', 'surname' => 'Berzins', 'country_id'=>1],
+            ],
+            'country'=>[
+                1 => ['name' => 'Latvia'],
+                2 => ['name' => 'UK'],
+            ]
+        ];
+
+        $p = new Persistence_Array($a);
+
+
+
+        $country = new Model($p, 'country');
+        $country->addField('name');
+
+        $user = new Model();
+        $user->table='user';
+        $user->addField('name');
+        $user->addField('surname');
+
+        $country->hasMany('Users', $user);
+        $user->hasOne('country_id', $country);
+
+        $country->load(1);
+        $this->assertEquals(2, $country->ref('Users')->action('count')->getOne());
+
+        $country->load(2);
+        $this->assertEquals(1 , $country->ref('Users')->action('count')->getOne());
     }
 }
