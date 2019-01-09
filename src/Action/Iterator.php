@@ -1,16 +1,12 @@
 <?php
 
-
 namespace atk4\data\Action;
-
 
 use Guzzle\Iterator\FilterIterator;
 
 /**
  * Class Array_ is returned by $model->action(). Compatible with DSQL to a certain point as it implements
  * specific actions such as getOne() or get().
- *
- * @package atk4\data\Action
  */
 class Iterator
 {
@@ -24,21 +20,22 @@ class Iterator
      *
      * @param $generator
      */
-    function __construct(array $generator)
+    public function __construct(array $generator)
     {
         $this->generator = new \ArrayIterator($generator);
     }
 
     /**
-     * Applies FilterIterator making sure that values of $field equal to $value
+     * Applies FilterIterator making sure that values of $field equal to $value.
      *
      * @param $field
      * @param $value
      *
      * @return $this
      */
-    function where($field, $value) {
-        $this->generator = new \CallbackFilterIterator($this->generator, function($row) use ($field, $value) {
+    public function where($field, $value)
+    {
+        $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
 
             // skip row. does not have field at all
             if (!isset($row[$field])) {
@@ -57,36 +54,37 @@ class Iterator
     }
 
     /**
-     * Counts number of rows and replaces our generator with just a single number
+     * Counts number of rows and replaces our generator with just a single number.
      *
      * @return $this
      */
-    function count()
+    public function count()
     {
         $this->generator = new \ArrayIterator([[iterator_count($this->generator)]]);
 
         return $this;
     }
 
-
     /**
      * @return array get all data inside array
      */
-    function get()
+    public function get()
     {
         return iterator_to_array($this->generator, true);
     }
 
-    function getRow(){
-
+    public function getRow()
+    {
         $row = $this->generator->current();
         $this->generator->next();
 
         return $row;
     }
 
-    function getOne(){
+    public function getOne()
+    {
         $data = $this->getRow();
+
         return array_shift($data);
     }
 }

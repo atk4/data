@@ -323,7 +323,6 @@ class PersistentJSONTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->assertEquals(0, $m->action('count')->getOne());
     }
 
-
     public function testHasOne()
     {
         $a = [
@@ -364,21 +363,19 @@ class PersistentJSONTest extends \atk4\core\PHPUnit_AgileTestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id'=>2],
                 3 => ['name' => 'Janis', 'surname' => 'Berzins', 'country_id'=>1],
             ],
-            'country'=>[
+            'country'=> [
                 1 => ['name' => 'Latvia'],
                 2 => ['name' => 'UK'],
-            ]
+            ],
         ];
 
         $p = new Persistence_Array($a);
-
-
 
         $country = new Model($p, 'country');
         $country->addField('name');
 
         $user = new Model();
-        $user->table='user';
+        $user->table = 'user';
         $user->addField('name');
         $user->addField('surname');
 
@@ -389,6 +386,6 @@ class PersistentJSONTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->assertEquals(2, $country->ref('Users')->action('count')->getOne());
 
         $country->load(2);
-        $this->assertEquals(1 , $country->ref('Users')->action('count')->getOne());
+        $this->assertEquals(1, $country->ref('Users')->action('count')->getOne());
     }
 }

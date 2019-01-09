@@ -1,15 +1,12 @@
 <?php
 
-
 namespace atk4\data;
-
 
 class Persistence_JSON extends Persistence
 {
-
     /**
      * @var array Contains decoded JSON data. If model specifies table, then it is loaded from a specific
-     * route, e.g. $table='user/blah/abc' will load $data['user']['blah']['abc']
+     *            route, e.g. $table='user/blah/abc' will load $data['user']['blah']['abc']
      *
      * Table route can include ID numbers for record traversal 'user/23/Roles'
      */
@@ -28,11 +25,12 @@ class Persistence_JSON extends Persistence
     /**
      * Associate model with the data driver.
      *
-     * @param Model|string $m Model which will use this persistence
-     * @param array $defaults Properties
+     * @param Model|string $m        Model which will use this persistence
+     * @param array        $defaults Properties
+     *
+     * @throws Exception
      *
      * @return Model
-     * @throws Exception
      */
     public function add($m, $defaults = [])
     {
@@ -56,34 +54,33 @@ class Persistence_JSON extends Persistence
     {
         $path_array = explode('/', $path);
 
-        $cur =& $this->data;
+        $cur = &$this->data;
 
-        foreach($path_array as $node) {
+        foreach ($path_array as $node) {
             if (!isset($cur[$node])) {
                 throw new Exception([
                     'Path not found in JSON',
-                    'path'=>$path
+                    'path'=> $path,
                 ]);
             }
 
-            $cur =& $cur[$node];
+            $cur = &$cur[$node];
         }
-
     }
 
     /**
      * Loads model and returns data record.
      *
-     * @param Model $m
-     * @param mixed $id
+     * @param Model  $m
+     * @param mixed  $id
      * @param string $table
      *
-     * @return array|false
      * @throws Exception
+     *
+     * @return array|false
      */
     public function load(Model $m, $id, $table = null)
     {
-
         if (isset($m->table) && !isset($this->data[$m->table])) {
             throw new Exception([
                 'Table was not found in the array data source',
@@ -123,6 +120,4 @@ class Persistence_JSON extends Persistence
 
         return $this->typecastLoadRow($m, $this->data[$table][$id]);
     }
-
-
 }
