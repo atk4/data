@@ -266,6 +266,7 @@ class Persistence_Array extends Persistence
     {
         $action = $this->initAction($m, $fields);
         $this->applyConditions($m, $action);
+
         return $action->get();
     }
 
@@ -277,7 +278,6 @@ class Persistence_Array extends Persistence
      */
     public function initAction(Model $m, $fields = null)
     {
-
         $keys = $fields ? array_flip($fields) : null;
 
         $data = array_map(function ($r) use ($m, $keys) {
@@ -309,10 +309,9 @@ class Persistence_Array extends Persistence
             // parameter inside where()
 
             if (count($cond) == 1) {
-
                 throw new Exception([
                     'Condition not acceptable for Array persistence',
-                    'condition'=>$cond
+                    'condition'=> $cond,
                 ]);
                 /*
                 // OR conditions
@@ -337,11 +336,11 @@ class Persistence_Array extends Persistence
                 if ($cond[0] instanceof Field) {
                     $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
                 }
-                $q->where(is_string($cond[0]) ? $cond[0]: $cond[0]->short_name, $cond[1]);
+                $q->where(is_string($cond[0]) ? $cond[0] : $cond[0]->short_name, $cond[1]);
             } else {
                 throw new Exception([
                     'Condition not acceptable for Array persistence',
-                    'condition'=>$cond
+                    'condition'=> $cond,
                 ]);
 
                 /*
@@ -355,7 +354,7 @@ class Persistence_Array extends Persistence
     }
 
     /**
-     * Various actions possible here, mostly for compatibility for SQLs
+     * Various actions possible here, mostly for compatibility for SQLs.
      *
      * @param Model  $m
      * @param string $type
@@ -402,8 +401,5 @@ class Persistence_Array extends Persistence
                     'type' => $type,
                 ]);
         }
-
     }
-
-
 }
