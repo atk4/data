@@ -1164,8 +1164,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if (is_string($class) && $class[0] != '\\') {
             $class = '\\'.$class;
         }
-
-        return $this->persistence->add($class, $options);
+        
+        if ($this->persistence) {
+            return $this->persistence->add($class, $options);
+        }
+        return new $class($options);
     }
 
     /**
