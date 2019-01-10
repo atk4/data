@@ -1939,10 +1939,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     protected function _hasReference($c, $link, $defaults = [])
     {
-        if (is_callable($defaults)) {
-            $defaults = call_user_func($defaults, $this);
-        }
-
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_'.$link];
         } elseif (isset($defaults[0])) {
