@@ -360,11 +360,11 @@ class Field
 
                 if ($f->type == 'date') {
                     // remove time portion from date type value
-                    $value->setTime(0,0,0);
+                    $value->setTime(0, 0, 0);
                 }
                 if ($f->type == 'time') {
                     // remove date portion from date type value
-                    $value->setDate(0,1,1);
+                    $value->setDate(0, 1, 1);
                 }
 
                 break;
