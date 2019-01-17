@@ -298,7 +298,7 @@ class Persistence
             // run persistence-specific typecasting of field value
             return $this->_typecastSaveField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to serialize field value on save', 'field' => $f->name], null, $e);
+            throw new Exception(['Unable to typecast field value on save', 'field' => $f->name], null, $e);
         }
     }
 
