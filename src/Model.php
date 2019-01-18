@@ -1165,7 +1165,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $class = '\\'.$class;
         }
 
-        return $this->persistence->add($class, $options);
+        if ($this->persistence) {
+            return $this->persistence->add($class, $options);
+        }
+
+        return new $class($options);
     }
 
     /**
@@ -1924,9 +1928,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Private method.
      *
-     * @param string $c        Class name
-     * @param string $link     Link
-     * @param array  $defaults Properties which we will pass to Reference object constructor
+     * @param string         $c        Class name
+     * @param string         $link     Link
+     * @param array|callable $defaults Properties which we will pass to Reference object constructor
      *
      * @throws Exception
      * @throws \atk4\core\Exception
