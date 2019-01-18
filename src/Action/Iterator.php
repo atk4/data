@@ -11,12 +11,12 @@ use Guzzle\Iterator\FilterIterator;
 class Iterator
 {
     /**
-     * @var array
+     * @var \ArrayIterator
      */
     public $generator;
 
     /**
-     * Array_ constructor.
+     * Iterator constructor.
      *
      * @param $generator
      */
@@ -66,13 +66,20 @@ class Iterator
     }
 
     /**
-     * @return array get all data inside array
+     * Return all data inside array.
+     *
+     * @return array
      */
     public function get()
     {
         return iterator_to_array($this->generator, true);
     }
 
+    /**
+     * Return one row of data.
+     *
+     * @return array
+     */
     public function getRow()
     {
         $row = $this->generator->current();
@@ -81,6 +88,11 @@ class Iterator
         return $row;
     }
 
+    /**
+     * Return one value from one row of data.
+     *
+     * @return mixed
+     */
     public function getOne()
     {
         $data = $this->getRow();

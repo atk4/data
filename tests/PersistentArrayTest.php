@@ -317,15 +317,68 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('surname');
 
         $this->assertEquals(4, $m->action('count')->getOne());
+        $this->assertEquals($a['data'], $m->export());
+
         $m->addCondition('name', 'Sarah');
         $this->assertEquals(3, $m->action('count')->getOne());
+
         $m->addCondition('surname', 'Smith');
-
-        $this->assertEquals([4=>['name'=>'Sarah', 'surname'=>'Smith']], $m->export());
-
         $this->assertEquals(1, $m->action('count')->getOne());
+        $this->assertEquals([4=>['name'=>'Sarah', 'surname'=>'Smith']], $m->export());
+        $this->assertEquals([4=>['name'=>'Sarah', 'surname'=>'Smith']], $m->action('select')->get());
+
         $m->addCondition('surname', 'Siiiith');
         $this->assertEquals(0, $m->action('count')->getOne());
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testUnsupportedAction()
+    {
+        $a = [1=>['name'=>'John']];
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->action('foo');
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testBadActionArgs()
+    {
+        $a = [1=>['name'=>'John']];
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->action('select', 'foo'); // args should be array
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testUnsupportedCondition1()
+    {
+        $a = [1=>['name'=>'John']];
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addCondition('name');
+        $m->export();
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testUnsupportedCondition2()
+    {
+        $a = [1=>['name'=>'John']];
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addCondition('name', '<>', 'John');
+        $m->export();
     }
 
     public function testHasOne()

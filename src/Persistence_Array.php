@@ -271,6 +271,8 @@ class Persistence_Array extends Persistence
     }
 
     /**
+     * Typecast data and return Iterator of data array.
+     *
      * @param Model $m
      * @param array $fields
      *
@@ -290,10 +292,10 @@ class Persistence_Array extends Persistence
     /**
      * Will apply conditions defined inside $m onto query $q.
      *
-     * @param Model            $m
-     * @param \atk4\dsql\Query $q
+     * @param Model           $m
+     * @param Action\Iterator $q
      *
-     * @return \atk4\dsql\Query
+     * @return Action\Iterator
      */
     public function applyConditions(Model $m, Action\Iterator $q)
     {
@@ -311,7 +313,7 @@ class Persistence_Array extends Persistence
             if (count($cond) == 1) {
                 throw new Exception([
                     'Condition not acceptable for Array persistence',
-                    'condition'=> $cond,
+                    'condition' => $cond,
                 ]);
                 /*
                 // OR conditions
@@ -354,7 +356,7 @@ class Persistence_Array extends Persistence
     }
 
     /**
-     * Various actions possible here, mostly for compatibility for SQLs.
+     * Various actions possible here, mostly for compatibility with SQLs.
      *
      * @param Model  $m
      * @param string $type
@@ -384,6 +386,7 @@ class Persistence_Array extends Persistence
 
                 return $action->count();
 
+            /* These are not implemented yet
             case 'field':
 
                 $field = is_string($args[0]) ? $m->getElement($args[0]) : $args[0];
@@ -394,6 +397,7 @@ class Persistence_Array extends Persistence
             case 'fx0':
 
                 return $action->aggregate($field->short_name, $fx);
+            */
 
             default:
                 throw new Exception([
