@@ -357,6 +357,16 @@ class Field
 
                     throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value type' => gettype($value)]);
                 }
+
+                if ($f->type == 'date') {
+                    // remove time portion from date type value
+                    $value->setTime(0, 0, 0);
+                }
+                if ($f->type == 'time') {
+                    // remove date portion from date type value
+                    $value->setDate(0, 1, 1);
+                }
+
                 break;
             case 'array':
                 if (!is_array($value)) {
