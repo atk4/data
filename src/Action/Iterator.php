@@ -92,7 +92,7 @@ class Iterator
      */
     public function limit($cnt, $shift = 0)
     {
-        $data = array_slice($this->get(), $shift, $cnt, TRUE);
+        $data = array_slice($this->get(), $shift, $cnt, true);
 
         // put data back in generator
         $this->generator = new \ArrayIterator($data);

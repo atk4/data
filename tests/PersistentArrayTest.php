@@ -349,11 +349,11 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $d = $this->_getRows($m, ['f1']);
         $this->assertEquals([
             ['f1'=>'A'],
-            ['f1'=>'A'],
-            ['f1'=>'C'],
-            ['f1'=>'D'],
-            ['f1'=>'D'],
-            ['f1'=>'E'],
+            ['f1'=> 'A'],
+            ['f1'=> 'C'],
+            ['f1'=> 'D'],
+            ['f1'=> 'D'],
+            ['f1'=> 'E'],
         ], $d);
         $this->assertEquals($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
@@ -367,11 +367,11 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $d = $this->_getRows($m, ['f1']);
         $this->assertEquals([
             ['f1'=>'E'],
-            ['f1'=>'D'],
-            ['f1'=>'D'],
-            ['f1'=>'C'],
-            ['f1'=>'A'],
-            ['f1'=>'A'],
+            ['f1'=> 'D'],
+            ['f1'=> 'D'],
+            ['f1'=> 'C'],
+            ['f1'=> 'A'],
+            ['f1'=> 'A'],
         ], $d);
         $this->assertEquals($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
@@ -387,11 +387,11 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $d = $this->_getRows($m, ['f1', 'f2', 'id']);
         $this->assertEquals([
             ['f1'=>'E', 'f2'=>'A', 'id'=>5],
-            ['f1'=>'D', 'f2'=>'C', 'id'=>3],
-            ['f1'=>'D', 'f2'=>'A', 'id'=>2],
-            ['f1'=>'C', 'f2'=>'A', 'id'=>6],
-            ['f1'=>'A', 'f2'=>'C', 'id'=>4],
-            ['f1'=>'A', 'f2'=>'B', 'id'=>1],
+            ['f1'=> 'D', 'f2'=>'C', 'id'=>3],
+            ['f1'=> 'D', 'f2'=>'A', 'id'=>2],
+            ['f1'=> 'C', 'f2'=>'A', 'id'=>6],
+            ['f1'=> 'A', 'f2'=>'C', 'id'=>4],
+            ['f1'=> 'A', 'f2'=>'B', 'id'=>1],
         ], $d);
         $this->assertEquals($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }
@@ -423,7 +423,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ['f1' => 'E'],
         ], array_values($m->export()));
 
-        $m->setLimit(2,1);
+        $m->setLimit(2, 1);
         $this->assertEquals(2, $m->action('count')->getOne());
         $this->assertEquals([
             ['f1' => 'D'],
