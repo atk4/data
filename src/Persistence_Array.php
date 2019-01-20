@@ -249,9 +249,16 @@ class Persistence_Array extends Persistence
         }
     }
 
+    /**
+     * Prepare iterator.
+     *
+     * @param Model $m
+     *
+     * @return array
+     */
     public function prepareIterator(Model $m)
     {
-        return $this->data[$m->table];
+        return $m->action('select')->get();
     }
 
     /**
@@ -264,10 +271,7 @@ class Persistence_Array extends Persistence
      */
     public function export(Model $m, $fields = null)
     {
-        $action = $this->initAction($m, $fields);
-        $this->applyConditions($m, $action);
-
-        return $action->get();
+        return $m->action('select', [$fields])->get();
     }
 
     /**
@@ -287,6 +291,28 @@ class Persistence_Array extends Persistence
         }, $this->data[$m->table]);
 
         return new Action\Iterator($data);
+    }
+
+    /**
+     * Will set limit defined inside $m onto data.
+     *
+     * @param Model          $m
+     * @param Array\Iterator $action
+     */
+    protected function setLimitOrder($m, &$action)
+    {
+        // first order by
+        if ($m->order) {
+            $action->order($m->order);
+        }
+
+        // then set limit
+        if ($m->limit && ($m->limit[0] || $m->limit[1])) {
+            $cnt = isset($m->limit[0]) ? $m->limit[0] : 0;
+            $shift = isset($m->limit[1]) ? $m->limit[1] : 0;
+
+            $action->limit($cnt, $shift);
+        }
     }
 
     /**
@@ -373,9 +399,10 @@ class Persistence_Array extends Persistence
             ]);
         }
 
-        $action = $this->initAction($m);
+        $action = $this->initAction($m, isset($args[0]) ? $args[0] : null);
 
         $this->applyConditions($m, $action);
+        $this->setLimitOrder($m, $action);
 
         switch ($type) {
             case 'select':

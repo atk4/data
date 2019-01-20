@@ -18,18 +18,18 @@ class Iterator
     /**
      * Iterator constructor.
      *
-     * @param $generator
+     * @param array $data
      */
-    public function __construct(array $generator)
+    public function __construct(array $data)
     {
-        $this->generator = new \ArrayIterator($generator);
+        $this->generator = new \ArrayIterator($data);
     }
 
     /**
      * Applies FilterIterator making sure that values of $field equal to $value.
      *
-     * @param $field
-     * @param $value
+     * @param string $field
+     * @param string $value
      *
      * @return $this
      */
@@ -49,6 +49,53 @@ class Iterator
 
             return false;
         });
+
+        return $this;
+    }
+
+    /**
+     * Applies sorting on Iterator.
+     *
+     * @param array $fields
+     *
+     * @return $this
+     */
+    public function order($fields)
+    {
+        $data = $this->get();
+
+        // prepare arguments for array_multisort()
+        $args = [];
+        foreach ($fields as list($field, $desc)) {
+            $args[] = array_column($data, $field);
+            $args[] = $desc ? SORT_DESC : SORT_ASC;
+            //$args[] = SORT_STRING; // SORT_STRING | SORT_NUMERIC | SORT_REGULAR
+        }
+        $args[] = &$data;
+
+        // call sorting
+        call_user_func_array('array_multisort', $args);
+
+        // put data back in generator
+        $this->generator = new \ArrayIterator(array_pop($args));
+
+        return $this;
+    }
+
+    /**
+     * Limit Iterator.
+     *
+     * @param int $cnt
+     * @param int $shift
+     *
+     * @return $this
+     */
+    public function limit($cnt, $shift = 0)
+    {
+        $data = array_slice($this->get(), $shift, $cnt, TRUE);
+
+        // put data back in generator
+        $this->generator = new \ArrayIterator($data);
 
         return $this;
     }

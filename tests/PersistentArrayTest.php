@@ -287,6 +287,9 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         ], $m->export(['surname']));
     }
 
+    /**
+     * Test Model->action('count').
+     */
     public function testCount()
     {
         $a = [
@@ -302,6 +305,140 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->assertEquals(2, $m->action('count')->getOne());
     }
 
+    /**
+     * Returns exported data, but will use get() instead of export().
+     *
+     * @param \atk4\data\Model $m
+     * @param array            $fields
+     *
+     * @return array
+     */
+    protected function _getRows(\atk4\data\Model $m, $fields = [])
+    {
+        $d = [];
+        foreach ($m as $junk) {
+            $row = $m->get();
+            $row = $fields ? array_intersect_key($row, array_flip($fields)) : $row;
+            $d[] = $row;
+        }
+
+        return $d;
+    }
+
+    /**
+     * Test Model->setOrder().
+     */
+    public function testOrder()
+    {
+        $a = [
+            ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
+            ['id' => 2, 'f1' => 'D', 'f2' => 'A'],
+            ['id' => 3, 'f1' => 'D', 'f2' => 'C'],
+            ['id' => 4, 'f1' => 'A', 'f2' => 'C'],
+            ['id' => 5, 'f1' => 'E', 'f2' => 'A'],
+            ['id' => 6, 'f1' => 'C', 'f2' => 'A'],
+        ];
+
+        // order by one field ascending
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('f1');
+        $m->addField('f2');
+        $m->addField('f3');
+        $m->setOrder('f1');
+        $d = $this->_getRows($m, ['f1']);
+        $this->assertEquals([
+            ['f1'=>'A'],
+            ['f1'=>'A'],
+            ['f1'=>'C'],
+            ['f1'=>'D'],
+            ['f1'=>'D'],
+            ['f1'=>'E'],
+        ], $d);
+        $this->assertEquals($d, array_values($m->export(['f1']))); // array_values to get rid of keys
+
+        // order by one field descending
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('f1');
+        $m->addField('f2');
+        $m->addField('f3');
+        $m->setOrder('f1', true);
+        $d = $this->_getRows($m, ['f1']);
+        $this->assertEquals([
+            ['f1'=>'E'],
+            ['f1'=>'D'],
+            ['f1'=>'D'],
+            ['f1'=>'C'],
+            ['f1'=>'A'],
+            ['f1'=>'A'],
+        ], $d);
+        $this->assertEquals($d, array_values($m->export(['f1']))); // array_values to get rid of keys
+
+        // order by two fields ascending
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('f1');
+        $m->addField('f2');
+        $m->addField('f3');
+
+        $m->setOrder('f1', true);
+        $m->setOrder('f2', true);
+        $d = $this->_getRows($m, ['f1', 'f2', 'id']);
+        $this->assertEquals([
+            ['f1'=>'E', 'f2'=>'A', 'id'=>5],
+            ['f1'=>'D', 'f2'=>'C', 'id'=>3],
+            ['f1'=>'D', 'f2'=>'A', 'id'=>2],
+            ['f1'=>'C', 'f2'=>'A', 'id'=>6],
+            ['f1'=>'A', 'f2'=>'C', 'id'=>4],
+            ['f1'=>'A', 'f2'=>'B', 'id'=>1],
+        ], $d);
+        $this->assertEquals($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
+    }
+
+    /**
+     * Test Model->setLimit().
+     */
+    public function testLimit()
+    {
+        $a = [
+            ['f1' => 'A'],
+            ['f1' => 'D'],
+            ['f1' => 'E'],
+            ['f1' => 'C'],
+        ];
+
+        // order by one field ascending
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('f1');
+
+        $this->assertEquals(4, $m->action('count')->getOne());
+
+        $m->setLimit(3);
+        $this->assertEquals(3, $m->action('count')->getOne());
+        $this->assertEquals([
+            ['f1' => 'A'],
+            ['f1' => 'D'],
+            ['f1' => 'E'],
+        ], array_values($m->export()));
+
+        $m->setLimit(2,1);
+        $this->assertEquals(2, $m->action('count')->getOne());
+        $this->assertEquals([
+            ['f1' => 'D'],
+            ['f1' => 'E'],
+        ], array_values($m->export()));
+
+        // well, this is strange, that you can actually change limit on-the-fly and then previous
+        // limit is not taken into account, but most likely you will never set it multiple times
+        $m->setLimit(3);
+        $this->assertEquals(3, $m->action('count')->getOne());
+    }
+
+    /**
+     * Test Model->addCondition().
+     */
     public function testCondition()
     {
         $a = [
@@ -381,6 +518,9 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->export();
     }
 
+    /**
+     * Test Model->hasOne().
+     */
     public function testHasOne()
     {
         $a = [
@@ -413,6 +553,9 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->assertEquals('UK', $user->ref('country_id')['name']);
     }
 
+    /**
+     * Test Model->hasMany().
+     */
     public function testHasMany()
     {
         $a = [
