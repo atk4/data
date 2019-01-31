@@ -712,7 +712,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->addHook('afterSave', function($m){
+    $this->addHook('afterSave', function($m, $is_update){
         if(isset($m['payment'])) {
             $m->ref('Payment')->insert($m['payment']);
         }

@@ -362,13 +362,13 @@ Hooks
     - afterUpdateQuery (query, statement)
 
 
-  - afterUpdate [only if existing record]
-  - afterInsert [only if new record]
+  - afterUpdate [only if existing record, model not reloaded yet]
+  - afterInsert [only if new record, model not reloaded yet]
 
   - beforeUnload
   - afterUnload
 
-- afterSave
+- afterSave (bool $is_update) [after insert or update, model is reloaded]
 
 How to verify Updates
 ---------------------

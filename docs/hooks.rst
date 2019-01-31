@@ -122,7 +122,7 @@ A good place to hook is beforeSave as it will be fired when adding new records
 or modifying existing ones:
 
  - beforeSave($m) (saving existing or new records. Not executed if model is not dirty)
- - afterSave($m) (same as above)
+ - afterSave($m, $is_update) (same as above, $is_update is boolean true if it was update and false otherwise)
 
 You might consider "save" to be a higher level hook, as beforeSave is called
 pretty early on during saving the record and afterSave is called at the very end
