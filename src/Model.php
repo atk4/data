@@ -1507,7 +1507,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
             }
 
-            $this->hook('afterSave');
+            $this->hook('afterSave', [$is_update]);
 
             if ($this->loaded()) {
                 $this->dirty = $this->_dirty_after_reload;
