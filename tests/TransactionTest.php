@@ -62,7 +62,7 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // test insert
         $m = new Model($db, 'item');
         $m->addField('name');
-        $m->addHook('afterSave', function($model, $is_update)use($self){
+        $m->addHook('afterSave', function ($model, $is_update) use ($self) {
             $self->assertFalse($is_update);
         });
         $m->save(['name'=>'Foo']);
@@ -70,9 +70,9 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // test update
         $m = new Model($db, 'item');
         $m->addField('name');
-        $m->addHook('afterSave', function($model, $is_update)use($self){
+        $m->addHook('afterSave', function ($model, $is_update) use ($self) {
             $self->assertTrue($is_update);
         });
-        $m->loadBy('name','John')->save(['name'=>'Foo']);
+        $m->loadBy('name', 'John')->save(['name'=>'Foo']);
     }
 }

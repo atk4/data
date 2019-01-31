@@ -44,7 +44,7 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $this->assertEquals(['name' => 5, 'surname' => 'Bilbo'], $m->get());
     }
-    
+
     /**
      * @expectedException Exception
      */
