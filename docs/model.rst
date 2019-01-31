@@ -362,7 +362,7 @@ Hooks
     - afterUpdateQuery (query, statement)
 
 
-  - afterUpdate [only if existing record, model not reloaded yet]
+  - afterUpdate [only if existing record, model is reloaded]
   - afterInsert [only if new record, model not reloaded yet]
 
   - beforeUnload
