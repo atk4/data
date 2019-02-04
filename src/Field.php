@@ -6,11 +6,13 @@ namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
 use atk4\core\TrackableTrait;
+use atk4\dsql\Expression;
+use atk4\dsql\Expressionable;
 
 /**
  * Class description?
  */
-class Field
+class Field implements Expressionable
 {
     use TrackableTrait;
     use DIContainerTrait;
@@ -321,25 +323,7 @@ class Field
                 }
                 break;
             case 'boolean':
-                if (is_bool($value)) {
-                    break;
-                }
-                if (isset($f->enum) && is_array($f->enum)) {
-                    if (isset($f->enum[0]) && strtolower($value) === strtolower($f->enum[0])) {
-                        $value = false;
-                    } elseif (isset($f->enum[1]) && strtolower($value) === strtolower($f->enum[1])) {
-                        $value = true;
-                    }
-                } elseif (is_numeric($value)) {
-                    $value = (bool) $value;
-                }
-                if (!is_bool($value)) {
-                    throw new ValidationException([$this->name => 'Must be a boolean value']);
-                }
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must be selected']);
-                }
-                break;
+                throw Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
             case 'date':
             case 'datetime':
             case 'time':
@@ -476,6 +460,26 @@ class Field
     }
 
     // }}}
+
+    /**
+     * When field is used as expression, this method will be called.
+     * Universal way to convert ourselves to expression. Off-load implementation into persistence.
+     *
+     * @param Expression $expression
+     *
+     * @return Expression
+     */
+    public function getDSQLExpression($expression)
+    {
+        if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence_SQL) {
+            throw new Exception([
+                'Field must have SQL persistence if it is used as part of expression',
+                'persistence'=> $this->owner->persistence ?? null,
+            ]);
+        }
+
+        return $this->owner->persistence->getFieldSQLExpression($this, $expression);
+    }
 
     // {{{ Debug Methods
 

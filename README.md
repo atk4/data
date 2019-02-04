@@ -19,9 +19,11 @@ ATK Data is extensible and offers wide range of add-ons ranging from [Audit](htt
 [![License](https://poser.pugx.org/atk4/data/license)](https://packagist.org/packages/atk4/data)
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg?maxAge=2592000)](CHANGELOG.md)
 
-Quick-Links: [Documentation](http://agile-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK Data](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413).
+[![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
 
-### Benefits of using ATK Data (former Agile Data)
+Quick-Links: [Documentation](http://agile-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
+
+### Benefits of using ATK Data
 
 Designed for medium to large PHP applications and frameworks, ATK Data is a clean implementation of Data Mapper that will:
 
@@ -39,7 +41,7 @@ Since the initial introduction of Agile Data back in [2016](https://www.reddit.c
 
 Watch [Quick Start](http://agile-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](http://agile-data.readthedocs.io) ([PDF](https://media.readthedocs.org/pdf/agile-data/develop/agile-data.pdf)). 
 
-ATK Data relies on ATK Core and ATK UI:
+ATK Data relies on ATK Core and can be greatly complimented by ATK UI:
 
 -   [Agile Core](http://agile-core.readthedocs.io/en/develop/) - documents various low-level traits and features such as Containers, Hooks or Exceptions ([PDF](https://media.readthedocs.org/pdf/agile-core/develop/agile-core.pdf))
 -   [Agile UI](http://agile-ui.readthedocs.io/en/latest/) - documents optional UI components and how to build Web App with them. ([PDF](http://readthedocs.org/projects/agile-ui/downloads/pdf/latest/))

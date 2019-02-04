@@ -366,7 +366,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addField($field, $defaults = [])
     {
-        $field_object = $this->factory($this->mergeSeeds($defaults, $this->_default_seed_addField), null, '\atk4\data\Field');
+        // compatibility: for field types
+        $class = $this->_default_seed_addField;
+        if (is_array($defaults) && isset($defaults['type'])) {
+            switch (strtolower($defaults['type'])) {
+                case 'boolean':
+                    $class = 'Boolean';
+                    break;
+            }
+        }
+
+        $field_object = $this->factory($this->mergeSeeds($defaults, $class), null, '\atk4\data\Field');
         $this->add($field_object, $field);
 
         return $field_object;
@@ -566,7 +576,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             // enum property support
-            if ($f->enum && $f->type != 'boolean') {
+            if (isset($f->enum) && $f->enum && $f->type != 'boolean') {
                 if ($value === '') {
                     $value = null;
                 }
