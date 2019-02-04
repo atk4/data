@@ -2,7 +2,16 @@
 
 # 1.4
 
-This version adds implementation of sorting, ordering and even some actions in `Persistence_Array`. 
+ - Add implementation for sorting, ordering and actions in `Persistence_Array`. 
+ - afterSave hook gains 2nd argument ($is_update)
+ - New pattern: [implemented of SubTypes](https://agile-data.readthedocs.io/en/develop/advanced.html#subtypes)
+ - [Model::hasField()](https://agile-data.readthedocs.io/en/develop/model.html#Model::hasField) added for convenience (similar to hasElement())
+ - New aggregation function - [concat](https://agile-data.readthedocs.io/en/develop/references.html)
+ - Implemented "DeepCopy" feature ([experemental](https://github.com/atk4/data/blob/develop/src/Util/DeepCopy.php))
+ - Implemented insert lookups (https://medium.com/@romaninsh/atk-data-and-data-import-ingestion-82bdb81c74dd)
+ - Refactor ['type'=>'boolean'] into Boolean class [#314](https://github.com/atk4/data/pull/314) ([experemental](https://agile-data.readthedocs.io/en/develop/field_boolean.html))
+
+## 1.4.0
 
 **Fixed bugs:**
 
