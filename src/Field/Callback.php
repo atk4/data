@@ -34,11 +34,6 @@ class Callback extends \atk4\data\Field
      */
     public $never_persist = true;
 
-    public function __construct($callback)
-    {
-        $this->expr = $callback;
-    }
-
     /**
      * Initialization.
      */
