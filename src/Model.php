@@ -48,7 +48,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var string
      */
-    public $_default_seed_addExpression = ['\atk4\data\Field_Callback'];
+    public $_default_seed_addExpression = ['\atk4\data\Field\Callback'];
 
     /**
      * The class used by join() method.

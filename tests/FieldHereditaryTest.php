@@ -10,9 +10,9 @@ class FieldHereditaryTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // default title field
         $m = new \atk4\data\Model($p);
-        $m->addField('caps', ['Callback', function ($m) {
+        $m->addExpression('caps', function ($m) {
             return strtoupper($m['name']);
-        }]);
+        });
 
         $m->load(1);
         $this->assertEquals('world', $m['name']);

@@ -127,6 +127,36 @@ UI framework such as Agile Toolkit will typically rely on field type information
 to properly present data for views (forms and tables) without you having to
 explicitly specify the `ui` property.
 
+Typecast by callbacks
+---------------------
+You can also use callbacks for typecasting.
+
+    // encrypt data if SQL persistence
+    $encrypt = function ($value, $field, $persistence) {
+        if ($persistence instanceof \atk4\data\Persistence_SQL) {
+            return mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $field->key, $value);
+        }
+        return $value;
+    }
+
+    // decrypt data if SQL persistence
+    $decrypt = function ($value, $field, $persistence) {
+        if ($persistence instanceof \atk4\data\Persistence_SQL) {
+            return mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $field->key, $value);
+        }
+        return $value;
+    }
+
+    $field = $this->addField('rot_encoded', [
+        'typecast' => [
+            $encrypt, // encode before saving
+            $decrypt, // decode after loading
+        ],
+    ]);
+    $field->key = 'secret-key-here';
+
+
+
 Serialization
 =============
 
@@ -163,7 +193,7 @@ specifying our callbacks for converting::
         return $x->amount.' '.$x->currency;
     }
 
-    $money_dencode = function($x) {
+    $money_decode = function($x) {
         list($amount, $currency) = explode(' ', $x);
         return new MyMoney($amount, $currency);
     }
