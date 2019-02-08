@@ -31,6 +31,8 @@ class Callback extends \atk4\data\Field
 
     /**
      * Never persist this field.
+     *
+     * @var bool
      */
     public $never_persist = true;
 
