@@ -236,9 +236,10 @@ class Persistence_SQL extends Persistence
      */
     public function initField($q, $field)
     {
-        if ($field instanceof Field_SQL && $field->useAlias()) {
+        $is_sql_field = ($field instanceof Field_SQL) || ($field instanceof Field\Boolean);
+        if ($is_sql_field && $field->useAlias()) {
             $q->field($field, $field->short_name);
-        } elseif ($field instanceof Field_SQL) {
+        } elseif ($is_sql_field) {
             $q->field($field);
         } else {
             $q->field($field->short_name);

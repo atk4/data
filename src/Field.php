@@ -417,6 +417,16 @@ class Field implements Expressionable
         return $this->owner[$this->short_name] == $value;
     }
 
+    /**
+     * Should this field use alias?
+     *
+     * @return bool
+     */
+    public function useAlias()
+    {
+        return isset($this->actual);
+    }
+
     // }}}
 
     // {{{ Handy methods used by UI

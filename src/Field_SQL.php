@@ -13,23 +13,6 @@ use atk4\dsql\Expressionable;
 class Field_SQL extends Field implements Expressionable
 {
     /**
-     * Actual field name.
-     *
-     * @var string|null
-     */
-    public $actual = null;
-
-    /**
-     * Should this field use alias?
-     *
-     * @return bool
-     */
-    public function useAlias()
-    {
-        return isset($this->actual);
-    }
-
-    /**
      * SQL fields are allowed to have expressions inside of them.
      *
      * @param mixed $value
