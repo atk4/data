@@ -15,14 +15,16 @@
     "require": {
         "php": ">=7.0.0",
         "atk4/dsql": "dev-develop as 1.2.5",
-        "atk4/core": "dev-develop"
+        "atk4/core": "dev-develop",
+        "phpoffice/phpspreadsheet": "^1.6"
     },
     "require-dev": {
         "atk4/schema": "dev-develop",
         "phpunit/phpunit": "<6",
         "phpunit/dbunit": ">=1.2",
         "phpunit/phpcov": "*",
-        "codeclimate/php-test-reporter": "*"
+        "codeclimate/php-test-reporter": "*",
+        "dompdf/dompdf": "^0.8.3"
     },
     "autoload": {
         "psr-4": {"atk4\\data\\":"src/"}
