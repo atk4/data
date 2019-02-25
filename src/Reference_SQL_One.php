@@ -48,6 +48,22 @@ class Reference_SQL_One extends Reference_One
             $defaults
         ));
 
+        $e->read_only = false;
+        $e->never_save = true;
+
+        // Will try to execute last
+        $this->owner->addHook('beforeSave', function ($m) use ($field, $their_field) {
+            // if title field is changed, but reference ID field (our_field)
+            // is not changed, then update reference ID field value
+            if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
+                $mm = $this->getModel();
+
+                $mm->addCondition($their_field, $m[$field]);
+                $m[$this->our_field] = $mm->action('field', [$mm->id_field]);
+                unset($m[$field]);
+            }
+        }, null, 21);
+
         return $e;
     }
 

@@ -297,6 +297,28 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         ], $this->getDB(['country', 'user']));
     }
 
+    public function testImportByLookup()
+    {
+        $c = new LCountry($this->db);
+
+        // Specifying hasMany here will perform input
+        $c->import([
+            ['Canada', 'code'=>'CA'],
+            ['Latvia', 'code'=>'LV'],
+            ['Japan', 'code'=>'JP'],
+            ['Lithuania', 'code'=>'LT', 'is_eu'=>true],
+            ['Russia', 'code'=>'RU'],
+        ]);
+
+        $u = new LUser($this->db);
+
+        $u->import([
+            ['name'       => 'Alain', 'country_code'=>'CA'],
+            ['name'       => 'Imants', 'country_code'=>'LV'],
+            //[ 'name'       => 'Romans', 'country_code'=>'UK'],  // does not exist
+        ]);
+    }
+
     /*
      *
      * TODO - that's left for hasMTM implementation..., to be coming later
