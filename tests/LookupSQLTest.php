@@ -313,11 +313,10 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $u = new LUser($this->db);
 
         $u->import([
-            [ 'name'       => 'Alain', 'country_code'=>'CA'],
-            [ 'name'       => 'Imants', 'country_code'=>'LV'],
+            ['name'       => 'Alain', 'country_code'=>'CA'],
+            ['name'       => 'Imants', 'country_code'=>'LV'],
             //[ 'name'       => 'Romans', 'country_code'=>'UK'],  // does not exist
         ]);
-
     }
 
     /*
