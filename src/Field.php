@@ -348,7 +348,7 @@ class Field implements Expressionable
                 }
                 if ($f->type == 'time') {
                     // remove date portion from date type value
-                    // need 1970 in place of 0 - DB 
+                    // need 1970 in place of 0 - DB
                     $value->setDate(1970, 1, 1);
                 }
 
