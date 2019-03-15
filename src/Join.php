@@ -218,6 +218,9 @@ class Join
      */
     public function addField($n, $defaults = [])
     {
+        if ($defaults && !is_array($defaults)) {
+            $defaults = [$defaults];
+        }
         $defaults['join'] = $this;
 
         return $this->owner->addField($this->prefix.$n, $defaults);
