@@ -486,7 +486,7 @@ Start by creating a beforeSave handler for Order::
 
             if (
                 $m->newInstance()
-                    ->addCondition('client_id', $m['client_id'])
+                    ->addCondition('client_id', '!=', $m['client_id'])
                     ->tryLoadBy('ref', $m['ref'])
                     ->loaded()
             ) {
