@@ -2,9 +2,9 @@
 
 namespace atk4\data\tests;
 
-use atk4\data\UserAction;
-use atk4\data\Persistence_Static;
 use atk4\data\Model;
+use atk4\data\Persistence_Static;
+use atk4\data\UserAction;
 
 /**
  * Sample trait designed to extend model.
