@@ -157,6 +157,17 @@ This will produce the following query:
         (select code form currency where is_convertable=1)
 
 
+Concatenating Fields
+--------------------
+
+You may want to display want to list your related entities by concatenating. For example::
+
+    $user->hasMany('Tags', new Tag())
+        ->addField('tags', ['concat'=>',', 'field'=>'name']);
+
+This will create a new field for your user, ``tags`` which will contain all comma-separated
+tag names.
+
 Add Aggregate Fields
 --------------------
 
@@ -674,11 +685,3 @@ References are implemented through several classes:
 
     Returns referenced model WITH conditions. (if possible)
 
-.. php:method:: guessFieldType
-
-    This method implementation is removed due to performance but may be
-    reconsidered. Attempts to initialize related model to find out more
-    about the field that is being referenced during the "definition time".
-
-    Normally this would happen only during query time and if the field is
-    included into query.

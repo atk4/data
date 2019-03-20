@@ -35,7 +35,7 @@ class Reference
      *
      * @var string
      */
-    protected $link;
+    public $link;
 
     /**
      * Definition of the destination model, that can be either an object, a
@@ -177,42 +177,6 @@ class Reference
     public function refModel($defaults = [])
     {
         return $this->getModel($defaults);
-    }
-
-    /**
-     * If you have set $their_field property correctly, then calling this method
-     * will traverse into a related model and fetch the type of their field. This
-     * method will be extra careful to avoid any loops.
-     *
-     * @param string $their_field
-     *
-     * @return string|null
-     */
-    public function guessFieldType($their_field = null)
-    {
-        return;
-        if (!is_string($their_field)) {
-            return;
-        }
-
-        // We shouldn't traverse into ourselves recursively
-        $cl = get_class($this->owner).'::'.$this->short_name;
-
-        // see where we shouldn't traverse
-        if (isset($this->owner->_do_not_traverse_into)) {
-            $dnti = $this->owner->_do_not_traverse_into;
-
-            if (isset($dnti[$cl])) {
-                return;
-            }
-        }
-        $dnti[$cl] = true;
-
-        $m = $this->getModel(['_do_not_traverse_into' => $dnti]);
-
-        $f = $m->hasElement($their_field ?: $this->their_field);
-
-        return $f ? $f->type : null;
     }
 
     // {{{ Debug Methods

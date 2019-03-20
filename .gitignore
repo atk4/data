@@ -1,6 +1,8 @@
 docs/build
+phpunit-mysql-local.xml
 /composer.lock
 /build
 /vendor
 .DS_Store
 /.idea
+atk-test*.csv

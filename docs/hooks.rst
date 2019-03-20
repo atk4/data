@@ -106,6 +106,9 @@ The $data argument will contain array of actual data (field=>value) to be saved,
 which you can use to withdraw certain fields from actually being saved into the
 database (by unsetting it's value).
 
+Note that altering data via $m->set() does not work in beforeInsert and beforeUpdate
+hooks, only by altering $data.
+
 afterInsert will receive either $id of new record or null if model couldn't
 provide ID field. Also, afterInsert is actually called before
 :php:meth:`Model::_reload_after_save` reloading is done.
@@ -119,7 +122,7 @@ A good place to hook is beforeSave as it will be fired when adding new records
 or modifying existing ones:
 
  - beforeSave($m) (saving existing or new records. Not executed if model is not dirty)
- - afterSave($m) (same as above)
+ - afterSave($m, $is_update) (same as above, $is_update is boolean true if it was update and false otherwise)
 
 You might consider "save" to be a higher level hook, as beforeSave is called
 pretty early on during saving the record and afterSave is called at the very end

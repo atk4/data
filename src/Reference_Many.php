@@ -48,6 +48,8 @@ class Reference_Many extends Reference
      *
      * @param array $defaults Properties
      *
+     * @throws Exception
+     *
      * @return Model
      */
     public function ref($defaults = [])
@@ -63,6 +65,8 @@ class Reference_Many extends Reference
      * Creates model that can be used for generating sub-query actions.
      *
      * @param array $defaults Properties
+     *
+     * @throws Exception
      *
      * @return Model
      */
@@ -82,20 +86,30 @@ class Reference_Many extends Reference
      * @param string $n        Field name
      * @param array  $defaults Properties
      *
+     * @throws Exception
+     *
      * @return Field_Callback
      */
     public function addField($n, $defaults = [])
     {
-        if (!isset($defaults['aggregate']) && !isset($defaults['expr'])) {
+        if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
             throw new Exception([
-                '"aggregate" strategy (or "expr") should be defined for oneToMany field',
+                'Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()',
                 'field'    => $n,
                 'defaults' => $defaults,
             ]);
         }
 
+        $defaults['aggregate_relation'] = $this;
+
         $field_n = isset($defaults['field']) ? $defaults['field'] : $n;
         $field = isset($defaults['field']) ? $defaults['field'] : null;
+
+        if (isset($defaults['concat'])) {
+            $defaults['aggregate'] = $this->owner->dsql()->groupConcat($field_n, $defaults['concat']);
+            $defaults['read_only'] = false;
+            $defaults['never_save'] = true;
+        }
 
         if (isset($defaults['expr'])) {
             $cb = function () use ($defaults, $field) {
@@ -136,6 +150,8 @@ class Reference_Many extends Reference
      * @see addField()
      *
      * @param array $fields Array of fields
+     *
+     * @throws Exception
      *
      * @return $this
      */

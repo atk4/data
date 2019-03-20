@@ -3,6 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
+use atk4\data\Persistence;
 use atk4\data\Persistence_SQL;
 
 class Model_Rate extends \atk4\data\Model
@@ -66,7 +67,7 @@ class Model_Item3 extends \atk4\data\Model
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class RandomSQLTests extends \atk4\schema\PHPUnit_SchemaTestCase
+class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testRate()
     {
@@ -477,5 +478,19 @@ class RandomSQLTests extends \atk4\schema\PHPUnit_SchemaTestCase
             10 => ['code' => 10, 'name' => 'John'],
             20 => ['code' => 20, 'name' => 'Sarah'],
         ], $m2->export(['code', 'name'], 'code'));
+    }
+
+    public function testNewInstance()
+    {
+        // model without persistence
+        $m = new Model(['table' => 'order']);
+        $a = $m->newInstance();
+        $this->assertFalse(isset($a->persistence));
+
+        // model with persistence
+        $db = new Persistence();
+        $m = new Model($db, ['table' => 'order']);
+        $a = $m->newInstance();
+        $this->assertTrue(isset($a->persistence));
     }
 }

@@ -6,11 +6,13 @@ namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
 use atk4\core\TrackableTrait;
+use atk4\dsql\Expression;
+use atk4\dsql\Expressionable;
 
 /**
  * Class description?
  */
-class Field
+class Field implements Expressionable
 {
     use TrackableTrait;
     use DIContainerTrait;
@@ -27,7 +29,7 @@ class Field
     /**
      * Field type.
      *
-     * Values are: 'string', 'boolean', 'integer', 'money', 'float',
+     * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
      *             'date', 'datetime', 'time', 'array', 'object'.
      * Can also be set to unspecified type for your own custom handling.
      *
@@ -252,12 +254,18 @@ class Field
             // other field types empty value is the same as no-value, nothing or null
             if ($f->type && $f->type != 'string' && $value === '') {
                 if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a empty']);
+                    throw new ValidationException([$this->name => 'Must not be empty']);
                 }
 
                 return;
             }
 
+            // validate scalar values
+            if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float']) && !is_scalar($value)) {
+                throw new ValidationException([$this->name => 'Must use scalar value']);
+            }
+
+            // normalize
             switch ($f->type) {
             case null: // loose comparison, but is OK here
                 if ($this->required && empty($value)) {
@@ -265,10 +273,15 @@ class Field
                 }
                 break;
             case 'string':
-                if (!is_scalar($value)) {
-                    throw new ValidationException([$this->name => 'Must be a string']);
+                // remove all line-ends and trim
+                $value = trim(str_replace(["\r", "\n"], '', $value));
+                if ($this->required && empty($value)) {
+                    throw new ValidationException([$this->name => 'Must not be empty']);
                 }
-                $value = trim($value);
+                break;
+            case 'text':
+                // normalize line-ends to LF and trim
+                $value = trim(str_replace(["\r\n", "\r"], "\n", $value));
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
                 }
@@ -277,7 +290,8 @@ class Field
                 // we clear out thousand separator, but will change to
                 // http://php.net/manual/en/numberformatter.parse.php
                 // in the future with the introduction of locale
-                $value = preg_replace('/[^0-9.-]/', '', $value);
+                $value = trim(str_replace(["\r", "\n"], '', $value));
+                $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
                 }
@@ -287,7 +301,8 @@ class Field
                 }
                 break;
             case 'float':
-                $value = str_replace(',', '', $value);
+                $value = trim(str_replace(["\r", "\n"], '', $value));
+                $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
                 }
@@ -297,7 +312,8 @@ class Field
                 }
                 break;
             case 'money':
-                $value = preg_replace('/[^0-9.-]/', '', $value);
+                $value = trim(str_replace(["\r", "\n"], '', $value));
+                $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
                 }
@@ -307,29 +323,10 @@ class Field
                 }
                 break;
             case 'boolean':
-                if (is_bool($value)) {
-                    break;
-                }
-                if (isset($f->enum) && is_array($f->enum)) {
-                    if (isset($f->enum[0]) && $value === $f->enum[0]) {
-                        $value = false;
-                    } elseif (isset($f->enum[1]) && $value === $f->enum[1]) {
-                        $value = true;
-                    }
-                } elseif (is_numeric($value)) {
-                    $value = (bool) $value;
-                }
-                if (!is_bool($value)) {
-                    throw new ValidationException([$this->name => 'Must be a boolean value']);
-                }
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must be selected']);
-                }
-                break;
+                throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
             case 'date':
             case 'datetime':
             case 'time':
-
                 // we allow http://php.net/manual/en/datetime.formats.relative.php
                 $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
 
@@ -338,8 +335,23 @@ class Field
                 } elseif (is_string($value)) {
                     $value = new $class($value);
                 } elseif (!$value instanceof $class) {
-                    throw new Exception(['must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
+                    if (is_object($value)) {
+                        throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
+                    }
+
+                    throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value type' => gettype($value)]);
                 }
+
+                if ($f->type == 'date') {
+                    // remove time portion from date type value
+                    $value->setTime(0, 0, 0);
+                }
+                if ($f->type == 'time') {
+                    // remove date portion from date type value
+                    // need 1970 in place of 0 - DB
+                    $value->setDate(1970, 1, 1);
+                }
+
                 break;
             case 'array':
                 if (!is_array($value)) {
@@ -406,6 +418,16 @@ class Field
         return $this->owner[$this->short_name] == $value;
     }
 
+    /**
+     * Should this field use alias?
+     *
+     * @return bool
+     */
+    public function useAlias()
+    {
+        return isset($this->actual);
+    }
+
     // }}}
 
     // {{{ Handy methods used by UI
@@ -449,6 +471,26 @@ class Field
     }
 
     // }}}
+
+    /**
+     * When field is used as expression, this method will be called.
+     * Universal way to convert ourselves to expression. Off-load implementation into persistence.
+     *
+     * @param Expression $expression
+     *
+     * @return Expression
+     */
+    public function getDSQLExpression($expression)
+    {
+        if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence_SQL) {
+            throw new Exception([
+                'Field must have SQL persistence if it is used as part of expression',
+                'persistence'=> $this->owner->persistence ?? null,
+            ]);
+        }
+
+        return $this->owner->persistence->getFieldSQLExpression($this, $expression);
+    }
 
     // {{{ Debug Methods
 

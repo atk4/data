@@ -89,8 +89,35 @@ class Persistence_CSV extends Persistence
      */
     public function __destruct()
     {
+        $this->closeFile();
+    }
+
+    /**
+     * Open CSV file.
+     *
+     * Override this method and open handle yourself if you want to
+     * reposition or load some extra columns on the top.
+     *
+     * @param string $mode 'r' or 'w'
+     */
+    public function openFile($mode = 'r')
+    {
+        if (!$this->handle) {
+            $this->handle = fopen($this->file, $mode);
+            if ($this->handle === false) {
+                throw new Exception(['Can not open CSV file.', 'file' => $this->file, 'mode' => $mode]);
+            }
+        }
+    }
+
+    /**
+     * Close CSV file.
+     */
+    public function closeFile()
+    {
         if ($this->handle) {
             fclose($this->handle);
+            $this->handle = null;
         }
     }
 
@@ -128,16 +155,10 @@ class Persistence_CSV extends Persistence
      */
     public function loadHeader()
     {
-        // Override this method and open handle yourself if you want to
-        // reposition or load some extra columns on the top.
-        if (!$this->handle) {
-            $this->handle = fopen($this->file, 'r');
-            if ($this->handle === false) {
-                throw new Exception(['Can not open CSV file.', 'file' => $this->file]);
-            }
-        }
+        $this->openFile('r');
 
         $header = $this->getLine();
+        $this->line--; // because we don't want to count header line
 
         $this->initializeHeader($header);
     }
@@ -150,14 +171,7 @@ class Persistence_CSV extends Persistence
      */
     public function saveHeader(Model $m)
     {
-        // Override this method and open handle yourself if you want to
-        // reposition or load some extra columns on the top.
-        if (!$this->handle) {
-            $this->handle = fopen($this->file, 'w');
-            if ($this->handle === false) {
-                throw new Exception(['Can not open CSV file.', 'file' => $this->file]);
-            }
-        }
+        $this->openFile('w');
 
         $header = [];
         foreach ($m->elements as $name=>$field) {
@@ -277,6 +291,7 @@ class Persistence_CSV extends Persistence
             if (!$data) {
                 break;
             }
+            $data = $this->typecastLoadRow($m, $data);
             $data[$m->id_field] = $this->line;
 
             yield $data;
@@ -388,5 +403,27 @@ class Persistence_CSV extends Persistence
                     'type' => $type,
                 ]);
         }
+    }
+
+    /**
+     * Export all DataSet.
+     *
+     * @param Model      $m
+     * @param array|null $fields
+     *
+     * @return array
+     */
+    public function export(Model $m, $fields = null)
+    {
+        $data = [];
+
+        foreach ($m as $junk) {
+            $data[] = $fields ? array_intersect_key($m->get(), array_flip($fields)) : $m->get();
+        }
+
+        // need to close file otherwise file pointer is at the end of file
+        $this->closeFile();
+
+        return $data;
     }
 }

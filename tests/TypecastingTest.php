@@ -34,7 +34,6 @@ class MyDateTime extends \DateTime
  */
 class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
-    //    public $debug = true;
     public function testType()
     {
         $a = [
@@ -44,7 +43,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                     'date'     => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12',
                     'time'     => '12:00:50',
-                    'boolean'  => '1',
+                    'boolean'  => 1,
                     'integer'  => '2940',
                     'money'    => '8.20',
                     'float'    => '8.202343',
@@ -564,5 +563,64 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m['i'] = 1;
         $this->assertSame([], $m->dirty);
+    }
+
+    public function testDirtyTime()
+    {
+        $sql_time = '11:44:08';
+        $sql_time_new = '12:34:56';
+
+        $a = [
+            'types' => [
+                [
+                    'date'     => $sql_time,
+                ],
+            ], ];
+        $this->setDB($a);
+        $db = new Persistence_SQL($this->db->connection);
+
+        $m = new Model($db, ['table' => 'types']);
+        $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
+        $m->loadAny();
+
+        $m['ts'] = $sql_time_new;
+        $this->assertTrue($m->isDirty('ts'));
+
+        $m['ts'] = $sql_time;
+        $this->assertFalse($m->isDirty('ts'));
+
+        $m['ts'] = $sql_time_new;
+        $this->assertTrue($m->isDirty('ts'));
+    }
+
+    public function testDirtyTimeAfterSave()
+    {
+        $sql_time = '11:44:08';
+        $sql_time_new = '12:34:56';
+
+        $a = [
+            'types' => [
+                [
+                    'date'     => null,
+                ],
+            ], ];
+        $this->setDB($a);
+        $db = new Persistence_SQL($this->db->connection);
+
+        $m = new Model($db, ['table' => 'types']);
+        $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
+        $m->loadAny();
+
+        $m['ts'] = $sql_time;
+        $this->assertTrue($m->isDirty('ts'));
+
+        $m->save();
+        $m->reload();
+
+        $m['ts'] = $sql_time;
+        $this->assertFalse($m->isDirty('ts'));
+
+        $m['ts'] = $sql_time_new;
+        $this->assertTrue($m->isDirty('ts'));
     }
 }

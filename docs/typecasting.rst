@@ -108,8 +108,8 @@ The same applies for references ($m->hasOne()).
 Supported types
 ---------------
 
-- 'string' - for storing short strings, such as name of a person.
-  Normalize will trim the value.
+- 'string' - for storing short strings, such as name of a person. Normalize will trim the value.
+- 'text' - for storing long strings, suchas notes or description. Normalize will trim the value.
 - 'boolean' - normalize will cast value to boolean.
 - 'integer' - normalize will cast value to integer.
 - 'money' - normalize will round value with 4 digits after dot.
@@ -126,6 +126,36 @@ Types and UI
 UI framework such as Agile Toolkit will typically rely on field type information
 to properly present data for views (forms and tables) without you having to
 explicitly specify the `ui` property.
+
+Typecast by callbacks
+---------------------
+You can also use callbacks for typecasting.
+
+    // encrypt data if SQL persistence
+    $encrypt = function ($value, $field, $persistence) {
+        if ($persistence instanceof \atk4\data\Persistence_SQL) {
+            return mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $field->key, $value);
+        }
+        return $value;
+    }
+
+    // decrypt data if SQL persistence
+    $decrypt = function ($value, $field, $persistence) {
+        if ($persistence instanceof \atk4\data\Persistence_SQL) {
+            return mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $field->key, $value);
+        }
+        return $value;
+    }
+
+    $field = $this->addField('rot_encoded', [
+        'typecast' => [
+            $encrypt, // encode before saving
+            $decrypt, // decode after loading
+        ],
+    ]);
+    $field->key = 'secret-key-here';
+
+
 
 Serialization
 =============
@@ -163,7 +193,7 @@ specifying our callbacks for converting::
         return $x->amount.' '.$x->currency;
     }
 
-    $money_dencode = function($x) {
+    $money_decode = function($x) {
         list($amount, $currency) = explode(' ', $x);
         return new MyMoney($amount, $currency);
     }

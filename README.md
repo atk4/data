@@ -8,14 +8,22 @@ ATK Data is focused on reducing number of database queries, moving CPU-intensive
 
 ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation](https://github.com/atk4/report) all the way to [Web UI](https://github.com/atk4/ui) and [RestAPI](https://github.com/atk4/api). Minimalistic interface allows you to use ATK Data in your legacy apps or with modern PHP frameworks.
 
+[![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=latest)](http://agile-data.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
+[![StyleCI](https://styleci.io/repos/56442737/shield)](https://styleci.io/repos/56442737)
+[![CodeCov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
 [![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
-[![codecov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)[![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
+[![Issue Count](https://codeclimate.com/github/atk4/data/badges/issue_count.svg)](https://codeclimate.com/github/atk4/data)
 
-Quick-Links: [Documentation](http://agile-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK Data](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413).
+[![License](https://poser.pugx.org/atk4/data/license)](https://packagist.org/packages/atk4/data)
+[![GitHub release](https://img.shields.io/github/release/atk4/data.svg?maxAge=2592000)](CHANGELOG.md)
 
-### Benefits of using ATK Data (former Agile Data)
+[![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
+
+Quick-Links: [Documentation](http://agile-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
+
+### Benefits of using ATK Data
 
 Designed for medium to large PHP applications and frameworks, ATK Data is a clean implementation of Data Mapper that will:
 
@@ -33,7 +41,7 @@ Since the initial introduction of Agile Data back in [2016](https://www.reddit.c
 
 Watch [Quick Start](http://agile-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](http://agile-data.readthedocs.io) ([PDF](https://media.readthedocs.org/pdf/agile-data/develop/agile-data.pdf)). 
 
-ATK Data relies on ATK Core and ATK UI:
+ATK Data relies on ATK Core and can be greatly complimented by ATK UI:
 
 -   [Agile Core](http://agile-core.readthedocs.io/en/develop/) - documents various low-level traits and features such as Containers, Hooks or Exceptions ([PDF](https://media.readthedocs.org/pdf/agile-core/develop/agile-core.pdf))
 -   [Agile UI](http://agile-ui.readthedocs.io/en/latest/) - documents optional UI components and how to build Web App with them. ([PDF](http://readthedocs.org/projects/agile-ui/downloads/pdf/latest/))
@@ -580,6 +588,13 @@ Please consider our other MIT-licensed project - [Agile UI](http://www.agiletool
 ## Current Status
 
 Agile Data is **Stable since Jul 2016**. For more recent updates see [Changelog](https://github.com/atk4/data/blob/develop/CHANGELOG.md).
+
+## Community and Support
+
+[![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4)
+[![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
+
 
 ### Timeline to the first release
 
