@@ -219,7 +219,7 @@ For other functions, such as `min`, `max`, `avg` and non mathematical aggregates
 as `group_concat` no zero-coalesce will be used. Expect that result could be zero or
 null.
 
-When you specify `'aggregate'=>'count'` field defaults.
+When you specify `'aggregate'=>'count'` field defaults to `*`.
 
 Aggregate Expressions
 ---------------------
