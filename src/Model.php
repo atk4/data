@@ -4,6 +4,8 @@
 
 namespace atk4\data;
 
+use atk4\data\UserAction;
+
 /**
  * Class description?
  */
@@ -56,6 +58,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @var string
      */
     public $_default_seed_join = ['\atk4\data\Join'];
+
+    /**
+     * Class for addAction()
+     *
+     * @var array|Action default class / seed
+     */
+    public $_default_action = Action::class;
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -479,6 +488,54 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         return $field;
+    }
+
+    /**
+     * Register new user action for this model. By default UI will allow users to trigger actions
+     * from UI.
+     *
+     * @param $name
+     * @param null $callback
+     * @param array $arguments
+     * @param array $defaults
+     *
+     * @return UserAction\Action
+     *
+     * @throws \atk4\core\Exception
+     */
+    public function addAction($name, $callback = null, $arguments = [], $defaults = [])
+    {
+        $action = $this->factory($this->_default_action, $defaults);
+
+        $action->callback = $callback;
+        $action->args = $arguments;
+
+        $this->add('action:'.$name, $action);
+
+        return $action;
+    }
+
+    /**
+     * Returns list of actions for this model
+     *
+     * @throws \atk4\core\Exception
+     */
+    public function getActions()
+    {
+        $actions = array_filter($this->elements, function ($var) { return (stripos($var, 'action:') === 0); });
+        $res = [];
+
+        foreach($actions as $action) {
+            $a = $this->getElement($action);
+
+            if ($a->system) {
+                continue;
+            }
+
+            $res[$action] = $a;
+        }
+
+        return $res;
     }
 
     /**
