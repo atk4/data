@@ -58,7 +58,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $_default_seed_join = ['\atk4\data\Join'];
 
     /**
-     * Default class for addAction()
+     * Default class for addAction().
      *
      * @var array|UserAction\Action default class / seed
      */
@@ -520,7 +520,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function getActions()
     {
-        $actions = array_filter(array_keys($this->elements), function ($var) { return (stripos($var, 'action:') === 0); });
+        $actions = array_filter(array_keys($this->elements), function ($var) {
+            return stripos($var, 'action:') === 0;
+        });
         $res = [];
 
         foreach ($actions as $action) {
@@ -532,7 +534,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             $res[str_replace('action:', '', $action)] = $a;
         }
-
 
         return $res;
     }

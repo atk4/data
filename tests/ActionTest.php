@@ -2,8 +2,8 @@
 
 namespace atk4\data\tests;
 
-use atk4\data\UserAction;
 use atk4\data\Persistence_Static;
+use atk4\data\UserAction;
 
 /**
  * Sample trait designed to extend model.
@@ -51,7 +51,6 @@ class ActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
     public function testBasic()
     {
         $client = new ACClient($this->pers);
-
 
         $actions = $client->getActions();
 
