@@ -4,8 +4,6 @@
 
 namespace atk4\data;
 
-use atk4\data\UserAction;
-
 /**
  * Class description?
  */
@@ -495,13 +493,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * from UI.
      *
      * @param $name
-     * @param null $callback
+     * @param null  $callback
      * @param array $arguments
      * @param array $defaults
      *
-     * @return UserAction\Action
-     *
      * @throws \atk4\core\Exception
+     *
+     * @return UserAction\Action
      */
     public function addAction($name, $callback = null, $arguments = [], $defaults = [])
     {
@@ -516,7 +514,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Returns list of actions for this model
+     * Returns list of actions for this model.
      *
      * @throws \atk4\core\Exception
      */
@@ -525,7 +523,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $actions = array_filter(array_keys($this->elements), function ($var) { return (stripos($var, 'action:') === 0); });
         $res = [];
 
-        foreach($actions as $action) {
+        foreach ($actions as $action) {
             $a = $this->getElement($action);
 
             if ($a->system) {
