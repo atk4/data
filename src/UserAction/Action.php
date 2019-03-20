@@ -26,6 +26,8 @@ class Action
     const MULTIPLE_RECORDS = 3; // e.g. delete
     const NO_RECORDS = 4; // e.g. add
 
+    /** @var int by default - action is for a single-record */
+    public $scope = self::SINGLE_RECORD;
 
     /** @var callable code to execute. By default will call method with same name */
     public $callback = null;
@@ -40,7 +42,7 @@ class Action
     public $enabled = true;
 
     /** @var bool system action will be hidden from UI, but can still be explicitly triggered */
-    public $system = true;
+    public $system = false;
 
     /** @var array Argument definition. */
     public $args = [];
@@ -51,7 +53,15 @@ class Action
 
     public function execute(...$args)
     {
+        // todo - assert owner model loaded
 
+        // todo - start transaction, if atomic
+
+        // todo - pass model as first argument ?
+
+        $callback = $this->callback ?: [$this->owner, str_replace('action:', '', $this->short_name)];
+
+        return call_user_func_array($callback, $args);
     }
 
 }

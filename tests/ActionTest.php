@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Action;
+use atk4\data\UserAction;
 use atk4\data\Persistence_Static;
 
 
@@ -55,6 +55,19 @@ class ActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $client = new ACClient($this->pers);
 
+
+        $actions = $client->getActions();
+
+        $act1 = $actions['send_reminder'];
+
+        // action takes no arguments. If it would, we should be able to find info about those
+        $this->assertEquals([], $act1->args);
+        $this->assertEquals(UserAction\Action::SINGLE_RECORD, $act1->scope);
+
+        // load record, before executing, because scope is single record
         $client->load(1);
+        $res = $act1->execute();
+
+        $this->assertEquals('sent reminder to John', $res);
     }
 }
