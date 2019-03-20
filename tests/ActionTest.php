@@ -3,18 +3,16 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Action;
 use atk4\data\Persistence_Static;
 
-
 /**
- * Sample trait designed to extend model
+ * Sample trait designed to extend model.
  *
  * @target Model
  */
 trait ACReminder
 {
-    function send_reminder()
+    public function send_reminder()
     {
         return 'sent reminder to '.$this[$this->title_field];
     }
@@ -39,7 +37,6 @@ class ACClient extends Model
  */
 class ActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
-
     public $pers = null;
 
     public function setUp()
@@ -47,7 +44,7 @@ class ActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         parent::setUp();
 
         $this->pers = new Persistence_Static([
-            1=>['name'=>'John']
+            1=> ['name'=>'John'],
         ]);
     }
 

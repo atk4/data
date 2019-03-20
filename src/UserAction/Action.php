@@ -12,12 +12,9 @@ use atk4\core\TrackableTrait;
  * are provided.
  *
  * Action must NOT rely on any specific UI implementation.
- *
- * @package atk4\data
  */
 class Action
 {
-
     use TrackableTrait;
 
     /** Defining scope of the action */
@@ -25,7 +22,6 @@ class Action
     const ALL_RECORDS = 2; // e.g. truncate
     const MULTIPLE_RECORDS = 3; // e.g. delete
     const NO_RECORDS = 4; // e.g. add
-
 
     /** @var callable code to execute. By default will call method with same name */
     public $callback = null;
@@ -36,7 +32,7 @@ class Action
     /** @var array UI properties, e,g. 'icon'=>.. , 'warning', etc. UI implementation can interpret or extend. */
     public $ui = [];
 
-    /** @var bool|callback setting this to false will disable action. Callback will be executed with ($m) and must return bool */
+    /** @var bool|callable setting this to false will disable action. Callback will be executed with ($m) and must return bool */
     public $enabled = true;
 
     /** @var bool system action will be hidden from UI, but can still be explicitly triggered */
@@ -48,10 +44,7 @@ class Action
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
-
     public function execute(...$args)
     {
-
     }
-
 }
