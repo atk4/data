@@ -417,6 +417,25 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Finds a field with a corresponding name. Returns false if field not found. Similar
+     * to hasElement() but with extra checks to make sure it's certainly a field you are
+     * getting.
+     *
+     * @param string $name
+     *
+     * @return Field|false
+     */
+    public function hasField($name)
+    {
+        $f_object = $this->hasElement($name);
+        if (!$f_object || !$f_object instanceof Field) {
+            return false;
+        }
+
+        return $f_object;
+    }
+
+    /**
      * Sets which fields we will select.
      *
      * @param array $fields
@@ -486,56 +505,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         return $field;
-    }
-
-    /**
-     * Register new user action for this model. By default UI will allow users to trigger actions
-     * from UI.
-     *
-     * @param $name
-     * @param null  $callback
-     * @param array $arguments
-     * @param array $defaults
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return UserAction\Action
-     */
-    public function addAction($name, $callback = null, $arguments = [], $defaults = [])
-    {
-        $action = $this->factory($this->_default_action, $defaults);
-
-        $action->callback = $callback;
-        $action->args = $arguments;
-
-        $this->add($action, 'action:'.$name);
-
-        return $action;
-    }
-
-    /**
-     * Returns list of actions for this model.
-     *
-     * @throws \atk4\core\Exception
-     */
-    public function getActions()
-    {
-        $actions = array_filter(array_keys($this->elements), function ($var) {
-            return stripos($var, 'action:') === 0;
-        });
-        $res = [];
-
-        foreach ($actions as $action) {
-            $a = $this->getElement($action);
-
-            if ($a->system) {
-                continue;
-            }
-
-            $res[str_replace('action:', '', $action)] = $a;
-        }
-
-        return $res;
     }
 
     /**
@@ -851,6 +820,98 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->_unset($name);
     }
 
+    // }}}
+
+    // {{{ UserAction support
+
+    /**
+     * Register new user action for this model. By default UI will allow users to trigger actions
+     * from UI.
+     *
+     * @param $name
+     * @param null  $callback
+     * @param array $arguments
+     * @param array $defaults
+     *
+     * @throws \atk4\core\Exception
+     *
+     * @return UserAction\Action
+     */
+    public function addAction($name, $callback = null, $arguments = [], $defaults = [])
+    {
+        $action = $this->factory($this->_default_action, $defaults);
+
+        $action->callback = $callback;
+        $action->args = $arguments;
+
+        $this->add($action, 'action:'.$name);
+
+        return $action;
+    }
+
+    /**
+     * Returns list of actions for this model.
+     *
+     * @return array
+     */
+    public function getActions()
+    {
+        $actions = array_filter(array_keys($this->elements), function ($var) {
+            return stripos($var, 'action:') === 0;
+        });
+        $res = [];
+
+        foreach ($actions as $action) {
+            $a = $this->getElement($action);
+
+            if ($a->system) {
+                continue;
+            }
+
+            $res[str_replace('action:', '', $action)] = $a;
+        }
+
+        return $res;
+    }
+    
+    /**
+     * Finds a user action with a corresponding name. Returns false if action not found. Similar
+     * to hasElement() but with extra checks to make sure it's certainly a action you are
+     * getting.
+     *
+     * @param string $name
+     *
+     * @return UserAction\Action|false
+     */
+    public function hasAction($name)
+    {
+        $actions = array_filter(array_keys($this->elements), function ($var) use ($name) {
+            return stripos($var, 'action:'.$name) === 0;
+        });
+        
+        return $actions ? $this->getElement(array_shift($actions)) : false;
+    }
+
+    /**
+     * Returns one action object of this model. If action not defined, then throws exception.
+     *
+     * @param string $name
+     *
+     * @throws \atk4\data\Exception
+     *
+     * @return UserAction\Action
+     */
+    public function getAction($name)
+    {
+        $a = $this->hasAction($name);
+        
+        if ($a === false) {
+            throw new Exception(['User Action not defined', 'action' => $name]);
+        }
+        
+        return $a;
+    }
+    
     // }}}
 
     // {{{ DataSet logic
@@ -2165,25 +2226,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function hasRef($link)
     {
         return $this->hasElement('#ref_'.$link);
-    }
-
-    /**
-     * Finds a field with a corresponding name. Returns false if field not found. Similar
-     * to hasElement() but with extra checks to make sure it's certainly a field you are
-     * getting.
-     *
-     * @param $name
-     *
-     * @return Field|false
-     */
-    public function hasField($name)
-    {
-        $f_object = $this->hasElement($name);
-        if (!$f_object || !$f_object instanceof Field) {
-            return false;
-        }
-
-        return $f_object;
     }
 
     // }}}

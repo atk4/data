@@ -4,6 +4,7 @@
 
 namespace atk4\data\UserAction;
 
+use atk4\core\DIContainerTrait;
 use atk4\core\TrackableTrait;
 
 /**
@@ -15,6 +16,7 @@ use atk4\core\TrackableTrait;
  */
 class Action
 {
+    use DIContainerTrait;
     use TrackableTrait;
 
     /** Defining scope of the action */
