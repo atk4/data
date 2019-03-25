@@ -66,7 +66,7 @@ class Address extends Model
     {
         parent::init();
 
-        $this->hasOne('country_id', Country::class); // not fully functional yet
+        //$this->hasOne('country_id', Country::class); // not fully functional yet
         $this->addField('street');
         $this->addField('house');
     }
@@ -84,7 +84,7 @@ class Line extends Model
         $this->addField('price', ['type' => 'money', 'required' => true]);
         $this->addField('qty', ['type' => 'float', 'required' => true]);
 
-        $this->hasOne('vat_rate_id', VatRate::class); // not fully functional yet
+        //$this->hasOne('vat_rate_id', VatRate::class); // not fully functional yet
     }
 }
 
@@ -138,7 +138,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $a->set($row = ['country_id'=>1, 'street'=>'Rigas', 'house'=>13]);
+        $a->set($row = ['street'=>'Rigas', 'house'=>13]);
         $a->save();
 
         // now reload invoice and see if it is saved
@@ -167,7 +167,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // with address
         $a = $i->ref('shipping_address');
-        $a->set($row = ['country_id'=>1, 'street'=>'Rigas', 'house'=>13])->save();
+        $a->set($row = ['street'=>'Rigas', 'house'=>13])->save();
 
         // now let's add one more field in address model
         $a->addField('post_index');
@@ -194,9 +194,9 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's add some lines
         $l = $i->ref('lines');
         $rows = [
-            1 => ['id' => 1, 'price' => 10, 'qty' => 2, 'vat_rate_id' => 1],
-            2 => ['id' => 2, 'price' => 15, 'qty' => 5, 'vat_rate_id' => 1],
-            3 => ['id' => 3, 'price' => 40, 'qty' => 1, 'vat_rate_id' => 1],
+            1 => ['id' => 1, 'price' => 10, 'qty' => 2],
+            2 => ['id' => 2, 'price' => 15, 'qty' => 5],
+            3 => ['id' => 3, 'price' => 40, 'qty' => 1],
         ];
         foreach ($rows as $row) {
             $l->insert($row);
@@ -210,11 +210,11 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's delete line with id=2 and add one more line
         $i->ref('lines')
             ->load(2)->delete()
-            ->insert(['price' => 50, 'qty' => 3, 'vat_rate_id' => 1]);
+            ->insert(['price' => 50, 'qty' => 3]);
         $rows = [
-            1 => ['id' => 1, 'price' => 10, 'qty' => 2, 'vat_rate_id' => 1],
-            3 => ['id' => 3, 'price' => 40, 'qty' => 1, 'vat_rate_id' => 1],
-            4 => ['id' => 4, 'price' => 50, 'qty' => 3, 'vat_rate_id' => 1],
+            1 => ['id' => 1, 'price' => 10, 'qty' => 2],
+            3 => ['id' => 3, 'price' => 40, 'qty' => 1],
+            4 => ['id' => 4, 'price' => 50, 'qty' => 3],
         ];
         $this->assertEquals($rows, $i->ref('lines')->export());
 
