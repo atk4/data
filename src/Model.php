@@ -873,7 +873,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         return $res;
     }
-    
+
     /**
      * Finds a user action with a corresponding name. Returns false if action not found. Similar
      * to hasElement() but with extra checks to make sure it's certainly a action you are
@@ -888,7 +888,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $actions = array_filter(array_keys($this->elements), function ($var) use ($name) {
             return stripos($var, 'action:'.$name) === 0;
         });
-        
+
         return $actions ? $this->getElement(array_shift($actions)) : false;
     }
 
@@ -904,14 +904,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function getAction($name)
     {
         $a = $this->hasAction($name);
-        
+
         if ($a === false) {
             throw new Exception(['User Action not defined', 'action' => $name]);
         }
-        
+
         return $a;
     }
-    
+
     // }}}
 
     // {{{ DataSet logic

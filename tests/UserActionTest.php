@@ -17,7 +17,7 @@ trait ACReminder
     {
         return 'sent reminder to '.$this->getTitle();
     }
-    
+
     public function backup_clients()
     {
         return 'backs up all clients';
@@ -36,7 +36,7 @@ class ACClient extends Model
 
         // this action can be invoked from UI
         $this->addAction('send_reminder');
-        
+
         // this action will be system action, so it will not be invokable from UI
         $a = $this->addAction('backup_clients', null, [], ['scope' => UserAction\Action::ALL_RECORDS, 'system' => true]);
     }
@@ -63,7 +63,6 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $client = new ACClient($this->pers);
 
-
         $actions = $client->getActions();
         $this->assertEquals(1, count($actions)); // don't return system actions here
 
@@ -80,23 +79,21 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('sent reminder to John', $res);
         $client->unload();
 
-
         // test system action
         $act2 = $client->getAction('backup_clients');
-        
+
         // action takes no arguments. If it would, we should be able to find info about those
         $this->assertEquals([], $act2->args);
         $this->assertEquals(UserAction\Action::ALL_RECORDS, $act2->scope);
 
         $res = $act2->execute();
         $this->assertEquals('backs up all clients', $res);
-    
-    
+
         // non-existing action
         $act3 = $client->hasAction('foo');
         $this->assertFalse($act3);
     }
-    
+
     /**
      * @expectedException Exception
      */
