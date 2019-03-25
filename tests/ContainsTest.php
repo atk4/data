@@ -271,7 +271,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testRefArrayRefSQL2()
     {
-        $this->markTestIncomplete('This test is not fully functional yet');
+        //$this->markTestIncomplete('This test is not fully functional yet');
 
         $i = new Invoice($this->db);
         $i->loadBy('ref_no', 'A1');
@@ -294,8 +294,11 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // and now try to traverse to country model which is SQL persistence model
         $l = $i->ref('lines')->load(2);
 
-        var_dump($l->loaded(), $l->persistence);
-        $v = $l->ref('vat_rate_id');
-        var_dump($v->persistence); // it's also array persistence here, but should switch back to SQL persistence somehow
+        //var_dump($l->loaded(), $l->persistence);
+        //$v = $l->ref('vat_rate_id');
+        //$v->persistence = $i->persistence;
+        //var_dump($v->persistence); // it's also array persistence here, but should switch back to SQL persistence somehow
+
+        //var_dump($l->get());
     }
 }
