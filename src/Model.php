@@ -2188,6 +2188,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             // extract data into array
             $data = $self[$link] ?: [];
 
+            /**/
             // associate with array persistence
             $data = [$sub_model->table => ($data ? [1 => $data] : [])];
             $persistence = new Persistence_Array($data);
@@ -2195,6 +2196,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             // try to load any (actually only one possible) record
             $sub_model->tryLoadAny();
+            /**/
+
+            // $sub_model->data = &$data; // Romans wants it like this (comment marked code lines above)
 
             return $sub_model;
         });

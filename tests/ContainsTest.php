@@ -243,6 +243,10 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i->ref('lines');
     }
 
+
+
+
+
     /**
      * What if we have hasOne to SQL model inside array persisted model?
      */
