@@ -271,7 +271,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testRefArrayRefSQL2()
     {
-        //$this->markTestIncomplete('This test is not fully functional yet');
+        $this->markTestIncomplete('This test is not fully functional yet');
 
         $i = new Invoice($this->db);
         $i->loadBy('ref_no', 'A1');
