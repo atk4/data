@@ -2175,12 +2175,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $sub_model->table = $link;
 
             // set some hooks for sub_model
-            $sub_model->addHook(['beforeSave'], function($m) use ($self, $link) {
+            $sub_model->addHook(['beforeSave'], function ($m) use ($self, $link) {
                 $self->save([$link => $m->get()]);
                 $m->breakHook(false);
             });
 
-            $sub_model->addHook(['beforeDelete'], function($m) use ($self, $link) {
+            $sub_model->addHook(['beforeDelete'], function ($m) use ($self, $link) {
                 $self->save([$link => null]);
                 $m->breakHook(false);
             });
@@ -2242,7 +2242,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $sub_model->table = $link;
 
             // set some hooks for sub_model
-            $sub_model->addHook(['afterSave','afterDelete'], function($m) use ($self, $link) {
+            $sub_model->addHook(['afterSave', 'afterDelete'], function ($m) use ($self, $link) {
                 // @todo it would be super to use array_values() here around export() because then json_encode
                 // will encode this as actual JS array not object, but sadly then model id functionality breaks :(
                 $self->save([$link => $m->export() ?: null]);

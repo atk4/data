@@ -88,8 +88,6 @@ class Line extends Model
     }
 }
 
-
-
 /**
  * @coversDefaultClass Model
  *
@@ -173,7 +171,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // now let's add one more field in address model
         $a->addField('post_index');
-        $a->set('post_index','LV-1234');
+        $a->set('post_index', 'LV-1234');
         $a->save();
         $this->assertEquals(array_merge($row, ['post_index'=>'LV-1234']), $a->get());
 
@@ -212,8 +210,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's delete line with id=2 and add one more line
         $i->ref('lines')
             ->load(2)->delete()
-            ->insert(['price' => 50, 'qty' => 3, 'vat_rate_id' => 1])
-            ;
+            ->insert(['price' => 50, 'qty' => 3, 'vat_rate_id' => 1]);
         $rows = [
             1 => ['id' => 1, 'price' => 10, 'qty' => 2, 'vat_rate_id' => 1],
             3 => ['id' => 3, 'price' => 40, 'qty' => 1, 'vat_rate_id' => 1],
@@ -234,6 +231,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i = new Invoice($this->db);
         $i->ref('shipping_address');
     }
+
     /**
      * Model should be loaded before traversing to containsMany relation.
      *
@@ -268,7 +266,6 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $c = $a->ref('country_id');
         var_dump($c->loaded());
 
-
         //var_dump($i->export());
     }
 
@@ -300,7 +297,5 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         var_dump($l->loaded(), $l->persistence);
         $v = $l->ref('vat_rate_id');
         var_dump($v->persistence); // it's also array persistence here, but should switch back to SQL persistence somehow
-
-
     }
 }
