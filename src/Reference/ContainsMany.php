@@ -36,7 +36,7 @@ class ContainsMany extends ContainsOne
 
         // set some hooks for ref_model
         $m->addHook(['afterSave', 'afterDelete'], function ($m) {
-            // @todo it would be super to use array_values() here around export() because then json_encode
+            // NOTE - it would be super to use array_values() here around export() because then json_encode
             // will encode this as actual JS array not object, but sadly then model id functionality breaks :(
             $rows = $m->export();
             foreach ($rows as $id=>$row) {

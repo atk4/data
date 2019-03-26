@@ -2298,7 +2298,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             // set some hooks for sub_model
             $sub_model->addHook(['afterSave', 'afterDelete'], function ($m) use ($self, $link) {
-                // @todo it would be super to use array_values() here around export() because then json_encode
+                // NOTE - it would be super to use array_values() here around export() because then json_encode
                 // will encode this as actual JS array not object, but sadly then model id functionality breaks :(
                 $self->save([$link => $m->export() ?: null]);
                 //$m->breakHook(false);
