@@ -61,6 +61,7 @@ class ContainsOne extends \atk4\data\Reference
 
     /**
      * Returns default persistence. It will be empty at this point.
+     *
      * @see ref()
      *
      * @param Model $model Referenced model

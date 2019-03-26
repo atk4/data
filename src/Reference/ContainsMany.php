@@ -4,13 +4,6 @@
 
 namespace atk4\data\Reference;
 
-/**
- *
- */
 class ContainsMany extends \atk4\data\Reference
 {
-
-
-
-
 }

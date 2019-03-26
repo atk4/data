@@ -235,7 +235,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i->ref('shipping_address');
     }
 
-    /**
+    /*
      * Model should be loaded before traversing to containsMany relation.
      *
      * @expectedException Exception
@@ -248,7 +248,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
     }
     */
 
-    /**
+    /*
      * What if we have hasOne to SQL model inside array persisted model?
      */
     /*
