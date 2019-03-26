@@ -1442,42 +1442,49 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $is_update = $this->loaded();
             if ($is_update) {
                 $data = [];
+                $data_all = [];
                 $dirty_join = false;
                 foreach ($this->dirty as $name => $junk) {
                     $field = $this->hasElement($name);
-                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                    // get the value of the field
+                    $value = $this->get($name);
+
+                    if(!$field) continue;
+
+                    if ($field->read_only || $field->never_persist || $field->never_save) {
+                        $data_all[$name]=$value;
                         continue;
                     }
 
-                    // get the value of the field
-                    $value = $this->get($name);
 
                     if (isset($field->join)) {
                         $dirty_join = true;
                         // storing into a different table join
                         $field->join->set($name, $value);
                     } else {
-                        $data[$name] = $value;
+                        $data_all[$name] = $data[$name] = $value;
                     }
                 }
 
-                // No save needed, nothing was changed
-                if (!$data && !$dirty_join) {
-                    return $this;
-                }
 
-                if ($this->hook('beforeUpdate', [&$data]) === false) {
+                if ($this->hook('beforeUpdate', [&$data_all]) === false) {
                     return $this;
                 }
+                
+                // No save needed, nothing was changed
+                // if (!$data && !$dirty_join) {
+                //     return $this;
+                // }
 
                 $to_persistence->update($this, $this->id, $data);
-
-                $this->hook('afterUpdate', [&$data]);
+                $this->hook('afterUpdate', [&$data_all]);
             } else {
                 $data = [];
+                $data_all=[];
                 foreach ($this->get() as $name => $value) {
                     $field = $this->hasElement($name);
                     if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                        $data_all[$name]=$value;
                         continue;
                     }
 
@@ -1485,11 +1492,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
                         // storing into a different table join
                         $field->join->set($name, $value);
                     } else {
-                        $data[$name] = $value;
+                        $data_all[$name]=$data[$name] = $value;
                     }
                 }
 
-                if ($this->hook('beforeInsert', [&$data]) === false) {
+                if ($this->hook('beforeInsert', [&$data_all]) === false) {
                     return $this;
                 }
 
