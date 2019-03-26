@@ -233,7 +233,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i->ref('shipping_address');
     }
 
-    /*
+    /**
      * Model should be loaded before traversing to containsMany relation.
      *
      * @expectedException Exception
