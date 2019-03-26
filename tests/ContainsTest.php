@@ -53,7 +53,7 @@ class Invoice extends Model
         $this->containsOne('shipping_address', Address::class);
 
         // will contain many Lines
-        //$this->containsMany('lines', Line::class);
+        $this->containsMany('lines', Line::class);
     }
 }
 
@@ -187,7 +187,6 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
     /**
      * Test containsMany.
      */
-    /*
     public function testContainsMany()
     {
         $i = new Invoice($this->db);
@@ -222,7 +221,6 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         //var_dump($i->export());
     }
-    */
 
     /**
      * Model should be loaded before traversing to containsOne relation.
@@ -240,13 +238,11 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
      *
      * @expectedException Exception
      */
-    /*
     public function testEx2()
     {
         $i = new Invoice($this->db);
         $i->ref('lines');
     }
-    */
 
     /*
      * What if we have hasOne to SQL model inside array persisted model?
