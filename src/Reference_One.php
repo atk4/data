@@ -107,7 +107,7 @@ class Reference_One extends Reference
      *
      * Value can be array [$encode_callback, $decode_callback].
      *
-     * @var null|bool|array
+     * @var null|bool|array|string
      */
     public $serialize = null;
 

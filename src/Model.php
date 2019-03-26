@@ -5,7 +5,7 @@
 namespace atk4\data;
 
 /**
- * Class description?
+ * Data model class.
  */
 class Model implements \ArrayAccess, \IteratorAggregate
 {
@@ -30,6 +30,20 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $_default_seed_addField = ['\atk4\data\Field'];
 
     /**
+     * The class used by addExpression() method.
+     *
+     * @var string
+     */
+    public $_default_seed_addExpression = ['\atk4\data\Field\Callback'];
+
+    /**
+     * The class used by addRef() method.
+     *
+     * @var string
+     */
+    public $_default_seed_addRef = ['\atk4\data\Reference'];
+
+    /**
      * The class used by hasOne() method.
      *
      * @var string
@@ -44,11 +58,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $_default_seed_hasMany = ['\atk4\data\Reference_Many'];
 
     /**
-     * The class used by addField() method.
+     * The class used by containsOne() method.
      *
      * @var string
      */
-    public $_default_seed_addExpression = ['\atk4\data\Field\Callback'];
+    public $_default_seed_containsOne = ['\atk4\data\Reference\ContainsOne'];
+
+    /**
+     * The class used by containsMany() method.
+     *
+     * @var string
+     */
+    public $_default_seed_containsMany = ['\atk4\data\Reference\ContainsMany'];
 
     /**
      * The class used by join() method.
@@ -304,6 +325,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
     }
 
+    /**
+     * Clones model object.
+     */
     public function __clone()
     {
         // we need to clone some of the elements
@@ -407,6 +431,25 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         return $this;
+    }
+
+    /**
+     * Finds a field with a corresponding name. Returns false if field not found. Similar
+     * to hasElement() but with extra checks to make sure it's certainly a field you are
+     * getting.
+     *
+     * @param $name
+     *
+     * @return Field|false
+     */
+    public function hasField($name)
+    {
+        $f_object = $this->hasElement($name);
+        if (!$f_object || !$f_object instanceof Field) {
+            return false;
+        }
+
+        return $f_object;
     }
 
     /**
@@ -701,9 +744,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function getTitle()
     {
-        return
-            $this->hasElement($this->title_field)
-            && $this->getElement($this->title_field) instanceof \atk4\data\Field
+        $el = $this->hasElement($this->title_field);
+
+        return $el && $el instanceof \atk4\data\Field
                 ? $this[$this->title_field]
                 : $this->id;
     }
@@ -1195,7 +1238,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * If you wish to fully copy the data from one
      * model to another you should use:
      *
-     * $m->withPersintence($p2, false)->set($m)->save();
+     * $m->withPersistence($p2, false)->set($m)->save();
      *
      * See https://github.com/atk4/data/issues/111 for
      * use-case examples.
@@ -1987,7 +2030,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addRef($link, $callback)
     {
-        return $this->_hasReference('\atk4\data\Reference', $link, $callback);
+        return $this->_hasReference($this->_default_seed_addRef, $link, $callback);
     }
 
     /**
@@ -2020,6 +2063,38 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function hasMany($link, $defaults = [])
     {
         return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults);
+    }
+
+    /**
+     * Add containsOne field.
+     *
+     * @param string $link
+     * @param array  $defaults
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     *
+     * @return Reference\ContainsOne
+     */
+    public function containsOne($link, $defaults = [])
+    {
+        return $this->_hasReference($this->_default_seed_containsOne, $link, $defaults);
+    }
+
+    /**
+     * Add containsMany field.
+     *
+     * @param string $link
+     * @param array  $defaults
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     *
+     * @return Reference\ContainsMany
+     */
+    public function containsMany($link, $defaults = [])
+    {
+        return $this->_hasReference($this->_default_seed_containsMany, $link, $defaults);
     }
 
     /**
@@ -2111,29 +2186,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Finds a field with a corresponding name. Returns false if field not found. Similar
-     * to hasElement() but with extra checks to make sure it's certainly a field you are
-     * getting.
-     *
-     * @param $name
-     *
-     * @return Field|false
-     */
-    public function hasField($name)
-    {
-        $f_object = $this->hasElement($name);
-        if (!$f_object || !$f_object instanceof Field) {
-            return false;
-        }
-
-        return $f_object;
-    }
-
-    // }}}
-
-    // {{{ References
-
-    /**
      * Adds injected model - one record sub_model.
      *
      * It will be saved as serialized field value inside system field of this model.
@@ -2146,6 +2198,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return $this
      */
+    /*
     public function containsOne($link, $defaults = [])
     {
         // prepare defaults, 'model' key will contain sub-model class/object
@@ -2188,7 +2241,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             // extract data into array
             $data = $self[$link] ?: [];
 
-            /**/
             // associate with array persistence
             $data = [$sub_model->table => ($data ? [1 => $data] : [])];
             $persistence = new Persistence_Array($data);
@@ -2196,13 +2248,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             // try to load any (actually only one possible) record
             $sub_model->tryLoadAny();
-            /**/
-
-            // $sub_model->data = &$data; // Romans wants it like this (comment marked code lines above)
 
             return $sub_model;
         });
     }
+    */
 
     /**
      * Adds injected model - multiple record, traversable sub_model.
@@ -2217,6 +2267,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return $this
      */
+    /*
     public function containsMany($link, $defaults = [])
     {
         // prepare defaults, 'model' key will contain sub-model class/object
@@ -2264,6 +2315,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             return $sub_model;
         });
     }
+    */
 
     // }}}
 
