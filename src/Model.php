@@ -2107,7 +2107,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function ref($link, $defaults = []) : Model
+    public function ref($link, $defaults = []) : self
     {
         return $this->getRef($link)->ref($defaults);
     }
@@ -2122,7 +2122,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function refModel($link, $defaults = []) : Model
+    public function refModel($link, $defaults = []) : self
     {
         return $this->getRef($link)->refModel($defaults);
     }
@@ -2137,7 +2137,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function refLink($link, $defaults = []) : Model
+    public function refLink($link, $defaults = []) : self
     {
         return $this->getRef($link)->refLink($defaults);
     }

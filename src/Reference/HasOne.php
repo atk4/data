@@ -4,10 +4,9 @@
 
 namespace atk4\data\Reference;
 
-use atk4\data\Exception;
 use atk4\data\Field;
-use atk4\data\Model;
 use atk4\data\Join;
+use atk4\data\Model;
 use atk4\data\Reference;
 
 /**
