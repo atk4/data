@@ -2,12 +2,17 @@
 
 // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
-namespace atk4\data;
+namespace atk4\data\Persistence;
 
+use atk4\data\Exception;
+use atk4\data\Field;
+use atk4\data\Field_SQL_Expression;
+use atk4\data\Model;
+use atk4\data\Persistence;
 use atk4\dsql\Expression;
 
 /**
- * Class description?
+ * Persistence\SQL
  */
 class SQL extends Persistence
 {
@@ -236,7 +241,7 @@ class SQL extends Persistence
      */
     public function initField($q, $field)
     {
-        $is_sql_field = ($field instanceof Field_SQL) || ($field instanceof Field\Boolean);
+        $is_sql_field = ($field instanceof \atk4\data\Field_SQL) || ($field instanceof \atk4\data\Field\Boolean);
         if ($is_sql_field && $field->useAlias()) {
             $q->field($field, $field->short_name);
         } elseif ($is_sql_field) {

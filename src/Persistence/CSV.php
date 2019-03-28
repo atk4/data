@@ -2,7 +2,12 @@
 
 // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
-namespace atk4\data;
+namespace atk4\data\Persistence;
+
+use atk4\data\Exception;
+use atk4\data\Field;
+use atk4\data\Model;
+use atk4\data\Persistence;
 
 /**
  * Implements persistence driver that can save data and load from CSV file.
@@ -10,14 +15,14 @@ namespace atk4\data;
  * id-specific operations. You can only use a single persistence object with
  * a single file.
  *
- * $p = new Persistence_CSV('file.csv');
+ * $p = new Persistence\CSV('file.csv');
  * $m = new MyModel($p);
  * $data = $m->export();
  *
  * Alternatively you can write into a file. First operation you perform on
  * the persistence will determine the mode.
  *
- * $p = new Persistence_CSV('file.csv');
+ * $p = new Persistence\CSV('file.csv');
  * $m = new MyModel($p);
  * $m->import($data);
  */

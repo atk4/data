@@ -2,7 +2,7 @@
 
 namespace atk4\data\tests;
 
-use atk4\data\Persistence_SQL;
+use atk4\data\Persistence\SQL as Persistence_SQL;
 
 class Folder extends \atk4\data\Model
 {

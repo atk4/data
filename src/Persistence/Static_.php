@@ -2,17 +2,22 @@
 
 // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
-namespace atk4\data;
+namespace atk4\data\Persistence;
+
+use atk4\data\Exception;
+use atk4\data\Field;
+use atk4\data\Model;
+use atk4\data\Persistence;
 
 /**
  * Implements a very basic array-access pattern:.
  *
- * $m = new Model(Persistence_Static(['hello', 'world']));
+ * $m = new Model(Persistence\Static(['hello', 'world']));
  * $m->load(1);
  *
  * echo $m['name'];  // world
  */
-class Persistence_Static extends Persistence_Array
+class Static_ extends Array_
 {
     /**
      * This will be the title field for the model.

@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
+use atk4\data\Persistence\SQL as Persistence_SQL;
 
 class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
@@ -483,7 +483,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->setDB($a);
 
         $encrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof \atk4\data\Persistence_SQL) {
+            if (!$persistence instanceof Persistence_SQL) {
                 return $value;
             }
 
@@ -498,7 +498,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         };
 
         $decrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof \atk4\data\Persistence_SQL) {
+            if (!$persistence instanceof Persistence_SQL) {
                 return $value;
             }
 

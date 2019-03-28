@@ -2,7 +2,13 @@
 
 // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
-namespace atk4\data;
+namespace atk4\data\Persistence;
+
+use atk4\data\Exception;
+use atk4\data\Field;
+use atk4\data\Model;
+use atk4\data\Persistence;
+
 
 /**
  * Implements persistence driver that can save data into array and load
@@ -280,7 +286,7 @@ class Array_ extends Persistence
      * @param Model $m
      * @param array $fields
      *
-     * @return Action\Iterator
+     * @return \atk4\data\Action\Iterator
      */
     public function initAction(Model $m, $fields = null)
     {
@@ -290,14 +296,14 @@ class Array_ extends Persistence
             return $this->typecastLoadRow($m, $keys ? array_intersect_key($r, $keys) : $r);
         }, $this->data[$m->table]);
 
-        return new Action\Iterator($data);
+        return new \atk4\data\Action\Iterator($data);
     }
 
     /**
      * Will set limit defined inside $m onto data.
      *
-     * @param Model          $m
-     * @param Array\Iterator $action
+     * @param Model         $m
+     * @param ArrayIterator $action
      */
     protected function setLimitOrder($m, &$action)
     {
@@ -318,12 +324,12 @@ class Array_ extends Persistence
     /**
      * Will apply conditions defined inside $m onto query $q.
      *
-     * @param Model           $m
-     * @param Action\Iterator $q
+     * @param Model                      $m
+     * @param \atk4\data\Action\Iterator $q
      *
-     * @return Action\Iterator
+     * @return \atk4\data\Action\Iterator|null
      */
-    public function applyConditions(Model $m, Action\Iterator $q)
+    public function applyConditions(Model $m, \atk4\data\Action\Iterator $q)
     {
         if (!isset($m->conditions)) {
             // no conditions are set in the model
@@ -388,7 +394,7 @@ class Array_ extends Persistence
      * @param string $type
      * @param array  $args
      *
-     * @return \atk4\dsql\Query,Iterator\Action
+     * @return mixed
      */
     public function action($m, $type, $args = [])
     {

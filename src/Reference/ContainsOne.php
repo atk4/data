@@ -75,7 +75,7 @@ class ContainsOne extends Reference
     protected function getDefaultPersistence($model)
     {
         $data = [$this->table_alias => []];
-        $p = new \atk4\data\Persistence_Array($data);
+        $p = new \atk4\data\Persistence\Array_($data);
 
         return $p;
     }

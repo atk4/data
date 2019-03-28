@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
+use atk4\data\Persistence\SQL as Persistence_SQL;
 
 /**
  * THIS IS NOT A TEST. This file is a template which you can duplicate
