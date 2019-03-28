@@ -7,7 +7,7 @@ namespace atk4\data;
 /**
  * Class description?
  */
-class Join_SQL extends Join implements \atk4\dsql\Expressionable
+class SQL extends Join implements \atk4\dsql\Expressionable
 {
     /**
      * By default we create ON expression ourselves, but if you want to specify
