@@ -12,7 +12,7 @@ use atk4\data\Persistence;
 use atk4\dsql\Expression;
 
 /**
- * Persistence\SQL
+ * Persistence\SQL.
  */
 class SQL extends Persistence
 {

@@ -9,7 +9,6 @@ use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
-
 /**
  * Implements persistence driver that can save data into array and load
  * from array. This basic driver only offers the load/save support based
