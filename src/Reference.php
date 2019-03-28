@@ -174,7 +174,13 @@ class Reference
      */
     protected function getDefaultPersistence($model)
     {
-        return $this->owner->persistence ?: false;
+        $m = $this->owner;
+
+        if ($m->contained_in_root_model && $m->contained_in_root_model->persistence) {
+            return $m->contained_in_root_model->persistence;
+        }
+
+        return $m->persistence ?: false;
     }
 
     /**

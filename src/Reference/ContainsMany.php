@@ -29,7 +29,12 @@ class ContainsMany extends ContainsOne
 
         // get model
         // will not use ID field
-        $m = $this->getModel(array_merge($defaults, [/*'id_field' => false,*/ 'table' => $this->table_alias]));
+        $m = $this->getModel(array_merge($defaults, [
+            'contained_in_model' => $this->owner,
+            'contained_in_root_model' => $this->owner->contained_in_root_model ?: $this->owner,
+            /*'id_field' => false,*/
+            'table' => $this->table_alias,
+        ]));
 
         // set data source of referenced array persistence
         $rows = $this->owner[$this->our_field] ?: [];

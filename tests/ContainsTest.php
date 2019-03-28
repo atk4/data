@@ -31,6 +31,7 @@ class VatRate extends Model
         parent::init();
 
         $this->addField('name');
+        $this->addField('rate', ['type' => 'integer']);
     }
 }
 
@@ -66,7 +67,8 @@ class Address extends Model
     {
         parent::init();
 
-        //$this->hasOne('country_id', Country::class); // not fully functional yet
+        $this->hasOne('country_id', Country::class);
+
         $this->addField('street');
         $this->addField('house');
         $this->addField('built_date', ['type' => 'date']);
@@ -82,10 +84,14 @@ class Line extends Model
     {
         parent::init();
 
+        $this->hasOne('vat_rate_id', VatRate::class);
+
         $this->addField('price', ['type' => 'money', 'required' => true]);
         $this->addField('qty', ['type' => 'float', 'required' => true]);
 
-        //$this->hasOne('vat_rate_id', VatRate::class); // not fully functional yet
+        $this->addExpression('total_gross', function($m) {
+            return $m['price'] * $m['qty'] * $m->ref('vat_rate_id')['rate'] / 100;
+        });
     }
 }
 
@@ -115,8 +121,8 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m = new VatRate($this->db);
         $m->import([
-            ['id' => 1, 'name' => '21% rate'],
-            ['id' => 2, 'name' => '15% rate'],
+            ['id' => 1, 'name' => '21% rate', 'rate' => 21],
+            ['id' => 2, 'name' => '15% rate', 'rate' => 15],
         ]);
 
         $m = new Invoice($this->db);
@@ -139,7 +145,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $a->set($row = ['street'=>'Rigas', 'house'=>13, 'built_date'=>new \DateTime('last year')]);
+        $a->set($row = ['country_id'=>1, 'street'=>'Rigas', 'house'=>13, 'built_date'=>new \DateTime('last year')]);
         $a->save();
 
         // now reload invoice and see if it is saved
@@ -150,6 +156,13 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now try to change some field in address
         $i->ref('shipping_address')->set('house', 666)->save();
         $this->assertEquals(666, $i->ref('shipping_address')['house']);
+
+        // try hasOne reference
+        $c = $i->ref('shipping_address')->ref('country_id');
+        $this->assertEquals('Latvia', $c['name']);
+        $i->ref('shipping_address')->set('country_id', 2)->save();
+        $c = $i->ref('shipping_address')->ref('country_id');
+        $this->assertEquals('United Kingdom', $c['name']);
 
         // so far so good. now let's try to delete that shipping address completely
         $i->ref('shipping_address')->delete();
@@ -168,7 +181,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // with address
         $a = $i->ref('shipping_address');
-        $a->set($row = ['street'=>'Rigas', 'house'=>13, 'built_date'=>new \DateTime('last year')])->save();
+        $a->set($row = ['country_id'=>1, 'street'=>'Rigas', 'house'=>13, 'built_date'=>new \DateTime('last year')])->save();
 
         // now let's add one more field in address model
         $a->addField('post_index');
@@ -195,9 +208,9 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's add some lines
         $l = $i->ref('lines');
         $rows = [
-            1 => ['id' => 1, 'price' => 10, 'qty' => 2],
-            2 => ['id' => 2, 'price' => 15, 'qty' => 5],
-            3 => ['id' => 3, 'price' => 40, 'qty' => 1],
+            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2],
+            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5],
+            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1],
         ];
         foreach ($rows as $row) {
             $l->insert($row);
@@ -211,13 +224,21 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's delete line with id=2 and add one more line
         $i->ref('lines')
             ->load(2)->delete()
-            ->insert(['price' => 50, 'qty' => 3]);
+            ->insert(['vat_rate_id'=>2, 'price' => 50, 'qty' => 3]);
         $rows = [
-            1 => ['id' => 1, 'price' => 10, 'qty' => 2],
-            3 => ['id' => 3, 'price' => 40, 'qty' => 1],
-            4 => ['id' => 4, 'price' => 50, 'qty' => 3],
+            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2],
+            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1],
+            4 => ['id' => 4, 'vat_rate_id'=>2, 'price' => 50, 'qty' => 3],
         ];
         $this->assertEquals($rows, $i->ref('lines')->export());
+
+        // try hasOne reference
+        $v = $i->ref('lines')->load(4)->ref('vat_rate_id');
+        $this->assertEquals(15, $v['rate']);
+
+        // test expression fields
+        $v = $i->ref('lines')->load(4);
+        $this->assertEquals(50*3*15/100, $v['total_gross']);
 
         //var_dump($i->export());
     }
@@ -243,65 +264,4 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i = new Invoice($this->db);
         $i->ref('lines');
     }
-
-    /*
-     * What if we have hasOne to SQL model inside array persisted model?
-     */
-    /*
-    public function testRefArrayRefSQL()
-    {
-        $this->markTestIncomplete('This test is not fully functional yet');
-
-        $i = new Invoice($this->db);
-        $i->loadBy('ref_no', 'A1');
-
-        // check do we have shipping address set
-        $a = $i->ref('shipping_address');
-        $this->assertFalse($a->loaded());
-
-        // now store some address
-        $a->set($row = ['country_id'=>1, 'street'=>'Rigas', 'house'=>13]);
-        $a->save();
-        var_dump($a->loaded()); // it's not loaded here because that model don't have id field (argghhhhhhhhh)
-
-        // and now try to traverse to country model which is SQL persistence model
-        $c = $a->ref('country_id');
-        var_dump($c->loaded());
-
-        //var_dump($i->export());
-    }
-
-    public function testRefArrayRefSQL2()
-    {
-        $this->markTestIncomplete('This test is not fully functional yet');
-
-        $i = new Invoice($this->db);
-        $i->loadBy('ref_no', 'A1');
-
-        // now let's add some lines
-        $l = $i->ref('lines');
-        $rows = [
-            1 => ['id' => 1, 'price' => 5, 'qty' => 2, 'vat_rate_id' => 2],
-            2 => ['id' => 2, 'price' => 15, 'qty' => 5, 'vat_rate_id' => 1],
-        ];
-        foreach ($rows as $row) {
-            $l->insert($row);
-        }
-
-        // reload invoice just in case
-        $this->assertEquals($rows, $i->ref('lines')->export());
-        $i->reload();
-        $this->assertEquals($rows, $i->ref('lines')->export());
-
-        // and now try to traverse to country model which is SQL persistence model
-        $l = $i->ref('lines')->load(2);
-
-        //var_dump($l->loaded(), $l->persistence);
-        //$v = $l->ref('vat_rate_id');
-        //$v->persistence = $i->persistence;
-        //var_dump($v->persistence); // it's also array persistence here, but should switch back to SQL persistence somehow
-
-        //var_dump($l->get());
-    }
-    */
 }

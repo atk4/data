@@ -281,6 +281,24 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public $reload_after_save = null;
 
+    /**
+     * If this model is "contained into" another model by using containsOne
+     * or containsMany reference, then this property will contain reference
+     * to parent model.
+     *
+     * @var Model|null
+     */
+    public $contained_in_model = null;
+
+    /**
+     * If this model is "contained into" another model by using containsOne
+     * or containsMany reference, then this property will contain reference
+     * to top most parent model.
+     *
+     * @var Model|null
+     */
+    public $contained_in_root_model = null;
+
     // }}}
 
     // {{{ Basic Functionality, field definition, set() and get()
