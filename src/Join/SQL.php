@@ -4,7 +4,6 @@
 
 namespace atk4\data\Join;
 
-use atk4\data\Exception;
 use atk4\data\Join;
 use atk4\data\Model;
 
