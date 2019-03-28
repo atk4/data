@@ -2,10 +2,16 @@
 
 // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
-namespace atk4\data;
+namespace atk4\data\Reference;
+
+use atk4\data\Exception;
+use atk4\data\Field;
+use atk4\data\Model;
+use atk4\data\Join;
+use atk4\data\Reference;
 
 /**
- * Class description?
+ * Reference\HasOne class.
  */
 class HasOne extends Reference
 {
@@ -187,7 +193,7 @@ class HasOne extends Reference
      *
      * @return Field
      */
-    protected function referenceOurValue()
+    protected function referenceOurValue() : Field
     {
         $this->owner->persistence_data['use_table_prefixes'] = true;
 
@@ -204,7 +210,7 @@ class HasOne extends Reference
      *
      * @return Model
      */
-    public function ref($defaults = [])
+    public function ref($defaults = []) : Model
     {
         $m = $this->getModel($defaults);
 

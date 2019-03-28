@@ -4,6 +4,10 @@
 
 namespace atk4\data\Reference;
 
+use atk4\data\Exception;
+use atk4\data\Model;
+use atk4\data\Reference;
+
 /**
  * ContainsMany reference.
  */
@@ -16,11 +20,11 @@ class ContainsMany extends ContainsOne
      *
      * @return Model
      */
-    public function ref($defaults = [])
+    public function ref($defaults = []) : Model
     {
         // model should be loaded
         if (!$this->owner->loaded()) {
-            throw new \atk4\data\Exception(['Model should be loaded!', 'model' => get_class($this->owner)]);
+            throw new Exception(['Model should be loaded!', 'model' => get_class($this->owner)]);
         }
 
         // get model

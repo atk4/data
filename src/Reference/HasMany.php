@@ -2,10 +2,15 @@
 
 // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
-namespace atk4\data;
+namespace atk4\data\Reference;
+
+use atk4\data\Exception;
+use atk4\data\Field;
+use atk4\data\Model;
+use atk4\data\Reference;
 
 /**
- * Class description?
+ * Reference\HasMany class.
  */
 class HasMany extends Reference
 {
@@ -36,7 +41,7 @@ class HasMany extends Reference
      *
      * @return Field
      */
-    protected function referenceOurValue()
+    protected function referenceOurValue() : Field
     {
         $this->owner->persistence_data['use_table_prefixes'] = true;
 
@@ -52,7 +57,7 @@ class HasMany extends Reference
      *
      * @return Model
      */
-    public function ref($defaults = [])
+    public function ref($defaults = []) : Model
     {
         return $this->getModel($defaults)
             ->addCondition(
@@ -70,7 +75,7 @@ class HasMany extends Reference
      *
      * @return Model
      */
-    public function refLink($defaults = [])
+    public function refLink($defaults = []) : Model
     {
         return $this->getModel($defaults)
             ->addCondition(
@@ -88,9 +93,9 @@ class HasMany extends Reference
      *
      * @throws Exception
      *
-     * @return Field_Callback
+     * @return Field
      */
-    public function addField($n, $defaults = [])
+    public function addField($n, $defaults = []) : Field
     {
         if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
             throw new Exception([

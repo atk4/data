@@ -48,14 +48,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var string
      */
-    public $_default_seed_hasOne = ['\atk4\data\Reference_One'];
+    public $_default_seed_hasOne = ['\atk4\data\Reference\HasOne'];
 
     /**
      * The class used by hasMany() method.
      *
      * @var string
      */
-    public $_default_seed_hasMany = ['\atk4\data\Reference_Many'];
+    public $_default_seed_hasMany = ['\atk4\data\Reference\HasMany'];
 
     /**
      * The class used by containsOne() method.
@@ -1988,9 +1988,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @throws Exception
      * @throws \atk4\core\Exception
      *
-     * @return object
+     * @return Reference
      */
-    protected function _hasReference($c, $link, $defaults = [])
+    protected function _hasReference($c, $link, $defaults = []) : Reference
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_'.$link];
@@ -2026,9 +2026,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @throws Exception
      * @throws \atk4\core\Exception
      *
-     * @return object
+     * @return Reference
      */
-    public function addRef($link, $callback)
+    public function addRef($link, $callback) : Reference
     {
         return $this->_hasReference($this->_default_seed_addRef, $link, $callback);
     }
@@ -2042,9 +2042,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @throws Exception
      * @throws \atk4\core\Exception
      *
-     * @return Reference_One
+     * @return Reference\HasOne
      */
-    public function hasOne($link, $defaults = [])
+    public function hasOne($link, $defaults = []) : Reference
     {
         return $this->_hasReference($this->_default_seed_hasOne, $link, $defaults);
     }
@@ -2058,9 +2058,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @throws Exception
      * @throws \atk4\core\Exception
      *
-     * @return Reference_Many
+     * @return Reference\HasMany
      */
-    public function hasMany($link, $defaults = [])
+    public function hasMany($link, $defaults = []) : Reference
     {
         return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults);
     }
@@ -2076,7 +2076,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Reference\ContainsOne
      */
-    public function containsOne($link, $defaults = [])
+    public function containsOne($link, $defaults = []) : Reference
     {
         return $this->_hasReference($this->_default_seed_containsOne, $link, $defaults);
     }
@@ -2092,7 +2092,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Reference\ContainsMany
      */
-    public function containsMany($link, $defaults = [])
+    public function containsMany($link, $defaults = []) : Reference
     {
         return $this->_hasReference($this->_default_seed_containsMany, $link, $defaults);
     }
@@ -2107,7 +2107,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function ref($link, $defaults = [])
+    public function ref($link, $defaults = []) : Model
     {
         return $this->getRef($link)->ref($defaults);
     }
@@ -2122,7 +2122,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function refModel($link, $defaults = [])
+    public function refModel($link, $defaults = []) : Model
     {
         return $this->getRef($link)->refModel($defaults);
     }
@@ -2137,7 +2137,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function refLink($link, $defaults = [])
+    public function refLink($link, $defaults = []) : Model
     {
         return $this->getRef($link)->refLink($defaults);
     }
@@ -2149,9 +2149,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @throws \atk4\core\Exception
      *
-     * @return Field
+     * @return Reference
      */
-    public function getRef($link)
+    public function getRef($link) : Reference
     {
         return $this->getElement('#ref_'.$link);
     }
@@ -2161,7 +2161,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return array
      */
-    public function getRefs()
+    public function getRefs() : array
     {
         $refs = [];
         foreach ($this->elements as $key => $val) {

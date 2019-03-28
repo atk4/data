@@ -2,12 +2,19 @@
 
 // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
-namespace atk4\data;
+namespace atk4\data\Reference;
+
+use atk4\data\Exception;
+use atk4\data\Field;
+use atk4\data\Field_SQL_Expression;
+use atk4\data\Model;
+use atk4\data\Persistence_SQL;
+use atk4\data\Reference;
 
 /**
- * Class description?
+ * Reference\HasOne_SQL class.
  */
-class HasOne_SQL extends Reference_One
+class HasOne_SQL extends HasOne
 {
     /**
      * Creates expression which sub-selects a field inside related model.
@@ -19,7 +26,7 @@ class HasOne_SQL extends Reference_One
      *
      * @return Field_SQL_Expression
      */
-    public function addField($field, $their_field = null)
+    public function addField($field, $their_field = null) : Field_SQL_Expression
     {
         if (is_array($field)) {
             $defaults = $field;
@@ -118,7 +125,7 @@ class HasOne_SQL extends Reference_One
      *
      * @return Model
      */
-    public function refLink($defaults = [])
+    public function refLink($defaults = []) : Model
     {
         $m = $this->getModel($defaults);
 
@@ -137,7 +144,7 @@ class HasOne_SQL extends Reference_One
      *
      * @return Model
      */
-    public function ref($defaults = [])
+    public function ref($defaults = []) : Model
     {
         $m = parent::ref($defaults);
 
@@ -164,7 +171,7 @@ class HasOne_SQL extends Reference_One
      *
      * @return Field_SQL_Expression
      */
-    public function addTitle($defaults = [])
+    public function addTitle($defaults = []) : Field_SQL_Expression
     {
         if (!is_array($defaults)) {
             throw new Exception([

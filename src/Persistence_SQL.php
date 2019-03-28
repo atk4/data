@@ -30,14 +30,14 @@ class Persistence_SQL extends Persistence
      *
      * @var string
      */
-    public $_default_seed_hasOne = ['\atk4\data\Reference_SQL_One'];
+    public $_default_seed_hasOne = ['\atk4\data\Reference\HasOne_SQL'];
 
     /**
      * Default class when adding hasMany field.
      *
      * @var string
      */
-    public $_default_seed_hasMany = null; //'atk4\data\Reference_Many';
+    public $_default_seed_hasMany = null; //'atk4\data\Reference\HasMany';
 
     /**
      * Default class when adding Expression field.
