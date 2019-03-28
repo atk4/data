@@ -7,7 +7,7 @@ namespace atk4\data;
 /**
  * Class description?
  */
-class Reference_SQL_One extends Reference_One
+class HasOne_SQL extends Reference_One
 {
     /**
      * Creates expression which sub-selects a field inside related model.

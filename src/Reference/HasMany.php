@@ -7,7 +7,7 @@ namespace atk4\data;
 /**
  * Class description?
  */
-class Reference_Many extends Reference
+class HasMany extends Reference
 {
     /**
      * Returns our field value or id.

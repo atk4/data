@@ -7,7 +7,7 @@ namespace atk4\data;
 /**
  * Class description?
  */
-class Reference_One extends Reference
+class HasOne extends Reference
 {
     /**
      * Field type.
