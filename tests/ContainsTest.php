@@ -89,7 +89,7 @@ class Line extends Model
         $this->addField('price', ['type' => 'money', 'required' => true]);
         $this->addField('qty', ['type' => 'float', 'required' => true]);
 
-        $this->addExpression('total_gross', function($m) {
+        $this->addExpression('total_gross', function ($m) {
             return $m['price'] * $m['qty'] * $m->ref('vat_rate_id')['rate'] / 100;
         });
     }
@@ -238,7 +238,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // test expression fields
         $v = $i->ref('lines')->load(4);
-        $this->assertEquals(50*3*15/100, $v['total_gross']);
+        $this->assertEquals(50 * 3 * 15 / 100, $v['total_gross']);
 
         //var_dump($i->export());
     }
