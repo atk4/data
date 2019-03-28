@@ -9,7 +9,7 @@ namespace atk4\data;
  * from array. This basic driver only offers the load/save support based
  * around ID, you can't use conditions, order or limit.
  */
-class Persistence_Array extends Persistence
+class Array_ extends Persistence
 {
     /**
      * Array of data.

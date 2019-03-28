@@ -9,7 +9,7 @@ use atk4\dsql\Expression;
 /**
  * Class description?
  */
-class Persistence_SQL extends Persistence
+class SQL extends Persistence
 {
     /**
      * Connection object.

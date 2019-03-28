@@ -21,7 +21,7 @@ namespace atk4\data;
  * $m = new MyModel($p);
  * $m->import($data);
  */
-class Persistence_CSV extends Persistence
+class CSV extends Persistence
 {
     /**
      * Name of the file.
