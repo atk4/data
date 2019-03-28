@@ -51,7 +51,7 @@ class Persistence_SQL extends Persistence
      *
      * @var string
      */
-    public $_default_seed_join = ['\atk4\data\Join_SQL'];
+    public $_default_seed_join = ['\atk4\data\Join\SQL'];
 
     /**
      * Constructor.

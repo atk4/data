@@ -2,12 +2,16 @@
 
 // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
-namespace atk4\data;
+namespace atk4\data\Join;
+
+use atk4\data\Exception;
+use atk4\data\Join;
+use atk4\data\Model;
 
 /**
- * Class description?
+ * Join\Array_ class.
  */
-class Join_Array extends Join
+class Array_ extends Join
 {
     /**
      * This method is to figure out stuff.

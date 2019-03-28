@@ -2,10 +2,14 @@
 
 // vim:ts=4:sw=4:et:fdm=marker:fdl=0
 
-namespace atk4\data;
+namespace atk4\data\Join;
+
+use atk4\data\Exception;
+use atk4\data\Join;
+use atk4\data\Model;
 
 /**
- * Class description?
+ * Join\SQL class.
  */
 class SQL extends Join implements \atk4\dsql\Expressionable
 {
@@ -46,7 +50,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         return $q->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
         */
 
-        // Romans: join_sql shouldn't even be called if expr is undefined. I think we should leave it here to produce error.
+        // Romans: JOIN\SQL shouldn't even be called if expr is undefined. I think we should leave it here to produce error.
         return $this->owner->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
     }
 
