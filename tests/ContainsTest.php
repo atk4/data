@@ -55,6 +55,17 @@ class Invoice extends Model
 
         // will contain many Lines
         $this->containsMany('lines', Line::class);
+
+        // total_gross
+        /*
+        $this->addExpression('total_gross', function ($m) {
+            $total = 0;
+            foreach ($m->ref('lines') as $line) { // Exception: Model should be loaded :(
+                $total += $line['total_gross'];
+            }
+            return $total;
+        });
+        */
     }
 }
 
