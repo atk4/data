@@ -2210,12 +2210,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string       $name
-     * @param string|array $expression
+     * @param string                $name
+     * @param string|array|callable $expression
      *
      * @throws \atk4\core\Exception
      *
-     * @return Field_Callback
+     * @return Field\Callback
      */
     public function addExpression($name, $expression)
     {
@@ -2229,6 +2229,26 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $c = $this->_default_seed_addExpression;
 
         return $this->add($this->factory($c, $expression), $name);
+    }
+
+    /**
+     * Add expression field which will calculate its value by using callback.
+     *
+     * @param string                $name
+     * @param string|array|callable $expression
+     *
+     * @throws \atk4\core\Exception
+     *
+     * @return Field\Callback
+     */
+    public function addCalculatedField($name, $expression) {
+        if (!is_array($expression)) {
+            $expression = ['expr' => $expression];
+        } elseif (isset($expression[0])) {
+            $expression['expr'] = $expression[0];
+            unset($expression[0]);
+        }
+        return $this->addField($name, new Field\Callback($expression));
     }
 
     // }}}

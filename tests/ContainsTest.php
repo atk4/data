@@ -56,16 +56,14 @@ class Invoice extends Model
         // will contain many Lines
         $this->containsMany('lines', Line::class);
 
-        // total_gross
-        /*
-        $this->addExpression('total_gross', function ($m) {
+        // total_gross - calculated by php callback not by SQL expression
+        $this->addCalculatedField('total_gross', function ($m) {
             $total = 0;
-            foreach ($m->ref('lines') as $line) { // Exception: Model should be loaded :(
+            foreach ($m->ref('lines') as $line) {
                 $total += $line['total_gross'];
             }
             return $total;
         });
-        */
     }
 }
 
@@ -101,7 +99,7 @@ class Line extends Model
         $this->addField('qty', ['type' => 'float', 'required' => true]);
 
         $this->addExpression('total_gross', function ($m) {
-            return $m['price'] * $m['qty'] * $m->ref('vat_rate_id')['rate'] / 100;
+            return $m['price'] * $m['qty'] * (1 + $m->ref('vat_rate_id')['rate'] / 100);
         });
     }
 }
@@ -249,7 +247,11 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // test expression fields
         $v = $i->ref('lines')->load(4);
-        $this->assertEquals(50 * 3 * 15 / 100, $v['total_gross']);
+        $this->assertEquals(50 * 3 * (1 + 15 / 100), $v['total_gross']);
+
+        // and what about calculated field?
+        $i->reload(); // we need to reload invoice for changes in lines to be recalculated
+        $this->assertEquals(10*2*(1+21/100) + 40*1*(1+21/100) + 50*3*(1+15/100), $i['total_gross']); // =245.10
 
         //var_dump($i->export());
     }
