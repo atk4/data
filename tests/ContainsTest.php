@@ -102,8 +102,34 @@ class Line extends Model
         $this->addExpression('total_gross', function ($m) {
             return $m['price'] * $m['qty'] * (1 + $m->ref('vat_rate_id')['rate'] / 100);
         });
+
+        // each line can have multiple discounts and calculate total of these discounts
+        $this->containsMany('discounts', Discount::class);
+
+        $this->addCalculatedField('discounts_total', function ($m) {
+            $total = 0;
+            foreach ($m->ref('discounts') as $d) {
+                $total += $d['percent'];
+            }
+            return $total;
+        });
     }
 }
+
+/**
+ * Each line can have multiple discounts.
+ */
+class Discount extends Model
+{
+    public function init()
+    {
+        parent::init();
+
+        $this->addField('percent', ['type' => 'integer', 'required' => true]);
+    }
+}
+
+// ============================================================================
 
 /**
  * @coversDefaultClass Model
@@ -218,9 +244,9 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's add some lines
         $l = $i->ref('lines');
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2],
-            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5],
-            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1],
+            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'discounts' => null],
+            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5, 'discounts' => null],
+            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1, 'discounts' => null],
         ];
         foreach ($rows as $row) {
             $l->insert($row);
@@ -234,11 +260,11 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's delete line with id=2 and add one more line
         $i->ref('lines')
             ->load(2)->delete()
-            ->insert(['vat_rate_id'=>2, 'price' => 50, 'qty' => 3]);
+            ->insert(['vat_rate_id'=>2, 'price' => 50, 'qty' => 3, 'discounts' => null]);
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2],
-            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1],
-            4 => ['id' => 4, 'vat_rate_id'=>2, 'price' => 50, 'qty' => 3],
+            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'discounts' => null],
+            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1, 'discounts' => null],
+            4 => ['id' => 4, 'vat_rate_id'=>2, 'price' => 50, 'qty' => 3, 'discounts' => null],
         ];
         $this->assertEquals($rows, $i->ref('lines')->export());
 
@@ -277,5 +303,42 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $i = new Invoice($this->db);
         $i->ref('lines');
+    }
+
+    /**
+     * Recursive containsMany tests.
+     */
+    public function testRecursiveContainsMany()
+    {
+        $i = new Invoice($this->db);
+        $i->loadBy('ref_no', 'A1');
+
+        // now let's add some lines
+        $l = $i->ref('lines');
+
+        $rows = [
+            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2],
+            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5],
+        ];
+        foreach ($rows as $row) {
+            $l->insert($row);
+        }
+
+        // add some discounts
+        $l->load(1)->ref('discounts')->insert(['id' => 1, 'percent' => 5]);
+        $l->load(1)->ref('discounts')->insert(['id' => 2, 'percent' => 10]);
+        $l->load(2)->ref('discounts')->insert(['id' => 1, 'percent' => 20]);
+
+        // reload invoice to be sure all is saved and to recalculate all fields
+        var_dump($i->export());
+        $i->reload();
+
+        // now test
+        var_dump($i->ref('lines')->load(1)->get());
+
+
+
+
+        //var_dump($i->export());
     }
 }
