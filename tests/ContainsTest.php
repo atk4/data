@@ -62,6 +62,7 @@ class Invoice extends Model
             foreach ($m->ref('lines') as $line) {
                 $total += $line['total_gross'];
             }
+
             return $total;
         });
     }
@@ -251,7 +252,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
-        $this->assertEquals(10*2*(1+21/100) + 40*1*(1+21/100) + 50*3*(1+15/100), $i['total_gross']); // =245.10
+        $this->assertEquals(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i['total_gross']); // =245.10
 
         //var_dump($i->export());
     }

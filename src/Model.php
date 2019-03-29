@@ -2241,13 +2241,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Field\Callback
      */
-    public function addCalculatedField($name, $expression) {
+    public function addCalculatedField($name, $expression)
+    {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];
         } elseif (isset($expression[0])) {
             $expression['expr'] = $expression[0];
             unset($expression[0]);
         }
+
         return $this->addField($name, new Field\Callback($expression));
     }
 
