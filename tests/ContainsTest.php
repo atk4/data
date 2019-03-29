@@ -111,6 +111,7 @@ class Line extends Model
             foreach ($m->ref('discounts') as $d) {
                 $total += $d['percent'];
             }
+
             return $total;
         });
     }
@@ -335,9 +336,6 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // now test
         var_dump($i->ref('lines')->load(1)->get());
-
-
-
 
         //var_dump($i->export());
     }
