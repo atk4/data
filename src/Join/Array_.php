@@ -9,7 +9,7 @@ use atk4\data\Join;
 use atk4\data\Model;
 
 /**
- * Join\Array_ class
+ * Join\Array_ class.
  */
 class Array_ extends Join
 {

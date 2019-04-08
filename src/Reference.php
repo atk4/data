@@ -161,6 +161,7 @@ class Reference
         if (!$model->persistence && $p = $this->getDefaultPersistence($model)) {
             $p->add($model, $defaults);
         }
+
         return $model;
     }
 
@@ -180,7 +181,7 @@ class Reference
             return $m->contained_in_root_model->persistence;
         }
         */
-        
+
         return $m->persistence ?: false;
     }
 

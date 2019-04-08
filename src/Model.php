@@ -2185,6 +2185,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $expression['expr'] = $expression[0];
             unset($expression[0]);
         }
+
         return $this->addField($name, new Field\Callback($expression));
     }
 
