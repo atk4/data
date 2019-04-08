@@ -48,15 +48,15 @@ class ContainsMany extends ContainsOne
             // NOTE - it would be super to use array_values() here around export() because then json_encode
             // will encode this as actual JS array not object, but sadly then model id functionality breaks :(
             $rows = $m->export(/*null,null,false*/);
-//var_dump([get_class($m)=>$rows]);
+            //var_dump([get_class($m)=>$rows]);
 
-//var_dump(['rows_before'=>$rows]);
+            //var_dump(['rows_before'=>$rows]);
             // use root model persistence for typecasting
             $owner = $this->owner->contained_in_root_model ?: $this->owner;
             foreach ($rows as $id=>$row) {
                 $rows[$id] = $owner->persistence->typecastSaveRow($m, $row);
             }
-//var_dump(['rows_after'=>$rows]);
+            //var_dump(['rows_after'=>$rows]);
 
             $this->owner->save([$this->our_field => $rows ?: null]);
             //$m->breakHook(false);

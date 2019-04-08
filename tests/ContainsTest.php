@@ -338,9 +338,9 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         }
 
         // add some discounts
-//var_dump('BEFORE');
+        //var_dump('BEFORE');
         $l->load(1)->ref('discounts')->insert(['id' => 1, 'percent' => 5, 'valid_till_date' => new \DateTime('next month')]);
-//var_dump('AFTER');
+        //var_dump('AFTER');
         //$l->load(1)->ref('discounts')->insert(['id' => 2, 'percent' => 10]);
         //$l->load(2)->ref('discounts')->insert(['id' => 1, 'percent' => 20]);
 
@@ -356,8 +356,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
     }
 }
 
-
-/**
+/*
 
 In PHP:
 Array
