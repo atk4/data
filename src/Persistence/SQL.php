@@ -157,7 +157,7 @@ class SQL extends Persistence
         if ($m->table === false) {
             $m->getElement($m->id_field)->destroy();
             $m->addExpression($m->id_field, '1');
-        } else {
+        //} else {
             // SQL databases use ID of int by default
             //$m->getElement($m->id_field)->type = 'integer';
         }
