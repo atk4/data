@@ -2,14 +2,17 @@
 
 namespace atk4\data\tests;
 
+use atk4\data\Model;
+use atk4\data\Persistence\Static_ as Persistence_Static;
+
 class FieldHereditaryTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testDirty1()
     {
-        $p = new \atk4\data\Persistence_Static(['hello', 'world']);
+        $p = new Persistence_Static(['hello', 'world']);
 
         // default title field
-        $m = new \atk4\data\Model($p);
+        $m = new Model($p);
         $m->addExpression('caps', function ($m) {
             return strtoupper($m['name']);
         });

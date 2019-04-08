@@ -4,8 +4,8 @@ namespace atk4\data\Util;
 
 use atk4\core\Exception;
 use atk4\data\Model;
-use atk4\data\Reference_Many;
-use atk4\data\Reference_One;
+use atk4\data\Reference\HasMany;
+use atk4\data\Reference\HasOne;
 
 /**
  * Class DeepCopy implements copying records between two models:.
@@ -194,7 +194,7 @@ class DeepCopy
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
                 $this->debug("Considering $ref_key");
 
-                if (($ref = $source->hasRef($ref_key)) && $ref instanceof Reference_One) {
+                if (($ref = $source->hasRef($ref_key)) && $ref instanceof HasOne) {
                     $this->debug("Proceeding with $ref_key");
 
                     // load destination model through $source
@@ -243,7 +243,7 @@ class DeepCopy
             // Next look for hasMany relationships and copy those too
 
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
-                if (($ref = $source->hasRef($ref_key)) && $ref instanceof Reference_Many) {
+                if (($ref = $source->hasRef($ref_key)) && $ref instanceof HasMany) {
 
                     // No mapping, will always copy
                     foreach ($source->ref($ref_key) as $ref_model) {

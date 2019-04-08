@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_CSV;
+use atk4\data\Persistence\CSV as Persistence_CSV;
 use atk4\data\tests\Model\Person as Person;
 
 /**

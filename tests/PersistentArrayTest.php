@@ -4,7 +4,7 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\data\Persistence_Array;
+use atk4\data\Persistence\Array_ as Persistence_Array;
 use atk4\data\tests\Model\Female as Female;
 use atk4\data\tests\Model\Male as Male;
 
