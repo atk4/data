@@ -846,16 +846,21 @@ class SQL extends Persistence
      *
      * @param Model      $m
      * @param array|null $fields
+     * @param bool       $typecast_data Should we typecast exported data
      *
      * @return array
      */
-    public function export(Model $m, $fields = null)
+    public function export(Model $m, $fields = null, $typecast_data = true)
     {
-        $export = $m->action('select', [$fields]);
+        $data = $m->action('select', [$fields])->get();
 
-        return array_map(function ($r) use ($m) {
-            return $this->typecastLoadRow($m, $r);
-        }, $export->get());
+        if ($typecast_data) {
+            $data = array_map(function ($r) use ($m) {
+                return $this->typecastLoadRow($m, $r);
+            }, $data);
+        }
+
+        return $data;
     }
 
     /**

@@ -98,6 +98,7 @@ class Line extends Model
 
         $this->addField('price', ['type' => 'money', 'required' => true]);
         $this->addField('qty', ['type' => 'float', 'required' => true]);
+        $this->addField('add_date', ['type' => 'date']);
 
         $this->addExpression('total_gross', function ($m) {
             return $m['price'] * $m['qty'] * (1 + $m->ref('vat_rate_id')['rate'] / 100);
@@ -127,6 +128,7 @@ class Discount extends Model
         parent::init();
 
         $this->addField('percent', ['type' => 'integer', 'required' => true]);
+        $this->addField('valid_till_date', ['type' => 'date']);
     }
 }
 
@@ -172,6 +174,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
     /**
      * Test containsOne.
      */
+    /*
     public function testContainsOne()
     {
         $i = new Invoice($this->db);
@@ -207,10 +210,12 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         //var_dump($i->export());
     }
+    */
 
     /**
      * How containsOne performs when not all values are stored or there are more values in DB than fields in model.
      */
+    /*
     public function testContainsOneWhenChangeModelFields()
     {
         $i = new Invoice($this->db);
@@ -233,10 +238,12 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $a = $i->ref('shipping_address');
         $this->assertEquals($row, $a->get());
     }
+    */
 
     /**
      * Test containsMany.
      */
+    /*
     public function testContainsMany()
     {
         $i = new Invoice($this->db);
@@ -283,28 +290,33 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         //var_dump($i->export());
     }
+    */
 
     /**
      * Model should be loaded before traversing to containsOne relation.
      *
      * @expectedException Exception
      */
+    /*
     public function testEx1()
     {
         $i = new Invoice($this->db);
         $i->ref('shipping_address');
     }
+    */
 
     /**
      * Model should be loaded before traversing to containsMany relation.
      *
      * @expectedException Exception
      */
+    /*
     public function testEx2()
     {
         $i = new Invoice($this->db);
         $i->ref('lines');
     }
+    */
 
     /**
      * Recursive containsMany tests.
@@ -318,25 +330,91 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $l = $i->ref('lines');
 
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2],
-            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5],
+            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'add_date' => new \DateTime('last month')],
+            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5, 'add_date' => new \DateTime('last month')],
         ];
         foreach ($rows as $row) {
             $l->insert($row);
         }
 
         // add some discounts
-        $l->load(1)->ref('discounts')->insert(['id' => 1, 'percent' => 5]);
-        $l->load(1)->ref('discounts')->insert(['id' => 2, 'percent' => 10]);
-        $l->load(2)->ref('discounts')->insert(['id' => 1, 'percent' => 20]);
+//var_dump('BEFORE');
+        $l->load(1)->ref('discounts')->insert(['id' => 1, 'percent' => 5, 'valid_till_date' => new \DateTime('next month')]);
+//var_dump('AFTER');
+        //$l->load(1)->ref('discounts')->insert(['id' => 2, 'percent' => 10]);
+        //$l->load(2)->ref('discounts')->insert(['id' => 1, 'percent' => 20]);
 
         // reload invoice to be sure all is saved and to recalculate all fields
-        var_dump($i->export());
-        $i->reload();
+        //print_r($i->export(null,null,false));
+        //print_r($i->export());
+        //$i->reload();
 
         // now test
-        var_dump($i->ref('lines')->load(1)->get());
+        //var_dump($i->ref('lines')->load(1)->get());
 
         //var_dump($i->export());
     }
 }
+
+
+/**
+
+In PHP:
+Array
+(
+    [0] => Array
+        (
+            [id] => 1
+            [ref_no] => A1
+            [amount] => 123
+            [lines] => Array
+                (
+                    [1] => Array
+                        (
+                            [id] => 1
+                            [vat_rate_id] => 1
+                            [price] => 10
+                            [qty] => 2
+                            [discounts] =>
+                                Array (
+                                    [1] => Array
+                                        (
+                                            [id] => 1
+                                            [percent] => 5
+                                        )
+                                )
+                        )
+
+                    [2] => Array
+                        (
+                            [id] => 2
+                            [vat_rate_id] => 2
+                            [price] => 15
+                            [qty] => 5
+                            [discounts] =>
+                        )
+
+                )
+        )
+)
+
+In SQL:
+.Array
+(
+    [0] => Array
+        (
+            [id] => 1
+            [ref_no] => A1
+            [amount] => 123
+            [lines] => {
+                "1":{"id":1,"vat_rate_id":1,"price":10,"qty":2,"discounts":{
+                    "1":{"id":1,"percent":5}
+                }},
+                "2":{"id":2,"vat_rate_id":2,"price":15,"qty":5,"discounts":null}
+            }
+        )
+)
+
+
+
+*/

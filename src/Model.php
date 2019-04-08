@@ -1688,12 +1688,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $fields    Names of fields to export
-     * @param string     $key_field Optional name of field which value we will use as array key
+     * @param array|null $fields        Names of fields to export
+     * @param string     $key_field     Optional name of field which value we will use as array key
+     * @param bool       $typecast_data Should we typecast exported data
      *
      * @return array
      */
-    public function export($fields = null, $key_field = null)
+    public function export($fields = null, $key_field = null, $typecast_data = true)
     {
         if (!$this->persistence->hasMethod('export')) {
             throw new Exception('Persistence does not support export()');
@@ -1701,7 +1702,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         // no key field - then just do export
         if ($key_field === null) {
-            return $this->persistence->export($this, $fields);
+            return $this->persistence->export($this, $fields, $typecast_data);
         }
 
         // do we have added key field in fields list?
@@ -1757,7 +1758,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         // export
-        $data = $this->persistence->export($this, $fields);
+        $data = $this->persistence->export($this, $fields, $typecast_data);
 
         // prepare resulting array
         $return = [];

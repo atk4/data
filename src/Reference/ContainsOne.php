@@ -18,7 +18,7 @@ class ContainsOne extends Reference
      *
      * @var string
      */
-    public $type = 'array';
+    public $type = null;
 
     /**
      * Is it system field?
@@ -26,13 +26,6 @@ class ContainsOne extends Reference
      * @var bool
      */
     public $system = true;
-
-    /**
-     * Should we use serialization when saving/loading data to/from persistence.
-     *
-     * @var null|bool|array|string
-     */
-    public $serialize = 'json';
 
     /**
      * Required! We need table alias for internal use only.
@@ -53,12 +46,18 @@ class ContainsOne extends Reference
             $this->our_field = $this->link;
         }
 
+        // only serialize root model !!!
+        //$serialize = null;
+        if (!$this->owner->contained_in_root_model) {
+            $this->type = 'array';
+        }
+
         if (!$this->owner->hasElement($this->our_field)) {
             $this->owner->addField($this->our_field, [
                 'type'              => $this->type,
                 'reference'         => $this,
                 'system'            => $this->system,
-                'serialize'         => $this->serialize,
+                //'serialize'         => $serialize,
             ]);
         }
     }
