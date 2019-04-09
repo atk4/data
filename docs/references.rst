@@ -646,7 +646,7 @@ Reference Classes
 
 References are implemented through several classes:
 
-.. php:class:: Reference_One
+.. php:class:: Reference\HasOne
 
     Defines generic reference, that is typically created by :php:meth:`Model::addRef`
 

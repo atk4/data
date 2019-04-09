@@ -46,7 +46,7 @@ Console is using `Psysh <http://psysh.org>`_ to help you interact with objects
 like this::
 
     > $db
-    => atk4\data\Persistence_SQL {...}
+    => atk4\data\Persistence\SQL {...}
 
     > exit
 
@@ -390,7 +390,7 @@ For some persistence classes, you should use constructor directly::
     $array[1] = ['name'=>'John'];
     $array[2] = ['name'=>'Peter'];
 
-    $db = new \atk4\data\Persistence_Array($array);
+    $db = new \atk4\data\Persistence\Array_($array);
     $m = new \atk4\data\Model($db);
     $m->addField('name');
     $m->load(2);
@@ -400,7 +400,7 @@ There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
 
     $a=['user'=>[],'contact_info'=>[]];
-    $ar = new \atk4\data\Persistence_Array($a);
+    $ar = new \atk4\data\Persistence\Array_($a);
     $m = new Model_User($ar);
     $m['username']='test';
     $m['address_1']='street'
@@ -498,8 +498,8 @@ Implementation of References
 ----------------------------
 
 When reference is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
-the new object is created and added into Model of class :php:class:`Reference_Many`
-or :php:class:`Reference_One` (or :php:class:`Reference_SQL_One` in case you
+the new object is created and added into Model of class :php:class:`Reference\HasMany`
+or :php:class:`Reference\HasOne` (or :php:class:`Reference\HasOne_SQL` in case you
 use SQL database). The object itself is quite simple and you can fetch it from
 the model if you keep the return value of hasOne() / hasMany() or call
 :php:meth:`Model::getRef()` with the same identifier later on.
