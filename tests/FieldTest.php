@@ -461,6 +461,32 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals($a, $this->getDB());
     }
 
+    public function testCalculatedField()
+    {
+        $db = new Persistence_SQL($this->db->connection);
+        $a = [
+            'invoice' => [
+                1 => ['id' => 1, 'net' => 100, 'vat' => 21],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'invoice');
+        $m->addField('net', ['type' => 'money']);
+        $m->addField('vat', ['type' => 'money']);
+        $m->addCalculatedField('total', function ($m) {
+            return $m['net'] + $m['vat'];
+        });
+        $m->insert(['net' => 30, 'vat' => 8]);
+
+        $m->load(1);
+        $this->assertEquals(121, $m['total']);
+        $m->load(2);
+        $this->assertEquals(38, $m['total']);
+
+        $d = $m->export(); // in export calculated fields are not included
+        $this->assertFalse(isset($d[0]['total']));
+    }
+
     public function testSystem1()
     {
         $m = new Model();
