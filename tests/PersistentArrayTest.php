@@ -288,7 +288,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     }
 
     /**
-     * Test Model->action('count').
+     * Test Model->action('like').
      */
     public function testCount()
     {
@@ -303,6 +303,30 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('surname');
 
         $this->assertEquals(2, $m->action('count')->getOne());
+    }
+
+    /**
+     * Test Model->addCondition operator LIKE.
+     */
+    public function testLike()
+    {
+        $a = [
+            1 => ['name' => 'John', 'surname' => 'Smith'],
+            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
+
+        $p = new Persistence_Array($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+        $m->addCondition('name', 'LIKE','Jo%');
+        $m->addCondition('name', 'LIKE','%hn');
+        $m->addCondition('name', 'LIKE','%oh%');
+
+        $result = $m->action('select')->get();
+        $this->assertTrue(array_key_exists(1, $result));
+        $this->assertTrue(array_key_exists('name', $result[1]));
+        $this->assertTrue($result[1]['name'] === 'John');
     }
 
     /**
