@@ -365,6 +365,17 @@ class Persistence_Array extends Persistence
                     $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
                 }
                 $q->where(is_string($cond[0]) ? $cond[0] : $cond[0]->short_name, $cond[1]);
+            } elseif(count($cond) == 3) {
+                if ($cond[0] instanceof Field) {
+                    $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
+                }
+                if (!method_exists($q,strtolower($cond[1]))) {
+                    throw new Exception([
+                        'Method ' . $cond[1] . ' not supported by Array persistence driver',
+                        'condition'=> $cond,
+                    ]);
+                }
+                $q->{strtolower($cond[1])}(is_string($cond[0]) ? $cond[0] : $cond[0]->short_name, $cond[2]);
             } else {
                 throw new Exception([
                     'Condition not acceptable for Array persistence',
