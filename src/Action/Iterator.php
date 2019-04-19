@@ -54,6 +54,47 @@ class Iterator
     }
 
     /**
+     * Applies FilterIterator condition imitating the sql LIKE operator - $field LIKE %$value% | $value% | %$value
+     *
+     * @param string $field
+     * @param string $value
+     *
+     * @return $this
+     */
+    public function like($field, $value)
+    {
+        $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
+
+            // skip row. does not have field at all
+            if (!isset($row[$field])) {
+                return false;
+            }
+
+
+            $clean_value = str_replace('%', '', $value);
+            // the row field exists check the position of th "%"(s)
+            switch ($value) {
+                // case "%str%"
+                case substr_count($value,'%')==2:
+                    return (strpos($row[$field], $clean_value) !== false);
+                    break;
+                // case "str%"
+                case substr($value, -1, 1) == '%':
+                    return (substr($row[$field], 0, strlen($clean_value)) === $clean_value);
+                    break;
+                // case "%str"
+                case substr($value, 0, 1) == '%':
+                    return (substr($row[$field], -strlen($clean_value)) === $clean_value);
+                    break;
+            }
+
+            return false;
+        });
+
+        return $this;
+    }
+
+    /**
      * Applies sorting on Iterator.
      *
      * @param array $fields
