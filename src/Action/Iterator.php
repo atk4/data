@@ -71,20 +71,20 @@ class Iterator
             }
 
 
-            $clean_value = str_replace('%', '', $value);
+            $clean_value = trim(trim($value), '%');
             // the row field exists check the position of th "%"(s)
             switch ($value) {
                 // case "%str%"
-                case substr_count($value,'%')==2:
-                    return (strpos($row[$field], $clean_value) !== false);
+                case substr($value, -1, 1) == '%' && substr($value, 0, 1) == '%':
+                    return strpos($row[$field], $clean_value) !== false;
                     break;
                 // case "str%"
                 case substr($value, -1, 1) == '%':
-                    return (substr($row[$field], 0, strlen($clean_value)) === $clean_value);
+                    return substr($row[$field], 0, strlen($clean_value)) === $clean_value;
                     break;
                 // case "%str"
                 case substr($value, 0, 1) == '%':
-                    return (substr($row[$field], -strlen($clean_value)) === $clean_value);
+                    return substr($row[$field], -strlen($clean_value)) === $clean_value;
                     break;
             }
 

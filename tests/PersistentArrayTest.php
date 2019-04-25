@@ -288,7 +288,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     }
 
     /**
-     * Test Model->action('like').
+     * Test Model->action('count').
      */
     public function testCount()
     {
@@ -310,23 +310,60 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
      */
     public function testLike()
     {
-        $a = [
-            1 => ['name' => 'John', 'surname' => 'Smith'],
-            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-        ];
+        $a = [ 'countries' => [
+            1 => ['id'=>1, 'name'=>'ABC9', 'code'=>11, 'country'=>'Ireland'],
+            2 => ['id'=>2, 'name'=>'ABC8', 'code'=>12, 'country'=>'Ireland'],
+            3 => ['id'=>3, 'name'=>'ABC7', 'code'=>13, 'country'=>'Latvia'],
+            4 => ['id'=>4, 'name'=>'ABC6', 'code'=>14, 'country'=>'UK'],
+            5 => ['id'=>5, 'name'=>'ABC5', 'code'=>15, 'country'=>'UK'],
+            6 => ['id'=>6, 'name'=>'ABC4', 'code'=>16, 'country'=>'Ireland'],
+            7 => ['id'=>7, 'name'=>'ABC3', 'code'=>17, 'country'=>'Latvia'],
+            8 => ['id'=>8, 'name'=>'ABC2', 'code'=>18, 'country'=>'Russia'],
+            9 => ['id'=>9, 'name'=>'ABC1', 'code'=>19, 'country'=>'Latvia'],
+        ]];
 
         $p = new Persistence_Array($a);
-        $m = new Model($p);
+        $m = new Model($p,'countries');
         $m->addField('name');
-        $m->addField('surname');
-        $m->addCondition('name', 'LIKE','Jo%');
-        $m->addCondition('name', 'LIKE','%hn');
-        $m->addCondition('name', 'LIKE','%oh%');
+        $m->addField('code',['type' => 'int']);
+        $m->addField('country');
 
+        // case str%
+        $m->addCondition('country', 'LIKE','La%');
         $result = $m->action('select')->get();
-        $this->assertTrue(array_key_exists(1, $result));
-        $this->assertTrue(array_key_exists('name', $result[1]));
-        $this->assertTrue($result[1]['name'] === 'John');
+        $this->assertEquals(3, count($result));
+        $this->assertEquals($a['countries'][3], $result[3]);
+        $this->assertEquals($a['countries'][7], $result[7]);
+        $this->assertEquals($a['countries'][9], $result[9]);
+        unset($result);
+        $m->unload();
+
+        // case %str
+        $m->conditions = [];
+        $m->addCondition('country', 'LIKE','%ia');
+        $result = $m->action('select')->get();
+        $this->assertEquals(4, count($result));
+        $this->assertEquals($a['countries'][3], $result[3]);
+        $this->assertEquals($a['countries'][7], $result[7]);
+        $this->assertEquals($a['countries'][8], $result[8]);
+        $this->assertEquals($a['countries'][9], $result[9]);
+        unset($result);
+        $m->unload();
+
+        // case %str
+        $m->conditions = [];
+        $m->addCondition('country', 'LIKE','%a%');
+        $result = $m->action('select')->get();
+        $this->assertEquals(7, count($result));
+        $this->assertEquals($a['countries'][1], $result[1]);
+        $this->assertEquals($a['countries'][2], $result[2]);
+        $this->assertEquals($a['countries'][3], $result[3]);
+        $this->assertEquals($a['countries'][6], $result[6]);
+        $this->assertEquals($a['countries'][7], $result[7]);
+        $this->assertEquals($a['countries'][8], $result[8]);
+        $this->assertEquals($a['countries'][9], $result[9]);
+        unset($result);
+        $m->unload();
     }
 
     /**
