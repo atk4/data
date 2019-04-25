@@ -114,7 +114,7 @@ Basic Properties
 ----------------
 
 Fields have properties, which define its behaviour. Some properties apply on how
-the values are handled or restrictions on interraction, other values can even
+the values are handled or restrictions on interaction, other values can even
 help with data vizualization. For example if :php:attr:`Field::enum` is used
 with Agile UI form, it will be displayed as radio button or a drop-down::
 

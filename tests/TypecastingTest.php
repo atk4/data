@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
+use atk4\data\Persistence;
 
 class MyDate extends \DateTime
 {
@@ -55,7 +55,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         date_default_timezone_set('Asia/Seoul');
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
@@ -146,7 +146,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         date_default_timezone_set('Asia/Seoul');
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
@@ -226,7 +226,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ],
         ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'test']);
         $m->addField('a');
@@ -259,7 +259,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         date_default_timezone_set('Asia/Seoul');
 
@@ -321,7 +321,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
 
@@ -341,7 +341,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
 
@@ -361,7 +361,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
 
@@ -381,7 +381,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
@@ -396,7 +396,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testTypecastBoolean()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'job');
 
         $f = $m->addField('closed', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
@@ -406,7 +406,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testTypecastTimezone()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'event');
         $dt = $m->addField('dt', ['type' => 'datetime', 'persist_timezone' => 'EEST']);
         $d = $m->addField('d', ['type' => 'date', 'persist_timezone' => 'EEST']);
@@ -453,7 +453,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
@@ -477,7 +477,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
@@ -495,7 +495,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
@@ -514,7 +514,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
@@ -528,7 +528,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testIntegerSave()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('i', ['type' => 'integer']);
@@ -577,7 +577,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
@@ -605,7 +605,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->setDB($a);
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
