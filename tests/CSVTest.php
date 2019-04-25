@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence\CSV as Persistence_CSV;
+use atk4\data\Persistence;
 use atk4\data\tests\Model\Person as Person;
 
 /**
@@ -73,7 +73,7 @@ class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $this->setDB($data);
 
-        $p = new Persistence_CSV($this->file);
+        $p = new Persistence\CSV($this->file);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -92,7 +92,7 @@ class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $this->setDB($data);
 
-        $p = new Persistence_CSV($this->file);
+        $p = new Persistence\CSV($this->file);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -115,8 +115,8 @@ class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $this->setDB($data);
 
-        $p = new Persistence_CSV($this->file);
-        $p2 = new Persistence_CSV($this->file2);
+        $p = new Persistence\CSV($this->file);
+        $p2 = new Persistence\CSV($this->file2);
 
         $m = new Person($p);
 
@@ -143,7 +143,7 @@ class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
             ];
         $this->setDB($data);
 
-        $p = new Persistence_CSV($this->file);
+        $p = new Persistence\CSV($this->file);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');

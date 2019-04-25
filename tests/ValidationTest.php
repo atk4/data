@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence\Array_ as Persistence_Array;
+use atk4\data\Persistence;
 
 class MyValidationModel extends Model
 {
@@ -51,7 +51,7 @@ class ValidationTests extends \atk4\core\PHPUnit_AgileTestCase
     public function setUp()
     {
         $a = [];
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $this->m = new MyValidationModel($p);
     }
 
@@ -104,7 +104,7 @@ class ValidationTests extends \atk4\core\PHPUnit_AgileTestCase
     public function testValidate5()
     {
         $a = [];
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new BadValidationModel($p);
 
         $m['name'] = 'john';

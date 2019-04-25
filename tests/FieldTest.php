@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence\SQL as Persistence_SQL;
+use atk4\data\Persistence;
 
 class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
@@ -86,7 +86,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testMandatory2()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -104,7 +104,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testRequired2()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -122,7 +122,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testMandatory3()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -142,7 +142,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -300,7 +300,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testPersist()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -361,7 +361,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
@@ -426,7 +426,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -463,7 +463,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testCalculatedField()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'invoice' => [
                 1 => ['id' => 1, 'net' => 100, 'vat' => 21],
@@ -501,7 +501,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testEncryptedField()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'secret' => 'Smith'],
@@ -509,7 +509,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->setDB($a);
 
         $encrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof Persistence_SQL) {
+            if (!$persistence instanceof Persistence\SQL) {
                 return $value;
             }
 
@@ -524,7 +524,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         };
 
         $decrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof Persistence_SQL) {
+            if (!$persistence instanceof Persistence\SQL) {
                 return $value;
             }
 

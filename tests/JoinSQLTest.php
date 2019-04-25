@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence\SQL as Persistence_SQL;
+use atk4\data\Persistence;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -12,7 +12,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testDirection()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'user');
 
         $j = $m->join('contact');
@@ -46,7 +46,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testDirection2()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'user');
         $j = $m->join('contact4.foo_id', 'test_id');
         $this->assertEquals(true, $this->getProtected($j, 'reverse'));
@@ -67,7 +67,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 '_' => ['id' => 1, 'contact_phone' => '+123'],
             ], ];
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m_u = new Model($db, 'user');
         $this->setDB($a);
 
@@ -112,7 +112,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
             ], ];
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m_u = new Model($db, 'user');
         $this->setDB($a);
         $m_u->addField('name');
@@ -172,7 +172,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 '_' => ['id' => 1, 'contact_phone' => '+123'],
             ], ];
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m_u = new Model($db, 'user');
         $this->setDB($a);
 
@@ -205,7 +205,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m_u = new Model($db, 'user');
         $m_u->addField('name');
         $j = $m_u->join('contact');
@@ -246,7 +246,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -335,7 +335,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -366,7 +366,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
             ], ];
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m_u = new Model($db, 'user');
         $this->setDB($a);
         $m_u->addField('name');
@@ -413,7 +413,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -477,7 +477,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -533,7 +533,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 42 => ['id' => 42, 'contact_id' => 11, 'address' => 'jane@foo.net'],
             ], ];
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $this->setDB($a);
 
         // main user model joined to contact table

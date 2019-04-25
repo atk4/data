@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence\Static_ as Persistence_Static;
+use atk4\data\Persistence;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -15,7 +15,7 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
      */
     public function testBasicStatic()
     {
-        $p = new Persistence_Static(['hello', 'world']);
+        $p = new Persistence\Static_(['hello', 'world']);
 
         // default title field
         $m = new Model($p);
@@ -30,7 +30,7 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testArrayOfArrays()
     {
-        $p = new Persistence_Static([['hello', 'xx', true], ['world', 'xy', false]]);
+        $p = new Persistence\Static_([['hello', 'xx', true], ['world', 'xy', false]]);
         $m = new Model($p);
 
         $m->load(1);
@@ -42,7 +42,7 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testArrayOfHashes()
     {
-        $p = new Persistence_Static([['foo'=>'hello'], ['foo'=>'world']]);
+        $p = new Persistence\Static_([['foo'=>'hello'], ['foo'=>'world']]);
         $m = new Model($p);
 
         $m->load(1);
@@ -52,7 +52,7 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testIDArg()
     {
-        $p = new Persistence_Static([['id'=>20, 'foo'=>'hello'], ['id'=>21, 'foo'=>'world']]);
+        $p = new Persistence\Static_([['id'=>20, 'foo'=>'hello'], ['id'=>21, 'foo'=>'world']]);
         $m = new Model($p);
 
         $m->load(21);
@@ -62,7 +62,7 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testIDKey()
     {
-        $p = new Persistence_Static([20=>['foo'=>'hello'], 21=>['foo'=>'world']]);
+        $p = new Persistence\Static_([20=>['foo'=>'hello'], 21=>['foo'=>'world']]);
         $m = new Model($p);
 
         $m->load(21);
@@ -72,7 +72,7 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testEmpty()
     {
-        $p = new Persistence_Static([]);
+        $p = new Persistence\Static_([]);
         $m = new Model($p);
 
         $m->tryLoadAny();
@@ -82,34 +82,34 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testCustomField()
     {
-        $p = new Persistence_Static([['foo'=>'hello'], ['foo'=>'world']]);
+        $p = new Persistence\Static_([['foo'=>'hello'], ['foo'=>'world']]);
         $m = new StaticPersistenceModel($p);
 
         $this->assertEquals('custom field', $m->getElement('foo')->caption);
 
-        $p = new Persistence_Static([['foo'=>'hello', 'bar'=>'world']]);
+        $p = new Persistence\Static_([['foo'=>'hello', 'bar'=>'world']]);
         $m = new StaticPersistenceModel($p);
         $this->assertEquals('foo', $m->title_field);
     }
 
     public function testTitleOrName()
     {
-        $p = new Persistence_Static([['foo'=>'hello', 'bar'=>'world']]);
+        $p = new Persistence\Static_([['foo'=>'hello', 'bar'=>'world']]);
         $m = new Model($p);
         $this->assertEquals('foo', $m->title_field);
 
-        $p = new Persistence_Static([['foo'=>'hello', 'name'=>'x']]);
+        $p = new Persistence\Static_([['foo'=>'hello', 'name'=>'x']]);
         $m = new Model($p);
         $this->assertEquals('name', $m->title_field);
 
-        $p = new Persistence_Static([['foo'=>'hello', 'title'=>'x']]);
+        $p = new Persistence\Static_([['foo'=>'hello', 'title'=>'x']]);
         $m = new Model($p);
         $this->assertEquals('title', $m->title_field);
     }
 
     public function testFieldTypes()
     {
-        $p = new Persistence_Static([[
+        $p = new Persistence\Static_([[
             'name'        => 'hello',
             'test_int'    => 123,
             'test_float'  => 123.45,

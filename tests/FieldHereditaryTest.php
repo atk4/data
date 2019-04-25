@@ -3,13 +3,13 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence\Static_ as Persistence_Static;
+use atk4\data\Persistence;
 
 class FieldHereditaryTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testDirty1()
     {
-        $p = new Persistence_Static(['hello', 'world']);
+        $p = new Persistence\Static_(['hello', 'world']);
 
         // default title field
         $m = new Model($p);

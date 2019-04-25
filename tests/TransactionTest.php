@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence\SQL as Persistence_SQL;
+use atk4\data\Persistence;
 
 /**
  * Various tests to make sure transactions work OK.
@@ -12,7 +12,7 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     public function testAtomicOperations()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 ['name' => 'John'],
@@ -52,7 +52,7 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
     public function testAfterSaveHook()
     {
         $self = $this;
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 ['name' => 'John'],

@@ -4,7 +4,6 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\data\Persistence\Array_ as Persistence_Array;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -91,7 +90,7 @@ class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testCustomRef()
     {
         $a = [];
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
 
         $m = new Model($p, ['table' => 'user']);
         $m->addRef('archive', function ($m) {

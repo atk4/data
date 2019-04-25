@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence\Array_ as Persistence_Array;
+use atk4\data\Persistence;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -13,7 +13,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testDirection()
     {
         $a = ['user' => [], 'contact' => []];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m = new Model($db, 'user');
 
         $j = $m->join('contact');
@@ -48,7 +48,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testDirection2()
     {
         $a = ['user' => [], 'contact' => []];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m = new Model($db, 'user');
         $j = $m->join('contact4.foo_id', 'test_id');
         $this->assertEquals(true, $this->getProtected($j, 'reverse'));
@@ -59,7 +59,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testJoinSaving1()
     {
         $a = ['user' => [], 'contact' => []];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -110,7 +110,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testJoinSaving2()
     {
         $a = ['user' => [], 'contact' => []];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('name');
         $j = $m_u->join('contact.test_id');
@@ -159,7 +159,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testJoinSaving3()
     {
         $a = ['user' => [], 'contact' => []];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('name');
         $j = $m_u->join('contact', 'test_id');
@@ -180,7 +180,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testJoinSaving4()
     {
         $a = ['user'=>[], 'contact'=>[]];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('name');
         $m_u->addField('code');
@@ -211,7 +211,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ], ];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -246,7 +246,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ], ];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -317,7 +317,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
             ], ];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -353,7 +353,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
             ], ];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -365,7 +365,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testReverseJoin()
     {
         $a = [];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m = new Model($db);
         $m->addField('name');
     }
@@ -377,7 +377,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testTrickyCases()
     {
         $a = [];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m = new Model($db);
 
         // tricky cases to testt
