@@ -70,7 +70,6 @@ class Iterator
                 return false;
             }
 
-
             $clean_value = trim(trim($value), '%');
             // the row field exists check the position of th "%"(s)
             switch ($value) {
