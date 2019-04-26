@@ -793,7 +793,7 @@ you can implement it like this::
         $_SESSION['ad'] = []; // initialize
     }
 
-    $sess = new \atk4\data\Persistence_Array($_SESSION['ad']);
+    $sess = new \atk4\data\Persistence\Array_($_SESSION['ad']);
     $logged_user = new User($sess);
     $logged_user->load('active_user');
 
@@ -879,7 +879,7 @@ The default action type can be set when executing action, for example::
 SQL Actions
 -----------
 
-The following actions are currently supported by Persistence_SQL:
+The following actions are currently supported by Persistence\SQL:
 
  - select - produces query that returns DataSet  (array of hashes)
  - delete - produces query for deleting DataSet (no result)

@@ -161,7 +161,7 @@ Persistence Hooks
 Persistence has a few spots which it actually executes through $model->hook(),
 so depending on where you save the data, there are some more hooks available.
 
-Persistence_SQL
+Persistence\SQL
 ---------------
 
 Those hooks can be used to affect queries before they are executed.

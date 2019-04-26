@@ -5,7 +5,7 @@
 namespace atk4\data;
 
 /**
- * Class description?
+ * Data model class.
  */
 class Model implements \ArrayAccess, \IteratorAggregate
 {
@@ -30,25 +30,32 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $_default_seed_addField = ['\atk4\data\Field'];
 
     /**
+     * The class used by addField() method.
+     *
+     * @var string
+     */
+    public $_default_seed_addExpression = ['\atk4\data\Field\Callback'];
+
+    /**
+     * The class used by addRef() method.
+     *
+     * @var string
+     */
+    public $_default_seed_addRef = ['\atk4\data\Reference'];
+
+    /**
      * The class used by hasOne() method.
      *
      * @var string
      */
-    public $_default_seed_hasOne = ['\atk4\data\Reference_One'];
+    public $_default_seed_hasOne = ['\atk4\data\Reference\HasOne'];
 
     /**
      * The class used by hasMany() method.
      *
      * @var string
      */
-    public $_default_seed_hasMany = ['\atk4\data\Reference_Many'];
-
-    /**
-     * The class used by addField() method.
-     *
-     * @var string
-     */
-    public $_default_seed_addExpression = ['\atk4\data\Field\Callback'];
+    public $_default_seed_hasMany = ['\atk4\data\Reference\HasMany'];
 
     /**
      * The class used by join() method.
@@ -304,6 +311,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
     }
 
+    /**
+     * Clones model object.
+     */
     public function __clone()
     {
         // we need to clone some of the elements
@@ -407,6 +417,25 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         return $this;
+    }
+
+    /**
+     * Finds a field with a corresponding name. Returns false if field not found. Similar
+     * to hasElement() but with extra checks to make sure it's certainly a field you are
+     * getting.
+     *
+     * @param $name
+     *
+     * @return Field|false
+     */
+    public function hasField($name)
+    {
+        $f_object = $this->hasElement($name);
+        if (!$f_object || !$f_object instanceof Field) {
+            return false;
+        }
+
+        return $f_object;
     }
 
     /**
@@ -701,9 +730,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function getTitle()
     {
-        return
-            $this->hasElement($this->title_field)
-            && $this->getElement($this->title_field) instanceof \atk4\data\Field
+        $el = $this->hasElement($this->title_field);
+
+        return $el && $el instanceof \atk4\data\Field
                 ? $this[$this->title_field]
                 : $this->id;
     }
@@ -1195,7 +1224,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * If you wish to fully copy the data from one
      * model to another you should use:
      *
-     * $m->withPersintence($p2, false)->set($m)->save();
+     * $m->withPersistence($p2, false)->set($m)->save();
      *
      * See https://github.com/atk4/data/issues/111 for
      * use-case examples.
@@ -1945,9 +1974,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @throws Exception
      * @throws \atk4\core\Exception
      *
-     * @return object
+     * @return Reference
      */
-    protected function _hasReference($c, $link, $defaults = [])
+    protected function _hasReference($c, $link, $defaults = []) : Reference
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_'.$link];
@@ -1983,11 +2012,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @throws Exception
      * @throws \atk4\core\Exception
      *
-     * @return object
+     * @return Reference
      */
-    public function addRef($link, $callback)
+    public function addRef($link, $callback) : Reference
     {
-        return $this->_hasReference('\atk4\data\Reference', $link, $callback);
+        return $this->_hasReference($this->_default_seed_addRef, $link, $callback);
     }
 
     /**
@@ -1999,9 +2028,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @throws Exception
      * @throws \atk4\core\Exception
      *
-     * @return Reference_One
+     * @return Reference\HasOne
      */
-    public function hasOne($link, $defaults = [])
+    public function hasOne($link, $defaults = []) : Reference
     {
         return $this->_hasReference($this->_default_seed_hasOne, $link, $defaults);
     }
@@ -2015,9 +2044,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @throws Exception
      * @throws \atk4\core\Exception
      *
-     * @return Reference_Many
+     * @return Reference\HasMany
      */
-    public function hasMany($link, $defaults = [])
+    public function hasMany($link, $defaults = []) : Reference
     {
         return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults);
     }
@@ -2032,7 +2061,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function ref($link, $defaults = [])
+    public function ref($link, $defaults = []) : self
     {
         return $this->getRef($link)->ref($defaults);
     }
@@ -2047,7 +2076,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function refModel($link, $defaults = [])
+    public function refModel($link, $defaults = []) : self
     {
         return $this->getRef($link)->refModel($defaults);
     }
@@ -2062,7 +2091,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function refLink($link, $defaults = [])
+    public function refLink($link, $defaults = []) : self
     {
         return $this->getRef($link)->refLink($defaults);
     }
@@ -2074,9 +2103,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @throws \atk4\core\Exception
      *
-     * @return Field
+     * @return Reference
      */
-    public function getRef($link)
+    public function getRef($link) : Reference
     {
         return $this->getElement('#ref_'.$link);
     }
@@ -2086,7 +2115,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return array
      */
-    public function getRefs()
+    public function getRefs() : array
     {
         $refs = [];
         foreach ($this->elements as $key => $val) {
@@ -2110,25 +2139,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this->hasElement('#ref_'.$link);
     }
 
-    /**
-     * Finds a field with a corresponding name. Returns false if field not found. Similar
-     * to hasElement() but with extra checks to make sure it's certainly a field you are
-     * getting.
-     *
-     * @param $name
-     *
-     * @return Field|false
-     */
-    public function hasField($name)
-    {
-        $f_object = $this->hasElement($name);
-        if (!$f_object || !$f_object instanceof Field) {
-            return false;
-        }
-
-        return $f_object;
-    }
-
     // }}}
 
     // {{{ Expressions
@@ -2136,12 +2146,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string       $name
-     * @param string|array $expression
+     * @param string                $name
+     * @param string|array|callable $expression
      *
      * @throws \atk4\core\Exception
      *
-     * @return Field_Callback
+     * @return Field\Callback
      */
     public function addExpression($name, $expression)
     {
@@ -2157,6 +2167,28 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this->add($this->factory($c, $expression), $name);
     }
 
+    /**
+     * Add expression field which will calculate its value by using callback.
+     *
+     * @param string                $name
+     * @param string|array|callable $expression
+     *
+     * @throws \atk4\core\Exception
+     *
+     * @return Field\Callback
+     */
+    public function addCalculatedField($name, $expression)
+    {
+        if (!is_array($expression)) {
+            $expression = ['expr' => $expression];
+        } elseif (isset($expression[0])) {
+            $expression['expr'] = $expression[0];
+            unset($expression[0]);
+        }
+
+        return $this->addField($name, new Field\Callback($expression));
+    }
+
     // }}}
 
     // {{{ Misc methods
@@ -2170,7 +2202,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function lastInsertID()
     {
-        if (isset($this->persistence) && $this->persistence instanceof Persistence_SQL) {
+        if (isset($this->persistence) && $this->persistence instanceof Persistence\SQL) {
             return $this->persistence->connection->lastInsertId($this);
         }
 

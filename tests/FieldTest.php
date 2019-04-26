@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
+use atk4\data\Persistence;
 
 class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
@@ -86,7 +86,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testMandatory2()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -104,7 +104,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testRequired2()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -122,7 +122,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testMandatory3()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -142,7 +142,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -300,7 +300,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testPersist()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -361,7 +361,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
@@ -426,7 +426,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -461,6 +461,32 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals($a, $this->getDB());
     }
 
+    public function testCalculatedField()
+    {
+        $db = new Persistence\SQL($this->db->connection);
+        $a = [
+            'invoice' => [
+                1 => ['id' => 1, 'net' => 100, 'vat' => 21],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'invoice');
+        $m->addField('net', ['type' => 'money']);
+        $m->addField('vat', ['type' => 'money']);
+        $m->addCalculatedField('total', function ($m) {
+            return $m['net'] + $m['vat'];
+        });
+        $m->insert(['net' => 30, 'vat' => 8]);
+
+        $m->load(1);
+        $this->assertEquals(121, $m['total']);
+        $m->load(2);
+        $this->assertEquals(38, $m['total']);
+
+        $d = $m->export(); // in export calculated fields are not included
+        $this->assertFalse(isset($d[0]['total']));
+    }
+
     public function testSystem1()
     {
         $m = new Model();
@@ -475,7 +501,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testEncryptedField()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'secret' => 'Smith'],
@@ -483,7 +509,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->setDB($a);
 
         $encrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof \atk4\data\Persistence_SQL) {
+            if (!$persistence instanceof Persistence\SQL) {
                 return $value;
             }
 
@@ -498,7 +524,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         };
 
         $decrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof \atk4\data\Persistence_SQL) {
+            if (!$persistence instanceof Persistence\SQL) {
                 return $value;
             }
 
