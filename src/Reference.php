@@ -176,11 +176,10 @@ class Reference
     {
         $m = $this->owner;
 
-        /* this will be useful for containsOne/Many implementation
+        // this will be useful for containsOne/Many implementation
         if ($m->contained_in_root_model && $m->contained_in_root_model->persistence) {
             return $m->contained_in_root_model->persistence;
         }
-        */
 
         return $m->persistence ?: false;
     }
@@ -207,7 +206,7 @@ class Reference
      *
      * @return Model
      */
-    public function refModel($defaults = [])
+    public function refModel($defaults = []) : Model
     {
         return $this->getModel($defaults);
     }
