@@ -395,7 +395,7 @@ class CSV extends Persistence
 
         $ids = array_keys($this->data[$table]);
 
-        $type = $m->getElement($m->id_field)->type;
+        $type = $m->getField($m->id_field)->type;
 
         switch ($type) {
             case 'integer':

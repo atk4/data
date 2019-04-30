@@ -196,7 +196,7 @@ class HasOne extends Reference
     {
         $this->owner->persistence_data['use_table_prefixes'] = true;
 
-        return $this->owner->getElement($this->our_field);
+        return $this->owner->getField($this->our_field);
     }
 
     /**

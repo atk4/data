@@ -144,7 +144,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             $model->expr('{}.{} = {}', [
                 (isset($this->foreign_alias) ? $this->foreign_alias : $this->foreign_table),
                 $this->foreign_field,
-                $this->owner->getElement($this->master_field),
+                $this->owner->getField($this->master_field),
             ]),
             $this->kind
         );
