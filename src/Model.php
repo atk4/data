@@ -431,7 +431,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * to hasElement() but with extra checks to make sure it's certainly a field you are
      * getting.
      *
-
+     *
      * @param string|Field $name
      *
      * @return Field|false
