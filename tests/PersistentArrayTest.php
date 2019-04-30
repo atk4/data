@@ -309,7 +309,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
      */
     public function testLike()
     {
-        $a = [ 'countries' => [
+        $a = ['countries' => [
             1 => ['id'=>1, 'name'=>'ABC9', 'code'=>11, 'country'=>'Ireland'],
             2 => ['id'=>2, 'name'=>'ABC8', 'code'=>12, 'country'=>'Ireland'],
             3 => ['id'=>3, 'code'=>13, 'country'=>'Latvia'],
@@ -322,20 +322,20 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         ]];
 
         $p = new Persistence\Array_($a);
-        $m = new Model($p,'countries');
-        $m->addField('code',['type' => 'int']);
+        $m = new Model($p, 'countries');
+        $m->addField('code', ['type' => 'int']);
         $m->addField('country');
 
         // if no condition we should get all the data back
         $iterator = $m->action('select');
-        $result = $m->persistence->applyConditions($m,$iterator);
-        $this->assertInstanceOf(\atk4\data\Action\Iterator::class,$result);
+        $result = $m->persistence->applyConditions($m, $iterator);
+        $this->assertInstanceOf(\atk4\data\Action\Iterator::class, $result);
         $m->unload();
         unset($iterator);
         unset($result);
 
         // case : str%
-        $m->addCondition('country', 'LIKE','La%');
+        $m->addCondition('country', 'LIKE', 'La%');
         $result = $m->action('select')->get();
         $this->assertEquals(3, count($result));
         $this->assertEquals($a['countries'][3], $result[3]);
@@ -346,7 +346,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
 
         // case : %str
         $m->conditions = [];
-        $m->addCondition('country', 'LIKE','%ia');
+        $m->addCondition('country', 'LIKE', '%ia');
         $result = $m->action('select')->get();
         $this->assertEquals(4, count($result));
         $this->assertEquals($a['countries'][3], $result[3]);
@@ -358,7 +358,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
 
         // case : %str
         $m->conditions = [];
-        $m->addCondition('country', 'LIKE','%a%');
+        $m->addCondition('country', 'LIKE', '%a%');
         $result = $m->action('select')->get();
         $this->assertEquals(7, count($result));
         $this->assertEquals($a['countries'][1], $result[1]);
@@ -573,7 +573,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     }
 
     /**
-     * unsupported method
+     * unsupported method.
      *
      * @expectedException Exception
      */
@@ -588,7 +588,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     }
 
     /**
-     * unsupported format - 4th param
+     * unsupported format - 4th param.
      *
      * @expectedException Exception
      */
@@ -603,7 +603,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     }
 
     /**
-     * unsupported format - param[0] not Field::class
+     * unsupported format - param[0] not Field::class.
      *
      * @expectedException Exception
      */
@@ -616,7 +616,6 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addCondition(new Model(), 'like', '%o%');
         $m->export();
     }
-
 
     /**
      * Test Model->hasOne().

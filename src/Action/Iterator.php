@@ -54,7 +54,7 @@ class Iterator
     }
 
     /**
-     * Applies FilterIterator condition imitating the sql LIKE operator - $field LIKE %$value% | $value% | %$value
+     * Applies FilterIterator condition imitating the sql LIKE operator - $field LIKE %$value% | $value% | %$value.
      *
      * @param string $field
      * @param string $value

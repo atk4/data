@@ -7,5 +7,4 @@ namespace atk4\data;
  */
 class Persistence_Array extends Persistence\Array_
 {
-
 }
