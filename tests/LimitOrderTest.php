@@ -21,7 +21,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
-        $i->getElement('id')->system = false;
+        $i->getField($i->id_field)->system = false;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);
@@ -44,7 +44,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $ii = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
-        $ii->getElement('id')->system = false;
+        $ii->getField($ii->id_field)->system = false;
 
         // pass parameters as CSV string
         $i = clone $ii;
@@ -95,7 +95,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->setDB($a);
 
         $ii = (new Model($this->db, 'invoice'))->addFields(['net', 'vat']);
-        $ii->getElement('id')->system = false;
+        $ii->getField($ii->id_field)->system = false;
 
         // pass parameters as array elements [field,order]
         $i = clone $ii;
@@ -140,7 +140,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
-        $i->getElement('id')->system = false;
+        $i->getField($i->id_field)->system = false;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);

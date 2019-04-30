@@ -54,7 +54,7 @@ class Array_ extends Persistence
 
         $m = parent::add($m, $defaults);
 
-        if ($f = $m->hasElement($m->id_field)) {
+        if ($f = $m->hasField($m->id_field)) {
             if (!$f->type) {
                 $f->type = 'integer';
             }
@@ -239,7 +239,7 @@ class Array_ extends Persistence
 
         $ids = array_keys($this->data[$table]);
 
-        $type = $m->getElement($m->id_field)->type;
+        $type = $m->getField($m->id_field)->type;
 
         switch ($type) {
             case 'integer':
@@ -366,7 +366,7 @@ class Array_ extends Persistence
 
             // get the model field
             if (is_string($cond[0])) {
-                $cond[0] = $model->getElement($cond[0]);
+                $cond[0] = $model->getField($cond[0]);
             }
 
             if (!is_a($cond[0],\atk4\data\Field::class)) {
@@ -425,7 +425,7 @@ class Array_ extends Persistence
             /* These are not implemented yet
             case 'field':
 
-                $field = is_string($args[0]) ? $m->getElement($args[0]) : $args[0];
+                $field = is_string($args[0]) ? $m->getField($args[0]) : $args[0];
 
                 return $action->filterField($field->short_name);
 

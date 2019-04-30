@@ -424,18 +424,43 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * to hasElement() but with extra checks to make sure it's certainly a field you are
      * getting.
      *
-     * @param $name
+     * @param string|Field $name
      *
      * @return Field|false
      */
     public function hasField($name)
     {
+        if ($name instanceof Field) {
+            return $name;
+        }
+
         $f_object = $this->hasElement($name);
         if (!$f_object || !$f_object instanceof Field) {
             return false;
         }
 
         return $f_object;
+    }
+
+    /**
+     * Same as hasField, but will throw exception if field not found.
+     * Similar to getElement().
+     *
+     * @param string|Field $name
+     *
+     * @throws Exception
+     *
+     * @return Field
+     */
+    public function getField($name)
+    {
+        $f = $this->hasField($name);
+
+        if ($f === false) {
+            throw new Exception(['Field is not defined in model', 'model' => get_class($this), 'field' => $name]);
+        }
+
+        return $f;
     }
 
     /**
@@ -490,7 +515,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($this->only_fields) {
-            if (!in_array($field, $this->only_fields) && !$this->getElement($field)->system) {
+            if (!in_array($field, $this->only_fields) && !$this->getField($field)->system) {
                 throw new Exception([
                     'Attempt to use field outside of those set by onlyFields',
                     'field'       => $field,
@@ -568,7 +593,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-        $f = $this->hasElement($field);
+        $f = $this->hasField($field);
 
         try {
             if ($f && $this->hook('normalize', [$f, $value]) !== false) {
@@ -697,7 +722,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             return $this->data[$field];
         }
 
-        $f = $this->hasElement($field);
+        $f = $this->hasField($field);
 
         return $f ? $f->default : null;
     }
@@ -730,11 +755,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function getTitle()
     {
-        $el = $this->hasElement($this->title_field);
+        $f = $this->hasField($this->title_field);
 
-        return $el && $el instanceof \atk4\data\Field
-                ? $this[$this->title_field]
-                : $this->id;
+        return $f ? $f->get() : $this->id;
     }
 
     /**
@@ -753,7 +776,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function compare($name, $value)
     {
-        return $this->getElement($name)->compare($value);
+        return $this->getField($name)->compare($value);
     }
 
     /**
@@ -869,9 +892,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $or = $this->persistence->orExpr();
 
             foreach ($field as list($field, $operator, $value)) {
-
                 if (is_string($field)) {
-                    $f = $this->hasElement($field);
+                    $f = $this->hasField($field);
                     if (!$f) {
                         throw new Exception([
                             'Field does not exist',
@@ -886,27 +908,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 $or->where($f, $operator, $value);
             }
 
-
             return $this;
             */
         }
 
-        $f = null;
-
-        // Perform basic validation to see if the field exists
-        if (is_string($field)) {
-            $f = $this->hasElement($field);
-            if (!$f) {
-                throw new Exception([
-                    'Field does not exist',
-                    'model' => $this,
-                    'field' => $field,
-                ]);
-            }
-        } elseif ($field instanceof Field) {
-            $f = $field;
-        }
-
+        $f = (is_string($field) || $field instanceof Field) ? $this->getField($field) : false;
         if ($f) {
             if ($operator === '=' || func_num_args() == 2) {
                 $v = $operator === '=' ? $value : $operator;
@@ -1170,7 +1176,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $m = $this->newInstance($class, $options);
 
         foreach ($this->data as $field=> $value) {
-            if ($value !== null && $value !== $this->getElement($field)->default) {
+            if ($value !== null && $value !== $this->getField($field)->default) {
 
                 // Copying only non-default value
                 $m[$field] = $value;
@@ -1394,16 +1400,29 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function loadBy($field, $value)
     {
+        // store
+        $field = $this->getField($field);
+        $system = $field->system;
+        $default = $field->default;
+
+        // add condition and load record
         $this->addCondition($field, $value);
 
         try {
             $this->loadAny();
         } catch (\Exception $e) {
+            // restore
             array_pop($this->conditions);
+            $field->system = $system;
+            $field->default = $default;
 
             throw $e;
         }
+
+        // restore
         array_pop($this->conditions);
+        $field->system = $system;
+        $field->default = $default;
 
         return $this;
     }
@@ -1419,16 +1438,29 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function tryLoadBy($field, $value)
     {
+        // store
+        $field = $this->getField($field);
+        $system = $field->system;
+        $default = $field->default;
+
+        // add condition and try to load record
         $this->addCondition($field, $value);
 
         try {
             $this->tryLoadAny();
         } catch (\Exception $e) {
+            // restore
             array_pop($this->conditions);
+            $field->system = $system;
+            $field->default = $default;
 
             throw $e;
         }
+
+        // restore
         array_pop($this->conditions);
+        $field->system = $system;
+        $field->default = $default;
 
         return $this;
     }
@@ -1473,7 +1505,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 $data = [];
                 $dirty_join = false;
                 foreach ($this->dirty as $name => $junk) {
-                    $field = $this->hasElement($name);
+                    $field = $this->hasField($name);
                     if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
                         continue;
                     }
@@ -1505,7 +1537,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             } else {
                 $data = [];
                 foreach ($this->get() as $name => $value) {
-                    $field = $this->hasElement($name);
+                    $field = $this->hasField($name);
                     if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
                         continue;
                     }
@@ -1684,8 +1716,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
                 // Add requested fields first
                 foreach ($this->only_fields as $field) {
-                    $f_object = $this->getElement($field);
-                    if ($f_object instanceof Field && $f_object->never_persist) {
+                    $f_object = $this->getField($field);
+                    if ($f_object->never_persist) {
                         continue;
                     }
                     $fields[$field] = true;
