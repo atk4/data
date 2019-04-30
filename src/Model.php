@@ -1719,8 +1719,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $fields    Names of fields to export
-     * @param string     $key_field Optional name of field which value we will use as array key
+     * @param array|null $fields        Names of fields to export
+     * @param string     $key_field     Optional name of field which value we will use as array key
      * @param bool       $typecast_data Should we typecast exported data
      *
      * @return array
@@ -2130,6 +2130,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         return $this->_hasReference($this->_default_seed_containsOne, $link, $defaults);
     }
+
     /**
      * Add containsMany field.
      *
