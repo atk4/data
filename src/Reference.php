@@ -18,6 +18,7 @@ class Reference
     }
     use \atk4\core\TrackableTrait;
     use \atk4\core\DIContainerTrait;
+    use \atk4\core\FactoryTrait;
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -74,6 +75,14 @@ class Reference
     }
 
     /**
+     * Initialization.
+     */
+    public function init()
+    {
+        $this->_init();
+    }
+
+    /**
      * Will use #ref_<link>.
      *
      * @return string
@@ -84,14 +93,6 @@ class Reference
     }
 
     /**
-     * Initialization.
-     */
-    public function init()
-    {
-        $this->_init();
-    }
-
-    /**
      * Returns destination model that is linked through this reference. Will apply
      * necessary conditions.
      *
@@ -99,7 +100,7 @@ class Reference
      *
      * @return Model
      */
-    public function getModel($defaults = [])
+    public function getModel($defaults = []) : Model
     {
         // set table_alias
         if (!isset($defaults['table_alias'])) {
@@ -117,23 +118,16 @@ class Reference
         // if model is Closure, then call it and return model
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = $this->model;
-
             $c = $c($this->owner, $this, $defaults);
-            if (!$c->persistence && $this->owner->persistence) {
-                $c = $this->owner->persistence->add($c, $defaults);
-            }
 
-            return $c;
+            return $this->addToPersistence($c, $defaults);
         }
 
         // if model is set, then return clone of this model
         if (is_object($this->model)) {
             $c = clone $this->model;
-            if (!$this->model->persistence && $this->owner->persistence) {
-                $this->owner->persistence->add($c, $defaults);
-            }
 
-            return $c;
+            return $this->addToPersistence($c, $defaults);
         }
 
         // last effort - try to add model
@@ -147,9 +141,48 @@ class Reference
             $model = $this->model;
         }
 
-        $p = $this->owner->persistence;
+        if (!$model instanceof Model) {
+            $model = $this->factory($model, $defaults);
+        }
 
-        return $p->add($model, $defaults);
+        return $this->addToPersistence($model, $defaults);
+    }
+
+    /**
+     * Adds model to persistence.
+     *
+     * @param Model $model
+     * @param array $defaults
+     *
+     * @return Model
+     */
+    protected function addToPersistence($model, $defaults = []) : Model
+    {
+        if (!$model->persistence && $p = $this->getDefaultPersistence($model)) {
+            $p->add($model, $defaults);
+        }
+
+        return $model;
+    }
+
+    /**
+     * Returns default persistence.
+     *
+     * @param Model $model Referenced model
+     *
+     * @return Persistence|false
+     */
+    protected function getDefaultPersistence($model)
+    {
+        $m = $this->owner;
+
+        /* this will be useful for containsOne/Many implementation
+        if ($m->contained_in_root_model && $m->contained_in_root_model->persistence) {
+            return $m->contained_in_root_model->persistence;
+        }
+        */
+
+        return $m->persistence ?: false;
     }
 
     /**
@@ -160,7 +193,7 @@ class Reference
      *
      * @return Model
      */
-    public function ref($defaults = [])
+    public function ref($defaults = []) : Model
     {
         return $this->getModel($defaults);
     }

@@ -270,10 +270,10 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i->load('1');
 
         // type was set explicitly
-        $this->assertEquals('money', $i->getElement('total_vat')->type);
+        $this->assertEquals('money', $i->getField('total_vat')->type);
 
         // type was not set and is not inherited
-        $this->assertEquals(null, $i->getElement('total_net')->type);
+        $this->assertEquals(null, $i->getField('total_net')->type);
 
         $this->assertEquals(40, $i['total_net']);
         $this->assertEquals(9.2, $i['total_vat']);
@@ -424,20 +424,20 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // by default not set
         $o->hasOne('user_id', $u);
-        $this->assertEquals($o->getElement('user_id')->isVisible(), true);
+        $this->assertEquals($o->getField('user_id')->isVisible(), true);
 
         $o->getRef('user_id')->addTitle();
-        $this->assertEquals((bool) $o->hasElement('user'), true);
-        $this->assertEquals($o->getElement('user')->isVisible(), true);
-        $this->assertEquals($o->getElement('user_id')->isVisible(), false);
+        $this->assertEquals((bool) $o->hasField('user'), true);
+        $this->assertEquals($o->getField('user')->isVisible(), true);
+        $this->assertEquals($o->getField('user_id')->isVisible(), false);
 
         // if it is set manually then it will not be changed
         $o = (new Model($this->db, 'order'))->addFields(['amount']);
         $o->hasOne('user_id', $u);
-        $o->getElement('user_id')->ui['visible'] = true;
+        $o->getField('user_id')->ui['visible'] = true;
         $o->getRef('user_id')->addTitle();
 
-        $this->assertEquals($o->getElement('user_id')->isVisible(), true);
+        $this->assertEquals($o->getField('user_id')->isVisible(), true);
     }
 
     /**

@@ -464,6 +464,11 @@ class Field implements Expressionable
         return isset($this->ui['hidden']) ? $this->ui['hidden'] : false;
     }
 
+    /**
+     * Returns field caption for use in UI.
+     *
+     * @return string
+     */
     public function getCaption()
     {
         return $this->caption ?: (isset($this->ui['caption']) ? $this->ui['caption'] :
@@ -482,7 +487,7 @@ class Field implements Expressionable
      */
     public function getDSQLExpression($expression)
     {
-        if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence_SQL) {
+        if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence\SQL) {
             throw new Exception([
                 'Field must have SQL persistence if it is used as part of expression',
                 'persistence'=> $this->owner->persistence ?? null,

@@ -2,7 +2,7 @@
 
 namespace atk4\data\tests;
 
-use atk4\data\Persistence_SQL;
+use atk4\data\Persistence;
 
 class Folder extends \atk4\data\Model
 {
@@ -44,7 +44,7 @@ class FolderTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $f = new Folder($db);
         $f->load(4);
 

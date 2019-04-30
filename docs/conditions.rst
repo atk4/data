@@ -145,7 +145,7 @@ Supported by: SQL   (planned for Array, Mongo)
 
 Usage::
 
-    $m->addCondition('name', $m->getElement('surname'));
+    $m->addCondition('name', $m->getField('surname'));
 
 Will perform a match between two fields.
 
@@ -173,7 +173,7 @@ SQL Expression Matching
     value inside $arguments and replace it with the field::
 
         $m->expr('[age] > 20'); // same as
-        $m->expr('[age] > 20', ['age'=>$m->getElement('age')); // same as
+        $m->expr('[age] > 20', ['age'=>$m->getField('age')); // same as
 
 
 
@@ -234,7 +234,7 @@ The $field of addCondition() can be passed as either an expression or any
 object implementing atk4\dsql\Expressionable interface. Same logic applies
 to the $value::
 
-    $m->addCondition($m->getElement('name'), '!=', $this->getElement('surname'));
+    $m->addCondition($m->getField('name'), '!=', $this->getField('surname'));
 
 
 Using withID

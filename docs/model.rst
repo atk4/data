@@ -40,6 +40,15 @@ persistence driver. Use it to define fields of your model::
 
         $this->addField('surname', ['default'=>'Smith']);
 
+.. php:method:: addCalculatedField($name, $callback)
+
+    Creates new field object inside your model. Field value will be automatically
+    calculated by your callback method right after loading data record in model::
+
+        $this->addCalculatedField('total', function($m) {
+            return $m['net'] + $m['vat'];
+        });
+
 Read more about :php:class:`Field`
 
 .. php:property:: strict_fields
@@ -211,6 +220,12 @@ When you modify active record, it keeps the original value in the $dirty array:
     to hasElement() but with extra checks to make sure it's certainly a field you are
     getting.
 
+.. php:method:: getField($field)
+
+    Finds a field with a corresponding name. Throws exception if field not found. Similar
+    to getElement() but with extra checks to make sure it's certainly a field you are
+    getting.
+
 
 Full example::
 
@@ -330,12 +345,12 @@ Setting limit and sort order
 
     Sets limit on how many records to select. Will select only $count records
     starting from $offset record.
-    
+
 .. php:method:: public setOrder($field, $desc = null)
 
     Sets sorting order of returned data records. Here are some usage examples.
     All these syntaxes work the same::
-    
+
         $m->setOrder('name, salary desc');
         $m->setOrder(['name', 'salary desc']);
         $m->setOrder(['name', 'salary'=>true]);

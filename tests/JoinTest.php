@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_Array;
+use atk4\data\Persistence;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -13,7 +13,7 @@ class JoinTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testBasicJoin()
     {
         $a = ['user' => [], 'contact' => []];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m = new Model($db, 'user');
         $m->addField('name');
 
@@ -37,7 +37,7 @@ class JoinTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testReverseJoin()
     {
         $a = [];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m = new Model($db);
         $m->addField('name');
     }
@@ -49,7 +49,7 @@ class JoinTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testTrickyCases()
     {
         $a = [];
-        $db = new Persistence_Array($a);
+        $db = new Persistence\Array_($a);
         $m = new Model($db);
 
         // tricky cases to testt
