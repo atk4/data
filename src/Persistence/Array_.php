@@ -328,61 +328,65 @@ class Array_ extends Persistence
      *
      * @return \atk4\data\Action\Iterator|null
      */
-    public function applyConditions(Model $m, \atk4\data\Action\Iterator $q)
+    public function applyConditions(Model $model, \atk4\data\Action\Iterator $iterator)
     {
-        if (!isset($m->conditions)) {
+        if (empty($model->conditions)) {
             // no conditions are set in the model
-            return $q;
+            return $iterator;
         }
 
-        foreach ($m->conditions as $cond) {
+        foreach ($model->conditions as $cond) {
 
-            // Options here are:
-            // count($cond) == 1, we will pass the only
-            // parameter inside where()
-
-            if (count($cond) == 1) {
-                throw new Exception([
-                    'Condition not acceptable for Array persistence',
-                    'condition' => $cond,
-                ]);
-                /*
-                // OR conditions
-                if (is_array($cond[0])) {
-                    foreach ($cond[0] as &$row) {
-                        if (is_string($row[0])) {
-                            $row[0] = $m->getField($row[0]);
-                        }
-                    }
-                }
-
-                $q->where($cond[0]);
-                continue;
-                */
-            }
-
-            if (is_string($cond[0])) {
-                $cond[0] = $m->getField($cond[0]);
-            }
-
+            // assume the action is "where" if we have only 2 parameters
             if (count($cond) == 2) {
-                if ($cond[0] instanceof Field) {
-                    $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
-                }
-                $q->where(is_string($cond[0]) ? $cond[0] : $cond[0]->short_name, $cond[1]);
-            } else {
+                array_splice($cond, -1, 1, ['where', $cond[1]]);
+            }
+
+            // condition must have 3 params at these point
+            if (count($cond) != 3) {
+                // condition can have up to three params
                 throw new Exception([
-                    'Condition not acceptable for Array persistence',
+                    'Persistence\Array_ driver condition unsupported format',
+                    'reason' => 'condition can have two to three params',
                     'condition'=> $cond,
                 ]);
-
-                /*
-                if ($cond[0] instanceof Field) {
-                    $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
-                }
-                $q->where($cond[0], $cond[1], $cond[2]);
-                */
             }
+
+            // action
+            $method = strtolower($cond[1]);
+
+            // check if the method is supported by the iterator
+            if (!method_exists( $iterator, $method)) {
+                throw new Exception([
+                    'Persistence\Array_ driver condition unsupported method',
+                    'reason' => "method $method not implemented for Action\Iterator",
+                    'condition'=> $cond,
+                ]);
+            }
+
+            // get the model field
+            if (is_string($cond[0])) {
+                $cond[0] = $model->getField($cond[0]);
+            }
+
+            if (!is_a($cond[0],\atk4\data\Field::class)) {
+                throw new Exception([
+                    'Persistence\Array_ driver condition unsupported format',
+                    'reason' => 'Unsupported object instance ' . get_class($cond[0]),
+                    'condition' => [
+                        get_class($cond[0]),
+                        $cond[1],
+                        $cond[2]
+                    ],
+                ]);
+            }
+
+            // get the field name
+            $short_name = $cond[0]->short_name;
+            // .. the value
+            $value = $this->typecastSaveField($cond[0], $cond[2]);
+            // run the (filter) method
+            $iterator->{$method}($short_name, $value);
         }
     }
 
