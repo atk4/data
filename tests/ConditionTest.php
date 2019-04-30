@@ -10,7 +10,7 @@ use atk4\data\Model;
 class ConditionTest extends \atk4\core\PHPUnit_AgileTestCase
 {
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testException1()
     {

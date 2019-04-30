@@ -464,6 +464,11 @@ class Field implements Expressionable
         return isset($this->ui['hidden']) ? $this->ui['hidden'] : false;
     }
 
+    /**
+     * Returns field caption for use in UI.
+     *
+     * @return string
+     */
     public function getCaption()
     {
         return $this->caption ?: (isset($this->ui['caption']) ? $this->ui['caption'] :
