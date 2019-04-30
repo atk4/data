@@ -292,7 +292,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         ]);
         $this->assertEquals(1, $u->action('count')->getOne());
     }
-    
+
     /**
      * Test loadBy and tryLoadBy.
      * They should set only temporary condition.
@@ -309,12 +309,12 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->setDB($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
-    
+
         $u->loadBy('name', 'John');
         $this->assertEquals([], $u->conditions); // should be no conditions
         $this->assertFalse($u->getElement('name')->system); // should not set field as system
         $this->assertNull($u->getElement('name')->default); // should not set field default value
-        
+
         $u->tryLoadBy('name', 'John');
         $this->assertEquals([], $u->conditions); // should be no conditions
         $this->assertFalse($u->getElement('name')->system); // should not set field as system

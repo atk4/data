@@ -433,7 +433,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($name instanceof Field) {
             return $name;
         }
-    
+
         $f_object = $this->hasElement($name);
         if (!$f_object || !$f_object instanceof Field) {
             return false;
@@ -441,15 +441,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         return $f_object;
     }
-    
+
     /**
      * Same as hasField, but will throw exception if field not found.
      * Similar to getElement().
      *
      * @param string|Field $name
      *
-     * @return Field
      * @throws Exception
+     *
+     * @return Field
      */
     public function getField($name)
     {
@@ -911,7 +912,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             */
         }
 
-        
         $f = (is_string($field) || $field instanceof Field) ? $this->getField($field) : false;
         if ($f) {
             if ($operator === '=' || func_num_args() == 2) {
@@ -1403,10 +1403,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
         // store
         $field = $this->getField($field);
         $system = $field->system;
-        $default = $field->default; 
+        $default = $field->default;
 
         // add condition and load record
         $this->addCondition($field, $value);
+
         try {
             $this->loadAny();
         } catch (\Exception $e) {
@@ -1440,10 +1441,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
         // store
         $field = $this->getField($field);
         $system = $field->system;
-        $default = $field->default; 
+        $default = $field->default;
 
         // add condition and try to load record
         $this->addCondition($field, $value);
+
         try {
             $this->tryLoadAny();
         } catch (\Exception $e) {
