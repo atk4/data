@@ -312,15 +312,9 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $u->loadBy('name', 'John');
         $this->assertEquals([], $u->conditions); // should be no conditions
-<<<<<<< HEAD
-        $this->assertFalse($u->getElement('name')->system); // should not set field as system
-        $this->assertNull($u->getElement('name')->default); // should not set field default value
-
-=======
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value
         
->>>>>>> add docs, reuse getField/hasField even more
         $u->tryLoadBy('name', 'John');
         $this->assertEquals([], $u->conditions); // should be no conditions
         $this->assertFalse($u->getField('name')->system); // should not set field as system
