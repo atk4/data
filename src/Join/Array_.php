@@ -75,7 +75,7 @@ class Array_ extends Join
             return;
         }
 
-        if ($model->hasElement($this->master_field)
+        if ($model->hasField($this->master_field)
             && $model[$this->master_field]
         ) {
             // The value for the master_field is set,

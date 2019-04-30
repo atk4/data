@@ -88,7 +88,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             // If string specified here does not point to an existing model field
             // a new basic field is inserted and marked hidden.
             if (is_string($this->master_field)) {
-                $e = $this->owner->hasElement($this->master_field);
+                $e = $this->owner->hasField($this->master_field);
                 if (!$e) {
                     if ($this->join) {
                         $e = $this->join->addField($this->master_field, ['system' => true, 'read_only' => true]);
@@ -144,7 +144,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             $model->expr('{}.{} = {}', [
                 (isset($this->foreign_alias) ? $this->foreign_alias : $this->foreign_table),
                 $this->foreign_field,
-                $this->owner->getElement($this->master_field),
+                $this->owner->getField($this->master_field),
             ]),
             $this->kind
         );
@@ -189,7 +189,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         }
 
         // The value for the master_field is set, so we are going to use existing record anyway
-        if ($model->hasElement($this->master_field) && $model[$this->master_field]) {
+        if ($model->hasField($this->master_field) && $model[$this->master_field]) {
             return;
         }
 

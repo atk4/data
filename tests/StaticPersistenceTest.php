@@ -85,7 +85,7 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
         $p = new Persistence\Static_([['foo'=>'hello'], ['foo'=>'world']]);
         $m = new StaticPersistenceModel($p);
 
-        $this->assertEquals('custom field', $m->getElement('foo')->caption);
+        $this->assertEquals('custom field', $m->getField('foo')->caption);
 
         $p = new Persistence\Static_([['foo'=>'hello', 'bar'=>'world']]);
         $m = new StaticPersistenceModel($p);
@@ -122,17 +122,17 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
         ]]);
         $m = new Model($p);
 
-        $this->assertEquals('integer', $m->getElement('test_int')->type);
-        $this->assertEquals('float', $m->getElement('test_float')->type);
-        $this->assertEquals('datetime', $m->getElement('test_date')->type);
-        $this->assertEquals('array', $m->getElement('test_array')->type);
-        $this->assertEquals('object', $m->getElement('test_object')->type);
+        $this->assertEquals('integer', $m->getField('test_int')->type);
+        $this->assertEquals('float', $m->getField('test_float')->type);
+        $this->assertEquals('datetime', $m->getField('test_date')->type);
+        $this->assertEquals('array', $m->getField('test_array')->type);
+        $this->assertEquals('object', $m->getField('test_object')->type);
 
         // string is default type, so it is null
-        $this->assertNull($m->getElement('name')->type);
-        $this->assertNull($m->getElement('test_str_1')->type);
-        $this->assertNull($m->getElement('test_str_2')->type);
-        $this->assertNull($m->getElement('test_str_3')->type);
+        $this->assertNull($m->getField('name')->type);
+        $this->assertNull($m->getField('test_str_1')->type);
+        $this->assertNull($m->getField('test_str_2')->type);
+        $this->assertNull($m->getField('test_str_3')->type);
     }
 }
 

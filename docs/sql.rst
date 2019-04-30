@@ -41,8 +41,8 @@ SQL Field
     SQL Fields can be used inside other SQL expressions::
 
         $q = new \atk4\dsql\Expression('[age] + [birth_year]', [
-                'age'        => $m->getElement('age'),
-                'birth_year' => $m->getElement('birth_year'),
+                'age'        => $m->getField('age'),
+                'birth_year' => $m->getField('birth_year'),
             ]);
 
 SQL Reference
@@ -208,8 +208,8 @@ to be specified. Use of Model::expr() allows you to specify field names and thos
 field expressions will be automatically substituted. Here is long / short format::
 
     $q = new \atk4\dsql\Expression('[age] + [birth_year]', [
-            'age' => $m->getElement('age'),
-            'birth_year' => $m->getElement('birth_year')
+            'age' => $m->getField('age'),
+            'birth_year' => $m->getField('birth_year')
         ]);
 
     // identical to

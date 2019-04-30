@@ -115,8 +115,8 @@ All measurements are implemented with :php:class:`Units` and can be further exte
     $model['speed'] = '30km/s';
 
     echo $model['speed']; // 30000
-    echo $model->getElement('speed')->format(); // 30km/s
-    echo $model->getElement('speed')->format('m'); // 30000m/s
+    echo $model->getField('speed')->format(); // 30km/s
+    echo $model->getField('speed')->format('m'); // 30000m/s
 
 
 Supported Serialization

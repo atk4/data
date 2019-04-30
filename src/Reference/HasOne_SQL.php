@@ -184,7 +184,7 @@ class HasOne_SQL extends HasOne
                     ? $defaults['field']
                     : preg_replace('/_'.($this->owner->id_field ?: 'id').'$/i', '', $this->link);
 
-        if ($this->owner->hasElement($field)) {
+        if ($this->owner->hasField($field)) {
             throw new Exception([
                 'Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])',
                 'field' => $field,
@@ -223,8 +223,8 @@ class HasOne_SQL extends HasOne
         }, null, 20);
 
         // Set ID field as not visible in grid by default
-        if (!array_key_exists('visible', $this->owner->getElement($this->our_field)->ui)) {
-            $this->owner->getElement($this->our_field)->ui['visible'] = false;
+        if (!array_key_exists('visible', $this->owner->getField($this->our_field)->ui)) {
+            $this->owner->getField($this->our_field)->ui['visible'] = false;
         }
 
         return $ex;

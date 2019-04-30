@@ -155,15 +155,15 @@ class SQL extends Persistence
 
         // When we work without table, we can't have any IDs
         if ($m->table === false) {
-            $m->getElement($m->id_field)->destroy();
+            $m->getField($m->id_field)->destroy();
             $m->addExpression($m->id_field, '1');
             //} else {
             // SQL databases use ID of int by default
-            //$m->getElement($m->id_field)->type = 'integer';
+            //$m->getField($m->id_field)->type = 'integer';
         }
 
         // Sequence support
-        if ($m->sequence && $id_field = $m->hasElement($m->id_field)) {
+        if ($m->sequence && $id_field = $m->hasField($m->id_field)) {
             $id_field->default = $this->dsql()->mode('seq_nextval')->sequence($m->sequence);
         }
 
@@ -200,7 +200,7 @@ class SQL extends Persistence
             function ($matches) use (&$args, $m) {
                 $identifier = substr($matches[0], 1, -1);
                 if ($identifier && !isset($args[$identifier])) {
-                    $args[$identifier] = $m->getElement($identifier);
+                    $args[$identifier] = $m->getField($identifier);
                 }
 
                 return $matches[0];
@@ -271,15 +271,15 @@ class SQL extends Persistence
             // Set of fields is strictly defined for purposes of export,
             // so we will ignore even system fields.
             foreach ($fields as $field) {
-                $this->initField($q, $m->getElement($field));
+                $this->initField($q, $m->getField($field));
             }
         } elseif ($m->only_fields) {
             $added_fields = [];
 
             // Add requested fields first
             foreach ($m->only_fields as $field) {
-                $f_object = $m->getElement($field);
-                if ($f_object instanceof Field && $f_object->never_persist) {
+                $f_object = $m->getField($field);
+                if ($f_object->never_persist) {
                     continue;
                 }
                 $this->initField($q, $f_object);
@@ -331,7 +331,7 @@ class SQL extends Persistence
 
         if ($m->order) {
             foreach ($m->order as $o) {
-                $q->order($m->getElement($o[0]), $o[1]);
+                $q->order($m->getField($o[0]), $o[1]);
             }
         }
     }
@@ -363,7 +363,7 @@ class SQL extends Persistence
                 if (is_array($cond[0])) {
                     foreach ($cond[0] as &$row) {
                         if (is_string($row[0])) {
-                            $row[0] = $m->getElement($row[0]);
+                            $row[0] = $m->getField($row[0]);
                         }
                     }
                 }
@@ -373,7 +373,7 @@ class SQL extends Persistence
             }
 
             if (is_string($cond[0])) {
-                $cond[0] = $m->getElement($cond[0]);
+                $cond[0] = $m->getField($cond[0]);
             }
 
             if (count($cond) == 2) {
@@ -604,7 +604,7 @@ class SQL extends Persistence
                     ]);
                 }
 
-                $field = is_string($args[0]) ? $m->getElement($args[0]) : $args[0];
+                $field = is_string($args[0]) ? $m->getField($args[0]) : $args[0];
                 $m->hook('initSelectQuery', [$q, $type]);
                 if (isset($args['alias'])) {
                     $q->reset('field')->field($field, $args['alias']);
@@ -628,7 +628,7 @@ class SQL extends Persistence
                 }
 
                 $fx = $args[0];
-                $field = is_string($args[1]) ? $m->getElement($args[1]) : $args[1];
+                $field = is_string($args[1]) ? $m->getField($args[1]) : $args[1];
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);
 
@@ -677,7 +677,7 @@ class SQL extends Persistence
         }
 
         $load = $m->action('select');
-        $load->where($m->getElement($m->id_field), $id);
+        $load->where($m->getField($m->id_field), $id);
         $load->limit(1);
 
         // execute action
@@ -901,7 +901,7 @@ class SQL extends Persistence
 
         // only apply fields that has been modified
         $update->set($data);
-        $update->where($m->getElement($m->id_field), $id);
+        $update->where($m->getField($m->id_field), $id);
 
         $st = null;
 

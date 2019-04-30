@@ -174,10 +174,10 @@ class Persistence
         foreach ($row as $key => $value) {
 
             // Look up field object
-            $f = $m->hasElement($key);
+            $f = $m->hasField($key);
 
             // Figure out the name of the destination field
-            $field = isset($f->actual) && $f->actual ? $f->actual : $key;
+            $field = $f && isset($f->actual) && $f->actual ? $f->actual : $key;
 
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
@@ -241,7 +241,7 @@ class Persistence
         foreach ($row as $key => &$value) {
 
             // Look up field object
-            $f = $m->hasElement($key);
+            $f = $m->hasField($key);
 
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.

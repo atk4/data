@@ -164,7 +164,7 @@ class HasOne extends Reference
             $this->our_field = $this->link;
         }
 
-        if (!$this->owner->hasElement($this->our_field)) {
+        if (!$this->owner->hasField($this->our_field)) {
             $this->owner->addField($this->our_field, [
                 'type'              => $this->type,
                 'reference'         => $this,
@@ -196,7 +196,7 @@ class HasOne extends Reference
     {
         $this->owner->persistence_data['use_table_prefixes'] = true;
 
-        return $this->owner->getElement($this->our_field);
+        return $this->owner->getField($this->our_field);
     }
 
     /**
