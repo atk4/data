@@ -322,7 +322,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m->reload();
         $this->assertEquals('Smith', $m['surname']);
-        $m->getElement('surname')->never_save = false;
+        $m->getField('surname')->never_save = false;
         $m['surname'] = 'Stalker';
         $m->save();
         $a['item'][1]['surname'] = 'Stalker';
@@ -492,8 +492,8 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m = new Model();
         $m->addField('foo', ['system' => true]);
         $m->addField('bar');
-        $this->assertEquals(false, $m->getElement('foo')->isEditable());
-        $this->assertEquals(false, $m->getElement('foo')->isVisible());
+        $this->assertEquals(false, $m->getField('foo')->isEditable());
+        $this->assertEquals(false, $m->getField('foo')->isVisible());
 
         $m->onlyFields(['bar']);
         // TODO: build a query and see if the field is there

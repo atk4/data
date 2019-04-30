@@ -903,7 +903,7 @@ You must be aware that set() operates on a DSQL object and will no longer
 work with your model fields. You should use the object like this if you can::
 
     $m->action('update')
-        ->set($m->getElement('has_discount'), false)
+        ->set($m->getField('has_discount'), false)
         ->execute();
 
 See $actual for more details.

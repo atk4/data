@@ -220,6 +220,12 @@ When you modify active record, it keeps the original value in the $dirty array:
     to hasElement() but with extra checks to make sure it's certainly a field you are
     getting.
 
+.. php:method:: getField($field)
+
+    Finds a field with a corresponding name. Throws exception if field not found. Similar
+    to getElement() but with extra checks to make sure it's certainly a field you are
+    getting.
+
 
 Full example::
 

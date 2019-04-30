@@ -147,7 +147,7 @@ class Static_ extends Array_
         }
 
         foreach ($this->fieldsForModel as $field=>$def) {
-            if ($m->hasElement($field)) {
+            if ($m->hasField($field)) {
                 continue;
             }
 

@@ -47,8 +47,8 @@ class ConditionTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('gender');
         $m->addCondition('gender', 'M');
 
-        $this->assertEquals(true, $m->getElement('gender')->system);
-        $this->assertEquals(false, $m->getElement('gender')->isEditable());
+        $this->assertEquals(true, $m->getField('gender')->system);
+        $this->assertEquals(false, $m->getField('gender')->isEditable());
     }
 
     public function testEditableHasOne()
@@ -60,7 +60,7 @@ class ConditionTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('name');
         $m->hasOne('gender_id', $gender);
 
-        $this->assertEquals(false, $m->getElement('gender_id')->system);
-        $this->assertEquals(true, $m->getElement('gender_id')->isEditable());
+        $this->assertEquals(false, $m->getField('gender_id')->system);
+        $this->assertEquals(true, $m->getField('gender_id')->isEditable());
     }
 }

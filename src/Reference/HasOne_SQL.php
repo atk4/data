@@ -184,7 +184,7 @@ class HasOne_SQL extends HasOne
                     ? $defaults['field']
                     : preg_replace('/_'.($this->owner->id_field ?: 'id').'$/i', '', $this->link);
 
-        if ($this->owner->hasElement($field)) {
+        if ($this->owner->hasField($field)) {
             throw new Exception([
                 'Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])',
                 'field' => $field,

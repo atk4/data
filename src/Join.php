@@ -171,7 +171,7 @@ class Join
                     // master_field exists, no we will use that
                     /*
                     if (!is_object($this->master_field)
-                        && !$this->owner->hasElement($this->master_field
+                        && !$this->owner->hasField($this->master_field
                     )) {
                      */
                     throw new Exception([
