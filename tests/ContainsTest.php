@@ -331,7 +331,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $rows = [
             1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'add_date' => new \DateTime('last month')],
-            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5, 'add_date' => new \DateTime('last month')],
+            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5, 'add_date' => new \DateTime('this month')],
         ];
         foreach ($rows as $row) {
             $l->insert($row);
