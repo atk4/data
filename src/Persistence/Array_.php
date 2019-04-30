@@ -347,7 +347,7 @@ class Array_ extends Persistence
                 // condition can have up to three params
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
-                    'reason' => 'condition can have two to three params',
+                    'reason'   => 'condition can have two to three params',
                     'condition'=> $cond,
                 ]);
             }
@@ -356,10 +356,10 @@ class Array_ extends Persistence
             $method = strtolower($cond[1]);
 
             // check if the method is supported by the iterator
-            if (!method_exists( $iterator, $method)) {
+            if (!method_exists($iterator, $method)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported method',
-                    'reason' => "method $method not implemented for Action\Iterator",
+                    'reason'   => "method $method not implemented for Action\Iterator",
                     'condition'=> $cond,
                 ]);
             }
@@ -369,14 +369,14 @@ class Array_ extends Persistence
                 $cond[0] = $model->getField($cond[0]);
             }
 
-            if (!is_a($cond[0],\atk4\data\Field::class)) {
+            if (!is_a($cond[0], \atk4\data\Field::class)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
-                    'reason' => 'Unsupported object instance ' . get_class($cond[0]),
+                    'reason'    => 'Unsupported object instance '.get_class($cond[0]),
                     'condition' => [
                         get_class($cond[0]),
                         $cond[1],
-                        $cond[2]
+                        $cond[2],
                     ],
                 ]);
             }
