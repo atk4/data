@@ -806,7 +806,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20 12:23:34')));
         $this->assertSame('2019-01-20 12:23:34', $m->getField('datetime')->toString(new \DateTime('2019-01-20 12:23:34')));
         $this->assertSame('12:23:34', $m->getField('time')->toString(new \DateTime('2019-01-20 12:23:34')));
-        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('array')->toString(['foo'=>'bar','int'=>123,'rows'=>['a','b']]));
-        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object)['foo'=>'bar','int'=>123,'rows'=>['a','b']]));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('array')->toString(['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object) ['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
     }
 }

@@ -206,7 +206,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // check how shipping address is actually stored in database
         $this->assertEquals(
             '{"country_id":2,"street":"Rigas","house":666,"built_date":"2019-01-01"}',
-            $i->export(null,null,false)[0]['shipping_address']
+            $i->export(null, null, false)[0]['shipping_address']
         );
 
         // so far so good. now let's try to delete that shipping address completely
@@ -291,7 +291,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         //var_dump($i->export());
     }
 
-    /**
+    /*
      * Model should be loaded before traversing to containsOne relation.
      *
      * @expectedException Exception
@@ -304,7 +304,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
     }
     */
 
-    /**
+    /*
      * Model should be loaded before traversing to containsMany relation.
      *
      * @expectedException Exception
@@ -317,7 +317,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
     }
     */
 
-    /**
+    /*
      * Recursive containsMany tests.
      */
     /*
