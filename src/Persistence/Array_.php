@@ -271,12 +271,21 @@ class Array_ extends Persistence
      *
      * @param Model      $m
      * @param array|null $fields
+     * @param bool       $typecast_data Should we typecast exported data
      *
      * @return array
      */
-    public function export(Model $m, $fields = null)
+    public function export(Model $m, $fields = null, $typecast_data = true)
     {
-        return $m->action('select', [$fields])->get();
+        $data = $m->action('select', [$fields])->get();
+
+        if ($typecast_data) {
+            $data = array_map(function ($r) use ($m) {
+                return $this->typecastLoadRow($m, $r);
+            }, $data);
+        }
+
+        return $data;
     }
 
     /**
@@ -292,7 +301,9 @@ class Array_ extends Persistence
         $keys = $fields ? array_flip($fields) : null;
 
         $data = array_map(function ($r) use ($m, $keys) {
-            return $this->typecastLoadRow($m, $keys ? array_intersect_key($r, $keys) : $r);
+            // typecasting moved to export() method
+            //return $this->typecastLoadRow($m, $keys ? array_intersect_key($r, $keys) : $r);
+            return $keys ? array_intersect_key($r, $keys) : $r;
         }, $this->data[$m->table]);
 
         return new \atk4\data\Action\Iterator($data);

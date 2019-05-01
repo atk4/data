@@ -96,9 +96,9 @@ class Boolean extends \atk4\data\Field
      */
     public function toString($value = null)
     {
-        $value = ($value === null ? $this->get() : $this->normalize($value));
+        $v = ($value === null ? $this->get() : $this->normalize($value));
 
-        return $value ? '1' : '0';
+        return $v === true ? '1' : '0';
     }
 
     /**
