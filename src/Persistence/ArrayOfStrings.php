@@ -4,9 +4,7 @@
 
 namespace atk4\data\Persistence;
 
-use atk4\data\Exception;
 use atk4\data\Field;
-use atk4\data\Model;
 use atk4\data\Persistence;
 
 /**

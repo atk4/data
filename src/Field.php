@@ -364,8 +364,8 @@ class Field implements Expressionable
                 break;
             case 'object':
                if (is_string($value) && $f->owner && $f->owner->persistence) {
-                    $value = $f->owner->persistence->jsonDecode($f, $value, false);
-                }
+                   $value = $f->owner->persistence->jsonDecode($f, $value, false);
+               }
 
                 if (!is_object($value)) {
                     throw new ValidationException([$this->name => 'Must be an object']);
