@@ -382,6 +382,43 @@ class Field implements Expressionable
     }
 
     /**
+     * Casts field value to string.
+     *
+     * @param mixed $value Optional value
+     *
+     * @return string
+     */
+    public function toString($value = null)
+    {
+        $value = ($value === null ? $this->get() : $this->normalize($value));
+
+        try {
+            switch ($this->type) {
+                case null: // loose comparison, but is OK here
+                    return null;
+                case 'boolean':
+                    throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
+                case 'date':
+                    return $value->format('Y-m-d');
+                case 'datetime':
+                    return $value->format('Y-m-d H:i:s');
+                case 'time':
+                    return $value->format('H:i:s');
+                case 'array':
+                    return json_encode($value);
+                case 'object':
+                    return json_encode($value);
+                default:
+                    return (string) $value;
+            }
+        } catch (Exception $e) {
+            $e->addMoreInfo('field', $this);
+
+            throw $e;
+        }
+    }
+
+    /**
      * Returns field value.
      *
      * @return mixed

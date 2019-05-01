@@ -174,7 +174,6 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
     /**
      * Test containsOne.
      */
-    /*
     public function testContainsOne()
     {
         $i = new Invoice($this->db);
@@ -185,7 +184,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $a->set($row = ['country_id'=>1, 'street'=>'Rigas', 'house'=>13, 'built_date'=>new \DateTime('last year')]);
+        $a->set($row = ['country_id'=>1, 'street'=>'Rigas', 'house'=>13, 'built_date'=>new \DateTime('2019-01-01')]);
         $a->save();
 
         // now reload invoice and see if it is saved
@@ -204,18 +203,20 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $c = $i->ref('shipping_address')->ref('country_id');
         $this->assertEquals('United Kingdom', $c['name']);
 
+        // check how shipping address is actually stored in database
+        $this->assertEquals(
+            '{"country_id":2,"street":"Rigas","house":666,"built_date":"2019-01-01"}',
+            $i->export(null,null,false)[0]['shipping_address']
+        );
+
         // so far so good. now let's try to delete that shipping address completely
         $i->ref('shipping_address')->delete();
         $this->assertEquals(null, $i->get('shipping_address'));
-
-        //var_dump($i->export());
     }
-    */
 
     /**
      * How containsOne performs when not all values are stored or there are more values in DB than fields in model.
      */
-    /*
     public function testContainsOneWhenChangeModelFields()
     {
         $i = new Invoice($this->db);
@@ -223,7 +224,8 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // with address
         $a = $i->ref('shipping_address');
-        $a->set($row = ['country_id'=>1, 'street'=>'Rigas', 'house'=>13, 'built_date'=>new \DateTime('last year')])->save();
+        $a->set($row = ['country_id'=>1, 'street'=>'Rigas', 'house'=>13, 'built_date'=>new \DateTime('2019-01-01')]);
+        $a->save();
 
         // now let's add one more field in address model
         $a->addField('post_index');
@@ -238,12 +240,10 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $a = $i->ref('shipping_address');
         $this->assertEquals($row, $a->get());
     }
-    */
 
     /**
      * Test containsMany.
      */
-    /*
     public function testContainsMany()
     {
         $i = new Invoice($this->db);
@@ -252,9 +252,9 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's add some lines
         $l = $i->ref('lines');
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'discounts' => null],
-            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5, 'discounts' => null],
-            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1, 'discounts' => null],
+            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
+            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
+            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
         ];
         foreach ($rows as $row) {
             $l->insert($row);
@@ -268,11 +268,11 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's delete line with id=2 and add one more line
         $i->ref('lines')
             ->load(2)->delete()
-            ->insert(['vat_rate_id'=>2, 'price' => 50, 'qty' => 3, 'discounts' => null]);
+            ->insert(['vat_rate_id'=>2, 'price' => 50, 'qty' => 3, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')]);
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'discounts' => null],
-            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1, 'discounts' => null],
-            4 => ['id' => 4, 'vat_rate_id'=>2, 'price' => 50, 'qty' => 3, 'discounts' => null],
+            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
+            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
+            4 => ['id' => 4, 'vat_rate_id'=>2, 'price' => 50, 'qty' => 3, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
         ];
         $this->assertEquals($rows, $i->ref('lines')->export());
 
@@ -290,7 +290,6 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         //var_dump($i->export());
     }
-    */
 
     /**
      * Model should be loaded before traversing to containsOne relation.
@@ -321,6 +320,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
     /**
      * Recursive containsMany tests.
      */
+    /*
     public function testRecursiveContainsMany()
     {
         $i = new Invoice($this->db);
@@ -354,6 +354,7 @@ class ContainsTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         //var_dump($i->export());
     }
+    */
 }
 
 /*
