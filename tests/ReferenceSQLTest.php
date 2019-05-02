@@ -397,6 +397,38 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('Peters new contact', $u['address']);
     }
 
+    /**
+     * test case hasOne::our_key == owner::id_field
+     */
+    public function testIdFieldReferenceOurFieldCase()
+    {
+        $a = [
+            'player' => [
+                ['name' => 'John'],
+                ['name' => 'Messi'],
+                ['name' => 'Ronaldo'],
+            ],
+            'stadium' => [
+                ['name' => 'Sue bernabeu', 'player_id'=>'3'],
+                ['name' => 'John camp', 'player_id'=>'1']
+            ]
+        ];
+        $this->setDB($a);
+
+        $p = (new Model($this->db, 'player'))->addFields(['name']);
+
+        $s = (new Model($this->db, 'stadium'));
+        $s->addFields(['name']);
+        $s->hasOne('player_id', $p);
+
+        $p->hasOne('Stadium', [$s,'our_field'=>'id', 'their_field'=>'player_id']);
+
+        $p->load(2);
+        $p->ref('Stadium')->import([['name'=>'Nou camp nou']]);
+        $this->assertEquals('Nou camp nou', $p->ref('Stadium')['name']);
+        $this->assertEquals('2', $p->ref('Stadium')['player_id']);
+    }
+
     public function testModelProperty()
     {
         $user = new Model($this->db, ['table' => 'user']);
