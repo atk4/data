@@ -64,7 +64,7 @@ class ContainsMany extends ContainsOne
         ]));
 
         // set some hooks for ref_model
-        $m->addHook(['afterSave','afterDelete'], function ($model) {
+        $m->addHook(['afterSave', 'afterDelete'], function ($model) {
             $rows = $model->persistence->data[$this->table_alias];
             $this->owner->save([$this->our_field => $rows ?: null]);
         });

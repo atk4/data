@@ -5,7 +5,7 @@ namespace atk4\data\tests;
 use atk4\data\Model;
 
 /**
- * Model structure:
+ * Model structure:.
  *
  * Invoice (SQL)
  *   - containsOne(Address)
@@ -79,8 +79,6 @@ class Country1 extends Model
         $this->addField('name');
     }
 }
-
-
 
 // ============================================================================
 
@@ -159,7 +157,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('United Kingdom', $c['name']);
 
         // let's test how it all looks in persistence without typecasting
-        $exp_addr = $i->export(null,null,false)[0]['addr'];
+        $exp_addr = $i->export(null, null, false)[0]['addr'];
         $this->assertEquals(
             '{"country_id":2,"address":"bar","built_date":"2019-01-01T00:00:00+00:00","door_code":"{\"code\":\"DEF\",\"valid_till\":\"2019-07-01T00:00:00+00:00\"}"}',
             $exp_addr
@@ -220,5 +218,4 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i = new Invoice1($this->db);
         $i->ref('addr');
     }
-
 }
