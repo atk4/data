@@ -803,9 +803,9 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertSame('0', $m->getField('boolean')->toString(false));
         $this->assertSame('1', $m->getField('boolean_enum')->toString('Y'));
         $this->assertSame('0', $m->getField('boolean_enum')->toString('N'));
-        $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20 12:23:34')));
-        $this->assertSame('2019-01-20 12:23:34', $m->getField('datetime')->toString(new \DateTime('2019-01-20 12:23:34')));
-        $this->assertSame('12:23:34', $m->getField('time')->toString(new \DateTime('2019-01-20 12:23:34')));
+        $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('2019-01-20T12:23:34+00:00', $m->getField('datetime')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('12:23:34', $m->getField('time')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
         $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('array')->toString(['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
         $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object) ['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
     }

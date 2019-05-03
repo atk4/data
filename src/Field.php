@@ -409,7 +409,7 @@ class Field implements Expressionable
                 case 'date':
                     return $v->format('Y-m-d');
                 case 'datetime':
-                    return $v->format('Y-m-d H:i:s');
+                    return $v->format('c'); // ISO 8601 format 2004-02-12T15:19:21+00:00
                 case 'time':
                     return $v->format('H:i:s');
                 case 'array':
