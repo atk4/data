@@ -403,7 +403,7 @@ class Field implements Expressionable
         try {
             switch ($this->type) {
                 case null: // loose comparison, but is OK here
-                    return;
+                    return $v;
                 case 'boolean':
                     throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
                 case 'date':

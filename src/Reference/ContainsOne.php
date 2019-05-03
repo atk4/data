@@ -6,6 +6,7 @@ namespace atk4\data\Reference;
 
 use atk4\data\Exception;
 use atk4\data\Model;
+use atk4\data\Persistence\ArrayOfStrings;
 use atk4\data\Reference;
 
 /**
@@ -18,7 +19,7 @@ class ContainsOne extends Reference
      *
      * @var string
      */
-    public $type = null;
+    public $type = 'array';
 
     /**
      * Is it system field?
@@ -46,18 +47,11 @@ class ContainsOne extends Reference
             $this->our_field = $this->link;
         }
 
-        // only serialize root model !!!
-        //$serialize = null;
-        if (!$this->owner->contained_in_root_model) {
-            $this->type = 'array';
-        }
-
         if (!$this->owner->hasElement($this->our_field)) {
             $this->owner->addField($this->our_field, [
                 'type'              => $this->type,
                 'reference'         => $this,
                 'system'            => $this->system,
-                //'serialize'         => $serialize,
             ]);
         }
     }
@@ -73,8 +67,19 @@ class ContainsOne extends Reference
      */
     protected function getDefaultPersistence($model)
     {
-        $data = [$this->table_alias => []];
-        $p = new \atk4\data\Persistence\Array_($data);
+        $m = $this->owner;
+
+        // model should be loaded
+        if (!$m->loaded()) {
+            throw new Exception(['Model should be loaded!', 'model' => get_class($m)]);
+        }
+
+        // set data source of referenced array persistence
+        $row = $m[$this->our_field] ?: [];
+        //$row = $m->persistence->typecastLoadRow($m, $row); // we need this typecasting because we set persistence data directly
+
+        $data = [$this->table_alias => $row ? [1 => $row] : []];
+        $p = new ArrayOfStrings($data);
 
         return $p;
     }
@@ -88,36 +93,19 @@ class ContainsOne extends Reference
      */
     public function ref($defaults = []) : Model
     {
-        // model should be loaded
-        if (!$this->owner->loaded()) {
-            throw new Exception(['Model should be loaded!', 'model' => get_class($this->owner)]);
-        }
-
         // get model
         // will not use ID field
         $m = $this->getModel(array_merge($defaults, [
-            'contained_in_model'      => $this->owner,
             'contained_in_root_model' => $this->owner->contained_in_root_model ?: $this->owner,
             'id_field'                => false,
             'table'                   => $this->table_alias,
         ]));
 
-        // set data source of referenced array persistence
-        $row = $this->owner[$this->our_field] ?: [];
-        $row = $this->owner->persistence->typecastLoadRow($m, $row);
-        $m->persistence->data = [$this->table_alias => ($row ? [1 => $row] : [])];
-
         // set some hooks for ref_model
-        $m->addHook(['beforeSave'], function ($m) {
-            $row = $m->get();
-            $row = $this->owner->persistence->typecastSaveRow($m, $row);
+        $m->addHook(['afterSave','afterDelete'], function ($model) {
+            $row = $model->persistence->data[$this->table_alias];
+            $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
             $this->owner->save([$this->our_field => $row]);
-            $m->breakHook(false);
-        });
-
-        $m->addHook(['beforeDelete'], function ($m) {
-            $this->owner->save([$this->our_field => null]);
-            $m->breakHook(false);
         });
 
         // try to load any (actually only one possible) record

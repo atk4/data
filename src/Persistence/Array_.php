@@ -174,7 +174,9 @@ class Array_ extends Persistence
         $data = $this->typecastSaveRow($m, $data);
 
         $id = $this->generateNewID($m, $table);
-        $data[$m->id_field] = $id;
+        if ($m->id_field) {
+            $data[$m->id_field] = $id;
+        }
         $this->data[$table][$id] = $data;
 
         return $id;
@@ -237,9 +239,13 @@ class Array_ extends Persistence
             $table = $m->table;
         }
 
-        $ids = array_keys($this->data[$table]);
-
-        $type = $m->getField($m->id_field)->type;
+        if ($m->id_field) {
+            $ids = array_keys($this->data[$table]);
+            $type = $m->getField($m->id_field)->type;
+        } else {
+            $ids = [count($this->data[$table])]; // use ids starting from 1
+            $type = 'integer';
+        }
 
         switch ($type) {
             case 'integer':
