@@ -398,7 +398,7 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
     }
 
     /**
-     * test case hasOne::our_key == owner::id_field
+     * test case hasOne::our_key == owner::id_field.
      */
     public function testIdFieldReferenceOurFieldCase()
     {
@@ -410,8 +410,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ],
             'stadium' => [
                 ['name' => 'Sue bernabeu', 'player_id'=>'3'],
-                ['name' => 'John camp', 'player_id'=>'1']
-            ]
+                ['name' => 'John camp', 'player_id'=>'1'],
+            ],
         ];
         $this->setDB($a);
 
@@ -421,7 +421,7 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $s->addFields(['name']);
         $s->hasOne('player_id', $p);
 
-        $p->hasOne('Stadium', [$s,'our_field'=>'id', 'their_field'=>'player_id']);
+        $p->hasOne('Stadium', [$s, 'our_field'=>'id', 'their_field'=>'player_id']);
 
         $p->load(2);
         $p->ref('Stadium')->import([['name'=>'Nou camp nou']]);

@@ -155,6 +155,7 @@ class HasOne_SQL extends HasOne
         // If model is not loaded, then we are probably doing deep traversal
         if (!$this->owner->loaded()) {
             $values = $this->owner->action('field', [$this->our_field]);
+
             return $m->addCondition($this->their_field ?: $m->id_field, $values);
         }
 
@@ -163,7 +164,7 @@ class HasOne_SQL extends HasOne
         // we should persist the relation in condtition
         // example - $m->load(1)->ref('refLink')->import($rows);
         if ($this->owner->loaded() && !$m->loaded()) {
-            if($this->owner->id_field == $this->our_field){
+            if ($this->owner->id_field == $this->our_field) {
                 $condition_field = $this->their_field ?: $m->id_field;
                 $condition_value = $this->owner[$this->our_field ?: $this->owner->id_field];
                 $m->addCondition($condition_field, $condition_value);
