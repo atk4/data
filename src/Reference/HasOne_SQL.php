@@ -8,7 +8,7 @@ use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\Field_SQL_Expression;
 use atk4\data\Model;
-use atk4\data\Persistence\SQL as Persistence_SQL;
+use atk4\data\Persistence\SQL;
 use atk4\data\Reference;
 
 /**
@@ -148,7 +148,7 @@ class HasOne_SQL extends HasOne
     {
         $m = parent::ref($defaults);
 
-        if (!isset($this->owner->persistence) || !($this->owner->persistence instanceof Persistence_SQL)) {
+        if (!isset($this->owner->persistence) || !($this->owner->persistence instanceof Persistence\SQL)) {
             return $m;
         }
 
