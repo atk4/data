@@ -176,11 +176,12 @@ class Reference
     {
         $m = $this->owner;
 
-        /* this will be useful for containsOne/Many implementation
+        // this will be useful for containsOne/Many implementation in case when you have
+        // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
+        // from Array persistence used in containsOne model
         if ($m->contained_in_root_model && $m->contained_in_root_model->persistence) {
             return $m->contained_in_root_model->persistence;
         }
-        */
 
         return $m->persistence ?: false;
     }
@@ -207,7 +208,7 @@ class Reference
      *
      * @return Model
      */
-    public function refModel($defaults = [])
+    public function refModel($defaults = []) : Model
     {
         return $this->getModel($defaults);
     }

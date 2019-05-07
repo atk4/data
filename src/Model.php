@@ -58,6 +58,20 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $_default_seed_hasMany = ['\atk4\data\Reference\HasMany'];
 
     /**
+     * The class used by containsOne() method.
+     *
+     * @var string
+     */
+    public $_default_seed_containsOne = ['\atk4\data\Reference\ContainsOne'];
+
+    /**
+     * The class used by containsMany() method.
+     *
+     * @var string
+     */
+    public $_default_seed_containsMany = ['\atk4\data\Reference\ContainsMany'];
+
+    /**
      * The class used by join() method.
      *
      * @var string
@@ -266,6 +280,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @var bool|null
      */
     public $reload_after_save = null;
+
+    /**
+     * If this model is "contained into" another model by using containsOne
+     * or containsMany reference, then this property will contain reference
+     * to top most parent model.
+     *
+     * @var Model|null
+     */
+    public $contained_in_root_model = null;
 
     // }}}
 
@@ -1688,12 +1711,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $fields    Names of fields to export
-     * @param string     $key_field Optional name of field which value we will use as array key
+     * @param array|null $fields        Names of fields to export
+     * @param string     $key_field     Optional name of field which value we will use as array key
+     * @param bool       $typecast_data Should we typecast exported data
      *
      * @return array
      */
-    public function export($fields = null, $key_field = null)
+    public function export($fields = null, $key_field = null, $typecast_data = true)
     {
         if (!$this->persistence->hasMethod('export')) {
             throw new Exception('Persistence does not support export()');
@@ -1701,7 +1725,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         // no key field - then just do export
         if ($key_field === null) {
-            return $this->persistence->export($this, $fields);
+            return $this->persistence->export($this, $fields, $typecast_data);
         }
 
         // do we have added key field in fields list?
@@ -1757,7 +1781,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         // export
-        $data = $this->persistence->export($this, $fields);
+        $data = $this->persistence->export($this, $fields, $typecast_data);
 
         // prepare resulting array
         $return = [];
@@ -2081,6 +2105,38 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function hasMany($link, $defaults = []) : Reference
     {
         return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults);
+    }
+
+    /**
+     * Add containsOne field.
+     *
+     * @param string $link
+     * @param array  $defaults
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     *
+     * @return Reference\ContainsOne
+     */
+    public function containsOne($link, $defaults = []) : Reference
+    {
+        return $this->_hasReference($this->_default_seed_containsOne, $link, $defaults);
+    }
+
+    /**
+     * Add containsMany field.
+     *
+     * @param string $link
+     * @param array  $defaults
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     *
+     * @return Reference\ContainsMany
+     */
+    public function containsMany($link, $defaults = []) : Reference
+    {
+        return $this->_hasReference($this->_default_seed_containsMany, $link, $defaults);
     }
 
     /**
