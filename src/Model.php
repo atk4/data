@@ -894,12 +894,21 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return UserAction\Action
      */
-    public function addAction($name, $callback = null, $arguments = [], $defaults = [])
+    public function addAction($name, $defaults = [])
     {
-        $action = $this->factory($this->_default_action, $defaults);
+        if (!isset($defaults['title'])) {
 
-        $action->callback = $callback;
-        $action->args = $arguments;
+            $s = $name;
+
+            $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
+            $s = array_map('trim', $s);
+            $s = ucwords(implode(' ', $s));
+
+            $defaults['caption'] = $s;
+        }
+
+        /** @var UserAction\Action $action */
+        $action = $this->factory($this->_default_action, $defaults);
 
         $this->add($action, 'action:'.$name);
 

@@ -5,6 +5,7 @@
 namespace atk4\data\UserAction;
 
 use atk4\core\DIContainerTrait;
+use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
 
 /**
@@ -18,12 +19,15 @@ class Action
 {
     use DIContainerTrait;
     use TrackableTrait;
+    use InitializerTrait {
+        init as init_;
+    }
 
     /** Defining scope of the action */
-    const SINGLE_RECORD = 1; // e.g. edit
-    const ALL_RECORDS = 2; // e.g. truncate
-    const MULTIPLE_RECORDS = 3; // e.g. delete
-    const NO_RECORDS = 4; // e.g. add
+    const NO_RECORDS = 'none'; // e.g. add
+    const SINGLE_RECORD = 'single'; // e.g. edit
+    const MULTIPLE_RECORDS = 'multiple'; // e.g. delete
+    const ALL_RECORDS = 'all'; // e.g. truncate
 
     /** @var int by default - action is for a single-record */
     public $scope = self::SINGLE_RECORD;
@@ -33,6 +37,9 @@ class Action
 
     /** @var string caption to put on the button */
     public $caption = null;
+
+    /** @var string a longer description of this action */
+    public $description = null;
 
     /** @var array UI properties, e,g. 'icon'=>.. , 'warning', etc. UI implementation can interpret or extend. */
     public $ui = [];
@@ -49,6 +56,13 @@ class Action
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
+    public function init() {
+        if ($this->caption === null) {
+            $this->caption = substr($this->short_name, 7); // remove action: in front
+        }
+        $this->init_();
+    }
+
     public function execute(...$args)
     {
         // todo - assert owner model loaded
@@ -57,8 +71,24 @@ class Action
 
         // todo - pass model as first argument ?
 
-        $callback = $this->callback ?: [$this->owner, str_replace('action:', '', $this->short_name)];
-
-        return call_user_func_array($callback, $args);
+        if(is_null($this->callback)) {
+            $callback = $this->callback ?: [$this->owner, str_replace('action:', '', $this->short_name)];
+            return call_user_func_array([$this->owner, $callback], $args);
+        } elseif (is_string($this->callback))  {
+            return call_user_func_array([$this->owner, $this->callback], $args);
+        } else {
+            return call_user_func_array($this->callback, $args);
+        }
     }
+
+    /**
+     * Get description of this current action in a user-understandable language
+     *
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->description ?? ('Will execute '.$this->caption);
+    }
+
 }
