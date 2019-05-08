@@ -897,7 +897,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function addAction($name, $defaults = [])
     {
         if (!isset($defaults['title'])) {
-
             $s = $name;
 
             $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
