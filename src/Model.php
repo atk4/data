@@ -896,6 +896,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addAction($name, $defaults = [])
     {
+
+        if (is_callable($defaults)) {
+            $defaults = ['callback'=>$defaults];
+        }
+
         if (!isset($defaults['title'])) {
 
             $s = $name;
@@ -920,10 +925,18 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return array
      */
-    public function getActions()
+    public function getActions($scope = null)
     {
-        $actions = array_filter(array_keys($this->elements), function ($var) {
-            return stripos($var, 'action:') === 0;
+        $actions = array_filter(array_keys($this->elements), function ($var) use ($scope) {
+            if (stripos($var, 'action:') !== 0) {
+                return false;
+            }
+
+            if ($scope !== null && $this->getElement($var)->scope !== $scope) {
+                return false;
+            }
+
+            return true;
         });
         $res = [];
 

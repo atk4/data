@@ -35,6 +35,9 @@ class Action
     /** @var callable code to execute. By default will call method with same name */
     public $callback = null;
 
+    /** @var callable code, identical to callback, but would generate preview of action without permanent effect */
+    public $preview = null;
+
     /** @var string caption to put on the button */
     public $caption = null;
 
@@ -77,7 +80,21 @@ class Action
         } elseif (is_string($this->callback))  {
             return call_user_func_array([$this->owner, $this->callback], $args);
         } else {
+            array_unshift($args, $this->owner);
             return call_user_func_array($this->callback, $args);
+        }
+    }
+
+    public function preview(...$args)
+    {
+        if(is_null($this->preview)) {
+            $preview = $this->preview ?: [$this->owner, str_replace('action:', '', $this->short_name)];
+            return call_user_func_array([$this->owner, $preview], $args);
+        } elseif (is_string($this->preview))  {
+            return call_user_func_array([$this->owner, $this->preview], $args);
+        } else {
+            array_unshift($args, $this->owner);
+            return call_user_func_array($this->preview, $args);
         }
     }
 
