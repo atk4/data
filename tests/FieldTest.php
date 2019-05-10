@@ -774,4 +774,39 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo', ['type' => 'boolean']);
         $m['foo'] = 'ABC';
     }
+
+    public function testToString()
+    {
+        $m = new Model(['strict_types' => true]);
+
+        // Field types: 'string', 'text', 'integer', 'money', 'float', 'boolean',
+        //              'date', 'datetime', 'time', 'array', 'object'
+        $m->addField('string', ['type' => 'string']);
+        $m->addField('text', ['type' => 'text']);
+        $m->addField('integer', ['type' => 'integer']);
+        $m->addField('money', ['type' => 'money']);
+        $m->addField('float', ['type' => 'float']);
+        $m->addField('boolean', ['type' => 'boolean']);
+        $m->addField('boolean_enum', ['type' => 'boolean', 'enum'=>['N', 'Y']]);
+        $m->addField('date', ['type' => 'date']);
+        $m->addField('datetime', ['type' => 'datetime']);
+        $m->addField('time', ['type' => 'time']);
+        $m->addField('array', ['type' => 'array']);
+        $m->addField('object', ['type' => 'object']);
+
+        $this->assertSame('TwoLines', $m->getField('string')->toString("Two\r\nLines  "));
+        $this->assertSame("Two\nLines", $m->getField('text')->toString("Two\r\nLines  "));
+        $this->assertSame('123', $m->getField('integer')->toString(123));
+        $this->assertSame('123.45', $m->getField('money')->toString(123.45));
+        $this->assertSame('123.456789', $m->getField('float')->toString(123.456789));
+        $this->assertSame('1', $m->getField('boolean')->toString(true));
+        $this->assertSame('0', $m->getField('boolean')->toString(false));
+        $this->assertSame('1', $m->getField('boolean_enum')->toString('Y'));
+        $this->assertSame('0', $m->getField('boolean_enum')->toString('N'));
+        $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('2019-01-20T12:23:34+00:00', $m->getField('datetime')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('12:23:34', $m->getField('time')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('array')->toString(['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object) ['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
+    }
 }

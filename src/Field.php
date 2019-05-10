@@ -354,11 +354,19 @@ class Field implements Expressionable
 
                 break;
             case 'array':
+                if (is_string($value) && $f->owner && $f->owner->persistence) {
+                    $value = $f->owner->persistence->jsonDecode($f, $value, true);
+                }
+
                 if (!is_array($value)) {
                     throw new ValidationException([$this->name => 'Must be an array']);
                 }
                 break;
             case 'object':
+               if (is_string($value) && $f->owner && $f->owner->persistence) {
+                   $value = $f->owner->persistence->jsonDecode($f, $value, false);
+               }
+
                 if (!is_object($value)) {
                     throw new ValidationException([$this->name => 'Must be an object']);
                 }
@@ -374,6 +382,43 @@ class Field implements Expressionable
             }
 
             return $value;
+        } catch (Exception $e) {
+            $e->addMoreInfo('field', $this);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Casts field value to string.
+     *
+     * @param mixed $value Optional value
+     *
+     * @return string
+     */
+    public function toString($value = null)
+    {
+        $v = ($value === null ? $this->get() : $this->normalize($value));
+
+        try {
+            switch ($this->type) {
+                case null: // loose comparison, but is OK here
+                    return $v;
+                case 'boolean':
+                    throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
+                case 'date':
+                    return $v->format('Y-m-d');
+                case 'datetime':
+                    return $v->format('c'); // ISO 8601 format 2004-02-12T15:19:21+00:00
+                case 'time':
+                    return $v->format('H:i:s');
+                case 'array':
+                    return json_encode($v); // todo use Persistence->jsonEncode() instead
+                case 'object':
+                    return json_encode($v); // todo use Persistence->jsonEncode() instead
+                default:
+                    return (string) $v;
+            }
         } catch (Exception $e) {
             $e->addMoreInfo('field', $this);
 
