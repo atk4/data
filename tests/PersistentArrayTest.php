@@ -303,7 +303,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $this->assertEquals(2, $m->action('count')->getOne());
     }
-    
+
     /**
      * Test Model->action('field').
      */
@@ -329,7 +329,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $q = $m->action('field', ['name']);
         $this->assertEquals(['name'=>'John'], $q);
     }
-    
+
     /**
      * Test Model->addCondition operator LIKE.
      */
