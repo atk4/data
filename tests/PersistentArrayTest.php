@@ -289,7 +289,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     /**
      * Test Model->action('count').
      */
-    public function testCount()
+    public function testActionCount()
     {
         $a = [
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -302,6 +302,32 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('surname');
 
         $this->assertEquals(2, $m->action('count')->getOne());
+    }
+
+    /**
+     * Test Model->action('field').
+     */
+    public function testActionField()
+    {
+        $a = [
+            1 => ['name' => 'John', 'surname' => 'Smith'],
+            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+
+        $this->assertEquals(2, $m->action('count')->getOne());
+
+        // use alias as array key if it is set
+        $q = $m->action('field', ['name', 'alias'=>'first_name']);
+        $this->assertEquals(['first_name'=>'John'], $q);
+
+        // if alias is not set, then use field name as key
+        $q = $m->action('field', ['name']);
+        $this->assertEquals(['name'=>'John'], $q);
     }
 
     /**
@@ -356,7 +382,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         unset($result);
         $m->unload();
 
-        // case : %str
+        // case : %str%
         $m->conditions = [];
         $m->addCondition('country', 'LIKE', '%a%');
         $result = $m->action('select')->get();
