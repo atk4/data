@@ -896,7 +896,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function addAction($name, $defaults = [])
     {
-
         if (is_callable($defaults)) {
             $defaults = ['callback'=>$defaults];
         }
