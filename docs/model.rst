@@ -82,9 +82,14 @@ Certain operations may "shrink" this set, such as adding conditions::
 
    send_email_to_users($male_users);
 
-This essentially filters your users without fetching them from the database server. Note that most
+This essentially filters your users without fetching them from the database server. In my example,
+when I pass `$male_users` to the method, no records are loaded yet from the database. It is up to
+the implementation of `send_email_to_users` to load or iterate records or perhaps approach the
+data-set differently, e.g. execute multi-record operation.
+
+Note that most
 operations on Model are mutating (meaning that in example above `$all_users` will also be filtered
-and in fact, `$all_users` and `male_users` will reference same object. Use `clone` if you do not wish
+and in fact, `$all_users` and `$male_users` will reference same object. Use `clone` if you do not wish
 to affect `$all_users`.
 
 Model object = meta information
@@ -270,22 +275,34 @@ For the times when you are not working with SQL persistence, you can calculate f
 .. php:method:: addCalculatedField($name, $callback)
 
 Creates new field object inside your model. Field value will be automatically
-calculated by your callback method right after loading data record in model::
+calculated by your callback method right after individual record is loaded by the model::
 
    $this->addField('term', ['caption'=>'Repayment term in months', 'default'=>36]);
    $this->addField('rate', ['caption'=>'APR %', 'default'=>5]);
 
-   $this->addCalculatedField('interest', function($m) use($apr_calculator) {
-      return $apr_calculator->calculateInterest($m);
+   $this->addCalculatedField('interest', function($m) {
+      return $m->calculateInterest();
    });
+
+.. important:: always use argument `$m` instead of `$this` inside your callbacks. If model is to be
+   `clone`d, the code relying on `$this` would reference original model, but the code using
+   `$m` will properly address the model which triggered the callback.
 
 This can also be useful for calculating relative times::
 
-   use HumanTiming; // See https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
+   class MyModel extends Model {
+      use HumanTiming; // See https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
 
-   $this->addCalculatedField('event_ts_human_friendly', function($m) {
-      return $this->humanTiming($m['event_ts']);
-   });
+      function init() {
+         parent::init();
+
+         $this->addCalculatedField('event_ts_human_friendly', function($m) {
+            return $this->humanTiming($m['event_ts']);
+         });
+
+      }
+   }
+
 
 Strict Fields
 ^^^^^^^^^^^^^
@@ -295,9 +312,9 @@ Strict Fields
 By default model will only allow you to operate with values for the fields
 that have been defined through addField(). If you attempt to get, set or
 otherwise access the value of any other field that has not been properly
-defined, you'll get exception. Read more about :php:class:`Field`
+defined, you'll get an exception. Read more about :php:class:`Field`
 
-If you set strict_field to false, then the check will not be performed.
+If you set `strict_fields` to false, then the check will not be performed.
 
 Actions
 -------
