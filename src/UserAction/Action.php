@@ -59,7 +59,8 @@ class Action
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
-    public function init() {
+    public function init()
+    {
         if ($this->caption === null) {
             $this->caption = substr($this->short_name, 7); // remove action: in front
         }
@@ -74,10 +75,11 @@ class Action
 
         // todo - pass model as first argument ?
 
-        if(is_null($this->callback)) {
+        if (is_null($this->callback)) {
             $callback = $this->callback ?: [$this->owner, str_replace('action:', '', $this->short_name)];
+
             return call_user_func_array([$this->owner, $callback], $args);
-        } elseif (is_string($this->callback))  {
+        } elseif (is_string($this->callback)) {
             return call_user_func_array([$this->owner, $this->callback], $args);
         } else {
             array_unshift($args, $this->owner);
@@ -99,7 +101,7 @@ class Action
     }
 
     /**
-     * Get description of this current action in a user-understandable language
+     * Get description of this current action in a user-understandable language.
      *
      * @return string
      */
@@ -107,5 +109,4 @@ class Action
     {
         return $this->description ?? ('Will execute '.$this->caption);
     }
-
 }
