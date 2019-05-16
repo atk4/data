@@ -1,5 +1,5 @@
 
-.. _SQL:
+.. _Static:
 
 ==================
 Static Persistence

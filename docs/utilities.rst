@@ -12,7 +12,6 @@ very useful when working with ATK Data, but may not always be needed.
 DeepCopy
 ========
 
-.. php:namespace:: \atk4\data\Util
 .. php:class:: DeepCopy
 
 .. php:method:: from
