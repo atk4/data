@@ -23,9 +23,11 @@ Contents:
     joins
     hooks
     deriving
+    utilities
     advanced
     extensions
     persistence/csv
+
 
 
 
