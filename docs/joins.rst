@@ -75,7 +75,7 @@ After this you will have the following fields in your model:
 - country_name [read_only]
 - default_currency [read_only]
 
-.. php:method:: imortModel
+.. php:method:: importModel
 
 You can achieve a similar functionality with hasOne reference, but with weak
 join you can pull multiple fields into your model.
