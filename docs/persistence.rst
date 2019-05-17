@@ -440,12 +440,11 @@ For SQL that means calling 'replace into x'.
 
 .. warning::
 
-    You might be wondering how join() logic would work. Well there are no
-    special treatment for joins() when duplicating records, so your new record
-    will end up referencing a same joined record. If join is reverse, then your
-    new record may not load.
+    There is no special treatment for joins() when duplicating records, so your
+    new record will end up referencing the same joined record. If the join is
+    reverse then your new record may not load.
 
-    This will be properly addressed in future versions of Agile Data.
+    This will be properly addressed in a future version of Agile Data.
 
 
 Working with Multiple DataSets

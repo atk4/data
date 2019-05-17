@@ -484,9 +484,9 @@ class Field implements Expressionable
      */
     public function isEditable()
     {
-        return $this->read_only || $this->never_persist
-            ? false
-            : (isset($this->ui['editable']) ? $this->ui['editable'] : !$this->system);
+        return isset($this->ui['editable']) ? $this->ui['editable']
+                : ($this->read_only || $this->never_persist) ? false
+                    : !$this->system;
     }
 
     /**
