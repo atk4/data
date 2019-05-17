@@ -425,27 +425,47 @@ class Array_ extends Persistence
             ]);
         }
 
-        $action = $this->initAction($m, isset($args[0]) ? $args[0] : null);
-
-        $this->applyConditions($m, $action);
-        $this->setLimitOrder($m, $action);
-
         switch ($type) {
             case 'select':
+                $action = $this->initAction($m, isset($args[0]) ? $args[0] : null);
+                $this->applyConditions($m, $action);
+                $this->setLimitOrder($m, $action);
 
                 return $action;
 
             case 'count':
+                $action = $this->initAction($m, isset($args[0]) ? $args[0] : null);
+                $this->applyConditions($m, $action);
+                $this->setLimitOrder($m, $action);
 
                 return $action->count();
 
-            /* These are not implemented yet
             case 'field':
+                if (!isset($args[0])) {
+                    throw new Exception([
+                        'This action requires one argument with field name',
+                        'action' => $type,
+                    ]);
+                }
 
-                $field = is_string($args[0]) ? $m->getField($args[0]) : $args[0];
+                $field = is_string($args[0]) ? $args[0] : $args[0][0];
 
-                return $action->filterField($field->short_name);
+                $action = $this->initAction($m, [$field]);
+                $this->applyConditions($m, $action);
+                $this->setLimitOrder($m, $action);
 
+                // get first record
+                $row = $action->getRow();
+                if ($row) {
+                    if (isset($args['alias']) && array_key_exists($field, $row)) {
+                        $row[$args['alias']] = $row[$field];
+                        unset($row[$field]);
+                    }
+                }
+
+                return $row;
+
+            /* These are not implemented yet
             case 'fx':
             case 'fx0':
 
