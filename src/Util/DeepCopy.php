@@ -45,9 +45,9 @@ class DeepCopy
     /**
      * @var array contains array similar to references but containing list of callback methods to transform fields/values:
      *            e.g. ['Invoices'=>['Lines'=>function($data){
-     *                  $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
-     *                  return $data;
-     *              }]]
+     *            $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
+     *            return $data;
+     *            }]]
      */
     protected $transforms = [];
 
