@@ -43,6 +43,15 @@ class DeepCopy
     protected $exclusions = [];
 
     /**
+     * @var array contains array similar to references but containing list of callback methods to transform fields/values:
+     *            e.g. ['Invoices'=>['Lines'=>function($data){
+     *                  $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
+     *                  return $data;
+     *              }]]
+     */
+    protected $transforms = [];
+
+    /**
      * @var array while copying, will record mapped records in format [$table => ['old_id'=>'new_id']]
      */
     public $mapping = [];
@@ -110,6 +119,33 @@ class DeepCopy
     }
 
     /**
+     * Specifies which models data should be transformed while copying.
+     * May also contain arrays for related entries.
+     *
+     * ->transformData(
+     *      [function($data){ // for Client entity
+     *          $data['name'] => $data['last_name'].' '.$data['first_name'];
+     *          unset($data['first_name'], $data['last_name']);
+     *          return $data;
+     *      }],
+     *      'Invoices' => ['Lines'=>function($data){ // for nested Client->Invoices->Lines hasMany entity
+     *              $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
+     *              return $data;
+     *          }]
+     *  );
+     *
+     * @param array $transforms
+     *
+     * @return $this
+     */
+    public function transformData($transforms)
+    {
+        $this->transforms = $transforms;
+
+        return $this;
+    }
+
+    /**
      * Will extract non-numeric keys from the array.
      *
      * @param $array
@@ -140,7 +176,13 @@ class DeepCopy
      */
     public function copy()
     {
-        return $this->_copy($this->source, $this->destination, $this->references, $this->exclusions)->reload();
+        return $this->_copy(
+                    $this->source,
+                    $this->destination,
+                    $this->references,
+                    $this->exclusions,
+                    $this->transforms
+            )->reload();
     }
 
     /**
@@ -150,13 +192,14 @@ class DeepCopy
      * @param Model $destination
      * @param array $references
      * @param array $exclusions  of fields to exclude
+     * @param array $transforms  callbacks for data transforming
      *
      * @throws DeepCopyException
      * @throws Exception
      *
      * @return Model Destination model
      */
-    protected function _copy(Model $source, Model $destination, array $references, array $exclusions)
+    protected function _copy(Model $source, Model $destination, array $references, array $exclusions, array $transforms)
     {
         try {
             // Perhaps source was already copied, then simply load destination model and return
@@ -167,16 +210,25 @@ class DeepCopy
             } else {
                 $this->debug('Copying '.get_class($source));
 
-                // TODO transform data from source to destination with a possible callback
-                // $data = $source->get(); transformData($data);
                 $data = $source->get();
-                unset($data[$source->id_field]);
+
+                // exclude not needed field values
+                // @see excluding()
                 foreach ($this->extractKeys($exclusions) as $key => $val) {
                     unset($data[$key]);
                 }
 
+                // do data transformation from source to destination
+                // @see transformData()
+                if (isset($transforms[0]) && is_callable($transforms[0])) {
+                    $data = call_user_func($transforms[0], $data);
+                }
+
                 // TODO add a way here to look for duplicates based on unique fields
                 // foreach($destination->unique fields) { try load by
+
+                // if we still have id field, then remove it
+                unset($data[$source->id_field]);
 
                 // Copy fields as they are
                 foreach ($data as $key => $val) {
@@ -221,7 +273,8 @@ class DeepCopy
                                 $source->ref($ref_key),
                                 $destination->refModel($ref_key),
                                 $ref_val,
-                                $exclusions[$ref_key] ?? []
+                                $exclusions[$ref_key] ?? [],
+                                $transforms[$ref_key] ?? []
                             )->id;
                             $this->debug(' ... mapped into '.$destination[$ref_key]);
                         } catch (DeepCopyException $e) {
@@ -251,7 +304,8 @@ class DeepCopy
                             $ref_model,
                             $destination->ref($ref_key),
                             $ref_val,
-                            $exclusions[$ref_key] ?? []
+                            $exclusions[$ref_key] ?? [],
+                            $transforms[$ref_key] ?? []
                         );
                     }
                 }
