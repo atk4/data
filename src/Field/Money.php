@@ -7,6 +7,4 @@ namespace atk4\data\Field;
  */
 class Money extends Number
 {
-    /** @var int */
-    public $decimalNumbers = 2;
 }
