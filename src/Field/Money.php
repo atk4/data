@@ -3,10 +3,10 @@
 namespace atk4\data\Field;
 
 /**
- * Class Money offers a lightweight implementation of currencies. If you plan to do anything at all with the
- * money, you should consider atk4/money add-on.
+ * Class Money offers a lightweight implementation of currencies.
  */
 class Money extends Number
 {
+    /** @var int */
     public $decimalNumbers = 2;
 }
