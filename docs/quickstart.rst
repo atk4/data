@@ -4,29 +4,82 @@
 Quickstart
 ==========
 
-Agile Data Framework is built around some unique concepts. Your knowledge of
-other ORM, ActiveRecord and QueryBuilder tools could be helpful, but you should
-carefully go through the basics if you want to know how to use Agile Data
-efficiently.
+The reason most developers dislike *Object Relational Mapper (ORM)* frameworks is because it is `slow, clumsy, limited and flawed <https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3>`_. The benefits are **consistency, compatibility and abstraction** it offers to larger projects.
 
-The distinctive goal for Agile Data is ability to "execute" complex operations
-on the database server directly, such as aggregation, sub-queries, joins and
-unions but only if the database server supports those operations.
+ATK Data is a Data/Persistence mapping framework in PHP implementing **an alternative to ORM** to achieve the following goals:
 
-Developer would normally create a declaration like this::
+ - offers consistency, compatibility and abstraction
+ - avoid classical flaws of ORM pattern
+ - remain SQL/NoSQL agnostic
+ - offer ability to take advantage of vendor-specific features
+   
+The pattern implemented by ATK Data (DataSets) were proposed on *Apr 2016*. The design goals and concepts are further discussed in :ref:`Overview`.
 
-    $user->hasMany('Order')->addField('total', ['aggregate'=>'sum']);
+Quick Intro
+===========
 
-It is up to Agile Data to decide what's the most efficient way to implement
-the aggregation. Currently only SQL persistence is capable of constructing
-aggregate sub-query.
+ATK Data is focused on reducing number of database queries, moving CPU-intensive tasks into your database (if possible). It is well suited for Amazon RDS, Google Cloud SQL and ClearDB but thanks to abstraction will work transparently with Static data, NoSQL or RestAPIs backends.
 
-Requirements
-============
+When using ATK Data, it's possible to work with the data on a **higher level**, performing operations such as :ref:`DeepCopy`, :ref:`DeepTraversal` as well as :ref:`Aggregation`.
 
-If you wish to try out some examples in this guide, you will need the following:
+Core of ATK Data aims to:
 
-- PHP 5.6 or above.
+ - allow you to describe your object entities without database specifics
+ - save/load model data through generic database drivers for SQL and NoSQL
+ - work with multiple record sets in your application
+ - integrate with generic `User Interface <https://github.com/atk4/ui>`_ or `Application Interface <https://github.com/atk4/api>`_ extensions
+
+ATK Data can do a lot more through add-ons.
+
+Quick Links
+===========
+
+Model Definition:
+   Defined in PHP class method init(). Supports PDO, NoSQL, Array, Session, CSV,
+   and RestAPI through custom persistence classes. Column-specific structure but
+   support nesting and containment. Inheritance.
+
+Loading and Storing data:
+   Generic integration with multiple SQL vendors. Support for Expressions. Table
+   name mapping, field name mapping, type mapping, serialization, field-level
+   encryption. Sub-Selects. Joins. Mapping to stored procedures. Recursive import.
+   Hooks. Behaviours.
+
+DataSet Operations:
+   Additive conditions. Expression-based conditions. Limits. Fetching all data,
+   selective columns or mapping. Expressing and re-using SQL statements. Updating
+   multiple records. Aggregation functions. Inferring values. Global conditions.
+
+Field Types:
+   Native PHP types. Custom types. Typecasting settings (e.g. format). ENUMs.
+   Key-value. PHP Calculated types.
+
+References and Relations:
+   hasOne and hasMany reference. Traversing without data loading. Cross-persistence
+   traversal. Deep traversal. 
+
+Utilities:
+   Schema migration. Deep copy. Unions. Aggregate Models. 
+
+Actions:
+   Defining user actions. Action arguments. Action executor specs. ACL. Transactions.
+
+Meta Information:
+   Inferring field decorator. Validation rules. Captions, hints and description.
+   Localization.
+
+Security:
+   Scopes. System fields and actions. Areas of concern.
+
+Refactoring:
+   Using with existing schema. Refactoring database.
+
+Quick Tour
+==========
+
+First get the following:
+
+- PHP 7.0 or above.
 - MySQL or MariaDB
 - Install `Agile Data Primer <https://github.com/atk4/data-primer/>`_
 
@@ -42,24 +95,153 @@ If you wish to try out some examples in this guide, you will need the following:
 
     php console.php
 
-Console is using `Psysh <http://psysh.org>`_ to help you interact with objects
-like this::
+
+Enter statements into console one-by-one and carefully observe results. If you wish
+to see SQL queries as they are being executed, be sure to include "dumper" proxy.
+
+Persistence Driver
+------------------
+
+Persistence is a database, like MySQL. It could also be a CSV file. To interract with a
+persistence you need a driver. `console.php` has already initialized persistence and
+connected to database, but no queries were executed::
 
     > $db
     => atk4\data\Persistence\SQL {...}
 
-    > exit
+The appropriate persistence class will be selected depending on your connection string (DSN).
 
-.. note:: I recommend that you enter statements into console one-by-one and
-    carefully observe results. You should also experiment where possible, try
-    different conditions or no conditions at all.
+Model Definition
+----------------
 
-    You can always create new model object if you mess up. If you change any
-    of the classes, you'll have to restart console.
+Your application does not talk to database directly. Instead it requires an object, which
+we call `Model`. You should create class for every business entity, for example:
 
-    There seem to be a bug inside Psysh where it looses MySQL connection, in
-    this case restart the console.
+ - `Client <https://github.com/atk4/data-primer/blob/master/src/inv/Client.php>`_
+ - `Invoice <https://github.com/atk4/data-primer/blob/master/src/inv/Invoice.php>`_
+ - `InvoiceLine <https://github.com/atk4/data-primer/blob/master/src/inv/InvoiceLine.php>`_
 
+Model Instance
+--------------
+
+Return back to the console, and create instance of Client class::
+
+   > $client = new inv\Client($db);
+   => inv\Client {#170
+        +id: null,
+        +conditions: [],
+      }
+
+The object `$client` has a state and can be used to interact with single or multiple records.
+Multi-record operations currently apply to entire set of data. Lets find out how many cliens
+we have::
+
+   > $client->action('count')->getOne();
+   => "10"
+
+Next, we can use :php:meth:`Model::loadAny` to load one record from persistence and then
+get data with :php:meth:`Model::get`::
+
+   > $client->loadAny();
+   > $client->get();
+
+The types returned by `get()` are automatically converted from database-specific to PHP-specific,
+such as `DateTime`.
+
+Fields
+------
+
+Model object will also populate :php:class:`Field` objects. You can get list of them with :php:meth:`Model::getFields`.
+Observe that field objects may vary depending on definition or :ref:`Persistence` capabilities. 
+
+Unlike other frameworks, Model object is reusable. You can unload and load data of another record
+or even iterate through entire set::
+
+   > $client->unload()
+   > $client->loadBy('name', 'John');
+
+Field objects also remain and can hold valuable information which may be relied on by other 
+frameworks or add-ons on the fly.
+
+References
+----------
+
+ATK Data uses term "reference" instead of "relation", because it's more broad. Think of it this way:
+
+ - one record of Client has many Invoice records.
+
+Reference is defined in :php:meth:`Model::init` method like this::
+
+   $this->hasMany('Invoices', Invoice::class);
+
+Go back to console and see which references your `$client` object has::
+
+   > $client->getRefs();
+
+Then traverse this reference::
+
+   > $invoices = $client->ref('Invoices');
+   => inv\Invoice {#226
+        +id: null,
+        +conditions: [
+          [
+            "inv_client_id",
+            "45",
+          ],
+        ],
+      }
+
+Observe that the model returned by :php:meth:`Model::ref` does not have active record, but instead it
+has condition set. This narrows down set of "All invoices" to the "Invoices of client John". We can
+execute operation on John's invoices::
+
+   > $invoices->action('count')->getOne();
+   => "2"
+
+You do not have to load record in order to traverse further. Try this::
+
+   > $all_lines = $invoices->ref('Lines');
+
+You will get a Line object conditioned to a DataSet corresponding to all invoices of client John. This
+time lets calculate total amount of all the invoice lines::
+
+   > $all_lines->action('fx', ['sum', 'total']);
+   => "69"
+
+The query used to fetch this value was constructed with our inferred conditions, but also taking into
+account that there are no physical "total" field and instead it is a multiplication of `qty` and `price` fields.
+
+Our invoices also have a `due` field, lets see how many invoices are due::
+
+   > $due = clone $invoices;
+   > $due->addCondition('due', '>', 0);
+   > $due->export(['ref', 'total', 'due']);
+
+This would give you list of due invocies and amount due.
+
+User Actions
+------------
+
+ATK Data provides a way to describe User actions. Once described action can be invoked through generic
+API, Add-on or UI. Lets find out which user actions `$invoices` offers::
+
+   > $invoices->getActions()
+
+You should see action `register_payment` here as well as description of it's arguments. Lets invoke this action::
+
+   > $invoices->register_payment(30.0);
+
+Now you can re-request list of due invoices::
+
+   > $due->export(['ref', 'total', 'due']);
+
+This time you should see a different picture, since the payment was allocated towards multiple invoices of client 'John'.
+
+Conclusion
+----------
+
+This quick intro shows just some basic concepts of traversing references and working with scoped data sets. We will
+get back to the `data-primer` later with some more advanced usage patterns.
 
 Core Concepts
 ==============

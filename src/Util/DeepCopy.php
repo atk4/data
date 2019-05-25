@@ -8,7 +8,7 @@ use atk4\data\Reference\HasMany;
 use atk4\data\Reference\HasOne;
 
 /**
- * Class DeepCopy implements copying records between two models:.
+ * Class DeepCopy implements copying records between two models.
  *
  * $dc = new DeepCopy();
  *
@@ -116,7 +116,7 @@ class DeepCopy
      *
      * @return array
      */
-    protected function extractKeys($array): array
+    protected function extractKeys($array)
     {
         $result = [];
         foreach ($array as $key=>$val) {
