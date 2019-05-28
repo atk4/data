@@ -7,8 +7,24 @@ Loading and Saving (Persistence)
 
 .. php:class:: Model
 
-In order to load and store data of your model inside the database your model
-should be "associated" with persistence layer.
+Model object represents your real-life business objects such as "Invoice" or "Client".
+The rest of your application works with "Model" objects only and have no knowledge of
+what database you are using and how data is stored in there. This decouples your app
+from the data storage (Persistence). If in the future you will want to change database
+server or structure of your database, you can do it without affecting your application.
+
+Data Persistence frameworks (like ATK Data) provide the bridge between "Model" and the
+actual database. There is balance between performance, simplicity and consistency. While
+other persistence frameworks insist on strict isolation, ATK Data prefers practicality
+and simplicity.
+
+ATK Data couples Model and Persistence, they have some intimate knowledge of each-other
+and work as a unit. Persistence object is created first and by the time Model is created,
+you specify persistence to the model.
+
+During the lifecycle of the Model it can work with various records, save, load, unload data
+etc, but it will always remain linked with that same persistence.
+
 
 Associating with Persistence
 ============================
