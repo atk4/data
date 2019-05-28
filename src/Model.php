@@ -888,9 +888,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param $name
      * @param array $defaults
      *
-     * @return UserAction\Generic
      *@throws \atk4\core\Exception
      *
+     * @return UserAction\Generic
      */
     public function addAction($name, $defaults = [])
     {
@@ -920,8 +920,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Returns list of actions for this model.
      *
      * @param int $scope e.g. UserAction::ALL_RECORDS
-     * @return array
+     *
      * @throws \atk4\core\Exception
+     *
+     * @return array
      */
     public function getActions($scope = null)
     {
@@ -958,8 +960,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param string $name
      *
-     * @return UserAction\Generic|false
      * @throws \atk4\core\Exception
+     *
+     * @return UserAction\Generic|false
      */
     public function hasAction($name)
     {
@@ -975,10 +978,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param string $name
      *
-     * @return UserAction\Generic
      * @throws \atk4\core\Exception
-     *
      * @throws \atk4\data\Exception
+     *
+     * @return UserAction\Generic
      */
     public function getAction($name)
     {

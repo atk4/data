@@ -78,7 +78,7 @@ class Generic
         if (is_null($this->callback)) {
             $callback = $this->callback ?: [$this->owner, str_replace('action:', '', $this->short_name)];
 
-            return call_user_func_array( $callback, $args);
+            return call_user_func_array($callback, $args);
         } elseif (is_string($this->callback)) {
             return call_user_func_array([$this->owner, $this->callback], $args);
         } else {
