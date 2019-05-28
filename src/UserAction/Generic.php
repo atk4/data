@@ -68,9 +68,10 @@ class Generic
     }
 
     /**
-     * Attempt to execute callback of the action
+     * Attempt to execute callback of the action.
      *
      * @param mixed ...$args
+     *
      * @return mixed
      */
     public function execute(...$args)
@@ -100,6 +101,7 @@ class Generic
      * Identical to Execute but display a preview of what will happen.
      *
      * @param mixed ...$args
+     *
      * @return mixed
      */
     public function preview(...$args)
