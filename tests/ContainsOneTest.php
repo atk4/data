@@ -125,7 +125,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $a->set($row = ['country_id'=>1, 'address'=>'foo', 'built_date'=>new \DateTime('2019-01-01'), 'door_code'=>null]);
+        $a->set($row = ['country_id'=>1, 'address'=>'foo', 'built_date'=>new \DateTime('2019-01-01 UTC'), 'door_code'=>null]);
         $a->save();
         $a->save();
 
@@ -140,7 +140,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // now add nested containsOne - DoorCode
         $c = $i->ref('addr')->ref('door_code');
-        $c->set($row = ['code'=>'ABC', 'valid_till'=>new \DateTime('2019-07-01')]);
+        $c->set($row = ['code'=>'ABC', 'valid_till'=>new \DateTime('2019-07-01 UTC')]);
         $c->save();
         $this->assertEquals($row, $i->ref('addr')->ref('door_code')->get());
 
