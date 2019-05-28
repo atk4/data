@@ -5,6 +5,7 @@
 namespace atk4\data\UserAction;
 
 use atk4\core\DIContainerTrait;
+use atk4\core\Exception;
 use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
 
@@ -61,9 +62,6 @@ class Generic
 
     public function init()
     {
-        if ($this->caption === null) {
-            $this->caption = substr($this->short_name, 7); // remove action: in front
-        }
         $this->init_();
     }
 
@@ -103,13 +101,17 @@ class Generic
      * @param mixed ...$args
      *
      * @return mixed
+     * @throws Exception
      */
     public function preview(...$args)
     {
         if (is_null($this->preview)) {
+            throw new Exception(['You must specify preview callback explicitly']);
+            /*
             $preview = $this->preview ?: [$this->owner, str_replace('action:', '', $this->short_name)];
 
             return call_user_func_array($preview, $args);
+            */
         } elseif (is_string($this->preview)) {
             return call_user_func_array([$this->owner, $this->preview], $args);
         } else {

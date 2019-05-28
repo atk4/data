@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence_Static;
 use atk4\data\UserAction;
@@ -111,6 +112,21 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $client->addAction('also_backup', ['callback'=>'backup_clients']);
         $this->assertEquals('backs up all clients', $client->getAction('also_backup')->execute());
+
+
+        $client->getAction('also_backup')->preview = 'backup_clients';
+        $this->assertEquals('backs up all clients', $client->getAction('also_backup')->preview());
+
+        $this->assertEquals('Will execute Also Backup', $client->getAction('also_backup')->getDescription());
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testPreviewFail()
+    {
+        $client = new ACClient($this->pers);
+        $client->getAction('backup_clients')->preview();
     }
 
     /**
