@@ -95,6 +95,17 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertFalse($act3);
     }
 
+    public function testPreview()
+    {
+        $client = new ACClient($this->pers);
+        $client->addAction('say_a', function(){ return 'a'; });
+
+        $this->assertEquals('a', $client->getAction('say_a')->execute());
+
+        $client->getAction('say_a')->preview = function() { return 'will say a'; };
+        $this->assertEquals('will say a', $client->getAction('say_a')->preview());
+    }
+
     /**
      * @expectedException Exception
      */
