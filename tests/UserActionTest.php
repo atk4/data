@@ -102,8 +102,11 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals('a', $client->getAction('say_a')->execute());
 
-        $client->getAction('say_a')->preview = function($m) { return ($m instanceof ACClient) ? 'will say a' : 'will fail'; };
-        $this->assertEquals('will say a', $client->getAction('say_a')->preview());
+        $client->getAction('say_a')->preview = function($m, $arg) { return ($m instanceof ACClient) ? 'will say '.$arg : 'will fail'; };
+        $this->assertEquals('will say x', $client->getAction('say_a')->preview('x'));
+
+        $client->addAction('also_backup', ['callback'=>'backup_clients']);
+        $this->assertEquals('backs up all clients', $client->getAction('also_backup')->execute());
     }
 
     /**
