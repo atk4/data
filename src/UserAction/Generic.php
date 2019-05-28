@@ -67,6 +67,12 @@ class Generic
         $this->init_();
     }
 
+    /**
+     * Attempt to execute callback of the action
+     *
+     * @param mixed ...$args
+     * @return mixed
+     */
     public function execute(...$args)
     {
         // todo - assert owner model loaded
@@ -74,6 +80,8 @@ class Generic
         // todo - start transaction, if atomic
 
         // todo - pass model as first argument ?
+
+        // todo - ACL tests must allow
 
         if (is_null($this->callback)) {
             $callback = $this->callback ?: [$this->owner, str_replace('action:', '', $this->short_name)];
@@ -88,12 +96,18 @@ class Generic
         }
     }
 
+    /**
+     * Identical to Execute but display a preview of what will happen.
+     *
+     * @param mixed ...$args
+     * @return mixed
+     */
     public function preview(...$args)
     {
         if (is_null($this->preview)) {
             $preview = $this->preview ?: [$this->owner, str_replace('action:', '', $this->short_name)];
 
-            return call_user_func_array([$this->owner, $preview], $args);
+            return call_user_func_array($preview, $args);
         } elseif (is_string($this->preview)) {
             return call_user_func_array([$this->owner, $this->preview], $args);
         } else {
