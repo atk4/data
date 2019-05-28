@@ -102,7 +102,7 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals('a', $client->getAction('say_a')->execute());
 
-        $client->getAction('say_a')->preview = function() { return 'will say a'; };
+        $client->getAction('say_a')->preview = function($m) { return ($m instanceof ACClient) ? 'will say a' : 'will fail'; };
         $this->assertEquals('will say a', $client->getAction('say_a')->preview());
     }
 
