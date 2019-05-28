@@ -81,9 +81,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Default class for addAction().
      *
-     * @var array|UserAction\Action default class / seed
+     * @var array|UserAction\Generic default class / seed
      */
-    public $_default_action = UserAction\Action::class;
+    public $_default_action = UserAction\Generic::class;
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -886,13 +886,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * from UI.
      *
      * @param $name
-     * @param null  $callback
-     * @param array $arguments
      * @param array $defaults
      *
-     * @throws \atk4\core\Exception
+     * @return UserAction\Generic
+     *@throws \atk4\core\Exception
      *
-     * @return UserAction\Action
      */
     public function addAction($name, $defaults = [])
     {
@@ -910,7 +908,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $defaults['caption'] = $s;
         }
 
-        /** @var UserAction\Action $action */
+        /** @var UserAction\Generic $action */
         $action = $this->factory($this->_default_action, $defaults);
 
         $this->add($action, 'action:'.$name);
@@ -921,7 +919,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Returns list of actions for this model.
      *
+     * @param int $scope e.g. UserAction::ALL_RECORDS
      * @return array
+     * @throws \atk4\core\Exception
      */
     public function getActions($scope = null)
     {
@@ -958,7 +958,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param string $name
      *
-     * @return UserAction\Action|false
+     * @return UserAction\Generic|false
+     * @throws \atk4\core\Exception
      */
     public function hasAction($name)
     {
@@ -974,9 +975,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param string $name
      *
-     * @throws \atk4\data\Exception
+     * @return UserAction\Generic
+     * @throws \atk4\core\Exception
      *
-     * @return UserAction\Action
+     * @throws \atk4\data\Exception
      */
     public function getAction($name)
     {

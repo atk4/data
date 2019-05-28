@@ -15,7 +15,7 @@ use atk4\core\TrackableTrait;
  *
  * Action must NOT rely on any specific UI implementation.
  */
-class Action
+class Generic
 {
     use DIContainerTrait;
     use TrackableTrait;
@@ -78,7 +78,7 @@ class Action
         if (is_null($this->callback)) {
             $callback = $this->callback ?: [$this->owner, str_replace('action:', '', $this->short_name)];
 
-            return call_user_func_array([$this->owner, $callback], $args);
+            return call_user_func_array( $callback, $args);
         } elseif (is_string($this->callback)) {
             return call_user_func_array([$this->owner, $this->callback], $args);
         } else {

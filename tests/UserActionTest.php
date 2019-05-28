@@ -38,7 +38,7 @@ class ACClient extends Model
         $this->addAction('send_reminder');
 
         // this action will be system action, so it will not be invokable from UI
-        $a = $this->addAction('backup_clients', null, [], ['scope' => UserAction\Action::ALL_RECORDS, 'system' => true]);
+        $a = $this->addAction('backup_clients', ['scope' => UserAction\Generic::ALL_RECORDS, 'system' => true]);
     }
 }
 
@@ -65,12 +65,13 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $actions = $client->getActions();
         $this->assertEquals(1, count($actions)); // don't return system actions here
+        $this->assertEquals(0, count($client->getActions(UserAction\Generic::ALL_RECORDS))); // don't return system actions here
 
         $act1 = $actions['send_reminder'];
 
         // action takes no arguments. If it would, we should be able to find info about those
         $this->assertEquals([], $act1->args);
-        $this->assertEquals(UserAction\Action::SINGLE_RECORD, $act1->scope);
+        $this->assertEquals(UserAction\Generic::SINGLE_RECORD, $act1->scope);
 
         // load record, before executing, because scope is single record
         $client->load(1);
@@ -84,7 +85,7 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // action takes no arguments. If it would, we should be able to find info about those
         $this->assertEquals([], $act2->args);
-        $this->assertEquals(UserAction\Action::ALL_RECORDS, $act2->scope);
+        $this->assertEquals(UserAction\Generic::ALL_RECORDS, $act2->scope);
 
         $res = $act2->execute();
         $this->assertEquals('backs up all clients', $res);
