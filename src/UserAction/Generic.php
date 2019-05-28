@@ -100,18 +100,19 @@ class Generic
      *
      * @param mixed ...$args
      *
-     * @return mixed
      * @throws Exception
+     *
+     * @return mixed
      */
     public function preview(...$args)
     {
         if (is_null($this->preview)) {
             throw new Exception(['You must specify preview callback explicitly']);
-            /*
-            $preview = $this->preview ?: [$this->owner, str_replace('action:', '', $this->short_name)];
+        /*
+        $preview = $this->preview ?: [$this->owner, str_replace('action:', '', $this->short_name)];
 
-            return call_user_func_array($preview, $args);
-            */
+        return call_user_func_array($preview, $args);
+        */
         } elseif (is_string($this->preview)) {
             return call_user_func_array([$this->owner, $this->preview], $args);
         } else {

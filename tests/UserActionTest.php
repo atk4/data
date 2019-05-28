@@ -113,7 +113,6 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $client->addAction('also_backup', ['callback'=>'backup_clients']);
         $this->assertEquals('backs up all clients', $client->getAction('also_backup')->execute());
 
-
         $client->getAction('also_backup')->preview = 'backup_clients';
         $this->assertEquals('backs up all clients', $client->getAction('also_backup')->preview());
 
