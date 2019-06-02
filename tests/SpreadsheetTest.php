@@ -29,7 +29,7 @@
 namespace atk4\data\tests;
 
 use \atk4\data\Model;
-use \atk4\data\Persistence_PhpSpreadsheet;
+use \atk4\data\Persistence\PhpSpreadsheet;
 use \atk4\data\tests\Model\Person as Person;
 
 /**
@@ -54,21 +54,21 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
     {
         // remove all file types
         $types = [
-            Persistence_PhpSpreadsheet::READ_TYPE_XLS,
-            Persistence_PhpSpreadsheet::READ_TYPE_XLSX,
-            Persistence_PhpSpreadsheet::READ_TYPE_XML,
-            Persistence_PhpSpreadsheet::READ_TYPE_ODS,
-            Persistence_PhpSpreadsheet::READ_TYPE_SLK,
-            Persistence_PhpSpreadsheet::READ_TYPE_GNU,
-            Persistence_PhpSpreadsheet::READ_TYPE_CSV,
-            Persistence_PhpSpreadsheet::READ_TYPE_HTML,
+            PhpSpreadsheet::READ_TYPE_XLS,
+            PhpSpreadsheet::READ_TYPE_XLSX,
+            PhpSpreadsheet::READ_TYPE_XML,
+            PhpSpreadsheet::READ_TYPE_ODS,
+            PhpSpreadsheet::READ_TYPE_SLK,
+            PhpSpreadsheet::READ_TYPE_GNU,
+            PhpSpreadsheet::READ_TYPE_CSV,
+            PhpSpreadsheet::READ_TYPE_HTML,
             
-            Persistence_PhpSpreadsheet::WRITE_TYPE_XLS,
-            Persistence_PhpSpreadsheet::WRITE_TYPE_XLSX,
-            Persistence_PhpSpreadsheet::WRITE_TYPE_ODS,
-            Persistence_PhpSpreadsheet::WRITE_TYPE_CSV,
-            Persistence_PhpSpreadsheet::WRITE_TYPE_HTML,
-            Persistence_PhpSpreadsheet::WRITE_TYPE_PDF
+            PhpSpreadsheet::WRITE_TYPE_XLS,
+            PhpSpreadsheet::WRITE_TYPE_XLSX,
+            PhpSpreadsheet::WRITE_TYPE_ODS,
+            PhpSpreadsheet::WRITE_TYPE_CSV,
+            PhpSpreadsheet::WRITE_TYPE_HTML,
+            PhpSpreadsheet::WRITE_TYPE_PDF
         ];
         
         // remove duplicated types
@@ -76,11 +76,10 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
         
         foreach($types as $type)
         {
-            // add is_file to be sure
             try {
                 
                 $file = $this->file . '.' . strtolower($type);
-                if(is_file($file))
+                if(file_exists($file))
                 {
                     unlink($file);
                 }
@@ -89,7 +88,7 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
     
             try {
                 $file_alt = $this->file_alt . '.' . strtolower($type);
-                if(is_file($file_alt))
+                if(file_exists($file_alt))
                 {
                     unlink($file_alt);
                 }
@@ -133,16 +132,16 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
                 ['name' => 'Sarah', 'surname' => 'Jones'],
             ];
 
-        $this->setDB($this->file . '.csv',$data);
+        $this->setDB($this->file . '.csv', $data);
 
-        $p = new Persistence_PhpSpreadsheet($this->file . '.csv');
+        $p = new PhpSpreadsheet($this->file . '.csv');
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
         $m->loadAny();
 
-        $this->assertEquals('John', $m['name']);
-        $this->assertEquals('Smith', $m['surname']);
+        $this->assertEquals('John', $m->get('name'));
+        $this->assertEquals('Smith', $m->get('surname'));
     }
 
     public function testLoadAnyException()
@@ -154,7 +153,7 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $this->setDB($this->file . '.csv',$data);
 
-        $p = new Persistence_PhpSpreadsheet($this->file . '.csv');
+        $p = new PhpSpreadsheet($this->file . '.csv');
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -177,8 +176,8 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $this->setDB($this->file . '.csv', $data);
 
-        $p = new Persistence_PhpSpreadsheet($this->file . '.csv');
-        $p2 = new Persistence_PhpSpreadsheet($this->file_alt . '.csv');
+        $p = new PhpSpreadsheet($this->file . '.csv');
+        $p2 = new PhpSpreadsheet($this->file_alt . '.csv');
 
         $m = new Person($p);
 
@@ -206,7 +205,7 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
         
         $this->setDB($this->file . '.csv', $data);
 
-        $p = new Persistence_PhpSpreadsheet($this->file . '.csv');
+        $p = new PhpSpreadsheet($this->file . '.csv');
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -235,27 +234,27 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->setDB($this->file . '.csv', $data);
     
         $types = [
-            Persistence_PhpSpreadsheet::READ_TYPE_XLS,
-            Persistence_PhpSpreadsheet::READ_TYPE_XLSX,
-            Persistence_PhpSpreadsheet::READ_TYPE_XML,
-            Persistence_PhpSpreadsheet::READ_TYPE_ODS,
-            Persistence_PhpSpreadsheet::READ_TYPE_SLK,
-            Persistence_PhpSpreadsheet::READ_TYPE_GNU,
-            Persistence_PhpSpreadsheet::READ_TYPE_CSV,
-            Persistence_PhpSpreadsheet::READ_TYPE_HTML
+            PhpSpreadsheet::READ_TYPE_XLS,
+            PhpSpreadsheet::READ_TYPE_XLSX,
+            PhpSpreadsheet::READ_TYPE_XML,
+            PhpSpreadsheet::READ_TYPE_ODS,
+            PhpSpreadsheet::READ_TYPE_SLK,
+            PhpSpreadsheet::READ_TYPE_GNU,
+            PhpSpreadsheet::READ_TYPE_CSV,
+            PhpSpreadsheet::READ_TYPE_HTML
         ];
         
         foreach($types as $type)
         {
             $type = strtolower($type);
-            $p = new Persistence_PhpSpreadsheet($this->file . '.' . $type, $this->file . '.csv');
+            $p = new PhpSpreadsheet($this->file . '.' . $type, $this->file . '.csv');
         
             $this->assertNotNull($p->getSpreadsheet(),'error on Type ' . $type);
         }
     
         // test file not allowed
         try {
-            $p = new Persistence_PhpSpreadsheet($this->file . '.php');
+            $p = new PhpSpreadsheet($this->file . '.php');
             $this->fail("Expected for file type not allowed for IReader has not been raised.");
         } catch(\Throwable $t)
         {
@@ -276,12 +275,12 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->setDB($this->file . '.csv', $data);
     
         $types = [
-            Persistence_PhpSpreadsheet::WRITE_TYPE_XLS,
-            Persistence_PhpSpreadsheet::WRITE_TYPE_XLSX,
-            Persistence_PhpSpreadsheet::WRITE_TYPE_ODS,
-            Persistence_PhpSpreadsheet::WRITE_TYPE_CSV,
-            Persistence_PhpSpreadsheet::WRITE_TYPE_HTML,
-            Persistence_PhpSpreadsheet::WRITE_TYPE_PDF
+            PhpSpreadsheet::WRITE_TYPE_XLS,
+            PhpSpreadsheet::WRITE_TYPE_XLSX,
+            PhpSpreadsheet::WRITE_TYPE_ODS,
+            PhpSpreadsheet::WRITE_TYPE_CSV,
+            PhpSpreadsheet::WRITE_TYPE_HTML,
+            PhpSpreadsheet::WRITE_TYPE_PDF
         ];
         
         foreach($types as $type)
@@ -290,9 +289,9 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
             
             if($type=== 'pdf')
             {
-                $p = new Persistence_PhpSpreadsheet($this->file . '.csv', $this->file . '.' . $type, 1, 'Dompdf');
+                $p = new PhpSpreadsheet($this->file . '.csv', $this->file . '.' . $type, 1, 'Dompdf');
             } else {
-                $p = new Persistence_PhpSpreadsheet($this->file . '.csv',$this->file . '.' . $type);
+                $p = new PhpSpreadsheet($this->file . '.csv',$this->file . '.' . $type);
             }
             
             $this->assertNotNull($p->getSpreadsheet(),'error on Type ' . $type);
@@ -300,7 +299,7 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
         
         // test file not allowed
         try {
-            $p = new Persistence_PhpSpreadsheet($this->file . '.csv','file.php');
+            $p = new PhpSpreadsheet($this->file . '.csv','file.php');
             $this->fail("Expected for file type not allowed for IWriter has not been raised.");
         } catch(\Throwable $t)
         {
@@ -320,7 +319,7 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
     
         $this->setDB($this->file . '.csv', $data);
         
-        $p = new Persistence_PhpSpreadsheet($this->file . '.csv');
+        $p = new PhpSpreadsheet($this->file . '.csv');
         $this->assertNotNull($p->getSpreadsheet(),'Spreadsheet not created after reading file');
     }
     
@@ -336,7 +335,7 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
         
         $this->setDB($this->file . '.csv',$data);
         
-        $p = new Persistence_PhpSpreadsheet($this->file . '.csv');
+        $p = new PhpSpreadsheet($this->file . '.csv');
         $p->saveSheetAs($this->file . '.xls');
     }
     
@@ -353,7 +352,7 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->setDB($this->file . '.csv',$data);
         
         try {
-            $p = new Persistence_PhpSpreadsheet($this->file . '.csv');
+            $p = new PhpSpreadsheet($this->file . '.csv');
             $p->saveSheetAs($this->file . '.pdf');
             
             $this->fails('this test must throw an exception for not specifing PDFClass');
@@ -382,7 +381,7 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
         
         $this->setDB($this->file . '.csv',$data);
         
-        $p = new Persistence_PhpSpreadsheet($this->file . '.csv',$this->file_alt . '.csv');
+        $p = new PhpSpreadsheet($this->file . '.csv',$this->file_alt . '.csv');
     
         $m = new Model($p);
         $m->addField('name');
@@ -420,12 +419,12 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
         
         $title2set = 'new title';
         
-        $p = new Persistence_PhpSpreadsheet($this->file . '.csv',$this->file . '.xls');
+        $p = new PhpSpreadsheet($this->file . '.csv',$this->file . '.xls');
         $m = new Person($p);
         
         $p->setActiveSheetTitle($title2set);
         
-        $p2 = new Persistence_PhpSpreadsheet($this->file . '.xls');
+        $p2 = new PhpSpreadsheet($this->file . '.xls');
         
         $this->assertEquals(
             $title2set,
@@ -452,12 +451,12 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
     
         $title2set = 'new title';
     
-        $p = new Persistence_PhpSpreadsheet($this->file . '.csv', $this->file . '.xls', -1);
+        $p = new PhpSpreadsheet($this->file . '.csv', $this->file . '.xls', -1);
         $m = new Model($p);
     
         $p->setActiveSheetTitle($title2set);
     
-        $p = new Persistence_PhpSpreadsheet($this->file . '.xls', $this->file . '.xls',1);
+        $p = new PhpSpreadsheet($this->file . '.xls', $this->file . '.xls',1);
     
         $this->assertEquals($title2set, $p->getSpreadsheet()
                                           ->getActiveSheet()
@@ -483,12 +482,12 @@ class SpreadsheetTest extends \atk4\core\PHPUnit_AgileTestCase
     
         $title2set = 'new title';
     
-        $p = new Persistence_PhpSpreadsheet($this->file_alt . '.csv', $this->file_alt . '.xls', null);
+        $p = new PhpSpreadsheet($this->file_alt . '.csv', $this->file_alt . '.xls', null);
         $m = new Model($p);
     
         $p->setActiveSheetTitle($title2set);
     
-        $p = new Persistence_PhpSpreadsheet($this->file_alt . '.xls', $this->file . '.xls',2);
+        $p = new PhpSpreadsheet($this->file_alt . '.xls', $this->file . '.xls',2);
     
         $this->assertEquals($title2set, $p->getSpreadsheet()
                                           ->getActiveSheet()
