@@ -4,7 +4,6 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\data\Persistence_SQL;
 
 class Model_Rate extends \atk4\data\Model
 {
@@ -78,7 +77,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m = new Model_Rate($db);
 
         $this->assertEquals(2, $m->action('count')->getOne());
@@ -92,7 +91,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'user');
         $m->addFields(['name', ['salary', 'default' => 10]]);
 
@@ -121,7 +120,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'user');
         $m->addFields(['name', 'login'], ['default' => 'unknown']);
 
@@ -142,7 +141,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => '1'],
@@ -165,7 +164,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -194,7 +193,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'age' => 18],
@@ -222,7 +221,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testUpdateCondition()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 ['name' => 'John'],
@@ -272,7 +271,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testHookBreakers()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 ['name' => 'John'],
@@ -312,7 +311,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testIssue220()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m = new Model_Item($db);
 
         $m->hasOne('foo', '\atk4\data\tests\Model_Item')
@@ -321,7 +320,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testIssue163()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m = new Model_Item($db);
 
         $m->hasOne('Person', 'atk4/data/tests/Model/Person');
@@ -330,7 +329,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testNonSQLFieldClass()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'rate' => [
                 ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1'=>'y1', 'x2'=>'y2'],
@@ -350,7 +349,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testCaption()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'user');
 
         // caption is not set, so generate it from class name \atk4\data\Model
@@ -367,7 +366,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => '1'],

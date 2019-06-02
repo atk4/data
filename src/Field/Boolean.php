@@ -88,6 +88,20 @@ class Boolean extends \atk4\data\Field
     }
 
     /**
+     * Casts field value to string.
+     *
+     * @param mixed $value Optional value
+     *
+     * @return string
+     */
+    public function toString($value = null)
+    {
+        $v = ($value === null ? $this->get() : $this->normalize($value));
+
+        return $v === true ? '1' : '0';
+    }
+
+    /**
      * Validate if value is allowed for this field.
      *
      * @param mixed $value

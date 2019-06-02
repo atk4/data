@@ -5,7 +5,7 @@
 namespace atk4\data;
 
 /**
- * Class description??
+ * Persistence class.
  */
 class Persistence
 {
@@ -56,7 +56,7 @@ class Persistence
             case 'dumper':
             case 'counter':
             case 'sqlite':
-                $db = new Persistence_SQL($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
+                $db = new \atk4\data\Persistence\SQL($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
                 $db->driver = $driver;
 
                 return $db;
@@ -174,10 +174,10 @@ class Persistence
         foreach ($row as $key => $value) {
 
             // Look up field object
-            $f = $m->hasElement($key);
+            $f = $m->hasField($key);
 
             // Figure out the name of the destination field
-            $field = isset($f->actual) && $f->actual ? $f->actual : $key;
+            $field = $f && isset($f->actual) && $f->actual ? $f->actual : $key;
 
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
@@ -241,7 +241,7 @@ class Persistence
         foreach ($row as $key => &$value) {
 
             // Look up field object
-            $f = $m->hasElement($key);
+            $f = $m->hasField($key);
 
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
@@ -470,7 +470,7 @@ class Persistence
      *
      * @return mixed
      */
-    protected function jsonDecode(Field $f, $value, $assoc = true)
+    public function jsonDecode(Field $f, $value, $assoc = true)
     {
         // constant supported only starting PHP 7.3
         if (!defined('JSON_THROW_ON_ERROR')) {
@@ -497,7 +497,7 @@ class Persistence
      *
      * @return string
      */
-    protected function jsonEncode(Field $f, $value)
+    public function jsonEncode(Field $f, $value)
     {
         // constant supported only starting PHP 7.3
         if (!defined('JSON_THROW_ON_ERROR')) {

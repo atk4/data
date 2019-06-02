@@ -4,7 +4,6 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\data\Persistence_Array;
 use atk4\data\tests\Model\Female as Female;
 use atk4\data\tests\Model\Male as Male;
 
@@ -25,7 +24,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p, 'user');
         $m->addField('name');
         $m->addField('surname');
@@ -61,7 +60,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
 
         $m = new Male($p);
         $m->load(1);
@@ -85,7 +84,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Male($p, 'user');
 
         $m->load(1);
@@ -115,7 +114,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p, 'user');
         $m->addField('name');
         $m->addField('surname');
@@ -159,7 +158,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p, 'user');
         $m->addField('name');
         $m->addField('surname');
@@ -184,7 +183,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p, 'user');
         $m->addField('name');
         $m->addField('surname');
@@ -208,7 +207,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -271,7 +270,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -290,19 +289,113 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     /**
      * Test Model->action('count').
      */
-    public function testCount()
+    public function testActionCount()
     {
         $a = [
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
 
         $this->assertEquals(2, $m->action('count')->getOne());
+    }
+
+    /**
+     * Test Model->action('field').
+     */
+    public function testActionField()
+    {
+        $a = [
+            1 => ['name' => 'John', 'surname' => 'Smith'],
+            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+
+        $this->assertEquals(2, $m->action('count')->getOne());
+
+        // use alias as array key if it is set
+        $q = $m->action('field', ['name', 'alias'=>'first_name']);
+        $this->assertEquals(['first_name'=>'John'], $q);
+
+        // if alias is not set, then use field name as key
+        $q = $m->action('field', ['name']);
+        $this->assertEquals(['name'=>'John'], $q);
+    }
+
+    /**
+     * Test Model->addCondition operator LIKE.
+     */
+    public function testLike()
+    {
+        $a = ['countries' => [
+            1 => ['id'=>1, 'name'=>'ABC9', 'code'=>11, 'country'=>'Ireland'],
+            2 => ['id'=>2, 'name'=>'ABC8', 'code'=>12, 'country'=>'Ireland'],
+            3 => ['id'=>3, 'code'=>13, 'country'=>'Latvia'],
+            4 => ['id'=>4, 'name'=>'ABC6', 'code'=>14, 'country'=>'UK'],
+            5 => ['id'=>5, 'name'=>'ABC5', 'code'=>15, 'country'=>'UK'],
+            6 => ['id'=>6, 'name'=>'ABC4', 'code'=>16, 'country'=>'Ireland'],
+            7 => ['id'=>7, 'name'=>'ABC3', 'code'=>17, 'country'=>'Latvia'],
+            8 => ['id'=>8, 'name'=>'ABC2', 'code'=>18, 'country'=>'Russia'],
+            9 => ['id'=>9, 'code'=>19, 'country'=>'Latvia'],
+        ]];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p, 'countries');
+        $m->addField('code', ['type' => 'int']);
+        $m->addField('country');
+
+        // if no condition we should get all the data back
+        $iterator = $m->action('select');
+        $result = $m->persistence->applyConditions($m, $iterator);
+        $this->assertInstanceOf(\atk4\data\Action\Iterator::class, $result);
+        $m->unload();
+        unset($iterator);
+        unset($result);
+
+        // case : str%
+        $m->addCondition('country', 'LIKE', 'La%');
+        $result = $m->action('select')->get();
+        $this->assertEquals(3, count($result));
+        $this->assertEquals($a['countries'][3], $result[3]);
+        $this->assertEquals($a['countries'][7], $result[7]);
+        $this->assertEquals($a['countries'][9], $result[9]);
+        unset($result);
+        $m->unload();
+
+        // case : %str
+        $m->conditions = [];
+        $m->addCondition('country', 'LIKE', '%ia');
+        $result = $m->action('select')->get();
+        $this->assertEquals(4, count($result));
+        $this->assertEquals($a['countries'][3], $result[3]);
+        $this->assertEquals($a['countries'][7], $result[7]);
+        $this->assertEquals($a['countries'][8], $result[8]);
+        $this->assertEquals($a['countries'][9], $result[9]);
+        unset($result);
+        $m->unload();
+
+        // case : %str%
+        $m->conditions = [];
+        $m->addCondition('country', 'LIKE', '%a%');
+        $result = $m->action('select')->get();
+        $this->assertEquals(7, count($result));
+        $this->assertEquals($a['countries'][1], $result[1]);
+        $this->assertEquals($a['countries'][2], $result[2]);
+        $this->assertEquals($a['countries'][3], $result[3]);
+        $this->assertEquals($a['countries'][6], $result[6]);
+        $this->assertEquals($a['countries'][7], $result[7]);
+        $this->assertEquals($a['countries'][8], $result[8]);
+        $this->assertEquals($a['countries'][9], $result[9]);
+        unset($result);
+        $m->unload();
     }
 
     /**
@@ -340,7 +433,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         ];
 
         // order by one field ascending
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('f1');
         $m->addField('f2');
@@ -358,7 +451,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->assertEquals($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
         // order by one field descending
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('f1');
         $m->addField('f2');
@@ -376,7 +469,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->assertEquals($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
         // order by two fields ascending
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('f1');
         $m->addField('f2');
@@ -409,7 +502,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         ];
 
         // order by one field ascending
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('f1');
 
@@ -448,7 +541,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             4 => ['name' => 'Sarah', 'surname' => 'Smith'],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -474,7 +567,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testUnsupportedAction()
     {
         $a = [1=>['name'=>'John']];
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
         $m->action('foo');
@@ -486,7 +579,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testBadActionArgs()
     {
         $a = [1=>['name'=>'John']];
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
         $m->action('select', 'foo'); // args should be array
@@ -498,7 +591,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testUnsupportedCondition1()
     {
         $a = [1=>['name'=>'John']];
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
         $m->addCondition('name');
@@ -506,15 +599,47 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     }
 
     /**
+     * unsupported method.
+     *
      * @expectedException Exception
      */
     public function testUnsupportedCondition2()
     {
         $a = [1=>['name'=>'John']];
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
         $m->addCondition('name', '<>', 'John');
+        $m->export();
+    }
+
+    /**
+     * unsupported format - 4th param.
+     *
+     * @expectedException Exception
+     */
+    public function testUnsupportedCondition3()
+    {
+        $a = [1=>['name'=>'John']];
+        $p = new Persistence\Array_($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addCondition('name', 'like', '%o%', 'CASE_INSENSITIVE');
+        $m->export();
+    }
+
+    /**
+     * unsupported format - param[0] not Field::class.
+     *
+     * @expectedException Exception
+     */
+    public function testUnsupportedCondition5()
+    {
+        $a = [1=>['name'=>'John']];
+        $p = new Persistence\Array_($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addCondition(new Model(), 'like', '%o%');
         $m->export();
     }
 
@@ -534,7 +659,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
 
         $user = new Model($p, 'user');
         $user->addField('name');
@@ -570,7 +695,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ],
         ];
 
-        $p = new Persistence_Array($a);
+        $p = new Persistence\Array_($a);
 
         $country = new Model($p, 'country');
         $country->addField('name');

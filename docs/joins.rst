@@ -75,7 +75,7 @@ After this you will have the following fields in your model:
 - country_name [read_only]
 - default_currency [read_only]
 
-.. php:method:: imortModel
+.. php:method:: importModel
 
 You can achieve a similar functionality with hasOne reference, but with weak
 join you can pull multiple fields into your model.
@@ -246,13 +246,13 @@ Joins are implemented like this:
   value of the foreign field will be set to null.
 
 
-.. php:class:: Join_SQL
+.. php:class:: Join\SQL
 
 SQL-specific joins
 ==================
 
 When your model is associated with SQL-capable driver, then instead of using
-'Join' class, the 'Join_SQL' is used instead. This class is designed to improve
+'Join' class, the 'Join\SQL' is used instead. This class is designed to improve
 loading technique, because SQL vendors can query multiple tables simultaneously.
 
 Vendors that cannot do JOINs will have to implement compatibility by pulling

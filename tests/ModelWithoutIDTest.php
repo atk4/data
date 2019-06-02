@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
+use atk4\data\Persistence;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -24,7 +24,7 @@ class ModelWithoutIDTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->setDB($a);
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $this->m = new Model($db, ['user', 'id_field'=>false]);
 
         $this->m->addFields(['name', 'gender']);
