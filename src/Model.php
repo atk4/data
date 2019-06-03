@@ -939,9 +939,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 continue;
             }
             $name = substr($name, strlen('action:')); // drop 'action:' prefix from element name
-        
+
             $action = $this->getAction($name);
-            
+
             if ($scope !== null && $action->scope !== $scope) {
                 continue;
             }
@@ -949,10 +949,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             if ($action->system) {
                 continue;
             }
-            
+
             $res[$name] = $action;
         }
-    
+
         return $res;
     }
 

@@ -90,7 +90,7 @@ class Generic
             array_unshift($args, $this->owner);
             $cb = $this->callback;
         }
-        
+
         return call_user_func_array($cb, $args);
     }
 
@@ -113,7 +113,7 @@ class Generic
             array_unshift($args, $this->owner);
             $cb = $this->preview;
         }
-        
+
         return call_user_func_array($cb, $args);
     }
 
