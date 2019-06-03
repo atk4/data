@@ -25,65 +25,69 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * The class used by addField() method.
      *
-     * @var string
+     * @todo use Field::class here and refactor addField() method to not use namespace prefixes.
+     *       but because that's backward incomatible change, then we can do that only in next
+     *       major version.
+     *
+     * @var string|array
      */
-    public $_default_seed_addField = ['\atk4\data\Field'];
+    public $_default_seed_addField = '\atk4\data\Field';
 
     /**
      * The class used by addField() method.
      *
-     * @var string
+     * @var string|array
      */
-    public $_default_seed_addExpression = ['\atk4\data\Field\Callback'];
+    public $_default_seed_addExpression = Field\Callback::class;
 
     /**
      * The class used by addRef() method.
      *
-     * @var string
+     * @var string|array
      */
-    public $_default_seed_addRef = ['\atk4\data\Reference'];
+    public $_default_seed_addRef = Reference::class;
 
     /**
      * The class used by hasOne() method.
      *
-     * @var string
+     * @var string|array
      */
-    public $_default_seed_hasOne = ['\atk4\data\Reference\HasOne'];
+    public $_default_seed_hasOne = Reference\HasOne::class;
 
     /**
      * The class used by hasMany() method.
      *
-     * @var string
+     * @var string|array
      */
-    public $_default_seed_hasMany = ['\atk4\data\Reference\HasMany'];
+    public $_default_seed_hasMany = Reference\HasMany::class;
 
     /**
      * The class used by containsOne() method.
      *
-     * @var string
+     * @var string|array
      */
-    public $_default_seed_containsOne = ['\atk4\data\Reference\ContainsOne'];
+    public $_default_seed_containsOne = Reference\ContainsOne::class;
 
     /**
      * The class used by containsMany() method.
      *
      * @var string
      */
-    public $_default_seed_containsMany = ['\atk4\data\Reference\ContainsMany'];
+    public $_default_seed_containsMany = Reference\ContainsMany::class;
 
     /**
      * The class used by join() method.
      *
-     * @var string
+     * @var string|array
      */
-    public $_default_seed_join = ['\atk4\data\Join'];
+    public $_default_seed_join = Join::class;
 
     /**
      * Default class for addAction().
      *
-     * @var array|UserAction\Generic default class / seed
+     * @var string|array
      */
-    public $_default_action = UserAction\Generic::class;
+    public $_default_seed_action = UserAction\Generic::class;
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -365,7 +369,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         if ($this->id_field) {
             $this->addField($this->id_field, [
-                'system'    => true,
+                'system' => true,
             ]);
         }
     }
@@ -885,20 +889,20 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Register new user action for this model. By default UI will allow users to trigger actions
      * from UI.
      *
-     * @param $name
-     * @param array $defaults
+     * @param string         $name     Action name
+     * @param array|callable $defaults
      *
-     *@throws \atk4\core\Exception
+     * @throws \atk4\core\Exception
      *
      * @return UserAction\Generic
      */
-    public function addAction($name, $defaults = [])
+    public function addAction($name, $defaults = []) : UserAction\Generic
     {
         if (is_callable($defaults)) {
             $defaults = ['callback'=>$defaults];
         }
 
-        if (!isset($defaults['title'])) {
+        if (!isset($defaults['caption'])) {
             $s = $name;
 
             $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
@@ -909,7 +913,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         /** @var UserAction\Generic $action */
-        $action = $this->factory($this->_default_action, $defaults);
+        $action = $this->factory($this->_default_seed_action, $defaults);
 
         $this->add($action, 'action:'.$name);
 
@@ -917,7 +921,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Returns list of actions for this model.
+     * Returns list of actions for this model. Can filter actions by scope.
+     * It will also skip system actions (where system === true).
      *
      * @param int $scope e.g. UserAction::ALL_RECORDS
      *
@@ -925,40 +930,38 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return array
      */
-    public function getActions($scope = null)
+    public function getActions($scope = null) : array
     {
-        $actions = array_filter(array_keys($this->elements), function ($var) use ($scope) {
-            if (stripos($var, 'action:') !== 0) {
-                return false;
-            }
-
-            if ($scope !== null && $this->getElement($var)->scope !== $scope) {
-                return false;
-            }
-
-            return true;
-        });
         $res = [];
 
-        foreach ($actions as $action) {
-            $a = $this->getElement($action);
-
-            if ($a->system) {
+        foreach (array_keys($this->elements) as $name) {
+            if (stripos($name, 'action:') !== 0) {
+                continue;
+            }
+            $name = substr($name, strlen('action:')); // drop 'action:' prefix from element name
+        
+            $action = $this->getAction($name);
+            
+            if ($scope !== null && $action->scope !== $scope) {
                 continue;
             }
 
-            $res[str_replace('action:', '', $action)] = $a;
+            if ($action->system) {
+                continue;
+            }
+            
+            $res[$name] = $action;
         }
-
+    
         return $res;
     }
 
     /**
      * Finds a user action with a corresponding name. Returns false if action not found. Similar
-     * to hasElement() but with extra checks to make sure it's certainly a action you are
+     * to hasElement() but with extra checks to make sure it's certainly an action you are
      * getting.
      *
-     * @param string $name
+     * @param string $name Action name
      *
      * @throws \atk4\core\Exception
      *
@@ -966,24 +969,20 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function hasAction($name)
     {
-        $actions = array_filter(array_keys($this->elements), function ($var) use ($name) {
-            return stripos($var, 'action:'.$name) === 0;
-        });
-
-        return $actions ? $this->getElement(array_shift($actions)) : false;
+        return $this->hasElement('action:'.$name);
     }
 
     /**
      * Returns one action object of this model. If action not defined, then throws exception.
      *
-     * @param string $name
+     * @param string $name Action name
      *
      * @throws \atk4\core\Exception
      * @throws \atk4\data\Exception
      *
      * @return UserAction\Generic
      */
-    public function getAction($name)
+    public function getAction($name) : UserAction\Generic
     {
         $a = $this->hasAction($name);
 
@@ -1391,7 +1390,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function withPersistence($persistence, $id = null, string $class = null)
     {
-        if (!$persistence instanceof \atk4\data\Persistence) {
+        if (!$persistence instanceof Persistence) {
             throw new Exception([
                 'Please supply valid persistence',
                 'arg' => $persistence,

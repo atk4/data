@@ -30,7 +30,7 @@ class Generic
     const MULTIPLE_RECORDS = 'multiple'; // e.g. delete
     const ALL_RECORDS = 'all'; // e.g. truncate
 
-    /** @var int by default - action is for a single-record */
+    /** @var string by default - action is for a single-record */
     public $scope = self::SINGLE_RECORD;
 
     /** @var callable code to execute. By default will call method with same name */
@@ -82,17 +82,16 @@ class Generic
 
         // todo - ACL tests must allow
 
-        if (is_null($this->callback)) {
-            $callback = $this->callback ?: [$this->owner, str_replace('action:', '', $this->short_name)];
-
-            return call_user_func_array($callback, $args);
+        if ($this->callback === null) {
+            $cb = [$this->owner, substr($this->short_name, strlen('action:'))];
         } elseif (is_string($this->callback)) {
-            return call_user_func_array([$this->owner, $this->callback], $args);
+            $cb = [$this->owner, $this->callback];
         } else {
             array_unshift($args, $this->owner);
-
-            return call_user_func_array($this->callback, $args);
+            $cb = $this->callback;
         }
+        
+        return call_user_func_array($cb, $args);
     }
 
     /**
@@ -106,20 +105,16 @@ class Generic
      */
     public function preview(...$args)
     {
-        if (is_null($this->preview)) {
+        if ($this->preview === null) {
             throw new Exception(['You must specify preview callback explicitly']);
-        /*
-        $preview = $this->preview ?: [$this->owner, str_replace('action:', '', $this->short_name)];
-
-        return call_user_func_array($preview, $args);
-        */
         } elseif (is_string($this->preview)) {
-            return call_user_func_array([$this->owner, $this->preview], $args);
+            $cb = [$this->owner, $this->preview];
         } else {
             array_unshift($args, $this->owner);
-
-            return call_user_func_array($this->preview, $args);
+            $cb = $this->preview;
         }
+        
+        return call_user_func_array($cb, $args);
     }
 
     /**
