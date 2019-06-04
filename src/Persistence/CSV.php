@@ -80,13 +80,22 @@ class CSV extends Persistence
     public $escape_char = '\\';
 
     /**
+     * Array of field names.
+     *
+     * @var array
+     */
+    public $header = [];
+
+    /**
      * Constructor. Can pass array of data in parameters.
      *
      * @param array &$data
+     * @param array $defaults
      */
-    public function __construct($file)
+    public function __construct($file, $defaults = [])
     {
         $this->file = $file;
+        $this->setDefaults($defaults);
     }
 
     /**
@@ -199,10 +208,15 @@ class CSV extends Persistence
     /**
      * Remembers $this->header so that the data can be
      * easier mapped.
+     *
+     * @param array
      */
     public function initializeHeader($header)
     {
-        $this->header = $header;
+        // removes forbidden symbols from header (field names)
+        $this->header = array_map(function ($name) {
+            return preg_replace('/[^a-z0-9_-]+/i', '_', $name);
+        }, $header);
     }
 
     /**
