@@ -17,6 +17,7 @@ class Persistence
     use \atk4\core\AppScopeTrait;
     use \atk4\core\DynamicMethodTrait;
     use \atk4\core\NameTrait;
+    use \atk4\core\DIContainerTrait;
 
     /** @var string Connection driver name, for example, mysql, pgsql, oci etc. */
     public $driver;
