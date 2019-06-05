@@ -126,7 +126,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $a->set($row = ['country_id'=>1, 'address'=>'foo', 'built_date'=>new \DateTime('2019-01-01 UTC'), 'tags'=>['foo','bar'], 'door_code'=>null]);
+        $a->set($row = ['country_id'=>1, 'address'=>'foo', 'built_date'=>new \DateTime('2019-01-01 UTC'), 'tags'=>['foo', 'bar'], 'door_code'=>null]);
         $a->save();
 
         // now reload invoice and see if it is saved
