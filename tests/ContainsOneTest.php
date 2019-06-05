@@ -45,6 +45,7 @@ class Address1 extends Model
 
         $this->addField('address');
         $this->addField('built_date', ['type' => 'datetime']);
+        $this->addField('tags', ['type'=>'array', 'default'=>[]]);
 
         // will contain one door code
         $this->containsOne('door_code', DoorCode1::class);
@@ -125,8 +126,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $a->set($row = ['country_id'=>1, 'address'=>'foo', 'built_date'=>new \DateTime('2019-01-01 UTC'), 'door_code'=>null]);
-        $a->save();
+        $a->set($row = ['country_id'=>1, 'address'=>'foo', 'built_date'=>new \DateTime('2019-01-01 UTC'), 'tags'=>['foo','bar'], 'door_code'=>null]);
         $a->save();
 
         // now reload invoice and see if it is saved
@@ -159,7 +159,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // let's test how it all looks in persistence without typecasting
         $exp_addr = $i->export(null, null, false)[0]['addr'];
         $this->assertEquals(
-            '{"country_id":2,"address":"bar","built_date":"2019-01-01T00:00:00+00:00","door_code":"{\"code\":\"DEF\",\"valid_till\":\"2019-07-01T00:00:00+00:00\"}"}',
+            '{"country_id":2,"address":"bar","built_date":"2019-01-01T00:00:00+00:00","tags":"[\"foo\",\"bar\"]","door_code":"{\"code\":\"DEF\",\"valid_till\":\"2019-07-01T00:00:00+00:00\"}"}',
             $exp_addr
         );
 
@@ -186,7 +186,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // with address
         $a = $i->ref('addr');
-        $a->set($row = ['country_id'=>1, 'address'=>'foo', 'built_date'=>new \DateTime('2019-01-01'), 'door_code'=>null]);
+        $a->set($row = ['country_id'=>1, 'address'=>'foo', 'built_date'=>new \DateTime('2019-01-01'), 'tags'=>[], 'door_code'=>null]);
         $a->save();
 
         // now let's add one more field in address model and save
