@@ -1,5 +1,12 @@
 # Change Log
 
+# 2.0
+
+First major version update of ATK Data now includes support for "User Actions".
+
+ - TBC
+
+
 # 1.4
 
  - Add implementation for sorting, ordering and actions in `Persistence_Array`. 
