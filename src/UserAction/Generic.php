@@ -77,8 +77,9 @@ class Generic
      *
      * @param mixed ...$args
      *
-     * @return mixed
      * @throws Exception
+     *
+     * @return mixed
      */
     public function execute(...$args)
     {
@@ -87,7 +88,7 @@ class Generic
         try {
             if (!$this->enabled) {
                 throw new Exception([
-                    "This action is disabled"
+                    'This action is disabled',
                 ]);
             }
 
@@ -97,11 +98,11 @@ class Generic
 
                 if ($too_dirty) {
                     throw new Exception([
-                        "Calling action on a Model with dirty fields that are not allowed by this action.",
+                        'Calling action on a Model with dirty fields that are not allowed by this action.',
 
                         'too_dirty' => $too_dirty,
-                        'dirty' => $this->owner->dirty,
-                        'permitted' => $this->fields
+                        'dirty'     => $this->owner->dirty,
+                        'permitted' => $this->fields,
                     ]);
                 }
             }
@@ -111,7 +112,7 @@ class Generic
                 case self::NO_RECORDS:
                     if ($this->owner->loaded()) {
                         throw new Exception([
-                            "This action scope prevents action from being executed on existing records.",
+                            'This action scope prevents action from being executed on existing records.',
                             'id' => $this->owner->id,
                         ]);
                     }
@@ -119,14 +120,13 @@ class Generic
                 case self::SINGLE_RECORD:
                     if (!$this->owner->loaded()) {
                         throw new Exception([
-                            "This action scope requires you to load existing record first.",
+                            'This action scope requires you to load existing record first.',
                         ]);
                     }
                     break;
             }
 
-
-            $run = function () use($args) {
+            $run = function () use ($args) {
                 if ($this->callback === null) {
                     $cb = [$this->owner, substr($this->short_name, strlen('action:'))];
                 } elseif (is_string($this->callback)) {
@@ -146,6 +146,7 @@ class Generic
             }
         } catch (Exception $e) {
             $e->addMoreInfo('action', $this);
+
             throw $e;
         }
     }
