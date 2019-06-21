@@ -82,38 +82,72 @@ class Generic
      */
     public function execute(...$args)
     {
-        // todo - assert owner model loaded
-
-        // todo - start transaction, if atomic
-
-        // todo - pass model as first argument ?
-
         // todo - ACL tests must allow
 
-        if (is_array($this->fields)) {
-            $too_dirty = array_diff($this->owner->dirty, $this->fields);
-
-            if ($too_dirty) {
+        try {
+            if (!$this->enabled) {
                 throw new Exception([
-                    "Calling action on a Model with dirty fields that are not allowed by this action.",
-
-                    'too_dirty'=>$too_dirty,
-                    'dirty'=>$this->owner->dirty,
-                    'permitted'=>$this->fields
+                    "This action is disabled"
                 ]);
             }
-        }
 
-        if ($this->callback === null) {
-            $cb = [$this->owner, substr($this->short_name, strlen('action:'))];
-        } elseif (is_string($this->callback)) {
-            $cb = [$this->owner, $this->callback];
-        } else {
-            array_unshift($args, $this->owner);
-            $cb = $this->callback;
-        }
+            // Verify that model fields wouldn't be too dirty
+            if (is_array($this->fields)) {
+                $too_dirty = array_diff($this->owner->dirty, $this->fields);
 
-        return call_user_func_array($cb, $args);
+                if ($too_dirty) {
+                    throw new Exception([
+                        "Calling action on a Model with dirty fields that are not allowed by this action.",
+
+                        'too_dirty' => $too_dirty,
+                        'dirty' => $this->owner->dirty,
+                        'permitted' => $this->fields
+                    ]);
+                }
+            }
+
+            // Verify some scope cases
+            switch ($this->scope) {
+                case self::NO_RECORDS:
+                    if ($this->owner->loaded()) {
+                        throw new Exception([
+                            "This action scope prevents action from being executed on existing records.",
+                            'id' => $this->owner->id,
+                        ]);
+                    }
+                    break;
+                case self::SINGLE_RECORD:
+                    if (!$this->owner->loaded()) {
+                        throw new Exception([
+                            "This action scope requires you to load existing record first.",
+                        ]);
+                    }
+                    break;
+            }
+
+
+            $run = function () use($args) {
+                if ($this->callback === null) {
+                    $cb = [$this->owner, substr($this->short_name, strlen('action:'))];
+                } elseif (is_string($this->callback)) {
+                    $cb = [$this->owner, $this->callback];
+                } else {
+                    array_unshift($args, $this->owner);
+                    $cb = $this->callback;
+                }
+
+                return call_user_func_array($cb, $args);
+            };
+
+            if ($this->atomic) {
+                return $this->owner->persistence->atomic($run);
+            } else {
+                return $run();
+            }
+        } catch (Exception $e) {
+            $e->addMoreInfo('action', $this);
+            throw $e;
+        }
     }
 
     /**
