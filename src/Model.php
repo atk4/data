@@ -4,6 +4,8 @@
 
 namespace atk4\data;
 
+use atk4\data\UserAction\Generic;
+
 /**
  * Data model class.
  */
@@ -371,7 +373,39 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->addField($this->id_field, [
                 'system' => true,
             ]);
+        } else {
+            return; // don't declare actions for model without id_field
         }
+
+        if ($this->read_only) {
+            return; // don't declare action for read-only model
+        }
+
+        // Declare our basic CRUD actions for the model.
+        $this->addAction('add', [
+            'fields'=>true,
+            'scope'=>UserAction\Generic::NO_RECORDS,
+            'callback'=>'save',
+            'ui'=>['icon'=>'plus']
+        ]);
+        $this->addAction('edit', [
+            'fields'=>true,
+            'scope'=>UserAction\Generic::SINGLE_RECORD,
+            'callback'=>'save',
+            'ui'=>['icon'=>'edit']
+        ]);
+        $this->addAction('delete', [
+            'scope'=>UserAction\Generic::SINGLE_RECORD,
+            'ui'=>['icon'=>'trash', 'danger', 'confirm'=>'Are you sure?']
+        ]);
+
+        $this->addAction('validate', [
+            //'scope'=> any!
+            'description'=>'Provided with modified values will validate them but will not save',
+            'fields'=>true,
+            'system'=>true, // don't show by default
+            'args'=>['intent'=>'string'],
+        ]);
     }
 
     /**
