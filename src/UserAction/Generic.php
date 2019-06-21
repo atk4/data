@@ -8,6 +8,7 @@ use atk4\core\DIContainerTrait;
 use atk4\core\Exception;
 use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
+use atk4\data\Model;
 
 /**
  * Implements generic user action. Assigned to a model it can be invoked by a user. Action describes meta information about
@@ -24,9 +25,12 @@ class Generic
         init as init_;
     }
 
+    /** @var Model */
+    public $owner;
+
     /** Defining scope of the action */
     const NO_RECORDS = 'none'; // e.g. add
-    const SINGLE_RECORD = 'single'; // e.g. edit
+    const SINGLE_RECORD = 'single'; // e.g. archive
     const MULTIPLE_RECORDS = 'multiple'; // e.g. delete
     const ALL_RECORDS = 'all'; // e.g. truncate
 
@@ -57,6 +61,9 @@ class Generic
     /** @var array Argument definition. */
     public $args = [];
 
+    /** @var array|null Specify which fields may be dirty when invoking action. NO_RECORDS|SINGLE_RECORD scopes for adding/modifying */
+    public $fields = [];
+
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
@@ -71,6 +78,7 @@ class Generic
      * @param mixed ...$args
      *
      * @return mixed
+     * @throws Exception
      */
     public function execute(...$args)
     {
@@ -81,6 +89,20 @@ class Generic
         // todo - pass model as first argument ?
 
         // todo - ACL tests must allow
+
+        if (is_array($this->fields)) {
+            $too_dirty = array_diff($this->owner->dirty, $this->fields);
+
+            if ($too_dirty) {
+                throw new Exception([
+                    "Calling action on a Model with dirty fields that are not allowed by this action.",
+
+                    'too_dirty'=>$too_dirty,
+                    'dirty'=>$this->owner->dirty,
+                    'permitted'=>$this->fields
+                ]);
+            }
+        }
 
         if ($this->callback === null) {
             $cb = [$this->owner, substr($this->short_name, strlen('action:'))];
