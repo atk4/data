@@ -383,28 +383,28 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         // Declare our basic CRUD actions for the model.
         $this->addAction('add', [
-            'fields'=>true,
-            'scope'=>UserAction\Generic::NO_RECORDS,
-            'callback'=>'save',
-            'ui'=>['icon'=>'plus']
+            'fields'  => true,
+            'scope'   => UserAction\Generic::NO_RECORDS,
+            'callback'=> 'save',
+            'ui'      => ['icon'=>'plus'],
         ]);
         $this->addAction('edit', [
-            'fields'=>true,
-            'scope'=>UserAction\Generic::SINGLE_RECORD,
-            'callback'=>'save',
-            'ui'=>['icon'=>'edit']
+            'fields'  => true,
+            'scope'   => UserAction\Generic::SINGLE_RECORD,
+            'callback'=> 'save',
+            'ui'      => ['icon'=>'edit'],
         ]);
         $this->addAction('delete', [
-            'scope'=>UserAction\Generic::SINGLE_RECORD,
-            'ui'=>['icon'=>'trash', 'danger', 'confirm'=>'Are you sure?']
+            'scope'=> UserAction\Generic::SINGLE_RECORD,
+            'ui'   => ['icon'=>'trash', 'danger', 'confirm'=>'Are you sure?'],
         ]);
 
         $this->addAction('validate', [
             //'scope'=> any!
-            'description'=>'Provided with modified values will validate them but will not save',
-            'fields'=>true,
-            'system'=>true, // don't show by default
-            'args'=>['intent'=>'string'],
+            'description'=> 'Provided with modified values will validate them but will not save',
+            'fields'     => true,
+            'system'     => true, // don't show by default
+            'args'       => ['intent'=>'string'],
         ]);
     }
 
