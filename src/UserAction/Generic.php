@@ -86,7 +86,7 @@ class Generic
         // todo - ACL tests must allow
 
         try {
-            if (!$this->enabled) {
+            if ($this->enabled === false || (is_callable($this->enabled) && call_user_func($this->enabled) === false)) {
                 throw new Exception([
                     'This action is disabled',
                 ]);

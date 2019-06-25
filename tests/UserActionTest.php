@@ -166,14 +166,33 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $client->getAction('non_existant_action');
     }
 
-    public function testDisabled()
+    public function testDisabled1()
     {
         $client = new ACClient($this->pers);
         $client->load(1);
 
         $client->getAction('send_reminder')->enabled = false;
 
-        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('disabled');
+        $client->getAction('send_reminder')->execute();
+    }
+    public function testDisabled2()
+    {
+        $client = new ACClient($this->pers);
+        $client->load(1);
+
+        $client->getAction('send_reminder')->enabled=function() { return false; };
+
+        $this->expectExceptionMessage('disabled');
+        $client->getAction('send_reminder')->execute();
+    }
+    public function testDisabled3()
+    {
+        $client = new ACClient($this->pers);
+        $client->load(1);
+
+        $client->getAction('send_reminder')->enabled=function() { return true; };
+
         $client->getAction('send_reminder')->execute();
     }
 
