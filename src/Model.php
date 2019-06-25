@@ -320,7 +320,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *  - you can specify string for a table
      *
      * @param Persistence|array $persistence
-     * @param string|array $defaults
+     * @param string|array      $defaults
+     *
      * @throws Exception
      */
     public function __construct($persistence = null, $defaults = [])
@@ -387,8 +388,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param string $intent By default only 'save' is used (from beforeSave) but you can use other intents yourself.
      *
-     * @return array ['field'=> err_spec]
      * @throws \atk4\core\Exception
+     *
+     * @return array ['field'=> err_spec]
      */
     public function validate($intent = null)
     {
@@ -406,10 +408,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Adds new field into model.
      *
      * @param string $field
-     * @param array $defaults
+     * @param array  $defaults
+     *
+     * @throws \atk4\core\Exception
      *
      * @return Field
-     * @throws \atk4\core\Exception
      */
     public function addField($field, $defaults = [])
     {
@@ -997,10 +1000,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Execute specified action with specified arguments
+     * Execute specified action with specified arguments.
      *
      * @param $name
      * @param $args
+     *
      * @throws Exception
      * @throws \atk4\core\Exception
      */

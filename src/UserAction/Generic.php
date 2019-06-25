@@ -108,7 +108,7 @@ class Generic
             } elseif ($this->fields !== false) {
                 throw new Exception([
                     'Arguments fields for the action must be either array or `false`.',
-                    'fields'=>$this->fields
+                    'fields'=> $this->fields,
                 ]);
             }
 

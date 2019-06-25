@@ -17,6 +17,7 @@ trait ACReminder
     public function send_reminder()
     {
         $this->save(['reminder_sent' => true]);
+
         return 'sent reminder to '.$this->getTitle();
     }
 
@@ -170,7 +171,7 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $client = new ACClient($this->pers);
         $client->load(1);
 
-        $client->getAction('send_reminder')->enabled=false;
+        $client->getAction('send_reminder')->enabled = false;
 
         $this->expectException(Exception::class);
         $client->getAction('send_reminder')->execute();
@@ -188,8 +189,9 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $client['name'] = 'Peter';
             $a->execute();
             $this->assertEquals('Peter', $client['name']);
-        }catch(Exception $e) {
+        } catch (Exception $e) {
             echo $e->getColorfulText();
+
             throw $e;
         }
     }
@@ -207,7 +209,6 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->expectExceptionMessage('dirty fields');
         $a->execute();
         $this->assertEquals('Peter', $client['name']);
-
     }
 
     public function testFieldsIncorrect()
@@ -222,6 +223,5 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->expectExceptionMessage('array');
         $a->execute();
         $this->assertEquals('Peter', $client['name']);
-
     }
 }
