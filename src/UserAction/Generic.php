@@ -94,17 +94,22 @@ class Generic
 
             // Verify that model fields wouldn't be too dirty
             if (is_array($this->fields)) {
-                $too_dirty = array_diff($this->owner->dirty, $this->fields);
+                $too_dirty = array_diff(array_keys($this->owner->dirty), $this->fields);
 
                 if ($too_dirty) {
                     throw new Exception([
                         'Calling action on a Model with dirty fields that are not allowed by this action.',
 
                         'too_dirty' => $too_dirty,
-                        'dirty'     => $this->owner->dirty,
+                        'dirty'     => array_keys($this->owner->dirty),
                         'permitted' => $this->fields,
                     ]);
                 }
+            } elseif ($this->fields !== false) {
+                throw new Exception([
+                    'Arguments fields for the action must be either array or `false`.',
+                    'fields'=>$this->fields
+                ]);
             }
 
             // Verify some scope cases
