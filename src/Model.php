@@ -321,6 +321,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param Persistence|array $persistence
      * @param string|array      $defaults
+     *
+     * @throws Exception
      */
     public function __construct($persistence = null, $defaults = [])
     {
@@ -386,6 +388,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param string $intent By default only 'save' is used (from beforeSave) but you can use other intents yourself.
      *
+     * @throws \atk4\core\Exception
+     *
      * @return array ['field'=> err_spec]
      */
     public function validate($intent = null)
@@ -405,6 +409,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @param string $field
      * @param array  $defaults
+     *
+     * @throws \atk4\core\Exception
      *
      * @return Field
      */
@@ -991,6 +997,20 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         return $a;
+    }
+
+    /**
+     * Execute specified action with specified arguments.
+     *
+     * @param $name
+     * @param $args
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     */
+    public function executeAction($name, ...$args)
+    {
+        $this->getAction($name)->execute(...$args);
     }
 
     // }}}
