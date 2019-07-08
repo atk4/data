@@ -29,8 +29,8 @@ class Field implements Expressionable
     /**
      * Field type.
      *
-     * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'array', 'object'.
+     * Values are: 'array', 'boolean', 'date', 'datetime', 'email', 'float',
+     *             'integer', 'money', 'object', 'string', 'time', 'text'.
      * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
