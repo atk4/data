@@ -322,6 +322,16 @@ class Field implements Expressionable
                     throw new ValidationException([$this->name => 'Must not be a zero']);
                 }
                 break;
+            case 'email':
+                // remove all line-ends and trim
+                $value = trim(str_replace(["\r", "\n"], '', $value));
+                if ($this->required && empty($value)) {
+                    throw new ValidationException([$this->name => 'Must not be empty']);
+                }
+                if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    throw new ValidationException([$this->name => 'Must be a valid email address']);
+                }
+                break;
             case 'boolean':
                 throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
             case 'date':
