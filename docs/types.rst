@@ -71,7 +71,7 @@ DateTime object.
 When storing or displaying a type-casting takes place which will format the
 value accordingly. Type-casting can be persistence-specific, for instance,
 when storing "datetime" into SQL, the ISO format will be used, but when displayed
-to the user a regional format is used instead. 
+to the user a regional format is used instead.
 
 Supported Types
 ===============
@@ -100,8 +100,9 @@ In ATK Data the number of supported types has been extended with:
  - ipv6 ([':php:class:`Number`', 'base'=>16', 'mask'=>'####:####:..']);
  - model (used for containment)
  - fraction (5/7) ([':php:class:`Fraction`'])
+ - `email`: Used to validate a field as an email address
 
-Additionally there is a support for 
+Additionally there is support for
 
  - distance ([':php:class:`Units`', 'scale'=>['m'=>1, 'km'=>1000, 'mm'=>0.001])
  - duration
