@@ -113,7 +113,6 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public $actions = [];
 
-
     /**
      * Contains name of table, session key, collection or file where this
      * model normally lives. The interpretation of the table will be decoded
@@ -963,7 +962,7 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function getActions($scope = null) : array
     {
-        return array_filter($this->actions, function($action) use($scope){
+        return array_filter($this->actions, function ($action) use ($scope) {
             return !$action->system && ($scope === null || $action->scope === $scope);
         });
     }
