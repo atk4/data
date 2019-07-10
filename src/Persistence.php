@@ -77,18 +77,22 @@ class Persistence
     }
 
     /**
-     * Given a field seed, return a feld object
+     * Given a field seed, return a feld object.
      *
      * @param string $type
+     *
      * @throws \atk4\core\Exception
+     *
      * @return Field
      */
-    public function fieldFactory($seed = []) {
+    public function fieldFactory($seed = [])
+    {
         /** @var Field $field */
         $field = $this->factory($this->mergeSeeds(
             isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
             [Field::class]
         ), null, '\atk4\data\Field');
+
         return $field;
     }
 
@@ -99,12 +103,13 @@ class Persistence
     /**
      * Associate model with the data driver.
      *
-     * @param Model|string $m Model which will use this persistence
-     * @param array $defaults Properties
+     * @param Model|string $m        Model which will use this persistence
+     * @param array        $defaults Properties
      *
-     * @return Model
      * @throws Exception
      * @throws \atk4\core\Exception
+     *
+     * @return Model
      */
     public function add($m, $defaults = [])
     {

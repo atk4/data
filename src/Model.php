@@ -440,7 +440,6 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function addField($name, $seed = [])
     {
-
         if ($this->persistence) {
             $field = $this->persistence->fieldFactory($seed);
         } else {
@@ -456,8 +455,9 @@ class Model implements ArrayAccess, IteratorAggregate
      * @param array $fields
      * @param array $defaults
      *
-     * @return $this
      * @throws \atk4\core\Exception
+     *
+     * @return $this
      */
     public function addFields($fields = [], $defaults = [])
     {
@@ -499,13 +499,15 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @param string|Field $name
      *
-     * @return Field
      * @throws \atk4\core\Exception
+     *
+     * @return Field
      */
     public function getField($name)
     {
         /** @var Field $field */
         $field = $this->_getFromCollection($name, 'fields');
+
         return $field;
     }
 
@@ -514,8 +516,9 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @param array $fields
      *
-     * @return $this
      * @throws \atk4\core\Exception
+     *
+     * @return $this
      */
     public function onlyFields($fields = [])
     {
@@ -542,8 +545,9 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @param mixed $field
      *
-     * @return string
      * @throws \atk4\core\Exception
+     *
+     * @return string
      */
     private function normalizeFieldName($field)
     {
@@ -612,7 +616,8 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return array
      */
-    public function getFields(string $filter = null){
+    public function getFields(string $filter = null)
+    {
         return array_filter($this->fields, function ($field, $name) use ($filter) {
 
             // do not return fields outside of "only_fields" scope
@@ -620,13 +625,12 @@ class Model implements ArrayAccess, IteratorAggregate
                 return false;
             }
 
-            switch($filter) {
+            switch ($filter) {
                 case null: return !$field->system;
                 case 'system': return $field->system;
                 case 'editable': return $field->ui['editable'] ?? !$field->system;
                 case 'visible': return $field->ui['visible'] ?? !$field->system;
             }
-
         }, ARRAY_FILTER_USE_BOTH);
     }
 
