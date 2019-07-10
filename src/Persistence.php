@@ -88,16 +88,18 @@ class Persistence
     public function fieldFactory($seed = [])
     {
         /** @var Field $field */
-        $field = $this->factory($this->mergeSeeds(
+        $seed = $this->mergeSeeds(
+            $seed,
             isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
             [Field::class]
-        ), null, '\atk4\data\Field');
+        );
+        $field = $this->factory($seed, null, '\atk4\data\Field');
 
         return $field;
     }
 
     protected $typeToFieldSeed = [
-        'boolean' => 'Boolean',
+        'boolean' => ['Boolean'],
     ];
 
     /**

@@ -384,6 +384,20 @@ class Model implements ArrayAccess, IteratorAggregate
                 $el->owner = $this;
             }
         }
+        if ($this->fields) {
+            foreach ($this->fields as $id => $el) {
+                $el = clone $el;
+                $this->fields[$id] = $el;
+                $el->owner = $this;
+            }
+        }
+        if ($this->actions) {
+            foreach ($this->actions as $id => $el) {
+                $el = clone $el;
+                $this->actions[$id] = $el;
+                $el->owner = $this;
+            }
+        }
     }
 
     /**
@@ -432,7 +446,7 @@ class Model implements ArrayAccess, IteratorAggregate
      * Adds new field into model.
      *
      * @param string $name
-     * @param array  $seed
+     * @param array|object  $seed
      *
      * @throws \atk4\core\Exception
      *
@@ -440,14 +454,26 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function addField($name, $seed = [])
     {
-        if ($this->persistence) {
-            $field = $this->persistence->fieldFactory($seed);
+        if (is_object($seed)) {
+            $field = $seed;
         } else {
-            $field = $this->factory($seed);
+            if ($this->persistence) {
+                $field = $this->persistence->fieldFactory($seed);
+            } else {
+                $field = $this->factory($this->mergeSeeds(
+                    $seed,
+                    isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
+                    Field::class
+                ), null, '\atk4\data\Field');
+            }
         }
 
         return $this->_addIntoCollection($name, $field, 'fields');
     }
+
+    protected $typeToFieldSeed = [
+        'boolean' => ['Boolean'],
+    ];
 
     /**
      * Adds multiple fields into model.
@@ -503,7 +529,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Field
      */
-    public function getField($name)
+    public function getField(string $name)
     {
         /** @var Field $field */
         $field = $this->_getFromCollection($name, 'fields');
@@ -576,7 +602,7 @@ class Model implements ArrayAccess, IteratorAggregate
             }
         }
 
-        if ($this->strict_field_check && !isset($this->elements[$field])) {
+        if ($this->strict_field_check && !$this->hasField($field)) {
             throw new Exception([
                 'Field is not defined inside a Model',
                 'field'       => $field,
@@ -618,6 +644,9 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function getFields(string $filter = null)
     {
+        if (!$filter) {
+            return $this->fields;
+        }
         return array_filter($this->fields, function ($field, $name) use ($filter) {
 
             // do not return fields outside of "only_fields" scope
@@ -626,7 +655,6 @@ class Model implements ArrayAccess, IteratorAggregate
             }
 
             switch ($filter) {
-                case null: return !$field->system;
                 case 'system': return $field->system;
                 case 'editable': return $field->ui['editable'] ?? !$field->system;
                 case 'visible': return $field->ui['visible'] ?? !$field->system;
@@ -780,11 +808,9 @@ class Model implements ArrayAccess, IteratorAggregate
                     $data[$field] = $this->get($field);
                 }
             } else {
-                // get all field-elements
-                foreach ($this->elements as $field => $f) {
-                    if ($f instanceof Field) {
-                        $data[$field] = $this->get($field);
-                    }
+                // get all fields
+                foreach ($this->getFields() as $field => $f) {
+                    $data[$field] = $this->get($field);
                 }
             }
 
@@ -830,6 +856,9 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function getTitle()
     {
+        if (!$this->title_field) {
+            return $this->id;
+        }
         $f = $this->hasField($this->title_field);
 
         return $f ? $f->get() : $this->id;
@@ -1088,7 +1117,7 @@ class Model implements ArrayAccess, IteratorAggregate
             */
         }
 
-        $f = (is_string($field) || $field instanceof Field) ? $this->getField($field) : false;
+        $f = is_string($field) ? $this->getField($field) : ($field instanceof Field ? $field : false);
         if ($f) {
             if ($operator === '=' || func_num_args() == 2) {
                 $v = $operator === '=' ? $value : $operator;
@@ -1574,15 +1603,15 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return $this
      */
-    public function loadBy($field, $value)
+    public function loadBy(string $field_name, $value)
     {
         // store
-        $field = $this->getField($field);
+        $field = $this->getField($field_name);
         $system = $field->system;
         $default = $field->default;
 
         // add condition and load record
-        $this->addCondition($field, $value);
+        $this->addCondition($field_name, $value);
 
         try {
             $this->loadAny();
@@ -1901,14 +1930,12 @@ class Model implements ArrayAccess, IteratorAggregate
                 }
 
                 // now add system fields, if they were not added
-                foreach ($this->elements as $field => $f_object) {
-                    if ($f_object instanceof Field) {
-                        if ($f_object->never_persist) {
-                            continue;
-                        }
-                        if ($f_object->system && !isset($fields[$field])) {
-                            $fields[$field] = true;
-                        }
+                foreach ($this->getFields() as $field => $f_object) {
+                    if ($f_object->never_persist) {
+                        continue;
+                    }
+                    if ($f_object->system && !isset($fields[$field])) {
+                        $fields[$field] = true;
                     }
                 }
 
@@ -1916,13 +1943,11 @@ class Model implements ArrayAccess, IteratorAggregate
             } else {
 
                 // Add all model fields
-                foreach ($this->elements as $field => $f_object) {
-                    if ($f_object instanceof Field) {
-                        if ($f_object->never_persist) {
-                            continue;
-                        }
-                        $fields[] = $field;
+                foreach ($this->getFields() as $field => $f_object) {
+                    if ($f_object->never_persist) {
+                        continue;
                     }
+                    $fields[] = $field;
                 }
             }
         }
@@ -2405,7 +2430,10 @@ class Model implements ArrayAccess, IteratorAggregate
 
         $c = $this->_default_seed_addExpression;
 
-        return $this->add($this->factory($c, $expression), $name);
+        $field = $this->factory($c, $expression);
+
+        $this->addField($name, $field);
+        return $this->add($field, $name);
     }
 
     /**

@@ -188,11 +188,7 @@ class CSV extends Persistence
         $this->openFile('w');
 
         $header = [];
-        foreach ($m->elements as $name=>$field) {
-            if (!$field instanceof Field) {
-                continue;
-            }
-
+        foreach ($m->getFields() as $name=>$field) {
             if ($name == $m->id_field) {
                 continue;
             }

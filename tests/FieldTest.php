@@ -436,6 +436,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m = new Model($db, 'user');
         $m->addField('first_name', ['actual' => 'name']);
         $m->addField('surname');
+        var_dump($m->load(1)->get());
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
         $m->loadBy('first_name', 'John');
         $this->assertEquals('John', $m['first_name']);

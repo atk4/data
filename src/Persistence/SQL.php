@@ -287,24 +287,20 @@ class SQL extends Persistence
             }
 
             // now add system fields, if they were not added
-            foreach ($m->elements as $field => $f_object) {
-                if ($f_object instanceof Field) {
-                    if ($f_object->never_persist) {
-                        continue;
-                    }
-                    if ($f_object->system && !isset($added_fields[$field])) {
-                        $this->initField($q, $f_object);
-                    }
+            foreach ($m->getFields() as $field => $f_object) {
+                if ($f_object->never_persist) {
+                    continue;
+                }
+                if ($f_object->system && !isset($added_fields[$field])) {
+                    $this->initField($q, $f_object);
                 }
             }
         } else {
-            foreach ($m->elements as $field => $f_object) {
-                if ($f_object instanceof Field) {
-                    if ($f_object->never_persist) {
-                        continue;
-                    }
-                    $this->initField($q, $f_object);
+            foreach ($m->getFields() as $field => $f_object) {
+                if ($f_object->never_persist) {
+                    continue;
                 }
+                $this->initField($q, $f_object);
             }
         }
     }
