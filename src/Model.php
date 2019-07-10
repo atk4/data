@@ -450,6 +450,7 @@ class Model implements ArrayAccess, IteratorAggregate
         if ($obj instanceof Field) {
             throw new Exception(['You should always use addField() for adding fields, not add()']);
         }
+
         return $obj;
     }
 
@@ -516,12 +517,14 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
-     * Remove field that was added previously
+     * Remove field that was added previously.
      *
      * @param $name
+     *
      * @throws \atk4\core\Exception
      */
-    public function removeField($name) {
+    public function removeField($name)
+    {
         return $this->_removeFromCollection($name, 'fields');
     }
 
