@@ -445,8 +445,8 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Adds new field into model.
      *
-     * @param string $name
-     * @param array|object  $seed
+     * @param string       $name
+     * @param array|object $seed
      *
      * @throws \atk4\core\Exception
      *
@@ -647,6 +647,7 @@ class Model implements ArrayAccess, IteratorAggregate
         if (!$filter) {
             return $this->fields;
         }
+
         return array_filter($this->fields, function ($field, $name) use ($filter) {
 
             // do not return fields outside of "only_fields" scope
@@ -2433,6 +2434,7 @@ class Model implements ArrayAccess, IteratorAggregate
         $field = $this->factory($c, $expression);
 
         $this->addField($name, $field);
+
         return $this->add($field, $name);
     }
 
