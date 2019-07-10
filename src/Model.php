@@ -45,7 +45,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @var string|array
      */
-    public $_default_seed_addField = '\atk4\data\Field';
+    public $_default_seed_addField = Field::class;
 
     /**
      * The class used by addField() method.
@@ -431,29 +431,23 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Adds new field into model.
      *
-     * @param string $field
-     * @param array  $defaults
+     * @param string $name
+     * @param array  $seed
      *
      * @throws \atk4\core\Exception
      *
      * @return Field
      */
-    public function addField($field, $defaults = [])
+    public function addField($name, $seed = [])
     {
-        // compatibility: for field types
-        $class = $this->_default_seed_addField;
-        if (is_array($defaults) && isset($defaults['type'])) {
-            switch (strtolower($defaults['type'])) {
-                case 'boolean':
-                    $class = 'Boolean';
-                    break;
-            }
+
+        if ($this->persistence) {
+            $field = $this->persistence->fieldFactory($seed);
+        } else {
+            $field = $this->factory($seed);
         }
 
-        $field_object = $this->factory($this->mergeSeeds($defaults, $class), null, '\atk4\data\Field');
-        $this->add($field_object, $field);
-
-        return $field_object;
+        return $this->_addIntoCollection($name, $field, 'fields');
     }
 
     /**
@@ -463,6 +457,7 @@ class Model implements ArrayAccess, IteratorAggregate
      * @param array $defaults
      *
      * @return $this
+     * @throws \atk4\core\Exception
      */
     public function addFields($fields = [], $defaults = [])
     {
@@ -489,22 +484,13 @@ class Model implements ArrayAccess, IteratorAggregate
      * getting.
      *
      *
-     * @param string|Field $name
+     * @param string $name
      *
      * @return Field|false
      */
-    public function hasField($name)
+    public function hasField(string $name)
     {
-        if ($name instanceof Field) {
-            return $name;
-        }
-
-        $f_object = $this->hasElement($name);
-        if (!$f_object || !$f_object instanceof Field) {
-            return false;
-        }
-
-        return $f_object;
+        return $this->_hasInCollection($name, 'fields');
     }
 
     /**
@@ -513,19 +499,14 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @param string|Field $name
      *
-     * @throws Exception
-     *
      * @return Field
+     * @throws \atk4\core\Exception
      */
     public function getField($name)
     {
-        $f = $this->hasField($name);
-
-        if ($f === false) {
-            throw new Exception(['Field is not defined in model', 'model' => get_class($this), 'field' => $name]);
-        }
-
-        return $f;
+        /** @var Field $field */
+        $field = $this->_getFromCollection($name, 'fields');
+        return $field;
     }
 
     /**
@@ -534,6 +515,7 @@ class Model implements ArrayAccess, IteratorAggregate
      * @param array $fields
      *
      * @return $this
+     * @throws \atk4\core\Exception
      */
     public function onlyFields($fields = [])
     {
@@ -561,6 +543,7 @@ class Model implements ArrayAccess, IteratorAggregate
      * @param mixed $field
      *
      * @return string
+     * @throws \atk4\core\Exception
      */
     private function normalizeFieldName($field)
     {
@@ -622,6 +605,29 @@ class Model implements ArrayAccess, IteratorAggregate
         }
 
         return false;
+    }
+
+    /**
+     * @param string|null $filter
+     *
+     * @return array
+     */
+    public function getFields(string $filter = null){
+        return array_filter($this->fields, function ($field, $name) use ($filter) {
+
+            // do not return fields outside of "only_fields" scope
+            if ($this->only_fields && !in_array($name, $this->only_fields)) {
+                return false;
+            }
+
+            switch($filter) {
+                case null: return !$field->system;
+                case 'system': return $field->system;
+                case 'editable': return $field->ui['editable'] ?? !$field->system;
+                case 'visible': return $field->ui['visible'] ?? !$field->system;
+            }
+
+        }, ARRAY_FILTER_USE_BOTH);
     }
 
     /**
