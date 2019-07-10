@@ -22,7 +22,9 @@ use IteratorAggregate;
  */
 class Model implements ArrayAccess, IteratorAggregate
 {
-    use ContainerTrait;
+    use ContainerTrait {
+        add as _add;
+    }
     use DynamicMethodTrait;
     use HookTrait;
     use InitializerTrait {
@@ -442,6 +444,15 @@ class Model implements ArrayAccess, IteratorAggregate
         return $errors;
     }
 
+    public function add($obj, $args = [])
+    {
+        $obj = $this->_add($obj, $args);
+        if ($obj instanceof Field) {
+            throw new Exception(['You should always use addField() for adding fields, not add()']);
+        }
+        return $obj;
+    }
+
     /**
      * Adds new field into model.
      *
@@ -502,6 +513,16 @@ class Model implements ArrayAccess, IteratorAggregate
         }
 
         return $this;
+    }
+
+    /**
+     * Remove field that was added previously
+     *
+     * @param $name
+     * @throws \atk4\core\Exception
+     */
+    public function removeField($name) {
+        return $this->_removeFromCollection($name, 'fields');
     }
 
     /**
@@ -2435,7 +2456,7 @@ class Model implements ArrayAccess, IteratorAggregate
 
         $this->addField($name, $field);
 
-        return $this->add($field, $name);
+        return $field;
     }
 
     /**
