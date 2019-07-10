@@ -133,7 +133,7 @@ class Generic
 
             $run = function () use ($args) {
                 if ($this->callback === null) {
-                    $cb = [$this->owner, substr($this->short_name, strlen('action:'))];
+                    $cb = [$this->owner, $this->short_name];
                 } elseif (is_string($this->callback)) {
                     $cb = [$this->owner, $this->callback];
                 } else {

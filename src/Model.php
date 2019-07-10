@@ -104,6 +104,17 @@ class Model implements ArrayAccess, IteratorAggregate
     public $_default_seed_action = UserAction\Generic::class;
 
     /**
+     * @var array Collection containing Field Objects - using key as the field system name
+     */
+    public $fields = [];
+
+    /**
+     * @var array Collection of actions - using key as action system name
+     */
+    public $actions = [];
+
+
+    /**
      * Contains name of table, session key, collection or file where this
      * model normally lives. The interpretation of the table will be decoded
      * by persistence driver.
@@ -935,7 +946,7 @@ class Model implements ArrayAccess, IteratorAggregate
         /** @var UserAction\Generic $action */
         $action = $this->factory($this->_default_seed_action, $defaults);
 
-        $this->add($action, 'action:'.$name);
+        $this->_addIntoCollection($name, $action, 'actions');
 
         return $action;
     }
@@ -952,28 +963,9 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function getActions($scope = null) : array
     {
-        $res = [];
-
-        foreach (array_keys($this->elements) as $name) {
-            if (stripos($name, 'action:') !== 0) {
-                continue;
-            }
-            $name = substr($name, strlen('action:')); // drop 'action:' prefix from element name
-
-            $action = $this->getAction($name);
-
-            if ($scope !== null && $action->scope !== $scope) {
-                continue;
-            }
-
-            if ($action->system) {
-                continue;
-            }
-
-            $res[$name] = $action;
-        }
-
-        return $res;
+        return array_filter($this->actions, function($action) use($scope){
+            return !$action->system && ($scope === null || $action->scope === $scope);
+        });
     }
 
     /**
@@ -989,7 +981,7 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function hasAction($name)
     {
-        return $this->hasElement('action:'.$name);
+        return $this->_hasInCollection($name, 'actions');
     }
 
     /**
@@ -1004,13 +996,7 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function getAction($name) : UserAction\Generic
     {
-        $a = $this->hasAction($name);
-
-        if ($a === false) {
-            throw new Exception(['User Action not defined', 'action' => $name]);
-        }
-
-        return $a;
+        return $this->_getFromCollection($name, 'actions');
     }
 
     /**
