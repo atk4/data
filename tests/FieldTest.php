@@ -812,31 +812,33 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object) ['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
     }
 
-    public function testAddFieldDirectly() {
+    public function testAddFieldDirectly()
+    {
         $this->expectException(Exception::class);
         $model = new Model();
         $model->add(new Field(), 'test');
     }
 
-    public function testGetFields() {
+    public function testGetFields()
+    {
         $model = new Model();
         $model->addField('system', ['system'=>true]);
         $model->addField('editable', ['ui'=>['editable'=>true]]);
-        $model->addField('editable_system', ['ui'=>['editable'=>true],'system'=>true]);
+        $model->addField('editable_system', ['ui'=>['editable'=>true], 'system'=>true]);
         $model->addField('visible', ['ui'=>['visible'=>true]]);
-        $model->addField('visible_system', ['ui'=>['visible'=>true],'system'=>true]);
+        $model->addField('visible_system', ['ui'=>['visible'=>true], 'system'=>true]);
         $model->addField('not_editable', ['ui'=>['editable'=>false]]);
 
-        $this->assertEquals(['system' ,'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
-        $this->assertEquals(['system' ,'editable_system', 'visible_system'], array_keys($model->getFields('system')));
+        $this->assertEquals(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+        $this->assertEquals(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
         $this->assertEquals(['editable', 'visible', 'not_editable'], array_keys($model->getFields('not system')));
-        $this->assertEquals(['editable' ,'editable_system', 'visible'], array_keys($model->getFields('editable')));
-        $this->assertEquals(['editable' ,'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
+        $this->assertEquals(['editable', 'editable_system', 'visible'], array_keys($model->getFields('editable')));
+        $this->assertEquals(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
 
         $model->onlyFields(['system', 'visible', 'not_editable']);
 
         // getFields() is unaffected by only_fields, will always return all fields
-        $this->assertEquals(['system' ,'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+        $this->assertEquals(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
 
         // only return subset of only_fields
         $this->assertEquals(['visible', 'not_editable'], array_keys($model->getFields('visible')));

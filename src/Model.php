@@ -6,13 +6,13 @@ namespace atk4\data;
 
 use ArrayAccess;
 use atk4\core\AppScopeTrait;
+use atk4\core\CollectionTrait;
 use atk4\core\ContainerTrait;
 use atk4\core\DIContainerTrait;
 use atk4\core\DynamicMethodTrait;
 use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
-use atk4\core\CollectionTrait;
 use atk4\core\NameTrait;
 use atk4\dsql\Query;
 use IteratorAggregate;
@@ -1627,8 +1627,9 @@ class Model implements ArrayAccess, IteratorAggregate
      * @param mixed $field_name
      * @param mixed $value
      *
-     * @return $this
      * @throws \atk4\core\Exception
+     *
+     * @return $this
      */
     public function loadBy(string $field_name, $value)
     {
@@ -1664,10 +1665,11 @@ class Model implements ArrayAccess, IteratorAggregate
      * Will not throw exception if record doesn't exist.
      *
      * @param string $field_name
-     * @param mixed $value
+     * @param mixed  $value
+     *
+     * @throws \atk4\core\Exception
      *
      * @return $this
-     * @throws \atk4\core\Exception
      */
     public function tryLoadBy(string $field_name, $value)
     {
