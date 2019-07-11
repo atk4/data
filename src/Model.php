@@ -670,7 +670,7 @@ class Model implements ArrayAccess, IteratorAggregate
             return $this->fields;
         }
 
-        return array_filter($this->fields, function ($field, $name) use ($filter) {
+        return array_filter($this->fields, function (Field $field, $name) use ($filter) {
 
             // do not return fields outside of "only_fields" scope
             if ($this->only_fields && !in_array($name, $this->only_fields)) {
@@ -680,8 +680,8 @@ class Model implements ArrayAccess, IteratorAggregate
             switch ($filter) {
                 case 'system': return $field->system;
                 case 'not system': return !$field->system;
-                case 'editable': return $field->ui['editable'] ?? !$field->system;
-                case 'visible': return $field->ui['visible'] ?? !$field->system;
+                case 'editable': return $field->isEditable();
+                case 'visible': return $field->isVisible();
                 default:
                     throw new Exception(['Filter is not supported', 'filter'=>$filter]);
             }
@@ -1624,10 +1624,11 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Load record by condition.
      *
-     * @param mixed $field
+     * @param mixed $field_name
      * @param mixed $value
      *
      * @return $this
+     * @throws \atk4\core\Exception
      */
     public function loadBy(string $field_name, $value)
     {
@@ -1662,36 +1663,37 @@ class Model implements ArrayAccess, IteratorAggregate
      * Try to load record by condition.
      * Will not throw exception if record doesn't exist.
      *
-     * @param mixed $field
+     * @param string $field_name
      * @param mixed $value
      *
      * @return $this
+     * @throws \atk4\core\Exception
      */
-    public function tryLoadBy($field, $value)
+    public function tryLoadBy(string $field_name, $value)
     {
         // store
-        $field = $this->getField($field);
-        $system = $field->system;
-        $default = $field->default;
+        $field_name = $this->getField($field_name);
+        $system = $field_name->system;
+        $default = $field_name->default;
 
         // add condition and try to load record
-        $this->addCondition($field, $value);
+        $this->addCondition($field_name, $value);
 
         try {
             $this->tryLoadAny();
         } catch (\Exception $e) {
             // restore
             array_pop($this->conditions);
-            $field->system = $system;
-            $field->default = $default;
+            $field_name->system = $system;
+            $field_name->default = $default;
 
             throw $e;
         }
 
         // restore
         array_pop($this->conditions);
-        $field->system = $system;
-        $field->default = $default;
+        $field_name->system = $system;
+        $field_name->default = $default;
 
         return $this;
     }
