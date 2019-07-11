@@ -12,7 +12,7 @@ use atk4\core\DynamicMethodTrait;
 use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
-use atk4\core\MultiContainerTrait;
+use atk4\core\CollectionTrait;
 use atk4\core\NameTrait;
 use atk4\dsql\Query;
 use IteratorAggregate;
@@ -34,7 +34,7 @@ class Model implements ArrayAccess, IteratorAggregate
     use DIContainerTrait;
     use FactoryTrait;
     use AppScopeTrait;
-    use MultiContainerTrait;
+    use CollectionTrait;
 
     // {{{ Properties of the class
 
@@ -108,12 +108,12 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * @var array Collection containing Field Objects - using key as the field system name
      */
-    public $fields = [];
+    protected $fields = [];
 
     /**
      * @var array Collection of actions - using key as action system name
      */
-    public $actions = [];
+    protected $actions = [];
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -378,28 +378,9 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function __clone()
     {
-        // we need to clone some of the elements
-        if ($this->elements) {
-            foreach ($this->elements as $id => $el) {
-                $el = clone $el;
-                $this->elements[$id] = $el;
-                $el->owner = $this;
-            }
-        }
-        if ($this->fields) {
-            foreach ($this->fields as $id => $el) {
-                $el = clone $el;
-                $this->fields[$id] = $el;
-                $el->owner = $this;
-            }
-        }
-        if ($this->actions) {
-            foreach ($this->actions as $id => $el) {
-                $el = clone $el;
-                $this->actions[$id] = $el;
-                $el->owner = $this;
-            }
-        }
+        $this->_cloneCollection('elements');
+        $this->_cloneCollection('fields');
+        $this->_cloneCollection('actions');
     }
 
     /**
@@ -444,6 +425,9 @@ class Model implements ArrayAccess, IteratorAggregate
         return $errors;
     }
 
+    /**
+     * TEMPORARY to spot any use of $model->add(new Field(), 'bleh'); form.
+     */
     public function add($obj, $args = [])
     {
         $obj = $this->_add($obj, $args);
@@ -469,18 +453,32 @@ class Model implements ArrayAccess, IteratorAggregate
         if (is_object($seed)) {
             $field = $seed;
         } else {
-            if ($this->persistence) {
-                $field = $this->persistence->fieldFactory($seed);
-            } else {
-                $field = $this->factory($this->mergeSeeds(
-                    $seed,
-                    isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
-                    Field::class
-                ), null, '\atk4\data\Field');
-            }
+            $field = $this->fieldFactory($seed);
         }
 
         return $this->_addIntoCollection($name, $field, 'fields');
+    }
+
+    /**
+     * Given a field seed, return a feld object.
+     *
+     * @param string $type
+     *
+     * @throws \atk4\core\Exception
+     *
+     * @return Field
+     */
+    public function fieldFactory($seed = [])
+    {
+        /** @var Field $field */
+        $seed = $this->mergeSeeds(
+            $seed,
+            isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
+            [Field::class]
+        );
+        $field = $this->factory($seed, null, '\atk4\data\Field');
+
+        return $field;
     }
 
     protected $typeToFieldSeed = [
@@ -525,7 +523,7 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function removeField($name)
     {
-        return $this->_removeFromCollection($name, 'fields');
+        $this->_removeFromCollection($name, 'fields');
     }
 
     /**
@@ -681,8 +679,11 @@ class Model implements ArrayAccess, IteratorAggregate
 
             switch ($filter) {
                 case 'system': return $field->system;
+                case 'not system': return !$field->system;
                 case 'editable': return $field->ui['editable'] ?? !$field->system;
                 case 'visible': return $field->ui['visible'] ?? !$field->system;
+                default:
+                    throw new Exception(['Filter is not supported', 'filter'=>$filter]);
             }
         }, ARRAY_FILTER_USE_BOTH);
     }
