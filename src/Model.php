@@ -4,21 +4,35 @@
 
 namespace atk4\data;
 
+use ArrayAccess;
+use atk4\core\AppScopeTrait;
+use atk4\core\ContainerTrait;
+use atk4\core\DIContainerTrait;
+use atk4\core\DynamicMethodTrait;
+use atk4\core\FactoryTrait;
+use atk4\core\HookTrait;
+use atk4\core\InitializerTrait;
+use atk4\core\MultiContainerTrait;
+use atk4\core\NameTrait;
+use atk4\dsql\Query;
+use IteratorAggregate;
+
 /**
  * Data model class.
  */
-class Model implements \ArrayAccess, \IteratorAggregate
+class Model implements ArrayAccess, IteratorAggregate
 {
-    use \atk4\core\ContainerTrait;
-    use \atk4\core\DynamicMethodTrait;
-    use \atk4\core\HookTrait;
-    use \atk4\core\InitializerTrait {
+    use ContainerTrait;
+    use DynamicMethodTrait;
+    use HookTrait;
+    use InitializerTrait {
         init as _init;
     }
-    use \atk4\core\NameTrait;
-    use \atk4\core\DIContainerTrait;
-    use \atk4\core\FactoryTrait;
-    use \atk4\core\AppScopeTrait;
+    use NameTrait;
+    use DIContainerTrait;
+    use FactoryTrait;
+    use AppScopeTrait;
+    use MultiContainerTrait;
 
     // {{{ Properties of the class
 
@@ -88,6 +102,16 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @var string|array
      */
     public $_default_seed_action = UserAction\Generic::class;
+
+    /**
+     * @var array Collection containing Field Objects - using key as the field system name
+     */
+    public $fields = [];
+
+    /**
+     * @var array Collection of actions - using key as action system name
+     */
+    public $actions = [];
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -921,7 +945,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         /** @var UserAction\Generic $action */
         $action = $this->factory($this->_default_seed_action, $defaults);
 
-        $this->add($action, 'action:'.$name);
+        $this->_addIntoCollection($name, $action, 'actions');
 
         return $action;
     }
@@ -938,28 +962,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function getActions($scope = null) : array
     {
-        $res = [];
-
-        foreach (array_keys($this->elements) as $name) {
-            if (stripos($name, 'action:') !== 0) {
-                continue;
-            }
-            $name = substr($name, strlen('action:')); // drop 'action:' prefix from element name
-
-            $action = $this->getAction($name);
-
-            if ($scope !== null && $action->scope !== $scope) {
-                continue;
-            }
-
-            if ($action->system) {
-                continue;
-            }
-
-            $res[$name] = $action;
-        }
-
-        return $res;
+        return array_filter($this->actions, function ($action) use ($scope) {
+            return !$action->system && ($scope === null || $action->scope === $scope);
+        });
     }
 
     /**
@@ -975,7 +980,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function hasAction($name)
     {
-        return $this->hasElement('action:'.$name);
+        return $this->_hasInCollection($name, 'actions');
     }
 
     /**
@@ -984,19 +989,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param string $name Action name
      *
      * @throws \atk4\core\Exception
-     * @throws \atk4\data\Exception
+     * @throws Exception
      *
      * @return UserAction\Generic
      */
     public function getAction($name) : UserAction\Generic
     {
-        $a = $this->hasAction($name);
-
-        if ($a === false) {
-            throw new Exception(['User Action not defined', 'action' => $name]);
-        }
-
-        return $a;
+        return $this->_getFromCollection($name, 'actions');
     }
 
     /**
@@ -2089,7 +2088,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @throws Exception
      *
-     * @return \atk4\dsql\Query
+     * @return Query
      */
     public function action($mode, $args = [])
     {

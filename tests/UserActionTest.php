@@ -161,7 +161,7 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testException1()
     {
-        $this->expectExceptionMessage('not defined');
+        $this->expectExceptionMessage('not found');
         $client = new ACClient($this->pers);
         $client->getAction('non_existant_action');
     }
