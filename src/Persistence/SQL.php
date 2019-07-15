@@ -155,7 +155,7 @@ class SQL extends Persistence
 
         // When we work without table, we can't have any IDs
         if ($m->table === false) {
-            $m->getField($m->id_field)->destroy();
+            $m->removeField($m->id_field);
             $m->addExpression($m->id_field, '1');
             //} else {
             // SQL databases use ID of int by default
@@ -241,13 +241,10 @@ class SQL extends Persistence
      */
     public function initField($q, $field)
     {
-        $is_sql_field = ($field instanceof \atk4\data\Field_SQL) || ($field instanceof \atk4\data\Field\Boolean);
-        if ($is_sql_field && $field->useAlias()) {
+        if ($field->useAlias()) {
             $q->field($field, $field->short_name);
-        } elseif ($is_sql_field) {
-            $q->field($field);
         } else {
-            $q->field($field->short_name);
+            $q->field($field);
         }
     }
 
@@ -287,24 +284,20 @@ class SQL extends Persistence
             }
 
             // now add system fields, if they were not added
-            foreach ($m->elements as $field => $f_object) {
-                if ($f_object instanceof Field) {
-                    if ($f_object->never_persist) {
-                        continue;
-                    }
-                    if ($f_object->system && !isset($added_fields[$field])) {
-                        $this->initField($q, $f_object);
-                    }
+            foreach ($m->getFields() as $field => $f_object) {
+                if ($f_object->never_persist) {
+                    continue;
+                }
+                if ($f_object->system && !isset($added_fields[$field])) {
+                    $this->initField($q, $f_object);
                 }
             }
         } else {
-            foreach ($m->elements as $field => $f_object) {
-                if ($f_object instanceof Field) {
-                    if ($f_object->never_persist) {
-                        continue;
-                    }
-                    $this->initField($q, $f_object);
+            foreach ($m->getFields() as $field => $f_object) {
+                if ($f_object->never_persist) {
+                    continue;
                 }
+                $this->initField($q, $f_object);
             }
         }
     }

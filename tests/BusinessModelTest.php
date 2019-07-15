@@ -24,7 +24,7 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
         $f = $m->getField('name');
         $this->assertEquals('name', $f->short_name);
 
-        $m->add(new Field(), 'surname');
+        $m->addField('surname', new Field());
         $f = $m->getField('surname');
         $this->assertEquals('surname', $f->short_name);
     }

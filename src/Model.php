@@ -6,13 +6,13 @@ namespace atk4\data;
 
 use ArrayAccess;
 use atk4\core\AppScopeTrait;
+use atk4\core\CollectionTrait;
 use atk4\core\ContainerTrait;
 use atk4\core\DIContainerTrait;
 use atk4\core\DynamicMethodTrait;
 use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
-use atk4\core\MultiContainerTrait;
 use atk4\core\NameTrait;
 use atk4\dsql\Query;
 use IteratorAggregate;
@@ -22,7 +22,9 @@ use IteratorAggregate;
  */
 class Model implements ArrayAccess, IteratorAggregate
 {
-    use ContainerTrait;
+    use ContainerTrait {
+        add as _add;
+    }
     use DynamicMethodTrait;
     use HookTrait;
     use InitializerTrait {
@@ -32,7 +34,7 @@ class Model implements ArrayAccess, IteratorAggregate
     use DIContainerTrait;
     use FactoryTrait;
     use AppScopeTrait;
-    use MultiContainerTrait;
+    use CollectionTrait;
 
     // {{{ Properties of the class
 
@@ -45,7 +47,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @var string|array
      */
-    public $_default_seed_addField = '\atk4\data\Field';
+    public $_default_seed_addField = Field::class;
 
     /**
      * The class used by addField() method.
@@ -106,12 +108,12 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * @var array Collection containing Field Objects - using key as the field system name
      */
-    public $fields = [];
+    protected $fields = [];
 
     /**
      * @var array Collection of actions - using key as action system name
      */
-    public $actions = [];
+    protected $actions = [];
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -376,14 +378,9 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function __clone()
     {
-        // we need to clone some of the elements
-        if ($this->elements) {
-            foreach ($this->elements as $id => $el) {
-                $el = clone $el;
-                $this->elements[$id] = $el;
-                $el->owner = $this;
-            }
-        }
+        $this->_cloneCollection('elements');
+        $this->_cloneCollection('fields');
+        $this->_cloneCollection('actions');
     }
 
     /**
@@ -429,38 +426,73 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
+     * TEMPORARY to spot any use of $model->add(new Field(), 'bleh'); form.
+     */
+    public function add($obj, $args = [])
+    {
+        $obj = $this->_add($obj, $args);
+        if ($obj instanceof Field) {
+            throw new Exception(['You should always use addField() for adding fields, not add()']);
+        }
+
+        return $obj;
+    }
+
+    /**
      * Adds new field into model.
      *
-     * @param string $field
-     * @param array  $defaults
+     * @param string       $name
+     * @param array|object $seed
      *
      * @throws \atk4\core\Exception
      *
      * @return Field
      */
-    public function addField($field, $defaults = [])
+    public function addField($name, $seed = [])
     {
-        // compatibility: for field types
-        $class = $this->_default_seed_addField;
-        if (is_array($defaults) && isset($defaults['type'])) {
-            switch (strtolower($defaults['type'])) {
-                case 'boolean':
-                    $class = 'Boolean';
-                    break;
-            }
+        if (is_object($seed)) {
+            $field = $seed;
+        } else {
+            $field = $this->fieldFactory($seed);
         }
 
-        $field_object = $this->factory($this->mergeSeeds($defaults, $class), null, '\atk4\data\Field');
-        $this->add($field_object, $field);
-
-        return $field_object;
+        return $this->_addIntoCollection($name, $field, 'fields');
     }
+
+    /**
+     * Given a field seed, return a field object.
+     *
+     * @param array $seed
+     *
+     * @throws \atk4\core\Exception
+     *
+     * @return Field
+     */
+    public function fieldFactory($seed = [])
+    {
+        $seed = $this->mergeSeeds(
+            $seed,
+            isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
+            [Field::class]
+        );
+
+        /** @var Field $field */
+        $field = $this->factory($seed, null, '\atk4\data\Field');
+
+        return $field;
+    }
+
+    protected $typeToFieldSeed = [
+        'boolean' => ['Boolean'],
+    ];
 
     /**
      * Adds multiple fields into model.
      *
      * @param array $fields
      * @param array $defaults
+     *
+     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -484,54 +516,59 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
+     * Remove field that was added previously.
+     *
+     * @param string $name
+     *
+     * @throws \atk4\core\Exception
+     *
+     * @return $this
+     */
+    public function removeField(string $name)
+    {
+        $this->_removeFromCollection($name, 'fields');
+
+        return $this;
+    }
+
+    /**
      * Finds a field with a corresponding name. Returns false if field not found. Similar
      * to hasElement() but with extra checks to make sure it's certainly a field you are
      * getting.
      *
-     *
-     * @param string|Field $name
+     * @param string $name
      *
      * @return Field|false
      */
-    public function hasField($name)
+    public function hasField(string $name)
     {
-        if ($name instanceof Field) {
-            return $name;
-        }
-
-        $f_object = $this->hasElement($name);
-        if (!$f_object || !$f_object instanceof Field) {
-            return false;
-        }
-
-        return $f_object;
+        return $this->_hasInCollection($name, 'fields');
     }
 
     /**
      * Same as hasField, but will throw exception if field not found.
      * Similar to getElement().
      *
-     * @param string|Field $name
+     * @param string $name
      *
-     * @throws Exception
+     * @throws \atk4\core\Exception
      *
      * @return Field
      */
-    public function getField($name)
+    public function getField(string $name)
     {
-        $f = $this->hasField($name);
+        /** @var Field $field */
+        $field = $this->_getFromCollection($name, 'fields');
 
-        if ($f === false) {
-            throw new Exception(['Field is not defined in model', 'model' => get_class($this), 'field' => $name]);
-        }
-
-        return $f;
+        return $field;
     }
 
     /**
      * Sets which fields we will select.
      *
      * @param array $fields
+     *
+     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -559,6 +596,8 @@ class Model implements ArrayAccess, IteratorAggregate
      * Normalize field name.
      *
      * @param mixed $field
+     *
+     * @throws \atk4\core\Exception
      *
      * @return string
      */
@@ -589,7 +628,7 @@ class Model implements ArrayAccess, IteratorAggregate
             }
         }
 
-        if ($this->strict_field_check && !isset($this->elements[$field])) {
+        if ($this->strict_field_check && !$this->hasField($field)) {
             throw new Exception([
                 'Field is not defined inside a Model',
                 'field'       => $field,
@@ -622,6 +661,35 @@ class Model implements ArrayAccess, IteratorAggregate
         }
 
         return false;
+    }
+
+    /**
+     * @param string|null $filter
+     *
+     * @return array
+     */
+    public function getFields(string $filter = null)
+    {
+        if (!$filter) {
+            return $this->fields;
+        }
+
+        return array_filter($this->fields, function (Field $field, $name) use ($filter) {
+
+            // do not return fields outside of "only_fields" scope
+            if ($this->only_fields && !in_array($name, $this->only_fields)) {
+                return false;
+            }
+
+            switch ($filter) {
+                case 'system': return $field->system;
+                case 'not system': return !$field->system;
+                case 'editable': return $field->isEditable();
+                case 'visible': return $field->isVisible();
+                default:
+                    throw new Exception(['Filter is not supported', 'filter'=>$filter]);
+            }
+        }, ARRAY_FILTER_USE_BOTH);
     }
 
     /**
@@ -770,11 +838,9 @@ class Model implements ArrayAccess, IteratorAggregate
                     $data[$field] = $this->get($field);
                 }
             } else {
-                // get all field-elements
-                foreach ($this->elements as $field => $f) {
-                    if ($f instanceof Field) {
-                        $data[$field] = $this->get($field);
-                    }
+                // get all fields
+                foreach ($this->getFields() as $field => $f) {
+                    $data[$field] = $this->get($field);
                 }
             }
 
@@ -820,6 +886,9 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function getTitle()
     {
+        if (!$this->title_field) {
+            return $this->id;
+        }
         $f = $this->hasField($this->title_field);
 
         return $f ? $f->get() : $this->id;
@@ -1078,7 +1147,7 @@ class Model implements ArrayAccess, IteratorAggregate
             */
         }
 
-        $f = (is_string($field) || $field instanceof Field) ? $this->getField($field) : false;
+        $f = is_string($field) ? $this->getField($field) : ($field instanceof Field ? $field : false);
         if ($f) {
             if ($operator === '=' || func_num_args() == 2) {
                 $v = $operator === '=' ? $value : $operator;
@@ -1559,20 +1628,22 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Load record by condition.
      *
-     * @param mixed $field
+     * @param mixed $field_name
      * @param mixed $value
+     *
+     * @throws \atk4\core\Exception
      *
      * @return $this
      */
-    public function loadBy($field, $value)
+    public function loadBy(string $field_name, $value)
     {
         // store
-        $field = $this->getField($field);
+        $field = $this->getField($field_name);
         $system = $field->system;
         $default = $field->default;
 
         // add condition and load record
-        $this->addCondition($field, $value);
+        $this->addCondition($field_name, $value);
 
         try {
             $this->loadAny();
@@ -1597,36 +1668,38 @@ class Model implements ArrayAccess, IteratorAggregate
      * Try to load record by condition.
      * Will not throw exception if record doesn't exist.
      *
-     * @param mixed $field
-     * @param mixed $value
+     * @param string $field_name
+     * @param mixed  $value
+     *
+     * @throws \atk4\core\Exception
      *
      * @return $this
      */
-    public function tryLoadBy($field, $value)
+    public function tryLoadBy(string $field_name, $value)
     {
         // store
-        $field = $this->getField($field);
-        $system = $field->system;
-        $default = $field->default;
+        $field_name = $this->getField($field_name);
+        $system = $field_name->system;
+        $default = $field_name->default;
 
         // add condition and try to load record
-        $this->addCondition($field, $value);
+        $this->addCondition($field_name, $value);
 
         try {
             $this->tryLoadAny();
         } catch (\Exception $e) {
             // restore
             array_pop($this->conditions);
-            $field->system = $system;
-            $field->default = $default;
+            $field_name->system = $system;
+            $field_name->default = $default;
 
             throw $e;
         }
 
         // restore
         array_pop($this->conditions);
-        $field->system = $system;
-        $field->default = $default;
+        $field_name->system = $system;
+        $field_name->default = $default;
 
         return $this;
     }
@@ -1891,14 +1964,12 @@ class Model implements ArrayAccess, IteratorAggregate
                 }
 
                 // now add system fields, if they were not added
-                foreach ($this->elements as $field => $f_object) {
-                    if ($f_object instanceof Field) {
-                        if ($f_object->never_persist) {
-                            continue;
-                        }
-                        if ($f_object->system && !isset($fields[$field])) {
-                            $fields[$field] = true;
-                        }
+                foreach ($this->getFields() as $field => $f_object) {
+                    if ($f_object->never_persist) {
+                        continue;
+                    }
+                    if ($f_object->system && !isset($fields[$field])) {
+                        $fields[$field] = true;
                     }
                 }
 
@@ -1906,13 +1977,11 @@ class Model implements ArrayAccess, IteratorAggregate
             } else {
 
                 // Add all model fields
-                foreach ($this->elements as $field => $f_object) {
-                    if ($f_object instanceof Field) {
-                        if ($f_object->never_persist) {
-                            continue;
-                        }
-                        $fields[] = $field;
+                foreach ($this->getFields() as $field => $f_object) {
+                    if ($f_object->never_persist) {
+                        continue;
                     }
+                    $fields[] = $field;
                 }
             }
         }
@@ -2395,7 +2464,11 @@ class Model implements ArrayAccess, IteratorAggregate
 
         $c = $this->_default_seed_addExpression;
 
-        return $this->add($this->factory($c, $expression), $name);
+        $field = $this->factory($c, $expression);
+
+        $this->addField($name, $field);
+
+        return $field;
     }
 
     /**
