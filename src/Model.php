@@ -447,8 +447,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return array_filter($this->elements, function ($field) {
             return $field instanceof \atk4\data\Field;
         });
-	
-
     }
 
     /**
