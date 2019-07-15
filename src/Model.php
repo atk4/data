@@ -460,9 +460,9 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
-     * Given a field seed, return a feld object.
+     * Given a field seed, return a field object.
      *
-     * @param string $type
+     * @param array $seed
      *
      * @throws \atk4\core\Exception
      *
@@ -470,12 +470,13 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function fieldFactory($seed = [])
     {
-        /** @var Field $field */
         $seed = $this->mergeSeeds(
             $seed,
             isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
             [Field::class]
         );
+
+        /** @var Field $field */
         $field = $this->factory($seed, null, '\atk4\data\Field');
 
         return $field;
@@ -517,20 +518,23 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Remove field that was added previously.
      *
-     * @param $name
+     * @param string $name
      *
      * @throws \atk4\core\Exception
+     *
+     * @return $this
      */
-    public function removeField($name)
+    public function removeField(string $name)
     {
         $this->_removeFromCollection($name, 'fields');
+
+        return $this;
     }
 
     /**
      * Finds a field with a corresponding name. Returns false if field not found. Similar
      * to hasElement() but with extra checks to make sure it's certainly a field you are
      * getting.
-     *
      *
      * @param string $name
      *
@@ -545,7 +549,7 @@ class Model implements ArrayAccess, IteratorAggregate
      * Same as hasField, but will throw exception if field not found.
      * Similar to getElement().
      *
-     * @param string|Field $name
+     * @param string $name
      *
      * @throws \atk4\core\Exception
      *
