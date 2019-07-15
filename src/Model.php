@@ -442,6 +442,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
+    public function getFields()
+    {
+        return array_filter($this->elements, function ($field) {
+            return $field instanceof \atk4\data\Field;
+        });
+	
+
+    }
+
     /**
      * Finds a field with a corresponding name. Returns false if field not found. Similar
      * to hasElement() but with extra checks to make sure it's certainly a field you are
