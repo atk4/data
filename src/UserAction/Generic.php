@@ -8,6 +8,7 @@ use atk4\core\DIContainerTrait;
 use atk4\core\Exception;
 use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
+use atk4\data\Model;
 
 /**
  * Implements generic user action. Assigned to a model it can be invoked by a user. Action describes meta information about
@@ -24,9 +25,12 @@ class Generic
         init as init_;
     }
 
+    /** @var Model */
+    public $owner;
+
     /** Defining scope of the action */
     const NO_RECORDS = 'none'; // e.g. add
-    const SINGLE_RECORD = 'single'; // e.g. edit
+    const SINGLE_RECORD = 'single'; // e.g. archive
     const MULTIPLE_RECORDS = 'multiple'; // e.g. delete
     const ALL_RECORDS = 'all'; // e.g. truncate
 
@@ -57,6 +61,9 @@ class Generic
     /** @var array Argument definition. */
     public $args = [];
 
+    /** @var array|null Specify which fields may be dirty when invoking action. NO_RECORDS|SINGLE_RECORD scopes for adding/modifying */
+    public $fields = [];
+
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
@@ -70,28 +77,83 @@ class Generic
      *
      * @param mixed ...$args
      *
+     * @throws Exception
+     *
      * @return mixed
      */
     public function execute(...$args)
     {
-        // todo - assert owner model loaded
-
-        // todo - start transaction, if atomic
-
-        // todo - pass model as first argument ?
-
         // todo - ACL tests must allow
 
-        if ($this->callback === null) {
-            $cb = [$this->owner, substr($this->short_name, strlen('action:'))];
-        } elseif (is_string($this->callback)) {
-            $cb = [$this->owner, $this->callback];
-        } else {
-            array_unshift($args, $this->owner);
-            $cb = $this->callback;
-        }
+        try {
+            if ($this->enabled === false || (is_callable($this->enabled) && call_user_func($this->enabled) === false)) {
+                throw new Exception([
+                    'This action is disabled',
+                ]);
+            }
 
-        return call_user_func_array($cb, $args);
+            // Verify that model fields wouldn't be too dirty
+            if (is_array($this->fields)) {
+                $too_dirty = array_diff(array_keys($this->owner->dirty), $this->fields);
+
+                if ($too_dirty) {
+                    throw new Exception([
+                        'Calling action on a Model with dirty fields that are not allowed by this action.',
+
+                        'too_dirty' => $too_dirty,
+                        'dirty'     => array_keys($this->owner->dirty),
+                        'permitted' => $this->fields,
+                    ]);
+                }
+            } elseif ($this->fields !== false) {
+                throw new Exception([
+                    'Arguments fields for the action must be either array or `false`.',
+                    'fields'=> $this->fields,
+                ]);
+            }
+
+            // Verify some scope cases
+            switch ($this->scope) {
+                case self::NO_RECORDS:
+                    if ($this->owner->loaded()) {
+                        throw new Exception([
+                            'This action scope prevents action from being executed on existing records.',
+                            'id' => $this->owner->id,
+                        ]);
+                    }
+                    break;
+                case self::SINGLE_RECORD:
+                    if (!$this->owner->loaded()) {
+                        throw new Exception([
+                            'This action scope requires you to load existing record first.',
+                        ]);
+                    }
+                    break;
+            }
+
+            $run = function () use ($args) {
+                if ($this->callback === null) {
+                    $cb = [$this->owner, $this->short_name];
+                } elseif (is_string($this->callback)) {
+                    $cb = [$this->owner, $this->callback];
+                } else {
+                    array_unshift($args, $this->owner);
+                    $cb = $this->callback;
+                }
+
+                return call_user_func_array($cb, $args);
+            };
+
+            if ($this->atomic) {
+                return $this->owner->persistence->atomic($run);
+            } else {
+                return $run();
+            }
+        } catch (Exception $e) {
+            $e->addMoreInfo('action', $this);
+
+            throw $e;
+        }
     }
 
     /**

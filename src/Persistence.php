@@ -82,6 +82,9 @@ class Persistence
      * @param Model|string $m        Model which will use this persistence
      * @param array        $defaults Properties
      *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     *
      * @return Model
      */
     public function add($m, $defaults = [])
