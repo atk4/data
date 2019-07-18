@@ -49,7 +49,7 @@ class Persistence
                 // to prevent nasty problems. This is un-tested on other databases, so moving it here.
                 // It gives problem with sqlite
                 if (strpos($dsn['dsn'], ';charset=') === false) {
-                    $dsn['dsn'] .= ';charset=utf8';
+                    $dsn['dsn'] .= ';charset=utf8mb4';
                 }
 
             case 'pgsql':
