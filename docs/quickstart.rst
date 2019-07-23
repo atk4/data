@@ -237,601 +237,172 @@ Now you can re-request list of due invoices::
 
 This time you should see a different picture, since the payment was allocated towards multiple invoices of client 'John'.
 
-Conclusion
-----------
+Quick UI
+========
 
-This quick intro shows just some basic concepts of traversing references and working with scoped data sets. We will
-get back to the `data-primer` later with some more advanced usage patterns.
+ATK UI contains enough information about your business model to actually be able to create a very nice
+administration system for it. Not only that, but some elements can be used for the client-facing front-end
+too with minimum code.
 
-Core Concepts
-==============
-
-Business Model (see :ref:`Model`)
-    You define business logic inside your own classes that extend :php:class:`Model`.
-    Each class you create represent one business entity.
-
-    Model has 3 major characteristic: Business Logic definition, DataSet mapping
-    and Active Record.
-
-    See: :php:class:`Model`
-
-Persistence (see :ref:`Persistence`)
-    Object representing a connection to database. Linking your Business Model
-    to a persistence allows you to load/save individual records as well as
-    execute multi-record operations (Actions)
-
-    For developer, persistence should be a secondary concern, after all it is
-    possible to switch from one persistence to another and compensate for the
-    feature differences without major refactoring.
-
-DataSet (see :ref:`DataSet`)
-    A set of physical records stored on your database server that correspond
-    to the Business Model.
-
-Active Record (see :ref:`Active Record`)
-    Model can load individual record from DataSet, work with it and save it back
-    into DataSet. While the record is loaded, we call it an Active Record.
-
-Action (see :ref:`Action`)
-    Operation that Model performs on all of DataSet records without loading
-    them individually. Actions have 3 main purposes: data aggregation,
-    referencing and multi-record operations.
-
-Persistence Domain vs Business Domain
--------------------------------------
-
-.. image:: images/bd-vs-pd.png
-
-It is very important to understand that there are two "domains" when it comes
-to your data. If you have used ORM, ActiveRecord or QueryBuilders, you will be
-thinking in terms of "Persistence Domain". That means that you think in terms
-of "tables", "fields", "foreign keys" and "group by" operations.
-
-In larger application developers does not necessarily have to know the details
-of your database structure. In fact - structure can often change and code that
-depend on specific field names or types can break.
-
-More importantly, if you decide to store some data in different database either
-for caching (memcache), unique features (full-text search) or to handle large
-amounts of data (BigData) you suddenly have to carefully consider that in your
-application.
-
-Business Domain is a layer that is designed to hide all the logic of data
-storage and focus on representing your business model in great detail. In other
-words - Business Logic is an API you and the rest of your developer team can use
-without concerning about data storage.
-
-Agile Data has a rich set of features to define how Business Domain maps into
-Persistence Domain. It also allows you to perform most actions with only
-knowledge of Business Domain, keeping the rest of your application independent
-from your database choice, structure or patterns.
-
-Class vs In-Line definition
----------------------------
-Business model entity in Agile Data is represented through PHP object.
-While it is advisable to create each entity in its own class, you do not have
-to do so.
-
-It might be handy to use in-line definition of a model. Try the following
-inside console::
-
-    $m = new \atk4\data\Model($db, 'contact_info');
-    $m->addFields(['address_1','address_2']);
-    $m->addCondition('address_1', 'not', null);
-    $m->loadAny();
-    $m->get();
-    $m->action('count')->getOne();
-
-Next, exit and create file `src/Model_ContactInfo.php`::
-
-    <?php
-    class Model_ContactInfo extends \atk4\data\Model
-    {
-        public $table = 'contact_info';
-        function init()
-        {
-            parent::init();
-
-            $this->addFields(['address_1','address_2']);
-            $this->addCondition('address_1','not', null);
-        }
-    }
-
-Save, exit and run console again. You can now type this::
-
-    $m = new Model_ContactInfo($db);
-    $m->loadAny();
-    $m->get();
-
-.. note:: Should the "addCondition" be located inside model definition or
-    inside your inline code? To answer this question - think - would
-    Model_ContactInfo have application without the condition? If yes then
-    either use addCondition in-line or create 2 classes.
-
-Model State
------------
-
-When you create a new model object, you can change its state to perform
-various operations on your data. The state can be broken down into the
-following categories:
-
-Persistence
-^^^^^^^^^^^
-
-When you create instance of a model (`new Model`) you need to specify
-:php:class:`Persistence` as a parameter. If you don't you can still use
-the model, but it won't be able to :php:meth:`Model::load()` or
-:php:meth:`Model::save()` data.
-
-Once model is associated with one persistence, you cannot re-associate it.
-Method :php:meth:`Model::init()` will be executed only after persistence is
-known, so that method may make some decisions based on chosen persistence.
-If you need to store model inside a different persistence, this is achieved
-by creating another instance of the same class and copying data over.
-You must however remember that any fields that you have added in-line will
-not be recreated.
-
-
-DataSet (Conditions)
-^^^^^^^^^^^^^^^^^^^^
-
-Model object may have one or several conditions applied. Conditions will limit
-which records model can load (make active) and save. Once the condition is added,
-it cannot be removed for safety reasons.
-
-Suppose you have a method that converts DataSet into JSON. Ability to add
-conditions is your way to specify which records to operate on::
-
-    function myexport(\atk4\data\Model $m, $fields)
-    {
-        return json_encode($m->export($fields));
-    }
-
-    $m = new Model_User($db);
-    $m->addCondition('country_id', '2');
-
-    myexport($m, ['id','username','country_id']);
-
-If you want to temporarily add conditions, then you can either clone the model
-or use :php:meth:`Model::tryLoadBy`.
-
-Active Record
-^^^^^^^^^^^^^
-
-Active Record is a third essential piece of information that your model stores.
-You can load / unload records like this::
-
-    $m = new Model_User($db);
-    $m->loadAny();
-
-    $m->get();     // inside console, this will show you what's inside your model
-
-    $m['email'] = 'test@example.com';
-    $m->save();
-
-You can call `$m->loaded()` to see if there is active record and `$m->id` will
-store the ID of active record. You can also un-load the record with `$m->unload()`.
-
-By default no records are loaded and if you modify some field and attempt
-to save unloaded model, it will create a new record.
-
-Model may use some default values in order to make sure that your record will
-be saved inside DataSet::
-
-    $m = new Model_User($db);
-    $m->addCondition('country_id', 2);
-    $m['username'] = 'peter';
-    $m->save();
-
-    $m->get(); // will show country_id as 2
-    $m['country_id'] = 3;
-    $m->save();  // will generate exception because model you try to save doesn't match conditions set
-
-
-Other Parameters
-^^^^^^^^^^^^^^^^
-
-Apart from the main 3 pieces of "state" your Model holds there can also be
-some other parameters such as:
-
- - order
- - limit
- - only_fields
-
-You can also define your own parameters like this::
-
-    $m = new Model_User($db, ['audit'=>false]);
-
-    $m->audit
-
-This can be used internally for all sorts of decisions for model behavior.
-
-
-Getting Started
-===============
-
-It's time to create the first Model. Open `src/Model_User.php` which should look
-like this::
-
-    <?php
-    class Model_User extends \atk4\data\Model
-    {
-        public $table = 'user';
-
-        function init() {
-            parent::init();
-
-            $this->addField('username');
-            $this->addField('email');
-
-            $j = $this->join('contact_info', 'contact_info_id');
-            $j->addField('address_1');
-            $j->addField('address_2');
-            $j->addField('address_3');
-            $j->hasOne('country_id', 'Country');
-
-        }
-    }
-
-Extend either the base Model class or one of your existing classes (like
-Model_Client). Define $table property unless it is already defined by parent
-class. All the properties defined inside your model class are considered
-"default" you can re-define them when you create model instances::
-
-    $m = new Model_User($db, 'user2'); // will use a different table
-
-    $m = new Model_User($db, ['table'=>'user2']); // same
-
-.. note:: If you're trying those lines, you will also have to
-    create this new table inside your MySQL database::
-
-        create table user2 as select * from user
-
-As I mentioned - :php:meth:`Model::init` is called when model is associated
-with persistence. You could create model and associate it with persistence
-later::
-
-    $m = new Model_User();
-
-    $db->add($m); // calls $m->init()
-
-You cannot add conditions just yet, although you can pass in some of the defaults::
-
-    $m = new Model_User(['table'=>'user2']);
-
-    $db->add($m); // will use table user2
-
-Adding Fields
--------------
-
-Methods :php:meth:`Model::addField()` and :php:meth:`Model::addFields()` can
-declare model fields. You need to declare them before you are able to use.
-You might think that some SQL reverse-engineering could be good at this point,
-but this would mimic your business logic after your presentation logic, while
-the whole point of Agile Data is to separate them, so you should, at least
-initially, avoid using generators.
-
-In practice, :php:meth:`Model::addField()` creates a new 'Field' object and then
-links it up to your model. This object is used to store some information about
-your field, but it also participates in some field-related activity.
-
-Table Joins
------------
-
-Similarly, :php:meth:`Model::join()` creates a Join object and stores it in $j.
-The Join object defines a relationship between the master :php:attr:`Model::table`
-and some other table inside persistence domain. It makes sure relationship is
-maintained when objects are saved / loaded::
-
-    $j = $this->join('contact_info', 'contact_info_id');
-    $j->addField('address_1');
-    $j->addField('address_2');
-
-That means that your business model will contain 'address_1' and 'address_2'
-fields, but when it comes to storing those values, they will be sent into a
-different database table and the records will be automatically linked.
-
-Lets once again load up the console for some exercises::
-
-    $m = new Model_User($db);
-
-    $m->loadBy('username','john');
-    $m->get();
-
-At this point you'll see that address has also been loaded for the user.
-Agile Data makes management of related records transparent. In fact you can
-introduce additional joins depending on class. See classes Model_Invoice and
-Model_Payment that join table `document` with either `payment` or `invoice`.
-
-As you load or save models you should see actual queries in the console, that
-should give you some idea what kind of information is sent to the database.
-
-Adding Fields, Joins, Expressions and References creates more objects and
-'adds' them into Model (to better understand how Model can behave like a
-container for these objects, see `documentation on Agile Core Containers
-<http://agile-core.readthedocs.io/en/develop/container.html>`_).
-This architecture of Agile Data allows database persistence to implement
-different logic that will properly manipulate features of that specific
-database engine.
-
-
-Understanding Persistence
--------------------------
-
-To make things simple, console has already created persistence inside variable
-`$db`. Load up `console.php` in your editor to look at how persistence is set up::
-
-    $app->db = \atk4\data\Persistence::connect($dsn, $user, $pass);
-
-The `$dsn` can also be using the PEAR-style DSN format, such as:
-"mysql://user:pass@db/host", in which case you do not need to specify $user and $pass.
-
-For some persistence classes, you should use constructor directly::
-
-    $array = [];
-    $array[1] = ['name'=>'John'];
-    $array[2] = ['name'=>'Peter'];
-
-    $db = new \atk4\data\Persistence\Array_($array);
-    $m = new \atk4\data\Model($db);
-    $m->addField('name');
-    $m->load(2);
-    echo $m['name'];  // Peter
-
-There are several Persistence classes that deal with different data sources.
-Lets load up our console and try out a different persistence::
-
-    $a=['user'=>[],'contact_info'=>[]];
-    $ar = new \atk4\data\Persistence\Array_($a);
-    $m = new Model_User($ar);
-    $m['username']='test';
-    $m['address_1']='street'
-
-    $m->save();
-
-    var_dump($a); // shows you stored data
-
-This time our Model_User logic has worked pretty well with Array-only
-persistence logic.
-
-.. note:: Persisting into Array or MongoDB are not fully functional as of 1.0
-    version. We plan to expand this functionality soon, see our development
-    `roadmap <https://github.com/atk4/data#roadmap>`_.
-
-
-References between Models
-=========================
-
-Your application normally uses multiple business entities and they can be
-related to each-other.
-
-.. warning:: Do not mix-up business model references with database relations
-    (foreign keys).
-
-References are defined by calling :php:meth:`Model::hasOne()` or
-:php:meth:`Model::hasMany()`. You always specify destination model and you can
-optionally specify which fields are used for conditioning.
-
-One to Many
------------
-
-Launch up console again and let's create reference between 'User' and 'System'.
-As per our database design - one user can have multiple 'system' records::
-
-    $m = new Model_User($db);
-    $m->hasMany('System');
-
-Next you can load a specific user and traverse into System model::
-
-    $m->loadBy('username', 'john');
-    $s = $m->ref('System');
-
-Unlike most ORM and ActiveRecord implementations today - instead of returning
-array of objects, :php:meth:`Model::ref()` actually returns another Model to
-you, however it will add one extra Condition. This type of reference traversal
-is called "Active Record to DataSet" or One to Many.
-
-Your Active Record was user john and after traversal you get a model with DataSet
-corresponding to all Systems that belong to user john. You can use the following
-to see number of records in DataSet or export DataSet::
-
-    $s->loaded();
-    $s->action('count')->getOne();
-    $s->export();
-    $s->action('count')->getDebugQuery();
-
-Many to Many
-------------
-
-Agile Data also supports another type of traversal - 'DataSet to DataSet' or
-Many to Many::
-
-    $c = $m->ref('System')->ref('Client');
-
-This will create a Model_Client instance with a DataSet corresponding to all
-the Clients that are contained in all of the Systems that belong to user john.
-You can examine the this model further::
-
-    $c->loaded();
-    $c->action('count')->getOne();
-    $c->export();
-    $c->action('count')->getDebugQuery();
-
-By looking at the code - both MtM and OtM references are defined with 'hasMany'.
-The only difference is the loaded() state of the source model.
-
-Calling ref()->ref() is also called Deep Traversal.
-
-One to One
-----------
-
-The third and final reference traversal type is "Active Record to Active Record"::
-
-    $cc = $m->ref('country_id');
-
-This results in an instance of Model_Country with Active Record set to the
-country of user john::
-
-    $cc->loaded();
-    $cc->id;
-    $cc->get();
-
-Implementation of References
-----------------------------
-
-When reference is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
-the new object is created and added into Model of class :php:class:`Reference\HasMany`
-or :php:class:`Reference\HasOne` (or :php:class:`Reference\HasOne_SQL` in case you
-use SQL database). The object itself is quite simple and you can fetch it from
-the model if you keep the return value of hasOne() / hasMany() or call
-:php:meth:`Model::getRef()` with the same identifier later on.
-You can also use :php:meth:`Model::hasRef()` to check if reference exists in model.
-
-Calling :php:meth:`Model::ref()` will proxy into the ref() method of reference
-object which will in turn figure out what to do.
-
-Additionally you can call :php:meth:`Model::addField()` on the reference model
-that will bring one or several fields from related model into your current model.
-
-Finally this reference object contains method :php:meth:`Reference::getModel()`
-which will produce a (possibly) fresh copy of related entity and will either
-adjust it's DataSet or set the active record.
-
-Actions
-=======
-
-Since NoSQL databases will always have some specific features, Agile Data uses
-the concept of 'action' to map into vendor-specific operations.
-
-Aggregation actions
--------------------
-
-SQL implements methods such as sum(), count() or max() that can offer you some
-basic aggregation without grouping. This type of aggregation provides some
-specific value from a data-set. SQL persistence implements some of the operations::
-
-    $m = new Model_Invoice($db);
-    $m->action('count')->getOne();
-    $m->action('fx', ['sum', 'total'])->getOne();
-    $m->action('fx', ['max', 'shipping'])->getOne();
-
-Aggregation actions can be used in Expressions with hasMany references and they
-can be brought into the original model as fields::
-
-    $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('max_delivery', ['aggregate'=>'max', 'field'=>'shipping']);
-    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
-    $m->export(['name','max_delivery','total_paid']);
-
-The above code is more concise and can be used together with reference declaration,
-although this is how it works::
-
-    $m = new Model_Client($db);
-    $m->addExpression('max_delivery', $m->refLink('Invoice')->action('fx', ['max', 'shipping']));
-    $m->addExpression('total_paid', $m->refLink('Payment')->action('fx', ['sum', 'amount']));
-    $m->export(['name','max_delivery','total_paid']);
-
-In this example calling refLink is similar to traversing reference but instead
-of calculating DataSet based on Active Record or DataSet it references the actual
-field, making it ideal for placing into sub-query which SQL action is using.
-So when calling like above, action() will produce expression for calculating
-max/sum for the specific record of Client and those calculation are used inside
-an Expression().
-
-Expression is a special type of read-only Field that uses sub-query or a more
-complex SQL expression instead of a physical field. (See :ref:`Expressions` and
-:ref:`References`)
-
-Field-reference actions
------------------------
-
-Field referencing allows you to fetch a specific field from related model::
-
-    $m = new Model_Country($db);
-    $m->action('field', ['name'])->get();
-    $m->action('field', ['name'])->getDebugQuery();
-
-This is useful with hasMany references::
-
-    $m = new Model_User($db);
-    $m->getRef('country_id')->addField('country', 'name');
-    $m->loadAny();
-    $m->get();  // look for 'country' field
-
-hasMany::addField() again is a short-cut for creating expression, which you can
-also build manually::
-
-    $m->addExpression('country', $m->refLink('country_id')->action('field',['name']));
-
-Multi-record actions
+Install Dependencies
 --------------------
 
-Actions also allow you to perform operations on multiple records. This can be
-very handy with some deep traversal to improve query efficiency. Suppose you need
-to change Client/Supplier status to 'suspended' for a specific user. Fire up a
-console once away::
+ATK Data can be complimented by https://github.com/atk4/ui, which can be used in conjunction with any
+other meta-framework. Here I'll present just a quick intro focused on building UI for existing data
+structure, but for a more comprehensive intro, see https://agile-ui.readthedocs.io/en/latest/quickstart.html.
 
-    $m = new Model_User($db);
-    $m->loadBy('username','john');
-    $m->hasMany('System');
-    $c = $m->ref('System')->ref('Client');
-    $s = $m->ref('System')->ref('Supplier');
+Use composer::
 
-    $c->action('update')->set('status', 'suspended')->execute();
-    $s->action('update')->set('status', 'suspended')->execute();
+    composer install atk4/ui
 
-Note that I had to perform 2 updates here, because Agile Data considers Client
-and Supplier as separate models. In our implementation they happened to be in
-a same table, but technically that could also be implemented differently by
-persistence layer.
+Next create a simple file::
 
-Advanced Use of Actions
------------------------
+    $app = new \atk4\ui\App();
+    $app->dbConnect('mysql://root:root@localhost/atk');
 
-Actions prove to be very useful in various situations. For instance, if you are
-looking to add a new user::
+    // Specify which UI layout to use
+    $app->initLayout('Centered');
 
-    $m = new Model_User($db);
-    $m['username'] = 'peter';
-    $m['address_1'] = 'street 49';
-    $m['country'] = 'UK';
-    $m->save();
+    // Create new Form object
+    $form = $app->add('Form');
 
-Normally this would not work, because country is read-only expression, however
-if you wish to avoid creating an intermediate select to determine ID for 'UK',
-you could do this::
+    // Associate UI component with your model and persistence
+    $form->setModel(new Client($app->db));
 
-    $m = new Model_User($db);
-    $m['username'] = 'peter';
-    $m['address_1'] = 'street 49';
-    $m['country_id'] = (new Model_Country($db))->addCondition('name','UK')->action('field',['id']);
-    $m->save();
+Opening the page will display a form consistent with the model/field definitions. A generic UI component will
+find fields suitable for the form and present them accuratelly with a correct type. No extra files or code
+is required.
 
-This way it will not execute any code, but instead it will provide expression
-that will then be used to lookup ID of 'UK' when inserting data into SQL table.
+Try using different views
+-------------------------
 
-Expressions
-===========
+ATK UI comes with varietty of different views, so try replacing $form creation with this::
 
-Expressions that are defined based on Actions (such as aggregate or field-reference)
-will continue to work even without SQL (although might be more performance-expensive),
-however if you're stuck with SQL you can use free-form pattern-based expressions::
+    $table = $app->add('Table');
+    $client = new Client($app->db);
 
-    $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('total_purchase', ['aggregate'=>'sum', 'field'=>'total']);
-    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
+    // Load existing client
+    $client->load(1);
 
-    $m->addExpression('balance','[total_purchase]+[total_paid]');
-    $m->export(['name','balance']);
+    // Show invoices of specific client inside a table
+    $table->setModel($client->ref('Invoices'));
+
+Next relace `Table` with `CRUD` and now your UI should allow you to add, edit and delete records too. Make note
+that any new invoices you add will be associated with the client with `id=1`::
+
+
+    $table = $app->add('Table');
+    $client = new Client($app->db);
+
+    // Load existing client
+    $client->load(1);
+
+    // Show invoices of specific client inside a table
+    $table->setModel($client->ref('Invoices'));
+
+Use Admin layout
+----------------
+
+Finally - ATK UI offers a hierarchical approach to rendering UI, so you can easily design layouts::
+
+    $app = new \atk4\ui\App();
+    $app->dbConnect('mysql://root:root@localhost/atk');
+
+    // Admin layout offers menu for navigating
+    $app->initLayout('Admin');
+
+
+    // Load existing client
+    $client = new Client($app->db);
+    $client->load(1);
+
+    $columns = $app->add('Columns');
+
+    // Two column layout
+    $c_left = $columns->addColumn();
+    $c_right = $columns->addColumn();
+
+    // Show client card on the left and invoices on the right
+    $c_left->add('Card')->setModel($client);
+    $c_right->add('CRUD')->setModel($client->ref('Invoices'));
+
+Don't forget to authenticate
+----------------------------
+
+I leave it as an exercise to you to create authentication for the admin. There is a very good add-on
+https://github.com/atk4/login which will make use of a Model to verify user access:
+
+ - require atk4/ui
+ - create 'User' model
+ - implement auth checking
+ - verify login/logout functionality
+ - verify password change screen
+
+
+Quick API
+=========
+
+If you need integration with React app or Mobile app, you might need an API. Once again - because ATK Data
+models contain some useful information already, it can be linked up with the API end-points directly. Also
+due to nature of https://github.com/atk4/api - it is a non-intrusive class, which follow standards and plays
+nice with other frameworks.
+
+Install Dependency
+------------------
+
+Install using composer::
+
+    composer require atk4/api
+
+Write the code
+--------------
+
+Create `api.php` file. You could mod_rewrite all requests into this file or use `api.php/clients/1` style
+endpoints, which would work out of the box::
+
+    
+    $api = new \atk4\api\Api();
+
+    // Create end-point route for clients
+    $api->rest('/clients', new Client($db));
+
+    // Create end-point route for client invoices
+    $api->rest('/clients/:client_id/invoices', function($id) use($db) {
+        $client = new Client($db);
+
+        return $client->load($id)->ref('Invoices');
+    });
+
+
+Actions, ACL and More
+=====================
+
+In a normal situation, your UI code may have to deal with various cases and variance depending on permissions,
+object state and more.
+
+With ATK add-ons you can continue to focus your work on ATK Data models and simply have the UI / API reflect
+your structure and business rules.
+
+So don't ask "how to add new button to the table" but rather thing in terms "how to add new action to a model".
+The benefit is that actions can also be accessed from the APIs if authentication and access control is
+configured correctly. You'll learn how to do that as you continue reading this documentation.
 
 
 Conclusion
 ==========
 
-You should now be familiar with the basics of Agile Data. To find more
-information on specific topics, use the rest of the documentation.
+In ATK community there is a saying "way of ATK". This refers to an implementation which implements the
+requirement with very small amount of effort from developers.
 
-Agile Data is designed in an extensive pattern - by adding more objects inside
-Model a new functionality can be introduced. The described functionality is never
-a limitation and 3rd party code or you can add features that Agile Data authors
-are not even considered.
+This QuickStart presented only the basics and demonstrated inter-component integration. I recommend that
+as you continue to work on your models, keep "UI" and "API"
+
+MasterCRUD Add-on
+-----------------
+
+I simply have to mention MasterCRUD add-on (https://github.com/atk4/mastercrud), which is designed to
+simplify things even further. This add-on is ideal for Administration Systems and traversing relationships
+automatically. I leave it to you to investigate how your entire Admin System code could be even shorter.
+
+
+
