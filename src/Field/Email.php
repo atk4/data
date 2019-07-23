@@ -1,21 +1,15 @@
 <?php
 
-
 namespace atk4\data\Field;
-
 
 use atk4\data\Exception;
 use atk4\data\Field;
-use atk4\data\ValidationException;
 
 /**
- * Stores valid email(s) as per configuration
- *
- * @package atk4\data\Field
+ * Stores valid email(s) as per configuration.
  */
 class Email extends Field
 {
-
     /**
      * @var bool Enable lookup for MX record for email addresses stored
      */
@@ -31,18 +25,17 @@ class Email extends Field
      */
     public $include_names = false;
 
-    function normalize($value)
+    public function normalize($value)
     {
 
         // use comma as separator
         $emails = explode(',', $value);
 
-        if (!$this->allow_multiple && count($emails)>1) {
+        if (!$this->allow_multiple && count($emails) > 1) {
             throw new Exception(['Only a single email can be entered', 'email'=>$value]);
         }
 
-        array_map(function($email){
-
+        array_map(function ($email) {
             $email = trim($email);
 
             if ($this->include_names) {
@@ -60,6 +53,6 @@ class Email extends Field
             }
         }, $emails);
 
-        return parent::normalize(join(', ', array_map('trim', $emails)));
+        return parent::normalize(implode(', ', array_map('trim', $emails)));
     }
 }

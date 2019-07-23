@@ -2,13 +2,11 @@
 
 namespace atk4\data\tests;
 
-use atk4\core\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence_Static;
-use atk4\data\UserAction;
 
 /**
- * Test various Field/*
+ * Test various Field/*.
  */
 class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
