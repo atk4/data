@@ -3,8 +3,8 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\ValidationException;
 use atk4\data\Persistence_Static;
+use atk4\data\ValidationException;
 
 /**
  * Test various Field.

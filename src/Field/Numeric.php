@@ -5,7 +5,6 @@
 namespace atk4\data\Field;
 
 use atk4\data\Field;
-use atk4\data\ValidationException;
 
 class Numeric extends Field
 {
@@ -28,5 +27,4 @@ class Numeric extends Field
      * @var mixed specify a maximum value for this number.
      */
     public $max;
-
 }

@@ -5,6 +5,6 @@ namespace atk4\data\Field;
 /**
  * Class Money offers a lightweight implementation of currencies.
  */
-class Money extends Number
+class _Money extends Number
 {
 }

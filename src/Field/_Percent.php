@@ -2,7 +2,7 @@
 
 namespace atk4\data\Field;
 
-class Percent extends Number
+class _Percent extends Number
 {
     /**
      * @var int IMPORTANT: set to 2+precision, since percentage is stored as a 0 .. 1
