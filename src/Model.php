@@ -729,7 +729,11 @@ class Model implements ArrayAccess, IteratorAggregate
         $f = $this->hasField($field);
 
         try {
-            if ($f && $this->hook('normalize', [$f, $value]) !== false) {
+            if (
+                $f
+                && $this->hook('normalize', [$f, $value]) !== false
+                && $this->strict_types
+            ) {
                 $value = $f->normalize($value);
             }
         } catch (Exception $e) {

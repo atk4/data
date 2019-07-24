@@ -3,6 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
+use atk4\data\ValidationException;
 use atk4\data\Persistence_Static;
 
 /**
@@ -20,6 +21,22 @@ class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
             1 => ['name'=>'John'],
             2 => ['name'=>'Peter'],
         ]);
+    }
+
+    public function testBoolean1()
+    {
+        $m = new Model($this->pers);
+        $m->addField('is_vip_1', ['type'=>'boolean', 'required'=>true]);
+        $m->addField('is_vip_2', ['Boolean', 'required'=>true]);
+
+        //$this->expectException(ValidationException::class);
+        $m->save(); // this should throw validation exception but normalize() is not called at all in this case !!!
+
+        $this->expectException(ValidationException::class);
+        $m->save(['is_vip_1'=>false]);
+
+        $this->expectException(ValidationException::class);
+        $m->save(['is_vip_2'=>false]);
     }
 
     public function testEmail1()

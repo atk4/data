@@ -16,6 +16,9 @@ class Boolean extends \atk4\data\Field
         init as _init;
     }
 
+    /** @var string Field type for backward compatibility. */
+    public $type = 'boolean';
+
     /**
      * Value which will be used for "true".
      *
@@ -61,30 +64,33 @@ class Boolean extends \atk4\data\Field
      *
      * @throws ValidationException
      *
-     * @return bool
+     * @return bool|null
      */
     public function normalize($value)
     {
         if (is_null($value) || $value === '') {
-            return;
-        }
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        if ($value === $this->valueTrue) {
-            return true;
-        }
-
-        if ($value === $this->valueFalse) {
-            return false;
+            if ($this->required) {
+                throw new ValidationException([$this->name => 'Must not be null']);
+            }
+            $value = null;
+        } elseif ($value === $this->valueTrue) {
+            $value = true;
+        } elseif ($value === $this->valueFalse) {
+            $value = false;
+        } elseif (is_numeric($value)) {
+            $value = (bool) $value;
         }
 
-        if (is_numeric($value)) {
-            return (bool) $value;
+        if ($value !== null && !is_bool($value)) {
+            throw new ValidationException([$this->name => 'Must be a boolean value']);
         }
 
-        throw new ValidationException([$this->name => 'Must be a boolean value']);
+        // if value required, then only valueTrue is allowed
+        if ($this->required && $value !== true) {
+            throw new ValidationException([$this->name => 'Must be selected']);
+        }
+
+        return $value;
     }
 
     /**
@@ -99,18 +105,5 @@ class Boolean extends \atk4\data\Field
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
         return $v === true ? '1' : '0';
-    }
-
-    /**
-     * Validate if value is allowed for this field.
-     *
-     * @param mixed $value
-     */
-    public function validate($value)
-    {
-        // if value required, then only valueTrue is allowed
-        if ($this->required && $value !== $this->valueTrue) {
-            throw new ValidationException([$this->name => 'Must be selected']);
-        }
     }
 }

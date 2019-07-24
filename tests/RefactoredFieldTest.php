@@ -46,4 +46,11 @@ class RefactoredFieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->set('is_vip_3', true);
         $this->assertEquals(true, $m['is_vip_3']);
     }
+
+    // === Field/Numeric tests ================================================
+
+
+
+
+
 }
