@@ -73,7 +73,7 @@ class Boolean extends \atk4\data\Field
                 throw new ValidationException([$this->name => 'Must not be null or empty']);
             }
 
-            return null;
+            return;
         }
 
         if ($value === $this->valueTrue) {

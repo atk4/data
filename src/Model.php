@@ -484,7 +484,7 @@ class Model implements ArrayAccess, IteratorAggregate
 
     protected $typeToFieldSeed = [
         'boolean' => ['Boolean'],
-        'float' => ['Numeric'],
+        'float'   => ['Numeric'],
     ];
 
     /**

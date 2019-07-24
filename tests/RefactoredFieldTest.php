@@ -3,7 +3,6 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\ValidationException;
 
 class RefactoredFieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
@@ -68,5 +67,4 @@ class RefactoredFieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->set('n3', 20.345678);
         $this->assertEquals(20.35, $m['n3']); // rounding
     }
-
 }

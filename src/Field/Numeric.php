@@ -50,7 +50,7 @@ class Numeric extends Field
                 throw new ValidationException([$this->name => 'Must not be null or empty']);
             }
 
-            return null;
+            return;
         }
 
         if (!is_scalar($value)) {
