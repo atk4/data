@@ -484,6 +484,7 @@ class Model implements ArrayAccess, IteratorAggregate
 
     protected $typeToFieldSeed = [
         'boolean' => ['Boolean'],
+        'float' => ['Numeric'],
     ];
 
     /**
@@ -745,10 +746,7 @@ class Model implements ArrayAccess, IteratorAggregate
         }
 
         $default_value = $f ? $f->default : null;
-
-        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] :
-            ((isset($f) && isset($f->default)) ? $f->default : null);
-
+        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] : $default_value;
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
         if (gettype($value) == gettype($current_value) && $value == $current_value) {

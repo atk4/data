@@ -68,12 +68,15 @@ class Boolean extends \atk4\data\Field
      */
     public function normalize($value)
     {
-        if (is_null($value) || $value === '') {
+        if ($value === null || $value === '') {
             if ($this->required) {
-                throw new ValidationException([$this->name => 'Must not be null']);
+                throw new ValidationException([$this->name => 'Must not be null or empty']);
             }
-            $value = null;
-        } elseif ($value === $this->valueTrue) {
+
+            return null;
+        }
+
+        if ($value === $this->valueTrue) {
             $value = true;
         } elseif ($value === $this->valueFalse) {
             $value = false;
@@ -81,7 +84,7 @@ class Boolean extends \atk4\data\Field
             $value = (bool) $value;
         }
 
-        if ($value !== null && !is_bool($value)) {
+        if (!is_bool($value)) {
             throw new ValidationException([$this->name => 'Must be a boolean value']);
         }
 

@@ -3,6 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
+use atk4\data\ValidationException;
 
 class RefactoredFieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
@@ -48,4 +49,24 @@ class RefactoredFieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
     }
 
     // === Field/Numeric tests ================================================
+
+    public function testNumeric()
+    {
+        $m = new Model();
+        $m->addField('n1', ['type' => 'float']);
+        $m->addField('n2', ['type' => 'float', 'required' => true, 'signed' => false]);
+        $m->addField('n3', ['type' => 'float', 'min' => 18, 'max' => 99, 'decimalNumbers' => 2]);
+
+        $m->set('n1', null);
+        $this->assertEquals(null, $m['n1']);
+        $m->set('n1', 0);
+        $this->assertEquals(0, $m['n1']);
+
+        $m->set('n2', 1.2345);
+        $this->assertEquals(1.2345, $m['n2']);
+
+        $m->set('n3', 20.345678);
+        $this->assertEquals(20.35, $m['n3']); // rounding
+    }
+
 }

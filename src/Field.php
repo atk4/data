@@ -248,7 +248,7 @@ class Field implements Expressionable
         // only string type fields can use empty string as legit value, for all
         // other field types empty value is the same as no-value, nothing or null
         if ($f->type && $f->type != 'string' && $value === '') {
-            if ($this->required && empty($value)) {
+            if ($this->required) {
                 throw new ValidationException([$this->name => 'Must not be empty']);
             }
 
@@ -296,16 +296,7 @@ class Field implements Expressionable
             }
             break;
         case 'float':
-            $value = trim(str_replace(["\r", "\n"], '', $value));
-            $value = preg_replace('/[,`\']/', '', $value);
-            if (!is_numeric($value)) {
-                throw new ValidationException([$this->name => 'Must be numeric']);
-            }
-            $value = (float) $value;
-            if ($this->required && empty($value)) {
-                throw new ValidationException([$this->name => 'Must not be a zero']);
-            }
-            break;
+            throw new Exception(['Use Field\Numeric for type=float', 'this'=>$this]);
         case 'money':
             $value = trim(str_replace(["\r", "\n"], '', $value));
             $value = preg_replace('/[,`\']/', '', $value);
