@@ -83,7 +83,7 @@ class Email extends Field
 
         return parent::normalize(implode(', ', $emails));
     }
-    
+
     /**
      * Return translated address.
      *
@@ -91,8 +91,8 @@ class Email extends Field
      *
      * @return string
      */
-     protected function idn_to_ascii($email)
-     {
+    protected function idn_to_ascii($email)
+    {
         return idn_to_ascii($email, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
-     }
+    }
 }

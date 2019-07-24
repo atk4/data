@@ -65,7 +65,7 @@ class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $m = new Model($this->pers);
         $m->addField('email_name', ['Email', 'include_names'=>true]);
-        $m->addField('email_names', ['Email', 'include_names'=>true, 'allow_multiple'=>true, 'separator'=>[',',';']]);
+        $m->addField('email_names', ['Email', 'include_names'=>true, 'allow_multiple'=>true, 'separator'=>[',', ';']]);
         $m->addField('email_idn', ['Email']);
         $m->addField('email', ['Email']);
 
