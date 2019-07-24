@@ -6,7 +6,7 @@ use atk4\data\Model;
 use atk4\data\Persistence_Static;
 
 /**
- * Test various Field/*.
+ * Test various Field.
  */
 class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
@@ -65,11 +65,13 @@ class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $m = new Model($this->pers);
         $m->addField('email_name', ['Email', 'include_names'=>true]);
-        $m->addField('email_names', ['Email', 'include_names'=>true, 'allow_multiple'=>true]);
+        $m->addField('email_names', ['Email', 'include_names'=>true, 'allow_multiple'=>true, 'separator'=>[',',';']]);
+        $m->addField('email_idn', ['Email']);
         $m->addField('email', ['Email']);
 
         $m['email_name'] = 'Romans <me@gmail.com>';
-        $m['email_names'] = 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>';
+        $m['email_names'] = 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans3 <me3@gmail.com>';
+        $m['email_idn'] = 'test@täst.de';
 
         $this->expectExceptionMessage('format is invalid');
         $m['email'] = 'Romans <me@gmail.com>';

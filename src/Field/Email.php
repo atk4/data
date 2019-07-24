@@ -59,25 +59,40 @@ class Email extends Field
         }
 
         // now normalize each email
-        array_map(function ($email) {
+        $emails = array_map(function ($email) {
             $email = trim($email);
 
             if ($this->include_names) {
                 $email = preg_replace('/^[^<]*<([^>]*)>/', '\1', $email);
             }
 
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            // should actually run only domain trough idn_to_ascii(), but for validation purpose this way it's fine too
+            if (!filter_var($this->idn_to_ascii($email), FILTER_VALIDATE_EMAIL)) {
                 throw new ValidationException([$this->name => 'Email format is invalid']);
             }
 
             if ($this->dns_check) {
                 $domain = explode('@', $email)[1];
-                if (!checkdnsrr(idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_UTS46), 'MX')) {
+                if (!checkdnsrr($this->idn_to_ascii($domain), 'MX')) {
                     throw new ValidationException([$this->name => 'Email domain does not exist']);
                 }
             }
+
+            return $email;
         }, $emails);
 
         return parent::normalize(implode(', ', $emails));
     }
+    
+    /**
+     * Return translated address.
+     *
+     * @param string $email
+     *
+     * @return string
+     */
+     protected function idn_to_ascii($email)
+     {
+        return idn_to_ascii($email, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
+     }
 }
