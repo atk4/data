@@ -71,7 +71,7 @@ class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m['email_name'] = 'Romans <me@gmail.com>';
         $m['email_names'] = 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans3 <me3@gmail.com>';
-        $m['email_idn'] = 'test@täst.de';
+        $m['email_idn'] = 'test@日本レジストリサービス.jp';
 
         $this->expectExceptionMessage('format is invalid');
         $m['email'] = 'Romans <me@gmail.com>';

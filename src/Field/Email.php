@@ -67,12 +67,14 @@ class Email extends Field
             }
 
             // should actually run only domain trough idn_to_ascii(), but for validation purpose this way it's fine too
-            if (!filter_var($this->idn_to_ascii($email), FILTER_VALIDATE_EMAIL)) {
+            $p = explode('@', $email);
+            $user = $p[0] ?? null;
+            $domain = $p[1] ?? null;
+            if (!filter_var($user.'@'.$this->idn_to_ascii($domain), FILTER_VALIDATE_EMAIL)) {
                 throw new ValidationException([$this->name => 'Email format is invalid']);
             }
 
             if ($this->dns_check) {
-                $domain = explode('@', $email)[1];
                 if (!checkdnsrr($this->idn_to_ascii($domain), 'MX')) {
                     throw new ValidationException([$this->name => 'Email domain does not exist']);
                 }
@@ -87,12 +89,12 @@ class Email extends Field
     /**
      * Return translated address.
      *
-     * @param string $email
+     * @param string $domain
      *
      * @return string
      */
-    protected function idn_to_ascii($email)
+    protected function idn_to_ascii($domain)
     {
-        return idn_to_ascii($email, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
+        return idn_to_ascii($domain, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
     }
 }
