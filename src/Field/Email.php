@@ -4,8 +4,8 @@
 
 namespace atk4\data\Field;
 
-use atk4\data\ValidationException;
 use atk4\data\Field;
+use atk4\data\ValidationException;
 
 /**
  * Stores valid email(s) as per configuration.
@@ -13,7 +13,7 @@ use atk4\data\Field;
  * Usage:
  *  $user->addField('email', ['Email']);
  *  $user->addField('email_mx_check', ['Email', 'dns_check'=>true]);
- *  $user->addField('email_with_name', ['Email', 'include_names'=>true]);
+ *  *  $user->addField('email_with_name', ['Email', 'include_names'=>true]);
  *  $user->addField('emails', ['Email', 'allow_multiple'=>true, 'separator'=>[',',';']]);
  *
  * Various options can also be combined.
@@ -34,7 +34,7 @@ class Email extends Field
      * @var bool Also allow entry of names in format "Romans <me@example.com>"
      */
     public $include_names = false;
-    
+
     /**
      * @var array Array of allowed separators
      */
@@ -52,7 +52,7 @@ class Email extends Field
     public function normalize($value)
     {
         // split value by any number of separator characters
-        $emails = preg_split("/[".join('',array_map('preg_quote',$this->separator))."]+/", $value, -1, PREG_SPLIT_NO_EMPTY);
+        $emails = preg_split('/['.implode('', array_map('preg_quote', $this->separator)).']+/', $value, -1, PREG_SPLIT_NO_EMPTY);
 
         if (!$this->allow_multiple && count($emails) > 1) {
             throw new ValidationException([$this->name => 'Only a single email can be entered']);
