@@ -112,7 +112,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('Sue', $m['name']);
 
         $mm = clone $m;
-        $mm->addCondition($mm->expr('[] > 1', [$mm->getElement('id')]));
+        $mm->addCondition($mm->expr('[] > 1', [$mm->getField('id')]));
         $mm->tryLoad(1);
         $this->assertEquals(null, $mm['name']);
         $mm->tryLoad(2);
@@ -151,7 +151,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('Sue', $mm['name']);
 
         $mm = clone $m;
-        $mm->addCondition($m->getElement('name'), $m->getElement('surname'));
+        $mm->addCondition($m->getField('name'), $m->getField('surname'));
         $mm->tryLoad(1);
         $this->assertEquals(null, $mm['name']);
         $mm->tryLoad(2);
@@ -165,7 +165,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(null, $mm['name']);
 
         $mm = clone $m;
-        $mm->addCondition($m->getElement('name'), '!=', $m->getElement('surname'));
+        $mm->addCondition($m->getField('name'), '!=', $m->getField('surname'));
         $mm->tryLoad(1);
         $this->assertEquals('John', $mm['name']);
         $mm->tryLoad(2);
@@ -291,5 +291,33 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ['name', 'Joe'],
         ]);
         $this->assertEquals(1, $u->action('count')->getOne());
+    }
+
+    /**
+     * Test loadBy and tryLoadBy.
+     * They should set only temporary condition.
+     */
+    public function testLoadBy()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John'],
+                2 => ['id' => 2, 'name' => 'Peter'],
+                3 => ['id' => 3, 'name' => 'Joe'],
+            ],
+        ];
+        $this->setDB($a);
+
+        $u = (new Model($this->db, 'user'))->addFields(['name']);
+
+        $u->loadBy('name', 'John');
+        $this->assertEquals([], $u->conditions); // should be no conditions
+        $this->assertFalse($u->getField('name')->system); // should not set field as system
+        $this->assertNull($u->getField('name')->default); // should not set field default value
+
+        $u->tryLoadBy('name', 'John');
+        $this->assertEquals([], $u->conditions); // should be no conditions
+        $this->assertFalse($u->getField('name')->system); // should not set field as system
+        $this->assertNull($u->getField('name')->default); // should not set field default value
     }
 }

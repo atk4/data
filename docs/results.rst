@@ -5,9 +5,8 @@ Fetching results
 
 .. php:class:: Model
 
-Model linked to a persistence in your "window" into DataSet and you get several
-ways which allow you to fetch the data. Apart from using ActiveRecord there are
-some other ways to fetch the data.
+Model linked to a persistence is your "window" into DataSet and you get several
+ways which allow you to fetch the data.
 
 
 Iterate through model data

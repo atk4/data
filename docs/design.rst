@@ -491,7 +491,7 @@ While with MongoDB, the query could be different::
 
 Finally the code above will work even if you use a simple Array as a data source::
 
-    $db = new \atk4\data\Persistence_Array([
+    $db = new \atk4\data\Persistence\Array_([
         'client'=>[
             [
                 'name'=>'Joe',

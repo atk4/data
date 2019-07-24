@@ -1,14 +1,14 @@
 
-.. _Persistence_CSV:
+.. _Persistence\CSV:
 
 ============================
 Loading and Saving CSV Files
 ============================
 
-.. php:class:: Persistence_CSV
+.. php:class:: Persistence\CSV
 
 Agile Data can operate with CSV files for data loading, or saving. The capabilities
-of Persistence_CSV are limited to the following actions:
+of Persistence\CSV are limited to the following actions:
 
 - open any CSV file, use column mapping
 - identify which column is corresponding for respective field
@@ -25,7 +25,7 @@ the file that might be stored either on a local system or
 use a remote file scheme (ftp://...). The file will not be
 actually opened unless you perform load/save operation::
 
-    $p = new Persistence_CSV('myfile.csv');
+    $p = new Persistence\CSV('myfile.csv');
 
     $u = new Model_User($p);
     $u->tryLoadAny();   // actually opens file and finds first record
@@ -37,8 +37,8 @@ You can take a model that is loaded from other persistence and save
 it into CSV like this. The next example demonstrates a basic functionality
 of SQL database export to CSV file::
 
-    $db = new Persistence_SQL($pdo);
-    $csv = new Persistence_CSV('dump.csv');
+    $db = new Persistence\SQL($pdo);
+    $csv = new Persistence\CSV('dump.csv');
 
     $m = new Model_User($db);
 
@@ -60,7 +60,7 @@ Additionally if you want to use a different column titles, you can::
     foreach (new Model_User($db) as $m) {
         $m_csv = $m->withPersistence($csv);
         $m_csv->onlyFields(['id', 'name', 'password'])
-        $m_csv->getElement('name')->actual = 'First Name';
+        $m_csv->getField('name')->actual = 'First Name';
         $m_csv->save();
     }
 
@@ -74,7 +74,7 @@ iterations::
     $m = new Model_User($db);
     $m_csv = $m->withPersistence($csv);
     $m_csv->onlyFields(['id', 'name', 'password'])
-    $m_csv->getElement('name')->actual = 'First Name';
+    $m_csv->getField('name')->actual = 'First Name';
 
     foreach ($m as $m_csv) {
         $m_csv->save();
@@ -85,7 +85,7 @@ This code can be further simplified if you use import() method::
     $m = new Model_User($db);
     $m_csv = $m->withPersistence($csv);
     $m_csv->onlyFields(['id', 'name', 'password'])
-    $m_csv->getElement('name')->actual = 'First Name';
+    $m_csv->getField('name')->actual = 'First Name';
     $m_csv->import($m);
 
 Naturally you can also move data in the other direction::
@@ -93,7 +93,7 @@ Naturally you can also move data in the other direction::
     $m = new Model_User($db);
     $m_csv = $m->withPersistence($csv);
     $m_csv->onlyFields(['id', 'name', 'password'])
-    $m_csv->getElement('name')->actual = 'First Name';
+    $m_csv->getField('name')->actual = 'First Name';
 
     $m->import($m_csv);
 

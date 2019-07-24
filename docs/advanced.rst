@@ -159,7 +159,7 @@ which I want to define like this::
 
         $this->owner->hasOne('created_by_user_id', 'User');
         if(isset($this->app->user) and $this->app->user->loaded()) {
-            $this->owner->getElement('created_by_user_id')->default = $this->app->user->id;
+            $this->owner->getField('created_by_user_id')->default = $this->app->user->id;
         }
 
         $this->owner->hasOne('updated_by_user_id', 'User');
@@ -669,7 +669,7 @@ If you wish to use a different value instead, you can create an expression::
         $c->addCondition($c->title_field, 'like', $m['category']);
         $m['category_id'] = $this->expr('coalesce([],[])',[
             $c->action('field',['id']),
-            $m->getElement('category_id')->default
+            $m->getField('category_id')->default
         ]);
     }
 
@@ -677,7 +677,7 @@ The beautiful thing about this approach is that default can also be defined
 as a lookup query::
 
     $this->hasOne('category_id','Model_Category');
-    $this->getElement('category_id')->default =
+    $this->getField('category_id')->default =
         $this->refModel('category_id')->addCondition('name','Other')
             ->action('field',['id']);
 
@@ -712,7 +712,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->addHook('afterSave', function($m){
+    $this->addHook('afterSave', function($m, $is_update){
         if(isset($m['payment'])) {
             $m->ref('Payment')->insert($m['payment']);
         }

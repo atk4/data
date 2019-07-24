@@ -1,3 +1,85 @@
+# Change Log
+
+# 2.0
+
+First major version update of ATK Data now includes support for "User Actions".
+
+ - TBC
+
+
+# 1.4
+
+ - Add implementation for sorting, ordering and actions in `Persistence_Array`. 
+ - afterSave hook gains 2nd argument ($is_update)
+ - New pattern: [implemented of SubTypes](https://agile-data.readthedocs.io/en/develop/advanced.html#subtypes)
+ - [Model::hasField()](https://agile-data.readthedocs.io/en/develop/model.html#Model::hasField) added for convenience (similar to hasElement())
+ - New aggregation function - [concat](https://agile-data.readthedocs.io/en/develop/references.html)
+ - Implemented "DeepCopy" feature ([experemental](https://github.com/atk4/data/blob/develop/src/Util/DeepCopy.php))
+ - Implemented insert lookups (https://medium.com/@romaninsh/atk-data-and-data-import-ingestion-82bdb81c74dd)
+ - Refactor ['type'=>'boolean'] into Boolean class [#314](https://github.com/atk4/data/pull/314) ([experemental](https://agile-data.readthedocs.io/en/develop/field_boolean.html))
+
+## 1.4.0
+
+**Fixed bugs:**
+
+- Model: $this-\>set\($this-\>id\_field, $this-\>id\) after insert [\#365](https://github.com/atk4/data/issues/365)
+- Issue with afterSave, AfterInsert and AfterUpdate Hooks together with hasOne\(\)-\>addField\(\) [\#383](https://github.com/atk4/data/issues/383)
+- our\_field is honored in Reference impl, but on save a validation error is thrown [\#370](https://github.com/atk4/data/issues/370)
+- hasMany on Join in not implemented yet [\#369](https://github.com/atk4/data/issues/369)
+- Copy with reference traversal [\#360](https://github.com/atk4/data/issues/360)
+- Model::ref\(\) does not apply condition on hasMany Reference if Model is not loaded [\#355](https://github.com/atk4/data/issues/355)
+- Escaped quote issue [\#349](https://github.com/atk4/data/issues/349)
+- $model-\>each\(\) should return array of returned values. [\#348](https://github.com/atk4/data/issues/348)
+- Documentation mistake [\#347](https://github.com/atk4/data/issues/347)
+- Looks like type=\>'text' is possible but not documented [\#338](https://github.com/atk4/data/issues/338)
+- Persistence\_CSV and Persistence\_Array does not support export\(\) [\#312](https://github.com/atk4/data/issues/312)
+
+**Merged pull requests:**
+
+- Feature/add action in aftersave hook [\#384](https://github.com/atk4/data/pull/384) (@DarkSide666)
+- Feature/normalize date values [\#381](https://github.com/atk4/data/pull/381) (@DarkSide666)
+- Feature/fix newinstance [\#380](https://github.com/atk4/data/pull/380) (@DarkSide666)
+- Support callables like \[$this,'func'\] for addRef\(\) [\#378](https://github.com/atk4/data/pull/378) (@DarkSide666)
+- implement Array persistence traversal, conditions and actions [\#377](https://github.com/atk4/data/pull/377) (@romaninsh)
+- Implement export\(\) for Array and CSV persistences [\#374](https://github.com/atk4/data/pull/374) (@DarkSide666)
+- Fix Reference\_SQL\_One lookup bugs, adds tests [\#373](https://github.com/atk4/data/pull/373) (@DarkSide666)
+- Fix Join-\>hasOne/hasMany [\#372](https://github.com/atk4/data/pull/372) (@DarkSide666)
+- Apply fixes from StyleCI [\#371](https://github.com/atk4/data/pull/371) (@DarkSide666)
+- Save id value after insert to id\_field [\#368](https://github.com/atk4/data/pull/368) (@romaninsh)
+- Feature/extend setorder even more [\#367](https://github.com/atk4/data/pull/367) (@DarkSide666)
+- Fix typo and setOrder\(\) with array args [\#364](https://github.com/atk4/data/pull/364) (@mvorisek)
+- Implement SubType support \(overriding class\) [\#361](https://github.com/atk4/data/pull/361) (@romaninsh)
+- Implementation of Deep Copy feature [\#359](https://github.com/atk4/data/pull/359) (@romaninsh)
+- Feature/add test for 355 [\#357](https://github.com/atk4/data/pull/357) (@DarkSide666)
+- beforeInsert/beforeUpdate Note [\#354](https://github.com/atk4/data/pull/354) (@PhilippGrashoff)
+- Feature/line end normalize [\#353](https://github.com/atk4/data/pull/353) (@DarkSide666)
+- Feature/json error [\#351](https://github.com/atk4/data/pull/351) (@DarkSide666)
+- Implement Lookups for inserts [\#350](https://github.com/atk4/data/pull/350) (@romaninsh)
+- Apply fixes from StyleCI [\#346](https://github.com/atk4/data/pull/346) (@romaninsh)
+- Feature/json unserialize error check \(compatible with php 7.3\) [\#345](https://github.com/atk4/data/pull/345) (@romaninsh)
+- Apply fixes from StyleCI [\#344](https://github.com/atk4/data/pull/344) (@romaninsh)
+- Apply fixes from StyleCI [\#343](https://github.com/atk4/data/pull/343) (@romaninsh)
+- Apply fixes from StyleCI [\#342](https://github.com/atk4/data/pull/342) (@romaninsh)
+- Feature/type text [\#339](https://github.com/atk4/data/pull/339) (@DarkSide666)
+
+
+## 1.4.1
+
+**Fixed bugs:**
+
+- Check if actual and other seed parameters work fine in join [\#387](https://github.com/atk4/data/issues/387)
+- \atk4\data\Field\_Callback does not exist [\#363](https://github.com/atk4/data/issues/363)
+
+**Closed issues:**
+
+- Migrate Model AutoCreator to Agile Data [\#251](https://github.com/atk4/data/issues/251)
+- Write article on how to store data encrypted [\#143](https://github.com/atk4/data/issues/143)
+
+**Merged pull requests:**
+
+- fix \#387 [\#388](https://github.com/atk4/data/pull/388) (@DarkSide666)
+- Fix problem with addExpression on models with Persistence\_Array [\#385](https://github.com/atk4/data/pull/385) (@skondakov)
+
 # 1.3.0
 
 Add support for Oracle and PostgreSQL, adding support for sequences and migrate to ATK Data 1.2.x
@@ -473,3 +555,4 @@ thigs up and fixing issues that were not triggered by the unit-tests.
 * Initial Release
 * Bootstraped Documentation (sphinx-doc)
 * Implemented CI
+

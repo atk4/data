@@ -21,11 +21,11 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
         $m = new Model();
         $m->addField('name');
 
-        $f = $m->getElement('name');
+        $f = $m->getField('name');
         $this->assertEquals('name', $f->short_name);
 
-        $m->add(new Field(), 'surname');
-        $f = $m->getElement('surname');
+        $m->addField('surname', new Field());
+        $f = $m->getField('surname');
         $this->assertEquals('surname', $f->short_name);
     }
 
@@ -182,7 +182,7 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
         $d = new Persistence();
         $m = new Model($d);
 
-        $this->assertNotNull($m->getElement('id'));
+        $this->assertNotNull($m->getField('id'));
 
         $m['id'] = 20;
         $this->assertEquals(20, $m->id);
