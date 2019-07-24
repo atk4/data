@@ -1,12 +1,22 @@
 <?php
 
+// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+
 namespace atk4\data\Field;
 
-use atk4\data\Exception;
+use atk4\data\ValidationException;
 use atk4\data\Field;
 
 /**
  * Stores valid email(s) as per configuration.
+ *
+ * Usage:
+ *  $user->addField('email', ['Email']);
+ *  $user->addField('email_mx_check', ['Email', 'dns_check'=>true]);
+ *  $user->addField('email_with_name', ['Email', 'include_names'=>true]);
+ *  $user->addField('emails', ['Email', 'allow_multiple'=>true, 'separator'=>[',',';']]);
+ *
+ * Various options can also be combined.
  */
 class Email extends Field
 {
@@ -24,17 +34,31 @@ class Email extends Field
      * @var bool Also allow entry of names in format "Romans <me@example.com>"
      */
     public $include_names = false;
+    
+    /**
+     * @var array Array of allowed separators
+     */
+    public $separator = [','];
 
+    /**
+     * Perform normalization.
+     *
+     * @param mixed $value
+     *
+     * @throws ValidationException
+     *
+     * @return mixed
+     */
     public function normalize($value)
     {
-
-        // use comma as separator
-        $emails = explode(',', $value);
+        // split value by any number of separator characters
+        $emails = preg_split("/[".join('',array_map('preg_quote',$this->separator))."]+/", $value, -1, PREG_SPLIT_NO_EMPTY);
 
         if (!$this->allow_multiple && count($emails) > 1) {
-            throw new Exception(['Only a single email can be entered', 'email'=>$value]);
+            throw new ValidationException([$this->name => 'Only a single email can be entered']);
         }
 
+        // now normalize each email
         array_map(function ($email) {
             $email = trim($email);
 
@@ -43,16 +67,17 @@ class Email extends Field
             }
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                throw new Exception(['Email format is invalid', 'email'=>$email]);
+                throw new ValidationException([$this->name => 'Email format is invalid']);
             }
 
-            $domain = explode('@', $email)[1];
-
-            if ($this->dns_check && !checkdnsrr($domain, 'MX')) {
-                throw new Exception(['Email domain does not exist', 'domain'=>$domain]);
+            if ($this->dns_check) {
+                $domain = explode('@', $email)[1];
+                if (!checkdnsrr(idn_to_ascii($domain), 'MX')) {
+                    throw new ValidationException([$this->name => 'Email domain does not exist']);
+                }
             }
         }, $emails);
 
-        return parent::normalize(implode(', ', array_map('trim', $emails)));
+        return parent::normalize(implode(', ', $emails));
     }
 }
