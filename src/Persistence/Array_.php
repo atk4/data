@@ -59,7 +59,7 @@ class Array_ extends Persistence
                 //$f->type = 'integer';
                 // have to re-add field to use proper Field class
                 $m->removeField($m->id_field);
-                $m->addField($m->id_field,['type'=>'integer']);
+                $m->addField($m->id_field, ['type'=>'integer']);
             }
         }
 
