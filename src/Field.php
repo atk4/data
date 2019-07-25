@@ -128,6 +128,8 @@ class Field implements Expressionable
      * Mandatory field must not be null. The value must be set, even if
      * it's an empty value.
      *
+     * Think about this property as "NOT NULL" property.
+     *
      * Can contain error message for UI.
      *
      * @var bool|string
@@ -136,6 +138,10 @@ class Field implements Expressionable
 
     /**
      * Required field must have non-empty value. A null value is considered empty too.
+     *
+     * Think about this property as !empty($value) property with some exceptions.
+     *
+     * This property takes precedence over $mandatory property.
      *
      * Can contain error message for UI.
      *
@@ -445,9 +451,7 @@ class Field implements Expressionable
      */
     public function isEditable()
     {
-        return isset($this->ui['editable']) ? $this->ui['editable']
-                : (($this->read_only || $this->never_persist) ? false
-                    : !$this->system);
+        return $this->ui['editable'] ?? (($this->read_only || $this->never_persist) ? false : !$this->system);
     }
 
     /**
@@ -457,7 +461,7 @@ class Field implements Expressionable
      */
     public function isVisible()
     {
-        return isset($this->ui['visible']) ? $this->ui['visible'] : !$this->system;
+        return $this->ui['visible'] ?? !$this->system;
     }
 
     /**
@@ -467,7 +471,7 @@ class Field implements Expressionable
      */
     public function isHidden()
     {
-        return isset($this->ui['hidden']) ? $this->ui['hidden'] : false;
+        return $this->ui['hidden'] ?? false;
     }
 
     /**
@@ -477,8 +481,7 @@ class Field implements Expressionable
      */
     public function getCaption()
     {
-        return $this->caption ?: (isset($this->ui['caption']) ? $this->ui['caption'] :
-            ucwords(str_replace('_', ' ', $this->short_name)));
+        return $this->caption ?: ($this->ui['caption'] ?? ucwords(str_replace('_', ' ', $this->short_name)));
     }
 
     // }}}
