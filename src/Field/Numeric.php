@@ -99,7 +99,8 @@ class Numeric extends Field
      *
      * @return float
      */
-    protected function round_up($n, $p) {
+    protected function round_up($n, $p)
+    {
         return $p ? ceil($n / $p) * $p : ceil($n);
     }
 
@@ -111,7 +112,8 @@ class Numeric extends Field
      *
      * @return float
      */
-    protected function round_down($n, $p) {
+    protected function round_down($n, $p)
+    {
         return $p ? floor($n / $p) * $p : floor($n);
     }
 }

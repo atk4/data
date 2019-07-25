@@ -5,7 +5,6 @@
 namespace atk4\data\Field;
 
 use atk4\data\Field;
-use atk4\data\ValidationException;
 
 /**
  * Class Money offers a lightweight implementation of currencies.

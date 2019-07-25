@@ -7,7 +7,6 @@ namespace atk4\data\Field;
 use atk4\data\Field;
 use atk4\data\ValidationException;
 
-
 /**
  * Integer field type.
  */
