@@ -15,7 +15,7 @@ class Money extends Numeric
     public $type = 'money';
 
     /**
-     * Specify how many decimal numbers should be saved.
+     * @var int Specify how many decimal numbers should be saved.
      */
     public $decimal_numbers = 4;
 }

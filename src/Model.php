@@ -487,6 +487,8 @@ class Model implements ArrayAccess, IteratorAggregate
         'float'   => ['Numeric'],
         'integer' => ['Integer'],
         'money'   => ['Money'],
+        'text'    => ['Text'],
+        'string'  => ['ShortText'],
     ];
 
     /**

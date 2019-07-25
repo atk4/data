@@ -275,19 +275,9 @@ class Field implements Expressionable
             }
             break;
         case 'string':
-            // remove all line-ends and trim
-            $value = trim(str_replace(["\r", "\n"], '', $value));
-            if ($this->required && empty($value)) {
-                throw new ValidationException([$this->name => 'Must not be empty']);
-            }
-            break;
+            throw new Exception(['Use Field\ShortText for type=string', 'this'=>$this]);
         case 'text':
-            // normalize line-ends to LF and trim
-            $value = trim(str_replace(["\r\n", "\r"], "\n", $value));
-            if ($this->required && empty($value)) {
-                throw new ValidationException([$this->name => 'Must not be empty']);
-            }
-            break;
+            throw new Exception(['Use Field\Text for type=text', 'this'=>$this]);
         case 'integer':
             throw new Exception(['Use Field\Integer for type=integer', 'this'=>$this]);
         case 'float':

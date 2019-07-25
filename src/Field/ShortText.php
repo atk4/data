@@ -8,25 +8,20 @@ use atk4\data\Field;
 use atk4\data\ValidationException;
 
 /**
- * Integer field type.
+ * Basic string field type. Think of it as field type "string" in past.
  */
-class Integer extends Numeric
+class ShortText extends Text
 {
     /** @var string Field type for backward compatibility. */
-    public $type = 'integer';
+    public $type = 'string';
 
     /**
-     * @var int Specify how many decimal numbers should be saved.
+     * @var int specify a maximum length for this text.
      */
-    public $decimal_numbers = 0;
+    public $max_length = 255;
 
     /**
-     * @var bool Enable number rounding. If true will round number, otherwise will round it down (trim).
-     */
-    public $enable_rounding = false;
-
-    /**
-     * Normalize value to integer.
+     * Normalize value to string.
      *
      * @param mixed $value
      *
@@ -38,6 +33,8 @@ class Integer extends Numeric
     {
         $value = parent::normalize($value);
 
-        return $value === null ? null : (int) $value;
+        $value = trim(str_replace(["\r", "\n"], '', $value));
+
+        return $value;
     }
 }

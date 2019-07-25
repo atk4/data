@@ -16,27 +16,27 @@ class Numeric extends Field
     public $type = 'float';
 
     /**
-     * Specify how many decimal numbers should be saved.
+     * @var int Specify how many decimal numbers should be saved.
      */
     public $decimal_numbers = 8;
 
     /**
-     * Enable number rounding. If true will round number, otherwise will round it down (trim).
+     * @var bool Enable number rounding. If true will round number, otherwise will round it down (trim).
      */
     public $enable_rounding = true;
 
     /**
-     * Set this to `true` if you wish to also store negative values.
+     * @var bool Set this to `true` if you wish to also store negative values.
      */
     public $signed = true;
 
     /**
-     * @var mixed specify a minimum value for this number.
+     * @var int specify a minimum value for this number.
      */
     public $min;
 
     /**
-     * @var mixed specify a maximum value for this number.
+     * @var int specify a maximum value for this number.
      */
     public $max;
 
@@ -47,7 +47,7 @@ class Numeric extends Field
      *
      * @throws ValidationException
      *
-     * @return bool|null
+     * @return mixed
      */
     public function normalize($value)
     {
