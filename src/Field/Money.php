@@ -17,5 +17,5 @@ class Money extends Numeric
     /**
      * Specify how many decimal numbers should be saved.
      */
-    public $decimalNumbers = 4;
+    public $decimal_numbers = 4;
 }

@@ -18,12 +18,12 @@ class Integer extends Numeric
     /**
      * Specify how many decimal numbers should be saved.
      */
-    public $decimalNumbers = 0;
+    public $decimal_numbers = 0;
 
     /**
      * Enable number rounding. If true will round number, otherwise will round it down (trim).
      */
-    public $enableRounding = false;
+    public $enable_rounding = false;
 
     /**
      * Normalize value to integer.

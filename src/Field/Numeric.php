@@ -18,12 +18,12 @@ class Numeric extends Field
     /**
      * Specify how many decimal numbers should be saved.
      */
-    public $decimalNumbers = 8;
+    public $decimal_numbers = 8;
 
     /**
      * Enable number rounding. If true will round number, otherwise will round it down (trim).
      */
-    public $enableRounding = true;
+    public $enable_rounding = true;
 
     /**
      * Set this to `true` if you wish to also store negative values.
@@ -74,7 +74,7 @@ class Numeric extends Field
         }
 
         $value = (float) $value;
-        $value = $this->enableRounding ? round($value, $this->decimalNumbers) : $this->round_down($value, $this->decimalNumbers);
+        $value = $this->enable_rounding ? round($value, $this->decimal_numbers) : $this->round_down($value, $this->decimal_numbers);
 
         if (!$this->signed && $value < 0) {
             throw new ValidationException([$this->name => 'Must be positive']);
