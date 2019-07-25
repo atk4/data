@@ -290,7 +290,7 @@ class Field implements Expressionable
         case 'datetime':
         case 'time':
             // we allow http://php.net/manual/en/datetime.formats.relative.php
-            $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+            $class = $f->dateTimeClass ?? 'DateTime';
 
             if (is_numeric($value)) {
                 $value = new $class('@'.$value);

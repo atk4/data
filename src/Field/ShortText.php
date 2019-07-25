@@ -9,6 +9,8 @@ use atk4\data\ValidationException;
 
 /**
  * Basic string field type. Think of it as field type "string" in past.
+ *
+ * Most of the time this is most basic type you will use.
  */
 class ShortText extends Text
 {
