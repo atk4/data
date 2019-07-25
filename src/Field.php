@@ -29,8 +29,9 @@ class Field implements Expressionable
     /**
      * Field type.
      *
-     * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'array', 'object'.
+     * Values are:
+     *      'string', 'text', 'boolean', 'integer', 'money', 'float',
+     *      'date', 'datetime', 'time', 'array', 'object'.
      * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
@@ -282,32 +283,11 @@ class Field implements Expressionable
             }
             break;
         case 'integer':
-            // we clear out thousand separator, but will change to
-            // http://php.net/manual/en/numberformatter.parse.php
-            // in the future with the introduction of locale
-            $value = trim(str_replace(["\r", "\n"], '', $value));
-            $value = preg_replace('/[,`\']/', '', $value);
-            if (!is_numeric($value)) {
-                throw new ValidationException([$this->name => 'Must be numeric']);
-            }
-            $value = (int) $value;
-            if ($this->required && empty($value)) {
-                throw new ValidationException([$this->name => 'Must not be a zero']);
-            }
-            break;
+            throw new Exception(['Use Field\Integer for type=integer', 'this'=>$this]);
         case 'float':
             throw new Exception(['Use Field\Numeric for type=float', 'this'=>$this]);
         case 'money':
-            $value = trim(str_replace(["\r", "\n"], '', $value));
-            $value = preg_replace('/[,`\']/', '', $value);
-            if (!is_numeric($value)) {
-                throw new ValidationException([$this->name => 'Must be numeric']);
-            }
-            $value = round($value, 4);
-            if ($this->required && empty($value)) {
-                throw new ValidationException([$this->name => 'Must not be a zero']);
-            }
-            break;
+            throw new Exception(['Use Field\Money for type=money', 'this'=>$this]);
         case 'boolean':
             throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
         case 'date':

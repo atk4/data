@@ -67,4 +67,38 @@ class RefactoredFieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->set('n3', 20.345678);
         $this->assertEquals(20.35, $m['n3']); // rounding
     }
+
+    // === Field/Integer tests ================================================
+
+    public function testInteger()
+    {
+        $m = new Model();
+        $m->addField('n', ['type' => 'integer']);
+
+        $m->set('n', null);
+        $this->assertEquals(null, $m['n']);
+        $m->set('n', 0);
+        $this->assertEquals(0, $m['n']);
+        $m->set('n', 1.2345);
+        $this->assertEquals(1, $m['n']);
+        $m->set('n', 1.5678);
+        $this->assertEquals(1, $m['n']); // no rounding
+    }
+
+    // === Field/Money tests ==================================================
+
+    public function testMoney()
+    {
+        $m = new Model();
+        $m->addField('n', ['type' => 'money']);
+
+        $m->set('n', null);
+        $this->assertEquals(null, $m['n']);
+        $m->set('n', 0);
+        $this->assertEquals(0, $m['n']);
+        $m->set('n', 1.12345);
+        $this->assertEquals(1.1235, $m['n']);
+        $m->set('n', -1.12345);
+        $this->assertEquals(-1.1235, $m['n']);
+    }
 }

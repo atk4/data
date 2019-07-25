@@ -5,6 +5,7 @@
 namespace atk4\data\Field;
 
 use atk4\data\Field;
+use atk4\data\ValidationException;
 
 /**
  * Basic numeric field type. Think of it as field type "float" in past.
@@ -15,9 +16,14 @@ class Numeric extends Field
     public $type = 'float';
 
     /**
-     * Specify how many decimal numbers should be saved. Set this to 0 for integers.
+     * Specify how many decimal numbers should be saved.
      */
     public $decimalNumbers = 8;
+
+    /**
+     * Enable number rounding. If true will round number, otherwise will round it down (trim).
+     */
+    public $enableRounding = true;
 
     /**
      * Set this to `true` if you wish to also store negative values.
@@ -35,7 +41,7 @@ class Numeric extends Field
     public $max;
 
     /**
-     * Normalize value to boolean value.
+     * Normalize value to numeric.
      *
      * @param mixed $value
      *
@@ -57,7 +63,9 @@ class Numeric extends Field
             throw new ValidationException([$this->name => 'Must use scalar value']);
         }
 
-        // remove line-ends and thousand separators
+        // we clear out thousand separator, but will change to
+        // http://php.net/manual/en/numberformatter.parse.php
+        // in the future with the introduction of locale
         $value = trim(str_replace(["\r", "\n"], '', $value));
         $value = preg_replace('/[,`\']/', '', $value);
 
@@ -66,7 +74,7 @@ class Numeric extends Field
         }
 
         $value = (float) $value;
-        $value = round($value, $this->decimalNumbers);
+        $value = $this->enableRounding ? round($value, $this->decimalNumbers) : $this->round_down($value, $this->decimalNumbers);
 
         if (!$this->signed && $value < 0) {
             throw new ValidationException([$this->name => 'Must be positive']);
@@ -81,5 +89,29 @@ class Numeric extends Field
         }
 
         return $value;
+    }
+
+    /**
+     * Round up to the nearest number.
+     *
+     * @param float $n Number
+     * @param int   $p Precision
+     *
+     * @return float
+     */
+    protected function round_up($n, $p) {
+        return $p ? ceil($n / $p) * $p : ceil($n);
+    }
+
+    /**
+     * Round down to the nearest number.
+     *
+     * @param float $n Number
+     * @param int   $p Precision
+     *
+     * @return float
+     */
+    protected function round_down($n, $p) {
+        return $p ? floor($n / $p) * $p : floor($n);
     }
 }
