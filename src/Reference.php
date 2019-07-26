@@ -21,6 +21,14 @@ class Reference
     use \atk4\core\FactoryTrait;
 
     /**
+     * Owner Model of the reference.
+     * override the hint type definition already present in TrackableTrait
+     *
+     * @var Model
+     */
+    public $owner;
+
+    /**
      * Use this alias for related entity by default. This can help you
      * if you create sub-queries or joins to separate this from main
      * table. The table_alias will be uniquely generated.
