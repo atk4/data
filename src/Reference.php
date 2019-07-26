@@ -22,7 +22,7 @@ class Reference
 
     /**
      * Owner Model of the reference.
-     * override the hint type definition already present in TrackableTrait
+     * override the hint type definition already present in TrackableTrait.
      *
      * @var Model
      */
@@ -163,6 +163,9 @@ class Reference
      *
      * @param Model $model
      * @param array $defaults
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
      *
      * @return Model
      */

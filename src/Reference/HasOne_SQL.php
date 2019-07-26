@@ -20,11 +20,12 @@ class HasOne_SQL extends HasOne
      *
      * Returns Expression in case you want to do something else with it.
      *
-     * @param string|Field|array $field or [$field, ..defaults]
+     * @param string|Field|array $field       or [$field, ..defaults]
      * @param string|null        $their_field
      *
      * @throws Exception
      * @throws \atk4\core\Exception
+     *
      * @return Field_SQL_Expression
      */
     public function addField($field, ?string $their_field = null) : Field_SQL_Expression
