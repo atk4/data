@@ -47,6 +47,10 @@ class HasOne_SQL extends HasOne
             $their_field = $field;
         }
 
+        // if caption is not defined in $defaults -> get it directly from the linked model field $their_field
+        $defaults['caption'] = $defaults['caption'] ?? $this->owner->refModel($this->link)->getField($their_field)->getCaption();
+
+        /** @var Field_SQL_Expression $e */
         $e = $this->owner->addExpression($field, array_merge([
             function (Model $m) use ($their_field) {
                 // remove order if we just select one field from hasOne model
