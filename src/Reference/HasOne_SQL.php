@@ -130,7 +130,7 @@ class HasOne_SQL extends HasOne
 
         $m->addCondition(
             $this->their_field ?: ($m->id_field),
-            $this->referenceOurValue($m)
+            $this->referenceOurValue()
         );
 
         return $m;
