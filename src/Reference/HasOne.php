@@ -4,6 +4,7 @@
 
 namespace atk4\data\Reference;
 
+use atk4\core\Exception;
 use atk4\data\Field;
 use atk4\data\Join;
 use atk4\data\Model;
@@ -155,6 +156,8 @@ class HasOne extends Reference
     /**
      * Reference_One will also add a field corresponding
      * to 'our_field' unless it exists of course.
+     *
+     * @throws Exception
      */
     public function init()
     {
@@ -189,6 +192,8 @@ class HasOne extends Reference
 
     /**
      * Returns our field or id field.
+     *
+     * @throws Exception
      *
      * @return Field
      */
