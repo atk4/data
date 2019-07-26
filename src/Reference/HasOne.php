@@ -207,6 +207,9 @@ class HasOne extends Reference
      *
      * @param array $defaults Properties
      *
+     * @throws Exception
+     * @throws \atk4\data\Exception
+     *
      * @return Model
      */
     public function ref($defaults = []) : Model
@@ -228,18 +231,14 @@ class HasOne extends Reference
                 $m->addHook('afterSave', function ($m) {
                     $this->owner[$this->our_field] = $m[$this->their_field];
                 });
-        } else {
-            if ($this->owner[$this->our_field]) {
-                $m->tryLoad($this->owner[$this->our_field]);
-            }
-
-            return
-                $m->addHook('afterSave', function ($m) {
-                    $this->owner[$this->our_field] = $m->id;
-                });
+        }
+        if ($this->owner[$this->our_field]) {
+            $m->tryLoad($this->owner[$this->our_field]);
         }
 
-        // can not load referenced model or set conditions on it, so we just return it
-        return $m;
+        return
+            $m->addHook('afterSave', function ($m) {
+                $this->owner[$this->our_field] = $m->id;
+            });
     }
 }
