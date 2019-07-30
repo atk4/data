@@ -26,7 +26,7 @@ class Integer extends Numeric
     public $enable_rounding = false;
 
     /**
-     * Normalize value to integer.
+     * Validate and normalize value.
      *
      * @param mixed $value
      *

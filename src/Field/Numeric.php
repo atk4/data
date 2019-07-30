@@ -41,7 +41,7 @@ class Numeric extends Field
     public $max;
 
     /**
-     * Normalize value to numeric.
+     * Validate and normalize value.
      *
      * @param mixed $value
      *

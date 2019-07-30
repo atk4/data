@@ -58,7 +58,7 @@ class Boolean extends \atk4\data\Field
     }
 
     /**
-     * Normalize value to boolean value.
+     * Validate and normalize value.
      *
      * @param mixed $value
      *

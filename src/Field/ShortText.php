@@ -23,7 +23,7 @@ class ShortText extends Text
     public $max_length = 255;
 
     /**
-     * Normalize value to string.
+     * Validate and normalize value.
      *
      * @param mixed $value
      *
@@ -35,6 +35,7 @@ class ShortText extends Text
     {
         $value = parent::normalize($value);
 
+        // remove all line-ends
         $value = trim(str_replace(["\r", "\n"], '', $value));
 
         return $value;

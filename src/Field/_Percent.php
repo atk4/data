@@ -1,4 +1,7 @@
 <?php
+/**
+ * Currently unused class - in development
+ */
 
 namespace atk4\data\Field;
 

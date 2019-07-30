@@ -229,6 +229,8 @@ class Field implements Expressionable
     }
 
     /**
+     * Validate and normalize value.
+     *
      * Depending on the type of a current field, this will perform
      * some normalization for strict types. This method must also make
      * sure that $f->required is respected when setting the value, e.g.
@@ -270,6 +272,7 @@ class Field implements Expressionable
         // normalize
         switch ($f->type) {
         case null: // loose comparison, but is OK here
+            // NOTE - this is not always the same as type=string. Need to review what else it can be and how type=null is used at all
             if ($this->required && empty($value)) {
                 throw new ValidationException([$this->name => 'Must not be empty']);
             }

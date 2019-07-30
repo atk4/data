@@ -41,7 +41,7 @@ class Email extends Field
     public $separator = [','];
 
     /**
-     * Perform normalization.
+     * Validate and normalize value.
      *
      * @param mixed $value
      *

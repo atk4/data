@@ -21,7 +21,7 @@ class Text extends Field
     public $max_length;
 
     /**
-     * Normalize value to text.
+     * Validate and normalize value.
      *
      * @param mixed $value
      *
