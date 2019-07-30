@@ -127,8 +127,7 @@ class Reference
 
         // if model is Closure, then call it and return model
         if (is_object($this->model) && $this->model instanceof \Closure) {
-            $c = $this->model;
-            $c = ($c)($this->owner, $this, $defaults);
+            $c = ($this->model)($this->owner, $this, $defaults);
 
             return $this->addToPersistence($c, $defaults);
         }
@@ -205,6 +204,8 @@ class Reference
      *
      * @param array $defaults Properties
      *
+     * @throws \atk4\core\Exception
+     *
      * @return Model
      */
     public function ref($defaults = []) : Model
@@ -218,6 +219,8 @@ class Reference
      * or scope.
      *
      * @param array $defaults Properties
+     *
+     * @throws \atk4\core\Exception
      *
      * @return Model
      */
