@@ -35,7 +35,7 @@ class Object_ extends Field
         }
 
         if (is_string($value) && $this->owner && $this->owner->persistence) {
-            $value = $this->owner->persistence->jsonDecode($this, $value, FALSE);
+            $value = $this->owner->persistence->jsonDecode($this, $value, false);
         }
 
         if (!is_object($value)) {

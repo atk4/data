@@ -35,7 +35,7 @@ class Array_ extends Field
         }
 
         if (is_string($value) && $this->owner && $this->owner->persistence) {
-            $value = $this->owner->persistence->jsonDecode($this, $value, TRUE);
+            $value = $this->owner->persistence->jsonDecode($this, $value, true);
         }
 
         if (!is_array($value)) {
