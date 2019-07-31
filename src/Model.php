@@ -482,6 +482,7 @@ class Model implements ArrayAccess, IteratorAggregate
         return $field;
     }
 
+    /** @var array [type => classname] */
     protected $typeToFieldSeed = [
         'boolean'  => ['Boolean'],
         'float'    => ['Numeric'],
@@ -492,6 +493,8 @@ class Model implements ArrayAccess, IteratorAggregate
         'datetime' => ['DateTime'],
         'date'     => ['Date'],
         'time'     => ['Time'],
+        'array'    => ['Array_'],
+        'object'   => ['Object_'],
     ];
 
     /**

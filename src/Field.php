@@ -243,6 +243,7 @@ class Field implements Expressionable
         }
 
         // normalize
+        // @TODO remove this block in future - it's useless
         switch ($f->type) {
         case null: // loose comparison, but is OK here
             // NOTE - this is not always the same as type=string. Need to review what else it can be and how type=null is used at all
@@ -269,23 +270,9 @@ class Field implements Expressionable
         case 'time':
             throw new Exception(['Use Field\Time for type=time', 'this'=>$this]);
         case 'array':
-            if (is_string($value) && $f->owner && $f->owner->persistence) {
-                $value = $f->owner->persistence->jsonDecode($f, $value, true);
-            }
-
-            if (!is_array($value)) {
-                throw new ValidationException([$this->name => 'Must be an array']);
-            }
-            break;
+            throw new Exception(['Use Field\Array_ for type=array', 'this'=>$this]);
         case 'object':
-           if (is_string($value) && $f->owner && $f->owner->persistence) {
-               $value = $f->owner->persistence->jsonDecode($f, $value, false);
-           }
-
-            if (!is_object($value)) {
-                throw new ValidationException([$this->name => 'Must be an object']);
-            }
-            break;
+            throw new Exception(['Use Field\Object_ for type=object', 'this'=>$this]);
         }
 
         return $value;
@@ -302,32 +289,7 @@ class Field implements Expressionable
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
-        try {
-            switch ($this->type) {
-                case null: // loose comparison, but is OK here
-                    return $v;
-                /* these fields now have their own toString methods
-                case 'boolean':
-                    throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
-                case 'date':
-                    return $v->format('Y-m-d');
-                case 'datetime':
-                    return $v->format('c'); // ISO 8601 format 2004-02-12T15:19:21+00:00
-                case 'time':
-                    return $v->format('H:i:s');
-                */
-                case 'array':
-                    return json_encode($v); // todo use Persistence->jsonEncode() instead
-                case 'object':
-                    return json_encode($v); // todo use Persistence->jsonEncode() instead
-                default:
-                    return (string) $v;
-            }
-        } catch (Exception $e) {
-            $e->addMoreInfo('field', $this);
-
-            throw $e;
-        }
+        return $this->type === null ? $v : (string) $v;
     }
 
     /**
