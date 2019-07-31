@@ -22,7 +22,7 @@ class DateTime extends Field
      * @var array
      */
     public $persistence = [
-        'format' => null, // for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
+        'format'   => null, // for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
         'timezone' => 'UTC', // 'IST', 'UTC', 'Europe/Riga' etc.
     ];
 
@@ -60,14 +60,15 @@ class DateTime extends Field
                 throw new ValidationException([$this->name => 'Must not be null']);
             }
 
-            return null;
+            return;
         }
 
         if ($value === '') {
             if ($this->required) {
                 throw new ValidationException([$this->name => 'Must not be empty']);
             }
-            return null;
+
+            return;
         }
 
         // we allow http://php.net/manual/en/datetime.formats.relative.php
