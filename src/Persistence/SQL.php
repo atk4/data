@@ -425,11 +425,11 @@ class SQL extends Persistence
 
             if ($v instanceof $dt_class) {
                 $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
-                $format = $f->persist_format ?: $format[$f->type];
+                $format = $f->persistence['format'] ?? $format[$f->type];
 
                 // datetime only - set to persisting timezone
-                if ($f->type == 'datetime' && isset($f->persist_timezone)) {
-                    $v->setTimezone(new $tz_class($f->persist_timezone));
+                if ($f->type == 'datetime' && isset($f->persistence['timezone'])) {
+                    $v->setTimezone(new $tz_class($f->persistence['timezone']));
                 }
                 $v = $v->format($format);
             }
@@ -503,11 +503,11 @@ class SQL extends Persistence
             } elseif (is_string($v)) {
                 // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
                 $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
-                $format = $f->persist_format ?: $format[$f->type];
+                $format = $f->persistence['format'] ?? $format[$f->type];
 
                 // datetime only - set from persisting timezone
-                if ($f->type == 'datetime' && isset($f->persist_timezone)) {
-                    $v = $dt_class::createFromFormat($format, $v, new $tz_class($f->persist_timezone));
+                if ($f->type == 'datetime' && isset($f->persistence['timezone'])) {
+                    $v = $dt_class::createFromFormat($format, $v, new $tz_class($f->persistence['timezone']));
                     if ($v === false) {
                         throw new Exception(['Incorrectly formatted datetime', 'format' => $format, 'value' => $value, 'field' => $f]);
                     }

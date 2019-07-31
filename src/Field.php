@@ -118,11 +118,20 @@ class Field implements Expressionable
     public $caption = null;
 
     /**
-     * Array with UI flags like editable, visible and hidden.
+     * Array with UI flags like editable, visible and hidden and settings
+     * like caption.
      *
      * @var array
      */
     public $ui = [];
+
+    /**
+     * Array with Persistence settings like format, timezone etc.
+     * It's job of Persistence to take these settings into account if needed.
+     *
+     * @var array
+     */
+    public $persistence = [];
 
     /**
      * Mandatory field must not be null. The value must be set, even if
@@ -166,42 +175,6 @@ class Field implements Expressionable
      * @var null|bool|array
      */
     public $serialize = null;
-
-    /**
-     * Persisting format for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
-     *
-     * @var string
-     */
-    public $persist_format = null;
-
-    /**
-     * Persisting timezone for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, 'IST', 'UTC', 'Europe/Riga' etc.
-     *
-     * @var string
-     */
-    public $persist_timezone = 'UTC';
-
-    /**
-     * DateTime class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTime', 'Carbon' etc.
-     *
-     * @param string
-     */
-    public $dateTimeClass = 'DateTime';
-
-    /**
-     * Timezone class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTimeZone', 'Carbon' etc.
-     *
-     * @param string
-     */
-    public $dateTimeZoneClass = 'DateTimeZone';
 
     // }}}
 
@@ -290,34 +263,11 @@ class Field implements Expressionable
         case 'boolean':
             throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
         case 'date':
+            throw new Exception(['Use Field\Date for type=date', 'this'=>$this]);
         case 'datetime':
+            throw new Exception(['Use Field\DateTime for type=datetime', 'this'=>$this]);
         case 'time':
-            // we allow http://php.net/manual/en/datetime.formats.relative.php
-            $class = $f->dateTimeClass ?? 'DateTime';
-
-            if (is_numeric($value)) {
-                $value = new $class('@'.$value);
-            } elseif (is_string($value)) {
-                $value = new $class($value);
-            } elseif (!$value instanceof $class) {
-                if (is_object($value)) {
-                    throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
-                }
-
-                throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value type' => gettype($value)]);
-            }
-
-            if ($f->type == 'date') {
-                // remove time portion from date type value
-                $value->setTime(0, 0, 0);
-            }
-            if ($f->type == 'time') {
-                // remove date portion from date type value
-                // need 1970 in place of 0 - DB
-                $value->setDate(1970, 1, 1);
-            }
-
-            break;
+            throw new Exception(['Use Field\Time for type=time', 'this'=>$this]);
         case 'array':
             if (is_string($value) && $f->owner && $f->owner->persistence) {
                 $value = $f->owner->persistence->jsonDecode($f, $value, true);
@@ -335,14 +285,6 @@ class Field implements Expressionable
             if (!is_object($value)) {
                 throw new ValidationException([$this->name => 'Must be an object']);
             }
-            break;
-        case 'int':
-        case 'str':
-        case 'bool':
-            throw new Exception([
-                'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
-                'type' => $f->type,
-            ]);
             break;
         }
 
@@ -364,6 +306,7 @@ class Field implements Expressionable
             switch ($this->type) {
                 case null: // loose comparison, but is OK here
                     return $v;
+                /* these fields now have their own toString methods
                 case 'boolean':
                     throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
                 case 'date':
@@ -372,6 +315,7 @@ class Field implements Expressionable
                     return $v->format('c'); // ISO 8601 format 2004-02-12T15:19:21+00:00
                 case 'time':
                     return $v->format('H:i:s');
+                */
                 case 'array':
                     return json_encode($v); // todo use Persistence->jsonEncode() instead
                 case 'object':

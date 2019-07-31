@@ -408,9 +408,9 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'event');
-        $dt = $m->addField('dt', ['type' => 'datetime', 'persist_timezone' => 'EEST']);
-        $d = $m->addField('d', ['type' => 'date', 'persist_timezone' => 'EEST']);
-        $t = $m->addField('t', ['type' => 'time', 'persist_timezone' => 'EEST']);
+        $dt = $m->addField('dt', ['type' => 'datetime', 'persistence'=>['timezone' => 'EEST']]);
+        $d = $m->addField('d', ['type' => 'date', 'persistence'=>['timezone' => 'EEST']]);
+        $t = $m->addField('t', ['type' => 'time', 'persistence'=>['timezone' => 'EEST']]);
 
         date_default_timezone_set('UTC');
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');

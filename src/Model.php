@@ -483,12 +483,15 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     protected $typeToFieldSeed = [
-        'boolean' => ['Boolean'],
-        'float'   => ['Numeric'],
-        'integer' => ['Integer'],
-        'money'   => ['Money'],
-        'text'    => ['Text'],
-        'string'  => ['ShortText'],
+        'boolean'  => ['Boolean'],
+        'float'    => ['Numeric'],
+        'integer'  => ['Integer'],
+        'money'    => ['Money'],
+        'text'     => ['Text'],
+        'string'   => ['ShortText'],
+        'datetime' => ['DateTime'],
+        'date'     => ['Date'],
+        'time'     => ['Time'],
     ];
 
     /**

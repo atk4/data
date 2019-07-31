@@ -85,6 +85,14 @@ class HasOne extends Reference
     public $ui = [];
 
     /**
+     * Array with Persistence settings like format, timezone etc.
+     * It's job of Persistence to take these settings into account if needed.
+     *
+     * @var array
+     */
+    public $persistence = [];
+
+    /**
      * Is field mandatory? By default fields are not mandatory.
      *
      * @var bool|string
@@ -117,42 +125,6 @@ class HasOne extends Reference
     public $serialize = null;
 
     /**
-     * Persisting format for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
-     *
-     * @var string
-     */
-    public $persist_format = null;
-
-    /**
-     * Persisting timezone for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, 'IST', 'UTC', 'Europe/Riga' etc.
-     *
-     * @var string
-     */
-    public $persist_timezone = 'UTC';
-
-    /**
-     * DateTime class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTime', 'Carbon' etc.
-     *
-     * @param string
-     */
-    public $dateTimeClass = 'DateTime';
-
-    /**
-     * Timezone class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTimeZone', 'Carbon' etc.
-     *
-     * @param string
-     */
-    public $dateTimeZoneClass = 'DateTimeZone';
-
-    /**
      * Reference_One will also add a field corresponding
      * to 'our_field' unless it exists of course.
      */
@@ -174,15 +146,14 @@ class HasOne extends Reference
                 'never_persist'     => $this->never_persist,
                 'read_only'         => $this->read_only,
                 'caption'           => $this->caption,
-                'ui'                => $this->ui,
+                'ui'                => $this->ui, // UI settings
+                'persistence'       => $this->persistence, // Persistence settings
                 'mandatory'         => $this->mandatory,
                 'required'          => $this->required,
                 'typecast'          => $this->typecast,
                 'serialize'         => $this->serialize,
-                'persist_format'    => $this->persist_format,
-                'persist_timezone'  => $this->persist_timezone,
-                'dateTimeClass'     => $this->dateTimeClass,
-                'dateTimeZoneClass' => $this->dateTimeZoneClass,
+                //'dateTimeClass'     => $this->dateTimeClass,      // @TODO these should be passed somehow. field->getSeed() needed here
+                //'dateTimeZoneClass' => $this->dateTimeZoneClass,
             ]);
         }
     }
