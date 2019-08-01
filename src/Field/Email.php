@@ -99,10 +99,10 @@ class Email extends Field
 
         // [key => default_value]
         $properties = $properties ?: [
-            'dns_check' => false,
+            'dns_check'      => false,
             'allow_multiple' => false,
-            'include_names' => false,
-            'separator' => [','],
+            'include_names'  => false,
+            'separator'      => [','],
         ];
 
         foreach ($properties as $k=>$v) {

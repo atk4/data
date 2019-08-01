@@ -229,7 +229,7 @@ class Field implements Expressionable
                 throw new ValidationException([$this->name => 'Must not be null']);
             }
 
-            return null;
+            return;
         }
 
         $f = $this;
@@ -241,7 +241,7 @@ class Field implements Expressionable
                 throw new ValidationException([$this->name => 'Must not be empty']);
             }
 
-            return null;
+            return;
         }
 
         // validate scalar values
@@ -298,24 +298,24 @@ class Field implements Expressionable
 
         // [key => default_value]
         $properties = $properties ?: [
-            'default' => null,
-            'type' => null,
-            'enum' => null,
-            'values' => null,
-            'reference' => null,
-            'actual' => null,
-            'join' => null,
-            'system' => false,
+            'default'       => null,
+            'type'          => null,
+            'enum'          => null,
+            'values'        => null,
+            'reference'     => null,
+            'actual'        => null,
+            'join'          => null,
+            'system'        => false,
             'never_persist' => false,
-            'never_save' => false,
-            'read_only' => false,
-            'caption' => null,
-            'ui' => [],
-            'persistence' => [],
-            'mandatory' => false,
-            'required' => false,
-            'typecast' => null,
-            'serialize' => null,
+            'never_save'    => false,
+            'read_only'     => false,
+            'caption'       => null,
+            'ui'            => [],
+            'persistence'   => [],
+            'mandatory'     => false,
+            'required'      => false,
+            'typecast'      => null,
+            'serialize'     => null,
         ];
 
         foreach ($properties as $k=>$v) {

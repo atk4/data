@@ -109,9 +109,9 @@ class Boolean extends \atk4\data\Field
 
         // [key => default_value]
         $properties = $properties ?: [
-            'valueTrue' => true,
+            'valueTrue'  => true,
             'valueFalse' => false,
-            'enum' => null,
+            'enum'       => null,
         ];
 
         foreach ($properties as $k=>$v) {

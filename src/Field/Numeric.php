@@ -55,9 +55,9 @@ class Numeric extends Field
         $properties = $properties ?: [
             'decimal_numbers' => 8,
             'enable_rounding' => true,
-            'signed' => true,
-            'min' => null,
-            'max' => null,
+            'signed'          => true,
+            'min'             => null,
+            'max'             => null,
         ];
 
         foreach ($properties as $k=>$v) {

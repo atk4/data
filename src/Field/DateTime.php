@@ -102,9 +102,9 @@ class DateTime extends Field
 
         // [key => default_value]
         $properties = $properties ?: [
-            'dateTimeClass' => 'DateTime',
+            'dateTimeClass'     => 'DateTime',
             'dateTimeZoneClass' => 'DateTimeZone',
-            'persistence' => ['format' => null, 'timezone' => 'UTC'],
+            'persistence'       => ['format' => null, 'timezone' => 'UTC'],
         ];
 
         foreach ($properties as $k=>$v) {

@@ -61,8 +61,8 @@ class Callback extends \atk4\data\Field
 
         // [key => default_value]
         $properties = $properties ?: [
-            'expr' => null,
-            'read_only' => true,
+            'expr'          => null,
+            'read_only'     => true,
             'never_persist' => true,
         ];
 
@@ -75,4 +75,3 @@ class Callback extends \atk4\data\Field
         return $seed;
     }
 }
-

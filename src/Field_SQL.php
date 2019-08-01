@@ -4,7 +4,6 @@
 
 namespace atk4\data;
 
-use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
 /**
