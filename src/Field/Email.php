@@ -93,7 +93,7 @@ class Email extends Field
      *
      * @return string
      */
-    protected function idn_to_ascii($domain)
+    protected function idn_to_ascii(?string $domain) : ?string
     {
         return idn_to_ascii($domain, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
     }

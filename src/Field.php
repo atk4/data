@@ -283,7 +283,7 @@ class Field implements Expressionable
      *
      * @param mixed $value Optional value
      *
-     * @return string
+     * @return string|mixed
      */
     public function toString($value = null)
     {
@@ -324,7 +324,7 @@ class Field implements Expressionable
      *
      * @return bool
      */
-    public function compare($value)
+    public function compare($value) : bool
     {
         return $this->owner[$this->short_name] == $value;
     }
@@ -398,7 +398,7 @@ class Field implements Expressionable
      *
      * @return string
      */
-    public function getCaption()
+    public function getCaption() : string
     {
         return $this->caption ?: ($this->ui['caption'] ?? ucwords(str_replace('_', ' ', $this->short_name)));
     }
@@ -410,6 +410,8 @@ class Field implements Expressionable
      * Universal way to convert ourselves to expression. Off-load implementation into persistence.
      *
      * @param Expression $expression
+     *
+     * @throws Exception
      *
      * @return Expression
      */
@@ -432,7 +434,7 @@ class Field implements Expressionable
      *
      * @return array
      */
-    public function __debugInfo()
+    public function __debugInfo() : array
     {
         $arr = [
             'short_name' => $this->short_name,
