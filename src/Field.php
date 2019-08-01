@@ -217,12 +217,19 @@ class Field implements Expressionable
      */
     public function normalize($value)
     {
+        // SQL fields are allowed to have expressions inside of them.
+        if ($value instanceof Expression ||
+            $value instanceof Expressionable) {
+            return $value;
+        }
+
+        // NULL value is always fine if it is allowed
         if ($value === null) {
             if ($this->required) {
                 throw new ValidationException([$this->name => 'Must not be null']);
             }
 
-            return;
+            return null;
         }
 
         $f = $this;
@@ -234,7 +241,7 @@ class Field implements Expressionable
                 throw new ValidationException([$this->name => 'Must not be empty']);
             }
 
-            return;
+            return null;
         }
 
         // validate scalar values
@@ -276,6 +283,48 @@ class Field implements Expressionable
         }
 
         return $value;
+    }
+
+    /**
+     * Return array of seed properties of this Field object.
+     *
+     * @param array $properties Properties to return, by default will return all properties set.
+     *
+     * @return array
+     */
+    public function getSeed(array $properties = []) : array
+    {
+        $seed = [];
+
+        // [key => default_value]
+        $properties = $properties ?: [
+            'default' => null,
+            'type' => null,
+            'enum' => null,
+            'values' => null,
+            'reference' => null,
+            'actual' => null,
+            'join' => null,
+            'system' => false,
+            'never_persist' => false,
+            'never_save' => false,
+            'read_only' => false,
+            'caption' => null,
+            'ui' => [],
+            'persistence' => [],
+            'mandatory' => false,
+            'required' => false,
+            'typecast' => null,
+            'serialize' => null,
+        ];
+
+        foreach ($properties as $k=>$v) {
+            if ($this->{$k} !== $v) {
+                $seed[$k] = $this->{$k};
+            }
+        }
+
+        return $seed;
     }
 
     /**

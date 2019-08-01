@@ -41,6 +41,35 @@ class Numeric extends Field
     public $max;
 
     /**
+     * Return array of seed properties of this Field object.
+     *
+     * @param array $properties Properties to return, by default will return all properties set.
+     *
+     * @return array
+     */
+    public function getSeed(array $properties = []) : array
+    {
+        $seed = parent::getSeed($properties);
+
+        // [key => default_value]
+        $properties = $properties ?: [
+            'decimal_numbers' => 8,
+            'enable_rounding' => true,
+            'signed' => true,
+            'min' => null,
+            'max' => null,
+        ];
+
+        foreach ($properties as $k=>$v) {
+            if ($this->{$k} !== $v) {
+                $seed[$k] = $this->{$k};
+            }
+        }
+
+        return $seed;
+    }
+
+    /**
      * Validate and normalize value.
      *
      * @param mixed $value

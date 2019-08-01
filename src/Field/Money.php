@@ -18,4 +18,29 @@ class Money extends Numeric
      * @var int Specify how many decimal numbers should be saved.
      */
     public $decimal_numbers = 4;
+
+    /**
+     * Return array of seed properties of this Field object.
+     *
+     * @param array $properties Properties to return, by default will return all properties set.
+     *
+     * @return array
+     */
+    public function getSeed(array $properties = []) : array
+    {
+        $seed = parent::getSeed($properties);
+
+        // [key => default_value]
+        $properties = $properties ?: [
+            'decimal_numbers' => 4,
+        ];
+
+        foreach ($properties as $k=>$v) {
+            if ($this->{$k} !== $v) {
+                $seed[$k] = $this->{$k};
+            }
+        }
+
+        return $seed;
+    }
 }

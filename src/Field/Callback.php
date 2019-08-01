@@ -47,4 +47,32 @@ class Callback extends \atk4\data\Field
             $m->data[$this->short_name] = call_user_func($this->expr, $m);
         });
     }
+
+    /**
+     * Return array of seed properties of this Field object.
+     *
+     * @param array $properties Properties to return, by default will return all properties set.
+     *
+     * @return array
+     */
+    public function getSeed(array $properties = []) : array
+    {
+        $seed = parent::getSeed($properties);
+
+        // [key => default_value]
+        $properties = $properties ?: [
+            'expr' => null,
+            'read_only' => true,
+            'never_persist' => true,
+        ];
+
+        foreach ($properties as $k=>$v) {
+            if ($this->{$k} !== $v) {
+                $seed[$k] = $this->{$k};
+            }
+        }
+
+        return $seed;
+    }
 }
+

@@ -46,11 +46,18 @@ class HasOne_SQL extends HasOne
         }
 
         $e = $this->owner->addExpression($field, array_merge([
+
+            // get expression
             function ($m) use ($their_field) {
                 // remove order if we just select one field from hasOne model
                 // that is mandatory for Oracle
                 return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
             }, ],
+
+            // get field seed properties from referenced model
+            $this->refLink()->getField($their_field)->getSeed(),
+
+            // overwrite with defaults we explicitly set
             $defaults
         ));
 

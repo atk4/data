@@ -9,7 +9,7 @@ use atk4\core\InitializerTrait;
 /**
  * Class description?
  */
-class Field_SQL_Expression extends Field_SQL
+class Field_SQL_Expression extends Field
 {
     use InitializerTrait {
         init as _init;

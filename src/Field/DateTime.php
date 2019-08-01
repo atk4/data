@@ -90,6 +90,33 @@ class DateTime extends Field
     }
 
     /**
+     * Return array of seed properties of this Field object.
+     *
+     * @param array $properties Properties to return, by default will return all properties set.
+     *
+     * @return array
+     */
+    public function getSeed(array $properties = []) : array
+    {
+        $seed = parent::getSeed($properties);
+
+        // [key => default_value]
+        $properties = $properties ?: [
+            'dateTimeClass' => 'DateTime',
+            'dateTimeZoneClass' => 'DateTimeZone',
+            'persistence' => ['format' => null, 'timezone' => 'UTC'],
+        ];
+
+        foreach ($properties as $k=>$v) {
+            if ($this->{$k} !== $v) {
+                $seed[$k] = $this->{$k};
+            }
+        }
+
+        return $seed;
+    }
+
+    /**
      * Casts field value to string.
      *
      * @param mixed $value Optional value

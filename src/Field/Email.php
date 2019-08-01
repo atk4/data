@@ -87,6 +87,34 @@ class Email extends Field
     }
 
     /**
+     * Return array of seed properties of this Field object.
+     *
+     * @param array $properties Properties to return, by default will return all properties set.
+     *
+     * @return array
+     */
+    public function getSeed(array $properties = []) : array
+    {
+        $seed = parent::getSeed($properties);
+
+        // [key => default_value]
+        $properties = $properties ?: [
+            'dns_check' => false,
+            'allow_multiple' => false,
+            'include_names' => false,
+            'separator' => [','],
+        ];
+
+        foreach ($properties as $k=>$v) {
+            if ($this->{$k} !== $v) {
+                $seed[$k] = $this->{$k};
+            }
+        }
+
+        return $seed;
+    }
+
+    /**
      * Return translated address.
      *
      * @param string $domain
