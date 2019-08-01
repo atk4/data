@@ -341,14 +341,14 @@ class Field implements Expressionable
 
     // }}}
 
-    // {{{ Handy methods used by UI
+    // {{{ Handy methods used by UI and in other places
 
     /**
      * Returns if field should be editable in UI.
      *
      * @return bool
      */
-    public function isEditable()
+    public function isEditable() : bool
     {
         return $this->ui['editable'] ?? (($this->read_only || $this->never_persist) ? false : !$this->system);
     }
@@ -358,7 +358,7 @@ class Field implements Expressionable
      *
      * @return bool
      */
-    public function isVisible()
+    public function isVisible() : bool
     {
         return $this->ui['visible'] ?? !$this->system;
     }
@@ -368,9 +368,29 @@ class Field implements Expressionable
      *
      * @return bool
      */
-    public function isHidden()
+    public function isHidden() : bool
     {
         return $this->ui['hidden'] ?? false;
+    }
+
+    /**
+     * Returns true if field allows NULL values.
+     *
+     * @return bool
+     */
+    public function canBeNull() : bool
+    {
+        return $this->mandatory === false;
+    }
+
+    /**
+     * Returns true if field allows EMPTY values like empty string and NULL.
+     *
+     * @return bool
+     */
+    public function canBeEmpty() : bool
+    {
+        return $this->mandatory === false && $this->required === false;
     }
 
     /**
