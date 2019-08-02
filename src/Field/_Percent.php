@@ -5,15 +5,18 @@
 
 namespace atk4\data\Field;
 
-class _Percent extends Number
+class _Percent extends Numeric
 {
     /**
-     * @var int IMPORTANT: set to 2+precision, since percentage is stored as a 0 .. 1
+     * @var int Specify how many decimal numbers should be saved.
+     *          IMPORTANT: set to 2+precision, since percentage is stored as a 0 .. 1
      */
     public $decimal_numbers = 2;
 
+    /*
     public function format()
     {
         return ($this->value() * 100).'%';
     }
+    */
 }
