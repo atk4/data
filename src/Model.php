@@ -104,7 +104,7 @@ class Model implements ArrayAccess, IteratorAggregate
      * @var string|array
      */
     public $_default_seed_action = UserAction\Generic::class;
-    
+
     /**
      * Default class for models ID field.
      *
