@@ -583,12 +583,12 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
 
         // Test : Now the caption is null and is generated from field name
-        $this->assertEquals('Last Name',$u->getField('last_name')->getCaption());
+        $this->assertEquals('Last Name', $u->getField('last_name')->getCaption());
 
         $u->getField('last_name')->caption = 'Surname';
 
         // Test : Now the caption is not null and the value is returned
-        $this->assertEquals('Surname',$u->getField('last_name')->getCaption());
+        $this->assertEquals('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, 'order'));
         $order_user_ref = $o->hasOne('my_user', [$u, 'our_field'=>'user_id']);
@@ -599,6 +599,6 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // Test : $field->caption for the field 'last_name' is defined in referenced model (User)
         // When Order add field from Referenced model User
         // caption will be passed to Order field user_last_name
-        $this->assertEquals('Surname',$referenced_caption);
+        $this->assertEquals('Surname', $referenced_caption);
     }
 }
