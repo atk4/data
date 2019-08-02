@@ -6,6 +6,7 @@ namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
 use atk4\data\Field;
+use atk4\data\Join;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -49,11 +50,14 @@ class Array_ extends Persistence
         }
 
         $defaults = array_merge([
-            '_default_seed_join' => 'atk4\data\Join\Array_',
+            '_default_seed_join' => Join\Array_::class,
         ], $defaults);
 
         $m = parent::add($m, $defaults);
 
+        /* Imants:  Why do we needed this at all?
+                    If we need this, then it has to be changed to not rely on $type property!!!
+                    But I think it's not needed anymore.
         if ($f = $m->hasField($m->id_field)) {
             if (!$f->type) {
                 //$f->type = 'integer';
@@ -62,6 +66,7 @@ class Array_ extends Persistence
                 $m->addField($m->id_field, ['type'=>'integer']);
             }
         }
+        */
 
         // if there is no model table specified, then create fake one named 'data'
         // and put all persistence data in there
@@ -234,7 +239,7 @@ class Array_ extends Persistence
      * @param Model  $m
      * @param string $table
      *
-     * @return string
+     * @return string|int
      */
     public function generateNewID($m, $table = null)
     {
@@ -243,24 +248,18 @@ class Array_ extends Persistence
         }
 
         if ($m->id_field) {
-            $ids = array_keys($this->data[$table]);
-            $type = $m->getField($m->id_field)->type;
-        } else {
-            $ids = [count($this->data[$table])]; // use ids starting from 1
-            $type = 'integer';
+            // if ID field is integer then calculate next ID value and return, otherwise return unique generated hash
+            if ($m->getField($m->id_field) instanceof Field\Integer) {
+                $ids = array_keys($this->data[$table]);
+
+                return empty($ids) ? 1 : (max($ids) + 1);
+            }
+
+            return uniqid();
         }
 
-        switch ($type) {
-            case 'integer':
-                return count($ids) === 0 ? 1 : (max($ids) + 1);
-            case 'string':
-                return uniqid();
-            default:
-                throw new Exception([
-                    'Unsupported id field type. Array supports type=integer or type=string only',
-                    'type' => $type,
-                ]);
-        }
+        // if we don't have ID field at all, then use simple sequence as id values
+        return count($this->data[$table]) + 1;
     }
 
     /**

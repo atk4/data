@@ -104,6 +104,13 @@ class Model implements ArrayAccess, IteratorAggregate
      * @var string|array
      */
     public $_default_seed_action = UserAction\Generic::class;
+    
+    /**
+     * Default class for models ID field.
+     *
+     * @var string|array
+     */
+    public $_default_seed_id_field = Field\Integer::class;
 
     /**
      * @var array Collection containing Field Objects - using key as the field system name
@@ -390,10 +397,14 @@ class Model implements ArrayAccess, IteratorAggregate
     {
         $this->_init();
 
+        // adds ID field if needed
         if ($this->id_field) {
-            $this->addField($this->id_field, [
-                'system' => true,
-            ]);
+            $this->addField($this->id_field, array_replace(
+                is_array($this->_default_seed_id_field) ? $this->_default_seed_id_field : [$this->_default_seed_id_field],
+                [
+                    'system' => true,
+                ]
+            ));
         }
     }
 
@@ -2032,7 +2043,7 @@ class Model implements ArrayAccess, IteratorAggregate
         foreach ($this->rawIterator() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $this->id = isset($data[$this->id_field]) ? $data[$this->id_field] : null;
+                $this->id = $data[$this->id_field] ?? null;
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
