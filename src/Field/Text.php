@@ -9,6 +9,7 @@ use atk4\data\ValidationException;
 
 /**
  * Basic textual field type. Think of it as field type "text" in past.
+ * This allows you to have multiple paragrahs (allow line-ends).
  */
 class Text extends Field
 {

@@ -500,7 +500,7 @@ class Model implements ArrayAccess, IteratorAggregate
         'integer'  => ['Integer'],
         'money'    => ['Money'],
         'text'     => ['Text'],
-        'string'   => ['ShortText'],
+        'string'   => ['Line'],
         'datetime' => ['DateTime'],
         'date'     => ['Date'],
         'time'     => ['Time'],
