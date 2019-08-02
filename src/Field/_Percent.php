@@ -10,7 +10,7 @@ class _Percent extends Number
     /**
      * @var int IMPORTANT: set to 2+precision, since percentage is stored as a 0 .. 1
      */
-    public $decimalNumbers = 2;
+    public $decimal_numbers = 2;
 
     public function format()
     {
