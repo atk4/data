@@ -103,7 +103,7 @@ class Numeric extends Field
         }
 
         $value = (float) $value;
-        $value = $this->enable_rounding ? round($value, $this->decimal_numbers) : $this->round_down($value, $this->decimal_numbers);
+        $value = $this->enable_rounding ? round($value, $this->decimal_numbers) : $this->roundDown($value, $this->decimal_numbers);
 
         if (!$this->signed && $value < 0) {
             throw new ValidationException([$this->name => 'Must be positive']);
@@ -128,7 +128,7 @@ class Numeric extends Field
      *
      * @return float
      */
-    protected function round_up(float $n, int $p) : float
+    protected function roundUp(float $n, int $p) : float
     {
         return $p ? ceil($n / $p) * $p : ceil($n);
     }
@@ -141,7 +141,7 @@ class Numeric extends Field
      *
      * @return float
      */
-    protected function round_down(float $n, int $p) : float
+    protected function roundDown(float $n, int $p) : float
     {
         return $p ? floor($n / $p) * $p : floor($n);
     }
