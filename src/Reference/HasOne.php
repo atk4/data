@@ -237,6 +237,7 @@ class HasOne extends Reference
                     $this->owner[$this->our_field] = $m[$this->their_field];
                 });
         }
+
         if ($this->owner[$this->our_field]) {
             $m->tryLoad($this->owner[$this->our_field]);
         }
