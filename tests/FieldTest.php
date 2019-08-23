@@ -847,10 +847,11 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $model->getFields('foo');
     }
     
-    public function testDateTimeFieldsToString() {
+    public function testDateTimeFieldsToString() 
+    {
         $model = new Model();
-        $model->addField('date',     ['type' => 'date']);
-        $model->addField('time',     ['type' => 'time']);
+        $model->addField('date', ['type' => 'date']);
+        $model->addField('time', ['type' => 'time']);
         $model->addField('datetime', ['type' => 'datetime']);
 
         $this->assertEquals('', $model->getField('date')->toString());
