@@ -846,8 +846,8 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->expectExceptionMessage('not supported');
         $model->getFields('foo');
     }
-    
-    public function testDateTimeFieldsToString() 
+
+    public function testDateTimeFieldsToString()
     {
         $model = new Model();
         $model->addField('date', ['type' => 'date']);
