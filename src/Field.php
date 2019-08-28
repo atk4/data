@@ -407,11 +407,11 @@ class Field implements Expressionable
                 case 'boolean':
                     throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
                 case 'date':
-                    return $v->format('Y-m-d');
+                    return $v instanceof \DateTimeInterface ? $v->format('Y-m-d') : (string) $v;
                 case 'datetime':
-                    return $v->format('c'); // ISO 8601 format 2004-02-12T15:19:21+00:00
+                    return $v instanceof \DateTimeInterface ? $v->format('c') : (string) $v; // ISO 8601 format 2004-02-12T15:19:21+00:00
                 case 'time':
-                    return $v->format('H:i:s');
+                    return $v instanceof \DateTimeInterface ? $v->format('H:i:s') : (string) $v;
                 case 'array':
                     return json_encode($v); // todo use Persistence->jsonEncode() instead
                 case 'object':
