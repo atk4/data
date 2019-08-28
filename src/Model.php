@@ -473,7 +473,7 @@ class Model implements ArrayAccess, IteratorAggregate
         $seed = $this->mergeSeeds(
             $seed,
             isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
-            [$this->_default_seed_addField]
+            $this->_default_seed_addField
         );
 
         /** @var Field $field */
