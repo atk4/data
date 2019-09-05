@@ -52,6 +52,7 @@ class ContainsOne extends Reference
                 'type'              => $this->type,
                 'reference'         => $this,
                 'system'            => $this->system,
+                'ui'                => ['visible' => false], // not visible in UI Grid
             ]);
         }
     }
