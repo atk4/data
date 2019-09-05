@@ -29,6 +29,19 @@ class ContainsOne extends Reference
     public $system = true;
 
     /**
+     * Array with UI flags like editable, visible and hidden.
+     *
+     * By default hasOne relation ID field should be editable in forms,
+     * but not visible in grids. UI should respect these flags.
+     *
+     * @var array
+     */
+    public $ui = [
+        'visible' => false, // not visible in UI Table, Grid and CRUD
+        'editable' => true, // but should be editable in UI Form
+    ];
+
+    /**
      * Required! We need table alias for internal use only.
      *
      * @var string
@@ -52,7 +65,7 @@ class ContainsOne extends Reference
                 'type'              => $this->type,
                 'reference'         => $this,
                 'system'            => $this->system,
-                'ui'                => ['visible' => false], // not visible in UI Grid
+                'ui'                => $this->ui,
             ]);
         }
     }
