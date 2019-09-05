@@ -208,7 +208,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals($row, $a->get());
     }
 
-    /**
+    /*
      * Model should be loaded before traversing to containsOne relation.
      *
      * @expectedException Exception
