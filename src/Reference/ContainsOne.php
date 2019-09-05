@@ -37,7 +37,7 @@ class ContainsOne extends Reference
      * @var array
      */
     public $ui = [
-        'visible' => false, // not visible in UI Table, Grid and CRUD
+        'visible'  => false, // not visible in UI Table, Grid and CRUD
         'editable' => true, // but should be editable in UI Form
     ];
 
