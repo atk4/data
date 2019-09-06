@@ -1735,11 +1735,12 @@ class Model implements ArrayAccess, IteratorAggregate
             if (($errors = $this->validate('save')) !== []) {
                 throw new ValidationException($errors, $this);
             }
-            if ($this->hook('beforeSave') === false) {
+            
+            $is_update = $this->loaded();
+            if ($this->hook('beforeSave', [$is_update]) === false) {
                 return $this;
             }
 
-            $is_update = $this->loaded();
             if ($is_update) {
                 $data = [];
                 $dirty_join = false;
