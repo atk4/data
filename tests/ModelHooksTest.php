@@ -10,7 +10,6 @@ use atk4\data\Persistence;
  */
 class ModelHooksTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
-
     public $m;
 
     public function setUp()
