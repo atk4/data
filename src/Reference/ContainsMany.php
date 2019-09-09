@@ -28,9 +28,11 @@ class ContainsMany extends ContainsOne
         $m = $this->owner;
 
         // model should be loaded
+        /* Imants: it looks that this is not actually required - disabling
         if (!$m->loaded()) {
             throw new Exception(['Model should be loaded!', 'model' => get_class($m)]);
         }
+        */
 
         // set data source of referenced array persistence
         $rows = $m[$this->our_field] ?: [];
