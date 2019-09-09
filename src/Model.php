@@ -1766,7 +1766,7 @@ class Model implements ArrayAccess, IteratorAggregate
                     return $this;
                 }
 
-                if ($this->hook('beforeUpdate', [&$data]) === false) {
+                if ($this->hook('beforeUpdate', [&$data, $is_update]) === false) {
                     return $this;
                 }
 
