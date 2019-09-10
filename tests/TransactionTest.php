@@ -49,6 +49,33 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('Sue', $this->getDB()['item'][2]['name']);
     }
 
+    public function testBeforeSaveHook()
+    {
+        $self = $this;
+        $db = new Persistence\SQL($this->db->connection);
+        $a = [
+            'item' => [
+                ['name' => 'John'],
+            ], ];
+        $this->setDB($a);
+
+        // test insert
+        $m = new Model($db, 'item');
+        $m->addField('name');
+        $m->addHook('beforeSave', function ($model, $is_update) use ($self) {
+            $self->assertFalse($is_update);
+        });
+        $m->save(['name'=>'Foo']);
+
+        // test update
+        $m = new Model($db, 'item');
+        $m->addField('name');
+        $m->addHook('afterSave', function ($model, $is_update) use ($self) {
+            $self->assertTrue($is_update);
+        });
+        $m->loadBy('name', 'John')->save(['name'=>'Foo']);
+    }
+
     public function testAfterSaveHook()
     {
         $self = $this;
