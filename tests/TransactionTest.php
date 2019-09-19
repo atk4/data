@@ -102,4 +102,31 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         });
         $m->loadBy('name', 'John')->save(['name'=>'Foo']);
     }
+    
+    public function testOnRollbackHook()
+    {
+        $self = $this;
+        $db = new Persistence\SQL($this->db->connection);
+        $a = [
+            'item' => [
+                ['name' => 'John'],
+            ], ];
+        $this->setDB($a);
+    
+        // test insert
+        $m = new Model($db, 'item');
+        $m->addField('name');
+        $m->addField('foo');
+        
+        $hook_called = false;
+        $m->addHook('onRollback', function($m, $e) use (&$hook_called) {
+            $hook_called = true;
+            $m->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
+        });
+
+        // this will fail because field foo is not in DB and call onRollback hook
+        $m->insert(['name'=>'Jane', 'foo'=>'bar']);
+        
+        $this->assertTrue($hook_called);
+    }
 }

@@ -2141,8 +2141,14 @@ class Model implements ArrayAccess, IteratorAggregate
         if (!$persistence) {
             $persistence = $this->persistence;
         }
-
-        return $persistence->atomic($f);
+        
+        try {
+            return $persistence->atomic($f);
+        } catch (\Exception $e) {
+            if ($this->hook('onRollback', [$this, $e]) !== false) {
+                throw $e;
+            }
+        }
     }
 
     // }}}
