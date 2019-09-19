@@ -2141,7 +2141,7 @@ class Model implements ArrayAccess, IteratorAggregate
         if (!$persistence) {
             $persistence = $this->persistence;
         }
-        
+
         try {
             return $persistence->atomic($f);
         } catch (\Exception $e) {
