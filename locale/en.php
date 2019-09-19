@@ -1,8 +1,8 @@
 <?php
 
-return array (
-  'atk4\\data' => array (
-    'test' => 'test',
+return [
+  'atk4\\data' => [
+    'test'     => 'test',
     'test two' => 'test two',
-  ),
-);
+  ],
+];
