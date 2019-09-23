@@ -119,14 +119,18 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('foo');
 
         $hook_called = false;
-        $m->addHook('onRollback', function ($m, $e) use (&$hook_called) {
+        $values = [];
+        $m->addHook('onRollback', function ($mm, $e) use (&$hook_called, &$values) {
             $hook_called = true;
-            $m->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
+            $values = $mm->get(); // model field values are still the same no matter we rolled back
+            $mm->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
         });
 
         // this will fail because field foo is not in DB and call onRollback hook
-        $m->insert(['name'=>'Jane', 'foo'=>'bar']);
+        $m->set(['name'=>'Jane', 'foo'=>'bar']);
+        $m->save();
 
         $this->assertTrue($hook_called);
+        $this->assertEquals($m->get(), $values);
     }
 }
