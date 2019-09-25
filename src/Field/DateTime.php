@@ -127,6 +127,6 @@ class DateTime extends Field
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
-        return $v->format('c'); // ISO 8601 format 2004-02-12T15:19:21+00:00
+        return $v ? $v->format('c') : $v; // ISO 8601 format 2004-02-12T15:19:21+00:00
     }
 }

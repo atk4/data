@@ -47,6 +47,6 @@ class Date extends DateTime
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
-        return $v->format('Y-m-d');
+        return $v ? $v->format('Y-m-d') : $v;
     }
 }
