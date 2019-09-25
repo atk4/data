@@ -846,4 +846,25 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->expectExceptionMessage('not supported');
         $model->getFields('foo');
     }
+
+    public function testDateTimeFieldsToString()
+    {
+        $model = new Model();
+        $model->addField('date', ['type' => 'date']);
+        $model->addField('time', ['type' => 'time']);
+        $model->addField('datetime', ['type' => 'datetime']);
+
+        $this->assertEquals('', $model->getField('date')->toString());
+        $this->assertEquals('', $model->getField('time')->toString());
+        $this->assertEquals('', $model->getField('datetime')->toString());
+
+        $current_date = new \DateTime();
+        $model->set('date', $current_date);
+        $model->set('time', $current_date);
+        $model->set('datetime', $current_date);
+
+        $this->assertEquals($current_date->format('Y-m-d'), $model->getField('date')->toString());
+        $this->assertEquals($current_date->format('H:i:s'), $model->getField('time')->toString());
+        $this->assertEquals($current_date->format('c'), $model->getField('datetime')->toString());
+    }
 }

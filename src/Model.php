@@ -1758,11 +1758,11 @@ class Model implements ArrayAccess, IteratorAggregate
             if (($errors = $this->validate('save')) !== []) {
                 throw new ValidationException($errors, $this);
             }
-            if ($this->hook('beforeSave') === false) {
+            $is_update = $this->loaded();
+            if ($this->hook('beforeSave', [$is_update]) === false) {
                 return $this;
             }
 
-            $is_update = $this->loaded();
             if ($is_update) {
                 $data = [];
                 $dirty_join = false;
@@ -2165,7 +2165,13 @@ class Model implements ArrayAccess, IteratorAggregate
             $persistence = $this->persistence;
         }
 
-        return $persistence->atomic($f);
+        try {
+            return $persistence->atomic($f);
+        } catch (\Exception $e) {
+            if ($this->hook('onRollback', [$this, $e]) !== false) {
+                throw $e;
+            }
+        }
     }
 
     // }}}
