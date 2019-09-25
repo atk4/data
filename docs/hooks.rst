@@ -32,11 +32,16 @@ If database has transaction support, then hooks will be executed while inside
 the same transaction:
 
  - begin transaction
- - beforeSave
+ - beforeSave hook
  - actual save
  - reload (see :php:attr:`Model::_reload_after_save`)
- - afterSave
- - commit
+ - afterSave hook
+ - commit transaction
+ 
+ In case of error:
+ 
+  - do rollback
+  - call onRollback hook
 
 If your afterSave hook creates exception, then the entire operation will be
 rolled back.
@@ -225,6 +230,31 @@ to $persistence for actual loading of the data.
 Similarly you can prevent deletion if you wish to implement
 :ref:`soft-delete` or stop insert/modify from occurring.
 
+
+onRollback Hook
+---------------
+
+This hook is executed right after transaction fails and rollback is done.
+This can be used in various situations.
+
+Save information into auditLog about failure:
+
+    $m->addHook('onRollback', function($m){ 
+        $m->auditLog->registerFailure();
+    });
+
+Upgrade schema:
+
+    $m->addHook('onRollback', function($m, $exception) { 
+        if ($exception instanceof \PDOException) {
+            $m->schema->upgrade();
+            $m->breakHook(false); // exception will not be thrown
+        }
+    });
+
+In first example we will register failure in audit log, but afterwards still throw exception.
+In second example we will upgrade model schema and will not throw exception at all because we
+break hook and return false boolean value.
 
 
 
