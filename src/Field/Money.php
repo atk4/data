@@ -17,7 +17,7 @@ class Money extends Numeric
     /**
      * @var int Specify how many decimal numbers should be saved.
      */
-    public $decimal_numbers = 4;
+    public $decimal_numbers = 2;
 
     /**
      * Return array of seed properties of this Field object.
@@ -32,7 +32,7 @@ class Money extends Numeric
 
         // [key => default_value]
         $properties = $properties ?: [
-            'decimal_numbers' => 4,
+            'decimal_numbers' => 2,
         ];
 
         foreach ($properties as $k=>$v) {
