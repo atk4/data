@@ -599,8 +599,8 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m['integer'] = '12,345.67676767'; // no digits after dot
         $this->assertSame(12345, $m['integer']);
 
-        $m['money'] = '12,345.67676767'; // 4 digits after dot
-        $this->assertSame(12345.6768, $m['money']);
+        $m['money'] = '12,345.67676767'; // 2 digits after dot
+        $this->assertSame(12345.68, $m['money']);
 
         $m['float'] = '12,345.67676767'; // don't round
         $this->assertSame(12345.67676767, $m['float']);

@@ -97,8 +97,8 @@ class RefactoredFieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->set('n', 0);
         $this->assertEquals(0, $m['n']);
         $m->set('n', 1.12345);
-        $this->assertEquals(1.1235, $m['n']);
+        $this->assertEquals(1.12, $m['n']);
         $m->set('n', -1.12345);
-        $this->assertEquals(-1.1235, $m['n']);
+        $this->assertEquals(-1.12, $m['n']);
     }
 }

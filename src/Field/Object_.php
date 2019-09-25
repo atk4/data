@@ -26,7 +26,7 @@ class Object_ extends Field
      */
     public function normalize($value)
     {
-        if ($value === null) {
+        if ($value === null || $value === '') {
             if ($this->required) {
                 throw new ValidationException([$this->name => 'Must not be null']);
             }
