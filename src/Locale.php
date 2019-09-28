@@ -11,6 +11,6 @@ class Locale
 
     public static function getPath()
     {
-        return __DIR__ . '/../locale/';
+        return __DIR__.'/../locale/';
     }
 }
