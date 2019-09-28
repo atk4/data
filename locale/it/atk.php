@@ -8,8 +8,8 @@ return [
   'Must not be null'                                                       => 'Non deve essere nullo',
   'Test with plural'                                                       => [
     'zero'  => 'Test zero',
-    'one'   => 'test è uno',
-    'other' => 'test sono {{count}}',
+    'one'   => 'Test è uno',
+    'other' => 'Test sono {{count}}',
   ],
   'There was error while decoding JSON'             => 'Si è verificato un errore durante la decodifica di JSON',
   'Unable to determine persistence driver from DSN' => 'Impossibile determinare il driver di persistenza via DSN',
