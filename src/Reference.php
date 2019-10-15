@@ -73,6 +73,14 @@ class Reference
     protected $their_field = null;
 
     /**
+     * Caption of the reeferenced model. Can be used in UI components, for example.
+     * Should be in plain English and ready for proper localization.
+     *
+     * @var string
+     */
+    public $caption = null;
+
+    /**
      * Default constructor. Will copy argument into properties.
      *
      * @param string $link a short_name component
@@ -124,7 +132,7 @@ class Reference
             }
             $defaults['table_alias'] = $this->table_alias;
         }
-
+        
         // if model is Closure, then call it and return model
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = ($this->model)($this->owner, $this, $defaults);
@@ -172,6 +180,11 @@ class Reference
     {
         if (!$model->persistence && $p = $this->getDefaultPersistence($model)) {
             $p->add($model, $defaults);
+        }
+
+        // set model caption
+        if ($this->caption !==null) {
+            $model->caption = $this->caption;
         }
 
         return $model;

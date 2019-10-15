@@ -29,15 +29,6 @@ class ContainsOne extends Reference
     public $system = true;
 
     /**
-     * Defines a label to go along with this field. Use getCaption() which
-     * will always return meaningful label (even if caption is null). Set
-     * this property to any string.
-     *
-     * @var string
-     */
-    public $caption = null;
-
-    /**
      * Array with UI flags like editable, visible and hidden.
      *
      * By default hasOne relation ID field should be editable in forms,
@@ -74,7 +65,7 @@ class ContainsOne extends Reference
                 'type'              => $this->type,
                 'reference'         => $this,
                 'system'            => $this->system,
-                'caption'           => $this->caption,
+                'caption'           => $this->caption, // it's ref models caption, but we can use it here for field too
                 'ui'                => $this->ui,
             ]);
         }
