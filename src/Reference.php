@@ -132,7 +132,7 @@ class Reference
             }
             $defaults['table_alias'] = $this->table_alias;
         }
-        
+
         // if model is Closure, then call it and return model
         if (is_object($this->model) && $this->model instanceof \Closure) {
             $c = ($this->model)($this->owner, $this, $defaults);
@@ -183,7 +183,7 @@ class Reference
         }
 
         // set model caption
-        if ($this->caption !==null) {
+        if ($this->caption !== null) {
             $model->caption = $this->caption;
         }
 
