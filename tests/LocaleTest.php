@@ -15,6 +15,7 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
 
     public function testGetPath()
     {
-        $this->assertEquals(dirname(__DIR__).'/src/../locale/', Locale::getPath());
+        $path = join(DIRECTORY_SEPARATOR, [dirname(__DIR__), 'src', '..', 'locale']) . DIRECTORY_SEPARATOR;
+        $this->assertEquals($path, Locale::getPath());
     }
 }
