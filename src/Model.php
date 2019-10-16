@@ -250,7 +250,7 @@ class Model implements ArrayAccess, IteratorAggregate
 
     /**
      * Caption of the model. Can be used in UI components, for example.
-     * Should be iun plain English and ready for proper localization.
+     * Should be in plain English and ready for proper localization.
      *
      * @var string
      */

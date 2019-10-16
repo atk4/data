@@ -16,6 +16,6 @@ class Locale
      */
     public static function getPath()
     {
-        return __DIR__.'/../locale/';
+        return implode(DIRECTORY_SEPARATOR, [__DIR__, '..', 'locale']).DIRECTORY_SEPARATOR;
     }
 }
