@@ -249,4 +249,23 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $a->execute();
         $this->assertEquals('Peter', $client['name']);
     }
+
+    /**
+     * @throws Exception
+     * @throws \atk4\data\Exception
+     */
+    public function testConfirmation()
+    {
+        $client = new ACClient($this->pers);
+        $client->load(1);
+        $action = $client->addAction('test');
+
+        $this->assertFalse($action->getConfirmation());
+
+        $action->confirmation = true;
+        $this->assertEquals('Are you sure you wish to Test John?', $action->getConfirmation());
+
+        $action->confirmation = 'Are you sure?';
+        $this->assertEquals('Are you sure?', $action->getConfirmation());
+    }
 }
