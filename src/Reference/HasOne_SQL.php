@@ -23,9 +23,12 @@ class HasOne_SQL extends HasOne
      * @param string|Field|array $field       or [$field, ..defaults]
      * @param string|null        $their_field
      *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     *
      * @return Field_SQL_Expression
      */
-    public function addField($field, $their_field = null) : Field_SQL_Expression
+    public function addField($field, ?string $their_field = null) : Field_SQL_Expression
     {
         if (is_array($field)) {
             $defaults = $field;
@@ -45,8 +48,12 @@ class HasOne_SQL extends HasOne
             $their_field = $field;
         }
 
+        // if caption is not defined in $defaults -> get it directly from the linked model field $their_field
+        $defaults['caption'] = $defaults['caption'] ?? $this->owner->refModel($this->link)->getField($their_field)->getCaption();
+
+        /** @var Field_SQL_Expression $e */
         $e = $this->owner->addExpression($field, array_merge([
-            function ($m) use ($their_field) {
+            function (Model $m) use ($their_field) {
                 // remove order if we just select one field from hasOne model
                 // that is mandatory for Oracle
                 return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
@@ -58,7 +65,7 @@ class HasOne_SQL extends HasOne
         $e->never_save = true;
 
         // Will try to execute last
-        $this->owner->addHook('beforeSave', function ($m) use ($field, $their_field) {
+        $this->owner->addHook('beforeSave', function (Model $m) use ($field, $their_field) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
             if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
@@ -86,6 +93,10 @@ class HasOne_SQL extends HasOne
      * addFields(['from', 'to'], ['type' => 'date']);
      *
      * @param array $fields
+     * @param array $defaults
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -122,6 +133,8 @@ class HasOne_SQL extends HasOne
      *
      * @param array $defaults Properties
      *
+     * @throws \atk4\core\Exception
+     *
      * @return Model
      */
     public function refLink($defaults = []) : Model
@@ -130,7 +143,7 @@ class HasOne_SQL extends HasOne
 
         $m->addCondition(
             $this->their_field ?: ($m->id_field),
-            $this->referenceOurValue($m)
+            $this->referenceOurValue()
         );
 
         return $m;
@@ -140,6 +153,9 @@ class HasOne_SQL extends HasOne
      * Navigate to referenced model.
      *
      * @param array $defaults Properties
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
      *
      * @return Model
      */
@@ -184,6 +200,9 @@ class HasOne_SQL extends HasOne
      *
      * @param array $defaults Properties
      *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     *
      * @return Field_SQL_Expression
      */
     public function addTitle($defaults = []) : Field_SQL_Expression
@@ -206,9 +225,10 @@ class HasOne_SQL extends HasOne
             ]);
         }
 
+        /** @var Field_SQL_Expression $ex */
         $ex = $this->owner->addExpression($field, array_merge_recursive(
             [
-                function ($m) {
+                function (Model $m) {
                     $mm = $m->refLink($this->link);
 
                     return $mm->action('field', [$mm->title_field])->reset('order');
@@ -226,7 +246,7 @@ class HasOne_SQL extends HasOne
         ));
 
         // Will try to execute last
-        $this->owner->addHook('beforeSave', function ($m) use ($field) {
+        $this->owner->addHook('beforeSave', function (Model $m) use ($field) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
             if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
@@ -253,6 +273,9 @@ class HasOne_SQL extends HasOne
      * This will add expression 'user' equal to ref('user_id')['name'];
      *
      * @param array $defaults Properties
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
      *
      * @return $this
      */

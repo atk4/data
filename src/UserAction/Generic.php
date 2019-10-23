@@ -145,7 +145,7 @@ class Generic
             };
 
             if ($this->atomic) {
-                return $this->owner->persistence->atomic($run);
+                return $this->owner->atomic($run);
             } else {
                 return $run();
             }

@@ -29,6 +29,19 @@ class ContainsOne extends Reference
     public $system = true;
 
     /**
+     * Array with UI flags like editable, visible and hidden.
+     *
+     * By default hasOne relation ID field should be editable in forms,
+     * but not visible in grids. UI should respect these flags.
+     *
+     * @var array
+     */
+    public $ui = [
+        'visible'  => false, // not visible in UI Table, Grid and CRUD
+        'editable' => true, // but should be editable in UI Form
+    ];
+
+    /**
      * Required! We need table alias for internal use only.
      *
      * @var string
@@ -52,6 +65,8 @@ class ContainsOne extends Reference
                 'type'              => $this->type,
                 'reference'         => $this,
                 'system'            => $this->system,
+                'caption'           => $this->caption, // it's ref models caption, but we can use it here for field too
+                'ui'                => $this->ui,
             ]);
         }
     }
@@ -70,9 +85,11 @@ class ContainsOne extends Reference
         $m = $this->owner;
 
         // model should be loaded
+        /* Imants: it looks that this is not actually required - disabling
         if (!$m->loaded()) {
             throw new Exception(['Model should be loaded!', 'model' => get_class($m)]);
         }
+        */
 
         // set data source of referenced array persistence
         $row = $m[$this->our_field] ?: [];
