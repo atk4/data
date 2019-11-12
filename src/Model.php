@@ -417,9 +417,13 @@ class Model implements ArrayAccess, IteratorAggregate
             'ui'      => ['icon'=>'edit', 'button'=>[null, 'icon'=>'edit']],
         ]);
         $this->addAction('delete', [
-            'scope'=> UserAction\Generic::SINGLE_RECORD,
-            'ui'   => ['icon'=>'trash', 'button'=>[null, 'icon'=>'red trash'], 'confirm'=>'Are you sure?'],
-            'callback' => function($m) { $m->delete(); return []; }
+            'scope'    => UserAction\Generic::SINGLE_RECORD,
+            'ui'       => ['icon'=>'trash', 'button'=>[null, 'icon'=>'red trash'], 'confirm'=>'Are you sure?'],
+            'callback' => function ($m) {
+                $m->delete();
+
+                return [];
+            },
         ]);
 
         $this->addAction('validate', [
