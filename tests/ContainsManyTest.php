@@ -29,7 +29,7 @@ class Invoice2 extends Model
         $this->addField('amount', ['type' => 'money']);
 
         // will contain many Lines
-        $this->containsMany('lines', Line2::class);
+        $this->containsMany('lines', [Line2::class, 'caption' => 'My Invoice Lines']);
 
         // total_gross - calculated by php callback not by SQL expression
         $this->addCalculatedField('total_gross', function ($m) {
@@ -149,6 +149,19 @@ class ContainsManyTest extends \atk4\schema\PHPUnit_SchemaTestCase
     }
 
     /**
+     * Test caption of referenced model.
+     */
+    public function testModelCaption()
+    {
+        $i = new Invoice2($this->db);
+
+        // test caption of containsMany reference
+        $this->assertEquals('My Invoice Lines', $i->getField('lines')->getCaption());
+        $this->assertEquals('My Invoice Lines', $i->refModel('lines')->getModelCaption());
+        $this->assertEquals('My Invoice Lines', $i->ref('lines')->getModelCaption());
+    }
+
+    /**
      * Test containsMany.
      */
     public function testContainsMany()
@@ -204,11 +217,13 @@ class ContainsManyTest extends \atk4\schema\PHPUnit_SchemaTestCase
      *
      * @expectedException Exception
      */
-    public function testEx2()
+    /* Imants: it looks that this is not actually required - disabling
+    public function testEx1()
     {
         $i = new Invoice2($this->db);
         $i->ref('lines');
     }
+    */
 
     /**
      * Nested containsMany tests.

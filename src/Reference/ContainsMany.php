@@ -28,9 +28,11 @@ class ContainsMany extends ContainsOne
         $m = $this->owner;
 
         // model should be loaded
+        /* Imants: it looks that this is not actually required - disabling
         if (!$m->loaded()) {
             throw new Exception(['Model should be loaded!', 'model' => get_class($m)]);
         }
+        */
 
         // set data source of referenced array persistence
         $rows = $m[$this->our_field] ?: [];
@@ -59,8 +61,8 @@ class ContainsMany extends ContainsOne
         // will not use ID field (no, sorry, will have to use it)
         $m = $this->getModel(array_merge($defaults, [
             'contained_in_root_model' => $this->owner->contained_in_root_model ?: $this->owner,
-            //'id_field' => false,
-            'table' => $this->table_alias,
+            //'id_field'              => false,
+            'table'                   => $this->table_alias,
         ]));
 
         // set some hooks for ref_model

@@ -558,4 +558,47 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $o->reload();
         $this->assertEquals(3, $o->get('user_id')); // and it's really saved like that
     }
+
+    /**
+     * Tests that if we change hasOne->addTitle() field value then it will also update
+     * link field value when saved.
+     */
+    public function testHasOneReferenceCaption()
+    {
+        $a = [
+            'user'  => [
+                1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
+                2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
+                3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
+            ],
+            'order' => [
+                1 => ['id' => 1, 'user_id' => 1],
+                2 => ['id' => 2, 'user_id' => 2],
+                3 => ['id' => 3, 'user_id' => 1],
+            ],
+        ];
+
+        // restore DB
+        $this->setDB($a);
+        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+
+        // Test : Now the caption is null and is generated from field name
+        $this->assertEquals('Last Name', $u->getField('last_name')->getCaption());
+
+        $u->getField('last_name')->caption = 'Surname';
+
+        // Test : Now the caption is not null and the value is returned
+        $this->assertEquals('Surname', $u->getField('last_name')->getCaption());
+
+        $o = (new Model($this->db, 'order'));
+        $order_user_ref = $o->hasOne('my_user', [$u, 'our_field'=>'user_id']);
+        $order_user_ref->addField('user_last_name', 'last_name');
+
+        $referenced_caption = $o->getField('user_last_name')->getCaption();
+
+        // Test : $field->caption for the field 'last_name' is defined in referenced model (User)
+        // When Order add field from Referenced model User
+        // caption will be passed to Order field user_last_name
+        $this->assertEquals('Surname', $referenced_caption);
+    }
 }

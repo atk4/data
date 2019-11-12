@@ -4,6 +4,7 @@
 
 namespace atk4\data\Reference;
 
+use atk4\core\Exception;
 use atk4\data\Field;
 use atk4\data\Join;
 use atk4\data\Model;
@@ -155,6 +156,8 @@ class HasOne extends Reference
     /**
      * Reference_One will also add a field corresponding
      * to 'our_field' unless it exists of course.
+     *
+     * @throws Exception
      */
     public function init()
     {
@@ -190,6 +193,8 @@ class HasOne extends Reference
     /**
      * Returns our field or id field.
      *
+     * @throws Exception
+     *
      * @return Field
      */
     protected function referenceOurValue() : Field
@@ -206,6 +211,9 @@ class HasOne extends Reference
      * This can happen in case of deep traversal $m->ref('Many')->ref('one_id'), for example.
      *
      * @param array $defaults Properties
+     *
+     * @throws Exception
+     * @throws \atk4\data\Exception
      *
      * @return Model
      */
@@ -228,18 +236,15 @@ class HasOne extends Reference
                 $m->addHook('afterSave', function ($m) {
                     $this->owner[$this->our_field] = $m[$this->their_field];
                 });
-        } else {
-            if ($this->owner[$this->our_field]) {
-                $m->tryLoad($this->owner[$this->our_field]);
-            }
-
-            return
-                $m->addHook('afterSave', function ($m) {
-                    $this->owner[$this->our_field] = $m->id;
-                });
         }
 
-        // can not load referenced model or set conditions on it, so we just return it
-        return $m;
+        if ($this->owner[$this->our_field]) {
+            $m->tryLoad($this->owner[$this->our_field]);
+        }
+
+        return
+            $m->addHook('afterSave', function ($m) {
+                $this->owner[$this->our_field] = $m->id;
+            });
     }
 }
