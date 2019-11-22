@@ -2,9 +2,6 @@
 
 namespace atk4\data\Util;
 
-//use atk4\data\Field;
-//use atk4\data\Model;
-
 /**
  * Helper class contains few useful methods which we share and use in other classes.
  */
