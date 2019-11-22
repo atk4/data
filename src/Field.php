@@ -8,6 +8,7 @@ use atk4\core\DIContainerTrait;
 use atk4\core\TrackableTrait;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
+use atk4\data\util\Helper;
 
 /**
  * Class description?
@@ -516,8 +517,7 @@ class Field implements Expressionable
      */
     public function getCaption()
     {
-        return $this->caption ?: (isset($this->ui['caption']) ? $this->ui['caption'] :
-            ucwords(str_replace('_', ' ', $this->short_name)));
+        return $this->caption ?? $this->ui['caption'] ?? Helper::readableCaption($this->short_name);
     }
 
     // }}}
