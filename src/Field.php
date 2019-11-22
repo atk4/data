@@ -6,9 +6,9 @@ namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
 use atk4\core\TrackableTrait;
+use atk4\data\util\Helper;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
-use atk4\data\util\Helper;
 
 /**
  * Class description?

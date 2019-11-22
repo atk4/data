@@ -2,7 +2,6 @@
 
 namespace atk4\data\Util;
 
-use atk4\core\Exception;
 //use atk4\data\Field;
 //use atk4\data\Model;
 
@@ -23,7 +22,7 @@ class Helper
      *
      * @return string
      */
-    static public function readableCaption($s)
+    public static function readableCaption($s)
     {
         //$s = 'this\\ _isNASA_MyBigBull shit_123\Foo';
 
