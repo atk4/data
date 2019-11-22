@@ -260,7 +260,6 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addCondition('date', new \DateTime('08-12-1982'));
         $m->loadAny();
         $this->assertEquals('Sue', $m['name']);
-        $this->assertEquals('Sue', $m['name']);
 
         $m->addCondition([['date', new \DateTime('08-12-1982')]]);
         $m->loadAny();
