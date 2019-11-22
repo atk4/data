@@ -333,7 +333,7 @@ class SQL extends Persistence
                 } elseif (is_string($o[0])) {
                     $q->order($m->getField($o[0]), $o[1]);
                 } else {
-                    throw new Exception(['Unsupported order parameter','model' => $m,'field' => $o[0]]);
+                    throw new Exception(['Unsupported order parameter', 'model' => $m, 'field' => $o[0]]);
                 }
             }
         }
