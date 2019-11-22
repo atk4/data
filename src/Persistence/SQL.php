@@ -9,7 +9,9 @@ use atk4\data\Field;
 use atk4\data\Field_SQL_Expression;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use atk4\dsql\Connection;
 use atk4\dsql\Expression;
+use atk4\dsql\Query;
 
 /**
  * Persistence\SQL class.
@@ -61,10 +63,10 @@ class SQL extends Persistence
     /**
      * Constructor.
      *
-     * @param \atk4\dsql\Connection|string $connection
-     * @param string                       $user
-     * @param string                       $password
-     * @param array                        $args
+     * @param Connection|string $connection
+     * @param string            $user
+     * @param string            $password
+     * @param array             $args
      */
     public function __construct($connection, $user = null, $password = null, $args = [])
     {
@@ -103,9 +105,9 @@ class SQL extends Persistence
     /**
      * Returns Query instance.
      *
-     * @return \atk4\dsql\Query
+     * @return Query
      */
-    public function dsql()
+    public function dsql() : Query
     {
         return $this->connection->dsql();
     }
@@ -132,7 +134,7 @@ class SQL extends Persistence
      *
      * @return Model
      */
-    public function add($m, $defaults = [])
+    public function add($m, $defaults = []) : Model
     {
         // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
@@ -188,9 +190,9 @@ class SQL extends Persistence
      * @param mixed $expr
      * @param array $args
      *
-     * @return \atk4\dsql\Expression
+     * @return Expression
      */
-    public function expr(Model $m, $expr, $args = [])
+    public function expr(Model $m, $expr, $args = []) : Expression
     {
         if (!is_string($expr)) {
             return $this->connection->expr($expr, $args);
@@ -216,9 +218,9 @@ class SQL extends Persistence
      *
      * @param Model $m
      *
-     * @return \atk4\dsql\Query
+     * @return Query
      */
-    public function initQuery($m)
+    public function initQuery(Model $m) : Query
     {
         $d = $m->persistence_data['dsql'] = $this->dsql();
 
@@ -236,10 +238,10 @@ class SQL extends Persistence
     /**
      * Adds Field in Query.
      *
-     * @param \atk4\dsql\Query $q
-     * @param Field            $field
+     * @param Query $q
+     * @param Field $field
      */
-    public function initField($q, $field)
+    public function initField(Query $q, Field $field)
     {
         if ($field->useAlias()) {
             $q->field($field, $field->short_name);
@@ -255,7 +257,7 @@ class SQL extends Persistence
      * @param \atk4\dsql\Query $q
      * @param array|null|false $fields
      */
-    public function initQueryFields($m, $q, $fields = null)
+    public function initQueryFields(Model $m, $q, $fields = null)
     {
         // do nothing on purpose
         if ($fields === false) {
@@ -305,11 +307,12 @@ class SQL extends Persistence
     /**
      * Will set limit defined inside $m onto query $q.
      *
-     * @param Model            $m
-     * @param \atk4\dsql\Query $q
+     * @param Model $m
+     * @param Query $q
      */
-    protected function setLimitOrder($m, $q)
+    protected function setLimitOrder(Model $m, Query $q)
     {
+        // set limit
         if ($m->limit && ($m->limit[0] || $m->limit[1])) {
             if ($m->limit[0] === null) {
                 // This is max number which is allowed in MySQL server.
@@ -322,9 +325,16 @@ class SQL extends Persistence
             $q->limit($m->limit[0], $m->limit[1]);
         }
 
+        // set order
         if ($m->order) {
             foreach ($m->order as $o) {
-                $q->order($m->getField($o[0]), $o[1]);
+                if ($o[0] instanceof Expression) {
+                    $q->order($o[0], $o[1]);
+                } elseif (is_string($o[0])) {
+                    $q->order($m->getField($o[0]), $o[1]);
+                } else {
+                    throw new Exception(['Unsupported order parameter','model' => $m,'field' => $o[0]]);
+                }
             }
         }
     }
@@ -332,12 +342,12 @@ class SQL extends Persistence
     /**
      * Will apply conditions defined inside $m onto query $q.
      *
-     * @param Model            $m
-     * @param \atk4\dsql\Query $q
+     * @param Model $m
+     * @param Query $q
      *
-     * @return \atk4\dsql\Query
+     * @return Query
      */
-    public function initQueryConditions($m, $q)
+    public function initQueryConditions(Model $m, Query $q) : Query
     {
         if (!isset($m->conditions)) {
             // no conditions are set in the model
@@ -548,7 +558,7 @@ class SQL extends Persistence
      *
      * @return \atk4\dsql\Query
      */
-    public function action($m, $type, $args = [])
+    public function action(Model $m, $type, $args = [])
     {
         if (!is_array($args)) {
             throw new Exception([
