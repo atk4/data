@@ -68,7 +68,7 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $client = new ACClient($this->pers);
 
         $actions = $client->getActions();
-        $this->assertEquals(1, count($actions)); // don't return system actions here
+        $this->assertEquals(4, count($actions)); // don't return system actions here, but include add/edit/delete
         $this->assertEquals(0, count($client->getActions(UserAction\Generic::ALL_RECORDS))); // don't return system actions here
 
         $act1 = $actions['send_reminder'];
