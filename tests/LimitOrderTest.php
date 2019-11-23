@@ -128,6 +128,88 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
         ], $i->export());
     }
 
+    public function testOrderByExpressions()
+    {
+        $a = [
+            'invoice' => [
+                ['code' => 'A', 'net' => 10, 'vat' => 5],
+                ['code' => 'B', 'net' => 10, 'vat' => 4],
+                ['code' => 'C', 'net' => 15, 'vat' => 4],
+            ], ];
+        $this->setDB($a);
+
+        // order by expression field
+        $i = (new Model($this->db, 'invoice'))->addFields(['code', 'net', 'vat']);
+        $i->addExpression('gross', '[net]+[vat]');
+        $i->getField($i->id_field)->system = false;
+
+        $i->setOrder('gross');
+        $i->onlyFields(['gross']);
+        $this->assertEquals([
+            ['gross' => 14],
+            ['gross' => 15],
+            ['gross' => 19],
+        ], $i->export());
+
+        // order by expression not defined as separate expression field in model
+        $i->order = []; // reset
+        $i->setOrder($i->expr('[net]*[vat]'));
+        $i->onlyFields(['code']);
+        $this->assertEquals([
+            ['code' => 'B'], // 10 * 4 = 40
+            ['code' => 'A'], // 10 * 5 = 50
+            ['code' => 'C'], // 15 * 4 = 60
+        ], $i->export());
+
+        // "desc" as part of expression string
+        $i->order = []; // reset
+        $i->setOrder($i->expr('[net]*[vat] desc'));
+        $i->onlyFields(['code']);
+        $this->assertEquals([
+            ['code' => 'C'], // 15 * 4 = 60
+            ['code' => 'A'], // 10 * 5 = 50
+            ['code' => 'B'], // 10 * 4 = 40
+        ], $i->export());
+
+        // "desc" as 2nd parameter
+        $i->order = []; // reset
+        $i->setOrder($i->expr('[net]*[vat]'), 'desc');
+        $i->onlyFields(['code']);
+        $this->assertEquals([
+            ['code' => 'C'], // 15 * 4 = 60
+            ['code' => 'A'], // 10 * 5 = 50
+            ['code' => 'B'], // 10 * 4 = 40
+        ], $i->export());
+
+        // order by mixed array of expressions and field names
+        $i->order = []; // reset
+        $i->setOrder(['vat', $i->expr('[net]*[vat]')]);
+        $i->onlyFields(['code']);
+        $this->assertEquals([
+            ['code' => 'B'], // 4, 10 * 4 = 40
+            ['code' => 'C'], // 4, 15 * 4 = 60
+            ['code' => 'A'], // 5, 10 * 5 = 50
+        ], $i->export());
+    }
+
+    /**
+     * Unsupported order parameter.
+     *
+     * @expectedException Exception
+     */
+    public function testExceptionUnsupportedOrderParam()
+    {
+        $a = [
+            'invoice' => [
+                ['net' => 10],
+            ], ];
+        $this->setDB($a);
+
+        $i = (new Model($this->db, 'invoice'))->addFields(['net']);
+        $i->setOrder(new \DateTime());
+        $i->export(); // executes query and throws exception because of DateTime object
+    }
+
     public function testLimit()
     {
         $a = [
@@ -168,7 +250,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i = clone $ii;
         $i->setLimit(null, 1);
         /*
-        This test is incorrect because last number in rendered query is dependant on server.
+        This test is incorrect because last number in rendered query is dependent on server.
         For example, on Imants Win10 64-bit this renders as:
         select "total_net" from "invoice" order by "total_net" limit 1, 2147483647
         On Travis server it renders as:
