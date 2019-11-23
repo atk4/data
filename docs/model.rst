@@ -100,7 +100,7 @@ implementations. Still - Model will be a good place to deposit some meta-informa
    $model->addField('age', ['ui'=>['caption'=>'Put your age here']]);
 
 Model and Field class will simply store the "ui" property which may (or may not) be used by ATK UI
-component or some add-on. 
+component or some add-on.
 
 
 Domain vs Persistence
@@ -125,7 +125,7 @@ used by persistence. (Name of property is decided to avoid beginner confusion)
 
 Good naming for a Model
 -----------------------
-Some parts of this documentation were created years ago and may use class notation: `Model_User`. 
+Some parts of this documentation were created years ago and may use class notation: `Model_User`.
 We actually recommend you to use namespaces instead::
 
    namespace yourapp\Model;
@@ -138,7 +138,7 @@ We actually recommend you to use namespaces instead::
 
          $this->addField('name');
 
-         $this->hasMany('Invoices', Invoice::class); 
+         $this->hasMany('Invoices', Invoice::class);
       }
    }
 
@@ -176,8 +176,8 @@ You may safely rely on `$this->persistence` property to make choices::
    } else {
 
       // Fallback
-      $this->addCalculatedField('total', function($m) { 
-         return $m['amount'] + $m['vat']; 
+      $this->addCalculatedField('total', function($m) {
+         return $m['amount'] + $m['vat'];
       } );
    }
 
@@ -763,4 +763,9 @@ Setting limit and sort order
 
     Keep in mind - `true` means `desc`, desc means descending. Otherwise it will be ascending order by default.
 
+    You can also use \atk4\dsql\Expression or array of expressions instead of field name here.
+    Or even mix them together::
 
+        $m->setOrder($m->expr('[net]*[vat]'));
+        $m->setOrder([$m->expr('[net]*[vat]'), $m->expr('[closing]-[opening]')]);
+        $m->setOrder(['net', $m->expr('[net]*[vat]', 'ref_no')]);
