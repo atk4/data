@@ -68,7 +68,7 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $client = new ACClient($this->pers);
 
         $actions = $client->getActions();
-        $this->assertEquals(1, count($actions)); // don't return system actions here
+        $this->assertEquals(4, count($actions)); // don't return system actions here, but include add/edit/delete
         $this->assertEquals(0, count($client->getActions(UserAction\Generic::ALL_RECORDS))); // don't return system actions here
 
         $act1 = $actions['send_reminder'];
@@ -248,5 +248,24 @@ class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->expectExceptionMessage('array');
         $a->execute();
         $this->assertEquals('Peter', $client['name']);
+    }
+
+    /**
+     * @throws Exception
+     * @throws \atk4\data\Exception
+     */
+    public function testConfirmation()
+    {
+        $client = new ACClient($this->pers);
+        $client->load(1);
+        $action = $client->addAction('test');
+
+        $this->assertFalse($action->getConfirmation());
+
+        $action->confirmation = true;
+        $this->assertEquals('Are you sure you wish to Test John?', $action->getConfirmation());
+
+        $action->confirmation = 'Are you sure?';
+        $this->assertEquals('Are you sure?', $action->getConfirmation());
     }
 }

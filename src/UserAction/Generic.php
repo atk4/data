@@ -11,9 +11,9 @@ use atk4\core\TrackableTrait;
 use atk4\data\Model;
 
 /**
- * Implements generic user action. Assigned to a model it can be invoked by a user. Action describes meta information about
- * the action that will help UI/API or add-ons to display action trigger (button) correctly, ensure that arguments
- * are provided.
+ * Implements generic user action. Assigned to a model it can be invoked by a user. UserAction class contains a
+ * meta information about the action (arguments, permissions, scope, etc) that will help UI/API or add-ons to display
+ * action trigger (button) correctly in an automated way.
  *
  * Action must NOT rely on any specific UI implementation.
  */
@@ -48,6 +48,12 @@ class Generic
 
     /** @var string a longer description of this action */
     public $description = null;
+
+    /** @var bool Specifies that the action is dangerous. Should be displayed in red. */
+    public $dangerous = false;
+
+    /** @var bool|string|callable Set this to "true", string or return the value from the callback. Will ask user to confirm. */
+    public $confirmation = false;
 
     /** @var array UI properties, e,g. 'icon'=>.. , 'warning', etc. UI implementation can interpret or extend. */
     public $ui = [];
@@ -187,5 +193,20 @@ class Generic
     public function getDescription()
     {
         return $this->description ?? ('Will execute '.$this->caption);
+    }
+
+    public function getConfirmation()
+    {
+        $confirmation = $this->confirmation;
+
+        if (is_callable($confirmation)) {
+            $confirmation = $confirmation();
+        }
+
+        if ($confirmation === true) {
+            $confirmation = 'Are you sure you wish to '.$this->caption.' '.$this->owner->getTitle().'?';
+        }
+
+        return $confirmation;
     }
 }
