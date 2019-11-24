@@ -10,9 +10,12 @@ jobs:
       DB_USERNAME: root
       DB_PASSWORD: password
 
+    container:
+      image: node:10.16-jessie
+
     services:
       mysql:
-        image: mysql:5.7
+          image: mysql:5.7
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: false
           MYSQL_ROOT_PASSWORD: password
@@ -20,13 +23,22 @@ jobs:
         ports:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      postgres:
+        image: postgres:10-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
-    strategy:
-      max-parallel: 6
-      matrix:
-        operating-system: [ubuntu-latest]
-        #operating-system: [ubuntu-latest, windows-latest, macOS-latest]
-        php-versions: ['7.2', '7.3']
+#    strategy:
+#      max-parallel: 6
+#      matrix:
+#        operating-system: [ubuntu-latest]
+#        #operating-system: [ubuntu-latest, windows-latest, macOS-latest]
+#        php-versions: ['7.2', '7.3']
 
     steps:
     - uses: actions/checkout@v1
@@ -46,6 +58,9 @@ jobs:
 
     - name: Test with phpunit and MySQL
       run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
+
+    - name: Test with phpunit and MySQL
+      run: vendor/bin/phpunit --configuration phpunit-pgsql-workflow.xml --coverage-text
 
     - name: Merge logs
       run: vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
