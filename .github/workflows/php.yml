@@ -22,7 +22,7 @@ jobs:
   test-container:
     runs-on: ubuntu-latest
     container:
-      image: php:${{ matrix.php }}-alpine
+      image: atk4/image:latest
     strategy:
       matrix:
         php: ['7.3']
