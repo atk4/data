@@ -38,6 +38,7 @@ jobs:
       - name: Verify MySQL connection from container
         run: |
           apk add mysql-client
+          apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/community composer
           mysql --host mysql -uroot -ppassword -e "SHOW DATABASES"
       - run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
 #
