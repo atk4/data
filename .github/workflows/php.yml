@@ -10,9 +10,6 @@ jobs:
       DB_USERNAME: root
       DB_PASSWORD: password
 
-    container:
-      image: node:10.16-jessie
-
     services:
       mysql:
         image: mysql:5.7
