@@ -1,6 +1,6 @@
 <phpunit colors="true" bootstrap="vendor/autoload.php" printerClass="atk4\core\PHPUnit_AgileResultPrinter">
     <php>
-        <var name="DB_DSN" value="pgsql:dbname=postgres;host=postgres" />
+        <var name="DB_DSN" value="pgsql:dbname=postgres;host=localhost" />
         <var name="DB_USER" value="postgres" />
         <var name="DB_PASSWD" value="postgres" />
         <var name="DB_DBNAME" value="postgrest" />
