@@ -34,10 +34,6 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
       - uses: actions/checkout@v1
-      - run: |
-          apk add mysql-client php-intl
-          apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/community composer
-          mysql --host mysql -uroot -ppassword -e "SHOW DATABASES"
       - run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
       - run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
 #
