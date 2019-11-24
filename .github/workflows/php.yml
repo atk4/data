@@ -17,6 +17,12 @@ jobs:
           MYSQL_ROOT_PASSWORD: password
           DB_DATABASE: db
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+      postgres:
+        image: postgres:10-alpine
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: root
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v1
       - name: Get Composer Cache Directory
@@ -33,11 +39,13 @@ jobs:
       - run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - run: |
+      - name: Run Tests
+        run: |
           mkdir -p build/logs
           vendor/bin/phpunit --configuration phpunit.xml --coverage-text --exclude-group dns
           mysql -uroot -ppassword -h mysql -e 'CREATE DATABASE db;'
           vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --exclude-group dns
+          vendor/bin/phpunit --configuration phpunit-pgsql-workflow.xml --exclude-group dns
           vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
 
       - uses: codecov/codecov-action@v1
