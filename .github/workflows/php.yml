@@ -22,7 +22,7 @@ jobs:
   test-container:
     runs-on: ubuntu-latest
     container:
-      image: atk4/image:latest
+      image: atk4/image:latest # https://github.com/atk4/image
     strategy:
       matrix:
         php: ['7.3']
@@ -31,10 +31,18 @@ jobs:
         image: mysql:5.7
         env:
           MYSQL_ROOT_PASSWORD: password
+          DB_DATABASE: db
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          - path: vendor
+
       - run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+        if: steps.cache.outputs.cache-hit != 'true'
+
       - run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
 #
 #  build:
