@@ -19,6 +19,22 @@ jobs:
           sudo apt-get install -y mysql-client
           mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -uroot -ppassword -e "SHOW DATABASES"
 
+  test-container:
+    runs-on: ubuntu-latest
+    container: ubuntu
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: password
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - name: Verify MySQL connection from container
+        run: |
+          apt-get update
+          apt-get install -y mysql-client
+          mysql --host mysql -uroot -ppassword -e "SHOW DATABASES"
+
 #  build:
 #    runs-on: ${{ matrix.operating-system }}
 #    container: ubuntu
