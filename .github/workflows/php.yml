@@ -21,7 +21,8 @@ jobs:
 
   test-container:
     runs-on: ubuntu-latest
-    container: ubuntu
+    container:
+      image: php:${{ matrix.php }}-alpine
     strategy:
       matrix:
         php: ['7.3']
