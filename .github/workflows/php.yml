@@ -36,7 +36,7 @@ jobs:
           mysql --host mysql -uroot -ppassword -e "SHOW DATABASES"
 
   build:
-    runs-on: ${{ matrix.operating-system }}
+    runs-on: ubuntu-linux
     container:
       image: php:${{ matrix.php }}-alpine
     strategy:
