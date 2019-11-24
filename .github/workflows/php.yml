@@ -35,10 +35,16 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
       - uses: actions/checkout@v1
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
       - uses: actions/cache@v1
-        id: cache
         with:
-          - path: vendor
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
       - run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
         if: steps.cache.outputs.cache-hit != 'true'
