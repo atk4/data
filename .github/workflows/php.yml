@@ -7,7 +7,8 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        operating-system: [ubuntu-latest, windows-latest, macOS-latest]
+        operating-system: [ubuntu-latest]
+        #operating-system: [ubuntu-latest, windows-latest, macOS-latest]
         php-versions: ['7.2', '7.3']
 
 
