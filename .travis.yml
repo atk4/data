@@ -40,7 +40,7 @@ before_script:
   - mkdir -p build/logs
 
 script:
-  - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then CM=""; NC=""; else CM=""; NC="--no-coverage"; fi
+  #- if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then CM=""; NC=""; else CM=""; NC="--no-coverage"; fi
   - $CM ./vendor/bin/phpunit --configuration phpunit.xml $NC
   - $CM ./vendor/bin/phpunit --configuration phpunit-mysql.xml $NC
   #- $CM ./vendor/bin/phpunit --configuration phpunit-pgsql.xml $NC
@@ -53,8 +53,8 @@ after_script:
       ls -l build/logs;
       echo "Sending codeclimate report:";
       vendor/bin/test-reporter --coverage-report build/logs/cc.xml;
-      echo "Sending codecov report:";
-      TRAVIS_CMD="" bash <(curl -s https://codecov.io/bash) -f build/logs/cc.xml;
+      #echo "Sending codecov report:";
+      #TRAVIS_CMD="" bash <(curl -s https://codecov.io/bash) -f build/logs/cc.xml;
     fi
 
 notifications:
