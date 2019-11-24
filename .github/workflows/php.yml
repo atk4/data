@@ -46,25 +46,25 @@ jobs:
         #operating-system: [ubuntu-latest, windows-latest, macOS-latest]
         php: ['7.3']
 
-    env:
-      DB_DATABASE: db
-      DB_USERNAME: root
-      DB_PASSWORD: password
-
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: false
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: db
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-      postgres:
-        image: postgres:10-alpine
-        env:
-          POSTGRES_PASSWORD: password
-          POSTGRES_USER: root
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+#    env:
+#      DB_DATABASE: db
+#      DB_USERNAME: root
+#      DB_PASSWORD: password
+#
+#    services:
+#      mysql:
+#        image: mysql:5.7
+#        env:
+#          MYSQL_ALLOW_EMPTY_PASSWORD: false
+#          MYSQL_ROOT_PASSWORD: password
+#          MYSQL_DATABASE: db
+#        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+#      postgres:
+#        image: postgres:10-alpine
+#        env:
+#          POSTGRES_PASSWORD: password
+#          POSTGRES_USER: root
+#        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
 
     steps:
