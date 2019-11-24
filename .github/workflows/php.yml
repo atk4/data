@@ -4,15 +4,29 @@ on: [pull_request]
 
 jobs:
   build:
+    runs-on: ${{ matrix.operating-system }}
+    env:
+      DB_DATABASE: db
+      DB_USERNAME: root
+      DB_PASSWORD: password
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: false
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: db
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     strategy:
       max-parallel: 6
       matrix:
         operating-system: [ubuntu-latest]
         #operating-system: [ubuntu-latest, windows-latest, macOS-latest]
         php-versions: ['7.2', '7.3']
-
-
-    runs-on: ${{ matrix.operating-system }}
 
     steps:
     - uses: actions/checkout@v1
@@ -31,7 +45,7 @@ jobs:
       run: vendor/bin/phpunit --configuration phpunit.xml --coverage-text
 
     - name: Test with phpunit and MySQL
-      run: vendor/bin/phpunit --configuration phpunit-mysql.xml --coverage-text
+      run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
 
     - name: Merge logs
       run: vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
