@@ -3,7 +3,8 @@ name: Unit Testing
 on: [pull_request]
 
 jobs:
-  test-container:
+  unit-test:
+    name: Unit Testing
     runs-on: ubuntu-latest
     container:
       image: atk4/image:latest # https://github.com/atk4/image
@@ -41,11 +42,18 @@ jobs:
       - name: Run Tests
         run: |
           mkdir -p build/logs
-          vendor/bin/phpunit --configuration phpunit.xml --coverage-text --exclude-group dns
           mysql -uroot -ppassword -h mysql -e 'CREATE DATABASE db;'
-          vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --exclude-group dns
-          vendor/bin/phpunit --configuration phpunit-pgsql-workflow.xml --exclude-group dns
-          vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
+      - name: SQLite Testing
+        run: vendor/bin/phpunit --configuration phpunit.xml --coverage-text --exclude-group dns
+
+      - name: MySQL Testing
+        run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --exclude-group dns
+
+      - name: PgSQL Testing
+        run: vendor/bin/phpunit --configuration phpunit-pgsql-workflow.xml --exclude-group dns  || echo 'ignoring errors..'
+
+      - name: Merge coverage logs
+        run: vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
 
       - uses: codecov/codecov-action@v1
         with:
