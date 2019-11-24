@@ -22,6 +22,9 @@ jobs:
   test-container:
     runs-on: ubuntu-latest
     container: ubuntu
+      strategy:
+        matrix:
+          php: ['7.3']
     services:
       mysql:
         image: mysql:5.7
@@ -34,18 +37,18 @@ jobs:
           apt-get update
           apt-get install -y mysql-client
           mysql --host mysql -uroot -ppassword -e "SHOW DATABASES"
-
-  build:
-    runs-on: ubuntu-linux
-    container:
-      image: php:${{ matrix.php }}-alpine
-    strategy:
-      #max-parallel: 6
-      matrix:
-        #operating-system: [ubuntu-latest]
-        #operating-system: [ubuntu-latest, windows-latest, macOS-latest]
-        php: ['7.3']
-
+#
+#  build:
+#    runs-on: ubuntu-linux
+#    container:
+#      image: php:${{ matrix.php }}-alpine
+#    strategy:
+#      #max-parallel: 6
+#      matrix:
+#        #operating-system: [ubuntu-latest]
+#        #operating-system: [ubuntu-latest, windows-latest, macOS-latest]
+#        php: ['7.3']
+#
 #    env:
 #      DB_DATABASE: db
 #      DB_USERNAME: root
@@ -65,30 +68,30 @@ jobs:
 #          POSTGRES_PASSWORD: password
 #          POSTGRES_USER: root
 #        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-
-    steps:
-    - uses: actions/checkout@v1
-    - run: |
-        apk add \
-          unzip
-        echo 'memory_limit=-1' >> /usr/local/etc/php/php.ini
-        wget -qO - https://raw.githubusercontent.com/composer/getcomposer.org/fb22b78362d31c0d2bf516d1f8cdfd2745caa431/web/installer | php -- --install-dir=/usr/local/bin --filename=composer --quiet
-
-    - name: Install dependencies
-      run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
-
-    - name: Test with phpunit and SQLite
-      run: vendor/bin/phpunit --configuration phpunit.xml --coverage-text
-
-    - name: Test with phpunit and MySQL
-      run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
-
-    - name: Merge logs
-      run: vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
-
-    - name: Upload coverage to CodeCov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }} #required
-        file: build/logs/cc.xml
+#
+#
+#    steps:
+#    - uses: actions/checkout@v1
+#    - run: |
+#        apk add \
+#          unzip
+#        echo 'memory_limit=-1' >> /usr/local/etc/php/php.ini
+#        wget -qO - https://raw.githubusercontent.com/composer/getcomposer.org/fb22b78362d31c0d2bf516d1f8cdfd2745caa431/web/installer | php -- --install-dir=/usr/local/bin --filename=composer --quiet
+#
+#    - name: Install dependencies
+#      run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+#
+#    - name: Test with phpunit and SQLite
+#      run: vendor/bin/phpunit --configuration phpunit.xml --coverage-text
+#
+#    - name: Test with phpunit and MySQL
+#      run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
+#
+#    - name: Merge logs
+#      run: vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
+#
+#    - name: Upload coverage to CodeCov
+#      uses: codecov/codecov-action@v1
+#      with:
+#        token: ${{ secrets.CODECOV_TOKEN }} #required
+#        file: build/logs/cc.xml
