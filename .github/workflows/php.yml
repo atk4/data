@@ -37,7 +37,6 @@ jobs:
             ${{ runner.os }}-composer-
 
       - run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
-        if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Run Tests
         run: |

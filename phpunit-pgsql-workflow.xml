@@ -2,7 +2,7 @@
     <php>
         <var name="DB_DSN" value="pgsql:dbname=postgres;host=postgres" />
         <var name="DB_USER" value="postgres" />
-        <var name="DB_PASSWD" value="postgres" />
+        <var name="DB_PASSWD" value="password" />
         <var name="DB_DBNAME" value="postgres" />
     </php>
     <filter>
