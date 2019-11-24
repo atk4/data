@@ -33,10 +33,13 @@ jobs:
           MYSQL_ROOT_PASSWORD: password
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
+      - uses: actions/checkout@v1
+      - run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
       - name: Verify MySQL connection from container
         run: |
           apk add mysql-client
           mysql --host mysql -uroot -ppassword -e "SHOW DATABASES"
+      - run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
 #
 #  build:
 #    runs-on: ubuntu-linux
