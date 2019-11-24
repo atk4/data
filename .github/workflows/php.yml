@@ -5,6 +5,7 @@ on: [pull_request]
 jobs:
   build:
     runs-on: ${{ matrix.operating-system }}
+    container: ubuntu
     env:
       DB_DATABASE: db
       DB_USERNAME: root
