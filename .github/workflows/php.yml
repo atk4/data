@@ -35,9 +35,9 @@ jobs:
 
       - run: |
           mkdir -p build/logs
-          vendor/bin/phpunit --configuration phpunit.xml --coverage-text
+          vendor/bin/phpunit --configuration phpunit.xml --coverage-text --exclude-group dns
           mysql -uroot -ppassword -h mysql -e 'CREATE DATABASE db;'
-          vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
+          vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --exclude-group dns
           vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
 
       - uses: codecov/codecov-action@v1

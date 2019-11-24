@@ -52,6 +52,7 @@ class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testEmail3()
     {
+        $this->setGroups(['dns']);
         $m = new Model($this->pers);
         $m->addField('email', ['Email', 'dns_check'=>true]);
 
