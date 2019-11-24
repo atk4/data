@@ -368,6 +368,10 @@ class SQL extends Persistence
                         if (is_string($row[0])) {
                             $row[0] = $m->getField($row[0]);
                         }
+
+                        if ($row[0] instanceof Field) {
+                            $row[1] = $this->typecastSaveField($row[0], $row[count($row) == 2 ? 1 : 2]);
+                        }
                     }
                 }
 
