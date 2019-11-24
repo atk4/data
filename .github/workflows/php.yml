@@ -22,9 +22,9 @@ jobs:
   test-container:
     runs-on: ubuntu-latest
     container: ubuntu
-      strategy:
-        matrix:
-          php: ['7.3']
+    strategy:
+      matrix:
+        php: ['7.3']
     services:
       mysql:
         image: mysql:5.7
