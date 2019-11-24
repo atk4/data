@@ -5,3 +5,4 @@ phpunit-mysql-local.xml
 /vendor
 .DS_Store
 /.idea
+atk-test*.csv

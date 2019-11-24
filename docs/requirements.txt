@@ -1,1 +1,2 @@
-sphinxcontrib-phpdomain==0.1.4
+sphinxcontrib-phpdomain
+sphinx_rtd_theme

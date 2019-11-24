@@ -2,8 +2,10 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\Exception;
+use atk4\data\Field;
 use atk4\data\Model;
-use atk4\data\Persistence_SQL;
+use atk4\data\Persistence;
 
 class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
@@ -86,7 +88,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testMandatory2()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -104,7 +106,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testRequired2()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -122,7 +124,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
      */
     public function testMandatory3()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -142,7 +144,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -300,7 +302,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testPersist()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -322,7 +324,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m->reload();
         $this->assertEquals('Smith', $m['surname']);
-        $m->getElement('surname')->never_save = false;
+        $m->getField('surname')->never_save = false;
         $m['surname'] = 'Stalker';
         $m->save();
         $a['item'][1]['surname'] = 'Stalker';
@@ -361,7 +363,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
@@ -426,7 +428,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -461,13 +463,39 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals($a, $this->getDB());
     }
 
+    public function testCalculatedField()
+    {
+        $db = new Persistence\SQL($this->db->connection);
+        $a = [
+            'invoice' => [
+                1 => ['id' => 1, 'net' => 100, 'vat' => 21],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($db, 'invoice');
+        $m->addField('net', ['type' => 'money']);
+        $m->addField('vat', ['type' => 'money']);
+        $m->addCalculatedField('total', function ($m) {
+            return $m['net'] + $m['vat'];
+        });
+        $m->insert(['net' => 30, 'vat' => 8]);
+
+        $m->load(1);
+        $this->assertEquals(121, $m['total']);
+        $m->load(2);
+        $this->assertEquals(38, $m['total']);
+
+        $d = $m->export(); // in export calculated fields are not included
+        $this->assertFalse(isset($d[0]['total']));
+    }
+
     public function testSystem1()
     {
         $m = new Model();
         $m->addField('foo', ['system' => true]);
         $m->addField('bar');
-        $this->assertEquals(false, $m->getElement('foo')->isEditable());
-        $this->assertEquals(false, $m->getElement('foo')->isVisible());
+        $this->assertEquals(false, $m->getField('foo')->isEditable());
+        $this->assertEquals(false, $m->getField('foo')->isVisible());
 
         $m->onlyFields(['bar']);
         // TODO: build a query and see if the field is there
@@ -475,7 +503,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testEncryptedField()
     {
-        $db = new Persistence_SQL($this->db->connection);
+        $db = new Persistence\SQL($this->db->connection);
         $a = [
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'secret' => 'Smith'],
@@ -483,7 +511,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->setDB($a);
 
         $encrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof \atk4\data\Persistence_SQL) {
+            if (!$persistence instanceof Persistence\SQL) {
                 return $value;
             }
 
@@ -498,7 +526,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         };
 
         $decrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof \atk4\data\Persistence_SQL) {
+            if (!$persistence instanceof Persistence\SQL) {
                 return $value;
             }
 
@@ -747,5 +775,96 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'boolean']);
         $m['foo'] = 'ABC';
+    }
+
+    public function testToString()
+    {
+        $m = new Model(['strict_types' => true]);
+
+        // Field types: 'string', 'text', 'integer', 'money', 'float', 'boolean',
+        //              'date', 'datetime', 'time', 'array', 'object'
+        $m->addField('string', ['type' => 'string']);
+        $m->addField('text', ['type' => 'text']);
+        $m->addField('integer', ['type' => 'integer']);
+        $m->addField('money', ['type' => 'money']);
+        $m->addField('float', ['type' => 'float']);
+        $m->addField('boolean', ['type' => 'boolean']);
+        $m->addField('boolean_enum', ['type' => 'boolean', 'enum'=>['N', 'Y']]);
+        $m->addField('date', ['type' => 'date']);
+        $m->addField('datetime', ['type' => 'datetime']);
+        $m->addField('time', ['type' => 'time']);
+        $m->addField('array', ['type' => 'array']);
+        $m->addField('object', ['type' => 'object']);
+
+        $this->assertSame('TwoLines', $m->getField('string')->toString("Two\r\nLines  "));
+        $this->assertSame("Two\nLines", $m->getField('text')->toString("Two\r\nLines  "));
+        $this->assertSame('123', $m->getField('integer')->toString(123));
+        $this->assertSame('123.45', $m->getField('money')->toString(123.45));
+        $this->assertSame('123.456789', $m->getField('float')->toString(123.456789));
+        $this->assertSame('1', $m->getField('boolean')->toString(true));
+        $this->assertSame('0', $m->getField('boolean')->toString(false));
+        $this->assertSame('1', $m->getField('boolean_enum')->toString('Y'));
+        $this->assertSame('0', $m->getField('boolean_enum')->toString('N'));
+        $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('2019-01-20T12:23:34+00:00', $m->getField('datetime')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('12:23:34', $m->getField('time')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('array')->toString(['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object) ['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
+    }
+
+    public function testAddFieldDirectly()
+    {
+        $this->expectException(Exception::class);
+        $model = new Model();
+        $model->add(new Field(), 'test');
+    }
+
+    public function testGetFields()
+    {
+        $model = new Model();
+        $model->addField('system', ['system'=>true]);
+        $model->addField('editable', ['ui'=>['editable'=>true]]);
+        $model->addField('editable_system', ['ui'=>['editable'=>true], 'system'=>true]);
+        $model->addField('visible', ['ui'=>['visible'=>true]]);
+        $model->addField('visible_system', ['ui'=>['visible'=>true], 'system'=>true]);
+        $model->addField('not_editable', ['ui'=>['editable'=>false]]);
+
+        $this->assertEquals(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+        $this->assertEquals(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
+        $this->assertEquals(['editable', 'visible', 'not_editable'], array_keys($model->getFields('not system')));
+        $this->assertEquals(['editable', 'editable_system', 'visible'], array_keys($model->getFields('editable')));
+        $this->assertEquals(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
+
+        $model->onlyFields(['system', 'visible', 'not_editable']);
+
+        // getFields() is unaffected by only_fields, will always return all fields
+        $this->assertEquals(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+
+        // only return subset of only_fields
+        $this->assertEquals(['visible', 'not_editable'], array_keys($model->getFields('visible')));
+
+        $this->expectExceptionMessage('not supported');
+        $model->getFields('foo');
+    }
+
+    public function testDateTimeFieldsToString()
+    {
+        $model = new Model();
+        $model->addField('date', ['type' => 'date']);
+        $model->addField('time', ['type' => 'time']);
+        $model->addField('datetime', ['type' => 'datetime']);
+
+        $this->assertEquals('', $model->getField('date')->toString());
+        $this->assertEquals('', $model->getField('time')->toString());
+        $this->assertEquals('', $model->getField('datetime')->toString());
+
+        $current_date = new \DateTime();
+        $model->set('date', $current_date);
+        $model->set('time', $current_date);
+        $model->set('datetime', $current_date);
+
+        $this->assertEquals($current_date->format('Y-m-d'), $model->getField('date')->toString());
+        $this->assertEquals($current_date->format('H:i:s'), $model->getField('time')->toString());
+        $this->assertEquals($current_date->format('c'), $model->getField('datetime')->toString());
     }
 }

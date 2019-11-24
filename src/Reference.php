@@ -18,6 +18,15 @@ class Reference
     }
     use \atk4\core\TrackableTrait;
     use \atk4\core\DIContainerTrait;
+    use \atk4\core\FactoryTrait;
+
+    /**
+     * Owner Model of the reference.
+     * override the hint type definition already present in TrackableTrait.
+     *
+     * @var Model
+     */
+    public $owner;
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -64,6 +73,14 @@ class Reference
     protected $their_field = null;
 
     /**
+     * Caption of the reeferenced model. Can be used in UI components, for example.
+     * Should be in plain English and ready for proper localization.
+     *
+     * @var string
+     */
+    public $caption = null;
+
+    /**
      * Default constructor. Will copy argument into properties.
      *
      * @param string $link a short_name component
@@ -71,6 +88,14 @@ class Reference
     public function __construct($link)
     {
         $this->link = $link;
+    }
+
+    /**
+     * Initialization.
+     */
+    public function init()
+    {
+        $this->_init();
     }
 
     /**
@@ -84,22 +109,16 @@ class Reference
     }
 
     /**
-     * Initialization.
-     */
-    public function init()
-    {
-        $this->_init();
-    }
-
-    /**
      * Returns destination model that is linked through this reference. Will apply
      * necessary conditions.
      *
      * @param array $defaults Properties
      *
+     * @throws \atk4\core\Exception
+     *
      * @return Model
      */
-    public function getModel($defaults = [])
+    public function getModel($defaults = []) : Model
     {
         // set table_alias
         if (!isset($defaults['table_alias'])) {
@@ -116,24 +135,16 @@ class Reference
 
         // if model is Closure, then call it and return model
         if (is_object($this->model) && $this->model instanceof \Closure) {
-            $c = $this->model;
+            $c = ($this->model)($this->owner, $this, $defaults);
 
-            $c = $c($this->owner, $this, $defaults);
-            if (!$c->persistence && $this->owner->persistence) {
-                $c = $this->owner->persistence->add($c, $defaults);
-            }
-
-            return $c;
+            return $this->addToPersistence($c, $defaults);
         }
 
         // if model is set, then return clone of this model
         if (is_object($this->model)) {
             $c = clone $this->model;
-            if (!$this->model->persistence && $this->owner->persistence) {
-                $this->owner->persistence->add($c, $defaults);
-            }
 
-            return $c;
+            return $this->addToPersistence($c, $defaults);
         }
 
         // last effort - try to add model
@@ -147,9 +158,57 @@ class Reference
             $model = $this->model;
         }
 
-        $p = $this->owner->persistence;
+        if (!$model instanceof Model) {
+            $model = $this->factory($model, $defaults);
+        }
 
-        return $p->add($model, $defaults);
+        return $this->addToPersistence($model, $defaults);
+    }
+
+    /**
+     * Adds model to persistence.
+     *
+     * @param Model $model
+     * @param array $defaults
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     *
+     * @return Model
+     */
+    protected function addToPersistence($model, $defaults = []) : Model
+    {
+        if (!$model->persistence && $p = $this->getDefaultPersistence($model)) {
+            $p->add($model, $defaults);
+        }
+
+        // set model caption
+        if ($this->caption !== null) {
+            $model->caption = $this->caption;
+        }
+
+        return $model;
+    }
+
+    /**
+     * Returns default persistence.
+     *
+     * @param Model $model Referenced model
+     *
+     * @return Persistence|false
+     */
+    protected function getDefaultPersistence($model)
+    {
+        $m = $this->owner;
+
+        // this will be useful for containsOne/Many implementation in case when you have
+        // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
+        // from Array persistence used in containsOne model
+        if ($m->contained_in_root_model && $m->contained_in_root_model->persistence) {
+            return $m->contained_in_root_model->persistence;
+        }
+
+        return $m->persistence ?: false;
     }
 
     /**
@@ -158,9 +217,11 @@ class Reference
      *
      * @param array $defaults Properties
      *
+     * @throws \atk4\core\Exception
+     *
      * @return Model
      */
-    public function ref($defaults = [])
+    public function ref($defaults = []) : Model
     {
         return $this->getModel($defaults);
     }
@@ -172,9 +233,11 @@ class Reference
      *
      * @param array $defaults Properties
      *
+     * @throws \atk4\core\Exception
+     *
      * @return Model
      */
-    public function refModel($defaults = [])
+    public function refModel($defaults = []) : Model
     {
         return $this->getModel($defaults);
     }

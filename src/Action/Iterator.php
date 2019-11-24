@@ -11,25 +11,25 @@ use Guzzle\Iterator\FilterIterator;
 class Iterator
 {
     /**
-     * @var array
+     * @var \ArrayIterator
      */
     public $generator;
 
     /**
-     * Array_ constructor.
+     * Iterator constructor.
      *
-     * @param $generator
+     * @param array $data
      */
-    public function __construct(array $generator)
+    public function __construct(array $data)
     {
-        $this->generator = new \ArrayIterator($generator);
+        $this->generator = new \ArrayIterator($data);
     }
 
     /**
      * Applies FilterIterator making sure that values of $field equal to $value.
      *
-     * @param $field
-     * @param $value
+     * @param string $field
+     * @param string $value
      *
      * @return $this
      */
@@ -54,6 +54,93 @@ class Iterator
     }
 
     /**
+     * Applies FilterIterator condition imitating the sql LIKE operator - $field LIKE %$value% | $value% | %$value.
+     *
+     * @param string $field
+     * @param string $value
+     *
+     * @return $this
+     */
+    public function like($field, $value)
+    {
+        $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
+
+            // skip row. does not have field at all
+            if (!isset($row[$field])) {
+                return false;
+            }
+
+            $clean_value = trim(trim($value), '%');
+            // the row field exists check the position of th "%"(s)
+            switch ($value) {
+                // case "%str%"
+                case substr($value, -1, 1) == '%' && substr($value, 0, 1) == '%':
+                    return strpos($row[$field], $clean_value) !== false;
+                    break;
+                // case "str%"
+                case substr($value, -1, 1) == '%':
+                    return substr($row[$field], 0, strlen($clean_value)) === $clean_value;
+                    break;
+                // case "%str"
+                case substr($value, 0, 1) == '%':
+                    return substr($row[$field], -strlen($clean_value)) === $clean_value;
+                    break;
+            }
+
+            return false;
+        });
+
+        return $this;
+    }
+
+    /**
+     * Applies sorting on Iterator.
+     *
+     * @param array $fields
+     *
+     * @return $this
+     */
+    public function order($fields)
+    {
+        $data = $this->get();
+
+        // prepare arguments for array_multisort()
+        $args = [];
+        foreach ($fields as list($field, $desc)) {
+            $args[] = array_column($data, $field);
+            $args[] = $desc ? SORT_DESC : SORT_ASC;
+            //$args[] = SORT_STRING; // SORT_STRING | SORT_NUMERIC | SORT_REGULAR
+        }
+        $args[] = &$data;
+
+        // call sorting
+        call_user_func_array('array_multisort', $args);
+
+        // put data back in generator
+        $this->generator = new \ArrayIterator(array_pop($args));
+
+        return $this;
+    }
+
+    /**
+     * Limit Iterator.
+     *
+     * @param int $cnt
+     * @param int $shift
+     *
+     * @return $this
+     */
+    public function limit($cnt, $shift = 0)
+    {
+        $data = array_slice($this->get(), $shift, $cnt, true);
+
+        // put data back in generator
+        $this->generator = new \ArrayIterator($data);
+
+        return $this;
+    }
+
+    /**
      * Counts number of rows and replaces our generator with just a single number.
      *
      * @return $this
@@ -66,13 +153,20 @@ class Iterator
     }
 
     /**
-     * @return array get all data inside array
+     * Return all data inside array.
+     *
+     * @return array
      */
     public function get()
     {
         return iterator_to_array($this->generator, true);
     }
 
+    /**
+     * Return one row of data.
+     *
+     * @return array
+     */
     public function getRow()
     {
         $row = $this->generator->current();
@@ -81,6 +175,11 @@ class Iterator
         return $row;
     }
 
+    /**
+     * Return one value from one row of data.
+     *
+     * @return mixed
+     */
     public function getOne()
     {
         $data = $this->getRow();

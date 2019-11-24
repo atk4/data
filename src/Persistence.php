@@ -5,7 +5,7 @@
 namespace atk4\data;
 
 /**
- * Class description??
+ * Persistence class.
  */
 class Persistence
 {
@@ -17,6 +17,7 @@ class Persistence
     use \atk4\core\AppScopeTrait;
     use \atk4\core\DynamicMethodTrait;
     use \atk4\core\NameTrait;
+    use \atk4\core\DIContainerTrait;
 
     /** @var string Connection driver name, for example, mysql, pgsql, oci etc. */
     public $driver;
@@ -49,14 +50,14 @@ class Persistence
                 // to prevent nasty problems. This is un-tested on other databases, so moving it here.
                 // It gives problem with sqlite
                 if (strpos($dsn['dsn'], ';charset=') === false) {
-                    $dsn['dsn'] .= ';charset=utf8';
+                    $dsn['dsn'] .= ';charset=utf8mb4';
                 }
 
             case 'pgsql':
             case 'dumper':
             case 'counter':
             case 'sqlite':
-                $db = new Persistence_SQL($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
+                $db = new \atk4\data\Persistence\SQL($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
                 $db->driver = $driver;
 
                 return $db;
@@ -80,6 +81,9 @@ class Persistence
      *
      * @param Model|string $m        Model which will use this persistence
      * @param array        $defaults Properties
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
      *
      * @return Model
      */
@@ -174,10 +178,10 @@ class Persistence
         foreach ($row as $key => $value) {
 
             // Look up field object
-            $f = $m->hasElement($key);
+            $f = $m->hasField($key);
 
             // Figure out the name of the destination field
-            $field = isset($f->actual) && $f->actual ? $f->actual : $key;
+            $field = $f && isset($f->actual) && $f->actual ? $f->actual : $key;
 
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
@@ -241,7 +245,7 @@ class Persistence
         foreach ($row as $key => &$value) {
 
             // Look up field object
-            $f = $m->hasElement($key);
+            $f = $m->hasField($key);
 
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
@@ -298,7 +302,7 @@ class Persistence
             // run persistence-specific typecasting of field value
             return $this->_typecastSaveField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to serialize field value on save', 'field' => $f->name], null, $e);
+            throw new Exception(['Unable to typecast field value on save', 'field' => $f->name], null, $e);
         }
     }
 
@@ -470,7 +474,7 @@ class Persistence
      *
      * @return mixed
      */
-    protected function jsonDecode(Field $f, $value, $assoc = true)
+    public function jsonDecode(Field $f, $value, $assoc = true)
     {
         // constant supported only starting PHP 7.3
         if (!defined('JSON_THROW_ON_ERROR')) {
@@ -497,7 +501,7 @@ class Persistence
      *
      * @return string
      */
-    protected function jsonEncode(Field $f, $value)
+    public function jsonEncode(Field $f, $value)
     {
         // constant supported only starting PHP 7.3
         if (!defined('JSON_THROW_ON_ERROR')) {

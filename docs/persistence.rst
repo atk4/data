@@ -7,8 +7,24 @@ Loading and Saving (Persistence)
 
 .. php:class:: Model
 
-In order to load and store data of your model inside the database your model
-should be "associated" with persistence layer.
+Model object represents your real-life business objects such as "Invoice" or "Client".
+The rest of your application works with "Model" objects only and have no knowledge of
+what database you are using and how data is stored in there. This decouples your app
+from the data storage (Persistence). If in the future you will want to change database
+server or structure of your database, you can do it without affecting your application.
+
+Data Persistence frameworks (like ATK Data) provide the bridge between "Model" and the
+actual database. There is balance between performance, simplicity and consistency. While
+other persistence frameworks insist on strict isolation, ATK Data prefers practicality
+and simplicity.
+
+ATK Data couples Model and Persistence, they have some intimate knowledge of each-other
+and work as a unit. Persistence object is created first and by the time Model is created,
+you specify persistence to the model.
+
+During the lifecycle of the Model it can work with various records, save, load, unload data
+etc, but it will always remain linked with that same persistence.
+
 
 Associating with Persistence
 ============================
@@ -440,12 +456,11 @@ For SQL that means calling 'replace into x'.
 
 .. warning::
 
-    You might be wondering how join() logic would work. Well there are no
-    special treatment for joins() when duplicating records, so your new record
-    will end up referencing a same joined record. If join is reverse, then your
-    new record may not load.
+    There is no special treatment for joins() when duplicating records, so your
+    new record will end up referencing the same joined record. If the join is
+    reverse then your new record may not load.
 
-    This will be properly addressed in future versions of Agile Data.
+    This will be properly addressed in a future version of Agile Data.
 
 
 Working with Multiple DataSets
@@ -486,8 +501,9 @@ Start by creating a beforeSave handler for Order::
 
             if (
                 $m->newInstance()
-                    ->addCondition('client_id', $m['client_id'])
-                    ->tryLoadBy('ref', $m['ref'])
+                    ->addCondition('client_id', $m['client_id']) // same client
+                    ->addCondition($m->id_field, '!=', $m->id)   // has another order
+                    ->tryLoadBy('ref', $m['ref'])                // with same ref
                     ->loaded()
             ) {
                 throw new Exception([
@@ -792,7 +808,7 @@ you can implement it like this::
         $_SESSION['ad'] = []; // initialize
     }
 
-    $sess = new \atk4\data\Persistence_Array($_SESSION['ad']);
+    $sess = new \atk4\data\Persistence\Array_($_SESSION['ad']);
     $logged_user = new User($sess);
     $logged_user->load('active_user');
 
@@ -878,7 +894,7 @@ The default action type can be set when executing action, for example::
 SQL Actions
 -----------
 
-The following actions are currently supported by Persistence_SQL:
+The following actions are currently supported by Persistence\SQL:
 
  - select - produces query that returns DataSet  (array of hashes)
  - delete - produces query for deleting DataSet (no result)
@@ -902,7 +918,7 @@ You must be aware that set() operates on a DSQL object and will no longer
 work with your model fields. You should use the object like this if you can::
 
     $m->action('update')
-        ->set($m->getElement('has_discount'), false)
+        ->set($m->getField('has_discount'), false)
         ->execute();
 
 See $actual for more details.

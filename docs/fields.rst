@@ -114,7 +114,7 @@ Basic Properties
 ----------------
 
 Fields have properties, which define its behaviour. Some properties apply on how
-the values are handled or restrictions on interraction, other values can even
+the values are handled or restrictions on interaction, other values can even
 help with data vizualization. For example if :php:attr:`Field::enum` is used
 with Agile UI form, it will be displayed as radio button or a drop-down::
 
@@ -222,58 +222,6 @@ beforeSave hook to read this value.
 This field contains certain arguments that may be needed by the UI layer to know
 if user should be allowed to edit this field.
 
-.. php:attr:: loadCallback
-
-Specify a callback that will be executed when the field is loaded and it is
-necessary to decode or do something else with loaded the value.
-
-You can use this callback if you are storing data in some unusual format and
-need to convert it into PHP value. Format of callback is::
-
-    function ($value) {
-        return str_rot13($value);
-    }
-
-There are additional arguments in case you want to have a common callback::
-
-    $encrypt = function ($value, $key, $persistence) {
-
-        // load encrypted data from SQL
-        if ($persistence instanceof \atk4\data\Persistence_SQL) {
-            return mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key->key, $value);
-        }
-
-        return $value;
-    }
-
-Note that if you use a call-back this will by-pass normal field typecasting.
-
-See :ref:`Advanced::EncryptedField` for full example.
-
-.. php:attr:: saveCallback
-
-Same as loadCallback property but will be executed when saving data. Arguments
-are still the same::
-
-    function ($value) {
-        return str_rot13($value);
-    }
-
-There are additional arguments in case you want to have a common callback::
-
-    $decrypt = function ($value, $key, $persistence) {
-
-        // load encrypted data from SQL
-        if ($persistence instanceof \atk4\data\Persistence_SQL) {
-            return mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key->key, $value);
-        }
-
-        return $value;
-    }
-
-
-See :ref:`Advanced::EncryptedField` for full example.
-
 .. php:method:: set
 
 Set the value of the field. Same as $model->set($field_name, $value);
@@ -310,8 +258,8 @@ views by default.
 Returns true if UI should not render this field in views.
 
 
-Password
-========
+Password (after 1.5.0 release)
+==============================
 
 .. php:namespace:: atk4\data\Field
 

@@ -102,7 +102,7 @@ class Field_SQL_Expression extends Field_SQL
         }
 
         if (is_string($expr)) {
-            // If our Model has expr() method (inherited from Persistence_SQL) then use it
+            // If our Model has expr() method (inherited from Persistence\SQL) then use it
             if ($this->owner->hasMethod('expr')) {
                 return $this->owner->expr('([])', [$this->owner->expr($expr)]);
             }

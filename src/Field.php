@@ -6,11 +6,13 @@ namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
 use atk4\core\TrackableTrait;
+use atk4\dsql\Expression;
+use atk4\dsql\Expressionable;
 
 /**
  * Class description?
  */
-class Field
+class Field implements Expressionable
 {
     use TrackableTrait;
     use DIContainerTrait;
@@ -288,7 +290,8 @@ class Field
                 // we clear out thousand separator, but will change to
                 // http://php.net/manual/en/numberformatter.parse.php
                 // in the future with the introduction of locale
-                $value = preg_replace('/[^0-9.-]/', '', $value);
+                $value = trim(str_replace(["\r", "\n"], '', $value));
+                $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
                 }
@@ -298,7 +301,8 @@ class Field
                 }
                 break;
             case 'float':
-                $value = preg_replace('/[^0-9.-]/', '', $value);
+                $value = trim(str_replace(["\r", "\n"], '', $value));
+                $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
                 }
@@ -308,7 +312,8 @@ class Field
                 }
                 break;
             case 'money':
-                $value = preg_replace('/[^0-9.-]/', '', $value);
+                $value = trim(str_replace(["\r", "\n"], '', $value));
+                $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
                 }
@@ -318,25 +323,7 @@ class Field
                 }
                 break;
             case 'boolean':
-                if (is_bool($value)) {
-                    break;
-                }
-                if (isset($f->enum) && is_array($f->enum)) {
-                    if (isset($f->enum[0]) && strtolower($value) === strtolower($f->enum[0])) {
-                        $value = false;
-                    } elseif (isset($f->enum[1]) && strtolower($value) === strtolower($f->enum[1])) {
-                        $value = true;
-                    }
-                } elseif (is_numeric($value)) {
-                    $value = (bool) $value;
-                }
-                if (!is_bool($value)) {
-                    throw new ValidationException([$this->name => 'Must be a boolean value']);
-                }
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must be selected']);
-                }
-                break;
+                throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
             case 'date':
             case 'datetime':
             case 'time':
@@ -354,13 +341,32 @@ class Field
 
                     throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value type' => gettype($value)]);
                 }
+
+                if ($f->type == 'date') {
+                    // remove time portion from date type value
+                    $value->setTime(0, 0, 0);
+                }
+                if ($f->type == 'time') {
+                    // remove date portion from date type value
+                    // need 1970 in place of 0 - DB
+                    $value->setDate(1970, 1, 1);
+                }
+
                 break;
             case 'array':
+                if (is_string($value) && $f->owner && $f->owner->persistence) {
+                    $value = $f->owner->persistence->jsonDecode($f, $value, true);
+                }
+
                 if (!is_array($value)) {
                     throw new ValidationException([$this->name => 'Must be an array']);
                 }
                 break;
             case 'object':
+               if (is_string($value) && $f->owner && $f->owner->persistence) {
+                   $value = $f->owner->persistence->jsonDecode($f, $value, false);
+               }
+
                 if (!is_object($value)) {
                     throw new ValidationException([$this->name => 'Must be an object']);
                 }
@@ -376,6 +382,43 @@ class Field
             }
 
             return $value;
+        } catch (Exception $e) {
+            $e->addMoreInfo('field', $this);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Casts field value to string.
+     *
+     * @param mixed $value Optional value
+     *
+     * @return string
+     */
+    public function toString($value = null)
+    {
+        $v = ($value === null ? $this->get() : $this->normalize($value));
+
+        try {
+            switch ($this->type) {
+                case null: // loose comparison, but is OK here
+                    return $v;
+                case 'boolean':
+                    throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
+                case 'date':
+                    return $v instanceof \DateTimeInterface ? $v->format('Y-m-d') : (string) $v;
+                case 'datetime':
+                    return $v instanceof \DateTimeInterface ? $v->format('c') : (string) $v; // ISO 8601 format 2004-02-12T15:19:21+00:00
+                case 'time':
+                    return $v instanceof \DateTimeInterface ? $v->format('H:i:s') : (string) $v;
+                case 'array':
+                    return json_encode($v); // todo use Persistence->jsonEncode() instead
+                case 'object':
+                    return json_encode($v); // todo use Persistence->jsonEncode() instead
+                default:
+                    return (string) $v;
+            }
         } catch (Exception $e) {
             $e->addMoreInfo('field', $this);
 
@@ -420,6 +463,16 @@ class Field
         return $this->owner[$this->short_name] == $value;
     }
 
+    /**
+     * Should this field use alias?
+     *
+     * @return bool
+     */
+    public function useAlias()
+    {
+        return isset($this->actual);
+    }
+
     // }}}
 
     // {{{ Handy methods used by UI
@@ -431,9 +484,9 @@ class Field
      */
     public function isEditable()
     {
-        return $this->read_only || $this->never_persist
-            ? false
-            : (isset($this->ui['editable']) ? $this->ui['editable'] : !$this->system);
+        return isset($this->ui['editable']) ? $this->ui['editable']
+                : (($this->read_only || $this->never_persist) ? false
+                    : !$this->system);
     }
 
     /**
@@ -456,6 +509,11 @@ class Field
         return isset($this->ui['hidden']) ? $this->ui['hidden'] : false;
     }
 
+    /**
+     * Returns field caption for use in UI.
+     *
+     * @return string
+     */
     public function getCaption()
     {
         return $this->caption ?: (isset($this->ui['caption']) ? $this->ui['caption'] :
@@ -463,6 +521,26 @@ class Field
     }
 
     // }}}
+
+    /**
+     * When field is used as expression, this method will be called.
+     * Universal way to convert ourselves to expression. Off-load implementation into persistence.
+     *
+     * @param Expression $expression
+     *
+     * @return Expression
+     */
+    public function getDSQLExpression($expression)
+    {
+        if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence\SQL) {
+            throw new Exception([
+                'Field must have SQL persistence if it is used as part of expression',
+                'persistence'=> $this->owner->persistence ?? null,
+            ]);
+        }
+
+        return $this->owner->persistence->getFieldSQLExpression($this, $expression);
+    }
 
     // {{{ Debug Methods
 

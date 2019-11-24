@@ -20,7 +20,7 @@ class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->hasMany('Orders', $order);
+        $user->hasMany('Orders', [$order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders');
 
         $this->assertEquals(20, $o['amount']);
@@ -35,6 +35,26 @@ class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
         });
 
         $this->assertEquals(100, $user->ref('BigOrders')['amount']);
+    }
+
+    /**
+     * Test caption of referenced model.
+     */
+    public function testModelCaption()
+    {
+        $user = new Model(['table' => 'user']);
+        $user->addField('name');
+        $user->id = 1;
+
+        $order = new Model();
+        $order->addField('amount', ['default' => 20]);
+        $order->addField('user_id');
+
+        $user->hasMany('Orders', [$order, 'caption' => 'My Orders']);
+
+        // test caption of containsOne reference
+        $this->assertEquals('My Orders', $user->refModel('Orders')->getModelCaption());
+        $this->assertEquals('My Orders', $user->ref('Orders')->getModelCaption());
     }
 
     public function testModelProperty()
@@ -77,7 +97,8 @@ class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
      */
     public function testRefName3()
     {
-        $order = new Model(['table' => 'order']);
+        $db = new Persistence();
+        $order = new Model($db, ['table' => 'order']);
         $order->addRef('archive', function ($m) {
             return $m->newInstance(null, ['table' => $m->table.'_archive']);
         });
@@ -89,7 +110,7 @@ class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testCustomRef()
     {
         $a = [];
-        $p = new \atk4\data\Persistence_Array($a);
+        $p = new Persistence\Array_($a);
 
         $m = new Model($p, ['table' => 'user']);
         $m->addRef('archive', function ($m) {
