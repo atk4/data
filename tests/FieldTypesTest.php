@@ -50,16 +50,16 @@ class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m['email'] = 'bar@exampe.com ,foo@example.com';
     }
 
-//    public function testEmail3()
-//    {
-//        $m = new Model($this->pers);
-//        $m->addField('email', ['Email', 'dns_check'=>true]);
-//
-//        $m['email'] = ' foo@gmail.com';
-//
-//        $this->expectExceptionMessage('does not exist');
-//        $m['email'] = ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com';
-//    }
+    public function testEmail3()
+    {
+        $m = new Model($this->pers);
+        $m->addField('email', ['Email', 'dns_check'=>true]);
+
+        $m['email'] = ' foo@gmail.com';
+
+        $this->expectExceptionMessage('does not exist');
+        $m['email'] = ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com';
+    }
 
     public function testEmail4()
     {
