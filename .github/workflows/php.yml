@@ -35,8 +35,7 @@ jobs:
     steps:
       - name: Verify MySQL connection from container
         run: |
-          apt-get update
-          apt-get install -y mysql-client
+          apk add mysql-client
           mysql --host mysql -uroot -ppassword -e "SHOW DATABASES"
 #
 #  build:
