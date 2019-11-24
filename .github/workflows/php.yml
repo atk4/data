@@ -3,22 +3,6 @@ name: Unit Testing
 on: [pull_request]
 
 jobs:
-  test-host:
-    runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ROOT_PASSWORD: password
-        ports:
-          - 3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    steps:
-      - name: Verify MySQL connection from host
-        run: |
-          sudo apt-get install -y mysql-client
-          mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -uroot -ppassword -e "SHOW DATABASES"
-
   test-container:
     runs-on: ubuntu-latest
     container:
@@ -49,7 +33,8 @@ jobs:
       - run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
+      - run: vendor/bin/phpunit --configuration phpunit.xml --coverage-text
+      #- run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
 #
 #  build:
 #    runs-on: ubuntu-linux
