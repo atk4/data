@@ -34,7 +34,10 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
 
       - run: vendor/bin/phpunit --configuration phpunit.xml --coverage-text
-      - run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
+
+      - run: |
+          mysql -uroot -ppassword -h mysql -e 'CREATE DATABASE db;'
+          vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --coverage-text
 
 
       - uses: codecov/codecov-action@v1
