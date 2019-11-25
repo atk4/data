@@ -1,9 +1,7 @@
 name: Unit Testing
 
 on:
-  pull_request:
-    branches:
-      - 'feature/*'
+  pull_request
 
 jobs:
   unit-test:
