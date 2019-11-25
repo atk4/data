@@ -7,7 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - run: mkdir temp_release_notes
       - name: Create Release Notes
         uses: docker://decathlon/release-notes-generator-action:2.0.0
         env:
