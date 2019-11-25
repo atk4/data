@@ -1,7 +1,7 @@
 name: Bundler
 
 on:
-  push:
+  create:
     branches:
       - 'release/*'
 
