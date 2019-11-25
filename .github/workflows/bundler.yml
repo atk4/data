@@ -13,7 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - run: |
-          sed -i "" -e '/atk4\/schema/s/dev-develop/\*/' composer.json # workaround composers inability to change both requries simultaniously
+          ls
+          sed -i "" -e '/atk4\/schema/s/dev-develop/\*/' composer.json
           composer require atk4/core atk4/dsql
           composer update
 
