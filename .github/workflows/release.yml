@@ -1,42 +1,20 @@
-name: Unit Testing
+name: Release Builder
 
-on: [pull_request]
+
+on:
+#  create:
+  push:
+    branches:
+      - 'release/*'
 
 jobs:
-  unit-test:
-    name: Unit Testing
+  release:
+    name: Release New Version
     runs-on: ubuntu-latest
     container:
       image: atk4/image:latest # https://github.com/atk4/image
-    strategy:
-      matrix:
-        php: ['7.3']
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ROOT_PASSWORD: password
-          DB_DATABASE: db
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
-      postgres:
-        image: postgres:10-alpine
-        env:
-          POSTGRES_PASSWORD: password
-          POSTGRES_USER: postgres
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v1
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: |
-          echo "::set-output name=dir::$(composer config cache-files-dir)"
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
       - run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
 
       - name: Run Tests
