@@ -17,5 +17,5 @@ return [
   'Unable to serialize field value on save'         => 'Unable to serialize field value on save ({{field}})',
   'Unable to typecast field value on load'          => 'Unable to typecast field value on load ({{field}})',
   'Unable to typecast field value on save'          => 'Unable to typecast field value on save ({{field}})',
-    'Record with specified ID was not found' => 'Record with specified ID was not found',
+    'Record with specified ID was not found'        => 'Record with specified ID was not found',
 ];

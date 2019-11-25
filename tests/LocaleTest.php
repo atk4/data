@@ -2,12 +2,11 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\Translator\Translator;
 use atk4\data\Exception;
 use atk4\data\Locale;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\core\Translator\Translator;
-
 
 class LocaleTest extends \PHPUnit_Framework_TestCase
 {
@@ -42,7 +41,7 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
             $m->addField('surname');
             $m->load(4);
         } catch (Exception $e) {
-            $this->assertContains('Запись', json_decode($e->getJSON(),true)['message']);
+            $this->assertContains('Запись', json_decode($e->getJSON(), true)['message']);
         }
 
         $this->fail('Expected exception');
