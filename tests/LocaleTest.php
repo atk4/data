@@ -42,6 +42,7 @@ class LocaleTest extends \PHPUnit_Framework_TestCase
             $m->load(4);
         } catch (Exception $e) {
             $this->assertContains('Запись', json_decode($e->getJSON(), true)['message']);
+            return;
         }
 
         $this->fail('Expected exception');
