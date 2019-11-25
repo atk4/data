@@ -13,7 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - run: |
-          ls
           sed -i "" -e '/atk4\/schema/s/dev-develop/\*/' composer.json
           composer require atk4/core atk4/dsql
           composer update
