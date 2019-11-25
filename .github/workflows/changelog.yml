@@ -1,7 +1,7 @@
 name: my-workflow
 
 on:
-  create:
+  push:
     branches:
       - 'release/*'
 
@@ -18,7 +18,8 @@ jobs:
           composer update
 
       - uses: teaminkling/autocommit@master
-        commit-message: Setting current dependencies
+        with:
+          commit-message: Setting current dependencies
       - uses: ad-m/github-push-action@master
         with:
           branch: ${{ github.ref }}
