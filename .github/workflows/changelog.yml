@@ -13,10 +13,13 @@ jobs:
       - uses: teaminkling/skip-commit@master
         with:
           commit-filter: skip-log, skip-ci, automated
-      - uses: teaminkling/autologger@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          github-repository: ${{ github.repository }}
+      - name: Create Release Notes
+        uses: docker://decathlon/release-notes-generator-action:2.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OUTPUT_FOLDER: temp_release_notes
+          USE_MILESTONE_TITLE: "true"
+
       - uses: teaminkling/autocommit@master
       - uses: ad-m/github-push-action@master
         with:
