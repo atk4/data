@@ -1,6 +1,5 @@
 on:
-  milestone:
-    action: [closed]
+  milestone
 
 name: Updating Changelog
 jobs:
