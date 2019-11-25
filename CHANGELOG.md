@@ -2,9 +2,7 @@
 
 # 2.0
 
-First major version update of ATK Data now includes support for "User Actions".
-
- - TBC
+see https://github.com/atk4/data/releases for further releases.
 
 
 # 1.4
