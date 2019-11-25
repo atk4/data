@@ -1,4 +1,4 @@
-unreleased-only=true
-#since-tag=1.4.0
 usernames-as-github-logins=true
-base=CHANGELOG.md
+base=HISTORY.md
+future-release=1.2.0
+since-tag=1.1.13
