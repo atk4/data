@@ -50,6 +50,9 @@ class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m['email'] = 'bar@exampe.com ,foo@example.com';
     }
 
+    /**
+     * @group dns
+     */
     public function testEmail3()
     {
         $m = new Model($this->pers);

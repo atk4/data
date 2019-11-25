@@ -1,12 +1,16 @@
-# Data Access PHP framework for High-Latency databases
+# ATK Data - Data Model Abstraction for Agile Toolkit
 
-The reason you hate Object Relational Mapper (ORM) is because it's [slow, clumsy, limited and flawed](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3). The reason you *have to* use it is because of consistency, compatibility and abstraction it offers to larger projects.
+[Agile Toolkit](https://agiletoolkit.org/) is a Low Code framework written in PHP. Agile UI implement server side rendering engine and over 50 UI generic components for interacting with your Data Model.
 
-**ATK Data provides a PHP framework, an alternative to ORM, which comes with [same and more features](https://socialcompare.com/en/comparison/php-data-access-libraries-orm-activerecord-persistence) without inheriting any design flaws of ORM pattern.**
+Agile Data is a framework for defining your "business layer" which is separate from your "presentation layer" and "persistence". Together with [Agile UI](https://github.com/atk4/ui) you can deliver user interface "out of the box" or with [Agile UI](https://github.com/atk4/api) - general-purpose API endpoints.
 
-ATK Data is focused on reducing number of database queries, moving CPU-intensive tasks into your database (if possible). It is well suited for Amazon RDS, Google Cloud SQL and ClearDB but thanks to abstraction will work transparently with Static data, NoSQL or RestAPIs backends.
-
-ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation](https://github.com/atk4/report) all the way to [Web UI](https://github.com/atk4/ui) and [RestAPI](https://github.com/atk4/api). Minimalistic interface allows you to use ATK Data in your legacy apps or with modern PHP frameworks.
+- Agile Data uses PHP to define your Business Objects, their properties and actions.
+- Agile Data works with SQL, NoSQL or external API sources.
+- Agile Data plugs into generic UI components (CRUD, Card, Table, Form, etc) with a minimum code.
+- Agile Data supports "user actions". UI layer uses "action executor" to read ACL-controlled metadata.
+- Agile Data is developer-friendly and easy to learn
+- Agile Data is high-performance, capable of abstracting aggregation logic and shifting it into a capable database persistence (such as SQL) through advanced expressions.
+- Agile Data is extensible - field types, persistence types, relations and action types can be extended.
 
 [![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=latest)](http://agile-data.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
@@ -15,13 +19,49 @@ ATK Data is extensible and offers wide range of add-ons ranging from [Audit](htt
 [![CodeCov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
 [![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
 [![Issue Count](https://codeclimate.com/github/atk4/data/badges/issue_count.svg)](https://codeclimate.com/github/atk4/data)
-
-[![License](https://poser.pugx.org/atk4/data/license)](https://packagist.org/packages/atk4/data)
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg?maxAge=2592000)](CHANGELOG.md)
 
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
 
 Quick-Links: [Documentation](http://agile-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
+
+## Is ATK Data similar to ORM?
+
+Yes and no.
+
+Agile Data is data persistence framework - like ORM it helps you escape raw SQL. Unlike ORM, it maps objects into "data set" and not "data record". Operating with data sets offers higher level of abstraction:
+
+``` php
+$vip_clients = (new Client($db))->addCondition('is_vip', true);
+
+// express total for all VIP client invoices. The value of the variable is an object
+$total_due = $vip_clients->ref('Invoice')->action('fx', ['sum', 'total']);
+
+// Single database query is executed here, but not before!
+echo $total_due->getOne();
+```
+
+In other ORM the similar implementation would be either [slow, clumsy, limited or flawed](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3).
+
+## How ATK Data integrates with UI (or API)
+
+Agile Toolkit is a low-code framework. Once you have defined your business object, it can be associated with a UI widget:
+
+``` php
+$app->add(new CRUD())->setModel(new Client($db), ['name', 'surname'], ['edit', 'archive']);
+```
+
+or with an API end-point:
+
+``` php
+$api->rest('/clients', new Client($db));
+```
+
+## Extensibility and Add-ons
+
+ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation/Reporting](https://github.com/atk4/report). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database. 
+
+Regardless of how your model is constructed and what database backend is used, it can easily be used in conjunction with any 3rd party add-on, like [Charts](https://github.com/atk4/chart).
 
 ### Benefits of using ATK Data
 
