@@ -1,18 +1,23 @@
-on:
-  milestone
+name: my-workflow
 
-name: Updating Changelog
+on:
+  push:
+    branches:
+      changelog-test
+
 jobs:
-  create-release-notes:
+  autocommit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@develop
-      - run: mkdir temp_release_notes
-      - name: Create Release Notes
-        uses: docker://decathlon/release-notes-generator-action:2.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OUTPUT_FOLDER: temp_release_notes
-          USE_MILESTONE_TITLE: "true"
-      - run: ls temp_release_notes
-      - run: cat temp_release_notes/*
+      - uses: actions/checkout@changelog-test
+      - uses: teaminkling/skip-commit@changelog-test
+        with:
+          commit-filter: skip-log, skip-ci, automated
+      - uses: teaminkling/autologger@changelog-test
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_repository: ${{ github.repository }}
+      - uses: teaminkling/autocommit@changelog-test
+      - uses: ad-m/github-push-action@changelog-test
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
