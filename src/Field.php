@@ -5,8 +5,8 @@
 namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
-use atk4\core\TrackableTrait;
 use atk4\core\ReadableCaptionTrait;
+use atk4\core\TrackableTrait;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
