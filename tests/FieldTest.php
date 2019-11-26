@@ -177,6 +177,15 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $f = $m->addField('foo3', ['ui'=>['caption'=>'My Foo']]);
         $this->assertEquals('My Foo', $f->getCaption());
+
+        $f = $m->addField('userDefinedEntity');
+        $this->assertEquals('User Defined Entity', $f->getCaption());
+
+        $f = $m->addField('newNASA_module');
+        $this->assertEquals('New NASA Module', $f->getCaption());
+
+        $f = $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
+        $this->assertEquals('This Is NASA My Big Bull Shit 123 Foo', $f->getCaption());
     }
 
     /**
