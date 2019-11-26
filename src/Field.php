@@ -6,6 +6,7 @@ namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
 use atk4\core\TrackableTrait;
+use atk4\core\ReadableCaptionTrait;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
@@ -16,6 +17,7 @@ class Field implements Expressionable
 {
     use TrackableTrait;
     use DIContainerTrait;
+    use ReadableCaptionTrait;
 
     // {{{ Properties
 

@@ -14,6 +14,7 @@ use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\NameTrait;
+use atk4\core\ReadableCaptionTrait;
 use atk4\data\UserAction\Generic;
 use atk4\dsql\Query;
 use IteratorAggregate;
@@ -36,6 +37,7 @@ class Model implements ArrayAccess, IteratorAggregate
     use FactoryTrait;
     use AppScopeTrait;
     use CollectionTrait;
+    use ReadableCaptionTrait;
 
     // {{{ Properties of the class
 
