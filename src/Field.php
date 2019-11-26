@@ -6,7 +6,7 @@ namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
 use atk4\core\TrackableTrait;
-use atk4\data\Util\Helper;
+use atk4\core\ReadableCaptionTrait;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
@@ -517,7 +517,7 @@ class Field implements Expressionable
      */
     public function getCaption()
     {
-        return $this->caption ?? $this->ui['caption'] ?? Helper::readableCaption($this->short_name);
+        return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption($this->short_name);
     }
 
     // }}}

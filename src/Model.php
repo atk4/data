@@ -14,8 +14,8 @@ use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\NameTrait;
+use atk4\core\ReadableCaptionTrait;
 use atk4\data\UserAction\Generic;
-use atk4\data\Util\Helper;
 use atk4\dsql\Query;
 use IteratorAggregate;
 
@@ -905,7 +905,7 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function getModelCaption()
     {
-        return $this->caption ?: Helper::readableCaption(get_class($this));
+        return $this->caption ?: $this->readableCaption(get_class($this));
     }
 
     /**
@@ -1031,7 +1031,7 @@ class Model implements ArrayAccess, IteratorAggregate
         }
 
         if (!isset($defaults['caption'])) {
-            $defaults['caption'] = Helper::readableCaption($name);
+            $defaults['caption'] = $this->readableCaption($name);
         }
 
         /** @var UserAction\Generic $action */
