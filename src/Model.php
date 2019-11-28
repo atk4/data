@@ -217,6 +217,8 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * SECURITY WARNING: If you are looking for a RELIABLE way to restrict access
      * to model data, please check Secure Enclave extension.
+     *
+     * @param bool
      */
     public $read_only = false;
 
