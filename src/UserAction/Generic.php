@@ -200,7 +200,7 @@ class Generic
         $confirmation = $this->confirmation;
 
         if (is_callable($confirmation)) {
-            $confirmation = $confirmation();
+            $confirmation = $confirmation($this);
         }
 
         if ($confirmation === true) {
