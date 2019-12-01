@@ -1104,6 +1104,23 @@ class Model implements ArrayAccess, IteratorAggregate
     {
         $this->getAction($name)->execute(...$args);
     }
+        
+    /**
+     * Remove specified action(s).
+     *
+     * @param string|array $name
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     */
+    public function removeAction($name)
+    {
+        foreach ((array) $name as $action) {
+            $this->_removeFromCollection($action, 'actions');
+        }
+    	
+        return $this;
+    }
 
     // }}}
 
