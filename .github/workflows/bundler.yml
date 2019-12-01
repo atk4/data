@@ -7,6 +7,7 @@ on:
 
 jobs:
   autocommit:
+    if: startsWith(github.ref, 'refs/heads/release/')
     runs-on: ubuntu-latest
     container:
       image: atk4/image:latest # https://github.com/atk4/image
