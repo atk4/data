@@ -15,9 +15,9 @@ jobs:
       - name: Update to stable dependencies
         run: |
           jq 'del(.require["atk4/core"]) | del(.require["atk4/dsql"]) | del(.["require-dev"]["atk4/schema"])' < composer.json > tmp && mv tmp composer.json
-          composer require atk4/core atk4/dsql
-          composer require --dev atk4/schema
-          composer update
+          composer require --no-progress --no-suggest --prefer-dist --optimize-autoloader atk4/core atk4/dsql
+          composer require --no-progress --no-suggest --prefer-dist --optimize-autoloader --dev atk4/schema
+          composer update --no-progress --no-suggest --prefer-dist --optimize-autoloader
 
       - uses: teaminkling/autocommit@master
         with:
