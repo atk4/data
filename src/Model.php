@@ -14,6 +14,7 @@ use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\NameTrait;
+use atk4\core\ReadableCaptionTrait;
 use atk4\data\UserAction\Generic;
 use atk4\dsql\Query;
 use IteratorAggregate;
@@ -36,6 +37,7 @@ class Model implements ArrayAccess, IteratorAggregate
     use FactoryTrait;
     use AppScopeTrait;
     use CollectionTrait;
+    use ReadableCaptionTrait;
 
     // {{{ Properties of the class
 
@@ -898,23 +900,13 @@ class Model implements ArrayAccess, IteratorAggregate
 
     /**
      * Return (possibly localized) $model->caption.
+     * If caption is not set, then generate it from model class name.
      *
      * @return string
      */
     public function getModelCaption()
     {
-        if ($this->caption) {
-            return $this->caption;
-        }
-
-        // if caption is not set, then generate it from model class name
-        $s = strtolower(get_class($this));
-        //$s = str_replace('model', '', $s);
-        $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
-        $s = array_map('trim', $s);
-        $s = ucwords(implode(' ', $s));
-
-        return $s;
+        return $this->caption ?: $this->readableCaption(get_class($this));
     }
 
     /**
@@ -1040,13 +1032,7 @@ class Model implements ArrayAccess, IteratorAggregate
         }
 
         if (!isset($defaults['caption'])) {
-            $s = $name;
-
-            $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
-            $s = array_map('trim', $s);
-            $s = ucwords(implode(' ', $s));
-
-            $defaults['caption'] = $s;
+            $defaults['caption'] = $this->readableCaption($name);
         }
 
         /** @var UserAction\Generic $action */

@@ -347,13 +347,13 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('y2', $m['x2']);
     }
 
-    public function testCaption()
+    public function testModelCaption()
     {
         $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'user');
 
         // caption is not set, so generate it from class name \atk4\data\Model
-        $this->assertEquals('Atk4 Data Model', $m->getModelCaption());
+        $this->assertEquals('Atk 4 Data Model', $m->getModelCaption());
 
         // caption is set
         $m->caption = 'test';

@@ -15,4 +15,5 @@ return [
   'Unable to serialize field value on save'         => 'Невозможно сериализовать значение поля при сохранении ({{field}})',
   'Unable to typecast field value on load'          => 'Невозможно установить тип поля при загрузке ({{field}})',
   'Unable to typecast field value on save'          => 'Невозможно сериализовать значение поля при сохранении ({{field}})',
+    'Record with specified ID was not found'        => 'Запись с данным ID не найдена',
 ];
