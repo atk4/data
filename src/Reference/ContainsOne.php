@@ -65,6 +65,7 @@ class ContainsOne extends Reference
                 'type'              => $this->type,
                 'reference'         => $this,
                 'system'            => $this->system,
+                'caption'           => $this->caption, // it's ref models caption, but we can use it here for field too
                 'ui'                => $this->ui,
             ]);
         }

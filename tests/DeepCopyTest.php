@@ -88,7 +88,7 @@ class DCInvoiceLine extends Model
         $this->addField('vat', ['type'=>'numeric', 'default'=>0.21]);
 
         // total is calculated with VAT
-        $this->addExpression('total', '[qty]*[price]*(1+vat)');
+        $this->addExpression('total', '[qty]*[price]*(1+[vat])');
     }
 }
 

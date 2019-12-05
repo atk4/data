@@ -14,6 +14,8 @@ use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\NameTrait;
+use atk4\core\ReadableCaptionTrait;
+use atk4\data\UserAction\Generic;
 use atk4\dsql\Query;
 use IteratorAggregate;
 
@@ -35,6 +37,7 @@ class Model implements ArrayAccess, IteratorAggregate
     use FactoryTrait;
     use AppScopeTrait;
     use CollectionTrait;
+    use ReadableCaptionTrait;
 
     // {{{ Properties of the class
 
@@ -257,7 +260,7 @@ class Model implements ArrayAccess, IteratorAggregate
 
     /**
      * Caption of the model. Can be used in UI components, for example.
-     * Should be iun plain English and ready for proper localization.
+     * Should be in plain English and ready for proper localization.
      *
      * @var string
      */
@@ -405,7 +408,42 @@ class Model implements ArrayAccess, IteratorAggregate
                     'system' => true,
                 ]
             ));
+        } else {
+            return; // don't declare actions for model without id_field
         }
+
+        if ($this->read_only) {
+            return; // don't declare action for read-only model
+        }
+
+        // Declare our basic CRUD actions for the model.
+        $this->addAction('add', [
+            'fields'  => true,
+            'scope'   => UserAction\Generic::NO_RECORDS,
+            'callback'=> 'save',
+            'ui'      => ['icon'=>'plus'],
+        ]);
+        $this->addAction('edit', [
+            'fields'  => true,
+            'scope'   => UserAction\Generic::SINGLE_RECORD,
+            'callback'=> 'save',
+            'ui'      => ['icon'=>'edit', 'button'=>[null, 'icon'=>'edit']],
+        ]);
+        $this->addAction('delete', [
+            'scope'    => UserAction\Generic::SINGLE_RECORD,
+            'ui'       => ['icon'=>'trash', 'button'=>[null, 'icon'=>'red trash'], 'confirm'=>'Are you sure?'],
+            'callback' => function ($model) {
+                return $model->delete();
+            },
+        ]);
+
+        $this->addAction('validate', [
+            //'scope'=> any!
+            'description'=> 'Provided with modified values will validate them but will not save',
+            'fields'     => true,
+            'system'     => true, // don't show by default
+            'args'       => ['intent'=>'string'],
+        ]);
     }
 
     /**
@@ -883,23 +921,13 @@ class Model implements ArrayAccess, IteratorAggregate
 
     /**
      * Return (possibly localized) $model->caption.
+     * If caption is not set, then generate it from model class name.
      *
      * @return string
      */
     public function getModelCaption()
     {
-        if ($this->caption) {
-            return $this->caption;
-        }
-
-        // if caption is not set, then generate it from model class name
-        $s = strtolower(get_class($this));
-        //$s = str_replace('model', '', $s);
-        $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
-        $s = array_map('trim', $s);
-        $s = ucwords(implode(' ', $s));
-
-        return $s;
+        return $this->caption ?: $this->readableCaption(get_class($this));
     }
 
     /**
@@ -1025,13 +1053,7 @@ class Model implements ArrayAccess, IteratorAggregate
         }
 
         if (!isset($defaults['caption'])) {
-            $s = $name;
-
-            $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
-            $s = array_map('trim', $s);
-            $s = ucwords(implode(' ', $s));
-
-            $defaults['caption'] = $s;
+            $defaults['caption'] = $this->readableCaption($name);
         }
 
         /** @var UserAction\Generic $action */
@@ -1102,6 +1124,25 @@ class Model implements ArrayAccess, IteratorAggregate
     public function executeAction($name, ...$args)
     {
         $this->getAction($name)->execute(...$args);
+    }
+
+    /**
+     * Remove specified action(s).
+     *
+     * @param string|array $name
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     *
+     * @return $this
+     */
+    public function removeAction($name)
+    {
+        foreach ((array) $name as $action) {
+            $this->_removeFromCollection($action, 'actions');
+        }
+
+        return $this;
     }
 
     // }}}

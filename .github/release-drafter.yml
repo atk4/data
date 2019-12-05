@@ -1,0 +1,9 @@
+# See https://github.com/release-drafter/release-drafter#configuration
+categories:
+  - title: 'Enhancements'
+    labels:
+      - enhancement
+template: |
+  ## What’s Changed
+
+  $CHANGES

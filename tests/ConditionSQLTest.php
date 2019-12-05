@@ -244,6 +244,28 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('Sue', $m['name']);
     }
 
+    public function testDateCondition2()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
+                2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($this->db, 'user');
+        $m->addField('name');
+        $m->addField('date', ['type'=>'date']);
+
+        $m->addCondition('date', new \DateTime('08-12-1982'));
+        $m->loadAny();
+        $this->assertEquals('Sue', $m['name']);
+
+        $m->addCondition([['date', new \DateTime('08-12-1982')]]);
+        $m->loadAny();
+        $this->assertEquals('Sue', $m['name']);
+    }
+
     /**
      * @expectedException        \Exception
      */

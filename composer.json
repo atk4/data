@@ -17,8 +17,8 @@
         "ext-intl": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
-        "atk4/dsql": "dev-develop as 1.2.5",
-        "atk4/core": "dev-develop"
+        "atk4/core": "dev-develop",
+        "atk4/dsql": "dev-develop"
     },
     "require-dev": {
         "atk4/schema": "dev-develop",

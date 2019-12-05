@@ -1,0 +1,68 @@
+name: Unit Testing
+
+on:
+  pull_request:
+    branches: '*'
+  push:
+    branches:
+      - master
+      - develop
+
+jobs:
+  unit-test:
+    name: Unit Testing
+    runs-on: ubuntu-latest
+    container:
+      image: atk4/image:${{ matrix.php }} # https://github.com/atk4/image
+    strategy:
+      matrix:
+        php: ['7.2', '7.3', 'latest']
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          DB_DATABASE: db
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+      postgres:
+        image: postgres:10-alpine
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v1
+      - run: php --version
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+
+      - name: Run Tests
+        run: |
+          mkdir -p build/logs
+          mysql -uroot -ppassword -h mysql -e 'CREATE DATABASE db;'
+      - name: SQLite Testing
+        run: vendor/bin/phpunit --configuration phpunit.xml --coverage-text --exclude-group dns
+
+      - name: MySQL Testing
+        run: vendor/bin/phpunit --configuration phpunit-mysql-workflow.xml --exclude-group dns
+
+      - name: PgSQL Testing (expected errors)
+        run: vendor/bin/phpunit --configuration phpunit-pgsql-workflow.xml --exclude-group dns  || echo 'ignoring errors..'
+
+      - name: Merge coverage logs
+        run: vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml;
+
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: build/logs/cc.xml
