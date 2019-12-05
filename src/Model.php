@@ -1102,7 +1102,7 @@ class Model implements ArrayAccess, IteratorAggregate
     {
         $this->getAction($name)->execute(...$args);
     }
-        
+
     /**
      * Remove specified action(s).
      *
@@ -1118,7 +1118,7 @@ class Model implements ArrayAccess, IteratorAggregate
         foreach ((array) $name as $action) {
             $this->_removeFromCollection($action, 'actions');
         }
-    	
+
         return $this;
     }
 
