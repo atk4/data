@@ -1110,6 +1110,8 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @throws Exception
      * @throws \atk4\core\Exception
+     *
+     * @return $this
      */
     public function removeAction($name)
     {
