@@ -371,7 +371,7 @@ class SQL extends Persistence
 
                         if ($row[0] instanceof Field) {
                             $valueKey = count($row) == 2 ? 1 : 2;
-                            
+
                             $row[$valueKey] = $this->typecastSaveField($row[0], $row[$valueKey]);
                         }
                     }
