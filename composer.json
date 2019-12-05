@@ -19,7 +19,7 @@
         "atk4/dsql": "dev-develop"
     },
     "require-dev": {
-        "atk4/schema": "*",
+        "atk4/schema": "dev-develop",
         "phpunit/phpunit": "<6",
         "phpunit/dbunit": ">=1.2",
         "phpunit/phpcov": "*",
