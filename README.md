@@ -14,6 +14,7 @@ Agile Data is a framework for defining your "business layer" which is separate f
 
 [![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=latest)](http://agile-data.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
+![Build](https://github.com/atk4/data/workflows/Unit%20Testing/badge.svg)
 [![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 [![StyleCI](https://styleci.io/repos/56442737/shield)](https://styleci.io/repos/56442737)
 [![CodeCov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
