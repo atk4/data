@@ -219,6 +219,8 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * SECURITY WARNING: If you are looking for a RELIABLE way to restrict access
      * to model data, please check Secure Enclave extension.
+     *
+     * @param bool
      */
     public $read_only = false;
 
@@ -511,7 +513,7 @@ class Model implements ArrayAccess, IteratorAggregate
         $seed = $this->mergeSeeds(
             $seed,
             isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
-            [Field::class]
+            $this->_default_seed_addField
         );
 
         /** @var Field $field */
