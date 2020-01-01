@@ -547,6 +547,10 @@ class Model implements ArrayAccess, IteratorAggregate
             if (is_array($field) && isset($field[0])) {
                 $name = $field[0];
                 unset($field[0]);
+                array_unshift($field, $name);
+                
+                $name = array_shift($field);
+                
                 $this->addField($name, $field);
                 continue;
             }
