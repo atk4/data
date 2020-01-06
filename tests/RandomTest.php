@@ -135,6 +135,42 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ], $this->getDB());
     }
 
+    public function testAddFields2()
+    {
+        if ($this->driver == 'pgsql') {
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        }
+
+        $a = [
+            'user' => [
+                1 => ['name' => 'John', 'last_name'=>null, 'login'=>null, 'salary'=>null, 'tax'=>null, 'vat'=>null],
+            ], ];
+        $this->setDB($a);
+
+        $db = new Persistence\SQL($this->db->connection);
+        $m = new Model($db, 'user');
+        $m->addFields(['name'], ['default' => 'anonymous']);
+        $m->addFields([
+            'last_name',
+            'login' => ['default' => 'unknown'],
+            'salary' => ['type'=>'money',CustomField::class, 'default' => 100],
+            ['tax', CustomField::class, 'type'=>'money', 'default' => 20],
+            'vat' => new CustomField(['type'=>'money', 'default' => 15]),
+        ]);
+
+        $m->insert([]);
+
+        $this->assertEquals([
+            ['id'=>1,'name'=>'John','last_name'=>null,'login'=>null,'salary'=>null,'tax'=>null,'vat'=>null],
+            ['id'=>2,'name'=>'anonymous','last_name'=>null,'login'=>'unknown','salary'=>100,'tax'=>20,'vat'=>15],
+        ], $m->export());
+
+        $m->load(2);
+        $this->assertTrue(is_float($m->get('salary')));
+        $this->assertTrue(is_float($m->get('tax')));
+        $this->assertTrue(is_float($m->get('vat')));
+    }
+
     public function testSameTable()
     {
         if ($this->driver == 'pgsql') {
@@ -493,3 +529,5 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertTrue(isset($a->persistence));
     }
 }
+
+class CustomField extends \atk4\data\Field {}

@@ -538,18 +538,25 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function addFields($fields = [], $defaults = [])
     {
-        foreach ($fields as $field) {
-            if (is_string($field)) {
-                $this->addField($field, $defaults);
+        foreach ($fields as $key => $field) {
+            if (!is_int($key)) {
+                // field name can be passed as array key
+                $name = $key;
+                $seed = array_merge($defaults, is_array($field) ? $field : [$field]);
+            } elseif (is_string($field)) {
+                // or it can be simple string = field name
+                $name = $field;
+                $seed = $defaults;
+            } elseif (is_array($field) && isset($field[0]) && is_string($field[0])) {
+                // or field name can be passed as first element of seed array (old behaviour)
+                $name = array_shift($field);
+                $seed = array_merge($defaults, is_array($field) ? $field : [$field]);
+            } else {
+                // some unsupported format, maybe throw exception here?
                 continue;
             }
 
-            if (is_array($field) && isset($field[0])) {
-                $name = $field[0];
-                unset($field[0]);
-                $this->addField($name, $field);
-                continue;
-            }
+            $this->addField($name, $seed);
         }
 
         return $this;
