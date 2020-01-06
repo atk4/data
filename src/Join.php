@@ -175,9 +175,9 @@ class Join
                     )) {
                      */
                     throw new Exception([
-                            'You are trying to link tables on non-id fields. This is not implemented yet',
-                            'condition' => $this->owner->table.'.'.$this->master_field.' = '.$this->foreign_table,
-                        ]);
+                        'You are trying to link tables on non-id fields. This is not implemented yet',
+                        'condition' => $this->owner->table.'.'.$this->master_field.' = '.$this->foreign_table,
+                    ]);
                     /*
                     }
 
