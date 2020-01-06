@@ -226,7 +226,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('Peter', $mm['name']);
         $this->assertEquals('+123 smiths', $mm['contact_phone']);
     }
-    
+
     public function testArrayCondition()
     {
         $a = [
@@ -240,22 +240,22 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', ['John', 'Doe']);
-        $this->assertEquals(1,count($m->export()));
+        $this->assertEquals(1, count($m->export()));
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
-        $m->addCondition('name', 'in', ['Johhny','Doe','Mary']);
-        $this->assertEquals(2,count($m->export()));
+        $m->addCondition('name', 'in', ['Johhny', 'Doe', 'Mary']);
+        $this->assertEquals(2, count($m->export()));
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', []); // this should not fail, always should be false
-        $this->assertEquals(0,count($m->export()));
+        $this->assertEquals(0, count($m->export()));
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', 'not', []); // this should not fail, always should be true
-        $this->assertEquals(3,count($m->export()));
+        $this->assertEquals(3, count($m->export()));
     }
 
     public function testDateCondition()
