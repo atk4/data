@@ -542,19 +542,19 @@ class Model implements ArrayAccess, IteratorAggregate
             if (!is_int($key)) {
                 // field name can be passed as array key
                 $name = $key;
-                $seed = array_merge($defaults, (array) $field);
             } elseif (is_string($field)) {
                 // or it can be simple string = field name
                 $name = $field;
-                $seed = $defaults;
+                $field = [];
             } elseif (is_array($field) && isset($field[0]) && is_string($field[0])) {
                 // or field name can be passed as first element of seed array (old behaviour)
                 $name = array_shift($field);
-                $seed = array_merge($defaults, (array) $field);
             } else {
                 // some unsupported format, maybe throw exception here?
                 continue;
             }
+
+            $seed = array_merge($defaults, (array) $field);
 
             $this->addField($name, $seed);
         }
