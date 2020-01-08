@@ -2,7 +2,7 @@
     <php>
         <var name="DB_DSN" value="pgsql:dbname=atk4-dsql-test;host=localhost" />
         <var name="DB_USER" value="postgres" />
-        <var name="DB_PASSWD" value="" />
+        <var name="DB_PASSWD" value="password" />
         <var name="DB_DBNAME" value="atk4-dsql-test" />
     </php>
     <filter>
