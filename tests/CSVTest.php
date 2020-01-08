@@ -55,9 +55,9 @@ class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testTestcase()
     {
         $data = [
-                ['name' => 'John', 'surname' => 'Smith'],
-                ['name' => 'Sarah', 'surname' => 'Jones'],
-            ];
+            ['name' => 'John', 'surname' => 'Smith'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
 
         $this->setDB($data);
         $data2 = $this->getDB();
@@ -67,9 +67,9 @@ class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testLoadAny()
     {
         $data = [
-                ['name' => 'John', 'surname' => 'Smith'],
-                ['name' => 'Sarah', 'surname' => 'Jones'],
-            ];
+            ['name' => 'John', 'surname' => 'Smith'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
 
         $this->setDB($data);
 
@@ -86,9 +86,9 @@ class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testLoadAnyException()
     {
         $data = [
-                ['name' => 'John', 'surname' => 'Smith'],
-                ['name' => 'Sarah', 'surname' => 'Jones'],
-            ];
+            ['name' => 'John', 'surname' => 'Smith'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
 
         $this->setDB($data);
 
@@ -109,9 +109,9 @@ class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testPersistenceCopy()
     {
         $data = [
-                ['name' => 'John', 'surname' => 'Smith', 'gender'=>'M'],
-                ['name' => 'Sarah', 'surname' => 'Jones', 'gender'=>'F'],
-            ];
+            ['name' => 'John', 'surname' => 'Smith', 'gender'=>'M'],
+            ['name' => 'Sarah', 'surname' => 'Jones', 'gender'=>'F'],
+        ];
 
         $this->setDB($data);
 
@@ -138,9 +138,9 @@ class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testExport()
     {
         $data = [
-                ['name' => 'John', 'surname' => 'Smith'],
-                ['name' => 'Sarah', 'surname' => 'Jones'],
-            ];
+            ['name' => 'John', 'surname' => 'Smith'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
         $this->setDB($data);
 
         $p = new Persistence\CSV($this->file);

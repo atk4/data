@@ -197,18 +197,18 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->duplicate()->save();
 
         $a['types'][2] = [
-                    'id'       => 2,
-                    'string'   => '',
-                    'notype'   => '',
-                    'date'     => null,
-                    'datetime' => null,
-                    'time'     => null,
-                    'boolean'  => null,
-                    'integer'  => null,
-                    'money'    => null,
-                    'float'    => null,
-                    'array'    => null,
-                    'object'   => null,
+            'id'       => 2,
+            'string'   => '',
+            'notype'   => '',
+            'date'     => null,
+            'datetime' => null,
+            'time'     => null,
+            'boolean'  => null,
+            'integer'  => null,
+            'money'    => null,
+            'float'    => null,
+            'array'    => null,
+            'object'   => null,
         ];
 
         $this->assertEquals($a, $this->getDB());
