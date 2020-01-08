@@ -213,7 +213,7 @@ class SQL extends Persistence
 
         return $this->connection->expr($expr, $args);
     }
-    
+
     /**
      * Creates new Query object with current_timestamp(precision) expression.
      *
