@@ -181,6 +181,7 @@ class SQL extends Persistence
     {
         $m->addMethod('expr', $this);
         $m->addMethod('dsql', $this);
+        $m->addMethod('exprNow', $this);
     }
 
     /**
@@ -211,6 +212,19 @@ class SQL extends Persistence
         );
 
         return $this->connection->expr($expr, $args);
+    }
+    
+    /**
+     * Creates new Query object with current_timestamp(precision) expression.
+     *
+     * @param Model $m
+     * @param int   $precision
+     *
+     * @return Query
+     */
+    public function exprNow($precision = null)
+    {
+        return $this->connection->dsql()->exprNow($precision);
     }
 
     /**
