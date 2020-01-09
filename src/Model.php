@@ -536,7 +536,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return $this
      */
-    public function addFields($fields = [], $defaults = [])
+    public function addFields(array $fields, $defaults = [])
     {
         foreach ($fields as $key => $field) {
             if (!is_int($key)) {

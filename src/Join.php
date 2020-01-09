@@ -211,19 +211,21 @@ class Join
      * with this join. That means it won't be loaded from $table, but
      * form the join instead.
      *
-     * @param string $n
-     * @param array  $defaults
+     * @param string $name
+     * @param array  $seed
+     *
+     * @throws \atk4\core\Exception
      *
      * @return Field
      */
-    public function addField($n, $defaults = [])
+    public function addField($name, $seed = [])
     {
-        if ($defaults && !is_array($defaults)) {
-            $defaults = [$defaults];
+        if ($seed && !is_array($seed)) {
+            $seed = [$seed];
         }
-        $defaults['join'] = $this;
+        $seed['join'] = $this;
 
-        return $this->owner->addField($this->prefix.$n, $defaults);
+        return $this->owner->addField($this->prefix.$name, $seed);
     }
 
     /**
