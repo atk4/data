@@ -195,6 +195,11 @@ class Generic
         return $this->description ?? ('Will execute '.$this->caption);
     }
 
+    /**
+     * Return action confirmation.
+     *
+     * @return bool|callable|string
+     */
     public function getConfirmation()
     {
         $confirmation = $this->confirmation;
@@ -208,5 +213,15 @@ class Generic
         }
 
         return $confirmation;
+    }
+
+    /**
+     * Return model associate with this action.
+     *
+     * @return Model
+     */
+    public function getModel()
+    {
+        return $this->owner;
     }
 }
