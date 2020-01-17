@@ -409,11 +409,11 @@ class Model implements ArrayAccess, IteratorAggregate
 
         // Declare our basic CRUD actions for the model.
         $this->addAction('add', [
-            'fields'  => true,
-            'scope'   => UserAction\Generic::NO_RECORDS,
-            'callback'=> 'save',
+            'fields'      => true,
+            'scope'       => UserAction\Generic::NO_RECORDS,
+            'callback'    => 'save',
             'description' => 'Add '.$this->getModelCaption(),
-            'ui'      => ['icon'=>'plus'],
+            'ui'          => ['icon'=>'plus'],
         ]);
         $this->addAction('edit', [
             'fields'  => true,
