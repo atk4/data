@@ -196,9 +196,9 @@ class Generic
     }
 
     /**
-     * Return action confirmation.
+     * Return confirmation message for action.
      *
-     * @return bool|callable|string
+     * @return string
      */
     public function getConfirmation()
     {
