@@ -155,7 +155,7 @@ which I want to define like this::
             return;
         }
 
-        $this->owner->addField('created_dts', ['type'=>'datetime', 'default'=>date('Y-m-d H:i:s')]);
+        $this->owner->addField('created_dts', ['type'=>'datetime', 'default'=>new \DateTime()]);
 
         $this->owner->hasOne('created_by_user_id', 'User');
         if(isset($this->app->user) and $this->app->user->loaded()) {
@@ -170,7 +170,7 @@ which I want to define like this::
             if(isset($this->app->user) and $this->app->user->loaded()) {
                 $data['updated_by'] = $this->app->user->id;
             }
-            $data['updated_dts'] = date('Y-m-d H:i:s');
+            $data['updated_dts'] = new \DateTime();
         });
     }
 

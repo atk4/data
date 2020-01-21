@@ -165,7 +165,7 @@ class Field implements Expressionable
     /**
      * Persisting format for type = 'date', 'datetime', 'time' fields.
      *
-     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
+     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.
      *
      * @var string
      */
@@ -409,11 +409,23 @@ class Field implements Expressionable
                 case 'boolean':
                     throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
                 case 'date':
-                    return $v instanceof \DateTimeInterface ? $v->format('Y-m-d') : (string) $v;
                 case 'datetime':
-                    return $v instanceof \DateTimeInterface ? $v->format('c') : (string) $v; // ISO 8601 format 2004-02-12T15:19:21+00:00
                 case 'time':
-                    return $v instanceof \DateTimeInterface ? $v->format('H:i:s') : (string) $v;
+                    if ($v instanceof \DateTimeInterface) {
+                        $dateFormat = 'Y-m-d';
+                        $timeFormat = 'H:i:s'.($v->format('u') > 0 ? '.u' : ''); // add microseconds if presented
+                        if ($this->type === 'date') {
+                            $format = $dateFormat;
+                        } elseif ($this->type === 'time') {
+                            $format = $timeFormat;
+                        } else {
+                            $format = $dateFormat.'\T'.$timeFormat.'P'; // ISO 8601 format 2004-02-12T15:19:21+00:00
+                        }
+
+                        return $v->format($format);
+                    }
+
+                    return (string) $v;
                 case 'array':
                     return json_encode($v); // todo use Persistence->jsonEncode() instead
                 case 'object':

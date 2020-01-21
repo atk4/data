@@ -867,13 +867,24 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('', $model->getField('time')->toString());
         $this->assertEquals('', $model->getField('datetime')->toString());
 
-        $current_date = new \DateTime();
-        $model->set('date', $current_date);
-        $model->set('time', $current_date);
-        $model->set('datetime', $current_date);
+        // datetime without microseconds
+        $dt = new \DateTime('2020-01-21 21:09:42');
+        $model->set('date', $dt);
+        $model->set('time', $dt);
+        $model->set('datetime', $dt);
 
-        $this->assertEquals($current_date->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertEquals($current_date->format('H:i:s'), $model->getField('time')->toString());
-        $this->assertEquals($current_date->format('c'), $model->getField('datetime')->toString());
+        $this->assertEquals($dt->format('Y-m-d'), $model->getField('date')->toString());
+        $this->assertEquals($dt->format('H:i:s'), $model->getField('time')->toString());
+        $this->assertEquals($dt->format('c'), $model->getField('datetime')->toString());
+
+        // datetime with microseconds
+        $dt = new \DateTime('2020-01-21 21:09:42.895623');
+        $model->set('date', $dt);
+        $model->set('time', $dt);
+        $model->set('datetime', $dt);
+
+        $this->assertEquals($dt->format('Y-m-d'), $model->getField('date')->toString());
+        $this->assertEquals($dt->format('H:i:s.u'), $model->getField('time')->toString());
+        $this->assertEquals($dt->format('Y-m-d\TH:i:s.uP'), $model->getField('datetime')->toString());
     }
 }
