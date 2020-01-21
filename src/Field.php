@@ -344,14 +344,14 @@ class Field implements Expressionable
                     throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value type' => gettype($value)]);
                 }
 
-                if ($f->type == 'date') {
+                if ($f->type == 'date' && $value->format('H:i:s.u') !== '00:00:00.000000') {
                     // remove time portion from date type value
-                    $value->setTime(0, 0, 0);
+                    $value = (clone $value)->setTime(0, 0, 0);
                 }
-                if ($f->type == 'time') {
+                if ($f->type == 'time' && $value->format('Y-m-d') !== '1970-01-01') {
                     // remove date portion from date type value
                     // need 1970 in place of 0 - DB
-                    $value->setDate(1970, 1, 1);
+                    $value = (clone $value)->setDate(1970, 1, 1);
                 }
 
                 break;
