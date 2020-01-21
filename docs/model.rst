@@ -29,12 +29,12 @@ object you can load/unload individual records (See Single record Operations belo
    $m->load(8);
    ....
 
-and even perform operations on multiple records (See Multiple record Operations below)::
+and even perform operations on multiple records (See `Persistence Actions` below)::
 
    $m = new User($db);
    $m->addCondition('expired', true);
 
-   $m->deleteAll();
+   $m->action('delete')->execute();
 
 When data is loaded from associated Persistence, it is automatically converted into
 a native PHP type (such as DateTime object) through a process called Typecasting. Various
