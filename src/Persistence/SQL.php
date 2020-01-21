@@ -453,7 +453,7 @@ class SQL extends Persistence
             $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
             $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
 
-            if ($v instanceof $dt_class) {
+            if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
                 $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
                 $format = $f->persist_format ?: $format[$f->type];
 

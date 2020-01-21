@@ -337,11 +337,15 @@ class Field implements Expressionable
                 } elseif (is_string($value)) {
                     $value = new $class($value);
                 } elseif (!$value instanceof $class) {
-                    if (is_object($value)) {
-                        throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
-                    }
+                    if ($value instanceof \DateTimeInterface) {
+                        $value = new $class($value->format('Y-m-d H:i:s.u'), $value->getTimeZone());
+                    } else {
+                        if (is_object($value)) {
+                            throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
+                        }
 
-                    throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value type' => gettype($value)]);
+                        throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value type' => gettype($value)]);
+                    }
                 }
 
                 if ($f->type == 'date') {
