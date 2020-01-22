@@ -729,7 +729,7 @@ class Model implements ArrayAccess, IteratorAggregate
             if ($this->only_fields && !in_array($name, $this->only_fields)) {
                 return false;
             }
-            foreach($filter as $f) {
+            foreach ($filter as $f) {
                 if (
                     ($f == 'system' && $field->system)
                     || ($f == 'not system' && !$field->system)
@@ -737,11 +737,11 @@ class Model implements ArrayAccess, IteratorAggregate
                     || ($f == 'visible' && $field->isVisible())
                 ) {
                     return true;
-                } elseif (!in_array($f, ['system','not system','editable','visible'])) {
+                } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'])) {
                     throw new Exception(['Filter is not supported', 'filter'=>$f]);
                 }
             }
-            
+
             return false;
         }, ARRAY_FILTER_USE_BOTH);
     }
