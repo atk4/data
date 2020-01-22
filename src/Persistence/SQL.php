@@ -459,6 +459,7 @@ class SQL extends Persistence
 
                 // datetime only - set to persisting timezone
                 if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                    $v = new \DateTime($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                     $v->setTimezone(new $tz_class($f->persist_timezone));
                 }
                 $v = $v->format($format);
