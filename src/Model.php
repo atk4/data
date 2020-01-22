@@ -712,15 +712,16 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
-     * @param string|null $filter
+     * @param string|array|null $filter
      *
      * @return array
      */
-    public function getFields(string $filter = null)
+    public function getFields($filter = null)
     {
         if (!$filter) {
             return $this->fields;
         }
+        $filter = is_string($filter) ? explode(',', $filter) : $filter;
 
         return array_filter($this->fields, function (Field $field, $name) use ($filter) {
 
@@ -728,15 +729,20 @@ class Model implements ArrayAccess, IteratorAggregate
             if ($this->only_fields && !in_array($name, $this->only_fields)) {
                 return false;
             }
-
-            switch ($filter) {
-                case 'system': return $field->system;
-                case 'not system': return !$field->system;
-                case 'editable': return $field->isEditable();
-                case 'visible': return $field->isVisible();
-                default:
-                    throw new Exception(['Filter is not supported', 'filter'=>$filter]);
+            foreach($filter as $f) {
+                if (
+                    ($f == 'system' && $field->system)
+                    || ($f == 'not system' && !$field->system)
+                    || ($f == 'editable' && $field->isEditable())
+                    || ($f == 'visible' && $field->isVisible())
+                ) {
+                    return true;
+                } elseif (!in_array($f, ['system','not system','editable','visible'])) {
+                    throw new Exception(['Filter is not supported', 'filter'=>$f]);
+                }
             }
+            
+            return false;
         }, ARRAY_FILTER_USE_BOTH);
     }
 
