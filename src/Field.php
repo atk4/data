@@ -395,6 +395,16 @@ class Field implements Expressionable
     // {{{ Handy methods used by UI and in other places
 
     /**
+     * Returns if field is a system field.
+     *
+     * @return bool
+     */
+    public function isSystem() : bool
+    {
+        return $this->system;
+    }
+    
+    /**
      * Returns if field should be editable in UI.
      *
      * @return bool
