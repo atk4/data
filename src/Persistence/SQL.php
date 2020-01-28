@@ -454,7 +454,7 @@ class SQL extends Persistence
             $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
 
             if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
-                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
                 $format = $f->persist_format ?: $format[$f->type];
 
                 // datetime only - set to persisting timezone
@@ -534,20 +534,27 @@ class SQL extends Persistence
             } elseif (is_string($v)) {
                 // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
                 $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
-                $format = $f->persist_format ?: $format[$f->type];
+                if ($f->persist_format) {
+                    $format = $f->persist_format;
+                } else {
+                    $format = $format[$f->type];
+                    if (strpos($v, '.') !== false) { // time possibly with microseconds, otherwise invalid format
+                        $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
+                    }
+                }
 
                 // datetime only - set from persisting timezone
                 if ($f->type == 'datetime' && isset($f->persist_timezone)) {
                     $v = $dt_class::createFromFormat($format, $v, new $tz_class($f->persist_timezone));
-                    if ($v === false) {
-                        throw new Exception(['Incorrectly formatted datetime', 'format' => $format, 'value' => $value, 'field' => $f]);
+                    if ($v !== false) {
+                        $v->setTimezone(new $tz_class(date_default_timezone_get()));
                     }
-                    $v = $v->setTimezone(new $tz_class(date_default_timezone_get()));
                 } else {
                     $v = $dt_class::createFromFormat($format, $v);
-                    if ($v === false) {
-                        throw new Exception(['Incorrectly formatted date/time', 'format' => $format, 'value' => $value, 'field' => $f]);
-                    }
+                }
+
+                if ($v === false) {
+                    throw new Exception(['Incorrectly formatted date/time', 'format' => $format, 'value' => $value, 'field' => $f]);
                 }
 
                 // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
