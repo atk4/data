@@ -453,12 +453,13 @@ class SQL extends Persistence
             $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
             $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
 
-            if ($v instanceof $dt_class) {
+            if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
                 $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
                 $format = $f->persist_format ?: $format[$f->type];
 
                 // datetime only - set to persisting timezone
                 if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                    $v = new \DateTime($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                     $v->setTimezone(new $tz_class($f->persist_timezone));
                 }
                 $v = $v->format($format);
@@ -541,7 +542,7 @@ class SQL extends Persistence
                     if ($v === false) {
                         throw new Exception(['Incorrectly formatted datetime', 'format' => $format, 'value' => $value, 'field' => $f]);
                     }
-                    $v->setTimeZone(new $tz_class(date_default_timezone_get()));
+                    $v = $v->setTimezone(new $tz_class(date_default_timezone_get()));
                 } else {
                     $v = $dt_class::createFromFormat($format, $v);
                     if ($v === false) {
@@ -552,7 +553,7 @@ class SQL extends Persistence
                 // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
                 // this is what Carbon::instance(DateTime $dt) method does for example
                 if ($dt_class != 'DateTime') {
-                    $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimeZone());
+                    $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                 }
             }
             break;
