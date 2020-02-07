@@ -208,21 +208,20 @@ performance. In ATK Data this is not an issue, because "Model" is re-usable::
 
    foreach(new User($db) as $user) {
 
-      var_dump($user->getField['name']);
       // will be the same object every time!!
+      var_dump($user->getField['name']);
 
-
-      var_dump($user)
       // this is also the same object every time!!
+      var_dump($user)
 
    }
 
 Instead, Field handles many very valuable operations which would otherwise fall on the
 shoulders of developer (Read more here :php:class:`Field`)
 
-.. php:method:: addField($name, $defaults)
+.. php:method:: addField($name, $seed)
 
-Creates a new field objects inside your model (by default the class is 'Field').
+Creates a new field object inside your model (by default the class is 'Field').
 The fields are implemented on top of Containers from Agile Core.
 
 Second argument to addField() will contain a seed for the Field class::
@@ -234,13 +233,28 @@ the type::
 
    $field = $this->addField('is_married', ['type'=>'boolean']);
 
-   // $field type is Field\Boolean
+   // $field class now will be Field\Boolean
 
 You may also specify your own Field implementation::
 
    $field = $this->addField('amount_and_currency', new MyAmountCurrencyField());
 
 Read more about :php:class:`Field`
+
+.. php:method:: addFields(array $fields, $defaults = [])
+
+Creates multiple field objects in one method call. See multiple syntax examples::
+
+    $m->addFields(['name'], ['default' => 'anonymous']);
+
+    $m->addFields([
+        'last_name',
+        'login' => ['default' => 'unknown'],
+        'salary' => ['type'=>'money', CustomField::class, 'default' => 100],
+        ['tax', CustomField::class, 'type'=>'money', 'default' => 20],
+        'vat' => new CustomField(['type'=>'money', 'default' => 15]),
+    ]);
+
 
 Read-only Fields
 ^^^^^^^^^^^^^^^^

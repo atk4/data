@@ -107,7 +107,7 @@ class SQL extends Persistence
      *
      * @return Query
      */
-    public function dsql() : Query
+    public function dsql(): Query
     {
         return $this->connection->dsql();
     }
@@ -134,7 +134,7 @@ class SQL extends Persistence
      *
      * @return Model
      */
-    public function add($m, $defaults = []) : Model
+    public function add($m, $defaults = []): Model
     {
         // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
@@ -181,6 +181,7 @@ class SQL extends Persistence
     {
         $m->addMethod('expr', $this);
         $m->addMethod('dsql', $this);
+        $m->addMethod('exprNow', $this);
     }
 
     /**
@@ -192,7 +193,7 @@ class SQL extends Persistence
      *
      * @return Expression
      */
-    public function expr(Model $m, $expr, $args = []) : Expression
+    public function expr(Model $m, $expr, $args = []): Expression
     {
         if (!is_string($expr)) {
             return $this->connection->expr($expr, $args);
@@ -214,13 +215,26 @@ class SQL extends Persistence
     }
 
     /**
+     * Creates new Query object with current_timestamp(precision) expression.
+     *
+     * @param Model $m
+     * @param int   $precision
+     *
+     * @return Query
+     */
+    public function exprNow($precision = null)
+    {
+        return $this->connection->dsql()->exprNow($precision);
+    }
+
+    /**
      * Initializes base query for model $m.
      *
      * @param Model $m
      *
      * @return Query
      */
-    public function initQuery(Model $m) : Query
+    public function initQuery(Model $m): Query
     {
         $d = $m->persistence_data['dsql'] = $this->dsql();
 
@@ -347,7 +361,7 @@ class SQL extends Persistence
      *
      * @return Query
      */
-    public function initQueryConditions(Model $m, Query $q) : Query
+    public function initQueryConditions(Model $m, Query $q): Query
     {
         if (!isset($m->conditions)) {
             // no conditions are set in the model
