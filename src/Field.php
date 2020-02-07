@@ -177,6 +177,27 @@ class Field implements Expressionable
      * @var null|bool|array
      */
     public $serialize = null;
+    
+    protected static $seedProperties = [
+            'default',
+            'type',
+            'enum',
+            'values',
+            'reference',
+            'actual',
+            'join',
+            'system',
+            'never_persist',
+            'never_save',
+            'read_only',
+            'caption',
+            'ui',
+            'persistence',
+            'mandatory',
+            'required',
+            'typecast',
+            'serialize',
+    ];
 
     // }}}
 
@@ -261,7 +282,7 @@ class Field implements Expressionable
             }
             break;
         case 'string':
-            throw new Exception(['Use Field\ShortText for type=string', 'this'=>$this]);
+            throw new Exception(['Use Field\Line for type=string', 'this'=>$this]);
         case 'text':
             throw new Exception(['Use Field\Text for type=text', 'this'=>$this]);
         case 'integer':
@@ -294,38 +315,24 @@ class Field implements Expressionable
      *
      * @return array
      */
-    public function getSeed(array $properties = []) : array
+    public function getSeed(array $defaults = []) : array
     {
+        if (!$defaults) {
+            $seedProperties = static::$seedProperties;
+            foreach (class_parents($this) as $parent) {
+                $seedProperties = array_merge($parent::$seedProperties, $seedProperties);
+            }
+            
+            $defaults = array_intersect_key(get_class_vars(static::class), array_flip($seedProperties));
+        }
+
         $seed = [];
-
-        // [key => default_value]
-        $properties = $properties ?: [
-            'default'       => null,
-            'type'          => null,
-            'enum'          => null,
-            'values'        => null,
-            'reference'     => null,
-            'actual'        => null,
-            'join'          => null,
-            'system'        => false,
-            'never_persist' => false,
-            'never_save'    => false,
-            'read_only'     => false,
-            'caption'       => null,
-            'ui'            => [],
-            'persistence'   => [],
-            'mandatory'     => false,
-            'required'      => false,
-            'typecast'      => null,
-            'serialize'     => null,
-        ];
-
-        foreach ($properties as $k=>$v) {
+        foreach ($defaults as $k=>$v) {
             if ($this->{$k} !== $v) {
                 $seed[$k] = $this->{$k};
             }
         }
-
+        
         return $seed;
     }
 

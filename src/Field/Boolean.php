@@ -41,6 +41,11 @@ class Boolean extends \atk4\data\Field
      * @var array
      */
     public $enum = null;
+    
+    protected static $seedProperties = [
+            'valueTrue',
+            'valueFalse',
+    ];
 
     /**
      * Constructor.
@@ -94,33 +99,6 @@ class Boolean extends \atk4\data\Field
         }
 
         return $value;
-    }
-
-    /**
-     * Return array of seed properties of this Field object.
-     *
-     * @param array $properties Properties to return, by default will return all properties set.
-     *
-     * @return array
-     */
-    public function getSeed(array $properties = []) : array
-    {
-        $seed = parent::getSeed($properties);
-
-        // [key => default_value]
-        $properties = $properties ?: [
-            'valueTrue'  => true,
-            'valueFalse' => false,
-            'enum'       => null,
-        ];
-
-        foreach ($properties as $k=>$v) {
-            if ($this->{$k} !== $v) {
-                $seed[$k] = $this->{$k};
-            }
-        }
-
-        return $seed;
     }
 
     /**

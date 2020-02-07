@@ -39,6 +39,13 @@ class Email extends Field
      * @var array Array of allowed separators
      */
     public $separator = [','];
+    
+    protected static $seedProperties = [
+            'dns_check',
+            'allow_multiple',
+            'include_names',
+            'separator',
+    ];
 
     /**
      * Validate and normalize value.
@@ -84,34 +91,6 @@ class Email extends Field
         }, $emails);
 
         return parent::normalize(implode(', ', $emails));
-    }
-
-    /**
-     * Return array of seed properties of this Field object.
-     *
-     * @param array $properties Properties to return, by default will return all properties set.
-     *
-     * @return array
-     */
-    public function getSeed(array $properties = []) : array
-    {
-        $seed = parent::getSeed($properties);
-
-        // [key => default_value]
-        $properties = $properties ?: [
-            'dns_check'      => false,
-            'allow_multiple' => false,
-            'include_names'  => false,
-            'separator'      => [','],
-        ];
-
-        foreach ($properties as $k=>$v) {
-            if ($this->{$k} !== $v) {
-                $seed[$k] = $this->{$k};
-            }
-        }
-
-        return $seed;
     }
 
     /**

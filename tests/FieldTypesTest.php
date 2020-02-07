@@ -3,8 +3,8 @@
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Persistence_Static;
-use atk4\data\ValidationException;
+use atk4\data\Field\Callback;
+use atk4\data\Field\Integer;
 
 /**
  * Test various Field.
@@ -17,7 +17,7 @@ class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         parent::setUp();
 
-        $this->pers = new Persistence_Static([
+        $this->pers = new \atk4\data\Persistence\Static_([
             1 => ['name'=>'John'],
             2 => ['name'=>'Peter'],
         ]);
@@ -98,5 +98,29 @@ class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->expectExceptionMessage('format is invalid');
         $m['email'] = 'Romans <me@gmail.com>';
+    }
+    
+    public function testCallback()
+    {
+        $model = new Model($this->pers);
+        $model->addField('callback', [Callback::class, 'fx'=>function($model) {
+            return $model['name'];
+        }]);
+        
+        $model->each(function($model) {
+            $this->assertEquals($model['callback'], $model['name']);
+        });
+    }
+    
+    public function testInteger()
+    {
+        $model = new Model($this->pers);
+        $model->addField('integer', [Integer::class]);
+        
+        $model['integer'] = 55.55;
+        
+        $model->save();
+
+        $this->assertEquals($model['integer'], 55);
     }
 }

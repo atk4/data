@@ -521,7 +521,7 @@ class Model implements ArrayAccess, IteratorAggregate
     {
         $seed = $this->mergeSeeds(
             $seed,
-            isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
+            isset($seed['type']) ? (static::$defaultFieldTypeSeed[$seed['type']] ?? null) : null,
             [Field::class]
         );
 
@@ -532,18 +532,18 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /** @var array [type => classname] */
-    protected $typeToFieldSeed = [
-        'boolean'  => ['Boolean'],
-        'float'    => ['Numeric'],
-        'integer'  => ['Integer'],
-        'money'    => ['Money'],
-        'text'     => ['Text'],
-        'string'   => ['Line'],
-        'datetime' => ['DateTime'],
-        'date'     => ['Date'],
-        'time'     => ['Time'],
-        'array'    => ['Array_'],
-        'object'   => ['Object_'],
+    protected static $defaultFieldTypeSeed = [
+        'boolean'  => Field\Boolean::class,
+        'float'    => Field\Numeric::class,
+        'integer'  => Field\Integer::class,
+        'money'    => Field\Money::class,
+        'text'     => Field\Text::class,
+        'string'   => Field\Line::class,
+        'datetime' => Field\DateTime::class,
+        'date'     => Field\Date::class,
+        'time'     => Field\Time::class,
+        'array'    => Field\Array_::class,
+        'object'   => Field\Object_::class,
     ];
 
     /**

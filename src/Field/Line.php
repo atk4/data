@@ -4,7 +4,6 @@
 
 namespace atk4\data\Field;
 
-use atk4\data\Field;
 use atk4\data\ValidationException;
 
 /**
@@ -22,6 +21,10 @@ class Line extends Text
      * @var int specify a maximum length for this text.
      */
     public $max_length = 255;
+    
+    protected static $seedProperties = [
+            'max_length',
+    ];
 
     /**
      * Validate and normalize value.
@@ -40,30 +43,5 @@ class Line extends Text
         $value = trim(str_replace(["\r", "\n"], '', $value));
 
         return $value;
-    }
-
-    /**
-     * Return array of seed properties of this Field object.
-     *
-     * @param array $properties Properties to return, by default will return all properties set.
-     *
-     * @return array
-     */
-    public function getSeed(array $properties = []) : array
-    {
-        $seed = parent::getSeed($properties);
-
-        // [key => default_value]
-        $properties = $properties ?: [
-            'max_length' => 255,
-        ];
-
-        foreach ($properties as $k=>$v) {
-            if ($this->{$k} !== $v) {
-                $seed[$k] = $this->{$k};
-            }
-        }
-
-        return $seed;
     }
 }

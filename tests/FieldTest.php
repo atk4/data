@@ -876,4 +876,19 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals($current_date->format('H:i:s'), $model->getField('time')->toString());
         $this->assertEquals($current_date->format('c'), $model->getField('datetime')->toString());
     }
+    
+    public function testFieldSeed()
+    {
+        $model = new Model();
+        $model->addField('date', ['type' => 'date', 'caption' => 'Test', 'required'=>true]);
+        $model->addField('integer', ['type' => 'integer', 'caption' => 'Test', 'required'=>true]);
+        
+        foreach (['date', 'integer'] as $name) {
+            $seed = $model->getField($name)->getSeed();
+            
+            $this->assertArrayNotHasKey('type', $seed);
+            $this->assertArrayHasKey('caption', $seed);
+            $this->assertArrayHasKey('required', $seed);;
+        }
+    }
 }

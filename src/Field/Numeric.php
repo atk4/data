@@ -18,17 +18,17 @@ class Numeric extends Field
     /**
      * @var int Specify how many decimal numbers should be saved.
      */
-    public $decimal_numbers = 8;
+    public $decimals = 8;
 
     /**
      * @var bool Enable number rounding. If true will round number, otherwise will round it down (trim).
      */
-    public $enable_rounding = true;
+    public $round = true;
 
     /**
      * @var bool Set this to `true` if you wish to also store negative values.
      */
-    public $signed = true;
+    public $signum = true;
 
     /**
      * @var int specify a minimum value for this number.
@@ -39,35 +39,14 @@ class Numeric extends Field
      * @var int specify a maximum value for this number.
      */
     public $max;
-
-    /**
-     * Return array of seed properties of this Field object.
-     *
-     * @param array $properties Properties to return, by default will return all properties set.
-     *
-     * @return array
-     */
-    public function getSeed(array $properties = []) : array
-    {
-        $seed = parent::getSeed($properties);
-
-        // [key => default_value]
-        $properties = $properties ?: [
-            'decimal_numbers' => 8,
-            'enable_rounding' => true,
-            'signed'          => true,
-            'min'             => null,
-            'max'             => null,
-        ];
-
-        foreach ($properties as $k=>$v) {
-            if ($this->{$k} !== $v) {
-                $seed[$k] = $this->{$k};
-            }
-        }
-
-        return $seed;
-    }
+    
+    protected static $seedProperties = [
+            'decimals',
+            'round',
+            'signum',
+            'min',
+            'max',
+    ];
 
     /**
      * Validate and normalize value.
@@ -103,9 +82,9 @@ class Numeric extends Field
         }
 
         $value = (float) $value;
-        $value = $this->enable_rounding ? round($value, $this->decimal_numbers) : $this->roundDown($value, $this->decimal_numbers);
+        $value = $this->round ? round($value, $this->decimals) : $this->roundDown($value, $this->decimals);
 
-        if (!$this->signed && $value < 0) {
+        if (!$this->signum && $value < 0) {
             throw new ValidationException([$this->name => 'Must be positive']);
         }
 
