@@ -20,6 +20,8 @@ use atk4\data\ValidationException;
  */
 class Email extends Field
 {
+    public $type = 'string';
+    
     /**
      * @var bool Enable lookup for MX record for email addresses stored
      */

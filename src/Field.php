@@ -198,6 +198,25 @@ class Field implements Expressionable
             'typecast',
             'serialize',
     ];
+    
+    /**
+     * Map field type to seed
+     * 
+     * @var array
+     */
+    protected static $registry = [
+            'boolean'  => Field\Boolean::class,
+            'float'    => Field\Numeric::class,
+            'integer'  => Field\Integer::class,
+            'money'    => Field\Money::class,
+            'text'     => Field\Text::class,
+            'string'   => Field\Line::class,
+            'datetime' => Field\DateTime::class,
+            'date'     => Field\Date::class,
+            'time'     => Field\Time::class,
+            'array'    => Field\Array_::class,
+            'object'   => Field\Object_::class,
+    ];
 
     // }}}
 
@@ -334,6 +353,27 @@ class Field implements Expressionable
         }
         
         return $seed;
+    }
+    
+    /**
+     * Resolve field type to seed from Field::$registry
+     * 
+     * @param string $type
+     */
+    public static function resolve($type)
+    {
+        return self::$registry[$type] ?? null;
+    }
+    
+    /**
+     * Register custom field type to be resolved
+     * 
+     * @param string        $type
+     * @param string|array  $seed
+     */
+    public static function register($type, $seed)
+    {
+        self::$registry[$type] = $seed;
     }
 
     /**

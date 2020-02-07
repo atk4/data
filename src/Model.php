@@ -524,30 +524,17 @@ class Model implements ArrayAccess, IteratorAggregate
     {
         $seed = $this->mergeSeeds(
             $seed,
-            isset($seed['type']) ? (static::$defaultFieldTypeSeed[$seed['type']] ?? null) : null,
+            Field::resolve($seed['type'] ?? null),
             $this->_default_seed_addField
         );
+        
+        unset($seed['type']);
 
         /** @var Field $field */
         $field = $this->factory($seed, null, '\atk4\data\Field');
 
         return $field;
     }
-
-    /** @var array [type => classname] */
-    protected static $defaultFieldTypeSeed = [
-        'boolean'  => Field\Boolean::class,
-        'float'    => Field\Numeric::class,
-        'integer'  => Field\Integer::class,
-        'money'    => Field\Money::class,
-        'text'     => Field\Text::class,
-        'string'   => Field\Line::class,
-        'datetime' => Field\DateTime::class,
-        'date'     => Field\Date::class,
-        'time'     => Field\Time::class,
-        'array'    => Field\Array_::class,
-        'object'   => Field\Object_::class,
-    ];
 
     /**
      * Adds multiple fields into model.
