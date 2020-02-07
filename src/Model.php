@@ -412,18 +412,18 @@ class Model implements ArrayAccess, IteratorAggregate
             'fields'      => true,
             'scope'       => UserAction\Generic::NO_RECORDS,
             'callback'    => 'save',
-            'description' => 'Add '.$this->getModelCaption(),
-            'ui'          => ['icon'=>'plus'],
+            'description' => 'Add ' . $this->getModelCaption(),
+            'ui'          => ['icon' => 'plus'],
         ]);
         $this->addAction('edit', [
             'fields'  => true,
             'scope'   => UserAction\Generic::SINGLE_RECORD,
-            'callback'=> 'save',
-            'ui'      => ['icon'=>'edit', 'button'=>[null, 'icon'=>'edit'], 'execButton'=>['Button', 'Save', 'blue']],
+            'callback' => 'save',
+            'ui'      => ['icon' => 'edit', 'button' => [null, 'icon' => 'edit'], 'execButton' => ['Button', 'Save', 'blue']],
         ]);
         $this->addAction('delete', [
             'scope'    => UserAction\Generic::SINGLE_RECORD,
-            'ui'       => ['icon'=>'trash', 'button'=>[null, 'icon'=>'red trash'], 'confirm'=>'Are you sure?'],
+            'ui'       => ['icon' => 'trash', 'button' => [null, 'icon' => 'red trash'], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
             },
@@ -431,10 +431,10 @@ class Model implements ArrayAccess, IteratorAggregate
 
         $this->addAction('validate', [
             //'scope'=> any!
-            'description'=> 'Provided with modified values will validate them but will not save',
+            'description' => 'Provided with modified values will validate them but will not save',
             'fields'     => true,
             'system'     => true, // don't show by default
-            'args'       => ['intent'=>'string'],
+            'args'       => ['intent' => 'string'],
         ]);
     }
 
@@ -738,7 +738,7 @@ class Model implements ArrayAccess, IteratorAggregate
                 ) {
                     return true;
                 } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'])) {
-                    throw new Exception(['Filter is not supported', 'filter'=>$f]);
+                    throw new Exception(['Filter is not supported', 'filter' => $f]);
                 }
             }
 
@@ -844,7 +844,7 @@ class Model implements ArrayAccess, IteratorAggregate
                         'field' => $field,
                         'model' => $this,
                         'value' => $value,
-                        'values'=> $f->values,
+                        'values' => $f->values,
                     ]);
                 } elseif (!array_key_exists($value, $f->values)) {
                     throw new Exception([
@@ -858,9 +858,11 @@ class Model implements ArrayAccess, IteratorAggregate
             }
         }
 
-        if (array_key_exists($field, $this->dirty) && (
+        if (
+            array_key_exists($field, $this->dirty) && (
             gettype($this->dirty[$field]) == gettype($value) && $this->dirty[$field] == $value
-        )) {
+            )
+        ) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
             $this->dirty[$field] =
@@ -883,7 +885,6 @@ class Model implements ArrayAccess, IteratorAggregate
     public function get($field = null)
     {
         if ($field === null) {
-
             // Collect list of eligible fields
             $data = [];
             if ($this->only_fields) {
@@ -1042,7 +1043,7 @@ class Model implements ArrayAccess, IteratorAggregate
     public function addAction($name, $defaults = []): UserAction\Generic
     {
         if (is_callable($defaults)) {
-            $defaults = ['callback'=>$defaults];
+            $defaults = ['callback' => $defaults];
         }
 
         if (!isset($defaults['caption'])) {
@@ -1258,7 +1259,7 @@ class Model implements ArrayAccess, IteratorAggregate
                 ]);
             }
 
-            foreach (array_reverse($field) as $key=>$o) {
+            foreach (array_reverse($field) as $key => $o) {
                 if (is_int($key)) {
                     if (is_array($o)) {
                         // format [field,order]
@@ -1467,9 +1468,8 @@ class Model implements ArrayAccess, IteratorAggregate
     {
         $m = $this->newInstance($class, $options);
 
-        foreach ($this->data as $field=> $value) {
+        foreach ($this->data as $field => $value) {
             if ($value !== null && $value !== $this->getField($field)->default) {
-
                 // Copying only non-default value
                 $m[$field] = $value;
             }
@@ -1499,7 +1499,7 @@ class Model implements ArrayAccess, IteratorAggregate
         }
 
         if (is_string($class) && $class[0] != '\\') {
-            $class = '\\'.$class;
+            $class = '\\' . $class;
         }
 
         if ($this->persistence) {
@@ -1904,10 +1904,8 @@ class Model implements ArrayAccess, IteratorAggregate
         // references instead
         $refs = [];
         foreach ($row as $key => $value) {
-
             // no field exists
             if ($field = $this->hasField($key)) {
-
                 // In certain cases, there may be exceptions when providing field values
                 if ($field instanceof Field_SQL_Expression && $field->concat && is_string($value) && $field->aggregate_relation) {
                     $refs[$field->aggregate_relation->link] = explode($field->concat, $value);
@@ -2010,7 +2008,6 @@ class Model implements ArrayAccess, IteratorAggregate
             $fields = [];
 
             if ($this->only_fields) {
-
                 // Add requested fields first
                 foreach ($this->only_fields as $field) {
                     $f_object = $this->getField($field);
@@ -2032,7 +2029,6 @@ class Model implements ArrayAccess, IteratorAggregate
 
                 $fields = array_keys($fields);
             } else {
-
                 // Add all model fields
                 foreach ($this->getFields() as $field => $f_object) {
                     if ($f_object->never_persist) {
@@ -2310,7 +2306,7 @@ class Model implements ArrayAccess, IteratorAggregate
     protected function _hasReference($c, $link, $defaults = []): Reference
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model_'.$link];
+            $defaults = ['model' => $defaults ?: 'Model_' . $link];
         } elseif (isset($defaults[0])) {
             $defaults['model'] = $defaults[0];
             unset($defaults[0]);
@@ -2470,7 +2466,7 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function getRef($link): Reference
     {
-        return $this->getElement('#ref_'.$link);
+        return $this->getElement('#ref_' . $link);
     }
 
     /**
@@ -2499,7 +2495,7 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function hasRef($link)
     {
-        return $this->hasElement('#ref_'.$link);
+        return $this->hasElement('#ref_' . $link);
     }
 
     // }}}

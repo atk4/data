@@ -237,7 +237,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->set($v);
         $m->save();
 
-        $a['test'][2] = array_merge(['id'=>'2'], $v);
+        $a['test'][2] = array_merge(['id' => '2'], $v);
 
         $this->assertEquals($a, $this->getDB());
     }

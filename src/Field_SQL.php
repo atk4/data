@@ -21,8 +21,10 @@ class Field_SQL extends Field implements Expressionable
      */
     public function normalize($value)
     {
-        if ($value instanceof Expression ||
-            $value instanceof Expressionable) {
+        if (
+            $value instanceof Expression ||
+            $value instanceof Expressionable
+        ) {
             return $value;
         }
 

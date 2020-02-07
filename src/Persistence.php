@@ -176,7 +176,6 @@ class Persistence
 
         $result = [];
         foreach ($row as $key => $value) {
-
             // Look up field object
             $f = $m->hasField($key);
 
@@ -243,7 +242,6 @@ class Persistence
 
         $result = [];
         foreach ($row as $key => &$value) {
-
             // Look up field object
             $f = $m->hasField($key);
 
@@ -428,20 +426,20 @@ class Persistence
     public function _serializeSaveField(Field $f, $value)
     {
         switch ($f->serialize === true ? 'serialize' : $f->serialize) {
-        case 'serialize':
-            return serialize($value);
-        case 'json':
-            return $this->jsonEncode($f, $value);
-        case 'base64':
-            if (!is_string($value)) {
-                throw new Exception([
+            case 'serialize':
+                return serialize($value);
+            case 'json':
+                return $this->jsonEncode($f, $value);
+            case 'base64':
+                if (!is_string($value)) {
+                    throw new Exception([
                     'Field value can not be base64 encoded because it is not of string type',
                     'field' => $f,
                     'value' => $value,
-                ]);
-            }
+                    ]);
+                }
 
-            return base64_encode($value);
+                return base64_encode($value);
         }
     }
 
@@ -456,12 +454,12 @@ class Persistence
     public function _serializeLoadField(Field $f, $value)
     {
         switch ($f->serialize === true ? 'serialize' : $f->serialize) {
-        case 'serialize':
-            return unserialize($value);
-        case 'json':
-            return $this->jsonDecode($f, $value, $f->type == 'array');
-        case 'base64':
-            return base64_decode($value);
+            case 'serialize':
+                return unserialize($value);
+            case 'json':
+                return $this->jsonDecode($f, $value, $f->type == 'array');
+            case 'base64':
+                return base64_decode($value);
         }
     }
 

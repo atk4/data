@@ -31,21 +31,21 @@ class DCInvoice extends Model
 
         $this->hasOne('client_id', new DCClient());
 
-        $this->hasMany('Lines', [new DCInvoiceLine(), 'their_field'=>'parent_id'])
-            ->addField('total', ['aggregate'=>'sum', 'field'=>'total']);
+        $this->hasMany('Lines', [new DCInvoiceLine(), 'their_field' => 'parent_id'])
+            ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
         $this->hasMany('Payments', new DCPayment())
-            ->addField('paid', ['aggregate'=>'sum', 'field'=>'amount']);
+            ->addField('paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
         $this->addExpression('due', '[total]-[paid]');
 
         $this->addField('ref');
 
-        $this->addField('is_paid', ['type'=>'boolean', 'default'=>false]);
+        $this->addField('is_paid', ['type' => 'boolean', 'default' => false]);
 
         $this->addHook('afterCopy', function ($m, $s) {
             if (get_class($s) == get_class($this)) {
-                $m['ref'] = $m['ref'].'_copy';
+                $m['ref'] = $m['ref'] . '_copy';
             }
         });
     }
@@ -60,12 +60,12 @@ class DCQuote extends Model
         parent::init();
         $this->hasOne('client_id', new DCClient());
 
-        $this->hasMany('Lines', [new DCQuoteLine(), 'their_field'=>'parent_id'])
-            ->addField('total', ['aggregate'=>'sum', 'field'=>'total']);
+        $this->hasMany('Lines', [new DCQuoteLine(), 'their_field' => 'parent_id'])
+            ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
         $this->addField('ref');
 
-        $this->addField('is_converted', ['type'=>'boolean', 'default'=>false]);
+        $this->addField('is_converted', ['type' => 'boolean', 'default' => false]);
     }
 }
 
@@ -80,12 +80,12 @@ class DCInvoiceLine extends Model
 
         $this->addField('name');
 
-        $this->addField('type', ['enum'=>['invoice', 'quote']]);
+        $this->addField('type', ['enum' => ['invoice', 'quote']]);
         $this->addCondition('type', '=', 'invoice');
 
-        $this->addField('qty', ['type'=>'integer', 'mandatory'=>true]);
-        $this->addField('price', ['type'=>'money']);
-        $this->addField('vat', ['type'=>'numeric', 'default'=>0.21]);
+        $this->addField('qty', ['type' => 'integer', 'mandatory' => true]);
+        $this->addField('price', ['type' => 'money']);
+        $this->addField('vat', ['type' => 'numeric', 'default' => 0.21]);
 
         // total is calculated with VAT
         $this->addExpression('total', '[qty]*[price]*(1+[vat])');
@@ -104,11 +104,11 @@ class DCQuoteLine extends Model
 
         $this->addField('name');
 
-        $this->addField('type', ['enum'=>['invoice', 'quote']]);
+        $this->addField('type', ['enum' => ['invoice', 'quote']]);
         $this->addCondition('type', '=', 'quote');
 
-        $this->addField('qty', ['type'=>'integer']);
-        $this->addField('price', ['type'=>'money']);
+        $this->addField('qty', ['type' => 'integer']);
+        $this->addField('price', ['type' => 'money']);
 
         // total is calculated WITHOUT VAT
         $this->addExpression('total', '[qty]*[price]');
@@ -126,7 +126,7 @@ class DCPayment extends Model
 
         $this->hasOne('invoice_id', new DCInvoice());
 
-        $this->addField('amount', ['type'=>'money']);
+        $this->addField('amount', ['type' => 'money']);
     }
 }
 
@@ -154,9 +154,9 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $quote = new DCQuote($this->db);
 
-        $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
-            ['tools', 'qty'=>5, 'price'=>10],
-            ['work', 'qty'=>1, 'price'=>40],
+        $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
+            ['tools', 'qty' => 5, 'price' => 10],
+            ['work', 'qty' => 1, 'price' => 40],
         ]]);
         $quote->loadAny();
 
@@ -180,7 +180,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('John', $invoice->ref('client_id')['name']);
 
         // now to add payment for the invoice. Payment originates from the same client as noted on the invoice
-        $invoice->ref('Payments')->insert(['amount'=>$invoice['total'] - 5, 'client_id'=>$invoice['client_id']]);
+        $invoice->ref('Payments')->insert(['amount' => $invoice['total'] - 5, 'client_id' => $invoice['client_id']]);
 
         $invoice->reload();
 
@@ -194,7 +194,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $invoice_copy = $dc
             ->from($invoice)
             ->to(new DCInvoice())
-            ->with(['Lines', 'client_id', 'Payments'=>['client_id']])
+            ->with(['Lines', 'client_id', 'Payments' => ['client_id']])
             ->copy();
 
         // Invoice copy receives a new ID
@@ -222,13 +222,13 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ->with([
 
                 // Invoices are copied, but unless we also copy lines, totals won't be there!
-                'Invoices'=> [
+                'Invoices' => [
                     'Lines',
                 ],
-                'Quotes'=> [
+                'Quotes' => [
                     'Lines',
                 ],
-                'Payments'=> [
+                'Payments' => [
 
                     // this is important to have here, because we want copied payments to be linked with NEW invoices!
                     'invoice_id',
@@ -266,11 +266,11 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $client_id = $client->insert('John');
 
         $quote = new DCQuote($this->db);
-        $quote->hasMany('Lines2', [new DCQuoteLine(), 'their_field'=>'parent_id']);
+        $quote->hasMany('Lines2', [new DCQuoteLine(), 'their_field' => 'parent_id']);
 
-        $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
-            ['tools', 'qty'=>5, 'price'=>10],
-            ['work', 'qty'=>1, 'price'=>40],
+        $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
+            ['tools', 'qty' => 5, 'price' => 10],
+            ['work', 'qty' => 1, 'price' => 40],
         ]]);
         $quote->loadAny();
 
@@ -310,9 +310,9 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $quote = new DCQuote($this->db);
 
-        $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
-            ['tools', 'qty'=>5, 'price'=>10],
-            ['work', 'qty'=>1, 'price'=>40],
+        $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
+            ['tools', 'qty' => 5, 'price' => 10],
+            ['work', 'qty' => 1, 'price' => 40],
         ]]);
         $quote->loadAny();
 
@@ -331,7 +331,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         try {
             $invoice = $dc
                 ->from($quote)
-                ->excluding(['Lines'=>['qty']])
+                ->excluding(['Lines' => ['qty']])
                 ->to($invoice)
                 ->with(['Lines'])
                 ->copy();

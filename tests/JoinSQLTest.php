@@ -266,8 +266,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ], $this->getDB()
-        );
+            ], ], $this->getDB());
 
         $m_u->load(1);
         $m_u['name'] = 'XX';
@@ -284,8 +283,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ], $this->getDB()
-        );
+            ], ], $this->getDB());
 
         $m_u['contact_phone'] = '+999';
         $m_u->save();
@@ -298,8 +296,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+999'],
-            ], ], $this->getDB()
-        );
+            ], ], $this->getDB());
 
         $m_u->tryLoad(4);
         $m_u['name'] = 'YYY';
@@ -316,8 +313,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ], $this->getDB()
-        );
+            ], ], $this->getDB());
     }
 
     public function testJoinDelete()
@@ -353,8 +349,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], 'contact' => [
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ], $this->getDB()
-        );
+            ], ], $this->getDB());
     }
 
     public function testDoubleSaveHook()
@@ -453,8 +448,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 2 => ['id' => 2, 'name' => 'USA'],
                 3 => ['id' => 3, 'name' => 'India'],
                 4 => ['id' => 4, 'name' => 'LV'],
-            ], ], $this->getDB()
-        );
+            ], ], $this->getDB());
     }
 
     public function testDoubleReverseJoin()
@@ -504,8 +498,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
-            ], ], $this->getDB()
-        );
+            ], ], $this->getDB());
     }
 
     /**
@@ -574,7 +567,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m_e = new Model($db, 'email');
         $m_e->addField('contact_id');
         $m_e->addField('address');
-        $ref = $j->hasMany('Email', [$m_e, 'our_field'=>'contact_id', 'their_field'=>'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+        $ref = $j->hasMany('Email', [$m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
 
         $m_u->load(1);
         $this->assertEquals([

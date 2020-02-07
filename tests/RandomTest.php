@@ -143,7 +143,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $a = [
             'user' => [
-                1 => ['name' => 'John', 'last_name'=>null, 'login'=>null, 'salary'=>null, 'tax'=>null, 'vat'=>null],
+                1 => ['name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
             ], ];
         $this->setDB($a);
 
@@ -153,16 +153,16 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addFields([
             'last_name',
             'login'  => ['default' => 'unknown'],
-            'salary' => ['type'=>'money', CustomField::class, 'default' => 100],
-            ['tax', CustomField::class, 'type'=>'money', 'default' => 20],
-            'vat' => new CustomField(['type'=>'money', 'default' => 15]),
+            'salary' => ['type' => 'money', CustomField::class, 'default' => 100],
+            ['tax', CustomField::class, 'type' => 'money', 'default' => 20],
+            'vat' => new CustomField(['type' => 'money', 'default' => 15]),
         ]);
 
         $m->insert([]);
 
         $this->assertEquals([
-            ['id'=>1, 'name'=>'John', 'last_name'=>null, 'login'=>null, 'salary'=>null, 'tax'=>null, 'vat'=>null],
-            ['id'=> 2, 'name'=>'anonymous', 'last_name'=>null, 'login'=>'unknown', 'salary'=>100, 'tax'=>20, 'vat'=>15],
+            ['id' => 1, 'name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
+            ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100, 'tax' => 20, 'vat' => 15],
         ], $m->export());
 
         $m->load(2);
@@ -324,7 +324,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         });
 
         $m->addHook('beforeLoad', function ($m, $id) {
-            $m->data = ['name' => 'rec #'.$id];
+            $m->data = ['name' => 'rec #' . $id];
             $m->id = $id;
             $m->breakHook(false);
         });
@@ -368,7 +368,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $db = new Persistence\SQL($this->db->connection);
         $a = [
             'rate' => [
-                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1'=>'y1', 'x2'=>'y2'],
+                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
             ],
         ];
         $this->setDB($a);
@@ -450,7 +450,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->setDB($a);
 
         // model without id field
-        $m1 = new Model($this->db, ['table'=>'user', 'id_field'=>false]);
+        $m1 = new Model($this->db, ['table' => 'user', 'id_field' => false]);
         $m1->addField('code');
         $m1->addField('name');
 

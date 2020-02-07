@@ -52,7 +52,8 @@ class HasOne_SQL extends HasOne
         $defaults['caption'] = $defaults['caption'] ?? $this->owner->refModel($this->link)->getField($their_field)->getCaption();
 
         /** @var Field_SQL_Expression $e */
-        $e = $this->owner->addExpression($field, array_merge([
+        $e = $this->owner->addExpression($field, array_merge(
+            [
             function (Model $m) use ($their_field) {
                 // remove order if we just select one field from hasOne model
                 // that is mandatory for Oracle
@@ -216,7 +217,7 @@ class HasOne_SQL extends HasOne
 
         $field = isset($defaults['field'])
                     ? $defaults['field']
-                    : preg_replace('/_'.($this->owner->id_field ?: 'id').'$/i', '', $this->link);
+                    : preg_replace('/_' . ($this->owner->id_field ?: 'id') . '$/i', '', $this->link);
 
         if ($this->owner->hasField($field)) {
             throw new Exception([

@@ -269,121 +269,121 @@ class Field implements Expressionable
 
             // normalize
             switch ($f->type) {
-            case null: // loose comparison, but is OK here
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
-                }
-                break;
-            case 'string':
-                // remove all line-ends and trim
-                $value = trim(str_replace(["\r", "\n"], '', $value));
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
-                }
-                break;
-            case 'text':
-                // normalize line-ends to LF and trim
-                $value = trim(str_replace(["\r\n", "\r"], "\n", $value));
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
-                }
-                break;
-            case 'integer':
-                // we clear out thousand separator, but will change to
-                // http://php.net/manual/en/numberformatter.parse.php
-                // in the future with the introduction of locale
-                $value = trim(str_replace(["\r", "\n"], '', $value));
-                $value = preg_replace('/[,`\']/', '', $value);
-                if (!is_numeric($value)) {
-                    throw new ValidationException([$this->name => 'Must be numeric']);
-                }
-                $value = (int) $value;
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a zero']);
-                }
-                break;
-            case 'float':
-                $value = trim(str_replace(["\r", "\n"], '', $value));
-                $value = preg_replace('/[,`\']/', '', $value);
-                if (!is_numeric($value)) {
-                    throw new ValidationException([$this->name => 'Must be numeric']);
-                }
-                $value = (float) $value;
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a zero']);
-                }
-                break;
-            case 'money':
-                $value = trim(str_replace(["\r", "\n"], '', $value));
-                $value = preg_replace('/[,`\']/', '', $value);
-                if (!is_numeric($value)) {
-                    throw new ValidationException([$this->name => 'Must be numeric']);
-                }
-                $value = round($value, 4);
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a zero']);
-                }
-                break;
-            case 'boolean':
-                throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
-            case 'date':
-            case 'datetime':
-            case 'time':
-                // we allow http://php.net/manual/en/datetime.formats.relative.php
-                $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-
-                if (is_numeric($value)) {
-                    $value = new $class('@'.$value);
-                } elseif (is_string($value)) {
-                    $value = new $class($value);
-                } elseif (!$value instanceof $class) {
-                    if ($value instanceof \DateTimeInterface) {
-                        $value = new $class($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
-                    } else {
-                        if (is_object($value)) {
-                            throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value class' => get_class($value)]);
-                        }
-
-                        throw new ValidationException(['must be a '.$f->type, 'class' => $class, 'value type' => gettype($value)]);
+                case null: // loose comparison, but is OK here
+                    if ($this->required && empty($value)) {
+                        throw new ValidationException([$this->name => 'Must not be empty']);
                     }
-                }
+                    break;
+                case 'string':
+                    // remove all line-ends and trim
+                    $value = trim(str_replace(["\r", "\n"], '', $value));
+                    if ($this->required && empty($value)) {
+                        throw new ValidationException([$this->name => 'Must not be empty']);
+                    }
+                    break;
+                case 'text':
+                    // normalize line-ends to LF and trim
+                    $value = trim(str_replace(["\r\n", "\r"], "\n", $value));
+                    if ($this->required && empty($value)) {
+                        throw new ValidationException([$this->name => 'Must not be empty']);
+                    }
+                    break;
+                case 'integer':
+                    // we clear out thousand separator, but will change to
+                    // http://php.net/manual/en/numberformatter.parse.php
+                    // in the future with the introduction of locale
+                    $value = trim(str_replace(["\r", "\n"], '', $value));
+                    $value = preg_replace('/[,`\']/', '', $value);
+                    if (!is_numeric($value)) {
+                        throw new ValidationException([$this->name => 'Must be numeric']);
+                    }
+                    $value = (int) $value;
+                    if ($this->required && empty($value)) {
+                        throw new ValidationException([$this->name => 'Must not be a zero']);
+                    }
+                    break;
+                case 'float':
+                    $value = trim(str_replace(["\r", "\n"], '', $value));
+                    $value = preg_replace('/[,`\']/', '', $value);
+                    if (!is_numeric($value)) {
+                        throw new ValidationException([$this->name => 'Must be numeric']);
+                    }
+                    $value = (float) $value;
+                    if ($this->required && empty($value)) {
+                        throw new ValidationException([$this->name => 'Must not be a zero']);
+                    }
+                    break;
+                case 'money':
+                    $value = trim(str_replace(["\r", "\n"], '', $value));
+                    $value = preg_replace('/[,`\']/', '', $value);
+                    if (!is_numeric($value)) {
+                        throw new ValidationException([$this->name => 'Must be numeric']);
+                    }
+                    $value = round($value, 4);
+                    if ($this->required && empty($value)) {
+                        throw new ValidationException([$this->name => 'Must not be a zero']);
+                    }
+                    break;
+                case 'boolean':
+                    throw new Exception(['Use Field\Boolean for type=boolean', 'this' => $this]);
+                case 'date':
+                case 'datetime':
+                case 'time':
+                    // we allow http://php.net/manual/en/datetime.formats.relative.php
+                    $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
 
-                if ($f->type == 'date' && $value->format('H:i:s.u') !== '00:00:00.000000') {
-                    // remove time portion from date type value
-                    $value = (clone $value)->setTime(0, 0, 0);
-                }
-                if ($f->type == 'time' && $value->format('Y-m-d') !== '1970-01-01') {
-                    // remove date portion from date type value
-                    // need 1970 in place of 0 - DB
-                    $value = (clone $value)->setDate(1970, 1, 1);
-                }
+                    if (is_numeric($value)) {
+                        $value = new $class('@' . $value);
+                    } elseif (is_string($value)) {
+                        $value = new $class($value);
+                    } elseif (!$value instanceof $class) {
+                        if ($value instanceof \DateTimeInterface) {
+                            $value = new $class($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
+                        } else {
+                            if (is_object($value)) {
+                                throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value class' => get_class($value)]);
+                            }
 
-                break;
-            case 'array':
-                if (is_string($value) && $f->owner && $f->owner->persistence) {
-                    $value = $f->owner->persistence->jsonDecode($f, $value, true);
-                }
+                            throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value type' => gettype($value)]);
+                        }
+                    }
 
-                if (!is_array($value)) {
-                    throw new ValidationException([$this->name => 'Must be an array']);
-                }
-                break;
-            case 'object':
-               if (is_string($value) && $f->owner && $f->owner->persistence) {
-                   $value = $f->owner->persistence->jsonDecode($f, $value, false);
-               }
+                    if ($f->type == 'date' && $value->format('H:i:s.u') !== '00:00:00.000000') {
+                        // remove time portion from date type value
+                        $value = (clone $value)->setTime(0, 0, 0);
+                    }
+                    if ($f->type == 'time' && $value->format('Y-m-d') !== '1970-01-01') {
+                        // remove date portion from date type value
+                        // need 1970 in place of 0 - DB
+                        $value = (clone $value)->setDate(1970, 1, 1);
+                    }
 
-                if (!is_object($value)) {
-                    throw new ValidationException([$this->name => 'Must be an object']);
-                }
-                break;
-            case 'int':
-            case 'str':
-            case 'bool':
-                throw new Exception([
+                    break;
+                case 'array':
+                    if (is_string($value) && $f->owner && $f->owner->persistence) {
+                        $value = $f->owner->persistence->jsonDecode($f, $value, true);
+                    }
+
+                    if (!is_array($value)) {
+                        throw new ValidationException([$this->name => 'Must be an array']);
+                    }
+                    break;
+                case 'object':
+                    if (is_string($value) && $f->owner && $f->owner->persistence) {
+                        $value = $f->owner->persistence->jsonDecode($f, $value, false);
+                    }
+
+                    if (!is_object($value)) {
+                        throw new ValidationException([$this->name => 'Must be an object']);
+                    }
+                    break;
+                case 'int':
+                case 'str':
+                case 'bool':
+                    throw new Exception([
                     'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
                     'type' => $f->type,
-                ]);
+                    ]);
                 break;
             }
 
@@ -411,19 +411,19 @@ class Field implements Expressionable
                 case null: // loose comparison, but is OK here
                     return $v;
                 case 'boolean':
-                    throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
+                    throw new Exception(['Use Field\Boolean for type=boolean', 'this' => $this]);
                 case 'date':
                 case 'datetime':
                 case 'time':
                     if ($v instanceof \DateTimeInterface) {
                         $dateFormat = 'Y-m-d';
-                        $timeFormat = 'H:i:s'.($v->format('u') > 0 ? '.u' : ''); // add microseconds if presented
+                        $timeFormat = 'H:i:s' . ($v->format('u') > 0 ? '.u' : ''); // add microseconds if presented
                         if ($this->type === 'date') {
                             $format = $dateFormat;
                         } elseif ($this->type === 'time') {
                             $format = $timeFormat;
                         } else {
-                            $format = $dateFormat.'\T'.$timeFormat.'P'; // ISO 8601 format 2004-02-12T15:19:21+00:00
+                            $format = $dateFormat . '\T' . $timeFormat . 'P'; // ISO 8601 format 2004-02-12T15:19:21+00:00
                         }
 
                         return $v->format($format);
@@ -552,7 +552,7 @@ class Field implements Expressionable
         if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence\SQL) {
             throw new Exception([
                 'Field must have SQL persistence if it is used as part of expression',
-                'persistence'=> $this->owner->persistence ?? null,
+                'persistence' => $this->owner->persistence ?? null,
             ]);
         }
 
@@ -573,9 +573,11 @@ class Field implements Expressionable
             'value'      => $this->get(),
         ];
 
-        foreach ([
+        foreach (
+            [
             'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'join',
-        ] as $key) {
+            ] as $key
+        ) {
             if (isset($this->$key)) {
                 $arr[$key] = $this->$key;
             }

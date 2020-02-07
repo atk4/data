@@ -27,7 +27,7 @@ class PersistentArrayOfStringsTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('boolean_enum', ['type' => 'boolean', 'enum'=>['N', 'Y']]);
+        $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -45,8 +45,8 @@ class PersistentArrayOfStringsTest extends \atk4\core\PHPUnit_AgileTestCase
             'date'         => new \DateTime('2019-01-20T12:23:34+00:00'),
             'datetime'     => new \DateTime('2019-01-20T12:23:34+00:00'),
             'time'         => new \DateTime('2019-01-20T12:23:34+00:00'),
-            'array'        => ['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']],
-            'object'       => (object) ['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']],
+            'array'        => ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
+            'object'       => (object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
         ]);
         $m->saveAndUnload();
 

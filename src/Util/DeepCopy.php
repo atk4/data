@@ -155,7 +155,7 @@ class DeepCopy
     protected function extractKeys($array): array
     {
         $result = [];
-        foreach ($array as $key=>$val) {
+        foreach ($array as $key => $val) {
             if (is_int($key)) {
                 $result[$val] = [];
             } else {
@@ -177,12 +177,12 @@ class DeepCopy
     public function copy()
     {
         return $this->_copy(
-                    $this->source,
-                    $this->destination,
-                    $this->references,
-                    $this->exclusions,
-                    $this->transforms
-            )->reload();
+            $this->source,
+            $this->destination,
+            $this->references,
+            $this->exclusions,
+            $this->transforms
+        )->reload();
     }
 
     /**
@@ -204,11 +204,11 @@ class DeepCopy
         try {
             // Perhaps source was already copied, then simply load destination model and return
             if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->id])) {
-                $this->debug('Skipping '.get_class($source));
+                $this->debug('Skipping ' . get_class($source));
 
                 $destination->load($this->mapping[$source->table][$source->id]);
             } else {
-                $this->debug('Copying '.get_class($source));
+                $this->debug('Copying ' . get_class($source));
 
                 $data = $source->get();
 
@@ -258,10 +258,10 @@ class DeepCopy
                     ) {
                         // no need to deep copy, simply alter ID
                         $destination[$ref_key] = $this->mapping[$source_table][$source[$ref_key]];
-                        $this->debug(' already copied '.$source[$ref_key].' as '.$destination[$ref_key]);
+                        $this->debug(' already copied ' . $source[$ref_key] . ' as ' . $destination[$ref_key]);
                     } else {
                         // hasOne points to null!
-                        $this->debug('Value is '.$source[$ref_key]);
+                        $this->debug('Value is ' . $source[$ref_key]);
                         if (!$source[$ref_key]) {
                             $destination[$ref_key] = $source[$ref_key];
                             continue;
@@ -276,9 +276,9 @@ class DeepCopy
                                 $exclusions[$ref_key] ?? [],
                                 $transforms[$ref_key] ?? []
                             )->id;
-                            $this->debug(' ... mapped into '.$destination[$ref_key]);
+                            $this->debug(' ... mapped into ' . $destination[$ref_key]);
                         } catch (DeepCopyException $e) {
-                            $this->debug('escalating a problem from '.$ref_key);
+                            $this->debug('escalating a problem from ' . $ref_key);
 
                             throw $e->addDepth($ref_key);
                         }
@@ -291,13 +291,12 @@ class DeepCopy
 
             // Store mapping
             $this->mapping[$source->table][$source->id] = $destination->id;
-            $this->debug(' .. copied '.get_class($source).' '.$source->id.' '.$destination->id);
+            $this->debug(' .. copied ' . get_class($source) . ' ' . $source->id . ' ' . $destination->id);
 
             // Next look for hasMany relationships and copy those too
 
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
                 if (($ref = $source->hasRef($ref_key)) && $ref instanceof HasMany) {
-
                     // No mapping, will always copy
                     foreach ($source->ref($ref_key) as $ref_model) {
                         $this->_copy(
@@ -323,7 +322,7 @@ class DeepCopy
                 'source_info'     => $source->__debugInfo(),
                 'source_data'     => $source->get(),
                 'destination'     => $destination,
-                'destination_info'=> $destination->__debugInfo(),
+                'destination_info' => $destination->__debugInfo(),
                 'depth'           => $e->getParams()['field'] ?? '?',
             ], null, $e);
         }

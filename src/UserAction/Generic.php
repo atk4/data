@@ -114,7 +114,7 @@ class Generic
             } elseif ($this->fields !== false) {
                 throw new Exception([
                     'Argument `fields` for the action must be either array or `false`.',
-                    'fields'=> $this->fields,
+                    'fields' => $this->fields,
                 ]);
             }
 
@@ -192,7 +192,7 @@ class Generic
      */
     public function getDescription()
     {
-        return $this->description ?? ('Will execute '.$this->caption);
+        return $this->description ?? ('Will execute ' . $this->caption);
     }
 
     /**
@@ -209,7 +209,7 @@ class Generic
         }
 
         if ($confirmation === true) {
-            $confirmation = 'Are you sure you wish to '.$this->caption.' '.$this->owner->getTitle().'?';
+            $confirmation = 'Are you sure you wish to ' . $this->caption . ' ' . $this->owner->getTitle() . '?';
         }
 
         return $confirmation;

@@ -41,7 +41,7 @@ class Static_ extends Array_
     public function __construct($data = null)
     {
         if (!is_array($data)) {
-            throw new Exception(['Static data should be array of strings or array of hashes', 'data'=>$data]);
+            throw new Exception(['Static data should be array of strings or array of hashes', 'data' => $data]);
         }
 
         // chomp off first row, we will use it to deduct fields
@@ -52,11 +52,11 @@ class Static_ extends Array_
         if (!is_array($row1)) {
             // We are dealing with array of strings. Convert it into array of hashes
             array_walk($data, function (&$str, $key) {
-                $str = ['id'=>$key, 'name'=>$str];
+                $str = ['id' => $key, 'name' => $str];
             });
 
             $this->titleForModel = 'name';
-            $this->fieldsForModel = ['name'=>[]];
+            $this->fieldsForModel = ['name' => []];
 
             return parent::__construct($data);
         }
@@ -71,8 +71,7 @@ class Static_ extends Array_
         $def_types = [];
         $must_override = false;
 
-        foreach ($row1 as $key=>$value) {
-
+        foreach ($row1 as $key => $value) {
             // id information present, use it instead
             if ($key == 'id') {
                 $must_override = true;
@@ -80,17 +79,17 @@ class Static_ extends Array_
 
             // try to detect type of field by its value
             if (is_int($value)) {
-                $def_types[] = ['type'=>'integer'];
+                $def_types[] = ['type' => 'integer'];
             } elseif ($value instanceof \DateTime) {
-                $def_types[] = ['type'=>'datetime'];
+                $def_types[] = ['type' => 'datetime'];
             } elseif (is_bool($value)) {
-                $def_types[] = ['type'=>'boolean'];
+                $def_types[] = ['type' => 'boolean'];
             } elseif (is_float($value)) {
-                $def_types[] = ['type'=>'float'];
+                $def_types[] = ['type' => 'float'];
             } elseif (is_array($value)) {
-                $def_types[] = ['type'=>'array'];
+                $def_types[] = ['type' => 'array'];
             } elseif (is_object($value)) {
-                $def_types[] = ['type'=>'object'];
+                $def_types[] = ['type' => 'object'];
             } else {
                 $def_types[] = [];
             }
@@ -108,7 +107,7 @@ class Static_ extends Array_
             }
 
             if (is_int($key)) {
-                $key_override[] = 'field'.$key;
+                $key_override[] = 'field' . $key;
                 $must_override = true;
                 continue;
             }
@@ -119,7 +118,7 @@ class Static_ extends Array_
         if ($must_override) {
             $data2 = [];
 
-            foreach ($data as $key=>$row) {
+            foreach ($data as $key => $row) {
                 $row = array_combine($key_override, $row);
                 if (isset($row['id'])) {
                     $key = $row['id'];
@@ -146,7 +145,7 @@ class Static_ extends Array_
             $m->title_field = $p->titleForModel;
         }
 
-        foreach ($this->fieldsForModel as $field=>$def) {
+        foreach ($this->fieldsForModel as $field => $def) {
             if ($m->hasField($field)) {
                 continue;
             }

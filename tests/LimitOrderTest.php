@@ -109,7 +109,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // pass parameters as array elements [field=>order]
         $i = clone $ii;
-        $i->setOrder(['net'=>true, 'vat'=>false]);
+        $i->setOrder(['net' => true, 'vat' => false]);
         $i->onlyFields(['net', 'vat']);
         $this->assertEquals([
             ['net' => 15, 'vat' => 4],
@@ -119,7 +119,7 @@ class LimitOrderTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // pass parameters as array elements [field=>order], same as above but use 'desc' instead of true
         $i = clone $ii;
-        $i->setOrder(['net'=>'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
+        $i->setOrder(['net' => 'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
         $i->onlyFields(['net', 'vat']);
         $this->assertEquals([
             ['net' => 15, 'vat' => 4],

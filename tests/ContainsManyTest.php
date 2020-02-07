@@ -172,9 +172,9 @@ class ContainsManyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's add some lines
         $l = $i->ref('lines');
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
-            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
-            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
+            1 => ['id' => 1, 'vat_rate_id' => 1, 'price' => 10, 'qty' => 2, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
+            2 => ['id' => 2, 'vat_rate_id' => 2, 'price' => 15, 'qty' => 5, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
+            3 => ['id' => 3, 'vat_rate_id' => 1, 'price' => 40, 'qty' => 1, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
         ];
 
         foreach ($rows as $row) {
@@ -189,11 +189,11 @@ class ContainsManyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // now let's delete line with id=2 and add one more line
         $i->ref('lines')
             ->load(2)->delete()
-            ->insert(['vat_rate_id'=>2, 'price' => 50, 'qty' => 3, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')]);
+            ->insert(['vat_rate_id' => 2, 'price' => 50, 'qty' => 3, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')]);
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
-            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
-            4 => ['id' => 4, 'vat_rate_id'=>2, 'price' => 50, 'qty' => 3, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
+            1 => ['id' => 1, 'vat_rate_id' => 1, 'price' => 10, 'qty' => 2, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
+            3 => ['id' => 3, 'vat_rate_id' => 1, 'price' => 40, 'qty' => 1, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
+            4 => ['id' => 4, 'vat_rate_id' => 2, 'price' => 50, 'qty' => 3, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
         ];
         $this->assertEquals($rows, $i->ref('lines')->export());
 
@@ -237,8 +237,8 @@ class ContainsManyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $l = $i->ref('lines');
 
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'add_date' => new \DateTime('2019-06-01')],
-            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5, 'add_date' => new \DateTime('2019-07-01')],
+            1 => ['id' => 1, 'vat_rate_id' => 1, 'price' => 10, 'qty' => 2, 'add_date' => new \DateTime('2019-06-01')],
+            2 => ['id' => 2, 'vat_rate_id' => 2, 'price' => 15, 'qty' => 5, 'add_date' => new \DateTime('2019-07-01')],
         ];
         foreach ($rows as $row) {
             $l->insert($row);

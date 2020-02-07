@@ -36,7 +36,7 @@ class ValidationException extends Exception
 
         if ($c === 1) {
             // foreach here just to get key/value from a single member
-            foreach ($errors as $field=>$error) {
+            foreach ($errors as $field => $error) {
                 return parent::__construct([
                     $error,
                     'field' => $field,

@@ -37,17 +37,17 @@ class TransferTest extends SMBOTestCase
         $a = new Account($this->db);
 
         $a->save('AIB');
-        $a->ref('Payment')->save(['amount'=>10]);
-        $a->ref('Payment')->save(['amount'=>20]);
+        $a->ref('Payment')->save(['amount' => 10]);
+        $a->ref('Payment')->save(['amount' => 20]);
         $a->unload();
 
         $a->save('BOI');
-        $a->ref('Payment')->save(['amount'=>30]);
+        $a->ref('Payment')->save(['amount' => 30]);
         $a->unload();
 
         // create payment without link to account
         $p = new Payment($this->db);
-        $p->saveAndUnload(['amount'=>40]);
+        $p->saveAndUnload(['amount' => 40]);
 
         // Account is not loaded, will dump all Payments related to ANY Account
         $data = $a->ref('Payment')->export(['amount']);

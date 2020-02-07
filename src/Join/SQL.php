@@ -27,7 +27,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
      */
     public function getDesiredName()
     {
-        return '_'.($this->foreign_alias ?: $this->foreign_table[0]);
+        return '_' . ($this->foreign_alias ?: $this->foreign_table[0]);
     }
 
     /**
@@ -69,7 +69,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
 
         // Our short name will be unique
         if (!$this->foreign_alias) {
-            $this->foreign_alias = (isset($this->owner->table_alias) ? $this->owner->table_alias : '').$this->short_name;
+            $this->foreign_alias = (isset($this->owner->table_alias) ? $this->owner->table_alias : '') . $this->short_name;
         }
 
         $this->owner->addhook('initSelectQuery', $this);
@@ -81,7 +81,6 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
             $this->owner->addHook('afterLoad', $this);
         } else {
-
             // Master field indicates ID of the joined item. In the past it had to be
             // defined as a physical field in the main table. Now it is a model field
             // so you can use expressions or fields inside joined entities.
@@ -131,7 +130,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
             $query->join(
-                $this->foreign_table.' '.$this->foreign_alias,
+                $this->foreign_table . ' ' . $this->foreign_alias,
                 $this->on instanceof \atk4\dsql\Expression ? $this->on : $model->expr($this->on),
                 $this->kind
             );
@@ -140,7 +139,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         }
 
         $query->join(
-            $this->foreign_table.(isset($this->foreign_alias) ? (' '.$this->foreign_alias) : ''),
+            $this->foreign_table . (isset($this->foreign_alias) ? (' ' . $this->foreign_alias) : ''),
             $model->expr('{}.{} = {}', [
                 (isset($this->foreign_alias) ? $this->foreign_alias : $this->foreign_table),
                 $this->foreign_field,

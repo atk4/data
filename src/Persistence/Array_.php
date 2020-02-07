@@ -353,7 +353,6 @@ class Array_ extends Persistence
         }
 
         foreach ($model->conditions as $cond) {
-
             // assume the action is "where" if we have only 2 parameters
             if (count($cond) == 2) {
                 array_splice($cond, -1, 1, ['where', $cond[1]]);
@@ -365,7 +364,7 @@ class Array_ extends Persistence
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
                     'reason'   => 'condition can have two to three params',
-                    'condition'=> $cond,
+                    'condition' => $cond,
                 ]);
             }
 
@@ -377,7 +376,7 @@ class Array_ extends Persistence
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported method',
                     'reason'   => "method $method not implemented for Action\Iterator",
-                    'condition'=> $cond,
+                    'condition' => $cond,
                 ]);
             }
 
@@ -389,7 +388,7 @@ class Array_ extends Persistence
             if (!is_a($cond[0], \atk4\data\Field::class)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
-                    'reason'    => 'Unsupported object instance '.get_class($cond[0]),
+                    'reason'    => 'Unsupported object instance ' . get_class($cond[0]),
                     'condition' => [
                         get_class($cond[0]),
                         $cond[1],

@@ -269,7 +269,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
-        $m->addField('date', ['type'=>'date']);
+        $m->addField('date', ['type' => 'date']);
 
         $m->tryLoadBy('date', new \DateTime('08-12-1982'));
         $this->assertEquals('Sue', $m['name']);
@@ -286,7 +286,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
-        $m->addField('date', ['type'=>'date']);
+        $m->addField('date', ['type' => 'date']);
 
         $m->addCondition('date', new \DateTime('08-12-1982'));
         $m->loadAny();
@@ -311,7 +311,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
-        $m->addField('date', ['type'=>'date']);
+        $m->addField('date', ['type' => 'date']);
 
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }

@@ -266,8 +266,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ], $a
-        );
+            ], ], $a);
 
         $m_u->load(3);
         $m_u['name'] = 'XX';
@@ -282,8 +281,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+999'],
-            ], ], $a
-        );
+            ], ], $a);
 
         $m_u->tryLoad(4);
         $m_u['name'] = 'YYY';
@@ -300,8 +298,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ], $a
-        );
+            ], ], $a);
     }
 
     public function testJoinDelete()
@@ -335,8 +332,7 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
             ], 'contact' => [
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ], $a
-        );
+            ], ], $a);
     }
 
     /**

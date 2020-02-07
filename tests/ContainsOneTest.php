@@ -45,7 +45,7 @@ class Address1 extends Model
 
         $this->addField('address');
         $this->addField('built_date', ['type' => 'datetime']);
-        $this->addField('tags', ['type'=>'array', 'default'=>[]]);
+        $this->addField('tags', ['type' => 'array', 'default' => []]);
 
         // will contain one door code
         $this->containsOne('door_code', [DoorCode1::class, 'caption' => 'Secret Code']);
@@ -139,7 +139,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $a->set($row = ['country_id'=>1, 'address'=>'foo', 'built_date'=>new \DateTime('2019-01-01 UTC'), 'tags'=>['foo', 'bar'], 'door_code'=>null]);
+        $a->set($row = ['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01 UTC'), 'tags' => ['foo', 'bar'], 'door_code' => null]);
         $a->save();
 
         // now reload invoice and see if it is saved
@@ -153,14 +153,14 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // now add nested containsOne - DoorCode
         $c = $i->ref('addr')->ref('door_code');
-        $c->set($row = ['code'=>'ABC', 'valid_till'=>new \DateTime('2019-07-01 UTC')]);
+        $c->set($row = ['code' => 'ABC', 'valid_till' => new \DateTime('2019-07-01 UTC')]);
         $c->save();
         $this->assertEquals($row, $i->ref('addr')->ref('door_code')->get());
 
         // update DoorCode
         $i->reload();
-        $i->ref('addr')->ref('door_code')->save(['code'=>'DEF']);
-        $this->assertEquals(array_merge($row, ['code'=>'DEF']), $i->ref('addr')->ref('door_code')->get());
+        $i->ref('addr')->ref('door_code')->save(['code' => 'DEF']);
+        $this->assertEquals(array_merge($row, ['code' => 'DEF']), $i->ref('addr')->ref('door_code')->get());
 
         // try hasOne reference
         $c = $i->ref('addr')->ref('country_id');
@@ -199,7 +199,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // with address
         $a = $i->ref('addr');
-        $a->set($row = ['country_id'=>1, 'address'=>'foo', 'built_date'=>new \DateTime('2019-01-01'), 'tags'=>[], 'door_code'=>null]);
+        $a->set($row = ['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01'), 'tags' => [], 'door_code' => null]);
         $a->save();
 
         // now let's add one more field in address model and save
@@ -207,7 +207,7 @@ class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $a->set('post_index', 'LV-1234');
         $a->save();
 
-        $this->assertEquals(array_merge($row, ['post_index'=>'LV-1234']), $a->get());
+        $this->assertEquals(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
 
         // now this one is a bit tricky
         // each time you call ref() it returns you new model object so it will not have post_index field

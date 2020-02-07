@@ -115,7 +115,7 @@ class ValidationTests extends \atk4\core\PHPUnit_AgileTestCase
     {
         $this->m->addHook('validate', function ($m) {
             if ($m['name'] === 'C#') {
-                return ['name'=>'No sharp objects allowed'];
+                return ['name' => 'No sharp objects allowed'];
             }
         });
 

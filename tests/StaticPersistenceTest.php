@@ -42,7 +42,7 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testArrayOfHashes()
     {
-        $p = new Persistence\Static_([['foo'=>'hello'], ['foo'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello'], ['foo' => 'world']]);
         $m = new Model($p);
 
         $m->load(1);
@@ -52,7 +52,7 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testIDArg()
     {
-        $p = new Persistence\Static_([['id'=>20, 'foo'=>'hello'], ['id'=>21, 'foo'=>'world']]);
+        $p = new Persistence\Static_([['id' => 20, 'foo' => 'hello'], ['id' => 21, 'foo' => 'world']]);
         $m = new Model($p);
 
         $m->load(21);
@@ -62,7 +62,7 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testIDKey()
     {
-        $p = new Persistence\Static_([20=>['foo'=>'hello'], 21=>['foo'=>'world']]);
+        $p = new Persistence\Static_([20 => ['foo' => 'hello'], 21 => ['foo' => 'world']]);
         $m = new Model($p);
 
         $m->load(21);
@@ -82,27 +82,27 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testCustomField()
     {
-        $p = new Persistence\Static_([['foo'=>'hello'], ['foo'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello'], ['foo' => 'world']]);
         $m = new StaticPersistenceModel($p);
 
         $this->assertEquals('custom field', $m->getField('foo')->caption);
 
-        $p = new Persistence\Static_([['foo'=>'hello', 'bar'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'bar' => 'world']]);
         $m = new StaticPersistenceModel($p);
         $this->assertEquals('foo', $m->title_field);
     }
 
     public function testTitleOrName()
     {
-        $p = new Persistence\Static_([['foo'=>'hello', 'bar'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'bar' => 'world']]);
         $m = new Model($p);
         $this->assertEquals('foo', $m->title_field);
 
-        $p = new Persistence\Static_([['foo'=>'hello', 'name'=>'x']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'name' => 'x']]);
         $m = new Model($p);
         $this->assertEquals('name', $m->title_field);
 
-        $p = new Persistence\Static_([['foo'=>'hello', 'title'=>'x']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'title' => 'x']]);
         $m = new Model($p);
         $this->assertEquals('title', $m->title_field);
     }
@@ -144,6 +144,6 @@ class StaticPersistenceModel extends Model
     {
         parent::init();
 
-        $this->addField('foo', ['caption'=>'custom field']);
+        $this->addField('foo', ['caption' => 'custom field']);
     }
 }
