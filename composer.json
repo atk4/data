@@ -23,7 +23,8 @@
         "phpunit/phpunit": "<6",
         "phpunit/dbunit": ">=1.2",
         "phpunit/phpcov": "*",
-        "codeclimate/php-test-reporter": "*"
+        "codeclimate/php-test-reporter": "*",
+        "squizlabs/php_codesniffer": "^3.5"
     },
     "autoload": {
         "psr-4": {"atk4\\data\\":"src/"}

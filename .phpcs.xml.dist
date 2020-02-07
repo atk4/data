@@ -1,0 +1,6 @@
+<ruleset>
+    <file>.</file>
+    <exclude-pattern>/vendor/*$</exclude-pattern>
+
+    <rule ref="PSR12" />
+</ruleset>
