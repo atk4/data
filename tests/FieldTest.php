@@ -880,15 +880,19 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
     public function testFieldSeed()
     {
         $model = new Model();
-        $model->addField('date', ['type' => 'date', 'caption' => 'Test', 'required'=>true]);
-        $model->addField('integer', ['type' => 'integer', 'caption' => 'Test', 'required'=>true]);
         
-        foreach (['date', 'integer'] as $name) {
+        $fields = [
+                'date' => ['type' => 'date', 'caption' => 'Test', 'required'=>true],
+                'integer' => ['type' => 'integer', 'caption' => 'Test', 'required'=>true],
+                'string' => ['type' => 'string', 'caption' => 'Test', 'required'=>true, 'max_length'=>255],
+        ];
+        $model->addFields($fields);
+        
+        foreach ($fields as $name => $defaults) {
             $seed = $model->getField($name)->getSeed();
             
+            $this->assertArraySubset($seed, $defaults);
             $this->assertArrayNotHasKey('type', $seed);
-            $this->assertArrayHasKey('caption', $seed);
-            $this->assertArrayHasKey('required', $seed);;
         }
     }
 }
