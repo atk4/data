@@ -527,8 +527,6 @@ class Model implements ArrayAccess, IteratorAggregate
             Field::resolve($seed['type'] ?? null),
             $this->_default_seed_addField
         );
-        
-        unset($seed['type']);
 
         /** @var Field $field */
         $field = $this->factory($seed, null, '\atk4\data\Field');
