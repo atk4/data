@@ -201,6 +201,7 @@ class Field implements Expressionable
     
     /**
      * Map field type to seed
+     * List can be updated or extended using the Field::register method
      * 
      * @var array
      */
@@ -208,6 +209,7 @@ class Field implements Expressionable
             'boolean'  => Field\Boolean::class,
             'float'    => Field\Numeric::class,
             'integer'  => Field\Integer::class,
+            'int'      => Field\Integer::class,
             'money'    => Field\Money::class,
             'text'     => Field\Text::class,
             'string'   => Field\Line::class,
