@@ -163,7 +163,7 @@ class Field implements Expressionable
     /**
      * Should we use typecasting when saving/loading data to/from persistence.
      *
-     * Value can be array [$typecast_save_callback, $typecast_load_callback].
+     * Value can be array ['save' => $typecast_save_callback, 'load' => $typecast_load_callback].
      *
      * @var null|bool|array
      */
@@ -172,7 +172,7 @@ class Field implements Expressionable
     /**
      * Should we use serialization when saving/loading data to/from persistence.
      *
-     * Value can be array [$encode_callback, $decode_callback].
+     * Value can be array ['encode' => $encode_callback, 'decode' => $decode_callback].
      *
      * @var null|bool|array
      */
@@ -501,6 +501,49 @@ class Field implements Expressionable
     public function getCaption() : string
     {
         return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption($this->short_name);
+    }
+
+    
+    /**
+     * Returns typecasting callback if defined.
+     * 
+     * @param string $mode - load|save
+     * 
+     * @return callable|false
+     */
+    public function getTypecaster($mode)
+    {
+        // map for backward compatibility with definition
+        // [typecast_save_callback, typecast_load_callback]
+        $map = [
+                'save' => 0,
+                'load' => 1
+        ];
+        
+        $fx = $this->typecast[$mode] ?? $this->typecast[$map[$mode]] ?? false;
+        
+        return is_callable($fx) ? $fx : false;
+    }
+    
+    /**
+     * Returns serialize callback if defined.
+     * 
+     * @param string $mode - encode|decode
+     * 
+     * @return callable|false
+     */
+    public function getSerializer($mode)
+    {
+        // map for backward compatibility with definition
+        // [encode_callback, decode_callback]
+        $map = [
+                'encode' => 0,
+                'decode' => 1
+        ];
+        
+        $fx = $this->serialize[$mode] ?? $this->serialize[$map[$mode]] ?? false;
+        
+        return is_callable($fx) ? $fx : false;
     }
 
     // }}}

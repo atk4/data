@@ -275,17 +275,16 @@ class Persistence
      * Prepare value of a specific field by converting it to
      * persistence-friendly format.
      *
-     * @param Field $f
+     * @param Field $field
      * @param mixed $value
      *
      * @return mixed
      */
-    public function typecastSaveField(Field $f, $value)
+    public function typecastSaveField(Field $field, $value)
     {
         try {
-            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
-                return $t($value, $f, $this);
+            if ($typecast = $field->getTypecaster('save')) {
+                return $typecast($value, $field, $this);
             }
 
             // we respect null values
@@ -294,9 +293,9 @@ class Persistence
             }
 
             // run persistence-specific typecasting of field value
-            return $this->_typecastSaveField($f, $value);
+            return $this->_typecastSaveField($field, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to typecast field value on save', 'field' => $f->name], null, $e);
+            throw new Exception(['Unable to typecast field value on save', 'field' => $field->name], null, $e);
         }
     }
 
@@ -304,22 +303,21 @@ class Persistence
      * Cast specific field value from the way how it's stored inside
      * persistence to a PHP format.
      *
-     * @param Field $f
+     * @param Field $field
      * @param mixed $value
      *
      * @return mixed
      */
-    public function typecastLoadField(Field $f, $value)
+    public function typecastLoadField(Field $field, $value)
     {
         try {
-            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[1]) && is_callable($t = $f->typecast[1])) {
-                return $t($value, $f, $this);
+            if ($typecast = $field->getTypecaster('load')) {
+                return $typecast($value, $field, $this);
             }
 
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
-            if ($f->type && $f->type != 'string' && $value === '') {
+            if ($field->type && $field->type != 'string' && $value === '') {
                 return;
             }
 
@@ -329,9 +327,9 @@ class Persistence
             }
 
             // run persistence-specific typecasting of field value
-            return $this->_typecastLoadField($f, $value);
+            return $this->_typecastLoadField($field, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to typecast field value on load', 'field' => $f->name], null, $e);
+            throw new Exception(['Unable to typecast field value on load', 'field' => $field->name], null, $e);
         }
     }
 
@@ -367,23 +365,22 @@ class Persistence
      * Provided with a value, will perform field serialization.
      * Can be used for the purposes of encryption or storing unsupported formats.
      *
-     * @param Field $f
+     * @param Field $field
      * @param mixed $value
      *
      * @return mixed
      */
-    public function serializeSaveField(Field $f, $value)
+    public function serializeSaveField(Field $field, $value)
     {
         try {
-            // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[0]) && is_callable($t = $f->serialize[0])) {
-                return $t($f, $value, $this);
+            if ($encode = $field->getSerializer('encode')) {
+                return $encode($field, $value, $this);
             }
 
             // run persistence-specific serialization of field value
-            return $this->_serializeSaveField($f, $value);
+            return $this->_serializeSaveField($field, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to serialize field value on save', 'field' => $f->name], null, $e);
+            throw new Exception(['Unable to serialize field value on save', 'field' => $field->name], null, $e);
         }
     }
 
@@ -391,23 +388,22 @@ class Persistence
      * Provided with a value, will perform field un-serialization.
      * Can be used for the purposes of encryption or storing unsupported formats.
      *
-     * @param Field $f
+     * @param Field $field
      * @param mixed $value
      *
      * @return mixed
      */
-    public function serializeLoadField(Field $f, $value)
+    public function serializeLoadField(Field $field, $value)
     {
         try {
-            // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[1]) && is_callable($t = $f->serialize[1])) {
-                return $t($f, $value, $this);
+            if ($decode = $field->getSerializer('decode')) {
+                return $decode($field, $value, $this);
             }
 
             // run persistence-specific un-serialization of field value
-            return $this->_serializeLoadField($f, $value);
+            return $this->_serializeLoadField($field, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to serialize field value on load', 'field' => $f->name], null, $e);
+            throw new Exception(['Unable to serialize field value on load', 'field' => $field->name], null, $e);
         }
     }
 
