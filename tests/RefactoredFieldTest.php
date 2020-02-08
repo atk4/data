@@ -53,8 +53,8 @@ class RefactoredFieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $m = new Model();
         $m->addField('n1', ['type' => 'float']);
-        $m->addField('n2', ['type' => 'float', 'required' => true, 'signed' => false]);
-        $m->addField('n3', ['type' => 'float', 'min' => 18, 'max' => 99, 'decimal_numbers' => 2]);
+        $m->addField('n2', ['type' => 'float', 'required' => true, 'signum' => false]);
+        $m->addField('n3', ['type' => 'float', 'min' => 18, 'max' => 99, 'decimals' => 2]);
 
         $m->set('n1', null);
         $this->assertEquals(null, $m['n1']);
