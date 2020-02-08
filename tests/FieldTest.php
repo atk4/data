@@ -895,4 +895,18 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->assertArrayNotHasKey('type', $seed);
         }
     }
+    
+    public function testFieldSeedRegistry()
+    {
+        $customTypes = [
+                'some_type' => 'ABC',
+                'other_type' => 'EDF'
+        ];
+
+        Field::register($customTypes);
+
+        foreach ($customTypes as $type => $seed) {
+            $this->assertEquals($seed, Field::resolve($type));
+        }
+    }
 }

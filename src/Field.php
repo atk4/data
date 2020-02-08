@@ -368,13 +368,19 @@ class Field implements Expressionable
     }
     
     /**
-     * Register custom field type to be resolved
+     * Register custom field type to be resolved.
      * 
-     * @param string        $type
-     * @param string|array  $seed
+     * @param string|array      $type
+     * @param string|array|null $seed
      */
-    public static function register($type, $seed)
+    public static function register($type, $seed = null)
     {
+        if (is_array($types = $type)) {
+             foreach ($types as $type => $seed) {
+                 self::register($type, $seed);
+             }   
+        }
+
         self::$registry[$type] = $seed;
     }
 
