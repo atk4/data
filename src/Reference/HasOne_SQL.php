@@ -28,7 +28,7 @@ class HasOne_SQL extends HasOne
      *
      * @return Field_SQL_Expression
      */
-    public function addField($field, ?string $their_field = null) : Field_SQL_Expression
+    public function addField($field, ?string $their_field = null): Field_SQL_Expression
     {
         if (is_array($field)) {
             $defaults = $field;
@@ -137,7 +137,7 @@ class HasOne_SQL extends HasOne
      *
      * @return Model
      */
-    public function refLink($defaults = []) : Model
+    public function refLink($defaults = []): Model
     {
         $m = $this->getModel($defaults);
 
@@ -159,7 +159,7 @@ class HasOne_SQL extends HasOne
      *
      * @return Model
      */
-    public function ref($defaults = []) : Model
+    public function ref($defaults = []): Model
     {
         $m = parent::ref($defaults);
 
@@ -205,7 +205,7 @@ class HasOne_SQL extends HasOne
      *
      * @return Field_SQL_Expression
      */
-    public function addTitle($defaults = []) : Field_SQL_Expression
+    public function addTitle($defaults = []): Field_SQL_Expression
     {
         if (!is_array($defaults)) {
             throw new Exception([

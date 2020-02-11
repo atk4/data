@@ -107,7 +107,7 @@ class SQL extends Persistence
      *
      * @return Query
      */
-    public function dsql() : Query
+    public function dsql(): Query
     {
         return $this->connection->dsql();
     }
@@ -134,7 +134,7 @@ class SQL extends Persistence
      *
      * @return Model
      */
-    public function add($m, $defaults = []) : Model
+    public function add($m, $defaults = []): Model
     {
         // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
@@ -181,6 +181,7 @@ class SQL extends Persistence
     {
         $m->addMethod('expr', $this);
         $m->addMethod('dsql', $this);
+        $m->addMethod('exprNow', $this);
     }
 
     /**
@@ -192,7 +193,7 @@ class SQL extends Persistence
      *
      * @return Expression
      */
-    public function expr(Model $m, $expr, $args = []) : Expression
+    public function expr(Model $m, $expr, $args = []): Expression
     {
         if (!is_string($expr)) {
             return $this->connection->expr($expr, $args);
@@ -214,13 +215,26 @@ class SQL extends Persistence
     }
 
     /**
+     * Creates new Query object with current_timestamp(precision) expression.
+     *
+     * @param Model $m
+     * @param int   $precision
+     *
+     * @return Query
+     */
+    public function exprNow($precision = null)
+    {
+        return $this->connection->dsql()->exprNow($precision);
+    }
+
+    /**
      * Initializes base query for model $m.
      *
      * @param Model $m
      *
      * @return Query
      */
-    public function initQuery(Model $m) : Query
+    public function initQuery(Model $m): Query
     {
         $d = $m->persistence_data['dsql'] = $this->dsql();
 
@@ -347,7 +361,7 @@ class SQL extends Persistence
      *
      * @return Query
      */
-    public function initQueryConditions(Model $m, Query $q) : Query
+    public function initQueryConditions(Model $m, Query $q): Query
     {
         if (!isset($m->conditions)) {
             // no conditions are set in the model
@@ -370,7 +384,9 @@ class SQL extends Persistence
                         }
 
                         if ($row[0] instanceof Field) {
-                            $row[1] = $this->typecastSaveField($row[0], $row[count($row) == 2 ? 1 : 2]);
+                            $valueKey = count($row) == 2 ? 1 : 2;
+
+                            $row[$valueKey] = $this->typecastSaveField($row[0], $row[$valueKey]);
                         }
                     }
                 }
@@ -437,12 +453,13 @@ class SQL extends Persistence
             $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
             $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
 
-            if ($v instanceof $dt_class) {
-                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+            if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
+                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
                 $format = $f->persist_format ?: $format[$f->type];
 
                 // datetime only - set to persisting timezone
                 if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                    $v = new \DateTime($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                     $v->setTimezone(new $tz_class($f->persist_timezone));
                 }
                 $v = $v->format($format);
@@ -517,26 +534,33 @@ class SQL extends Persistence
             } elseif (is_string($v)) {
                 // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
                 $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
-                $format = $f->persist_format ?: $format[$f->type];
+                if ($f->persist_format) {
+                    $format = $f->persist_format;
+                } else {
+                    $format = $format[$f->type];
+                    if (strpos($v, '.') !== false) { // time possibly with microseconds, otherwise invalid format
+                        $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
+                    }
+                }
 
                 // datetime only - set from persisting timezone
                 if ($f->type == 'datetime' && isset($f->persist_timezone)) {
                     $v = $dt_class::createFromFormat($format, $v, new $tz_class($f->persist_timezone));
-                    if ($v === false) {
-                        throw new Exception(['Incorrectly formatted datetime', 'format' => $format, 'value' => $value, 'field' => $f]);
+                    if ($v !== false) {
+                        $v->setTimezone(new $tz_class(date_default_timezone_get()));
                     }
-                    $v->setTimeZone(new $tz_class(date_default_timezone_get()));
                 } else {
                     $v = $dt_class::createFromFormat($format, $v);
-                    if ($v === false) {
-                        throw new Exception(['Incorrectly formatted date/time', 'format' => $format, 'value' => $value, 'field' => $f]);
-                    }
+                }
+
+                if ($v === false) {
+                    throw new Exception(['Incorrectly formatted date/time', 'format' => $format, 'value' => $value, 'field' => $f]);
                 }
 
                 // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
                 // this is what Carbon::instance(DateTime $dt) method does for example
                 if ($dt_class != 'DateTime') {
-                    $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimeZone());
+                    $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                 }
             }
             break;

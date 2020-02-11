@@ -12,6 +12,7 @@
     "nosql",
     "mongodb",
     "mysql",
+    "oracle",
     "postgresql"
   ],
   "homepage": "https://github.com/atk4/data",
@@ -30,11 +31,11 @@
     "atk4/dsql": "^2.0"
   },
   "require-dev": {
+    "atk4/schema": "^2.0",
     "phpunit/phpunit": "<6",
     "phpunit/dbunit": ">=1.2",
     "phpunit/phpcov": "*",
-    "codeclimate/php-test-reporter": "*",
-    "atk4/schema": "^2.0"
+    "codeclimate/php-test-reporter": "*"
   },
   "autoload": {
     "psr-4": {

@@ -219,6 +219,8 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * SECURITY WARNING: If you are looking for a RELIABLE way to restrict access
      * to model data, please check Secure Enclave extension.
+     *
+     * @param bool
      */
     public $read_only = false;
 
@@ -407,24 +409,23 @@ class Model implements ArrayAccess, IteratorAggregate
 
         // Declare our basic CRUD actions for the model.
         $this->addAction('add', [
-            'fields'  => true,
-            'scope'   => UserAction\Generic::NO_RECORDS,
-            'callback'=> 'save',
-            'ui'      => ['icon'=>'plus'],
+            'fields'      => true,
+            'scope'       => UserAction\Generic::NO_RECORDS,
+            'callback'    => 'save',
+            'description' => 'Add '.$this->getModelCaption(),
+            'ui'          => ['icon'=>'plus'],
         ]);
         $this->addAction('edit', [
             'fields'  => true,
             'scope'   => UserAction\Generic::SINGLE_RECORD,
             'callback'=> 'save',
-            'ui'      => ['icon'=>'edit', 'button'=>[null, 'icon'=>'edit']],
+            'ui'      => ['icon'=>'edit', 'button'=>[null, 'icon'=>'edit'], 'execButton'=>['Button', 'Save', 'blue']],
         ]);
         $this->addAction('delete', [
             'scope'    => UserAction\Generic::SINGLE_RECORD,
             'ui'       => ['icon'=>'trash', 'button'=>[null, 'icon'=>'red trash'], 'confirm'=>'Are you sure?'],
-            'callback' => function ($m) {
-                $m->delete();
-
-                return [];
+            'callback' => function ($model) {
+                return $model->delete();
             },
         ]);
 
@@ -513,7 +514,7 @@ class Model implements ArrayAccess, IteratorAggregate
         $seed = $this->mergeSeeds(
             $seed,
             isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
-            [Field::class]
+            $this->_default_seed_addField
         );
 
         /** @var Field $field */
@@ -536,20 +537,27 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return $this
      */
-    public function addFields($fields = [], $defaults = [])
+    public function addFields(array $fields, $defaults = [])
     {
-        foreach ($fields as $field) {
-            if (is_string($field)) {
-                $this->addField($field, $defaults);
+        foreach ($fields as $key => $field) {
+            if (!is_int($key)) {
+                // field name can be passed as array key
+                $name = $key;
+            } elseif (is_string($field)) {
+                // or it can be simple string = field name
+                $name = $field;
+                $field = [];
+            } elseif (is_array($field) && isset($field[0]) && is_string($field[0])) {
+                // or field name can be passed as first element of seed array (old behaviour)
+                $name = array_shift($field);
+            } else {
+                // some unsupported format, maybe throw exception here?
                 continue;
             }
 
-            if (is_array($field) && isset($field[0])) {
-                $name = $field[0];
-                unset($field[0]);
-                $this->addField($name, $field);
-                continue;
-            }
+            $seed = array_merge($defaults, (array) $field);
+
+            $this->addField($name, $seed);
         }
 
         return $this;
@@ -704,15 +712,16 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
-     * @param string|null $filter
+     * @param string|array|null $filter
      *
      * @return array
      */
-    public function getFields(string $filter = null)
+    public function getFields($filter = null)
     {
         if (!$filter) {
             return $this->fields;
         }
+        $filter = is_string($filter) ? explode(',', $filter) : $filter;
 
         return array_filter($this->fields, function (Field $field, $name) use ($filter) {
 
@@ -720,15 +729,20 @@ class Model implements ArrayAccess, IteratorAggregate
             if ($this->only_fields && !in_array($name, $this->only_fields)) {
                 return false;
             }
-
-            switch ($filter) {
-                case 'system': return $field->system;
-                case 'not system': return !$field->system;
-                case 'editable': return $field->isEditable();
-                case 'visible': return $field->isVisible();
-                default:
-                    throw new Exception(['Filter is not supported', 'filter'=>$filter]);
+            foreach ($filter as $f) {
+                if (
+                    ($f == 'system' && $field->system)
+                    || ($f == 'not system' && !$field->system)
+                    || ($f == 'editable' && $field->isEditable())
+                    || ($f == 'visible' && $field->isVisible())
+                ) {
+                    return true;
+                } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'])) {
+                    throw new Exception(['Filter is not supported', 'filter'=>$f]);
+                }
             }
+
+            return false;
         }, ARRAY_FILTER_USE_BOTH);
     }
 
@@ -1025,7 +1039,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return UserAction\Generic
      */
-    public function addAction($name, $defaults = []) : UserAction\Generic
+    public function addAction($name, $defaults = []): UserAction\Generic
     {
         if (is_callable($defaults)) {
             $defaults = ['callback'=>$defaults];
@@ -1053,7 +1067,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return array
      */
-    public function getActions($scope = null) : array
+    public function getActions($scope = null): array
     {
         return array_filter($this->actions, function ($action) use ($scope) {
             return !$action->system && ($scope === null || $action->scope === $scope);
@@ -1086,7 +1100,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return UserAction\Generic
      */
-    public function getAction($name) : UserAction\Generic
+    public function getAction($name): UserAction\Generic
     {
         return $this->_getFromCollection($name, 'actions');
     }
@@ -1103,6 +1117,25 @@ class Model implements ArrayAccess, IteratorAggregate
     public function executeAction($name, ...$args)
     {
         $this->getAction($name)->execute(...$args);
+    }
+
+    /**
+     * Remove specified action(s).
+     *
+     * @param string|array $name
+     *
+     * @throws Exception
+     * @throws \atk4\core\Exception
+     *
+     * @return $this
+     */
+    public function removeAction($name)
+    {
+        foreach ((array) $name as $action) {
+            $this->_removeFromCollection($action, 'actions');
+        }
+
+        return $this;
     }
 
     // }}}
@@ -2274,7 +2307,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Reference
      */
-    protected function _hasReference($c, $link, $defaults = []) : Reference
+    protected function _hasReference($c, $link, $defaults = []): Reference
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_'.$link];
@@ -2312,7 +2345,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Reference
      */
-    public function addRef($link, $callback) : Reference
+    public function addRef($link, $callback): Reference
     {
         return $this->_hasReference($this->_default_seed_addRef, $link, $callback);
     }
@@ -2328,7 +2361,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Reference\HasOne
      */
-    public function hasOne($link, $defaults = []) : Reference
+    public function hasOne($link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_hasOne, $link, $defaults);
     }
@@ -2344,7 +2377,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Reference\HasMany
      */
-    public function hasMany($link, $defaults = []) : Reference
+    public function hasMany($link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults);
     }
@@ -2360,7 +2393,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Reference\ContainsOne
      */
-    public function containsOne($link, $defaults = []) : Reference
+    public function containsOne($link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_containsOne, $link, $defaults);
     }
@@ -2376,7 +2409,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Reference\ContainsMany
      */
-    public function containsMany($link, $defaults = []) : Reference
+    public function containsMany($link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_containsMany, $link, $defaults);
     }
@@ -2391,7 +2424,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Model
      */
-    public function ref($link, $defaults = []) : self
+    public function ref($link, $defaults = []): self
     {
         return $this->getRef($link)->ref($defaults);
     }
@@ -2406,7 +2439,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Model
      */
-    public function refModel($link, $defaults = []) : self
+    public function refModel($link, $defaults = []): self
     {
         return $this->getRef($link)->refModel($defaults);
     }
@@ -2421,7 +2454,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Model
      */
-    public function refLink($link, $defaults = []) : self
+    public function refLink($link, $defaults = []): self
     {
         return $this->getRef($link)->refLink($defaults);
     }
@@ -2435,7 +2468,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return Reference
      */
-    public function getRef($link) : Reference
+    public function getRef($link): Reference
     {
         return $this->getElement('#ref_'.$link);
     }
@@ -2445,7 +2478,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return array
      */
-    public function getRefs() : array
+    public function getRefs(): array
     {
         $refs = [];
         foreach ($this->elements as $key => $val) {

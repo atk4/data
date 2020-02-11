@@ -120,7 +120,7 @@ class HasOne extends Reference
     /**
      * Persisting format for type = 'date', 'datetime', 'time' fields.
      *
-     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
+     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.
      *
      * @var string
      */
@@ -197,7 +197,7 @@ class HasOne extends Reference
      *
      * @return Field
      */
-    protected function referenceOurValue() : Field
+    protected function referenceOurValue(): Field
     {
         $this->owner->persistence_data['use_table_prefixes'] = true;
 
@@ -217,7 +217,7 @@ class HasOne extends Reference
      *
      * @return Model
      */
-    public function ref($defaults = []) : Model
+    public function ref($defaults = []): Model
     {
         $m = $this->getModel($defaults);
 
