@@ -34,7 +34,9 @@ and even perform operations on multiple records (See `Persistence Actions` below
    $m = new User($db);
    $m->addCondition('expired', true);
 
-   $m->action('delete')->execute();
+   $m->action('delete')->execute(); // performs mass delete, hooks are not executed
+   
+   $m->each('delete'); // deletes each record, hooks are executed
 
 When data is loaded from associated Persistence, it is automatically converted into
 a native PHP type (such as DateTime object) through a process called Typecasting. Various
