@@ -226,7 +226,7 @@ class HasOne_SQL extends HasOne
         }
 
         /** @var Field_SQL_Expression $ex */
-        $ex = $this->owner->addExpression($field, array_merge_recursive(
+        $ex = $this->owner->addExpression($field, array_replace_recursive(
             [
                 function (Model $m) {
                     $mm = $m->refLink($this->link);
