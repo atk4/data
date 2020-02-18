@@ -939,6 +939,20 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
+     * Returns array of model record titles [id => title].
+     *
+     * @return array
+     */
+    public function getTitles()
+    {
+        $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
+
+        return array_map(function ($row) use ($field) {
+            return $row[$field];
+        }, $this->export([$field], $this->id_field));
+    }
+
+    /**
      * You can compare new value of the field with existing one without
      * retrieving. In the trivial case it's same as ($value == $model[$name])
      * but this method can be used for:.

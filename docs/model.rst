@@ -740,6 +740,10 @@ Title Field
 
     Return title field value of currently loaded record.
 
+.. php:method:: public getTitles
+
+    Returns array of title field values of all model records in format [id => title].
+
 .. _caption:
 
 Model Caption
