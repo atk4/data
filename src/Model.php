@@ -939,7 +939,7 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
-     * Returns array of model record titles [id => title]
+     * Returns array of model record titles [id => title].
      *
      * @return array
      */
@@ -947,9 +947,9 @@ class Model implements ArrayAccess, IteratorAggregate
     {
         $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
 
-        return array_map(function($row) use ($field) {
-                return $row[$field];
-            }, $this->export([$field], $this->id_field));
+        return array_map(function ($row) use ($field) {
+            return $row[$field];
+        }, $this->export([$field], $this->id_field));
     }
 
     /**
@@ -1994,7 +1994,7 @@ class Model implements ArrayAccess, IteratorAggregate
 
         return $this;
     }
-    
+
     /**
      * Export DataSet as array of hashes.
      *

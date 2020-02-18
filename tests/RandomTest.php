@@ -414,11 +414,11 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // default title_field = name
         $this->assertEquals(null, $m->getTitle()); // not loaded model returns null
-        $this->assertEquals([1=>'John',2=>'Sue'], $m->getTitles()); // all titles
+        $this->assertEquals([1=>'John', 2=>'Sue'], $m->getTitles()); // all titles
 
         $m->load(2);
         $this->assertEquals('Sue', $m->getTitle()); // loaded returns title_field value
-        $this->assertEquals([1=>'John',2=>'Sue'], $m->getTitles()); // all titles
+        $this->assertEquals([1=>'John', 2=>'Sue'], $m->getTitles()); // all titles
 
         // set custom title_field
         $m->title_field = 'parent_item_id';
@@ -437,7 +437,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->title_field = 'my_name';
         $m->load(2);
         $this->assertEquals(2, $m->getTitle()); // loaded returns id value
-        $this->assertEquals([1=>1,2=>2], $m->getTitles()); // all titles (my_name)
+        $this->assertEquals([1=>1, 2=>2], $m->getTitles()); // all titles (my_name)
     }
 
     /**
