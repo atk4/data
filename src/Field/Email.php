@@ -39,12 +39,12 @@ class Email extends Field
      * @var array Array of allowed separators
      */
     public $separator = [','];
-    
+
     protected static $seedProperties = [
-            'dns_check',
-            'allow_multiple',
-            'include_names',
-            'separator',
+        'dns_check',
+        'allow_multiple',
+        'include_names',
+        'separator',
     ];
 
     /**
@@ -100,7 +100,7 @@ class Email extends Field
      *
      * @return string
      */
-    protected function idn_to_ascii(?string $domain) : ?string
+    protected function idn_to_ascii(?string $domain): ?string
     {
         return idn_to_ascii($domain, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
     }

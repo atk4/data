@@ -2,9 +2,9 @@
 
 namespace atk4\data\tests;
 
-use atk4\data\Model;
 use atk4\data\Field\Callback;
 use atk4\data\Field\Integer;
+use atk4\data\Model;
 
 /**
  * Test various Field.
@@ -99,26 +99,26 @@ class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->expectExceptionMessage('format is invalid');
         $m['email'] = 'Romans <me@gmail.com>';
     }
-    
+
     public function testCallback()
     {
         $model = new Model($this->pers);
-        $model->addField('callback', [Callback::class, 'fx'=>function($model) {
+        $model->addField('callback', [Callback::class, 'fx'=>function ($model) {
             return $model['name'];
         }]);
-        
-        $model->each(function($model) {
+
+        $model->each(function ($model) {
             $this->assertEquals($model['callback'], $model['name']);
         });
     }
-    
+
     public function testInteger()
     {
         $model = new Model($this->pers);
         $model->addField('integer', [Integer::class]);
-        
+
         $model['integer'] = 55.55;
-        
+
         $model->save();
 
         $this->assertEquals($model['integer'], 55);

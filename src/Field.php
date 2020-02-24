@@ -177,47 +177,47 @@ class Field implements Expressionable
      * @var null|bool|array
      */
     public $serialize = null;
-    
+
     protected static $seedProperties = [
-            'default',
-            'type',
-            'enum',
-            'values',
-            'reference',
-            'actual',
-            'join',
-            'system',
-            'never_persist',
-            'never_save',
-            'read_only',
-            'caption',
-            'ui',
-            'persistence',
-            'mandatory',
-            'required',
-            'typecast',
-            'serialize',
+        'default',
+        'type',
+        'enum',
+        'values',
+        'reference',
+        'actual',
+        'join',
+        'system',
+        'never_persist',
+        'never_save',
+        'read_only',
+        'caption',
+        'ui',
+        'persistence',
+        'mandatory',
+        'required',
+        'typecast',
+        'serialize',
     ];
-    
+
     /**
      * Map field type to seed
-     * List can be updated or extended using the Field::register method
-     * 
+     * List can be updated or extended using the Field::register method.
+     *
      * @var array
      */
     protected static $registry = [
-            'boolean'  => Field\Boolean::class,
-            'float'    => Field\Numeric::class,
-            'integer'  => Field\Integer::class,
-            'int'      => Field\Integer::class,
-            'money'    => Field\Money::class,
-            'text'     => Field\Text::class,
-            'string'   => Field\Line::class,
-            'datetime' => Field\DateTime::class,
-            'date'     => Field\Date::class,
-            'time'     => Field\Time::class,
-            'array'    => Field\Array_::class,
-            'object'   => Field\Object_::class,
+        'boolean'  => Field\Boolean::class,
+        'float'    => Field\Numeric::class,
+        'integer'  => Field\Integer::class,
+        'int'      => Field\Integer::class,
+        'money'    => Field\Money::class,
+        'text'     => Field\Text::class,
+        'string'   => Field\Line::class,
+        'datetime' => Field\DateTime::class,
+        'date'     => Field\Date::class,
+        'time'     => Field\Time::class,
+        'array'    => Field\Array_::class,
+        'object'   => Field\Object_::class,
     ];
 
     // }}}
@@ -336,14 +336,14 @@ class Field implements Expressionable
      *
      * @return array
      */
-    public function getSeed(array $defaults = []) : array
+    public function getSeed(array $defaults = []): array
     {
         if (!$defaults) {
             $seedProperties = static::$seedProperties;
             foreach (class_parents($this) as $parent) {
                 $seedProperties = array_merge($parent::$seedProperties, $seedProperties);
             }
-            
+
             $defaults = array_intersect_key(get_class_vars(static::class), array_flip($seedProperties));
         }
 
@@ -353,32 +353,32 @@ class Field implements Expressionable
                 $seed[$k] = $this->{$k};
             }
         }
-        
+
         return $seed;
     }
-    
+
     /**
-     * Resolve field type to seed from Field::$registry
-     * 
+     * Resolve field type to seed from Field::$registry.
+     *
      * @param string $type
      */
     public static function resolve($type)
     {
         return self::$registry[$type] ?? null;
     }
-    
+
     /**
      * Register custom field type to be resolved.
-     * 
+     *
      * @param string|array      $type
      * @param string|array|null $seed
      */
     public static function register($type, $seed = null)
     {
         if (is_array($types = $type)) {
-             foreach ($types as $type => $seed) {
-                 self::register($type, $seed);
-             }   
+            foreach ($types as $type => $seed) {
+                self::register($type, $seed);
+            }
         }
 
         self::$registry[$type] = $seed;
@@ -430,7 +430,7 @@ class Field implements Expressionable
      *
      * @return bool
      */
-    public function compare($value) : bool
+    public function compare($value): bool
     {
         return $this->owner[$this->short_name] == $value;
     }
@@ -454,7 +454,7 @@ class Field implements Expressionable
      *
      * @return bool
      */
-    public function isEditable() : bool
+    public function isEditable(): bool
     {
         return $this->ui['editable'] ?? (($this->read_only || $this->never_persist) ? false : !$this->system);
     }
@@ -464,7 +464,7 @@ class Field implements Expressionable
      *
      * @return bool
      */
-    public function isVisible() : bool
+    public function isVisible(): bool
     {
         return $this->ui['visible'] ?? !$this->system;
     }
@@ -474,7 +474,7 @@ class Field implements Expressionable
      *
      * @return bool
      */
-    public function isHidden() : bool
+    public function isHidden(): bool
     {
         return $this->ui['hidden'] ?? false;
     }
@@ -484,7 +484,7 @@ class Field implements Expressionable
      *
      * @return bool
      */
-    public function canBeNull() : bool
+    public function canBeNull(): bool
     {
         return $this->mandatory === false;
     }
@@ -494,7 +494,7 @@ class Field implements Expressionable
      *
      * @return bool
      */
-    public function canBeEmpty() : bool
+    public function canBeEmpty(): bool
     {
         return $this->mandatory === false && $this->required === false;
     }
@@ -504,17 +504,16 @@ class Field implements Expressionable
      *
      * @return string
      */
-    public function getCaption() : string
+    public function getCaption(): string
     {
         return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption($this->short_name);
     }
 
-    
     /**
      * Returns typecasting callback if defined.
-     * 
+     *
      * @param string $mode - load|save
-     * 
+     *
      * @return callable|false
      */
     public function getTypecaster($mode)
@@ -522,20 +521,20 @@ class Field implements Expressionable
         // map for backward compatibility with definition
         // [typecast_save_callback, typecast_load_callback]
         $map = [
-                'save' => 0,
-                'load' => 1
+            'save' => 0,
+            'load' => 1,
         ];
-        
+
         $fx = $this->typecast[$mode] ?? $this->typecast[$map[$mode]] ?? false;
-        
+
         return is_callable($fx) ? $fx : false;
     }
-    
+
     /**
      * Returns serialize callback if defined.
-     * 
+     *
      * @param string $mode - encode|decode
-     * 
+     *
      * @return callable|false
      */
     public function getSerializer($mode)
@@ -543,12 +542,12 @@ class Field implements Expressionable
         // map for backward compatibility with definition
         // [encode_callback, decode_callback]
         $map = [
-                'encode' => 0,
-                'decode' => 1
+            'encode' => 0,
+            'decode' => 1,
         ];
-        
+
         $fx = $this->serialize[$mode] ?? $this->serialize[$map[$mode]] ?? false;
-        
+
         return is_callable($fx) ? $fx : false;
     }
 
@@ -583,7 +582,7 @@ class Field implements Expressionable
      *
      * @return array
      */
-    public function __debugInfo() : array
+    public function __debugInfo(): array
     {
         $arr = [
             'short_name' => $this->short_name,

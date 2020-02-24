@@ -20,9 +20,9 @@ class Text extends Field
      * @var int specify a maximum length for this text.
      */
     public $max_length;
-    
+
     protected static $seedProperties = [
-            'max_length',
+        'max_length',
     ];
 
     /**

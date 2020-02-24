@@ -876,31 +876,31 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals($current_date->format('H:i:s'), $model->getField('time')->toString());
         $this->assertEquals($current_date->format('c'), $model->getField('datetime')->toString());
     }
-    
+
     public function testFieldSeed()
     {
         $model = new Model();
-        
+
         $fields = [
-                'date' => ['type' => 'date', 'caption' => 'Test', 'required'=>true],
-                'integer' => ['type' => 'integer', 'caption' => 'Test', 'required'=>true],
-                'string' => ['type' => 'string', 'caption' => 'Test', 'required'=>true, 'max_length'=>255],
+            'date'    => ['type' => 'date', 'caption' => 'Test', 'required'=>true],
+            'integer' => ['type' => 'integer', 'caption' => 'Test', 'required'=>true],
+            'string'  => ['type' => 'string', 'caption' => 'Test', 'required'=>true, 'max_length'=>255],
         ];
         $model->addFields($fields);
-        
+
         foreach ($fields as $name => $defaults) {
             $seed = $model->getField($name)->getSeed();
-            
+
             $this->assertArraySubset($seed, $defaults);
             $this->assertArrayNotHasKey('type', $seed);
         }
     }
-    
+
     public function testFieldSeedRegistry()
     {
         $customTypes = [
-                'some_type' => 'ABC',
-                'other_type' => 'EDF'
+            'some_type'  => 'ABC',
+            'other_type' => 'EDF',
         ];
 
         Field::register($customTypes);

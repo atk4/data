@@ -188,7 +188,7 @@ class Persistence
             if ($value === null && $field->mandatory) {
                 throw new ValidationException([$key => 'Mandatory field value cannot be null']);
             }
-            
+
             // Figure out the name of the destination field
             $key = empty($field->actual) ? $key : $field->actual;
 

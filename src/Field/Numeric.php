@@ -39,13 +39,13 @@ class Numeric extends Field
      * @var int specify a maximum value for this number.
      */
     public $max;
-    
+
     protected static $seedProperties = [
-            'decimals',
-            'round',
-            'signum',
-            'min',
-            'max',
+        'decimals',
+        'round',
+        'signum',
+        'min',
+        'max',
     ];
 
     /**
@@ -107,7 +107,7 @@ class Numeric extends Field
      *
      * @return float
      */
-    protected function roundUp(float $n, int $p) : float
+    protected function roundUp(float $n, int $p): float
     {
         return $p ? ceil($n / $p) * $p : ceil($n);
     }
@@ -120,7 +120,7 @@ class Numeric extends Field
      *
      * @return float
      */
-    protected function roundDown(float $n, int $p) : float
+    protected function roundDown(float $n, int $p): float
     {
         return $p ? floor($n / $p) * $p : floor($n);
     }

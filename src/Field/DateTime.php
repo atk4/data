@@ -43,10 +43,10 @@ class DateTime extends Field
      * @param string
      */
     public $dateTimeZoneClass = \DateTimeZone::class;
-    
+
     protected static $seedProperties = [
-            'dateTimeClass',
-            'dateTimeZoneClass',
+        'dateTimeClass',
+        'dateTimeZoneClass',
     ];
 
     /**
@@ -77,7 +77,7 @@ class DateTime extends Field
         }
 
         // we allow http://php.net/manual/en/datetime.formats.relative.php
-        $class = $this->dateTimeClass ?? DateTime::class;
+        $class = $this->dateTimeClass ?? self::class;
 
         if (is_numeric($value)) {
             $value = new $class('@'.$value);
@@ -101,7 +101,7 @@ class DateTime extends Field
      *
      * @return string
      */
-    public function toString($value = null) : ?string
+    public function toString($value = null): ?string
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 

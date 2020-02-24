@@ -21,9 +21,9 @@ class Line extends Text
      * @var int specify a maximum length for this text.
      */
     public $max_length = 255;
-    
+
     protected static $seedProperties = [
-            'max_length',
+        'max_length',
     ];
 
     /**

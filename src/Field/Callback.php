@@ -21,14 +21,13 @@ class Callback extends \atk4\data\Field
      * @var mixed
      */
     public $fx = null;
-    
+
     /**
      * Method to execute for evaluation.
      *
      * @var mixed
-     * 
+     *
      * @deprecated use $fx instead
-     * 
      */
     public $expr = null;
 
@@ -45,10 +44,10 @@ class Callback extends \atk4\data\Field
      * @var bool
      */
     public $never_persist = true;
-    
+
     protected static $seedProperties = [
-            'fx',
-            'expr',
+        'fx',
+        'expr',
     ];
 
     /**

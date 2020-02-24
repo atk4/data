@@ -129,7 +129,7 @@ class SQL extends Persistence
     /**
      * Associate model with the data driver.
      *
-     * @param Model|string $model        Model which will use this persistence
+     * @param Model|string $model    Model which will use this persistence
      * @param array        $defaults Properties
      *
      * @return Model

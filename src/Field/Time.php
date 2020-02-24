@@ -43,7 +43,7 @@ class Time extends DateTime
      *
      * @return string
      */
-    public function toString($value = null) : ?string
+    public function toString($value = null): ?string
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
