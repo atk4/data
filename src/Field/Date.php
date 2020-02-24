@@ -4,9 +4,6 @@
 
 namespace atk4\data\Field;
 
-use atk4\data\Field;
-use atk4\data\ValidationException;
-
 /**
  * Date field type. Think of it as field type "date" in past.
  */
@@ -20,7 +17,7 @@ class Date extends DateTime
      *
      * @param mixed $value
      *
-     * @throws ValidationException
+     * @throws \atk4\data\ValidationException
      *
      * @return mixed
      */

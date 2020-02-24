@@ -20,6 +20,16 @@ class Callback extends \atk4\data\Field
      *
      * @var mixed
      */
+    public $fx = null;
+    
+    /**
+     * Method to execute for evaluation.
+     *
+     * @var mixed
+     * 
+     * @deprecated use $fx instead
+     * 
+     */
     public $expr = null;
 
     /**
@@ -35,6 +45,11 @@ class Callback extends \atk4\data\Field
      * @var bool
      */
     public $never_persist = true;
+    
+    protected static $seedProperties = [
+            'fx',
+            'expr',
+    ];
 
     /**
      * Initialization.
@@ -44,34 +59,7 @@ class Callback extends \atk4\data\Field
         $this->_init();
 
         $this->owner->addHook('afterLoad', function ($m) {
-            $m->data[$this->short_name] = call_user_func($this->expr, $m);
+            $m->data[$this->short_name] = call_user_func($this->fx ?: $this->expr, $m);
         });
-    }
-
-    /**
-     * Return array of seed properties of this Field object.
-     *
-     * @param array $properties Properties to return, by default will return all properties set.
-     *
-     * @return array
-     */
-    public function getSeed(array $properties = []) : array
-    {
-        $seed = parent::getSeed($properties);
-
-        // [key => default_value]
-        $properties = $properties ?: [
-            'expr'          => null,
-            'read_only'     => true,
-            'never_persist' => true,
-        ];
-
-        foreach ($properties as $k=>$v) {
-            if ($this->{$k} !== $v) {
-                $seed[$k] = $this->{$k};
-            }
-        }
-
-        return $seed;
     }
 }

@@ -108,7 +108,7 @@ class ContainsOne extends Reference
      *
      * @return Model
      */
-    public function ref($defaults = []) : Model
+    public function ref($defaults = []): Model
     {
         // get model
         // will not use ID field

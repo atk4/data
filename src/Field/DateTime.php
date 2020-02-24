@@ -33,7 +33,7 @@ class DateTime extends Field
      *
      * @param string
      */
-    public $dateTimeClass = 'DateTime';
+    public $dateTimeClass = \DateTime::class;
 
     /**
      * Timezone class used for type = 'data', 'datetime', 'time' fields.
@@ -42,7 +42,12 @@ class DateTime extends Field
      *
      * @param string
      */
-    public $dateTimeZoneClass = 'DateTimeZone';
+    public $dateTimeZoneClass = \DateTimeZone::class;
+    
+    protected static $seedProperties = [
+            'dateTimeClass',
+            'dateTimeZoneClass',
+    ];
 
     /**
      * Validate and normalize value.
@@ -72,7 +77,7 @@ class DateTime extends Field
         }
 
         // we allow http://php.net/manual/en/datetime.formats.relative.php
-        $class = $this->dateTimeClass ?? 'DateTime';
+        $class = $this->dateTimeClass ?? DateTime::class;
 
         if (is_numeric($value)) {
             $value = new $class('@'.$value);
@@ -87,33 +92,6 @@ class DateTime extends Field
         }
 
         return $value;
-    }
-
-    /**
-     * Return array of seed properties of this Field object.
-     *
-     * @param array $properties Properties to return, by default will return all properties set.
-     *
-     * @return array
-     */
-    public function getSeed(array $properties = []) : array
-    {
-        $seed = parent::getSeed($properties);
-
-        // [key => default_value]
-        $properties = $properties ?: [
-            'dateTimeClass'     => 'DateTime',
-            'dateTimeZoneClass' => 'DateTimeZone',
-            'persistence'       => ['format' => null, 'timezone' => 'UTC'],
-        ];
-
-        foreach ($properties as $k=>$v) {
-            if ($this->{$k} !== $v) {
-                $seed[$k] = $this->{$k};
-            }
-        }
-
-        return $seed;
     }
 
     /**

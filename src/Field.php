@@ -163,7 +163,7 @@ class Field implements Expressionable
     /**
      * Should we use typecasting when saving/loading data to/from persistence.
      *
-     * Value can be array [$typecast_save_callback, $typecast_load_callback].
+     * Value can be array ['save' => $typecast_save_callback, 'load' => $typecast_load_callback].
      *
      * @var null|bool|array
      */
@@ -172,11 +172,53 @@ class Field implements Expressionable
     /**
      * Should we use serialization when saving/loading data to/from persistence.
      *
-     * Value can be array [$encode_callback, $decode_callback].
+     * Value can be array ['encode' => $encode_callback, 'decode' => $decode_callback].
      *
      * @var null|bool|array
      */
     public $serialize = null;
+    
+    protected static $seedProperties = [
+            'default',
+            'type',
+            'enum',
+            'values',
+            'reference',
+            'actual',
+            'join',
+            'system',
+            'never_persist',
+            'never_save',
+            'read_only',
+            'caption',
+            'ui',
+            'persistence',
+            'mandatory',
+            'required',
+            'typecast',
+            'serialize',
+    ];
+    
+    /**
+     * Map field type to seed
+     * List can be updated or extended using the Field::register method
+     * 
+     * @var array
+     */
+    protected static $registry = [
+            'boolean'  => Field\Boolean::class,
+            'float'    => Field\Numeric::class,
+            'integer'  => Field\Integer::class,
+            'int'      => Field\Integer::class,
+            'money'    => Field\Money::class,
+            'text'     => Field\Text::class,
+            'string'   => Field\Line::class,
+            'datetime' => Field\DateTime::class,
+            'date'     => Field\Date::class,
+            'time'     => Field\Time::class,
+            'array'    => Field\Array_::class,
+            'object'   => Field\Object_::class,
+    ];
 
     // }}}
 
@@ -261,7 +303,7 @@ class Field implements Expressionable
             }
             break;
         case 'string':
-            throw new Exception(['Use Field\ShortText for type=string', 'this'=>$this]);
+            throw new Exception(['Use Field\Line for type=string', 'this'=>$this]);
         case 'text':
             throw new Exception(['Use Field\Text for type=text', 'this'=>$this]);
         case 'integer':
@@ -294,39 +336,52 @@ class Field implements Expressionable
      *
      * @return array
      */
-    public function getSeed(array $properties = []) : array
+    public function getSeed(array $defaults = []) : array
     {
+        if (!$defaults) {
+            $seedProperties = static::$seedProperties;
+            foreach (class_parents($this) as $parent) {
+                $seedProperties = array_merge($parent::$seedProperties, $seedProperties);
+            }
+            
+            $defaults = array_intersect_key(get_class_vars(static::class), array_flip($seedProperties));
+        }
+
         $seed = [];
-
-        // [key => default_value]
-        $properties = $properties ?: [
-            'default'       => null,
-            'type'          => null,
-            'enum'          => null,
-            'values'        => null,
-            'reference'     => null,
-            'actual'        => null,
-            'join'          => null,
-            'system'        => false,
-            'never_persist' => false,
-            'never_save'    => false,
-            'read_only'     => false,
-            'caption'       => null,
-            'ui'            => [],
-            'persistence'   => [],
-            'mandatory'     => false,
-            'required'      => false,
-            'typecast'      => null,
-            'serialize'     => null,
-        ];
-
-        foreach ($properties as $k=>$v) {
+        foreach ($defaults as $k=>$v) {
             if ($this->{$k} !== $v) {
                 $seed[$k] = $this->{$k};
             }
         }
-
+        
         return $seed;
+    }
+    
+    /**
+     * Resolve field type to seed from Field::$registry
+     * 
+     * @param string $type
+     */
+    public static function resolve($type)
+    {
+        return self::$registry[$type] ?? null;
+    }
+    
+    /**
+     * Register custom field type to be resolved.
+     * 
+     * @param string|array      $type
+     * @param string|array|null $seed
+     */
+    public static function register($type, $seed = null)
+    {
+        if (is_array($types = $type)) {
+             foreach ($types as $type => $seed) {
+                 self::register($type, $seed);
+             }   
+        }
+
+        self::$registry[$type] = $seed;
     }
 
     /**
@@ -452,6 +507,49 @@ class Field implements Expressionable
     public function getCaption() : string
     {
         return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption($this->short_name);
+    }
+
+    
+    /**
+     * Returns typecasting callback if defined.
+     * 
+     * @param string $mode - load|save
+     * 
+     * @return callable|false
+     */
+    public function getTypecaster($mode)
+    {
+        // map for backward compatibility with definition
+        // [typecast_save_callback, typecast_load_callback]
+        $map = [
+                'save' => 0,
+                'load' => 1
+        ];
+        
+        $fx = $this->typecast[$mode] ?? $this->typecast[$map[$mode]] ?? false;
+        
+        return is_callable($fx) ? $fx : false;
+    }
+    
+    /**
+     * Returns serialize callback if defined.
+     * 
+     * @param string $mode - encode|decode
+     * 
+     * @return callable|false
+     */
+    public function getSerializer($mode)
+    {
+        // map for backward compatibility with definition
+        // [encode_callback, decode_callback]
+        $map = [
+                'encode' => 0,
+                'decode' => 1
+        ];
+        
+        $fx = $this->serialize[$mode] ?? $this->serialize[$map[$mode]] ?? false;
+        
+        return is_callable($fx) ? $fx : false;
     }
 
     // }}}

@@ -107,7 +107,7 @@ class SQL extends Persistence
      *
      * @return Query
      */
-    public function dsql() : Query
+    public function dsql(): Query
     {
         return $this->connection->dsql();
     }
@@ -117,24 +117,24 @@ class SQL extends Persistence
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param callable $f
+     * @param callable $fx
      *
      * @return mixed
      */
-    public function atomic($f)
+    public function atomic($fx)
     {
-        return $this->connection->atomic($f);
+        return $this->connection->atomic($fx);
     }
 
     /**
      * Associate model with the data driver.
      *
-     * @param Model|string $m        Model which will use this persistence
+     * @param Model|string $model        Model which will use this persistence
      * @param array        $defaults Properties
      *
      * @return Model
      */
-    public function add($m, $defaults = []) : Model
+    public function add($model, $defaults = []): Model
     {
         // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
@@ -146,63 +146,64 @@ class SQL extends Persistence
             '_default_seed_join'          => $this->_default_seed_join,
         ], $defaults);
 
-        $m = parent::add($m, $defaults);
+        $model = parent::add($model, $defaults);
 
-        if (!isset($m->table) || (!is_string($m->table) && $m->table !== false)) {
+        if (!isset($model->table) || (!is_string($model->table) && $model->table !== false)) {
             throw new Exception([
                 'Property $table must be specified for a model',
-                'model' => $m,
+                'model' => $model,
             ]);
         }
 
         // When we work without table, we can't have any IDs
-        if ($m->table === false) {
-            $m->removeField($m->id_field);
-            $m->addExpression($m->id_field, '1');
+        if ($model->table === false) {
+            $model->removeField($model->id_field);
+            $model->addExpression($model->id_field, '1');
             //} else {
             // SQL databases use ID of int by default
             //$m->getField($m->id_field)->type = 'integer';
         }
 
         // Sequence support
-        if ($m->sequence && $id_field = $m->hasField($m->id_field)) {
-            $id_field->default = $this->dsql()->mode('seq_nextval')->sequence($m->sequence);
+        if ($model->sequence && $id_field = $model->hasField($model->id_field)) {
+            $id_field->default = $this->dsql()->mode('seq_nextval')->sequence($model->sequence);
         }
 
-        return $m;
+        return $model;
     }
 
     /**
      * Initialize persistence.
      *
-     * @param Model $m
+     * @param Model $model
      */
-    protected function initPersistence(Model $m)
+    protected function initPersistence(Model $model)
     {
-        $m->addMethod('expr', $this);
-        $m->addMethod('dsql', $this);
+        $model->addMethod('expr', $this);
+        $model->addMethod('dsql', $this);
+        $model->addMethod('exprNow', $this);
     }
 
     /**
      * Creates new Expression object from expression string.
      *
-     * @param Model $m
+     * @param Model $model
      * @param mixed $expr
      * @param array $args
      *
      * @return Expression
      */
-    public function expr(Model $m, $expr, $args = []) : Expression
+    public function expr(Model $model, $expr, $args = []): Expression
     {
         if (!is_string($expr)) {
             return $this->connection->expr($expr, $args);
         }
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
-            function ($matches) use (&$args, $m) {
+            function ($matches) use (&$args, $model) {
                 $identifier = substr($matches[0], 1, -1);
                 if ($identifier && !isset($args[$identifier])) {
-                    $args[$identifier] = $m->getField($identifier);
+                    $args[$identifier] = $model->getField($identifier);
                 }
 
                 return $matches[0];
@@ -214,50 +215,55 @@ class SQL extends Persistence
     }
 
     /**
-     * Initializes base query for model $m.
+     * Creates new Query object with current_timestamp(precision) expression.
      *
      * @param Model $m
+     * @param int   $precision
      *
      * @return Query
      */
-    public function initQuery(Model $m) : Query
+    public function exprNow($precision = null)
     {
-        $d = $m->persistence_data['dsql'] = $this->dsql();
+        return $this->connection->dsql()->exprNow($precision);
+    }
 
-        if ($m->table) {
-            if (isset($m->table_alias)) {
-                $d->table($m->table, $m->table_alias);
-            } else {
-                $d->table($m->table);
-            }
+    /**
+     * Initializes base query for model $m.
+     *
+     * @param Model $model
+     *
+     * @return Query
+     */
+    public function initQuery(Model $model): Query
+    {
+        $query = $model->persistence_data['dsql'] = $this->dsql();
+
+        if ($model->table) {
+            $query->table($model->table, $model->table_alias ?? null);
         }
 
-        return $d;
+        return $query;
     }
 
     /**
      * Adds Field in Query.
      *
-     * @param Query $q
+     * @param Query $query
      * @param Field $field
      */
-    public function initField(Query $q, Field $field)
+    public function initField(Query $query, Field $field)
     {
-        if ($field->useAlias()) {
-            $q->field($field, $field->short_name);
-        } else {
-            $q->field($field);
-        }
+        $query->field($field, $field->useAlias() ? $field->short_name : null);
     }
 
     /**
      * Adds model fields in Query.
      *
-     * @param Model            $m
-     * @param \atk4\dsql\Query $q
+     * @param Model            $model
+     * @param \atk4\dsql\Query $query
      * @param array|null|false $fields
      */
-    public function initQueryFields(Model $m, $q, $fields = null)
+    public function initQueryFields(Model $model, $query, $fields = null)
     {
         // do nothing on purpose
         if ($fields === false) {
@@ -270,36 +276,36 @@ class SQL extends Persistence
             // Set of fields is strictly defined for purposes of export,
             // so we will ignore even system fields.
             foreach ($fields as $field) {
-                $this->initField($q, $m->getField($field));
+                $this->initField($query, $model->getField($field));
             }
-        } elseif ($m->only_fields) {
+        } elseif ($model->only_fields) {
             $added_fields = [];
 
             // Add requested fields first
-            foreach ($m->only_fields as $field) {
-                $f_object = $m->getField($field);
+            foreach ($model->only_fields as $field) {
+                $f_object = $model->getField($field);
                 if ($f_object->never_persist) {
                     continue;
                 }
-                $this->initField($q, $f_object);
+                $this->initField($query, $f_object);
                 $added_fields[$field] = true;
             }
 
             // now add system fields, if they were not added
-            foreach ($m->getFields() as $field => $f_object) {
+            foreach ($model->getFields() as $field => $f_object) {
                 if ($f_object->never_persist) {
                     continue;
                 }
                 if ($f_object->system && !isset($added_fields[$field])) {
-                    $this->initField($q, $f_object);
+                    $this->initField($query, $f_object);
                 }
             }
         } else {
-            foreach ($m->getFields() as $field => $f_object) {
+            foreach ($model->getFields() as $field => $f_object) {
                 if ($f_object->never_persist) {
                     continue;
                 }
-                $this->initField($q, $f_object);
+                $this->initField($query, $f_object);
             }
         }
     }
@@ -307,33 +313,33 @@ class SQL extends Persistence
     /**
      * Will set limit defined inside $m onto query $q.
      *
-     * @param Model $m
-     * @param Query $q
+     * @param Model $model
+     * @param Query $query
      */
-    protected function setLimitOrder(Model $m, Query $q)
+    protected function setLimitOrder(Model $model, Query $query)
     {
         // set limit
-        if ($m->limit && ($m->limit[0] || $m->limit[1])) {
-            if ($m->limit[0] === null) {
+        if ($model->limit && ($model->limit[0] || $model->limit[1])) {
+            if ($model->limit[0] === null) {
                 // This is max number which is allowed in MySQL server.
                 // But be aware, that PDO will downgrade this number even lower probably because
                 // in LIMIT it expects numeric value and converts string (we set float values as PDO_PARAM_STR)
                 // back to PDO_PARAM_INT which is goes back to max int value specific server can have.
                 // On my Win10,64-bit it is 2147483647, on Travis server 9223372036854775807 etc.
-                $m->limit[0] = '18446744073709551615';
+                $model->limit[0] = '18446744073709551615';
             }
-            $q->limit($m->limit[0], $m->limit[1]);
+            $query->limit($model->limit[0], $model->limit[1]);
         }
 
         // set order
-        if ($m->order) {
-            foreach ($m->order as $o) {
+        if ($model->order) {
+            foreach ($model->order as $o) {
                 if ($o[0] instanceof Expression) {
-                    $q->order($o[0], $o[1]);
+                    $query->order($o[0], $o[1]);
                 } elseif (is_string($o[0])) {
-                    $q->order($m->getField($o[0]), $o[1]);
+                    $query->order($model->getField($o[0]), $o[1]);
                 } else {
-                    throw new Exception(['Unsupported order parameter', 'model' => $m, 'field' => $o[0]]);
+                    throw new Exception(['Unsupported order parameter', 'model' => $model, 'field' => $o[0]]);
                 }
             }
         }
@@ -342,19 +348,19 @@ class SQL extends Persistence
     /**
      * Will apply conditions defined inside $m onto query $q.
      *
-     * @param Model $m
-     * @param Query $q
+     * @param Model $model
+     * @param Query $query
      *
      * @return Query
      */
-    public function initQueryConditions(Model $m, Query $q) : Query
+    public function initQueryConditions(Model $model, Query $query): Query
     {
-        if (!isset($m->conditions)) {
+        if (!isset($model->conditions)) {
             // no conditions are set in the model
-            return $q;
+            return $query;
         }
 
-        foreach ($m->conditions as $cond) {
+        foreach ($model->conditions as $cond) {
 
             // Options here are:
             // count($cond) == 1, we will pass the only
@@ -366,7 +372,7 @@ class SQL extends Persistence
                 if (is_array($cond[0])) {
                     foreach ($cond[0] as &$row) {
                         if (is_string($row[0])) {
-                            $row[0] = $m->getField($row[0]);
+                            $row[0] = $model->getField($row[0]);
                         }
 
                         if ($row[0] instanceof Field) {
@@ -377,28 +383,28 @@ class SQL extends Persistence
                     }
                 }
 
-                $q->where($cond[0]);
+                $query->where($cond[0]);
                 continue;
             }
 
             if (is_string($cond[0])) {
-                $cond[0] = $m->getField($cond[0]);
+                $cond[0] = $model->getField($cond[0]);
             }
 
             if (count($cond) == 2) {
                 if ($cond[0] instanceof Field) {
                     $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
                 }
-                $q->where($cond[0], $cond[1]);
+                $query->where($cond[0], $cond[1]);
             } else {
                 if ($cond[0] instanceof Field) {
                     $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
                 }
-                $q->where($cond[0], $cond[1], $cond[2]);
+                $query->where($cond[0], $cond[1], $cond[2]);
             }
         }
 
-        return $q;
+        return $query;
     }
 
     /**
@@ -410,42 +416,42 @@ class SQL extends Persistence
      *
      * @return mixed
      */
-    public function _typecastSaveField(Field $f, $value)
+    public function _typecastSaveField(Field $field, $value)
     {
         // work only on copied value not real one !!!
         $v = is_object($value) ? clone $value : $value;
 
-        switch ($f->type) {
+        switch ($field->type) {
         case 'boolean':
             // if enum is not set, then simply cast value to integer
-            if (!isset($f->enum) || !$f->enum) {
+            if (!isset($field->enum) || !$field->enum) {
                 $v = (int) $v;
                 break;
             }
 
             // if enum is set, first lets see if it matches one of those precisely
-            if ($v === $f->enum[1]) {
+            if ($v === $field->enum[1]) {
                 $v = true;
-            } elseif ($v === $f->enum[0]) {
+            } elseif ($v === $field->enum[0]) {
                 $v = false;
             }
 
             // finally, convert into appropriate value
-            $v = $v ? $f->enum[1] : $f->enum[0];
+            $v = $v ? $field->enum[1] : $field->enum[0];
             break;
         case 'date':
         case 'datetime':
         case 'time':
-            $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-            $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
+            $dt_class = $field->dateTimeClass ?? 'DateTime';
+            $tz_class = $field->dateTimeZoneClass ?? 'DateTimeZone';
 
             if ($v instanceof $dt_class) {
                 $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
-                $format = $f->persistence['format'] ?? $format[$f->type];
+                $format = $field->persistence['format'] ?? $format[$field->type];
 
                 // datetime only - set to persisting timezone
-                if ($f->type == 'datetime' && isset($f->persistence['timezone'])) {
-                    $v->setTimezone(new $tz_class($f->persistence['timezone']));
+                if ($field->type == 'datetime' && isset($field->persistence['timezone'])) {
+                    $v->setTimezone(new $tz_class($field->persistence['timezone']));
                 }
                 $v = $v->format($format);
             }
@@ -453,7 +459,7 @@ class SQL extends Persistence
         case 'array':
         case 'object':
             // don't encode if we already use some kind of serialization
-            $v = $f->serialize ? $v : $this->jsonEncode($f, $v);
+            $v = $field->serialize ? $v : $this->jsonEncode($field, $v);
             break;
         }
 
@@ -464,12 +470,12 @@ class SQL extends Persistence
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
-     * @param Field $f
+     * @param Field $field
      * @param mixed $value
      *
      * @return mixed
      */
-    public function _typecastLoadField(Field $f, $value)
+    public function _typecastLoadField(Field $field, $value)
     {
         // LOB fields return resource stream
         if (is_resource($value)) {
@@ -479,7 +485,7 @@ class SQL extends Persistence
         // work only on copied value not real one !!!
         $v = is_object($value) ? clone $value : $value;
 
-        switch ($f->type) {
+        switch ($field->type) {
         case 'string':
         case 'text':
             // do nothing - it's ok as it is
@@ -494,10 +500,10 @@ class SQL extends Persistence
             $v = round($v, 4);
             break;
         case 'boolean':
-            if (isset($f->enum) && is_array($f->enum)) {
-                if (isset($f->enum[0]) && $v == $f->enum[0]) {
+            if (isset($field->enum) && is_array($field->enum)) {
+                if (isset($field->enum[0]) && $v == $field->enum[0]) {
                     $v = false;
-                } elseif (isset($f->enum[1]) && $v == $f->enum[1]) {
+                } elseif (isset($field->enum[1]) && $v == $field->enum[1]) {
                     $v = true;
                 } else {
                     $v = null;
@@ -511,27 +517,27 @@ class SQL extends Persistence
         case 'date':
         case 'datetime':
         case 'time':
-            $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-            $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
+            $dt_class = isset($field->dateTimeClass) ? $field->dateTimeClass : 'DateTime';
+            $tz_class = isset($field->dateTimeZoneClass) ? $field->dateTimeZoneClass : 'DateTimeZone';
 
             if (is_numeric($v)) {
                 $v = new $dt_class('@'.$v);
             } elseif (is_string($v)) {
                 // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
                 $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
-                $format = $f->persistence['format'] ?? $format[$f->type];
+                $format = $field->persistence['format'] ?? $format[$field->type];
 
                 // datetime only - set from persisting timezone
-                if ($f->type == 'datetime' && isset($f->persistence['timezone'])) {
-                    $v = $dt_class::createFromFormat($format, $v, new $tz_class($f->persistence['timezone']));
+                if ($field->type == 'datetime' && isset($field->persistence['timezone'])) {
+                    $v = $dt_class::createFromFormat($format, $v, new $tz_class($field->persistence['timezone']));
                     if ($v === false) {
-                        throw new Exception(['Incorrectly formatted datetime', 'format' => $format, 'value' => $value, 'field' => $f]);
+                        throw new Exception(['Incorrectly formatted datetime', 'format' => $format, 'value' => $value, 'field' => $field]);
                     }
                     $v->setTimeZone(new $tz_class(date_default_timezone_get()));
                 } else {
                     $v = $dt_class::createFromFormat($format, $v);
                     if ($v === false) {
-                        throw new Exception(['Incorrectly formatted date/time', 'format' => $format, 'value' => $value, 'field' => $f]);
+                        throw new Exception(['Incorrectly formatted date/time', 'format' => $format, 'value' => $value, 'field' => $field]);
                     }
                 }
 
@@ -544,11 +550,11 @@ class SQL extends Persistence
             break;
         case 'array':
             // don't decode if we already use some kind of serialization
-            $v = $f->serialize ? $v : $this->jsonDecode($f, $v, true);
+            $v = $field->serialize ? $v : $this->jsonDecode($field, $v, true);
             break;
         case 'object':
             // don't decode if we already use some kind of serialization
-            $v = $f->serialize ? $v : $this->jsonDecode($f, $v, false);
+            $v = $field->serialize ? $v : $this->jsonDecode($field, $v, false);
             break;
         }
 
@@ -558,13 +564,13 @@ class SQL extends Persistence
     /**
      * Executing $model->action('update') will call this method.
      *
-     * @param Model  $m
+     * @param Model  $model
      * @param string $type
      * @param array  $args
      *
      * @return \atk4\dsql\Query
      */
-    public function action(Model $m, $type, $args = [])
+    public function action(Model $model, $type, $args = [])
     {
         if (!is_array($args)) {
             throw new Exception([
@@ -573,37 +579,37 @@ class SQL extends Persistence
             ]);
         }
 
-        $q = $this->initQuery($m);
+        $query = $this->initQuery($model);
         switch ($type) {
             case 'insert':
-                return $q->mode('insert');
+                return $query->mode('insert');
                 // cannot apply conditions now
 
             case 'update':
-                $q->mode('update');
+                $query->mode('update');
                 break;
 
             case 'delete':
-                $q->mode('delete');
-                $this->initQueryConditions($m, $q);
-                $m->hook('initSelectQuery', [$q, $type]);
+                $query->mode('delete');
+                $this->initQueryConditions($model, $query);
+                $model->hook('initSelectQuery', [$query, $type]);
 
-                return $q;
+                return $query;
 
             case 'select':
-                $this->initQueryFields($m, $q, isset($args[0]) ? $args[0] : null);
+                $this->initQueryFields($model, $query, isset($args[0]) ? $args[0] : null);
                 break;
 
             case 'count':
-                $this->initQueryConditions($m, $q);
-                $m->hook('initSelectQuery', [$q]);
+                $this->initQueryConditions($model, $query);
+                $model->hook('initSelectQuery', [$query]);
                 if (isset($args['alias'])) {
-                    $q->reset('field')->field('count(*)', $args['alias']);
+                    $query->reset('field')->field('count(*)', $args['alias']);
                 } else {
-                    $q->reset('field')->field('count(*)');
+                    $query->reset('field')->field('count(*)');
                 }
 
-                return $q;
+                return $query;
 
             case 'field':
                 if (!isset($args[0])) {
@@ -613,19 +619,19 @@ class SQL extends Persistence
                     ]);
                 }
 
-                $field = is_string($args[0]) ? $m->getField($args[0]) : $args[0];
-                $m->hook('initSelectQuery', [$q, $type]);
+                $field = is_string($args[0]) ? $model->getField($args[0]) : $args[0];
+                $model->hook('initSelectQuery', [$query, $type]);
                 if (isset($args['alias'])) {
-                    $q->reset('field')->field($field, $args['alias']);
+                    $query->reset('field')->field($field, $args['alias']);
                 } elseif ($field instanceof Field_SQL_Expression) {
-                    $q->reset('field')->field($field, $field->short_name);
+                    $query->reset('field')->field($field, $field->short_name);
                 } else {
-                    $q->reset('field')->field($field);
+                    $query->reset('field')->field($field);
                 }
-                $this->initQueryConditions($m, $q);
-                $this->setLimitOrder($m, $q);
+                $this->initQueryConditions($model, $query);
+                $this->setLimitOrder($model, $query);
 
-                return $q;
+                return $query;
 
             case 'fx':
             case 'fx0':
@@ -637,9 +643,9 @@ class SQL extends Persistence
                 }
 
                 $fx = $args[0];
-                $field = is_string($args[1]) ? $m->getField($args[1]) : $args[1];
-                $this->initQueryConditions($m, $q);
-                $m->hook('initSelectQuery', [$q, $type]);
+                $field = is_string($args[1]) ? $model->getField($args[1]) : $args[1];
+                $this->initQueryConditions($model, $query);
+                $model->hook('initSelectQuery', [$query, $type]);
 
                 if ($type == 'fx') {
                     $expr = "$fx([])";
@@ -648,14 +654,14 @@ class SQL extends Persistence
                 }
 
                 if (isset($args['alias'])) {
-                    $q->reset('field')->field($q->expr($expr, [$field]), $args['alias']);
+                    $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
                 } elseif ($field instanceof Field_SQL_Expression) {
-                    $q->reset('field')->field($q->expr($expr, [$field]), $fx.'_'.$field->short_name);
+                    $query->reset('field')->field($query->expr($expr, [$field]), $fx.'_'.$field->short_name);
                 } else {
-                    $q->reset('field')->field($q->expr($expr, [$field]));
+                    $query->reset('field')->field($query->expr($expr, [$field]));
                 }
 
-                return $q;
+                return $query;
 
             default:
                 throw new Exception([
@@ -664,11 +670,11 @@ class SQL extends Persistence
                 ]);
         }
 
-        $this->initQueryConditions($m, $q);
-        $this->setLimitOrder($m, $q);
-        $m->hook('initSelectQuery', [$q, $type]);
+        $this->initQueryConditions($model, $query);
+        $this->setLimitOrder($model, $query);
+        $model->hook('initSelectQuery', [$query, $type]);
 
-        return $q;
+        return $query;
     }
 
     /**
@@ -723,21 +729,21 @@ class SQL extends Persistence
     /**
      * Loads a record from model and returns a associative array.
      *
-     * @param Model $m
+     * @param Model $model
      * @param mixed $id
      *
      * @return array
      */
-    public function load(Model $m, $id)
+    public function load(Model $model, $id)
     {
-        $data = $this->tryLoad($m, $id);
+        $data = $this->tryLoad($model, $id);
 
         if (!$data) {
             throw new Exception([
                 'Record was not found',
-                'model'      => $m,
+                'model'      => $model,
                 'id'         => $id,
-                'conditions' => $m->conditions,
+                'conditions' => $model->conditions,
             ], 404);
         }
 
@@ -747,24 +753,24 @@ class SQL extends Persistence
     /**
      * Tries to load any one record.
      *
-     * @param Model $m
+     * @param Model $model
      *
      * @return array
      */
-    public function tryLoadAny(Model $m)
+    public function tryLoadAny(Model $model)
     {
-        $load = $m->action('select');
+        $load = $model->action('select');
         $load->limit(1);
 
         // execute action
         try {
-            $data = $this->typecastLoadRow($m, $load->getRow());
+            $data = $this->typecastLoadRow($model, $load->getRow());
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to load due to query error',
                 'query'      => $load->getDebugQuery(false),
-                'model'      => $m,
-                'conditions' => $m->conditions,
+                'model'      => $model,
+                'conditions' => $model->conditions,
             ], null, $e);
         }
 
@@ -772,16 +778,16 @@ class SQL extends Persistence
             return;
         }
 
-        if ($m->id_field) {
+        if ($model->id_field) {
 
             // If id_field is not set, model will be read-only
-            if (isset($data[$m->id_field])) {
-                $m->id = $data[$m->id_field];
+            if (isset($data[$model->id_field])) {
+                $model->id = $data[$model->id_field];
             } else {
                 throw new Exception([
                     'Model uses "id_field" but it was not available in the database',
-                    'model'       => $m,
-                    'id_field'    => $m->id_field,
+                    'model'       => $model,
+                    'id_field'    => $model->id_field,
                     'data'        => $data,
                 ]);
             }
@@ -793,19 +799,19 @@ class SQL extends Persistence
     /**
      * Loads any one record.
      *
-     * @param Model $m
+     * @param Model $model
      *
      * @return array
      */
-    public function loadAny(Model $m)
+    public function loadAny(Model $model)
     {
-        $data = $this->tryLoadAny($m);
+        $data = $this->tryLoadAny($model);
 
         if (!$data) {
             throw new Exception([
                 'No matching records were found',
-                'model'      => $m,
-                'conditions' => $m->conditions,
+                'model'      => $model,
+                'conditions' => $model->conditions,
             ], 404);
         }
 
@@ -815,57 +821,57 @@ class SQL extends Persistence
     /**
      * Inserts record in database and returns new record ID.
      *
-     * @param Model $m
+     * @param Model $model
      * @param array $data
      *
      * @return mixed
      */
-    public function insert(Model $m, $data)
+    public function insert(Model $model, $data)
     {
-        $insert = $m->action('insert');
+        $insert = $model->action('insert');
 
         // don't set id field at all if it's NULL
-        if ($m->id_field && array_key_exists($m->id_field, $data) && $data[$m->id_field] === null) {
-            unset($data[$m->id_field]);
+        if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
+            unset($data[$model->id_field]);
         }
 
-        $insert->set($this->typecastSaveRow($m, $data));
+        $insert->set($this->typecastSaveRow($model, $data));
 
         $st = null;
 
         try {
-            $m->hook('beforeInsertQuery', [$insert]);
+            $model->hook('beforeInsertQuery', [$insert]);
             $st = $insert->execute();
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to execute insert query',
                 'query'      => $insert->getDebugQuery(false),
-                'model'      => $m,
-                'conditions' => $m->conditions,
+                'model'      => $model,
+                'conditions' => $model->conditions,
             ], null, $e);
         }
 
-        $m->hook('afterInsertQuery', [$insert, $st]);
+        $model->hook('afterInsertQuery', [$insert, $st]);
 
-        return $m->lastInsertID();
+        return $model->lastInsertID();
     }
 
     /**
      * Export all DataSet.
      *
-     * @param Model      $m
+     * @param Model      $model
      * @param array|null $fields
      * @param bool       $typecast_data Should we typecast exported data
      *
      * @return array
      */
-    public function export(Model $m, $fields = null, $typecast_data = true)
+    public function export(Model $model, $fields = null, $typecast_data = true)
     {
-        $data = $m->action('select', [$fields])->get();
+        $data = $model->action('select', [$fields])->get();
 
         if ($typecast_data) {
-            $data = array_map(function ($r) use ($m) {
-                return $this->typecastLoadRow($m, $r);
+            $data = array_map(function ($r) use ($model) {
+                return $this->typecastLoadRow($model, $r);
             }, $data);
         }
 
@@ -875,22 +881,22 @@ class SQL extends Persistence
     /**
      * Prepare iterator.
      *
-     * @param Model $m
+     * @param Model $model
      *
      * @return \PDOStatement
      */
-    public function prepareIterator(Model $m)
+    public function prepareIterator(Model $model)
     {
         try {
-            $export = $m->action('select');
+            $export = $model->action('select');
 
             return $export->execute();
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to execute iteration query',
                 'query'      => $export->getDebugQuery(false),
-                'model'      => $m,
-                'conditions' => $m->conditions,
+                'model'      => $model,
+                'conditions' => $model->conditions,
             ], null, $e);
         }
     }
@@ -898,29 +904,29 @@ class SQL extends Persistence
     /**
      * Updates record in database.
      *
-     * @param Model $m
+     * @param Model $model
      * @param mixed $id
      * @param array $data
      */
-    public function update(Model $m, $id, $data)
+    public function update(Model $model, $id, $data)
     {
-        if (!$m->id_field) {
+        if (!$model->id_field) {
             throw new Exception(['id_field of a model is not set. Unable to update record.']);
         }
 
-        $update = $this->initQuery($m);
+        $update = $this->initQuery($model);
         $update->mode('update');
 
-        $data = $this->typecastSaveRow($m, $data);
+        $data = $this->typecastSaveRow($model, $data);
 
         // only apply fields that has been modified
         $update->set($data);
-        $update->where($m->getField($m->id_field), $id);
+        $update->where($model->getField($model->id_field), $id);
 
         $st = null;
 
         try {
-            $m->hook('beforeUpdateQuery', [$update]);
+            $model->hook('beforeUpdateQuery', [$update]);
             if ($data) {
                 $st = $update->execute();
             }
@@ -928,43 +934,43 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to update due to query error',
                 'query'      => $update->getDebugQuery(false),
-                'model'      => $m,
-                'conditions' => $m->conditions,
+                'model'      => $model,
+                'conditions' => $model->conditions,
             ], null, $e);
         }
 
-        if ($m->id_field && isset($data[$m->id_field]) && $m->dirty[$m->id_field]) {
+        if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
             // ID was changed
-            $m->id = $data[$m->id_field];
+            $model->id = $data[$model->id_field];
         }
 
-        $m->hook('afterUpdateQuery', [$update, $st]);
+        $model->hook('afterUpdateQuery', [$update, $st]);
 
         // if any rows were updated in database, and we had expressions, reload
-        if ($m->reload_after_save === true && (!$st || $st->rowCount())) {
-            $d = $m->dirty;
-            $m->reload();
-            $m->_dirty_after_reload = $m->dirty;
-            $m->dirty = $d;
+        if ($model->reload_after_save === true && (!$st || $st->rowCount())) {
+            $d = $model->dirty;
+            $model->reload();
+            $model->_dirty_after_reload = $model->dirty;
+            $model->dirty = $d;
         }
     }
 
     /**
      * Deletes record from database.
      *
-     * @param Model $m
+     * @param Model $model
      * @param mixed $id
      */
-    public function delete(Model $m, $id)
+    public function delete(Model $model, $id)
     {
-        if (!$m->id_field) {
+        if (!$model->id_field) {
             throw new Exception(['id_field of a model is not set. Unable to delete record.']);
         }
 
-        $delete = $this->initQuery($m);
+        $delete = $this->initQuery($model);
         $delete->mode('delete');
-        $delete->where($m->id_field, $id);
-        $m->hook('beforeDeleteQuery', [$delete]);
+        $delete->where($model->id_field, $id);
+        $model->hook('beforeDeleteQuery', [$delete]);
 
         try {
             $delete->execute();
@@ -972,8 +978,8 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to delete due to query error',
                 'query'      => $delete->getDebugQuery(false),
-                'model'      => $m,
-                'conditions' => $m->conditions,
+                'model'      => $model,
+                'conditions' => $model->conditions,
             ], null, $e);
         }
     }

@@ -20,6 +20,10 @@ class Text extends Field
      * @var int specify a maximum length for this text.
      */
     public $max_length;
+    
+    protected static $seedProperties = [
+            'max_length',
+    ];
 
     /**
      * Validate and normalize value.
@@ -58,30 +62,5 @@ class Text extends Field
         }
 
         return $value;
-    }
-
-    /**
-     * Return array of seed properties of this Field object.
-     *
-     * @param array $properties Properties to return, by default will return all properties set.
-     *
-     * @return array
-     */
-    public function getSeed(array $properties = []) : array
-    {
-        $seed = parent::getSeed($properties);
-
-        // [key => default_value]
-        $properties = $properties ?: [
-            'max_length' => null,
-        ];
-
-        foreach ($properties as $k=>$v) {
-            if ($this->{$k} !== $v) {
-                $seed[$k] = $this->{$k};
-            }
-        }
-
-        return $seed;
     }
 }

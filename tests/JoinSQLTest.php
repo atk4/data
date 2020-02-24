@@ -410,7 +410,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
-        ], ];
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence\SQL($this->db->connection);
@@ -474,7 +474,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
-        ], ];
+            ], ];
         $this->setDB($a);
 
         $db = new Persistence\SQL($this->db->connection);
