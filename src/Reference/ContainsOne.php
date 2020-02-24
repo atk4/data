@@ -119,7 +119,7 @@ class ContainsOne extends Reference
         ]));
 
         // set some hooks for ref_model
-        $m->addHook(['afterSave', 'afterDelete'], function ($model) {
+        $m->onHook(['afterSave', 'afterDelete'], function ($model) {
             $row = $model->persistence->data[$this->table_alias];
             $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
             $this->owner->save([$this->our_field => $row]);

@@ -166,7 +166,7 @@ If your persistence does not support expressions (e.g. you are using Redis or
 MongoDB), you would need to define the field differently::
 
     $model->addField('gross');
-    $model->addHook('beforeSave', function($m) {
+    $model->onHook('beforeSave', function($m) {
         $m['gross'] = $m['net'] + $m['vat'];
     });
 
@@ -186,7 +186,7 @@ you want it to work with NoSQL, then your solution might be::
 
         // persistence does not support expressions
         $model->addField('gross');
-        $model->addHook('beforeSave', function($m) {
+        $model->onHook('beforeSave', function($m) {
             $m['gross'] = $m['net'] + $m['vat'];
         });
 

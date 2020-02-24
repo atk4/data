@@ -2096,7 +2096,7 @@ class Model implements ArrayAccess, IteratorAggregate
 
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:
-            // $model->addHook('afterLoad', function ($m) {
+            // $model->onHook('afterLoad', function ($m) {
             //     if ($m['date'] < $m->date_from) $m->breakHook(false);
             // })
 

@@ -373,7 +373,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $j = $m_u->join('contact.test_id');
         $j->addField('contact_phone');
 
-        $m_u->addHook('afterSave', function ($m) {
+        $m_u->onHook('afterSave', function ($m) {
             if ($m['contact_phone'] != '+123') {
                 $m['contact_phone'] = '+123';
                 $m->save();

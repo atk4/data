@@ -270,7 +270,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('name');
         $m->load(2);
 
-        $m->addHook('afterUpdateQuery', function ($m, $update, $st) {
+        $m->onHook('afterUpdateQuery', function ($m, $update, $st) {
 
             // we can use afterUpdate to make sure that record was updated
 
@@ -319,17 +319,17 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m = new Model($db, 'user');
         $m->addField('name');
 
-        $m->addHook('beforeSave', function ($m) {
+        $m->onHook('beforeSave', function ($m) {
             $m->breakHook(false);
         });
 
-        $m->addHook('beforeLoad', function ($m, $id) {
+        $m->onHook('beforeLoad', function ($m, $id) {
             $m->data = ['name' => 'rec #'.$id];
             $m->id = $id;
             $m->breakHook(false);
         });
 
-        $m->addHook('beforeDelete', function ($m, $id) {
+        $m->onHook('beforeDelete', function ($m, $id) {
             $m->unload();
             $m->breakHook(false);
         });
