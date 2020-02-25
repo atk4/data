@@ -203,7 +203,7 @@ class Join
             }
         }
 
-        $this->owner->addHook('afterUnload', $this);
+        $this->owner->onHook('afterUnload', $this);
     }
 
     /**

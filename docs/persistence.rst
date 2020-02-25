@@ -496,7 +496,7 @@ this ref, how do you do it?
 
 Start by creating a beforeSave handler for Order::
 
-    $this->addHook('beforeSave', function($m) {
+    $this->onHook('beforeSave', function($m) {
         if ($this->isDirty('ref')) {
 
             if (
@@ -684,11 +684,11 @@ application::
             $m = $m->withPersistence($this->mdb)->replace();
         }
 
-        $m->addHook('beforeSave', function($m){
+        $m->onHook('beforeSave', function($m){
             $m->withPersistence($this->sql)->save();
         });
 
-        $m->addHook('beforeDelete', function($m){
+        $m->onHook('beforeDelete', function($m){
             $m->withPersistence($this->sql)->delete();
         });
 
@@ -729,11 +729,11 @@ records.
 The last two hooks are in order to replicate any changes into the SQL database
 also::
 
-    $m->addHook('beforeSave', function($m){
+    $m->onHook('beforeSave', function($m){
         $m->withPersistence($this->sql)->save();
     });
 
-    $m->addHook('beforeDelete', function($m){
+    $m->onHook('beforeDelete', function($m){
         $m->withPersistence($this->sql)->delete();
     });
 
@@ -784,7 +784,7 @@ Archive Copies into different persistence
 If you wish that every time you save your model the copy is also stored inside
 some other database (for archive purposes) you can implement it like this::
 
-    $m->addHook('beforeSave', function($m) {
+    $m->onHook('beforeSave', function($m) {
         $arc = $this->withPersistence($m->app->archive_db, false);
 
         // add some audit fields

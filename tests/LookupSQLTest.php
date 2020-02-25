@@ -102,7 +102,7 @@ class LFriend extends Model
 
         // add or remove reverse friendships
         /*
-        $this->addHook('afterInsert', function($m) {
+        $this->onHook('afterInsert', function($m) {
             if ($m->skip_reverse) {
                 return;
             }
@@ -115,7 +115,7 @@ class LFriend extends Model
             ]);
         });
 
-        $this->addHook('beforeDelete', function($m) {
+        $this->onHook('beforeDelete', function($m) {
             if ($m->skip_reverse) {
                 return;
             }

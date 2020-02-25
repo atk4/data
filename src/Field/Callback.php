@@ -43,7 +43,7 @@ class Callback extends \atk4\data\Field
     {
         $this->_init();
 
-        $this->owner->addHook('afterLoad', function ($m) {
+        $this->owner->onHook('afterLoad', function ($m) {
             $m->data[$this->short_name] = call_user_func($this->expr, $m);
         });
     }
