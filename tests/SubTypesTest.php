@@ -140,8 +140,8 @@ class SubTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigration(new STAccount($this->db))->drop()->create();
-        $this->getMigration(new STTransaction_TransferOut($this->db))->drop()->create();
+        $this->getMigrator(new STAccount($this->db))->drop()->create();
+        $this->getMigrator(new STTransaction_TransferOut($this->db))->drop()->create();
     }
 
     public function testBasic()

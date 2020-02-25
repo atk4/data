@@ -131,8 +131,8 @@ class ContainsManyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         parent::setUp();
 
         // populate database for our models
-        $this->getMigration(new VatRate2($this->db))->drop()->create();
-        $this->getMigration(new Invoice2($this->db))->drop()->create();
+        $this->getMigrator(new VatRate2($this->db))->drop()->create();
+        $this->getMigrator(new Invoice2($this->db))->drop()->create();
 
         // fill in some default values
         $m = new VatRate2($this->db);
