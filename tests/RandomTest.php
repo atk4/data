@@ -531,6 +531,27 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $a = $m->newInstance();
         $this->assertTrue(isset($a->persistence));
     }
+
+    public function testTableNameDots()
+    {
+        $d = new Model($this->db, 'db2.doc');
+        $d->addField('name');
+    
+        $m = new Model($this->db, 'db1.user');
+        $m->addField('name');
+
+        $d->hasOne('user_id', $m)->addTitle();
+        $m->hasMany('Documents', $d);
+
+        $d->addCondition('user','Sarah');
+
+        $q = 'select "id","name","user_id",(select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a';
+        $q = str_replace('"', $this->getEscapeChar(), $q);
+        $this->assertEquals(
+            $q,
+            $d->action('select')->render()
+        );
+    }
 }
 
 class CustomField extends \atk4\data\Field

@@ -69,7 +69,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
 
         // Our short name will be unique
         if (!$this->foreign_alias) {
-            $this->foreign_alias = (isset($this->owner->table_alias) ? $this->owner->table_alias : '').$this->short_name;
+            $this->foreign_alias = ($this->owner->table_alias ?: '').$this->short_name;
         }
 
         $this->owner->onHook('initSelectQuery', $this);
@@ -131,29 +131,31 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
             $query->join(
-                $this->foreign_table.' '.$this->foreign_alias,
+                $this->foreign_table,
                 $this->on instanceof \atk4\dsql\Expression ? $this->on : $model->expr($this->on),
-                $this->kind
+                $this->kind,
+                $this->foreign_alias
             );
 
             return;
         }
 
         $query->join(
-            $this->foreign_table.(isset($this->foreign_alias) ? (' '.$this->foreign_alias) : ''),
-            $model->expr('{}.{} = {}', [
-                (isset($this->foreign_alias) ? $this->foreign_alias : $this->foreign_table),
+            $this->foreign_table,
+            $model->expr('{{}}.{} = {}', [
+                ($this->foreign_alias ?: $this->foreign_table),
                 $this->foreign_field,
                 $this->owner->getField($this->master_field),
             ]),
-            $this->kind
+            $this->kind,
+            $this->foreign_alias
         );
 
         /*
         if ($this->reverse) {
             $query->field([$this->short_name => ($this->join ?:
                 (
-                    (isset($this->owner->table_alias) ? $this->owner->table_alias : $this->owner->table)
+                    ($this->owner->table_alias ?: $this->owner->table)
                     .'.'.$this->master_field)
             )]);
         } else {
