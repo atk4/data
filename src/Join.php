@@ -185,7 +185,7 @@ class Join
                     */
                 }
             }
-            
+
             // split by LAST dot in foreign_table name
             list($this->foreign_table, $this->foreign_field) = preg_split('/\.+(?=[^\.]+$)/', $this->foreign_table);
 

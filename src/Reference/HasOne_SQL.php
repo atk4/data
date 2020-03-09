@@ -52,12 +52,13 @@ class HasOne_SQL extends HasOne
         $defaults['caption'] = $defaults['caption'] ?? $this->owner->refModel($this->link)->getField($their_field)->getCaption();
 
         /** @var Field_SQL_Expression $e */
-        $e = $this->owner->addExpression($field, array_merge([
-            function (Model $m) use ($their_field) {
-                // remove order if we just select one field from hasOne model
-                // that is mandatory for Oracle
-                return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
-            }, ],
+        $e = $this->owner->addExpression($field, array_merge(
+            [
+                function (Model $m) use ($their_field) {
+                    // remove order if we just select one field from hasOne model
+                    // that is mandatory for Oracle
+                    return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
+                }, ],
             $defaults
         ));
 

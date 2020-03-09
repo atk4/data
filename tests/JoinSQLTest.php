@@ -258,15 +258,17 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m_u['contact_phone'] = '+555';
         $m_u->save();
 
-        $this->assertEquals([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ], $this->getDB()
+        $this->assertEquals(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                    3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
+                ], 'contact' => [
+                    1 => ['id' => 1, 'contact_phone' => '+555'],
+                    2 => ['id' => 2, 'contact_phone' => '+321'],
+                ], ],
+            $this->getDB()
         );
 
         $m_u->load(1);
@@ -276,29 +278,33 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m_u['name'] = 'XX';
         $m_u->save();
 
-        $this->assertEquals([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-            ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ], $this->getDB()
+        $this->assertEquals(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                ], 'contact' => [
+                    1 => ['id' => 1, 'contact_phone' => '+555'],
+                    2 => ['id' => 2, 'contact_phone' => '+321'],
+                ], ],
+            $this->getDB()
         );
 
         $m_u['contact_phone'] = '+999';
         $m_u->save();
 
-        $this->assertEquals([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-            ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-            ], ], $this->getDB()
+        $this->assertEquals(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                ], 'contact' => [
+                    1 => ['id' => 1, 'contact_phone' => '+555'],
+                    2 => ['id' => 2, 'contact_phone' => '+999'],
+                ], ],
+            $this->getDB()
         );
 
         $m_u->tryLoad(4);
@@ -306,17 +312,19 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m_u['contact_phone'] = '+777';
         $m_u->save();
 
-        $this->assertEquals([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ], $this->getDB()
+        $this->assertEquals(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                    4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                ], 'contact' => [
+                    1 => ['id' => 1, 'contact_phone' => '+555'],
+                    2 => ['id' => 2, 'contact_phone' => '+999'],
+                    3 => ['id' => 3, 'contact_phone' => '+777'],
+                ], ],
+            $this->getDB()
         );
     }
 
@@ -345,15 +353,17 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m_u->load(1);
         $m_u->delete();
 
-        $this->assertEquals([
-            'user' => [
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ], $this->getDB()
+        $this->assertEquals(
+            [
+                'user' => [
+                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                    4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                ], 'contact' => [
+                    2 => ['id' => 2, 'contact_phone' => '+999'],
+                    3 => ['id' => 3, 'contact_phone' => '+777'],
+                ], ],
+            $this->getDB()
         );
     }
 
@@ -438,22 +448,24 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m_u->unload();
         $m_u->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
-        $this->assertEquals([
-            'user' => [
-                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
-                30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
-                40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
-                41 => ['id' => 41, 'name' => 'new', 'contact_id' => 301],
-            ], 'contact' => [
-                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
-                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
-                301 => ['id' => 301, 'contact_phone' => '+000', 'country_id' => 4],
-            ], 'country' => [
+        $this->assertEquals(
+            [
+                'user' => [
+                    20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
+                    30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
+                    40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
+                    41 => ['id' => 41, 'name' => 'new', 'contact_id' => 301],
+                ], 'contact' => [
+                    200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
+                    300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
+                    301 => ['id' => 301, 'contact_phone' => '+000', 'country_id' => 4],
+                ], 'country' => [
 
-                2 => ['id' => 2, 'name' => 'USA'],
-                3 => ['id' => 3, 'name' => 'India'],
-                4 => ['id' => 4, 'name' => 'LV'],
-            ], ], $this->getDB()
+                    2 => ['id' => 2, 'name' => 'USA'],
+                    3 => ['id' => 3, 'name' => 'India'],
+                    4 => ['id' => 4, 'name' => 'LV'],
+                ], ],
+            $this->getDB()
         );
     }
 
@@ -492,19 +504,21 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m_u->loadBy('country_name', 'US');
         $this->assertEquals(30, $m_u->id);
 
-        $this->assertEquals([
-            'user' => [
-                20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
-                30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
-                40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
-            ], 'contact' => [
-                200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
-                300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
-            ], 'country' => [
+        $this->assertEquals(
+            [
+                'user' => [
+                    20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
+                    30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
+                    40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
+                ], 'contact' => [
+                    200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
+                    300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
+                ], 'country' => [
 
-                2 => ['id' => 2, 'name' => 'US'],
-                3 => ['id' => 3, 'name' => 'India'],
-            ], ], $this->getDB()
+                    2 => ['id' => 2, 'name' => 'US'],
+                    3 => ['id' => 3, 'name' => 'India'],
+                ], ],
+            $this->getDB()
         );
     }
 

@@ -177,12 +177,12 @@ class DeepCopy
     public function copy()
     {
         return $this->_copy(
-                    $this->source,
-                    $this->destination,
-                    $this->references,
-                    $this->exclusions,
-                    $this->transforms
-            )->reload();
+            $this->source,
+            $this->destination,
+            $this->references,
+            $this->exclusions,
+            $this->transforms
+        )->reload();
     }
 
     /**
