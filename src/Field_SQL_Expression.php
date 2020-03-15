@@ -97,8 +97,7 @@ class Field_SQL_Expression extends Field_SQL
     {
         $expr = $this->expr;
         if (is_callable($expr)) {
-            $c = $this->expr;
-            $expr = $c($this->owner, $expression);
+            $expr = $expr($this->owner, $expression);
         }
 
         if (is_string($expr)) {
