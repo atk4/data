@@ -232,19 +232,19 @@ class HasOne extends Reference
                 $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
             }
 
-            return
-                $m->onHook('afterSave', function ($m) {
-                    $this->owner[$this->our_field] = $m[$this->their_field];
-                });
-        }
+            $m->onHook('afterSave', function ($m) {
+                $this->owner[$this->our_field] = $m[$this->their_field];
+            });
+        } else {
+            if ($this->owner[$this->our_field]) {
+                $m->tryLoad($this->owner[$this->our_field]);
+            }
 
-        if ($this->owner[$this->our_field]) {
-            $m->tryLoad($this->owner[$this->our_field]);
-        }
-
-        return
             $m->onHook('afterSave', function ($m) {
                 $this->owner[$this->our_field] = $m->id;
             });
+        }
+
+        return $m;
     }
 }

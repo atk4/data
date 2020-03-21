@@ -78,7 +78,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         if ($this->reverse) {
             $this->owner->onHook('afterInsert', $this);
             $this->owner->onHook('beforeUpdate', $this);
-            $this->owner->onHook('beforeDelete', [$this, 'doDelete'], null, -5);
+            $this->owner->onHook('beforeDelete', [$this, 'doDelete'], [], -5);
             $this->owner->onHook('afterLoad', $this);
         } else {
 
@@ -99,7 +99,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
                 }
             }
 
-            $this->owner->onHook('beforeInsert', $this, null, -5);
+            $this->owner->onHook('beforeInsert', $this, [], -5);
             $this->owner->onHook('beforeUpdate', $this);
             $this->owner->onHook('afterDelete', [$this, 'doDelete']);
             $this->owner->onHook('afterLoad', $this);
