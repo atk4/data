@@ -76,7 +76,7 @@ class HasOne_SQL extends HasOne
                 $m[$this->our_field] = $mm->action('field', [$mm->id_field]);
                 unset($m[$field]);
             }
-        }, null, 21);
+        }, [], 21);
 
         return $e;
     }
@@ -256,7 +256,7 @@ class HasOne_SQL extends HasOne
                 $mm->addCondition($mm->title_field, $m[$field]);
                 $m[$this->our_field] = $mm->action('field', [$mm->id_field]);
             }
-        }, null, 20);
+        }, [], 20);
 
         // Set ID field as not visible in grid by default
         if (!array_key_exists('visible', $this->owner->getField($this->our_field)->ui)) {
