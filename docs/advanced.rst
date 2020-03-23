@@ -448,6 +448,31 @@ As expected - when you add a new model the new values are checked against
 existing records. You can also slightly modify the logic to make addCondition
 additive if you are verifying for the combination of matched fields.
 
+Using WITH cursors
+==================
+
+Many SQL database engines support defining WITH cursors to use in select, update
+and even delete statements.
+
+.. php:method:: addWith(Model $model, string $alias, array $fields, bool $recursive = false)
+
+    Agile toolkit data models also support these cursors. Usage is like this::
+
+    $invoices = new Invoice();
+
+    $contacts = new Contact();
+    $contacts->addWith($invoices, 'inv', ['contact_id'=>'cid', 'ref_no', 'total_net'=>'invoiced'], false);
+    $contacts->join('inv.cid');
+
+.. code-block:: sql
+
+    with
+        `inv` (`cid`, `ref_no`, `total_net`) as (select `contact_id`, `ref_no`, `total_net` from `invoice`)
+    select
+        *
+    from `contact`
+        join `inv` on `inv`.`cid`=`contact`.`id`
+
 Creating Many to Many relationship
 ==================================
 
