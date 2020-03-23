@@ -20,11 +20,11 @@ jobs:
         php: ['7.2', '7.3', 'latest']
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.0.15
         env:
           MYSQL_ROOT_PASSWORD: password
           DB_DATABASE: db
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+        options: --default-authentication-plugin=mysql_native_password --skip-mysqlx --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
       postgres:
         image: postgres:10-alpine
         env:
