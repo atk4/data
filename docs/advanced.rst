@@ -473,6 +473,8 @@ and even delete statements.
     from `contact`
         join `inv` on `inv`.`cid`=`contact`.`id`
 
+.. note:: Supported starting from MySQL 8.x. MariaDB supported it earlier.
+
 Creating Many to Many relationship
 ==================================
 
