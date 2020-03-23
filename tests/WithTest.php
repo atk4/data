@@ -45,20 +45,18 @@ class WithTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         // setup test model
         $m = clone $m_user;
-        $m->addWith($m_quote, 'q', ['user_id','net'=>'quoted'], false);
+        $m->addWith($m_quote, 'q', ['user_id', 'net'=>'quoted'], false);
         //$m->addWith($m_invoice, 'i', ['user_id','invoiced']);
 
         $j_user = $m->join('q.user_id'); // join cursors
         $j_user->addField('quoted');
-        
 
         // tests
         echo $m->action('select')->getDebugQuery();
 
         var_dump($m->export());
-    
     }
-    
+
     /**
      * Alias should be unique.
      *
@@ -68,7 +66,7 @@ class WithTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $m1 = new Model();
         $m2 = new Model();
-        $m1->addWith($m2,'t');
-        $m1->addWith($m2,'t');
+        $m1->addWith($m2, 't');
+        $m1->addWith($m2, 't');
     }
 }

@@ -184,7 +184,7 @@ class Model implements ArrayAccess, IteratorAggregate
      * @var array
      */
     public $order = [];
-    
+
     /**
      * Array of WITH cursors set.
      *
@@ -1253,7 +1253,7 @@ class Model implements ArrayAccess, IteratorAggregate
     {
         return $this->addCondition($this->id_field, $id);
     }
-    
+
     /**
      * Adds WITH cursor.
      *
@@ -1264,18 +1264,18 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return $this
      */
-    public function addWith(Model $model, string $alias, array $mapping = [], bool $recursive = false)
+    public function addWith(self $model, string $alias, array $mapping = [], bool $recursive = false)
     {
         if (isset($this->with[$alias])) {
             throw new Exception(['With cursor already set with this alias', 'alias'=>$alias]);
         }
-    
+
         $this->with[$alias] = [
-            'model' => $model,
-            'mapping' => $mapping,
+            'model'     => $model,
+            'mapping'   => $mapping,
             'recursive' => $recursive,
         ];
-    
+
         return $this;
     }
 

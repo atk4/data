@@ -245,7 +245,7 @@ class SQL extends Persistence
                 $d->table($m->table);
             }
         }
-        
+
         // add With cursors
         $this->initWithCursors($m, $d);
 
@@ -258,7 +258,8 @@ class SQL extends Persistence
      * @param Model $m
      * @param Query $q
      */
-    public function initWithCursors(Model $m, Query $q) {
+    public function initWithCursors(Model $m, Query $q)
+    {
         if (!$m->with) {
             return;
         }
@@ -270,7 +271,7 @@ class SQL extends Persistence
                 $fields_from[] = is_int($from) ? $to : $from;
                 $fields_to[] = $to;
             }
-            
+
             // prepare sub-query
             if ($fields_from) {
                 $model->onlyFields($fields_from);
