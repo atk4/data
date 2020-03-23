@@ -24,6 +24,8 @@
       "homepage": "https://nearly.guru/"
     }
   ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "require": {
     "php": ">=7.2.0",
     "ext-intl": "*",

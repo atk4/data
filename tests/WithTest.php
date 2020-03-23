@@ -14,12 +14,8 @@ class WithTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $a = [
             'user' => [
-                10 => ['id' => 10, 'name' => 'John', 'salary' => 1000],
-                20 => ['id' => 20, 'name' => 'Peter', 'salary' => 1500],
-            ], 'quote' => [
-                1 => ['id' => 1, 'net' => 100, 'user_id' => 10],
-                2 => ['id' => 2, 'net' => 350, 'user_id' => 20],
-                3 => ['id' => 3, 'net' => 75, 'user_id' => 10],
+                10 => ['id' => 10, 'name' => 'John', 'salary' => 2500],
+                20 => ['id' => 20, 'name' => 'Peter', 'salary' => 4000],
             ], 'invoice' => [
                 1 => ['id' => 1, 'net' => 500, 'user_id' => 10],
                 2 => ['id' => 2, 'net' => 200, 'user_id' => 20],
@@ -33,28 +29,22 @@ class WithTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m_user->addField('name');
         $m_user->addField('salary', ['type'=>'money']);
 
-        $m_quote = new Model($db, 'quote');
-        $m_quote->addField('net', ['type'=>'money']);
-        $m_quote->hasOne('user_id', $m_user);
-        // @todo How to add SUM + GROUP BY here ????
-
         $m_invoice = new Model($db, 'invoice');
         $m_invoice->addField('net', ['type'=>'money']);
         $m_invoice->hasOne('user_id', $m_user);
-        // @todo How to add SUM + GROUP BY here ????
+        $m_invoice->addCondition('net', '>', 100);
 
         // setup test model
         $m = clone $m_user;
-        $m->addWith($m_quote, 'q', ['user_id', 'net'=>'quoted'], false);
-        //$m->addWith($m_invoice, 'i', ['user_id','invoiced']);
-
-        $j_user = $m->join('q.user_id'); // join cursors
-        $j_user->addField('quoted');
+        $m->addWith($m_invoice, 'i', ['user_id', 'net'=>'invoiced']); // add cursor
+        $j_invoice = $m->join('i.user_id'); // join cursor
+        $j_invoice->addField('invoiced');   // add field from joined cursor
 
         // tests
-        echo $m->action('select')->getDebugQuery();
-
-        var_dump($m->export());
+        $q = 'with "i" ("user_id","invoiced") as (select "user_id","net" from "invoice" where "net" > 100) select "user"."id","user"."name","user"."salary","_i"."invoiced" from "user" inner join "i" as "_i" on "_i"."user_id" = "user"."id"';
+        $q = str_replace('"', $this->getEscapeChar(), $q);
+        $this->assertEquals($q, $m->action('select')->getDebugQuery());
+        $this->assertEquals(2, count($m->export()));
     }
 
     /**
