@@ -23,7 +23,7 @@ jobs:
         image: mariadb:latest
         env:
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: test
+          MYSQL_DATABASE: db
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
       postgres:
         image: postgres:10-alpine
@@ -50,7 +50,7 @@ jobs:
       - name: Run Tests
         run: |
           mkdir -p build/logs
-          mysql -uroot -ppassword -h mysql -e 'CREATE DATABASE db;'
+          # mysql -uroot -ppassword -h mysql -e 'CREATE DATABASE db;'
       - name: SQLite Testing
         run: vendor/bin/phpunit --configuration phpunit.xml --coverage-text --exclude-group dns
 
