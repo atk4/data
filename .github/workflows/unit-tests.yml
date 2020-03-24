@@ -20,7 +20,7 @@ jobs:
         php: ['7.2', '7.3', 'latest']
     services:
       mysql:
-        image: mariadb:10.15.1
+        image: mariadb:10.5.1
         env:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_DATABASE: db
