@@ -339,7 +339,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $a['item'][1]['surname'] = 'Stalker';
         $this->assertEquals($a, $this->getDB());
 
-        $m->addHook('beforeSave', function ($m) {
+        $m->onHook('beforeSave', function ($m) {
             if ($m->isDirty('name')) {
                 $m['surname'] = $m['name'];
                 unset($m['name']);

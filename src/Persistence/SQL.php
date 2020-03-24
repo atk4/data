@@ -995,15 +995,11 @@ class SQL extends Persistence
     public function getFieldSQLExpression(Field $field, Expression $expression)
     {
         if (isset($field->owner->persistence_data['use_table_prefixes'])) {
-            $mask = '{}.{}';
+            $mask = '{{}}.{}';
             $prop = [
                 $field->join
-                    ? (isset($field->join->foreign_alias)
-                    ? $field->join->foreign_alias
-                    : $field->join->short_name)
-                    : (isset($field->owner->table_alias)
-                    ? $field->owner->table_alias
-                    : $field->owner->table),
+                    ? ($field->join->foreign_alias ?: $field->join->short_name)
+                    : ($field->owner->table_alias ?: $field->owner->table),
                 $field->actual ?: $field->short_name,
             ];
         } else {

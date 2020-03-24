@@ -8,7 +8,7 @@ class SMBOTestCase extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         parent::setUp();
 
-        $s = $this->getMigration();
+        $s = $this->getMigrator();
 
         $x = clone $s;
         $x->table('account')->drop()

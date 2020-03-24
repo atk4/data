@@ -102,7 +102,7 @@ class LFriend extends Model
 
         // add or remove reverse friendships
         /*
-        $this->addHook('afterInsert', function($m) {
+        $this->onHook('afterInsert', function($m) {
             if ($m->skip_reverse) {
                 return;
             }
@@ -115,7 +115,7 @@ class LFriend extends Model
             ]);
         });
 
-        $this->addHook('beforeDelete', function($m) {
+        $this->onHook('beforeDelete', function($m) {
             if ($m->skip_reverse) {
                 return;
             }
@@ -160,9 +160,9 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigration(new LCountry($this->db))->drop()->create();
-        $this->getMigration(new LUser($this->db))->drop()->create();
-        $this->getMigration(new LFriend($this->db))->drop()->create();
+        $this->getMigrator(new LCountry($this->db))->drop()->create();
+        $this->getMigrator(new LUser($this->db))->drop()->create();
+        $this->getMigrator(new LFriend($this->db))->drop()->create();
     }
 
     /**
