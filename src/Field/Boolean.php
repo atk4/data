@@ -79,19 +79,19 @@ class Boolean extends \atk4\data\Field
         if (is_bool($value)) {
             return $value;
         }
-        
+
         if ($value === $this->valueTrue) {
             return true;
         }
-        
+
         if ($value === $this->valueFalse) {
             return false;
         }
-        
+
         if (is_numeric($value)) {
             return (bool) $value;
         }
-        
+
         throw new ValidationException([$this->name => 'Must be a boolean value']);
     }
 

@@ -291,11 +291,13 @@ class ContainsManyTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ],
             // json decode and also decode nested discounts array to be able to compare them
-            array_map(function ($v) {
+            array_map(
+                function ($v) {
                 $v['discounts'] = json_decode($v['discounts'], true);
 
                 return $v;
-            }, json_decode($exp_lines, true)
+            },
+                json_decode($exp_lines, true)
             )
         );
         /*

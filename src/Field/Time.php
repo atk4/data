@@ -47,6 +47,6 @@ class Time extends DateTime
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
-        return $v ? $v->format('H:i:s' . ($v->format('u') > 0  ? '.u' : '')) : $v;
+        return $v ? $v->format('H:i:s'.($v->format('u') > 0 ? '.u' : '')) : $v;
     }
 }

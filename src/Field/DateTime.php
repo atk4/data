@@ -90,7 +90,7 @@ class DateTime extends Field
                 if (is_object($value)) {
                     throw new ValidationException(['must be a '.$this->type, 'class' => $class, 'value class' => get_class($value)]);
                 }
-                
+
                 throw new ValidationException(['must be a '.$this->type, 'class' => $class, 'value type' => gettype($value)]);
             }
         }
@@ -112,12 +112,12 @@ class DateTime extends Field
         if ($v) {
             $dateFormat = 'Y-m-d';
             $timeFormat = 'H:i:s'.($v->format('u') > 0 ? '.u' : '');
-            
+
             $format = $dateFormat.'\T'.$timeFormat.'P'; // ISO 8601 format 2004-02-12T15:19:21+00:00
-            
+
             $v = $v->format($format);
         }
-        
+
         return $v;
     }
 }

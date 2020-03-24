@@ -217,7 +217,7 @@ class SQL extends Persistence
     /**
      * Creates new Query object with current_timestamp(precision) expression.
      *
-     * @param int   $precision
+     * @param int $precision
      *
      * @return Query
      */
@@ -518,23 +518,23 @@ class SQL extends Persistence
             case 'time':
                 $dt_class = isset($field->dateTimeClass) ? $field->dateTimeClass : 'DateTime';
                 $tz_class = isset($field->dateTimeZoneClass) ? $field->dateTimeZoneClass : 'DateTimeZone';
-                
+
                 if (is_numeric($v)) {
                     $v = new $dt_class('@'.$v);
-                } elseif (is_string($v)) {                    
+                } elseif (is_string($v)) {
                     if ($field->persistence['format'] ?? null) {
                         $format = $field->persistence['format'];
                     } else {
                         // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
                         $formatMap = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
-                        
+
                         $format = $formatMap[$field->type];
-                        
+
                         if (strpos($v, '.') !== false) { // time possibly with microseconds, otherwise invalid format
                             $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
                         }
                     }
-                    
+
                     // datetime only - set from persisting timezone
                     if ($field->type == 'datetime' && isset($field->persistence['timezone'])) {
                         $v = $dt_class::createFromFormat($format, $v, new $tz_class($field->persistence['timezone']));
@@ -544,11 +544,11 @@ class SQL extends Persistence
                     } else {
                         $v = $dt_class::createFromFormat($format, $v);
                     }
-                    
+
                     if ($v === false) {
                         throw new Exception(['Incorrectly formatted date/time', 'format' => $format, 'value' => $value, 'field' => $field]);
                     }
-                    
+
                     // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
                     // this is what Carbon::instance(DateTime $dt) method does for example
                     if ($dt_class != 'DateTime') {
@@ -565,7 +565,7 @@ class SQL extends Persistence
                 $v = $field->serialize ? $v : $this->jsonDecode($field, $v, false);
                 break;
         }
-        
+
         return $v;
     }
 
