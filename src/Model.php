@@ -186,6 +186,13 @@ class Model implements ArrayAccess, IteratorAggregate
     public $order = [];
 
     /**
+     * Array of WITH cursors set.
+     *
+     * @var array
+     */
+    public $with = [];
+
+    /**
      * Currently loaded record data. This record is associative array
      * that contain field=>data pairs. It may contain data for un-defined
      * fields only if $onlyFields mode is false.
@@ -1245,6 +1252,31 @@ class Model implements ArrayAccess, IteratorAggregate
     public function withID($id)
     {
         return $this->addCondition($this->id_field, $id);
+    }
+
+    /**
+     * Adds WITH cursor.
+     *
+     * @param Model  $model
+     * @param string $alias
+     * @param array  $mapping
+     * @param bool   $recursive
+     *
+     * @return $this
+     */
+    public function addWith(self $model, string $alias, array $mapping = [], bool $recursive = false)
+    {
+        if (isset($this->with[$alias])) {
+            throw new Exception(['With cursor already set with this alias', 'alias'=>$alias]);
+        }
+
+        $this->with[$alias] = [
+            'model'     => $model,
+            'mapping'   => $mapping,
+            'recursive' => $recursive,
+        ];
+
+        return $this;
     }
 
     /**

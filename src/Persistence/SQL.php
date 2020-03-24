@@ -246,7 +246,43 @@ class SQL extends Persistence
             }
         }
 
+        // add With cursors
+        $this->initWithCursors($m, $d);
+
         return $d;
+    }
+
+    /**
+     * Initializes WITH cursors.
+     *
+     * @param Model $m
+     * @param Query $q
+     */
+    public function initWithCursors(Model $m, Query $q)
+    {
+        if (!$m->with) {
+            return;
+        }
+
+        foreach ($m->with as $alias => ['model'=>$model, 'mapping'=>$mapping, 'recursive'=>$recursive]) {
+            // prepare field names
+            $fields_from = $fields_to = [];
+            foreach ($mapping as $from => $to) {
+                $fields_from[] = is_int($from) ? $to : $from;
+                $fields_to[] = $to;
+            }
+
+            // prepare sub-query
+            if ($fields_from) {
+                $model->onlyFields($fields_from);
+            }
+            // 2nd parameter here strictly define which fields should be selected
+            // as result system fields will not be added if they are not requested
+            $sub_q = $model->action('select', [$fields_from]);
+
+            // add With cursor
+            $q->with($sub_q, $alias, $fields_to ?: null, $recursive);
+        }
     }
 
     /**
@@ -268,7 +304,7 @@ class SQL extends Persistence
      * Adds model fields in Query.
      *
      * @param Model            $m
-     * @param \atk4\dsql\Query $q
+     * @param Query            $q
      * @param array|null|false $fields
      */
     public function initQueryFields(Model $m, $q, $fields = null)
@@ -584,7 +620,7 @@ class SQL extends Persistence
      * @param string $type
      * @param array  $args
      *
-     * @return \atk4\dsql\Query
+     * @return Query
      */
     public function action(Model $m, $type, $args = [])
     {
