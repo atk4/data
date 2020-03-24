@@ -26,7 +26,7 @@ class HasOne_SQL extends HasOne
      *
      * @return Field_SQL_Expression
      */
-    public function addField($field, $their_field = null) : Field_SQL_Expression
+    public function addField($field, $their_field = null): Field_SQL_Expression
     {
         if (is_array($field)) {
             $defaults = $field;
@@ -46,12 +46,13 @@ class HasOne_SQL extends HasOne
             $their_field = $field;
         }
 
-        $e = $this->owner->addExpression($field, array_merge([
-            function ($m) use ($their_field) {
-                // remove order if we just select one field from hasOne model
-                // that is mandatory for Oracle
-                return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
-            }, ],
+        $e = $this->owner->addExpression($field, array_merge(
+            [
+                function ($m) use ($their_field) {
+                    // remove order if we just select one field from hasOne model
+                    // that is mandatory for Oracle
+                    return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
+                }, ],
             $defaults
         ));
 
@@ -125,7 +126,7 @@ class HasOne_SQL extends HasOne
      *
      * @return Model
      */
-    public function refLink($defaults = []) : Model
+    public function refLink($defaults = []): Model
     {
         $m = $this->getModel($defaults);
 
@@ -144,7 +145,7 @@ class HasOne_SQL extends HasOne
      *
      * @return Model
      */
-    public function ref($defaults = []) : Model
+    public function ref($defaults = []): Model
     {
         $m = parent::ref($defaults);
 
@@ -171,7 +172,7 @@ class HasOne_SQL extends HasOne
      *
      * @return Field_SQL_Expression
      */
-    public function addTitle($defaults = []) : Field_SQL_Expression
+    public function addTitle($defaults = []): Field_SQL_Expression
     {
         if (!is_array($defaults)) {
             throw new Exception([

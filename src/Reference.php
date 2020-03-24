@@ -100,7 +100,7 @@ class Reference
      *
      * @return Model
      */
-    public function getModel($defaults = []) : Model
+    public function getModel($defaults = []): Model
     {
         // set table_alias
         if (!isset($defaults['table_alias'])) {
@@ -156,7 +156,7 @@ class Reference
      *
      * @return Model
      */
-    protected function addToPersistence($model, $defaults = []) : Model
+    protected function addToPersistence($model, $defaults = []): Model
     {
         if (!$model->persistence && $p = $this->getDefaultPersistence($model)) {
             $p->add($model, $defaults);
@@ -194,7 +194,7 @@ class Reference
      *
      * @return Model
      */
-    public function ref($defaults = []) : Model
+    public function ref($defaults = []): Model
     {
         return $this->getModel($defaults);
     }
@@ -208,7 +208,7 @@ class Reference
      *
      * @return Model
      */
-    public function refModel($defaults = []) : Model
+    public function refModel($defaults = []): Model
     {
         return $this->getModel($defaults);
     }

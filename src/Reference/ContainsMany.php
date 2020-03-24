@@ -53,7 +53,7 @@ class ContainsMany extends ContainsOne
      *
      * @return Model
      */
-    public function ref($defaults = []) : Model
+    public function ref($defaults = []): Model
     {
         // get model
         // will not use ID field (no, sorry, will have to use it)

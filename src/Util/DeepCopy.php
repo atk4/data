@@ -271,7 +271,7 @@ class DeepCopy
                 'destination'     => $destination,
                 'destination_info'=> $destination->__debugInfo(),
                 'depth'           => $e->getParams()['field'] ?? '?',
-                ], null, $e);
+            ], null, $e);
         }
     }
 }

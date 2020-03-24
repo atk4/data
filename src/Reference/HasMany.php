@@ -41,7 +41,7 @@ class HasMany extends Reference
      *
      * @return Field
      */
-    protected function referenceOurValue() : Field
+    protected function referenceOurValue(): Field
     {
         $this->owner->persistence_data['use_table_prefixes'] = true;
 
@@ -57,7 +57,7 @@ class HasMany extends Reference
      *
      * @return Model
      */
-    public function ref($defaults = []) : Model
+    public function ref($defaults = []): Model
     {
         return $this->getModel($defaults)
             ->addCondition(
@@ -75,7 +75,7 @@ class HasMany extends Reference
      *
      * @return Model
      */
-    public function refLink($defaults = []) : Model
+    public function refLink($defaults = []): Model
     {
         return $this->getModel($defaults)
             ->addCondition(
@@ -95,7 +95,7 @@ class HasMany extends Reference
      *
      * @return Field
      */
-    public function addField($n, $defaults = []) : Field
+    public function addField($n, $defaults = []): Field
     {
         if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
             throw new Exception([

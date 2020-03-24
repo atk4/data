@@ -266,7 +266,7 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ['total_vat', 'aggregate' => 'sum', 'type'=>'money'],
                 ['total_net', 'aggregate' => 'sum'],
                 ['total_gross', 'aggregate' => 'sum'],
-        ]);
+            ]);
         $i->load('1');
 
         // type was set explicitly
@@ -280,9 +280,9 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(49.2, $i['total_gross']);
 
         $i->ref('line')->import([
-                ['total_net' => ($n = 1), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1))],
-                ['total_net' => ($n = 2), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1))],
-            ]);
+            ['total_net' => ($n = 1), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1))],
+            ['total_net' => ($n = 2), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1))],
+        ]);
         $i->reload();
 
         $this->assertEquals($n = 43, $i['total_net']);
@@ -290,8 +290,8 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals($n * ($vat + 1), $i['total_gross']);
 
         $i->ref('line')->import([
-                ['total_net' => null, 'total_vat' => null, 'total_gross' => 1],
-            ]);
+            ['total_net' => null, 'total_vat' => null, 'total_gross' => 1],
+        ]);
         $i->reload();
 
         $this->assertEquals($n = 43, $i['total_net']);
@@ -329,7 +329,7 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ['len',       'aggregate' => $i->expr('sum(length([name]))')],
                 ['len2',      'expr' => 'sum(length([name]))'],
                 ['chicken5',  'expr' => 'sum([])', 'args'=>['5']],
-        ]);
+            ]);
         $l->load(1);
 
         $this->assertEquals(2, $l['items_name']); // 2 not-null values

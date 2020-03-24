@@ -2039,7 +2039,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Reference
      */
-    protected function _hasReference($c, $link, $defaults = []) : Reference
+    protected function _hasReference($c, $link, $defaults = []): Reference
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_'.$link];
@@ -2077,7 +2077,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Reference
      */
-    public function addRef($link, $callback) : Reference
+    public function addRef($link, $callback): Reference
     {
         return $this->_hasReference($this->_default_seed_addRef, $link, $callback);
     }
@@ -2093,7 +2093,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Reference\HasOne
      */
-    public function hasOne($link, $defaults = []) : Reference
+    public function hasOne($link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_hasOne, $link, $defaults);
     }
@@ -2109,7 +2109,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Reference\HasMany
      */
-    public function hasMany($link, $defaults = []) : Reference
+    public function hasMany($link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults);
     }
@@ -2125,7 +2125,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Reference\ContainsOne
      */
-    public function containsOne($link, $defaults = []) : Reference
+    public function containsOne($link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_containsOne, $link, $defaults);
     }
@@ -2141,7 +2141,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Reference\ContainsMany
      */
-    public function containsMany($link, $defaults = []) : Reference
+    public function containsMany($link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_containsMany, $link, $defaults);
     }
@@ -2156,7 +2156,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function ref($link, $defaults = []) : self
+    public function ref($link, $defaults = []): self
     {
         return $this->getRef($link)->ref($defaults);
     }
@@ -2171,7 +2171,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function refModel($link, $defaults = []) : self
+    public function refModel($link, $defaults = []): self
     {
         return $this->getRef($link)->refModel($defaults);
     }
@@ -2186,7 +2186,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Model
      */
-    public function refLink($link, $defaults = []) : self
+    public function refLink($link, $defaults = []): self
     {
         return $this->getRef($link)->refLink($defaults);
     }
@@ -2200,7 +2200,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return Reference
      */
-    public function getRef($link) : Reference
+    public function getRef($link): Reference
     {
         return $this->getElement('#ref_'.$link);
     }
@@ -2210,7 +2210,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @return array
      */
-    public function getRefs() : array
+    public function getRefs(): array
     {
         $refs = [];
         foreach ($this->elements as $key => $val) {
