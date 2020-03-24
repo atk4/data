@@ -73,32 +73,26 @@ class Boolean extends \atk4\data\Field
      */
     public function normalize($value)
     {
-        if ($value === null || $value === '') {
-            if ($this->required) {
-                throw new ValidationException([$this->name => 'Must not be null or empty']);
-            }
-
+        if (is_null($value) || $value === '') {
             return;
         }
-
+        if (is_bool($value)) {
+            return $value;
+        }
+        
         if ($value === $this->valueTrue) {
-            $value = true;
-        } elseif ($value === $this->valueFalse) {
-            $value = false;
-        } elseif (is_numeric($value)) {
-            $value = (bool) $value;
+            return true;
         }
-
-        if (!is_bool($value)) {
-            throw new ValidationException([$this->name => 'Must be a boolean value']);
+        
+        if ($value === $this->valueFalse) {
+            return false;
         }
-
-        // if value required, then only valueTrue is allowed
-        if ($this->required && $value !== true) {
-            throw new ValidationException([$this->name => 'Must be selected']);
+        
+        if (is_numeric($value)) {
+            return (bool) $value;
         }
-
-        return $value;
+        
+        throw new ValidationException([$this->name => 'Must be a boolean value']);
     }
 
     /**

@@ -27,7 +27,7 @@ class Date extends DateTime
 
         if ($value !== null) {
             // remove time portion from date type value
-            $value->setTime(0, 0, 0);
+            $value = (clone $value)->setTime(0, 0, 0);
         }
 
         return $value;

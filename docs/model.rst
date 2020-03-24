@@ -29,12 +29,14 @@ object you can load/unload individual records (See Single record Operations belo
    $m->load(8);
    ....
 
-and even perform operations on multiple records (See Multiple record Operations below)::
+and even perform operations on multiple records (See `Persistence Actions` below)::
 
    $m = new User($db);
    $m->addCondition('expired', true);
 
-   $m->deleteAll();
+   $m->action('delete')->execute(); // performs mass delete, hooks are not executed
+   
+   $m->each('delete'); // deletes each record, hooks are executed
 
 When data is loaded from associated Persistence, it is automatically converted into
 a native PHP type (such as DateTime object) through a process called Typecasting. Various
@@ -737,6 +739,10 @@ Title Field
 .. php:method:: public getTitle
 
     Return title field value of currently loaded record.
+
+.. php:method:: public getTitles
+
+    Returns array of title field values of all model records in format [id => title].
 
 .. _caption:
 
