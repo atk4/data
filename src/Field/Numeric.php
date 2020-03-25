@@ -102,7 +102,7 @@ class Numeric extends Field
     /**
      * Round up to the nearest number.
      *
-     * @param float $number Number
+     * @param float $number    Number
      * @param int   $precision Precision
      *
      * @return float
@@ -115,7 +115,7 @@ class Numeric extends Field
     /**
      * Round down to the nearest number.
      *
-     * @param float $number Number
+     * @param float $number    Number
      * @param int   $precision Precision
      *
      * @return float
