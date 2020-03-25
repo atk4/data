@@ -28,7 +28,7 @@ class Object_ extends Field
     {
         if ($value === null || $value === '') {
             if ($this->required) {
-                throw new ValidationException([$this->name => 'Must not be null']);
+                throw new ValidationException([$this->name => 'Must not be null or empty']);
             }
 
             return;

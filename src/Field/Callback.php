@@ -4,17 +4,11 @@
 
 namespace atk4\data\Field;
 
-use atk4\core\InitializerTrait;
-
 /**
  * Evaluate php expression after load.
  */
 class Callback extends \atk4\data\Field
 {
-    use InitializerTrait {
-        init as _init;
-    }
-
     /**
      * Method to execute for evaluation.
      *
@@ -55,12 +49,12 @@ class Callback extends \atk4\data\Field
      */
     public function init()
     {
-        $this->_init();
+        parent::init();
 
         $this->ui['table']['sortable'] = false;
 
-        $this->owner->onHook('afterLoad', function ($m) {
-            $m->data[$this->short_name] = call_user_func($this->fx ?: $this->expr, $m);
+        $this->owner->onHook('afterLoad', function ($model) {
+            $model->data[$this->short_name] = call_user_func($this->fx ?: $this->expr, $model);
         });
     }
 }

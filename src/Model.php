@@ -795,7 +795,7 @@ class Model implements ArrayAccess, IteratorAggregate
                 && $this->hook('normalize', [$f, $value]) !== false
                 && $this->strict_types
             ) {
-                $value = $f->normalize($value);
+                $value = $f->isExpression($value) ? $value : $f->normalize($value);
             }
         } catch (Exception $e) {
             $e->addMoreInfo('field', $field);

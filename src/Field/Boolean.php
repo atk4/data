@@ -4,7 +4,6 @@
 
 namespace atk4\data\Field;
 
-use atk4\core\InitializerTrait;
 use atk4\data\ValidationException;
 
 /**
@@ -12,10 +11,6 @@ use atk4\data\ValidationException;
  */
 class Boolean extends \atk4\data\Field
 {
-    use InitializerTrait {
-        init as _init;
-    }
-
     /** @var string Field type for backward compatibility. */
     public $type = 'boolean';
 
@@ -52,7 +47,7 @@ class Boolean extends \atk4\data\Field
      */
     public function init()
     {
-        $this->_init();
+        parent::init();
 
         // Backwards compatibility
         if ($this->enum) {
