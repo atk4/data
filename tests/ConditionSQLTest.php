@@ -392,10 +392,10 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $u->addField('name', ['type' => 'string']);
         $u->addField('active', ['type' => 'boolean']);
         $u->addField('created', ['type' => 'datetime']);
-    
+
         $t = (clone $u)->addCondition('created', 'like', '%19%');
         $this->assertEquals(2, count($t->export())); // only year 2019 records
-    
+
         $t = (clone $u)->addCondition('active', 'like', '%1%');
         $this->assertEquals(2, count($t->export())); // only active records
 
