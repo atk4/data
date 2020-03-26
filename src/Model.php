@@ -1178,7 +1178,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *  ->addCondition('my_field', '!=', $value);
      *  ->addCondition('my_field', 'in', [$value1, $value2]);
      *
-     * Second argument could be '=', '>', '<', '>=', '<=', '!=', 'in' or 'like'.
+     * Second argument could be '=', '>', '<', '>=', '<=', '!=', 'in', 'like' or 'regexp'.
      * Those conditions are still supported by most of persistence drivers.
      *
      * There are also vendor-specific expression support:
