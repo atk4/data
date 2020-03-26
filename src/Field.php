@@ -497,15 +497,8 @@ class Field implements Expressionable
                 'save' => 0,
                 'load' => 1
         ];
-        
-        $persistence = $this->getPersistence();
-        
-        // persistence specific typecast
-        $specific = $persistence ? ($this->persistence[get_class($persistence)]['typecast'] ?? null) : null;
-        
-        // get the typecast definition to be applied
-        // field specific or persistence specific or persistence general
-        $typecast = $this->typecast ?? $specific ?? $this->persistence['typecast'] ?? [];
+
+        $typecast = $this->getPersistenceSetting('typecast');
         
         // default typecaster is method in the field named typecastSave or typecastLoad if such method exists
         $default = method_exists($this, 'typecast' . ucfirst($mode)) ? [$this, 'typecast' . ucfirst($mode)] : false;
@@ -536,9 +529,47 @@ class Field implements Expressionable
         return is_callable($fx) ? $fx : false;
     }
     
-    public function getPersistence()
+    /**
+     * Returns persistence setting defined
+     * Order of precedence is: field specific, persistence specific, persistence general
+     * 
+     * Below examples consider $key = 'typecast'
+     * Field specific setting is defined in a field property with $key as name
+     * e.g. $field->typecast = [$encode_fx, $decode_fx]
+     * 
+     * Persistence specific setting is defined in $field->persistence array
+     * e.g. $field->persistence = [\atk4\data\Persistence\SQL::class => ['typecast' => [$encode_fx, $decode_fx]]] or
+     * e.g. $field->persistence = ['SQL' => ['typecast' => [$encode_fx, $decode_fx]]]
+     * The latter checks only the persistence class name ignoring the namespace. 
+     * Both syntaxes are valid but first one has precedence
+     * 
+     * Persistence general setting is defined in $field->persistence array
+     * e.g. $field->persistence = ['typecast' => [$encode_fx, $decode_fx]] 
+     * 
+     * @param string $key
+     * @return array
+     */
+    public function getPersistenceSetting($key)
     {
-        return $this->owner ? $this->owner->persistence : null;
+        // persistence specific typecast
+        $specific = null;
+        if ($persistence = $this->hasPersistence()) {
+            $classFull = get_class($persistence);
+            $classBare = implode('', array_slice(explode('\\', $classFull), - 1));
+
+            foreach ([$classFull, $classBare] as $class) {
+                $specific = $this->persistence[$class][$key] ?? $specific;
+            }
+        }
+        
+        // get the setting definition to be applied
+        // field specific or persistence specific or persistence general or none
+        return $this->{$key} ?? $specific ?? $this->persistence[$key] ?? [];
+    }
+    
+    public function hasPersistence()
+    {
+        return $this->owner ? $this->owner->persistence : false;
     }
 
     // }}}

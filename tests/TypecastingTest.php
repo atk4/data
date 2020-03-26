@@ -311,7 +311,47 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ], ];
         $this->assertEquals($a, $this->getDB());
     }
-
+        
+    public function testFieldPersistenceSetting()
+    {
+        $rot = function ($v) {
+            return str_rot13($v);
+        };
+        
+        $typecast = [$rot, $rot];
+        
+        $a = [
+            'various' => [
+                [
+                    'raw'                  => 'raw',
+                    'field_specific'       => $rot('raw'),
+                    'persistence_specific1' => $rot('raw'),
+                    'persistence_specific2' => $rot('raw'),
+                    'persistence_general'  => $rot('raw'),
+                ],
+            ], ];
+        
+        $this->setDB($a);
+        
+        $db = new Persistence\SQL($this->db->connection);
+        
+        $model = new Model($db, ['table' => 'various']);
+        
+        $model->addField('raw');
+        $model->addField('field_specific', compact('typecast'));
+        $model->addField('persistence_specific1', ['persistence' => [Persistence\SQL::class => compact('typecast')]]);
+        $model->addField('persistence_specific2', ['persistence' => ['SQL' => compact('typecast')]]);
+        $model->addField('persistence_general', ['persistence' => compact('typecast')]);
+        
+        $model->load(1);
+        
+        $this->assertEquals('raw', $model['raw']);
+        $this->assertEquals('raw', $model['field_specific']);
+        $this->assertEquals('raw', $model['persistence_specific1']);
+        $this->assertEquals('raw', $model['persistence_specific2']);
+        $this->assertEquals('raw', $model['persistence_general']);
+    }
+    
     public function testTryLoad()
     {
         $a = [
