@@ -1178,7 +1178,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *  ->addCondition('my_field', '!=', $value);
      *  ->addCondition('my_field', 'in', [$value1, $value2]);
      *
-     * Second argument could be '=', '>', '<', '>=', '<=', '!=' or 'in'.
+     * Second argument could be '=', '>', '<', '>=', '<=', '!=', 'in' or 'like'.
      * Those conditions are still supported by most of persistence drivers.
      *
      * There are also vendor-specific expression support:
@@ -1228,7 +1228,7 @@ class Model implements ArrayAccess, IteratorAggregate
         $f = is_string($field) ? $this->getField($field) : ($field instanceof Field ? $field : false);
         if ($f) {
             if ($operator === '=' || func_num_args() == 2) {
-                $v = $operator === '=' ? $value : $operator;
+                $v = ($operator === '=' ? $value : $operator);
 
                 if (!is_object($v) && !is_array($v)) {
                     $f->system = true;

@@ -373,4 +373,39 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value
     }
+
+    /**
+     * Test LIKE condition.
+     */
+    public function testLikeCondition()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'active' => 1, 'created' => '2020-01-01 15:00:30'],
+                2 => ['id' => 2, 'name' => 'Peter', 'active' => 0, 'created' => '2019-05-20 12:13:14'],
+                3 => ['id' => 3, 'name' => 'Joe', 'active' => 1, 'created' => '2019-07-15 09:55:05'],
+            ],
+        ];
+        $this->setDB($a);
+
+        $u = new Model($this->db, 'user');
+        $u->addField('name', ['type' => 'string']);
+        $u->addField('active', ['type' => 'boolean']);
+        $u->addField('created', ['type' => 'datetime']);
+    
+        $t = (clone $u)->addCondition('created', 'like', '%19%');
+        $this->assertEquals(2, count($t->export())); // only year 2019 records
+    
+        $t = (clone $u)->addCondition('active', 'like', '%1%');
+        $this->assertEquals(2, count($t->export())); // only active records
+
+        $t = (clone $u)->addCondition('active', 'like', '%0%');
+        $this->assertEquals(1, count($t->export())); // only inactive records
+
+        $t = (clone $u)->addCondition('active', 'like', '%999%');
+        $this->assertEquals(0, count($t->export())); // bad value, so it will not match anything
+
+        $t = (clone $u)->addCondition('active', 'like', '%ABC%');
+        $this->assertEquals(0, count($t->export())); // bad value, so it will not match anything
+    }
 }
