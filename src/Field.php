@@ -5,11 +5,11 @@
 namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
+use atk4\core\InitializerTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\core\TrackableTrait;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
-use atk4\core\InitializerTrait;
 
 /**
  * Class description?
@@ -248,7 +248,7 @@ class Field implements Expressionable
             }
         }
     }
-    
+
     /**
      * Initialization.
      */
@@ -282,7 +282,7 @@ class Field implements Expressionable
 
         return $value;
     }
-    
+
     public static function isExpression($value)
     {
         return $value instanceof Expression || $value instanceof Expressionable;
@@ -470,23 +470,23 @@ class Field implements Expressionable
 
     /**
      * Returns typecasting callback if defined.
-     * 
+     *
      * Typecasting can be defined as (in order of precedence)
-     * 
+     *
      * * affects all typecasting for the field
      * $user->addField('dob', ['Date', 'typecast'=>[$encode_fx, $decode_fx]]);
-     *  
+     *
      * * affects typecasting for specific persistence class
      * $user->addField('dob', ['Date', 'persistence'=>['atk4\data\Persistence\SQL'=>['typecast'=>[$encode_fx, $decode_fx]]]]);
-     * 
+     *
      * * affects typecasting for all persistences
      * $user->addField('dob', ['Date', 'persistence'=>['typecast'=>[$encode_fx, $decode_fx]]]);
-     * 
+     *
      * * default typecasting (if none of above set) will be used for all fields of the class defined in field methods
      * typecastSave / typecastLoad based on the $mode
-     * 
+     *
      * @param string $mode - load|save
-     * 
+     *
      * @return callable|false
      */
     public function getTypecaster($mode)
@@ -494,17 +494,17 @@ class Field implements Expressionable
         // map for backward compatibility with definition
         // [typecast_save_callback, typecast_load_callback]
         $map = [
-                'save' => 0,
-                'load' => 1
+            'save' => 0,
+            'load' => 1,
         ];
 
         $typecast = $this->getPersistenceSetting('typecast');
-        
+
         // default typecaster is method in the field named typecastSave or typecastLoad if such method exists
-        $default = method_exists($this, 'typecast' . ucfirst($mode)) ? [$this, 'typecast' . ucfirst($mode)] : false;
-        
+        $default = method_exists($this, 'typecast'.ucfirst($mode)) ? [$this, 'typecast'.ucfirst($mode)] : false;
+
         $fx = $typecast[$mode] ?? $typecast[$map[$mode]] ?? $default;
-        
+
         return is_callable($fx) ? $fx : false;
     }
 
@@ -528,7 +528,7 @@ class Field implements Expressionable
 
         return is_callable($fx) ? $fx : false;
     }
-    
+
     /**
      * Returns persistence setting defined
      * Order of precedence is: field specific, persistence specific, persistence general
