@@ -531,22 +531,23 @@ class Field implements Expressionable
 
     /**
      * Returns persistence setting defined
-     * Order of precedence is: field specific, persistence specific, persistence general
-     * 
+     * Order of precedence is: field specific, persistence specific, persistence general.
+     *
      * Below examples consider $key = 'typecast'
      * Field specific setting is defined in a field property with $key as name
      * e.g. $field->typecast = [$encode_fx, $decode_fx]
-     * 
+     *
      * Persistence specific setting is defined in $field->persistence array
      * e.g. $field->persistence = [\atk4\data\Persistence\SQL::class => ['typecast' => [$encode_fx, $decode_fx]]] or
      * e.g. $field->persistence = ['SQL' => ['typecast' => [$encode_fx, $decode_fx]]]
-     * The latter checks only the persistence class name ignoring the namespace. 
+     * The latter checks only the persistence class name ignoring the namespace.
      * Both syntaxes are valid but first one has precedence
-     * 
+     *
      * Persistence general setting is defined in $field->persistence array
-     * e.g. $field->persistence = ['typecast' => [$encode_fx, $decode_fx]] 
-     * 
+     * e.g. $field->persistence = ['typecast' => [$encode_fx, $decode_fx]]
+     *
      * @param string $key
+     *
      * @return array
      */
     public function getPersistenceSetting($key)
@@ -555,18 +556,18 @@ class Field implements Expressionable
         $specific = null;
         if ($persistence = $this->hasPersistence()) {
             $classFull = get_class($persistence);
-            $classBare = implode('', array_slice(explode('\\', $classFull), - 1));
+            $classBare = implode('', array_slice(explode('\\', $classFull), -1));
 
             foreach ([$classFull, $classBare] as $class) {
                 $specific = $this->persistence[$class][$key] ?? $specific;
             }
         }
-        
+
         // get the setting definition to be applied
         // field specific or persistence specific or persistence general or none
         return $this->{$key} ?? $specific ?? $this->persistence[$key] ?? [];
     }
-    
+
     public function hasPersistence()
     {
         return $this->owner ? $this->owner->persistence : false;
