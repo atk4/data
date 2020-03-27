@@ -359,7 +359,7 @@ class Array_ extends Persistence
                 array_splice($cond, -1, 1, ['where', $cond[1]]);
             }
 
-            // condition must have 3 params at these point
+            // condition must have 3 params at this point
             if (count($cond) != 3) {
                 // condition can have up to three params
                 throw new Exception([
@@ -369,39 +369,37 @@ class Array_ extends Persistence
                 ]);
             }
 
-            // action
+            // extract
+            $field = $cond[0];
             $method = strtolower($cond[1]);
+            $value = $cond[2];
 
             // check if the method is supported by the iterator
             if (!method_exists($iterator, $method)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported method',
-                    'reason'   => "method $method not implemented for Action\Iterator",
-                    'condition'=> $cond,
+                    'reason'    => "method $method not implemented for Action\Iterator",
+                    'condition' => $cond,
                 ]);
             }
 
             // get the model field
-            if (is_string($cond[0])) {
-                $cond[0] = $model->getField($cond[0]);
+            if (is_string($field)) {
+                $field = $model->getField($field);
             }
 
-            if (!is_a($cond[0], \atk4\data\Field::class)) {
+            if (!is_a($field, Field::class)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
-                    'reason'    => 'Unsupported object instance '.get_class($cond[0]),
-                    'condition' => [
-                        get_class($cond[0]),
-                        $cond[1],
-                        $cond[2],
-                    ],
+                    'reason'    => 'Unsupported object instance '.get_class($field),
+                    'condition' => $cond,
                 ]);
             }
 
             // get the field name
-            $short_name = $cond[0]->short_name;
+            $short_name = $field->short_name;
             // .. the value
-            $value = $this->typecastSaveField($cond[0], $cond[2]);
+            $value = $this->typecastSaveField($field, $value);
             // run the (filter) method
             $iterator->{$method}($short_name, $value);
         }

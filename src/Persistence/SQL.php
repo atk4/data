@@ -421,7 +421,6 @@ class SQL extends Persistence
 
                         if ($row[0] instanceof Field) {
                             $valueKey = count($row) == 2 ? 1 : 2;
-
                             $row[$valueKey] = $this->typecastSaveField($row[0], $row[$valueKey]);
                         }
                     }
@@ -441,7 +440,8 @@ class SQL extends Persistence
                 }
                 $q->where($cond[0], $cond[1]);
             } else {
-                if ($cond[0] instanceof Field) {
+                // "like" or "regexp" conditions do not need typecasting to field type!
+                if ($cond[0] instanceof Field && !in_array(strtolower($cond[1]), ['like', 'regexp'])) {
                     $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
                 }
                 $q->where($cond[0], $cond[1], $cond[2]);
