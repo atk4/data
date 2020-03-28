@@ -410,7 +410,7 @@ class SQL extends Persistence
             // count($cond) == 1, we will pass the only
             // parameter inside where()
 
-            if (count($cond) == 1) {
+            if (count($cond) === 1) {
 
                 // OR conditions
                 if (is_array($cond[0])) {
@@ -419,8 +419,9 @@ class SQL extends Persistence
                             $row[0] = $m->getField($row[0]);
                         }
 
-                        if ($row[0] instanceof Field) {
-                            $valueKey = count($row) == 2 ? 1 : 2;
+                        // "like" or "regexp" conditions do not need typecasting to field type!
+                        if ($row[0] instanceof Field && (count($row) === 2 || !in_array(strtolower($row[1]), ['like', 'regexp']))) {
+                            $valueKey = count($row) === 2 ? 1 : 2;
                             $row[$valueKey] = $this->typecastSaveField($row[0], $row[$valueKey]);
                         }
                     }
@@ -434,7 +435,7 @@ class SQL extends Persistence
                 $cond[0] = $m->getField($cond[0]);
             }
 
-            if (count($cond) == 2) {
+            if (count($cond) === 2) {
                 if ($cond[0] instanceof Field) {
                     $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
                 }
