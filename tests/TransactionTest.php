@@ -25,7 +25,7 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addField('name');
         $m->load(2);
 
-        $m->addHook('afterSave', function ($m) {
+        $m->onHook('afterSave', function ($m) {
             throw new \Exception('Awful thing happened');
         });
         $m['name'] = 'XXX';
@@ -37,7 +37,7 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals('Sue', $this->getDB()['item'][2]['name']);
 
-        $m->addHook('afterDelete', function ($m) {
+        $m->onHook('afterDelete', function ($m) {
             throw new \Exception('Awful thing happened');
         });
 
@@ -62,7 +62,7 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // test insert
         $m = new Model($db, 'item');
         $m->addField('name');
-        $m->addHook('beforeSave', function ($model, $is_update) use ($self) {
+        $m->onHook('beforeSave', function ($model, $is_update) use ($self) {
             $self->assertFalse($is_update);
         });
         $m->save(['name'=>'Foo']);
@@ -70,7 +70,7 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // test update
         $m = new Model($db, 'item');
         $m->addField('name');
-        $m->addHook('afterSave', function ($model, $is_update) use ($self) {
+        $m->onHook('afterSave', function ($model, $is_update) use ($self) {
             $self->assertTrue($is_update);
         });
         $m->loadBy('name', 'John')->save(['name'=>'Foo']);
@@ -89,7 +89,7 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // test insert
         $m = new Model($db, 'item');
         $m->addField('name');
-        $m->addHook('afterSave', function ($model, $is_update) use ($self) {
+        $m->onHook('afterSave', function ($model, $is_update) use ($self) {
             $self->assertFalse($is_update);
         });
         $m->save(['name'=>'Foo']);
@@ -97,7 +97,7 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // test update
         $m = new Model($db, 'item');
         $m->addField('name');
-        $m->addHook('afterSave', function ($model, $is_update) use ($self) {
+        $m->onHook('afterSave', function ($model, $is_update) use ($self) {
             $self->assertTrue($is_update);
         });
         $m->loadBy('name', 'John')->save(['name'=>'Foo']);
@@ -120,7 +120,7 @@ class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $hook_called = false;
         $values = [];
-        $m->addHook('onRollback', function ($mm, $e) use (&$hook_called, &$values) {
+        $m->onHook('onRollback', function ($mm, $e) use (&$hook_called, &$values) {
             $hook_called = true;
             $values = $mm->get(); // model field values are still the same no matter we rolled back
             $mm->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens

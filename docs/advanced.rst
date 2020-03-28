@@ -77,7 +77,7 @@ Another scenario which could benefit by type substitution would be::
 ATK Data allow class substitution during load and iteration by breaking "afterLoad"
 hook. Place the following inside Transaction::init()::
 
-    $this->addHook('afterLoad', function ($m) {
+    $this->onHook('afterLoad', function ($m) {
         if (get_class($this) != $m->getClassName()) {
             $cl = '\\'.$this->getClassName();
             $cl = new $cl($this->persistence);
@@ -98,7 +98,7 @@ of the record. Finally to help with performance, you can implement a switch::
         ..
 
         if ($this->typeSubstitution) {
-            $this->addHook('afterLoad',
+            $this->onHook('afterLoad',
                 ..........
             )
         }
@@ -155,7 +155,7 @@ which I want to define like this::
             return;
         }
 
-        $this->owner->addField('created_dts', ['type'=>'datetime', 'default'=>date('Y-m-d H:i:s')]);
+        $this->owner->addField('created_dts', ['type'=>'datetime', 'default'=>new \DateTime()]);
 
         $this->owner->hasOne('created_by_user_id', 'User');
         if(isset($this->app->user) and $this->app->user->loaded()) {
@@ -166,11 +166,11 @@ which I want to define like this::
 
         $this->owner->addField('updated_dts', ['type'=>'datetime']);
 
-        $this->owner->addHook('beforeUpdate', function($m, $data) {
+        $this->owner->onHook('beforeUpdate', function($m, $data) {
             if(isset($this->app->user) and $this->app->user->loaded()) {
                 $data['updated_by'] = $this->app->user->id;
             }
-            $data['updated_dts'] = date('Y-m-d H:i:s');
+            $data['updated_dts'] = new \DateTime();
         });
     }
 
@@ -343,7 +343,7 @@ before and just slightly modifying it::
                 $this->owner->addMethod('restore', $this);
             } else {
                 $this->owner->addCondition('is_deleted', false);
-                $this->owner->addHook('beforeDelete', [$this, 'softDelete'], null, 100);
+                $this->owner->onHook('beforeDelete', [$this, 'softDelete'], null, 100);
             }
         }
 
@@ -425,7 +425,7 @@ inside your model are unique::
                 $this->fields = [$this->owner->title_field];
             }
 
-            $this->owner->addHook('beforeSave', $this);
+            $this->owner->onHook('beforeSave', $this);
         }
 
         function beforeSave($m)
@@ -488,7 +488,7 @@ Next we need to define reference. Inside Model_Invoice add::
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field'=>'invoice_id']);
 
-    $this->addHook('beforeDelete',function($m){
+    $this->onHook('beforeDelete',function($m){
         $m->ref('InvoicePayment')->action('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment
@@ -623,7 +623,7 @@ Here is how to add them. First you need to create fields::
 I have declared those fields with never_persist so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
-    $this->addHook('beforeSave', function($m) {
+    $this->onHook('beforeSave', function($m) {
         if(isset($m['client_code']) && !isset($m['client_id'])) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('code',$m['client_code']);
@@ -712,7 +712,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->addHook('afterSave', function($m, $is_update){
+    $this->onHook('afterSave', function($m, $is_update){
         if(isset($m['payment'])) {
             $m->ref('Payment')->insert($m['payment']);
         }

@@ -102,26 +102,26 @@ class Numeric extends Field
     /**
      * Round up to the nearest number.
      *
-     * @param float $n Number
-     * @param int   $p Precision
+     * @param float $number    Number
+     * @param int   $precision Precision
      *
      * @return float
      */
-    protected function roundUp(float $n, int $p): float
+    protected function roundUp(float $number, int $precision): float
     {
-        return $p ? ceil($n / $p) * $p : ceil($n);
+        return $precision ? ceil($number / $precision) * $precision : ceil($number);
     }
 
     /**
      * Round down to the nearest number.
      *
-     * @param float $n Number
-     * @param int   $p Precision
+     * @param float $number    Number
+     * @param int   $precision Precision
      *
      * @return float
      */
-    protected function roundDown(float $n, int $p): float
+    protected function roundDown(float $number, int $precision): float
     {
-        return $p ? floor($n / $p) * $p : floor($n);
+        return $precision ? floor($number / $precision) * $precision : floor($number);
     }
 }

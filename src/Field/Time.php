@@ -30,7 +30,7 @@ class Time extends DateTime
         if ($value !== null) {
             // remove date portion from date type value
             // need 1970 in place of 0 - DB
-            $value->setDate(1970, 1, 1);
+            $value = (clone $value)->setDate(1970, 1, 1);
         }
 
         return $value;
@@ -47,6 +47,6 @@ class Time extends DateTime
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
-        return $v ? $v->format('H:i:s') : $v;
+        return $v ? $v->format('H:i:s'.($v->format('u') > 0 ? '.u' : '')) : $v;
     }
 }

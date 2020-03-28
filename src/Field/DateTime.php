@@ -77,18 +77,22 @@ class DateTime extends Field
         }
 
         // we allow http://php.net/manual/en/datetime.formats.relative.php
-        $class = $this->dateTimeClass ?? self::class;
+        $class = $this->dateTimeClass ?? \DateTime::class;
 
         if (is_numeric($value)) {
             $value = new $class('@'.$value);
         } elseif (is_string($value)) {
             $value = new $class($value);
         } elseif (!$value instanceof $class) {
-            if (is_object($value)) {
-                throw new ValidationException(['must be a '.$this->type, 'class' => $class, 'value class' => get_class($value)]);
-            }
+            if ($value instanceof \DateTimeInterface) {
+                $value = new $class($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
+            } else {
+                if (is_object($value)) {
+                    throw new ValidationException(['must be a '.$this->type, 'class' => $class, 'value class' => get_class($value)]);
+                }
 
-            throw new ValidationException(['must be a '.$this->type, 'class' => $class, 'value type' => gettype($value)]);
+                throw new ValidationException(['must be a '.$this->type, 'class' => $class, 'value type' => gettype($value)]);
+            }
         }
 
         return $value;
@@ -105,6 +109,15 @@ class DateTime extends Field
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
-        return $v ? $v->format('c') : $v; // ISO 8601 format 2004-02-12T15:19:21+00:00
+        if ($v) {
+            $dateFormat = 'Y-m-d';
+            $timeFormat = 'H:i:s'.($v->format('u') > 0 ? '.u' : '');
+
+            $format = $dateFormat.'\T'.$timeFormat.'P'; // ISO 8601 format 2004-02-12T15:19:21+00:00
+
+            $v = $v->format($format);
+        }
+
+        return $v;
     }
 }

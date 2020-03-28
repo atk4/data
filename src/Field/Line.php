@@ -37,11 +37,7 @@ class Line extends Text
      */
     public function normalize($value)
     {
-        $value = parent::normalize($value);
-
         // remove all line-ends
-        $value = trim(str_replace(["\r", "\n"], '', $value));
-
-        return $value;
+        return trim(str_replace(["\r", "\n"], '', parent::normalize($value)));
     }
 }

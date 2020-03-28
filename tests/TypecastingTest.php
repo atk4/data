@@ -17,7 +17,7 @@ class MyTime extends \DateTime
 {
     public function __toString()
     {
-        return $this->format('H:i:s');
+        return $this->format('H:i:s.u');
     }
 }
 
@@ -25,7 +25,7 @@ class MyDateTime extends \DateTime
 {
     public function __toString()
     {
-        return date('Y-m-d H:i:s', $this->format('U'));
+        return $this->format('Y-m-d H:i:s.u');
     }
 }
 
@@ -41,8 +41,8 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 [
                     'string'   => 'foo',
                     'date'     => '2013-02-20',
-                    'datetime' => '2013-02-20 20:00:12',
-                    'time'     => '12:00:50',
+                    'datetime' => '2013-02-20 20:00:12.000000',
+                    'time'     => '12:00:50.000000',
                     'boolean'  => 1,
                     'integer'  => '2940',
                     'money'    => '8.20',
@@ -87,8 +87,8 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                     'id'       => '1',
                     'string'   => 'foo',
                     'date'     => '2013-02-20',
-                    'datetime' => '2013-02-20 20:00:12',
-                    'time'     => '12:00:50',
+                    'datetime' => '2013-02-20 20:00:12.000000',
+                    'time'     => '12:00:50.000000',
                     'boolean'  => 1,
                     'integer'  => 2940,
                     'money'    => 8.20,
@@ -99,8 +99,8 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                     'id'       => '2',
                     'string'   => 'foo',
                     'date'     => '2013-02-20',
-                    'datetime' => '2013-02-20 20:00:12',
-                    'time'     => '12:00:50',
+                    'datetime' => '2013-02-20 20:00:12.000000',
+                    'time'     => '12:00:50.000000',
                     'boolean'  => '1',
                     'integer'  => '2940',
                     'money'    => '8.2',
@@ -248,8 +248,8 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
             'types' => [
                 [
                     'date'     => '2013-02-20',
-                    'datetime' => '2013-02-20 20:00:12',
-                    'time'     => '12:00:50',
+                    'datetime' => '2013-02-20 20:00:12.235689',
+                    'time'     => '12:00:50.235689',
                     'b1'       => 'Y',
                     'b2'       => 'N',
                     'integer'  => '2940',
@@ -285,9 +285,9 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertSame('hello world', $m['rot13']);
         $this->assertSame(1, (int) $m->id);
         $this->assertSame(1, (int) $m['id']);
-        $this->assertEquals('2013-02-21 05:00:12', (string) $m['datetime']);
+        $this->assertEquals('2013-02-21 05:00:12.235689', (string) $m['datetime']);
         $this->assertEquals('2013-02-20', (string) $m['date']);
-        $this->assertEquals('12:00:50', (string) $m['time']);
+        $this->assertEquals('12:00:50.235689', (string) $m['time']);
 
         $this->assertEquals(true, $m['b1']);
         $this->assertEquals(false, $m['b2']);
@@ -299,8 +299,8 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 2 => [
                     'id'       => '2',
                     'date'     => '2013-02-20',
-                    'datetime' => '2013-02-20 20:00:12',
-                    'time'     => '12:00:50',
+                    'datetime' => '2013-02-20 20:00:12.235689',
+                    'time'     => '12:00:50.235689',
                     'b1'       => 'Y',
                     'b2'       => 'N',
                     'integer'  => '2940',
@@ -310,6 +310,46 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ],
             ], ];
         $this->assertEquals($a, $this->getDB());
+    }
+
+    public function testFieldPersistenceSetting()
+    {
+        $rot = function ($v) {
+            return str_rot13($v);
+        };
+
+        $typecast = [$rot, $rot];
+
+        $a = [
+            'various' => [
+                [
+                    'raw'                   => 'raw',
+                    'field_specific'        => $rot('raw'),
+                    'persistence_specific1' => $rot('raw'),
+                    'persistence_specific2' => $rot('raw'),
+                    'persistence_general'   => $rot('raw'),
+                ],
+            ], ];
+
+        $this->setDB($a);
+
+        $db = new Persistence\SQL($this->db->connection);
+
+        $model = new Model($db, ['table' => 'various']);
+
+        $model->addField('raw');
+        $model->addField('field_specific', compact('typecast'));
+        $model->addField('persistence_specific1', ['persistence' => [Persistence\SQL::class => compact('typecast')]]);
+        $model->addField('persistence_specific2', ['persistence' => ['SQL' => compact('typecast')]]);
+        $model->addField('persistence_general', ['persistence' => compact('typecast')]);
+
+        $model->load(1);
+
+        $this->assertEquals('raw', $model['raw']);
+        $this->assertEquals('raw', $model['field_specific']);
+        $this->assertEquals('raw', $model['persistence_specific1']);
+        $this->assertEquals('raw', $model['persistence_specific2']);
+        $this->assertEquals('raw', $model['persistence_general']);
     }
 
     public function testTryLoad()
@@ -414,9 +454,9 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         date_default_timezone_set('UTC');
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertEquals('2005-08-16 00:52:01', $db->typecastSaveField($dt, $s));
+        $this->assertEquals('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
         $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertEquals('22:52:01', $db->typecastSaveField($t, $s));
+        $this->assertEquals('22:52:01.000000', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
@@ -424,9 +464,9 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
         date_default_timezone_set('Asia/Tokyo');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertEquals('2005-08-16 00:52:01', $db->typecastSaveField($dt, $s));
+        $this->assertEquals('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
         $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertEquals('22:52:01', $db->typecastSaveField($t, $s));
+        $this->assertEquals('22:52:01.000000', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
@@ -434,9 +474,9 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
         date_default_timezone_set('America/Los_Angeles');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01'); // uses servers default timezone
-        $this->assertEquals('2005-08-16 07:52:01', $db->typecastSaveField($dt, $s));
+        $this->assertEquals('2005-08-16 07:52:01.000000', $db->typecastSaveField($dt, $s));
         $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertEquals('22:52:01', $db->typecastSaveField($t, $s));
+        $this->assertEquals('22:52:01.000000', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $db->typecastLoadField($dt, '2005-08-16 07:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));

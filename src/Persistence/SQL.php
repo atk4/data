@@ -217,8 +217,7 @@ class SQL extends Persistence
     /**
      * Creates new Query object with current_timestamp(precision) expression.
      *
-     * @param Model $m
-     * @param int   $precision
+     * @param int $precision
      *
      * @return Query
      */
@@ -445,8 +444,8 @@ class SQL extends Persistence
             $dt_class = $field->dateTimeClass ?? 'DateTime';
             $tz_class = $field->dateTimeZoneClass ?? 'DateTimeZone';
 
-            if ($v instanceof $dt_class) {
-                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s', 'time' => 'H:i:s'];
+            if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
+                $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
                 $format = $field->persistence['format'] ?? $format[$field->type];
 
                 // datetime only - set to persisting timezone
@@ -486,76 +485,85 @@ class SQL extends Persistence
         $v = is_object($value) ? clone $value : $value;
 
         switch ($field->type) {
-        case 'string':
-        case 'text':
-            // do nothing - it's ok as it is
-            break;
-        case 'integer':
-            $v = (int) $v;
-            break;
-        case 'float':
-            $v = (float) $v;
-            break;
-        case 'money':
-            $v = round($v, 4);
-            break;
-        case 'boolean':
-            if (isset($field->enum) && is_array($field->enum)) {
-                if (isset($field->enum[0]) && $v == $field->enum[0]) {
-                    $v = false;
-                } elseif (isset($field->enum[1]) && $v == $field->enum[1]) {
-                    $v = true;
-                } else {
-                    $v = null;
-                }
-            } elseif ($v === '') {
-                $v = null;
-            } else {
-                $v = (bool) $v;
-            }
-            break;
-        case 'date':
-        case 'datetime':
-        case 'time':
-            $dt_class = isset($field->dateTimeClass) ? $field->dateTimeClass : 'DateTime';
-            $tz_class = isset($field->dateTimeZoneClass) ? $field->dateTimeZoneClass : 'DateTimeZone';
-
-            if (is_numeric($v)) {
-                $v = new $dt_class('@'.$v);
-            } elseif (is_string($v)) {
-                // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
-                $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
-                $format = $field->persistence['format'] ?? $format[$field->type];
-
-                // datetime only - set from persisting timezone
-                if ($field->type == 'datetime' && isset($field->persistence['timezone'])) {
-                    $v = $dt_class::createFromFormat($format, $v, new $tz_class($field->persistence['timezone']));
-                    if ($v === false) {
-                        throw new Exception(['Incorrectly formatted datetime', 'format' => $format, 'value' => $value, 'field' => $field]);
+            case 'string':
+            case 'text':
+                // do nothing - it's ok as it is
+                break;
+            case 'integer':
+                $v = (int) $v;
+                break;
+            case 'float':
+                $v = (float) $v;
+                break;
+            case 'money':
+                $v = round($v, 4);
+                break;
+            case 'boolean':
+                if (isset($field->enum) && is_array($field->enum)) {
+                    if (isset($field->enum[0]) && $v == $field->enum[0]) {
+                        $v = false;
+                    } elseif (isset($field->enum[1]) && $v == $field->enum[1]) {
+                        $v = true;
+                    } else {
+                        $v = null;
                     }
-                    $v->setTimeZone(new $tz_class(date_default_timezone_get()));
+                } elseif ($v === '') {
+                    $v = null;
                 } else {
-                    $v = $dt_class::createFromFormat($format, $v);
+                    $v = (bool) $v;
+                }
+                break;
+            case 'date':
+            case 'datetime':
+            case 'time':
+                $dt_class = isset($field->dateTimeClass) ? $field->dateTimeClass : 'DateTime';
+                $tz_class = isset($field->dateTimeZoneClass) ? $field->dateTimeZoneClass : 'DateTimeZone';
+
+                if (is_numeric($v)) {
+                    $v = new $dt_class('@'.$v);
+                } elseif (is_string($v)) {
+                    if ($field->persistence['format'] ?? null) {
+                        $format = $field->persistence['format'];
+                    } else {
+                        // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
+                        $formatMap = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
+
+                        $format = $formatMap[$field->type];
+
+                        if (strpos($v, '.') !== false) { // time possibly with microseconds, otherwise invalid format
+                            $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
+                        }
+                    }
+
+                    // datetime only - set from persisting timezone
+                    if ($field->type == 'datetime' && isset($field->persistence['timezone'])) {
+                        $v = $dt_class::createFromFormat($format, $v, new $tz_class($field->persistence['timezone']));
+                        if ($v !== false) {
+                            $v->setTimezone(new $tz_class(date_default_timezone_get()));
+                        }
+                    } else {
+                        $v = $dt_class::createFromFormat($format, $v);
+                    }
+
                     if ($v === false) {
                         throw new Exception(['Incorrectly formatted date/time', 'format' => $format, 'value' => $value, 'field' => $field]);
                     }
-                }
 
-                // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
-                // this is what Carbon::instance(DateTime $dt) method does for example
-                if ($dt_class != 'DateTime') {
-                    $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimeZone());
+                    // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
+                    // this is what Carbon::instance(DateTime $dt) method does for example
+                    if ($dt_class != 'DateTime') {
+                        $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimeZone());
+                    }
                 }
-            }
-            break;
-        case 'array':
-            // don't decode if we already use some kind of serialization
-            $v = $field->serialize ? $v : $this->jsonDecode($field, $v, true);
-            break;
-        case 'object':
-            // don't decode if we already use some kind of serialization
-            $v = $field->serialize ? $v : $this->jsonDecode($field, $v, false);
-            break;
+                break;
+            case 'array':
+                // don't decode if we already use some kind of serialization
+                $v = $field->serialize ? $v : $this->jsonDecode($field, $v, true);
+                break;
+            case 'object':
+                // don't decode if we already use some kind of serialization
+                $v = $field->serialize ? $v : $this->jsonDecode($field, $v, false);
+                break;
         }
 
         return $v;
@@ -987,15 +995,11 @@ class SQL extends Persistence
     public function getFieldSQLExpression(Field $field, Expression $expression)
     {
         if (isset($field->owner->persistence_data['use_table_prefixes'])) {
-            $mask = '{}.{}';
+            $mask = '{{}}.{}';
             $prop = [
                 $field->join
-                    ? (isset($field->join->foreign_alias)
-                    ? $field->join->foreign_alias
-                    : $field->join->short_name)
-                    : (isset($field->owner->table_alias)
-                    ? $field->owner->table_alias
-                    : $field->owner->table),
+                    ? ($field->join->foreign_alias ?: $field->join->short_name)
+                    : ($field->owner->table_alias ?: $field->owner->table),
                 $field->actual ?: $field->short_name,
             ];
         } else {

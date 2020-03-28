@@ -34,8 +34,10 @@ class Array_ extends Field
             return;
         }
 
-        if (is_string($value) && $this->owner && $this->owner->persistence) {
-            $value = $this->owner->persistence->jsonDecode($this, $value, true);
+        if (is_string($value)) {
+            if ($persistence = $this->hasPersistence()) {
+                $value = $persistence->jsonDecode($this, $value, true);
+            }
         }
 
         if (!is_array($value)) {
@@ -56,8 +58,8 @@ class Array_ extends Field
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
-        if ($this->owner && $this->owner->persistence) {
-            $v = $this->owner->persistence->jsonEncode($this, $v);
+        if ($persistence = $this->hasPersistence()) {
+            $v = $persistence->jsonEncode($this, $v);
         } else {
             $v = json_encode($v);
         }

@@ -29,12 +29,14 @@ object you can load/unload individual records (See Single record Operations belo
    $m->load(8);
    ....
 
-and even perform operations on multiple records (See Multiple record Operations below)::
+and even perform operations on multiple records (See `Persistence Actions` below)::
 
    $m = new User($db);
    $m->addCondition('expired', true);
 
-   $m->deleteAll();
+   $m->action('delete')->execute(); // performs mass delete, hooks are not executed
+   
+   $m->each('delete'); // deletes each record, hooks are executed
 
 When data is loaded from associated Persistence, it is automatically converted into
 a native PHP type (such as DateTime object) through a process called Typecasting. Various
@@ -185,7 +187,7 @@ To invoke code from `init()` methods of ALL models (for example soft-delete logi
 you use Persistence's "afterAdd" hook. This will not affect ALL models but just models
 which are associated with said persistence::
 
-   $db->addHook('afterAdd', function($p, $m) use($acl) {
+   $db->onHook('afterAdd', function($p, $m) use($acl) {
 
       $fields = $m->getFields();
 
@@ -389,7 +391,7 @@ a hook::
 
    $this->addField('name');
 
-   $this->addHook('validate', function($m) {
+   $this->onHook('validate', function($m) {
       if ($m['name'] == 'C#') {
          return ['name'=>'No sharp objects are allowed'];
       }
@@ -435,7 +437,7 @@ action - `send_gift`.
 There are some advanced techniques like "SubTypes" or class substitution,
 for example, this hook may be placed in the "User" class init()::
 
-   $this->addHook('afterLoad', function($m) {
+   $this->onHook('afterLoad', function($m) {
       if ($m['purchases'] > 1000) {
          $this->breakHook($this->asModel(VIPUser::class);
       }
@@ -737,6 +739,10 @@ Title Field
 .. php:method:: public getTitle
 
     Return title field value of currently loaded record.
+
+.. php:method:: public getTitles
+
+    Returns array of title field values of all model records in format [id => title].
 
 .. _caption:
 

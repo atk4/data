@@ -5,6 +5,7 @@
 namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
+use atk4\core\InitializerTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\core\TrackableTrait;
 use atk4\dsql\Expression;
@@ -18,6 +19,9 @@ class Field implements Expressionable
     use TrackableTrait;
     use DIContainerTrait;
     use ReadableCaptionTrait;
+    use InitializerTrait {
+        init as _init;
+    }
 
     // {{{ Properties
 
@@ -246,6 +250,14 @@ class Field implements Expressionable
     }
 
     /**
+     * Initialization.
+     */
+    public function init()
+    {
+        $this->_init();
+    }
+
+    /**
      * Validate and normalize value.
      *
      * Depending on the type of a current field, this will perform
@@ -261,72 +273,19 @@ class Field implements Expressionable
      */
     public function normalize($value)
     {
-        // SQL fields are allowed to have expressions inside of them.
-        if ($value instanceof Expression ||
-            $value instanceof Expressionable) {
-            return $value;
-        }
-
         // NULL value is always fine if it is allowed
-        if ($value === null) {
+        if ($value === null || $value === '') {
             if ($this->required) {
-                throw new ValidationException([$this->name => 'Must not be null']);
+                throw new ValidationException([$this->name => 'Must not be null or empty']);
             }
-
-            return;
-        }
-
-        $f = $this;
-
-        // only string type fields can use empty string as legit value, for all
-        // other field types empty value is the same as no-value, nothing or null
-        if ($f->type && $f->type != 'string' && $value === '') {
-            if ($this->required) {
-                throw new ValidationException([$this->name => 'Must not be empty']);
-            }
-
-            return;
-        }
-
-        // validate scalar values
-        if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float']) && !is_scalar($value)) {
-            throw new ValidationException([$this->name => 'Must use scalar value']);
-        }
-
-        // normalize
-        // @TODO remove this block in future - it's useless
-        switch ($f->type) {
-        case null: // loose comparison, but is OK here
-            // NOTE - this is not always the same as type=string. Need to review what else it can be and how type=null is used at all
-            if ($this->required && empty($value)) {
-                throw new ValidationException([$this->name => 'Must not be empty']);
-            }
-            break;
-        case 'string':
-            throw new Exception(['Use Field\Line for type=string', 'this'=>$this]);
-        case 'text':
-            throw new Exception(['Use Field\Text for type=text', 'this'=>$this]);
-        case 'integer':
-            throw new Exception(['Use Field\Integer for type=integer', 'this'=>$this]);
-        case 'float':
-            throw new Exception(['Use Field\Numeric for type=float', 'this'=>$this]);
-        case 'money':
-            throw new Exception(['Use Field\Money for type=money', 'this'=>$this]);
-        case 'boolean':
-            throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
-        case 'date':
-            throw new Exception(['Use Field\Date for type=date', 'this'=>$this]);
-        case 'datetime':
-            throw new Exception(['Use Field\DateTime for type=datetime', 'this'=>$this]);
-        case 'time':
-            throw new Exception(['Use Field\Time for type=time', 'this'=>$this]);
-        case 'array':
-            throw new Exception(['Use Field\Array_ for type=array', 'this'=>$this]);
-        case 'object':
-            throw new Exception(['Use Field\Object_ for type=object', 'this'=>$this]);
         }
 
         return $value;
+    }
+
+    public static function isExpression($value)
+    {
+        return $value instanceof Expression || $value instanceof Expressionable;
     }
 
     /**
@@ -512,6 +471,20 @@ class Field implements Expressionable
     /**
      * Returns typecasting callback if defined.
      *
+     * Typecasting can be defined as (in order of precedence)
+     *
+     * * affects all typecasting for the field
+     * $user->addField('dob', ['Date', 'typecast'=>[$encode_fx, $decode_fx]]);
+     *
+     * * affects typecasting for specific persistence class
+     * $user->addField('dob', ['Date', 'persistence'=>['atk4\data\Persistence\SQL'=>['typecast'=>[$encode_fx, $decode_fx]]]]);
+     *
+     * * affects typecasting for all persistences
+     * $user->addField('dob', ['Date', 'persistence'=>['typecast'=>[$encode_fx, $decode_fx]]]);
+     *
+     * * default typecasting (if none of above set) will be used for all fields of the class defined in field methods
+     * typecastSave / typecastLoad based on the $mode
+     *
      * @param string $mode - load|save
      *
      * @return callable|false
@@ -525,7 +498,12 @@ class Field implements Expressionable
             'load' => 1,
         ];
 
-        $fx = $this->typecast[$mode] ?? $this->typecast[$map[$mode]] ?? false;
+        $typecast = $this->getPersistenceSetting('typecast');
+
+        // default typecaster is method in the field named typecastSave or typecastLoad if such method exists
+        $default = method_exists($this, 'typecast'.ucfirst($mode)) ? [$this, 'typecast'.ucfirst($mode)] : false;
+
+        $fx = $typecast[$mode] ?? $typecast[$map[$mode]] ?? $default;
 
         return is_callable($fx) ? $fx : false;
     }
@@ -549,6 +527,50 @@ class Field implements Expressionable
         $fx = $this->serialize[$mode] ?? $this->serialize[$map[$mode]] ?? false;
 
         return is_callable($fx) ? $fx : false;
+    }
+
+    /**
+     * Returns persistence setting defined
+     * Order of precedence is: field specific, persistence specific, persistence general.
+     *
+     * Below examples consider $key = 'typecast'
+     * Field specific setting is defined in a field property with $key as name
+     * e.g. $field->typecast = [$encode_fx, $decode_fx]
+     *
+     * Persistence specific setting is defined in $field->persistence array
+     * e.g. $field->persistence = [\atk4\data\Persistence\SQL::class => ['typecast' => [$encode_fx, $decode_fx]]] or
+     * e.g. $field->persistence = ['SQL' => ['typecast' => [$encode_fx, $decode_fx]]]
+     * The latter checks only the persistence class name ignoring the namespace.
+     * Both syntaxes are valid but first one has precedence
+     *
+     * Persistence general setting is defined in $field->persistence array
+     * e.g. $field->persistence = ['typecast' => [$encode_fx, $decode_fx]]
+     *
+     * @param string $key
+     *
+     * @return array
+     */
+    public function getPersistenceSetting($key)
+    {
+        // persistence specific typecast
+        $specific = null;
+        if ($persistence = $this->hasPersistence()) {
+            $classFull = get_class($persistence);
+            $classBare = implode('', array_slice(explode('\\', $classFull), -1));
+
+            foreach ([$classFull, $classBare] as $class) {
+                $specific = $this->persistence[$class][$key] ?? $specific;
+            }
+        }
+
+        // get the setting definition to be applied
+        // field specific or persistence specific or persistence general or none
+        return $this->{$key} ?? $specific ?? $this->persistence[$key] ?? [];
+    }
+
+    public function hasPersistence()
+    {
+        return $this->owner ? $this->owner->persistence : false;
     }
 
     // }}}

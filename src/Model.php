@@ -719,15 +719,16 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
-     * @param string|null $filter
+     * @param string|array|null $filter
      *
      * @return array
      */
-    public function getFields(string $filter = null)
+    public function getFields($filter = null)
     {
         if (!$filter) {
             return $this->fields;
         }
+        $filter = is_string($filter) ? explode(',', $filter) : $filter;
 
         return array_filter($this->fields, function (Field $field, $name) use ($filter) {
 
@@ -735,15 +736,20 @@ class Model implements ArrayAccess, IteratorAggregate
             if ($this->only_fields && !in_array($name, $this->only_fields)) {
                 return false;
             }
-
-            switch ($filter) {
-                case 'system': return $field->system;
-                case 'not system': return !$field->system;
-                case 'editable': return $field->isEditable();
-                case 'visible': return $field->isVisible();
-                default:
-                    throw new Exception(['Filter is not supported', 'filter'=>$filter]);
+            foreach ($filter as $f) {
+                if (
+                    ($f == 'system' && $field->system)
+                    || ($f == 'not system' && !$field->system)
+                    || ($f == 'editable' && $field->isEditable())
+                    || ($f == 'visible' && $field->isVisible())
+                ) {
+                    return true;
+                } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'])) {
+                    throw new Exception(['Filter is not supported', 'filter'=>$f]);
+                }
             }
+
+            return false;
         }, ARRAY_FILTER_USE_BOTH);
     }
 
@@ -789,7 +795,7 @@ class Model implements ArrayAccess, IteratorAggregate
                 && $this->hook('normalize', [$f, $value]) !== false
                 && $this->strict_types
             ) {
-                $value = $f->normalize($value);
+                $value = $f->isExpression($value) ? $value : $f->normalize($value);
             }
         } catch (Exception $e) {
             $e->addMoreInfo('field', $field);
@@ -938,6 +944,20 @@ class Model implements ArrayAccess, IteratorAggregate
         $f = $this->hasField($this->title_field);
 
         return $f ? $f->get() : $this->id;
+    }
+
+    /**
+     * Returns array of model record titles [id => title].
+     *
+     * @return array
+     */
+    public function getTitles()
+    {
+        $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
+
+        return array_map(function ($row) use ($field) {
+            return $row[$field];
+        }, $this->export([$field], $this->id_field));
     }
 
     /**
@@ -2084,7 +2104,7 @@ class Model implements ArrayAccess, IteratorAggregate
 
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:
-            // $model->addHook('afterLoad', function ($m) {
+            // $model->onHook('afterLoad', function ($m) {
             //     if ($m['date'] < $m->date_from) $m->breakHook(false);
             // })
 
