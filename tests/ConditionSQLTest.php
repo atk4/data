@@ -63,15 +63,15 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addFields(['name', 'gender']);
 
         $m->addCondition('gender', null);
-        
+
         $nullCount = 0;
         foreach ($m as $user) {
             $this->assertNull($user['gender']);
             $this->assertContains('Null', $user['name']);
-            
+
             $nullCount++;
         }
-        
+
         $this->assertEquals(2, $nullCount);
     }
 
