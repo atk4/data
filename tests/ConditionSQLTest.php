@@ -65,7 +65,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $mm->addCondition('gender', null)->tryLoadAny();
         $this->assertEquals('Null', $mm['name']);
     }
-    
+
     public function testOperations()
     {
         $a = [
