@@ -755,6 +755,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to load due to query error',
                 'query'      => $load->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -822,6 +823,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to load due to query error',
                 'query'      => $load->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -899,6 +901,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to execute insert query',
                 'query'      => $insert->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -948,6 +951,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to execute iteration query',
                 'query'      => $export->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -987,6 +991,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to update due to query error',
                 'query'      => $update->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -1031,6 +1036,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to delete due to query error',
                 'query'      => $delete->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
