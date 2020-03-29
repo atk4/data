@@ -48,6 +48,24 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals('Sue', $mm['name']);
     }
 
+    public function testNull()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
+                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                3 => ['id' => 3, 'name' => 'Null', 'gender' => null],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($this->db, 'user');
+        $m->addFields(['name', 'gender']);
+
+        $mm = clone $m;
+        $mm->addCondition('gender', null)->tryLoadAny();
+        $this->assertEquals('Null', $mm['name']);
+    }
+    
     public function testOperations()
     {
         $a = [
