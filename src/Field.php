@@ -57,6 +57,10 @@ class Field implements Expressionable
     /**
      * If value of this field can be described by a model, this property
      * will contain reference to that model.
+     *
+     * It's used more in atk4/ui repository. See there.
+     *
+     * @var Reference|null
      */
     public $reference = null;
 
