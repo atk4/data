@@ -74,7 +74,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         
         $this->assertEquals(2, $nullCount);
     }
-    
+
     public function testOperations()
     {
         $a = [
