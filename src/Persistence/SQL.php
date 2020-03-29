@@ -291,8 +291,8 @@ class SQL extends Persistence
     /**
      * Adds model fields in Query.
      *
-     * @param Model $m
-     * @param Query $q
+     * @param Model            $m
+     * @param Query            $q
      * @param array|null|false $fields
      */
     public function initQueryFields($m, $q, $fields = null)
