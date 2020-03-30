@@ -318,7 +318,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             //[ 'name'       => 'Romans', 'country_code'=>'UK'],  // does not exist
         ]);
     }
-    
+
     public function testQueryByReference()
     {
         $c = new LCountry($this->db);
