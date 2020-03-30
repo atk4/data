@@ -68,7 +68,7 @@ class LUser extends Model
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
 
-        $this->hasMany('Friends', new LFriend())
+//         $this->hasMany('Friends', new LFriend())
             ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
     }
 }
@@ -392,10 +392,10 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         $u->addCondition('country_id.code', 'LV');
 
         $this->assertEquals(1, $u->action('count')->getOne());
-        
-        $u->loadAny();
-        
-        $this->assertEquals('LV', $u['country_code']);
+
+        foreach ($u as $user) {
+            $this->assertEquals('LV', $user['country_code']);
+        }
     }
 
     /*
