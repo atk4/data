@@ -318,6 +318,35 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             //[ 'name'       => 'Romans', 'country_code'=>'UK'],  // does not exist
         ]);
     }
+    
+    public function testQueryByReference()
+    {
+        $c = new LCountry($this->db);
+
+        // Specifying hasMany here will perform input
+        $c->import([
+            ['Canada', 'code'=>'CA'],
+            ['Latvia', 'code'=>'LV'],
+            ['Japan', 'code'=>'JP'],
+            ['Lithuania', 'code'=>'LT', 'is_eu'=>true],
+            ['Russia', 'code'=>'RU'],
+        ]);
+
+        $u = new LUser($this->db);
+
+        $u->import([
+            ['name'       => 'Alain', 'country_code'=>'CA'],
+            ['name'       => 'Imants', 'country_code'=>'LV'],
+        ]);
+
+        $u->addCondition('country_id.code', 'LV');
+
+        $this->assertEquals(1, $u->action('count')->getOne());
+        
+        $u->loadAny();
+        
+        $this->assertEquals('LV', $u['country_code']);
+    }
 
     /*
      *
