@@ -1184,11 +1184,11 @@ class Model implements ArrayAccess, IteratorAggregate
      * There are also vendor-specific expression support:
      *  ->addCondition('my_field', $expr);
      *  ->addCondition($expr);
-     *  
+     *
      * Conditions on referenced models are also supported:
      *  $contact->addCondition('company.country', 'US');
      * where 'company' is the name of the reference
-     * This will limit scope of $contact model to contacts whose company country is set to 'US' 
+     * This will limit scope of $contact model to contacts whose company country is set to 'US'
      *
      * To use those, you should consult with documentation of your
      * persistence driver.
@@ -1229,28 +1229,28 @@ class Model implements ArrayAccess, IteratorAggregate
             return $this;
             */
         }
-        
+
         if (is_string($field)) {
             // shorthand for adding conditions on references
             // use chained reference names separated by dot "."
             if (stripos($field, '.') !== false) {
                 $references = explode('.', $field);
-                
+
                 $field = array_pop($references);
-                
+
                 $model = $this;
                 foreach ($references as $link) {
                     $model = $model->refLink($link);
                 }
 
                 $this->conditions[] = [$model->addCondition(...func_get_args())->action('count'), '>', 0];
-                
+
                 return $this;
             }
 
             $field = $this->getField($field);
         }
-        
+
         if ($field instanceof Field) {
             if ($operator === '=' || func_num_args() == 2) {
                 $v = ($operator === '=' ? $value : $operator);
