@@ -368,7 +368,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
             ],
         ], $this->getDB(['country', 'user']));
     }
-    
+
     public function testQueryByReference()
     {
         $c = new LCountry($this->db);

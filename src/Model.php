@@ -1155,11 +1155,11 @@ class Model implements \IteratorAggregate
      * There are also vendor-specific expression support:
      *  ->addCondition('my_field', $expr);
      *  ->addCondition($expr);
-     *  
+     *
      * Conditions on referenced models are also supported:
      *  $contact->addCondition('company.country', 'US');
      * where 'company' is the name of the reference
-     * This will limit scope of $contact model to contacts whose company country is set to 'US' 
+     * This will limit scope of $contact model to contacts whose company country is set to 'US'
      *
      * To use those, you should consult with documentation of your
      * persistence driver.
@@ -1197,7 +1197,7 @@ class Model implements \IteratorAggregate
             return $this;
             */
         }
-        
+
         if (is_string($field) && !$f = $this->hasField($field)) {
             throw (new Exception('Field is not defined in model'))
                 ->addMoreInfo('model', $this)
