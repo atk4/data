@@ -1190,6 +1190,10 @@ class Model implements ArrayAccess, IteratorAggregate
      * where 'company' is the name of the reference
      * This will limit scope of $contact model to contacts whose company country is set to 'US'
      *
+     * Using # in conditions on referenced model will apply the condition on the number of records:
+     * $contact->addCondition('tickets.#', '>', 5);
+     * This will limit scope of $contact model to contacts that have more than 5 tickets
+     *
      * To use those, you should consult with documentation of your
      * persistence driver.
      *
@@ -1243,7 +1247,18 @@ class Model implements ArrayAccess, IteratorAggregate
                     $model = $model->refLink($link);
                 }
 
-                $this->conditions[] = [$model->addCondition(...func_get_args())->action('count'), '>', 0];
+                $args = func_get_args();
+
+                // '#' will apply condition directly on the record count (has # referenced records)
+                // otherwise applying condition on the referenced model field (has referenced records where)
+                if ($field !== '#') {
+                    $model->addCondition(...$args);
+                    $args[1] = '>';
+                    $args[2] = 0;
+                }
+                $args[0] = $model->action('count');
+
+                $this->conditions[] = $args;
 
                 return $this;
             }
