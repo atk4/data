@@ -16,6 +16,8 @@ use atk4\data\Model;
  * action trigger (button) correctly in an automated way.
  *
  * Action must NOT rely on any specific UI implementation.
+ *
+ * @property Model $owner
  */
 class Generic
 {
@@ -24,9 +26,6 @@ class Generic
     use InitializerTrait {
         init as init_;
     }
-
-    /** @var Model */
-    public $owner;
 
     /** Defining scope of the action */
     const NO_RECORDS = 'none'; // e.g. add

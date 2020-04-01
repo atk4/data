@@ -10,6 +10,8 @@ use atk4\core\TrackableTrait;
 
 /**
  * Class description?
+ *
+ * @property Model $owner
  */
 class Join
 {
