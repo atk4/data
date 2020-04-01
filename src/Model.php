@@ -21,6 +21,8 @@ use IteratorAggregate;
 
 /**
  * Data model class.
+ *
+ * @property Field[]|Reference[] $elements
  */
 class Model implements ArrayAccess, IteratorAggregate
 {
