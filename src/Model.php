@@ -1157,12 +1157,12 @@ class Model implements \IteratorAggregate
      *  ->addCondition($expr);
      *
      * Conditions on referenced models are also supported:
-     *  $contact->addCondition('company.country', 'US');
+     *  $contact->addCondition('company/country', 'US');
      * where 'company' is the name of the reference
      * This will limit scope of $contact model to contacts whose company country is set to 'US'
      *
      * Using # in conditions on referenced model will apply the condition on the number of records:
-     * $contact->addCondition('tickets.#', '>', 5);
+     * $contact->addCondition('tickets/#', '>', 5);
      * This will limit scope of $contact model to contacts that have more than 5 tickets
      *
      * To use those, you should consult with documentation of your
@@ -1205,7 +1205,16 @@ class Model implements \IteratorAggregate
         if (is_string($field) && !$f = $this->hasField($field)) {
             throw (new Exception('Field is not defined in model'))
                 ->addMoreInfo('model', $this)
-                ->addMoreInfo('field', $field);
+            if (stripos($field, '/') !== false) {
+                $references = explode('/', $field);
+
+                $field = array_pop($references);
+
+                $model = $this;
+                foreach ($references as $link) {
+                    $model = $model->refLink($link);
+                }
+
                 $args = func_get_args();
 
                 // '#' will apply condition directly on the record count (has # referenced records)
