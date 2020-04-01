@@ -1131,8 +1131,7 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Execute specified action with specified arguments.
      *
-     * @param $name
-     * @param $args
+     * @param string $name Action name
      *
      * @throws Exception
      * @throws \atk4\core\Exception

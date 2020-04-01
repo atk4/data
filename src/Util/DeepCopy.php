@@ -147,12 +147,8 @@ class DeepCopy
 
     /**
      * Will extract non-numeric keys from the array.
-     *
-     * @param $array
-     *
-     * @return array
      */
-    protected function extractKeys($array): array
+    protected function extractKeys(array $array): array
     {
         $result = [];
         foreach ($array as $key=>$val) {
