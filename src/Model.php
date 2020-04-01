@@ -1202,9 +1202,9 @@ class Model implements \IteratorAggregate
             */
         }
 
-        if (is_string($field) && !$f = $this->hasField($field)) {
-            throw (new Exception('Field is not defined in model'))
-                ->addMoreInfo('model', $this)
+        if (is_string($field)) {
+            // shorthand for adding conditions on references
+            // use chained reference names separated by "/"
             if (stripos($field, '/') !== false) {
                 $references = explode('/', $field);
 
