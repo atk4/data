@@ -340,7 +340,7 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         ]);
 
         $uu1 = clone $u;
-        
+
         $uu1->addCondition('country_id/code', 'LV');
 
         $this->assertEquals(1, $uu1->action('count')->getOne());
@@ -348,23 +348,23 @@ class LookupSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         foreach ($uu1 as $user) {
             $this->assertEquals('LV', $user['country_code']);
         }
-        
+
         $cc1 = clone $c;
-        
+
         // countries with 1 user
         $cc1->addCondition('Users/#', 1);
-        
+
         foreach ($cc1 as $country) {
             $this->assertTrue(in_array($country['code'], array_column($users, 'country_code')));
         }
-        
+
         $cc2 = clone $c;
-        
+
         // countries with no user
         $cc2->addCondition('Users/#', 0);
-        
+
         foreach ($cc2 as $country) {
-            $this->assertTrue(! in_array($country['code'], array_column($users, 'country_code')));
+            $this->assertTrue(!in_array($country['code'], array_column($users, 'country_code')));
         }
     }
 
