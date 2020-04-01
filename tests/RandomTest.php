@@ -25,7 +25,7 @@ class Model_Item extends \atk4\data\Model
     {
         parent::init();
         $this->addField('name');
-        $this->hasOne('parent_item_id', '\atk4\data\tests\Model_Item')
+        $this->hasOne('parent_item_id', self::class)
             ->addTitle();
     }
 }
@@ -350,7 +350,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $db = new Persistence\SQL($this->db->connection);
         $m = new Model_Item($db);
 
-        $m->hasOne('foo', '\atk4\data\tests\Model_Item')
+        $m->hasOne('foo', Model_Item::class)
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 

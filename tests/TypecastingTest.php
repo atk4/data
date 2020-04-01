@@ -265,9 +265,9 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
-        $m->addField('datetime', ['type' => 'datetime', 'dateTimeClass' => '\atk4\data\tests\MyDateTime']);
-        $m->addField('time', ['type' => 'time', 'dateTimeClass' => '\atk4\data\tests\MyTime']);
+        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('datetime', ['type' => 'datetime', 'dateTimeClass' => MyDateTime::class]);
+        $m->addField('time', ['type' => 'time', 'dateTimeClass' => MyTime::class]);
         $m->addField('b1', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('b2', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('money', ['type' => 'money']);
@@ -325,7 +325,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
+        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
 
         $m->tryLoad(1);
 
@@ -345,7 +345,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
+        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
 
         $m->tryLoadAny();
 
@@ -365,7 +365,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
+        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
 
         $m->loadBy('id', 1);
 
@@ -384,7 +384,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => '\atk4\data\tests\MyDate']);
+        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
         $m->loadAny();
         $d = $m['date'];
         $m->unload();

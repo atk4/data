@@ -525,13 +525,13 @@ class Model implements ArrayAccess, IteratorAggregate
         );
 
         /** @var Field $field */
-        $field = $this->factory($seed, null, '\atk4\data\Field');
+        $field = $this->factory($seed, null, Field::class);
 
         return $field;
     }
 
     protected $typeToFieldSeed = [
-        'boolean' => ['Boolean'],
+        'boolean' => [Field\Boolean::class],
     ];
 
     /**
