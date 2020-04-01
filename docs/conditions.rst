@@ -113,6 +113,28 @@ This rather unusual condition will show user records who have registered on same
 date when they were born OR if they were born on 10th. (This is really silly
 condition, please don't judge, if you have a better example, I'd love to hear).
 
+Conditions on Referenced Models
+-------------------------------
+
+Agile Data allows for adding conditions on related models for retrieval of type 'model has references where'.
+
+Setting conditions on references can be done utilizing the Model::refLink method but there is a shorthand format 
+directly integrated with addCondition method using "/" to chain the reference names::
+
+	$contact->addCondition('company/country', 'US');
+	
+This will limit the $contact model to those whose company is in US.
+'company' is the name of the reference in $contact model and 'country' is a field in the referenced model.
+
+If a condition must be set directly on the existence or number of referenced records the special symbol "#" can be
+utilized to indicate the condition is on the number of records::
+
+	$contact->addCondition('company/tickets/#', '>', 0);
+	
+This will limit the $contact model to those whose company has any tickets.
+'company' and 'tickets' are the name of the chained references ('company' is a reference in the $contact model and
+'tickets' is a reference in Company model)
+
 Defining your classes
 ---------------------
 
