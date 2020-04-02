@@ -1226,7 +1226,7 @@ class Model implements \IteratorAggregate
                 }
                 $args[0] = $model->action('count');
 
-                $this->conditions[] = $args;
+                return $this->addCondition(...$args);
         }
 
         $f = isset($f) ? $f : ($field instanceof Field ? $field : false);
