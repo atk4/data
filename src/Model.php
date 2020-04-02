@@ -1258,9 +1258,7 @@ class Model implements ArrayAccess, IteratorAggregate
                 }
                 $args[0] = $model->action('count');
 
-                $this->conditions[] = $args;
-
-                return $this;
+                return $this->addCondition(...$args);
             }
 
             $field = $this->getField($field);
