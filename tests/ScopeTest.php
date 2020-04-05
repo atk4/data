@@ -23,16 +23,16 @@ use atk4\dsql\Expression;
 class LCountry extends Model
 {
     public $table = 'country';
-    
+
     public function init()
     {
         parent::init();
-        
+
         $this->addField('name');
         $this->addField('code');
-        
+
         $this->addField('is_eu', ['type'=>'boolean', 'default'=>false]);
-        
+
         $this->hasMany('Users', new LUser())
         ->addField('user_names', ['field'=>'name', 'concat'=>',']);
     }
@@ -69,13 +69,12 @@ class LUser extends Model
         $this->addField('name');
         $this->addField('surname');
         $this->addField('is_vip', ['type'=>'boolean', 'default'=>false]);
-        
+
         $this->hasOne('country_id', new LCountry())
         ->withTitle()
         ->addFields(['country_code'=>'code', 'is_eu']);
     }
 }
-
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -84,15 +83,15 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 {
     protected $user;
     protected $country;
-    
+
     public function setUp()
     {
         parent::setUp();
-        
+
         $this->country = new LCountry($this->db);
-        
+
         $this->getMigrator($this->country)->drop()->create();
-        
+
         // Specifying hasMany here will perform input
         $this->country->import([
             ['Canada', 'code'=>'CA'],
@@ -103,11 +102,11 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ['France', 'code'=>'FR'],
             ['Brazil', 'code'=>'BR'],
         ]);
-        
+
         $this->user = new LUser($this->db);
-        
+
         $this->getMigrator($this->user)->drop()->create();
-        
+
         $this->user->import([
             ['name'       => 'John', 'surname' => 'Smith', 'country_code'=>'CA'],
             ['name'       => 'Jane', 'surname' => 'Doe', 'country_code'=>'LV'],
@@ -115,88 +114,88 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ['name'       => 'Aerton', 'surname' => 'Senna', 'country_code'=>'BR'],
         ]);
     }
-    
+
     public function testCondition()
     {
         $user = clone $this->user;
-        
+
         $condition = Condition::create('name', 'John');
-        
+
         $user->add($condition);
-        
+
         $user->loadAny();
-        
+
         $this->assertEquals(1, count($user->conditions));
         $this->assertEquals('Smith', $user['surname']);
     }
-    
+
     public function testContitionToWords()
     {
         $user = clone $this->user;
-        
+
         $condition = Condition::create(new Expression('false'));
-        
+
         $this->assertEquals('expression \'false\'', $condition->toWords($user, false));
 
         $condition = Condition::create('country_id/code', 'US');
-        
+
         $this->assertEquals('Record that has reference country_id where Code is equal to \'US\'', $condition->toWords($user, false));
-        
+
         $condition = Condition::create('country_id', 2);
-        
+
         $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->toWords($user, false));
-        
+
         $condition = Condition::create('name', $user->expr('[surname]'));
 
         $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->toWords($user, false));
-        
+
         $condition = Condition::create('country_id', null);
-        
+
         $this->assertEquals('Country Id is equal to empty', $condition->toWords($user, false));
-        
+
         $condition = Condition::create('name', '>', 'Test');
-        
+
         $this->assertEquals('Name is greater than \'Test\'', $condition->toWords($user, false));
-        
+
         $condition = Condition::create('country_id', 2)->negate();
-        
+
         $this->assertEquals('Country Id is not equal to \'Latvia\'', $condition->toWords($user, false));
-        
+
         $condition = Condition::create($user->getField('surname'), $user->getField('name'));
 
         $this->assertEquals('Surname is equal to User Name', $condition->toWords($user, false));
     }
-    
+
     public function testConditionValuePlaceholder()
     {
         $user = clone $this->user;
-        
+
         Condition::registerValuePlaceholder('__PERSPECTIVE__', [
             'label' => 'User Perspective',
-            'value' => 1
+            'value' => 1,
         ]);
-        
+
         $condition = Condition::create('country_id', '__PERSPECTIVE__');
-        
+
         $this->assertEquals('Country Id is equal to \'User Perspective\'', $condition->toWords($user, false));
 
         $user->add($condition);
-        
+
         $this->assertEquals(1, $user->loadAny()->id);
-        
+
         Condition::registerValuePlaceholder('__PERSPECTIVE__', [
             'label' => 'User Perspective',
-            'value' => function(Model $model, Condition $condition) {
+            'value' => function (Model $model, Condition $condition) {
                 $condition->deactivate();
-                          
+
                 return null;
-            }
+            },
         ]);
-        
+
         $condition = Condition::create('id', '__PERSPECTIVE__');
-        
+
         $user = clone $this->user;
-        
+
         $user->add($condition);
 
         $this->assertEmpty($user->conditions);
@@ -205,61 +204,61 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
     public function testScope()
     {
         $user = clone $this->user;
-        
+
         $condition1 = Condition::create('name', 'John');
         $condition2 = Condition::create('country_code', 'Canada');
-        
+
         $condition3 = Condition::create('surname', 'Doe');
         $condition4 = Condition::create('country_code', 'LV');
-        
+
         $scope1 = Scope::and($condition1, $condition2);
         $scope2 = Scope::and($condition3, $condition4);
-        
+
         $scope = Scope::or($scope1, $scope2);
 
         $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'Canada\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')', $scope->toWords($user, false));
-        
+
         $user->add($scope);
 
         $this->assertEquals(2, count($user->export()));
-        
+
 //         $this->assertEquals($scope->toWords($user), Scope::of($user)->toWords($user));
-        
+
         $condition5 = Condition::create('country_code', 'BR');
-        
+
         $scope = Scope::or($scope, $condition5);
-        
+
         $this->assertEquals('((Name is equal to \'John\' and Code is equal to \'Canada\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')) or Code is equal to \'BR\'', $scope->toWords($user, false));
-        
+
         $user = clone $this->user;
-        
+
         $user->add($scope);
 
         $this->assertEquals(3, count($user->export()));
     }
-    
+
     public function testScopeToWords()
     {
         $user = clone $this->user;
-        
+
         $condition1 = Condition::create('name', 'Alain');
         $condition2 = Condition::create('country_code', 'CA');
-        
+
         $scope1 = Scope::and($condition1, $condition2);
         $condition3 = Condition::create('surname', 'Prost')->negate();
-        
+
         $scope = Scope::and($scope1, $condition3);
-        
+
         $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->toWords($user, false));
     }
-    
+
 //     public function testValuesToScopeValidation()
 //     {
 //         $user = clone $this->user;
-        
+
 //         $condition1 = Condition::create('name', 'James');
 //         $condition2 = Condition::create('surname', 'Smith');
-        
+
 //         $scope = Scope::and($condition1, $condition2);
 
 //         foreach ($scope->validate($user, [
@@ -268,7 +267,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 //         ]) as $failedCondition) {
 //             $this->assertEquals('Name is equal to \'James\'', $failedCondition->toWords($user, false));
 //         }
-        
+
 //         $this->assertEmpty($condition1->validate($user, [
 //             'name' => 'James',
 //             'surname' => 'Arthur',
