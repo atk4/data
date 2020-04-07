@@ -4,7 +4,6 @@
 
 namespace atk4\data;
 
-use ArrayAccess;
 use atk4\core\AppScopeTrait;
 use atk4\core\CollectionTrait;
 use atk4\core\ContainerTrait;
@@ -17,12 +16,11 @@ use atk4\core\NameTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\data\UserAction\Generic;
 use atk4\dsql\Query;
-use IteratorAggregate;
 
 /**
  * Data model class.
  */
-class Model implements ArrayAccess, IteratorAggregate
+class Model implements \ArrayAccess, \IteratorAggregate
 {
     use ContainerTrait {
         add as _add;
