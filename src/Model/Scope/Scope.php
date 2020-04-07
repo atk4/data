@@ -34,16 +34,6 @@ class Scope extends AbstractScope
      */
     protected $junction = self::AND;
 
-    public function getConditions(Model $model)
-    {
-        $conditions = [];
-        foreach ($this->getActiveComponents() as $scope) {
-            $conditions = array_merge($conditions, $scope->getConditions($model));
-        }
-
-        return $this->junction == self::OR ? [[$conditions]] : $conditions;
-    }
-
     public function getActiveComponents()
     {
         return array_filter($this->components, function (AbstractScope $scope) {
@@ -51,10 +41,21 @@ class Scope extends AbstractScope
         });
     }
 
+    public function setModel(Model $model = null)
+    {
+        $this->model = $model;
+        
+        foreach ($this->components as $scope) {
+            $scope->setModel($model);
+        }
+
+        return $this;
+    }
+    
     public function addComponent(AbstractScope $scope)
     {
-        $this->components[] = $scope;
-
+        $this->components[] = $scope->setModel($this->model);
+        
         return $this;
     }
 
@@ -66,6 +67,11 @@ class Scope extends AbstractScope
     public function isCompound()
     {
         return count($this->getActiveComponents()) > 1;
+    }
+    
+    public function getJunction()
+    {
+        return $this->junction;
     }
 
     public function __clone()
@@ -107,7 +113,7 @@ class Scope extends AbstractScope
         return $this;
     }
 
-    public function toWords(Model $model, $asHtml = true)
+    public function toWords($asHtml = false)
     {
         if (!$this->isActive()) {
             return '';
@@ -115,7 +121,7 @@ class Scope extends AbstractScope
 
         $parts = [];
         foreach ($this->components as $scope) {
-            $words = $scope->toWords($model, $asHtml);
+            $words = $scope->on($this->model)->toWords($asHtml);
 
             $parts[] = $this->isCompound() && $scope->isCompound() ? "($words)" : $words;
         }
@@ -139,13 +145,20 @@ class Scope extends AbstractScope
             return $scopeOrArray;
         }
 
-        $scopeOrArray = is_string($scopeOrArray) ? Condition::create($scopeOrArray) : $scopeOrArray;
-
         return new static ($scopeOrArray, $junction);
     }
 
     public function __construct($scopes = null, $junction = self::AND)
     {
+        // use one of JUNCTIONS values, otherwise $junction is truish means OR, falsish means AND
+        $this->junction = in_array($junction, self::JUNCTIONS) ? $junction : self::JUNCTIONS[$junction ? 1 : 0];
+        
+        // handle it as Expression if it is a string
+        if (is_string($scopes)) {
+            $scopes = Condition::create($scopes);
+        }
+        
+        // true means no conditions, false means no access to any records at all
         if (is_bool($scopes)) {
             $scopes = $scopes ? [] : Condition::create(false);
         }
@@ -160,14 +173,11 @@ class Scope extends AbstractScope
             $scope = is_string($scope) ? Condition::create($scope) : $scope;
 
             if (is_array($scope)) {
-                if (count($scope) === 1) {
-                    if (is_array($scope[0])) {
-                        $scope = self::create($scope[0], self::OR);
-                    } else {
-                        $scope = Condition::create(...$scope);
-                    }
+                // array of OR sub-scopes
+                if (count($scope) === 1 && isset($scope[0]) && is_array($scope[0])) {
+                    $scope = self::create($scope[0], self::OR);
                 } else {
-                    $scope = Condition::create(...$scope); // self::create($scope, self::AND);
+                    $scope = Condition::create(...$scope);
                 }
             }
 
@@ -175,11 +185,7 @@ class Scope extends AbstractScope
                 continue;
             }
 
-            $this->addComponent($scope);
-        }
-
-        if (count($scopes) > 1) {
-            $this->junction = in_array($junction, self::JUNCTIONS) ? $junction : self::JUNCTIONS[$junction ? 1 : 0];
+            $this->addComponent(clone $scope);
         }
     }
 
@@ -209,36 +215,44 @@ class Scope extends AbstractScope
         return $ret ?: null;
     }
 
-    public static function and($scopeA, $scopeB, $_ = null)
+    public function and($scope)
+    {
+        if ($this->junction == self::OR) {
+            $self = clone $this;
+            
+            $this->junction = self::AND;
+            
+            $this->components = [];
+            
+            $this->addComponent($self);
+        }
+        
+        return $this->addComponent($scope);
+    }
+    
+    public function or($scope)
+    {
+        $self = clone $this;
+        
+        $this->junction = self::OR;
+        
+        $this->components = [$self, $scope];
+        
+        return $this;
+    }
+    
+    public static function mergeAnd(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null)
     {
         return self::create(func_get_args(), self::AND);
     }
 
-    public static function or($scopeA, $scopeB, $_ = null)
+    public static function mergeOr(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null)
     {
         return self::create(func_get_args(), self::OR);
     }
 
-    public static function merge($scopeA, $scopeB, $junction = self::AND)
+    public static function merge(AbstractScope $scopeA, AbstractScope $scopeB, $junction = self::AND)
     {
         return self::create([$scopeA, $scopeB], $junction);
-    }
-
-    /**
-     * Get the scope of the model.
-     *
-     * @param Model $model
-     *
-     * @return static
-     */
-    public static function of(Model $model)
-    {
-        return self::create($model->conditions);
-        $scope = static::create();
-        foreach ($model->conditions as $args) {
-            $scope = self::and($scope, is_array($args[0]) ? self::or(...$args[0]) : self::and(...$args));
-        }
-
-        return $scope;
     }
 }

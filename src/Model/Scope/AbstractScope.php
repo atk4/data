@@ -19,6 +19,13 @@ abstract class AbstractScope
      * @var bool
      */
     protected $active = true;
+    
+    /**
+     * The model this scope belongs to
+     * 
+     * @var Model
+     */
+    public $model;
 
     /**
      * Contains the placeholder registry in $key => $options format.
@@ -53,20 +60,30 @@ abstract class AbstractScope
     {
         $this->_init();
 
-        foreach ($this->getConditions($this->owner) as $condition) {
-            $this->owner->addCondition(...$condition);
-        }
+        $this->owner->scope()->addComponent($this);
     }
-
+    
     /**
-     * Returns array of arguments array for the Model::addCondition method.
-     *
+     * Alias for setModel
+     * 
      * @param Model $model
-     *
-     * @return array
+     * 
+     * @return static
      */
-    abstract public function getConditions(Model $model);
-
+    final public function on(Model $model)
+    {
+        return $this->setModel($model);
+    }
+    
+    /**
+     * Set the applicable model for the scope and its components
+     * 
+     * @param Model $model
+     * 
+     * @return static
+     */
+    abstract public function setModel(Model $model = null);
+    
     /**
      * Negate the scope object
      * e.g from 'is' to 'is not'.
@@ -105,10 +122,9 @@ abstract class AbstractScope
     /**
      * Convert the scope to human readable words when applied on $model.
      *
-     * @param Model $model
      * @param bool  $asHtml
      */
-    abstract public function toWords(Model $model, $asHtml = true);
+    abstract public function toWords($asHtml = false);
 
     /**
      * Sets the scope as excluded from applying it to the model.

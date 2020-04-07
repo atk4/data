@@ -20,7 +20,7 @@ use atk4\dsql\Expression;
  * We also introduced 'user_names' field, which will concatenate all user names for said country. It can also be
  * used when importing, simply provide a comma-separated string of user names and they will be CREATED for you.
  */
-class LCountry extends Model
+class SCountry extends Model
 {
     public $table = 'country';
 
@@ -33,7 +33,7 @@ class LCountry extends Model
 
         $this->addField('is_eu', ['type'=>'boolean', 'default'=>false]);
 
-        $this->hasMany('Users', new LUser())
+        $this->hasMany('Users', new SUser())
         ->addField('user_names', ['field'=>'name', 'concat'=>',']);
     }
 }
@@ -56,7 +56,7 @@ class LCountry extends Model
  *
  * Like before Friends can also be specified as an array.
  */
-class LUser extends Model
+class SUser extends Model
 {
     public $table = 'user';
 
@@ -70,7 +70,7 @@ class LUser extends Model
         $this->addField('surname');
         $this->addField('is_vip', ['type'=>'boolean', 'default'=>false]);
 
-        $this->hasOne('country_id', new LCountry())
+        $this->hasOne('country_id', new SCountry())
         ->withTitle()
         ->addFields(['country_code'=>'code', 'is_eu']);
     }
@@ -88,7 +88,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         parent::setUp();
 
-        $this->country = new LCountry($this->db);
+        $this->country = new SCountry($this->db);
 
         $this->getMigrator($this->country)->drop()->create();
 
@@ -103,7 +103,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ['Brazil', 'code'=>'BR'],
         ]);
 
-        $this->user = new LUser($this->db);
+        $this->user = new SUser($this->db);
 
         $this->getMigrator($this->user)->drop()->create();
 
@@ -122,10 +122,10 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $condition = Condition::create('name', 'John');
 
         $user->add($condition);
-
+        
         $user->loadAny();
 
-        $this->assertEquals(1, count($user->conditions));
+//         $this->assertEquals(1, count($user->conditions));
         $this->assertEquals('Smith', $user['surname']);
     }
 
@@ -135,35 +135,35 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $condition = Condition::create(new Expression('false'));
 
-        $this->assertEquals('expression \'false\'', $condition->toWords($user, false));
+        $this->assertEquals('expression \'false\'', $condition->on($user)->toWords());
 
         $condition = Condition::create('country_id/code', 'US');
 
-        $this->assertEquals('Record that has reference country_id where Code is equal to \'US\'', $condition->toWords($user, false));
+        $this->assertEquals('Record that has reference country_id where Code is equal to \'US\'', $condition->on($user)->toWords());
 
         $condition = Condition::create('country_id', 2);
 
-        $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->toWords($user, false));
+        $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->on($user)->toWords());
 
         $condition = Condition::create('name', $user->expr('[surname]'));
 
-        $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->toWords($user, false));
+        $this->assertEquals('Name is equal to expression \'"user"."surname"\'', $condition->on($user)->toWords());
 
         $condition = Condition::create('country_id', null);
 
-        $this->assertEquals('Country Id is equal to empty', $condition->toWords($user, false));
+        $this->assertEquals('Country Id is equal to empty', $condition->on($user)->toWords());
 
         $condition = Condition::create('name', '>', 'Test');
 
-        $this->assertEquals('Name is greater than \'Test\'', $condition->toWords($user, false));
+        $this->assertEquals('Name is greater than \'Test\'', $condition->on($user)->toWords());
 
         $condition = Condition::create('country_id', 2)->negate();
 
-        $this->assertEquals('Country Id is not equal to \'Latvia\'', $condition->toWords($user, false));
+        $this->assertEquals('Country Id is not equal to \'Latvia\'', $condition->on($user)->toWords());
 
         $condition = Condition::create($user->getField('surname'), $user->getField('name'));
 
-        $this->assertEquals('Surname is equal to User Name', $condition->toWords($user, false));
+        $this->assertEquals('Surname is equal to User Name', $condition->on($user)->toWords());
     }
 
     public function testConditionValuePlaceholder()
@@ -177,7 +177,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $condition = Condition::create('country_id', '__PERSPECTIVE__');
 
-        $this->assertEquals('Country Id is equal to \'User Perspective\'', $condition->toWords($user, false));
+        $this->assertEquals('Country Id is equal to \'User Perspective\'', $condition->on($user)->toWords());
 
         $user->add($condition);
 
@@ -206,17 +206,17 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $user = clone $this->user;
 
         $condition1 = Condition::create('name', 'John');
-        $condition2 = Condition::create('country_code', 'Canada');
+        $condition2 = Condition::create('country_code', 'CA');
 
         $condition3 = Condition::create('surname', 'Doe');
         $condition4 = Condition::create('country_code', 'LV');
 
-        $scope1 = Scope::and($condition1, $condition2);
-        $scope2 = Scope::and($condition3, $condition4);
+        $scope1 = Scope::mergeAnd($condition1, $condition2);
+        $scope2 = Scope::mergeAnd($condition3, $condition4);
 
-        $scope = Scope::or($scope1, $scope2);
+        $scope = Scope::mergeOr($scope1, $scope2);
 
-        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'Canada\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')', $scope->toWords($user, false));
+        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')', $scope->on($user)->toWords());
 
         $user->add($scope);
 
@@ -226,9 +226,9 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $condition5 = Condition::create('country_code', 'BR');
 
-        $scope = Scope::or($scope, $condition5);
-
-        $this->assertEquals('((Name is equal to \'John\' and Code is equal to \'Canada\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')) or Code is equal to \'BR\'', $scope->toWords($user, false));
+        $scope = Scope::mergeOr($scope, $condition5);
+        
+        $this->assertEquals('((Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')) or Code is equal to \'BR\'', $scope->on($user)->toWords());
 
         $user = clone $this->user;
 
@@ -244,12 +244,12 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $condition1 = Condition::create('name', 'Alain');
         $condition2 = Condition::create('country_code', 'CA');
 
-        $scope1 = Scope::and($condition1, $condition2);
+        $scope1 = Scope::mergeAnd($condition1, $condition2);
         $condition3 = Condition::create('surname', 'Prost')->negate();
 
-        $scope = Scope::and($scope1, $condition3);
+        $scope = Scope::mergeAnd($scope1, $condition3);
 
-        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->toWords($user, false));
+        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->on($user)->toWords());
     }
 
 //     public function testValuesToScopeValidation()
@@ -265,7 +265,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 //             'name' => 'John',
 //             'surname' => 'Smith',
 //         ]) as $failedCondition) {
-//             $this->assertEquals('Name is equal to \'James\'', $failedCondition->toWords($user, false));
+//             $this->assertEquals('Name is equal to \'James\'', $failedCondition->on($user)->toWords());
 //         }
 
 //         $this->assertEmpty($condition1->validate($user, [

@@ -12,6 +12,7 @@ use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\dsql\Query;
+use atk4\data\Model\Scope\Scope;
 
 /**
  * Data model class.
@@ -202,6 +203,8 @@ class Model implements \IteratorAggregate
      * @var array
      */
     public $conditions = [];
+    
+    protected $scope;
 
     /**
      * Array of limit set.
@@ -392,6 +395,8 @@ class Model implements \IteratorAggregate
      */
     public function __construct($persistence = null, $defaults = [])
     {
+        $this->scope = Model\Scope\Scope::create();
+        
         if (is_string($persistence) || is_array($persistence)) {
             $defaults = $persistence;
             $persistence = null;
@@ -418,6 +423,7 @@ class Model implements \IteratorAggregate
      */
     public function __clone()
     {
+        $this->scope = (clone $this->scope)->setModel($this);
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
         $this->_cloneCollection('actions');
@@ -1176,74 +1182,14 @@ class Model implements \IteratorAggregate
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        if (is_array($field)) {
-            $this->conditions[] = [$field];
-
-            return $this;
-            /*
-            $or = $this->persistence->orExpr();
-
-            foreach ($field as list($field, $operator, $value)) {
-                if (is_string($field)) {
-                    $f = $this->hasField($field);
-                    if (!$f) {
-                        throw (new Exception('Field does not exist'))
-                            ->addMoreInfo('model', $this)
-                            ->addMoreInfo('field', $field);
-                    }
-                } elseif ($field instanceof Field) {
-                    $f = $field;
-                }
-
-                $or->where($f, $operator, $value);
-            }
-
-            return $this;
-            */
-        }
-
-        if (is_string($field)) {
-            // shorthand for adding conditions on references
-            // use chained reference names separated by "/"
-            if (stripos($field, '/') !== false) {
-                $references = explode('/', $field);
-
-                $field = array_pop($references);
-
-                $model = $this;
-                foreach ($references as $link) {
-                    $model = $model->refLink($link);
-                }
-
-                $args = func_get_args();
-
-                // '#' will apply condition directly on the record count (has # referenced records)
-                // otherwise applying condition on the referenced model field (has referenced records where)
-                if ($field !== '#') {
-                    $model->addCondition(...$args);
-                    $args[1] = '>';
-                    $args[2] = 0;
-                }
-                $args[0] = $model->action('count');
-
-                return $this->addCondition(...$args);
-        }
-
-        $f = isset($f) ? $f : ($field instanceof Field ? $field : false);
-        if ($f) {
-            if ($operator === '=' || func_num_args() === 2) {
-                $v = ($operator === '=' ? $value : $operator);
-
-                if (!is_object($v) && !is_array($v)) {
-                    $field->system = true;
-                    $field->default = $v;
-                }
-            }
-        }
-
-        $this->conditions[] = func_get_args();
+        $this->scope()->addComponent(Scope::create([func_get_args()]));
 
         return $this;
+    }
+    
+    public function scope()
+    {
+        return $this->scope->setModel($this);
     }
 
     /**
@@ -1721,6 +1667,8 @@ class Model implements \IteratorAggregate
         $system = $field->system;
         $default = $field->default;
 
+        $scope = clone $this->scope;
+        
         // add condition and load record
         $this->addCondition($field_name, $value);
 
@@ -1728,7 +1676,7 @@ class Model implements \IteratorAggregate
             $this->loadAny();
         } catch (\Exception $e) {
             // restore
-            array_pop($this->conditions);
+            $this->scope = $scope;
             $field->system = $system;
             $field->default = $default;
 
@@ -1736,7 +1684,7 @@ class Model implements \IteratorAggregate
         }
 
         // restore
-        array_pop($this->conditions);
+        $this->scope = $scope;
         $field->system = $system;
         $field->default = $default;
 
@@ -1760,6 +1708,8 @@ class Model implements \IteratorAggregate
         $system = $field_name->system;
         $default = $field_name->default;
 
+        $scope = clone $this->scope;
+        
         // add condition and try to load record
         $this->addCondition($field_name, $value);
 
@@ -1767,7 +1717,7 @@ class Model implements \IteratorAggregate
             $this->tryLoadAny();
         } catch (\Exception $e) {
             // restore
-            array_pop($this->conditions);
+            $this->scope = $scope;
             $field_name->system = $system;
             $field_name->default = $default;
 
@@ -1775,7 +1725,7 @@ class Model implements \IteratorAggregate
         }
 
         // restore
-        array_pop($this->conditions);
+        $this->scope = $scope;
         $field_name->system = $system;
         $field_name->default = $default;
 
