@@ -19,10 +19,10 @@ abstract class AbstractScope
      * @var bool
      */
     protected $active = true;
-    
+
     /**
-     * The model this scope belongs to
-     * 
+     * The model this scope belongs to.
+     *
      * @var Model
      */
     public $model;
@@ -62,28 +62,28 @@ abstract class AbstractScope
 
         $this->owner->scope()->addComponent($this);
     }
-    
+
     /**
-     * Alias for setModel
-     * 
+     * Alias for setModel.
+     *
      * @param Model $model
-     * 
+     *
      * @return static
      */
     final public function on(Model $model)
     {
         return $this->setModel($model);
     }
-    
+
     /**
-     * Set the applicable model for the scope and its components
-     * 
+     * Set the applicable model for the scope and its components.
+     *
      * @param Model $model
-     * 
+     *
      * @return static
      */
     abstract public function setModel(Model $model = null);
-    
+
     /**
      * Negate the scope object
      * e.g from 'is' to 'is not'.
@@ -122,7 +122,7 @@ abstract class AbstractScope
     /**
      * Convert the scope to human readable words when applied on $model.
      *
-     * @param bool  $asHtml
+     * @param bool $asHtml
      */
     abstract public function toWords($asHtml = false);
 

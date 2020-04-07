@@ -11,8 +11,8 @@ use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\ReadableCaptionTrait;
-use atk4\dsql\Query;
 use atk4\data\Model\Scope\Scope;
+use atk4\dsql\Query;
 
 /**
  * Data model class.
@@ -203,7 +203,7 @@ class Model implements \IteratorAggregate
      * @var array
      */
     public $conditions = [];
-    
+
     protected $scope;
 
     /**
@@ -396,7 +396,7 @@ class Model implements \IteratorAggregate
     public function __construct($persistence = null, $defaults = [])
     {
         $this->scope = Model\Scope\Scope::create();
-        
+
         if (is_string($persistence) || is_array($persistence)) {
             $defaults = $persistence;
             $persistence = null;
@@ -1186,7 +1186,7 @@ class Model implements \IteratorAggregate
 
         return $this;
     }
-    
+
     public function scope()
     {
         return $this->scope->setModel($this);
@@ -1668,7 +1668,7 @@ class Model implements \IteratorAggregate
         $default = $field->default;
 
         $scope = clone $this->scope;
-        
+
         // add condition and load record
         $this->addCondition($field_name, $value);
 
@@ -1709,7 +1709,7 @@ class Model implements \IteratorAggregate
         $default = $field_name->default;
 
         $scope = clone $this->scope;
-        
+
         // add condition and try to load record
         $this->addCondition($field_name, $value);
 

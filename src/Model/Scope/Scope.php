@@ -44,18 +44,18 @@ class Scope extends AbstractScope
     public function setModel(Model $model = null)
     {
         $this->model = $model;
-        
+
         foreach ($this->components as $scope) {
             $scope->setModel($model);
         }
 
         return $this;
     }
-    
+
     public function addComponent(AbstractScope $scope)
     {
         $this->components[] = $scope->setModel($this->model);
-        
+
         return $this;
     }
 
@@ -68,7 +68,7 @@ class Scope extends AbstractScope
     {
         return count($this->getActiveComponents()) > 1;
     }
-    
+
     public function getJunction()
     {
         return $this->junction;
@@ -152,12 +152,12 @@ class Scope extends AbstractScope
     {
         // use one of JUNCTIONS values, otherwise $junction is truish means OR, falsish means AND
         $this->junction = in_array($junction, self::JUNCTIONS) ? $junction : self::JUNCTIONS[$junction ? 1 : 0];
-        
+
         // handle it as Expression if it is a string
         if (is_string($scopes)) {
             $scopes = Condition::create($scopes);
         }
-        
+
         // true means no conditions, false means no access to any records at all
         if (is_bool($scopes)) {
             $scopes = $scopes ? [] : Condition::create(false);
@@ -219,28 +219,28 @@ class Scope extends AbstractScope
     {
         if ($this->junction == self::OR) {
             $self = clone $this;
-            
+
             $this->junction = self::AND;
-            
+
             $this->components = [];
-            
+
             $this->addComponent($self);
         }
-        
+
         return $this->addComponent($scope);
     }
-    
+
     public function or($scope)
     {
         $self = clone $this;
-        
+
         $this->junction = self::OR;
-        
+
         $this->components = [$self, $scope];
-        
+
         return $this;
     }
-    
+
     public static function mergeAnd(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null)
     {
         return self::create(func_get_args(), self::AND);

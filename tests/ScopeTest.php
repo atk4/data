@@ -122,7 +122,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $condition = Condition::create('name', 'John');
 
         $user->add($condition);
-        
+
         $user->loadAny();
 
 //         $this->assertEquals(1, count($user->conditions));
@@ -227,7 +227,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $condition5 = Condition::create('country_code', 'BR');
 
         $scope = Scope::mergeOr($scope, $condition5);
-        
+
         $this->assertEquals('((Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')) or Code is equal to \'BR\'', $scope->on($user)->toWords());
 
         $user = clone $this->user;

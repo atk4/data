@@ -44,7 +44,7 @@ class Condition extends AbstractScope
         'IN'            => 'is one of',
         'NOT IN'        => 'is not one of',
         'REGEXP'        => 'is regular expression',
-        'NOT REGEXP'    => 'is not regular expression'
+        'NOT REGEXP'    => 'is not regular expression',
     ];
 
     /**
@@ -93,12 +93,12 @@ class Condition extends AbstractScope
         $this->operator = $operator;
         $this->value = $value;
     }
-    
+
     public function setModel(Model $model = null)
     {
         if ($model && $model !== $this->model) {
             $this->model = $model;
-            
+
             // key containing '/' means chained references and it is handled in toArray method
             if (is_string($field = $this->key) && stripos($field, '/') === false) {
                 $field = $model->getField($field);
@@ -114,7 +114,7 @@ class Condition extends AbstractScope
 
             $this->key = $field;
         }
-        
+
         return $this;
     }
 
@@ -122,27 +122,27 @@ class Condition extends AbstractScope
     {
         // make sure clones are used to avoid changes
         $condition = clone $this;
-        
+
         $field = $condition->key;
         $operator = $condition->operator;
         $value = $condition->value;
-        
-        if ($model = $condition->model) {                   
+
+        if ($model = $condition->model) {
             // replace placeholder can also disable the condition
             $value = $condition->replaceValue($model, $value);
-           
+
             if (is_string($field)) {
                 // shorthand for adding conditions on references
                 // use chained reference names separated by "/"
                 if (stripos($field, '/') !== false) {
                     $references = explode('/', $field);
-                    
+
                     $field = array_pop($references);
-                    
+
                     foreach ($references as $link) {
                         $model = $model->refLink($link);
                     }
-                    
+
                     // '#' will apply condition directly on the record count (has # referenced records)
                     // otherwise applying condition on the referenced model field (has referenced records where)
                     if ($field !== '#') {
@@ -150,12 +150,12 @@ class Condition extends AbstractScope
                         $operator = '>';
                         $value = 0;
                     }
-                    
+
                     $field = $model->action('count');
-                    
+
                     return [$field, $operator, $value];
                 }
-                
+
                 $field = $model->getField($field);
             }
 
@@ -165,23 +165,23 @@ class Condition extends AbstractScope
                     $value = $model->persistence->typecastSaveField($field, $value);
                 }
             }
-            
+
             if (!$this->isActive()) {
                 return [];
             }
-    
+
             // only expression contained in $field
             if (!$operator) {
                 return [$field];
             }
-            
+
             // skip explicitly using '=' as in some cases it is transformed to 'in'
             // for instance in dsql so let exact operator be handled by Persistence
             if ($operator === '=') {
                 return [$field, $value];
             }
         }
-            
+
         return [$field, $operator, $value];
     }
 
@@ -245,13 +245,13 @@ class Condition extends AbstractScope
 
         // make sure clones are used to avoid changes
         $condition = clone $this;
-    
+
         $key = $condition->keyToWords($asHtml);
-    
+
         $operator = $condition->operatorToWords($asHtml);
-    
+
         $value = $condition->valueToWords($condition->value, $asHtml);
-    
+
         $ret = trim("{$key} {$operator} {$value}");
 
         return $asHtml ? $ret : html_entity_decode($ret);
@@ -260,7 +260,7 @@ class Condition extends AbstractScope
     protected function keyToWords($asHtml = false)
     {
         $model = $this->model;
-        
+
         $words = [];
         $key = $this->key;
 
@@ -314,7 +314,7 @@ class Condition extends AbstractScope
     protected function valueToWords($value, $asHtml = false)
     {
         $model = $this->model;
-        
+
         if (is_null($value)) {
             return $this->operator ? 'empty' : '';
         }
@@ -357,13 +357,13 @@ class Condition extends AbstractScope
 
             $field = $model->hasField($field);
         }
-        
+
         // use the referenced model title if such exists
         if ($field && ($field->reference ?? false)) {
             // make sure we set the value in the Model parent of the reference
             // it should be same class as $model but $model might be a clone
             $field->reference->owner->set($field->short_name, $value);
-            
+
             $value = $field->reference->ref()->getTitle() ?: $value;
         }
 

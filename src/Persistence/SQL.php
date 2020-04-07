@@ -6,13 +6,13 @@ use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\Field_SQL_Expression;
 use atk4\data\Model;
+use atk4\data\Model\Scope\AbstractScope;
+use atk4\data\Model\Scope\Condition;
+use atk4\data\Model\Scope\Scope;
 use atk4\data\Persistence;
 use atk4\dsql\Connection;
 use atk4\dsql\Expression;
 use atk4\dsql\Query;
-use atk4\data\Model\Scope\Condition;
-use atk4\data\Model\Scope\AbstractScope;
-use atk4\data\Model\Scope\Scope;
 
 /**
  * Persistence\SQL class.
@@ -430,11 +430,11 @@ class SQL extends Persistence
 
         return $q;
     }
-    
+
     public function initScopeConditions(Model $model, Query $query, AbstractScope $scope = null): Query
     {
         $scope = $scope ?? $model->scope();
-        
+
         if (!$scope || $scope->isEmpty()) {
             return $query;
         }
@@ -449,25 +449,23 @@ class SQL extends Persistence
             if ($scope->isCompound()) {
                 if ($scope->getJunction() === Scope::OR) {
                     $expression = $query->orExpr();
-                }
-                else {
+                } else {
                     $expression = $query->andExpr();
                 }
-    
+
                 foreach ($scope->getActiveComponents() as $component) {
                     $expression = $this->initScopeConditions($model, $expression, $component);
                 }
-    
+
                 $query = $query->where($expression);
-            }
-            else {
+            } else {
                 foreach ($scope->getActiveComponents() as $component) {
                     $expression = $this->initScopeConditions($model, $query, $component);
                 }
             }
         }
-        
-        return $query;        
+
+        return $query;
     }
 
     /**
