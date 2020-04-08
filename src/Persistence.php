@@ -40,7 +40,7 @@ class Persistence
         // Process DSN string
         $dsn = \atk4\dsql\Connection::normalizeDSN($dsn, $user, $password);
 
-        $driver = isset($args['driver']) ? strtolower($args['driver']) : $dsn['driver'];
+        $driver = strtolower($args['driver'] ?? $dsn['driver']);
 
         switch ($driver) {
             case 'mysql':

@@ -487,8 +487,8 @@ class SQL extends Persistence
         case 'date':
         case 'datetime':
         case 'time':
-            $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-            $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
+            $dt_class = $f->dateTimeClass ?? \DateTime::class;
+            $tz_class = $f->dateTimeZoneClass ?? \DateTimeZone::class;
 
             if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
                 $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
@@ -563,8 +563,8 @@ class SQL extends Persistence
         case 'date':
         case 'datetime':
         case 'time':
-            $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-            $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
+            $dt_class = $f->dateTimeClass ?? \DateTime::class;
+            $tz_class = $f->dateTimeZoneClass ?? \DateTimeZone::class;
 
             if (is_numeric($v)) {
                 $v = new $dt_class('@'.$v);
@@ -650,7 +650,7 @@ class SQL extends Persistence
                 return $q;
 
             case 'select':
-                $this->initQueryFields($m, $q, isset($args[0]) ? $args[0] : null);
+                $this->initQueryFields($m, $q, $args[0] ?? null);
                 break;
 
             case 'count':

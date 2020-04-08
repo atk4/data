@@ -2123,7 +2123,7 @@ class Model implements ArrayAccess, IteratorAggregate
         foreach ($this->rawIterator() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $this->id = isset($data[$this->id_field]) ? $data[$this->id_field] : null;
+                $this->id = $data[$this->id_field] ?? null;
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
@@ -2628,10 +2628,8 @@ class Model implements ArrayAccess, IteratorAggregate
 
     /**
      * Returns array with useful debug info for var_dump.
-     *
-     * @return array
      */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
         $arr = [
             'id'         => $this->id,
