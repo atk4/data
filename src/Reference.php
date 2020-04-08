@@ -251,10 +251,8 @@ class Reference
 
     /**
      * Returns array with useful debug info for var_dump.
-     *
-     * @return array
      */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
         $arr = [];
         foreach ($this->__debug_fields as $k => $v) {

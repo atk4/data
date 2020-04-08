@@ -78,10 +78,8 @@ class Field_SQL_Expression extends Field_SQL
     /**
      * Should this field use alias?
      * Expression fields always need alias.
-     *
-     * @return bool
      */
-    public function useAlias()
+    public function useAlias(): bool
     {
         return true;
     }

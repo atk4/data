@@ -202,7 +202,7 @@ class Array_ extends Persistence
 
         $this->data[$table][$id] =
             array_merge(
-                isset($this->data[$table][$id]) ? $this->data[$table][$id] : [],
+                $this->data[$table][$id] ?? [],
                 $data
             );
 
@@ -330,8 +330,8 @@ class Array_ extends Persistence
 
         // then set limit
         if ($m->limit && ($m->limit[0] || $m->limit[1])) {
-            $cnt = isset($m->limit[0]) ? $m->limit[0] : 0;
-            $shift = isset($m->limit[1]) ? $m->limit[1] : 0;
+            $cnt = $m->limit[0] ?? 0;
+            $shift = $m->limit[1] ?? 0;
 
             $action->limit($cnt, $shift);
         }
@@ -425,14 +425,14 @@ class Array_ extends Persistence
 
         switch ($type) {
             case 'select':
-                $action = $this->initAction($m, isset($args[0]) ? $args[0] : null);
+                $action = $this->initAction($m, $args[0] ?? null);
                 $this->applyConditions($m, $action);
                 $this->setLimitOrder($m, $action);
 
                 return $action;
 
             case 'count':
-                $action = $this->initAction($m, isset($args[0]) ? $args[0] : null);
+                $action = $this->initAction($m, $args[0] ?? null);
                 $this->applyConditions($m, $action);
                 $this->setLimitOrder($m, $action);
 
