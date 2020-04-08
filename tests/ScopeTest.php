@@ -222,7 +222,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals(2, count($user->export()));
 
-//         $this->assertEquals($scope->toWords($user), Scope::of($user)->toWords($user));
+        $this->assertEquals($scope->on($user)->toWords(), $user->scope()->toWords());
 
         $condition5 = Condition::create('country_code', 'BR');
 
