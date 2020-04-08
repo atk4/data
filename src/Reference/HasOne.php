@@ -140,7 +140,7 @@ class HasOne extends Reference
      *
      * For example, 'DateTime', 'Carbon' etc.
      *
-     * @param string
+     * @var string
      */
     public $dateTimeClass = 'DateTime';
 
@@ -149,7 +149,7 @@ class HasOne extends Reference
      *
      * For example, 'DateTimeZone', 'Carbon' etc.
      *
-     * @param string
+     * @var string
      */
     public $dateTimeZoneClass = 'DateTimeZone';
 
@@ -222,7 +222,7 @@ class HasOne extends Reference
         $m = $this->getModel($defaults);
 
         // add hook to set our_field = null when record of referenced model is deleted
-        $m->addHook('afterDelete', function ($m) {
+        $m->onHook('afterDelete', function ($m) {
             $this->owner[$this->our_field] = null;
         });
 
@@ -232,19 +232,19 @@ class HasOne extends Reference
                 $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
             }
 
-            return
-                $m->addHook('afterSave', function ($m) {
-                    $this->owner[$this->our_field] = $m[$this->their_field];
-                });
-        }
+            $m->onHook('afterSave', function ($m) {
+                $this->owner[$this->our_field] = $m[$this->their_field];
+            });
+        } else {
+            if ($this->owner[$this->our_field]) {
+                $m->tryLoad($this->owner[$this->our_field]);
+            }
 
-        if ($this->owner[$this->our_field]) {
-            $m->tryLoad($this->owner[$this->our_field]);
-        }
-
-        return
-            $m->addHook('afterSave', function ($m) {
+            $m->onHook('afterSave', function ($m) {
                 $this->owner[$this->our_field] = $m->id;
             });
+        }
+
+        return $m;
     }
 }

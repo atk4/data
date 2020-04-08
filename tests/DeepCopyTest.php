@@ -43,7 +43,7 @@ class DCInvoice extends Model
 
         $this->addField('is_paid', ['type'=>'boolean', 'default'=>false]);
 
-        $this->addHook('afterCopy', function ($m, $s) {
+        $this->onHook('afterCopy', function ($m, $s) {
             if (get_class($s) == get_class($this)) {
                 $m['ref'] = $m['ref'].'_copy';
             }
@@ -140,11 +140,11 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigration(new DCClient($this->db))->drop()->create();
-        $this->getMigration(new DCInvoice($this->db))->drop()->create();
-        $this->getMigration(new DCQuote($this->db))->drop()->create();
-        $this->getMigration(new DCInvoiceLine($this->db))->drop()->create();
-        $this->getMigration(new DCPayment($this->db))->drop()->create();
+        $this->getMigrator(new DCClient($this->db))->drop()->create();
+        $this->getMigrator(new DCInvoice($this->db))->drop()->create();
+        $this->getMigrator(new DCQuote($this->db))->drop()->create();
+        $this->getMigrator(new DCInvoiceLine($this->db))->drop()->create();
+        $this->getMigrator(new DCPayment($this->db))->drop()->create();
     }
 
     public function testBasic()
@@ -275,7 +275,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $quote->loadAny();
 
         $invoice = new DCInvoice();
-        $invoice->addHook('afterCopy', function ($m) {
+        $invoice->onHook('afterCopy', function ($m) {
             if (!$m['ref']) {
                 throw new \atk4\core\Exception('no ref');
             }
@@ -317,7 +317,7 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $quote->loadAny();
 
         $invoice = new DCInvoice();
-        $invoice->addHook('afterCopy', function ($m) {
+        $invoice->onHook('afterCopy', function ($m) {
             if (!$m['ref']) {
                 throw new \atk4\core\Exception('no ref');
             }

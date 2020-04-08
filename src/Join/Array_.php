@@ -27,14 +27,14 @@ class Array_ extends Join
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->owner->addHook('afterInsert', $this, null, -5);
-            $this->owner->addHook('beforeUpdate', $this, null, -5);
-            $this->owner->addHook('beforeDelete', [$this, 'doDelete'], null, -5);
+            $this->owner->onHook('afterInsert', $this, [], -5);
+            $this->owner->onHook('beforeUpdate', $this, [], -5);
+            $this->owner->onHook('beforeDelete', [$this, 'doDelete'], [], -5);
         } else {
-            $this->owner->addHook('beforeInsert', $this);
-            $this->owner->addHook('beforeUpdate', $this);
-            $this->owner->addHook('afterDelete', [$this, 'doDelete']);
-            $this->owner->addHook('afterLoad', $this);
+            $this->owner->onHook('beforeInsert', $this);
+            $this->owner->onHook('beforeUpdate', $this);
+            $this->owner->onHook('afterDelete', [$this, 'doDelete']);
+            $this->owner->onHook('afterLoad', $this);
         }
     }
 

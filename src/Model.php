@@ -4,7 +4,6 @@
 
 namespace atk4\data;
 
-use ArrayAccess;
 use atk4\core\AppScopeTrait;
 use atk4\core\CollectionTrait;
 use atk4\core\ContainerTrait;
@@ -17,12 +16,13 @@ use atk4\core\NameTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\data\UserAction\Generic;
 use atk4\dsql\Query;
-use IteratorAggregate;
 
 /**
  * Data model class.
+ *
+ * @property Field[]|Reference[] $elements
  */
-class Model implements ArrayAccess, IteratorAggregate
+class Model implements \ArrayAccess, \IteratorAggregate
 {
     use ContainerTrait {
         add as _add;
@@ -186,6 +186,13 @@ class Model implements ArrayAccess, IteratorAggregate
     public $order = [];
 
     /**
+     * Array of WITH cursors set.
+     *
+     * @var array
+     */
+    public $with = [];
+
+    /**
      * Currently loaded record data. This record is associative array
      * that contain field=>data pairs. It may contain data for un-defined
      * fields only if $onlyFields mode is false.
@@ -220,7 +227,7 @@ class Model implements ArrayAccess, IteratorAggregate
      * SECURITY WARNING: If you are looking for a RELIABLE way to restrict access
      * to model data, please check Secure Enclave extension.
      *
-     * @param bool
+     * @var bool
      */
     public $read_only = false;
 
@@ -518,13 +525,13 @@ class Model implements ArrayAccess, IteratorAggregate
         );
 
         /** @var Field $field */
-        $field = $this->factory($seed, null, '\atk4\data\Field');
+        $field = $this->factory($seed, null, Field::class);
 
         return $field;
     }
 
     protected $typeToFieldSeed = [
-        'boolean' => ['Boolean'],
+        'boolean' => [Field\Boolean::class],
     ];
 
     /**
@@ -939,6 +946,20 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
+     * Returns array of model record titles [id => title].
+     *
+     * @return array
+     */
+    public function getTitles()
+    {
+        $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
+
+        return array_map(function ($row) use ($field) {
+            return $row[$field];
+        }, $this->export([$field], $this->id_field));
+    }
+
+    /**
      * You can compare new value of the field with existing one without
      * retrieving. In the trivial case it's same as ($value == $model[$name])
      * but this method can be used for:.
@@ -1108,8 +1129,7 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Execute specified action with specified arguments.
      *
-     * @param $name
-     * @param $args
+     * @param string $name Action name
      *
      * @throws Exception
      * @throws \atk4\core\Exception
@@ -1157,7 +1177,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *  ->addCondition('my_field', '!=', $value);
      *  ->addCondition('my_field', 'in', [$value1, $value2]);
      *
-     * Second argument could be '=', '>', '<', '>=', '<=', '!=' or 'in'.
+     * Second argument could be '=', '>', '<', '>=', '<=', '!=', 'in', 'like' or 'regexp'.
      * Those conditions are still supported by most of persistence drivers.
      *
      * There are also vendor-specific expression support:
@@ -1207,7 +1227,7 @@ class Model implements ArrayAccess, IteratorAggregate
         $f = is_string($field) ? $this->getField($field) : ($field instanceof Field ? $field : false);
         if ($f) {
             if ($operator === '=' || func_num_args() == 2) {
-                $v = $operator === '=' ? $value : $operator;
+                $v = ($operator === '=' ? $value : $operator);
 
                 if (!is_object($v) && !is_array($v)) {
                     $f->system = true;
@@ -1231,6 +1251,31 @@ class Model implements ArrayAccess, IteratorAggregate
     public function withID($id)
     {
         return $this->addCondition($this->id_field, $id);
+    }
+
+    /**
+     * Adds WITH cursor.
+     *
+     * @param Model  $model
+     * @param string $alias
+     * @param array  $mapping
+     * @param bool   $recursive
+     *
+     * @return $this
+     */
+    public function addWith(self $model, string $alias, array $mapping = [], bool $recursive = false)
+    {
+        if (isset($this->with[$alias])) {
+            throw new Exception(['With cursor already set with this alias', 'alias'=>$alias]);
+        }
+
+        $this->with[$alias] = [
+            'model'     => $model,
+            'mapping'   => $mapping,
+            'recursive' => $recursive,
+        ];
+
+        return $this;
     }
 
     /**
@@ -2077,12 +2122,12 @@ class Model implements ArrayAccess, IteratorAggregate
         foreach ($this->rawIterator() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $this->id = isset($data[$this->id_field]) ? $data[$this->id_field] : null;
+                $this->id = $data[$this->id_field] ?? null;
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:
-            // $model->addHook('afterLoad', function ($m) {
+            // $model->onHook('afterLoad', function ($m) {
             //     if ($m['date'] < $m->date_from) $m->breakHook(false);
             // })
 
@@ -2582,10 +2627,8 @@ class Model implements ArrayAccess, IteratorAggregate
 
     /**
      * Returns array with useful debug info for var_dump.
-     *
-     * @return array
      */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
         $arr = [
             'id'         => $this->id,

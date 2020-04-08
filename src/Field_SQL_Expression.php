@@ -61,7 +61,7 @@ class Field_SQL_Expression extends Field_SQL
         }
 
         if ($this->concat) {
-            $this->owner->addHook('afterSave', $this);
+            $this->owner->onHook('afterSave', $this);
         }
     }
 
@@ -69,7 +69,7 @@ class Field_SQL_Expression extends Field_SQL
      * Possibly that user will attempt to insert values here. If that is the case, then
      * we would need to inject it into related hasMany relationship.
      *
-     * @param $m
+     * @param Model $m
      */
     public function afterSave($m)
     {
@@ -78,10 +78,8 @@ class Field_SQL_Expression extends Field_SQL
     /**
      * Should this field use alias?
      * Expression fields always need alias.
-     *
-     * @return bool
      */
-    public function useAlias()
+    public function useAlias(): bool
     {
         return true;
     }
@@ -97,8 +95,7 @@ class Field_SQL_Expression extends Field_SQL
     {
         $expr = $this->expr;
         if (is_callable($expr)) {
-            $c = $this->expr;
-            $expr = $c($this->owner, $expression);
+            $expr = $expr($this->owner, $expression);
         }
 
         if (is_string($expr)) {

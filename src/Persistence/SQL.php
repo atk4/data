@@ -30,35 +30,35 @@ class SQL extends Persistence
      *
      * @var string
      */
-    public $_default_seed_addField = ['\atk4\data\Field_SQL'];
+    public $_default_seed_addField = \atk4\data\Field_SQL::class;
 
     /**
      * Default class when adding hasOne field.
      *
      * @var string
      */
-    public $_default_seed_hasOne = ['\atk4\data\Reference\HasOne_SQL'];
+    public $_default_seed_hasOne = \atk4\data\Reference\HasOne_SQL::class;
 
     /**
      * Default class when adding hasMany field.
      *
      * @var string
      */
-    public $_default_seed_hasMany = null; //'atk4\data\Reference\HasMany';
+    public $_default_seed_hasMany = null; // \atk4\data\Reference\HasMany::class;
 
     /**
      * Default class when adding Expression field.
      *
      * @var string
      */
-    public $_default_seed_addExpression = ['\atk4\data\Field_SQL_Expression'];
+    public $_default_seed_addExpression = Field_SQL_Expression::class;
 
     /**
      * Default class when adding join.
      *
      * @var string
      */
-    public $_default_seed_join = ['\atk4\data\Join\SQL'];
+    public $_default_seed_join = \atk4\data\Join\SQL::class;
 
     /**
      * Constructor.
@@ -246,7 +246,43 @@ class SQL extends Persistence
             }
         }
 
+        // add With cursors
+        $this->initWithCursors($m, $d);
+
         return $d;
+    }
+
+    /**
+     * Initializes WITH cursors.
+     *
+     * @param Model $m
+     * @param Query $q
+     */
+    public function initWithCursors(Model $m, Query $q)
+    {
+        if (!$m->with) {
+            return;
+        }
+
+        foreach ($m->with as $alias => ['model'=>$model, 'mapping'=>$mapping, 'recursive'=>$recursive]) {
+            // prepare field names
+            $fields_from = $fields_to = [];
+            foreach ($mapping as $from => $to) {
+                $fields_from[] = is_int($from) ? $to : $from;
+                $fields_to[] = $to;
+            }
+
+            // prepare sub-query
+            if ($fields_from) {
+                $model->onlyFields($fields_from);
+            }
+            // 2nd parameter here strictly define which fields should be selected
+            // as result system fields will not be added if they are not requested
+            $sub_q = $model->action('select', [$fields_from]);
+
+            // add With cursor
+            $q->with($sub_q, $alias, $fields_to ?: null, $recursive);
+        }
     }
 
     /**
@@ -268,7 +304,7 @@ class SQL extends Persistence
      * Adds model fields in Query.
      *
      * @param Model            $m
-     * @param \atk4\dsql\Query $q
+     * @param Query            $q
      * @param array|null|false $fields
      */
     public function initQueryFields(Model $m, $q, $fields = null)
@@ -374,7 +410,7 @@ class SQL extends Persistence
             // count($cond) == 1, we will pass the only
             // parameter inside where()
 
-            if (count($cond) == 1) {
+            if (count($cond) === 1) {
 
                 // OR conditions
                 if (is_array($cond[0])) {
@@ -383,9 +419,9 @@ class SQL extends Persistence
                             $row[0] = $m->getField($row[0]);
                         }
 
-                        if ($row[0] instanceof Field) {
-                            $valueKey = count($row) == 2 ? 1 : 2;
-
+                        // "like" or "regexp" conditions do not need typecasting to field type!
+                        if ($row[0] instanceof Field && (count($row) === 2 || !in_array(strtolower($row[1]), ['like', 'regexp']))) {
+                            $valueKey = count($row) === 2 ? 1 : 2;
                             $row[$valueKey] = $this->typecastSaveField($row[0], $row[$valueKey]);
                         }
                     }
@@ -399,13 +435,14 @@ class SQL extends Persistence
                 $cond[0] = $m->getField($cond[0]);
             }
 
-            if (count($cond) == 2) {
+            if (count($cond) === 2) {
                 if ($cond[0] instanceof Field) {
                     $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
                 }
                 $q->where($cond[0], $cond[1]);
             } else {
-                if ($cond[0] instanceof Field) {
+                // "like" or "regexp" conditions do not need typecasting to field type!
+                if ($cond[0] instanceof Field && !in_array(strtolower($cond[1]), ['like', 'regexp'])) {
                     $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
                 }
                 $q->where($cond[0], $cond[1], $cond[2]);
@@ -450,8 +487,8 @@ class SQL extends Persistence
         case 'date':
         case 'datetime':
         case 'time':
-            $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-            $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
+            $dt_class = $f->dateTimeClass ?? \DateTime::class;
+            $tz_class = $f->dateTimeZoneClass ?? \DateTimeZone::class;
 
             if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
                 $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
@@ -526,8 +563,8 @@ class SQL extends Persistence
         case 'date':
         case 'datetime':
         case 'time':
-            $dt_class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
-            $tz_class = isset($f->dateTimeZoneClass) ? $f->dateTimeZoneClass : 'DateTimeZone';
+            $dt_class = $f->dateTimeClass ?? \DateTime::class;
+            $tz_class = $f->dateTimeZoneClass ?? \DateTimeZone::class;
 
             if (is_numeric($v)) {
                 $v = new $dt_class('@'.$v);
@@ -584,7 +621,7 @@ class SQL extends Persistence
      * @param string $type
      * @param array  $args
      *
-     * @return \atk4\dsql\Query
+     * @return Query
      */
     public function action(Model $m, $type, $args = [])
     {
@@ -613,7 +650,7 @@ class SQL extends Persistence
                 return $q;
 
             case 'select':
-                $this->initQueryFields($m, $q, isset($args[0]) ? $args[0] : null);
+                $this->initQueryFields($m, $q, $args[0] ?? null);
                 break;
 
             case 'count':
@@ -718,6 +755,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to load due to query error',
                 'query'      => $load->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -785,6 +823,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to load due to query error',
                 'query'      => $load->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -862,6 +901,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to execute insert query',
                 'query'      => $insert->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -911,6 +951,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to execute iteration query',
                 'query'      => $export->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -950,6 +991,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to update due to query error',
                 'query'      => $update->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -994,6 +1036,7 @@ class SQL extends Persistence
             throw new Exception([
                 'Unable to delete due to query error',
                 'query'      => $delete->getDebugQuery(false),
+                'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
             ], null, $e);
@@ -1003,15 +1046,11 @@ class SQL extends Persistence
     public function getFieldSQLExpression(Field $field, Expression $expression)
     {
         if (isset($field->owner->persistence_data['use_table_prefixes'])) {
-            $mask = '{}.{}';
+            $mask = '{{}}.{}';
             $prop = [
                 $field->join
-                    ? (isset($field->join->foreign_alias)
-                    ? $field->join->foreign_alias
-                    : $field->join->short_name)
-                    : (isset($field->owner->table_alias)
-                    ? $field->owner->table_alias
-                    : $field->owner->table),
+                    ? ($field->join->foreign_alias ?: $field->join->short_name)
+                    : ($field->owner->table_alias ?: $field->owner->table),
                 $field->actual ?: $field->short_name,
             ];
         } else {

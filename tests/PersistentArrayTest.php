@@ -336,21 +336,22 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testLike()
     {
         $a = ['countries' => [
-            1 => ['id'=>1, 'name'=>'ABC9', 'code'=>11, 'country'=>'Ireland'],
-            2 => ['id'=>2, 'name'=>'ABC8', 'code'=>12, 'country'=>'Ireland'],
-            3 => ['id'=>3, 'code'=>13, 'country'=>'Latvia'],
-            4 => ['id'=>4, 'name'=>'ABC6', 'code'=>14, 'country'=>'UK'],
-            5 => ['id'=>5, 'name'=>'ABC5', 'code'=>15, 'country'=>'UK'],
-            6 => ['id'=>6, 'name'=>'ABC4', 'code'=>16, 'country'=>'Ireland'],
-            7 => ['id'=>7, 'name'=>'ABC3', 'code'=>17, 'country'=>'Latvia'],
-            8 => ['id'=>8, 'name'=>'ABC2', 'code'=>18, 'country'=>'Russia'],
-            9 => ['id'=>9, 'code'=>19, 'country'=>'Latvia'],
+            1 => ['id'=>1, 'name'=>'ABC9', 'code'=>11, 'country'=>'Ireland', 'active'=>1],
+            2 => ['id'=>2, 'name'=>'ABC8', 'code'=>12, 'country'=>'Ireland', 'active'=>0],
+            3 => ['id'=>3, 'code'=>13, 'country'=>'Latvia', 'active'=>1],
+            4 => ['id'=>4, 'name'=>'ABC6', 'code'=>14, 'country'=>'UK', 'active'=>0],
+            5 => ['id'=>5, 'name'=>'ABC5', 'code'=>15, 'country'=>'UK', 'active'=>0],
+            6 => ['id'=>6, 'name'=>'ABC4', 'code'=>16, 'country'=>'Ireland', 'active'=>1],
+            7 => ['id'=>7, 'name'=>'ABC3', 'code'=>17, 'country'=>'Latvia', 'active'=>0],
+            8 => ['id'=>8, 'name'=>'ABC2', 'code'=>18, 'country'=>'Russia', 'active'=>1],
+            9 => ['id'=>9, 'code'=>19, 'country'=>'Latvia', 'active'=>1],
         ]];
 
         $p = new Persistence\Array_($a);
         $m = new Model($p, 'countries');
         $m->addField('code', ['type' => 'int']);
         $m->addField('country');
+        $m->addField('active', ['type' => 'boolean']);
 
         // if no condition we should get all the data back
         $iterator = $m->action('select');
@@ -396,6 +397,31 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->assertEquals($a['countries'][9], $result[9]);
         unset($result);
         $m->unload();
+
+        // case : boolean field
+        $m->conditions = [];
+        $m->addCondition('active', 'LIKE', '0');
+        $this->assertEquals(4, count($m->export()));
+
+        $m->conditions = [];
+        $m->addCondition('active', 'LIKE', '1');
+        $this->assertEquals(5, count($m->export()));
+
+        $m->conditions = [];
+        $m->addCondition('active', 'LIKE', '%0%');
+        $this->assertEquals(4, count($m->export()));
+
+        $m->conditions = [];
+        $m->addCondition('active', 'LIKE', '%1%');
+        $this->assertEquals(5, count($m->export()));
+
+        $m->conditions = [];
+        $m->addCondition('active', 'LIKE', '%999%');
+        $this->assertEquals(0, count($m->export()));
+
+        $m->conditions = [];
+        $m->addCondition('active', 'LIKE', '%ABC%');
+        $this->assertEquals(0, count($m->export()));
     }
 
     /**

@@ -10,6 +10,8 @@ use atk4\core\TrackableTrait;
 
 /**
  * Class description?
+ *
+ * @property Model $owner
  */
 class Join
 {
@@ -160,7 +162,8 @@ class Join
         $this->_init();
 
         // handle foreign table containing a dot
-        if (is_string($this->foreign_table)
+        if (
+            is_string($this->foreign_table)
             && strpos($this->foreign_table, '.') !== false
         ) {
             if (!isset($this->reverse)) {
@@ -180,14 +183,14 @@ class Join
                     ]);
                     /*
                     }
-
                     $this->reverse = 'link';
-
-                     */
+                    */
                 }
             }
-            list($this->foreign_table, $this->foreign_field) =
-                explode('.', $this->foreign_table, 2);
+
+            // split by LAST dot in foreign_table name
+            list($this->foreign_table, $this->foreign_field) = preg_split('/\.+(?=[^\.]+$)/', $this->foreign_table);
+
             if (!$this->master_field) {
                 $this->master_field = 'id';
             }
@@ -203,7 +206,7 @@ class Join
             }
         }
 
-        $this->owner->addHook('afterUnload', $this);
+        $this->owner->onHook('afterUnload', $this);
     }
 
     /**

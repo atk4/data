@@ -74,7 +74,7 @@ class STGenericTransaction extends Model
         }
         $this->addField('amount');
 
-        $this->addHook('afterLoad', function (self $m) {
+        $this->onHook('afterLoad', function (self $m) {
             if (get_class($this) != $m->getClassName()) {
                 $cl = '\\'.$this->getClassName();
                 $cl = new $cl($this->persistence);
@@ -87,7 +87,7 @@ class STGenericTransaction extends Model
 
     public function getClassName()
     {
-        return 'atk4\data\tests\STTransaction_'.$this['type'];
+        return __NAMESPACE__.'\STTransaction_'.$this['type'];
     }
 }
 
@@ -140,8 +140,8 @@ class SubTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigration(new STAccount($this->db))->drop()->create();
-        $this->getMigration(new STTransaction_TransferOut($this->db))->drop()->create();
+        $this->getMigrator(new STAccount($this->db))->drop()->create();
+        $this->getMigrator(new STTransaction_TransferOut($this->db))->drop()->create();
     }
 
     public function testBasic()
@@ -152,16 +152,16 @@ class SubTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $inheritance->transferTo($current, 500);
         $current->withdraw(350);
 
-        $this->assertEquals('atk4\data\tests\STTransaction_OB', get_class($inheritance->ref('Transactions')->load(1)));
-        $this->assertEquals('atk4\data\tests\STTransaction_TransferOut', get_class($inheritance->ref('Transactions')->load(2)));
-        $this->assertEquals('atk4\data\tests\STTransaction_TransferIn', get_class($current->ref('Transactions')->load(3)));
-        $this->assertEquals('atk4\data\tests\STTransaction_Withdrawal', get_class($current->ref('Transactions')->load(4)));
+        $this->assertEquals(STTransaction_OB::class, get_class($inheritance->ref('Transactions')->load(1)));
+        $this->assertEquals(STTransaction_TransferOut::class, get_class($inheritance->ref('Transactions')->load(2)));
+        $this->assertEquals(STTransaction_TransferIn::class, get_class($current->ref('Transactions')->load(3)));
+        $this->assertEquals(STTransaction_Withdrawal::class, get_class($current->ref('Transactions')->load(4)));
 
         $cl = [];
         foreach ($current->ref('Transactions') as $tr) {
             $cl[] = get_class($tr);
         }
 
-        $this->assertEquals(['atk4\data\tests\STTransaction_TransferIn', 'atk4\data\tests\STTransaction_Withdrawal'], $cl);
+        $this->assertEquals([STTransaction_TransferIn::class, STTransaction_Withdrawal::class], $cl);
     }
 }

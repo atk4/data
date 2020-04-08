@@ -12,6 +12,8 @@ use atk4\dsql\Expressionable;
 
 /**
  * Class description?
+ *
+ * @property Model $owner
  */
 class Field implements Expressionable
 {
@@ -57,6 +59,10 @@ class Field implements Expressionable
     /**
      * If value of this field can be described by a model, this property
      * will contain reference to that model.
+     *
+     * It's used more in atk4/ui repository. See there.
+     *
+     * @var Reference|null
      */
     public $reference = null;
 
@@ -183,20 +189,20 @@ class Field implements Expressionable
     /**
      * DateTime class used for type = 'data', 'datetime', 'time' fields.
      *
-     * For example, 'DateTime', 'Carbon' etc.
+     * For example, 'DateTime', 'Carbon\Carbon' etc.
      *
-     * @param string
+     * @var string
      */
-    public $dateTimeClass = 'DateTime';
+    public $dateTimeClass = \DateTime::class;
 
     /**
      * Timezone class used for type = 'data', 'datetime', 'time' fields.
      *
-     * For example, 'DateTimeZone', 'Carbon' etc.
+     * For example, 'DateTimeZone', 'Carbon\CarbonTimeZone' etc.
      *
-     * @param string
+     * @var string
      */
-    public $dateTimeZoneClass = 'DateTimeZone';
+    public $dateTimeZoneClass = \DateTimeZone::class;
 
     // }}}
 
@@ -330,7 +336,7 @@ class Field implements Expressionable
             case 'datetime':
             case 'time':
                 // we allow http://php.net/manual/en/datetime.formats.relative.php
-                $class = isset($f->dateTimeClass) ? $f->dateTimeClass : 'DateTime';
+                $class = $f->dateTimeClass ?? \DateTime::class;
 
                 if (is_numeric($value)) {
                     $value = new $class('@'.$value);
@@ -399,10 +405,8 @@ class Field implements Expressionable
      * Casts field value to string.
      *
      * @param mixed $value Optional value
-     *
-     * @return string
      */
-    public function toString($value = null)
+    public function toString($value = null): string
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
@@ -458,10 +462,8 @@ class Field implements Expressionable
      * Sets field value.
      *
      * @param mixed $value
-     *
-     * @return $this
      */
-    public function set($value)
+    public function set($value): self
     {
         $this->owner->set($this->short_name, $value);
 
@@ -473,20 +475,16 @@ class Field implements Expressionable
      * use examples.
      *
      * @param mixed $value
-     *
-     * @return bool
      */
-    public function compare($value)
+    public function compare($value): bool
     {
         return $this->owner[$this->short_name] == $value;
     }
 
     /**
      * Should this field use alias?
-     *
-     * @return bool
      */
-    public function useAlias()
+    public function useAlias(): bool
     {
         return isset($this->actual);
     }
@@ -497,42 +495,32 @@ class Field implements Expressionable
 
     /**
      * Returns if field should be editable in UI.
-     *
-     * @return bool
      */
-    public function isEditable()
+    public function isEditable(): bool
     {
-        return isset($this->ui['editable']) ? $this->ui['editable']
-                : (($this->read_only || $this->never_persist) ? false
-                    : !$this->system);
+        return $this->ui['editable'] ?? !$this->read_only && !$this->never_persist && !$this->system;
     }
 
     /**
      * Returns if field should be visible in UI.
-     *
-     * @return bool
      */
-    public function isVisible()
+    public function isVisible(): bool
     {
-        return isset($this->ui['visible']) ? $this->ui['visible'] : !$this->system;
+        return $this->ui['visible'] ?? !$this->system;
     }
 
     /**
      * Returns if field should be hidden in UI.
-     *
-     * @return bool
      */
-    public function isHidden()
+    public function isHidden(): bool
     {
-        return isset($this->ui['hidden']) ? $this->ui['hidden'] : false;
+        return $this->ui['hidden'] ?? false;
     }
 
     /**
      * Returns field caption for use in UI.
-     *
-     * @return string
      */
-    public function getCaption()
+    public function getCaption(): string
     {
         return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption($this->short_name);
     }
@@ -563,10 +551,8 @@ class Field implements Expressionable
 
     /**
      * Returns array with useful debug info for var_dump.
-     *
-     * @return array
      */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
         $arr = [
             'short_name' => $this->short_name,

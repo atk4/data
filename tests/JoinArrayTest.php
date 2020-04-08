@@ -258,15 +258,17 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m_u['contact_phone'] = '+555';
         $m_u->save();
 
-        $this->assertEquals([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
-            ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ], $a
+        $this->assertEquals(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                    3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
+                ], 'contact' => [
+                    1 => ['id' => 1, 'contact_phone' => '+555'],
+                    2 => ['id' => 2, 'contact_phone' => '+321'],
+                ], ],
+            $a
         );
 
         $m_u->load(3);
@@ -274,15 +276,17 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m_u['contact_phone'] = '+999';
         $m_u->save();
 
-        $this->assertEquals([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-            ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-            ], ], $a
+        $this->assertEquals(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                ], 'contact' => [
+                    1 => ['id' => 1, 'contact_phone' => '+555'],
+                    2 => ['id' => 2, 'contact_phone' => '+999'],
+                ], ],
+            $a
         );
 
         $m_u->tryLoad(4);
@@ -290,17 +294,19 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m_u['contact_phone'] = '+777';
         $m_u->save();
 
-        $this->assertEquals([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ], $a
+        $this->assertEquals(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                    4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                ], 'contact' => [
+                    1 => ['id' => 1, 'contact_phone' => '+555'],
+                    2 => ['id' => 2, 'contact_phone' => '+999'],
+                    3 => ['id' => 3, 'contact_phone' => '+777'],
+                ], ],
+            $a
         );
     }
 
@@ -327,15 +333,17 @@ class JoinArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m_u->load(1);
         $m_u->delete();
 
-        $this->assertEquals([
-            'user' => [
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
-            ], 'contact' => [
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ], $a
+        $this->assertEquals(
+            [
+                'user' => [
+                    2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                    3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                    4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                ], 'contact' => [
+                    2 => ['id' => 2, 'contact_phone' => '+999'],
+                    3 => ['id' => 3, 'contact_phone' => '+777'],
+                ], ],
+            $a
         );
     }
 

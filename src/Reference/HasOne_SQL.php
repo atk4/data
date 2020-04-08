@@ -52,12 +52,13 @@ class HasOne_SQL extends HasOne
         $defaults['caption'] = $defaults['caption'] ?? $this->owner->refModel($this->link)->getField($their_field)->getCaption();
 
         /** @var Field_SQL_Expression $e */
-        $e = $this->owner->addExpression($field, array_merge([
-            function (Model $m) use ($their_field) {
-                // remove order if we just select one field from hasOne model
-                // that is mandatory for Oracle
-                return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
-            }, ],
+        $e = $this->owner->addExpression($field, array_merge(
+            [
+                function (Model $m) use ($their_field) {
+                    // remove order if we just select one field from hasOne model
+                    // that is mandatory for Oracle
+                    return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
+                }, ],
             $defaults
         ));
 
@@ -65,7 +66,7 @@ class HasOne_SQL extends HasOne
         $e->never_save = true;
 
         // Will try to execute last
-        $this->owner->addHook('beforeSave', function (Model $m) use ($field, $their_field) {
+        $this->owner->onHook('beforeSave', function (Model $m) use ($field, $their_field) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
             if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
@@ -75,7 +76,7 @@ class HasOne_SQL extends HasOne
                 $m[$this->our_field] = $mm->action('field', [$mm->id_field]);
                 unset($m[$field]);
             }
-        }, null, 21);
+        }, [], 21);
 
         return $e;
     }
@@ -226,7 +227,7 @@ class HasOne_SQL extends HasOne
         }
 
         /** @var Field_SQL_Expression $ex */
-        $ex = $this->owner->addExpression($field, array_merge_recursive(
+        $ex = $this->owner->addExpression($field, array_replace_recursive(
             [
                 function (Model $m) {
                     $mm = $m->refLink($this->link);
@@ -246,7 +247,7 @@ class HasOne_SQL extends HasOne
         ));
 
         // Will try to execute last
-        $this->owner->addHook('beforeSave', function (Model $m) use ($field) {
+        $this->owner->onHook('beforeSave', function (Model $m) use ($field) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
             if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
@@ -255,7 +256,7 @@ class HasOne_SQL extends HasOne
                 $mm->addCondition($mm->title_field, $m[$field]);
                 $m[$this->our_field] = $mm->action('field', [$mm->id_field]);
             }
-        }, null, 20);
+        }, [], 20);
 
         // Set ID field as not visible in grid by default
         if (!array_key_exists('visible', $this->owner->getField($this->our_field)->ui)) {

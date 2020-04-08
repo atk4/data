@@ -52,7 +52,7 @@ Example with beforeSave
 The next code snippet demonstrates a basic usage of a `beforeSave` hook.
 This one will update field values just before record is saved::
 
-    $m->addHook('beforeSave', function($m) {
+    $m->onHook('beforeSave', function($m) {
         $m['name'] = strtoupper($m['name']);
         $m['surname'] = strtoupper($m['surname']);
     });
@@ -85,7 +85,7 @@ model will assume the operation was successful.
 
 You can also break beforeLoad hook which can be used to skip rows::
 
-    $model->addHook('afterLoad', function ($m) {
+    $model->onHook('afterLoad', function ($m) {
         if ($m['date'] < $m->date_from) {
             $m->breakHook(false); // will not yield such data row
         }
@@ -136,7 +136,7 @@ of save.
 
 You may actually drop validation exception inside save, insert or update hooks::
 
-    $m->addHook('beforeSave', function($m) {
+    $m->onHook('beforeSave', function($m) {
         if ($m['name'] = 'Yagi') {
             throw new \atk4\data\ValidationException(['name'=>"We don't serve like you"]);
         }
@@ -193,7 +193,7 @@ and your update() may not actually update anything. This does not normally
 generate an error, however if you want to actually make sure that update() was
 effective, you can implement this through a hook::
 
-    $m->addHook('afterUpdateQuery',function($m, $update, $st) {
+    $m->onHook('afterUpdateQuery',function($m, $update, $st) {
         if (!$st->rowCount()) {
             throw new \atk4\core\Exception([
                 'Update didn\'t affect any records',
@@ -213,7 +213,7 @@ In some cases you want to prevent default actions from executing.
 Suppose you want to check 'memcache' before actually loading the record from
 the database. Here is how you can implement this functionality::
 
-    $m->addHook('beforeLoad',function($m, $id) {
+    $m->onHook('beforeLoad',function($m, $id) {
         $data = $m->app->cacheFetch($m->table, $id);
         if ($data) {
             $m->data = $data;
@@ -239,13 +239,13 @@ This can be used in various situations.
 
 Save information into auditLog about failure:
 
-    $m->addHook('onRollback', function($m){ 
+    $m->onHook('onRollback', function($m){ 
         $m->auditLog->registerFailure();
     });
 
 Upgrade schema:
 
-    $m->addHook('onRollback', function($m, $exception) { 
+    $m->onHook('onRollback', function($m, $exception) { 
         if ($exception instanceof \PDOException) {
             $m->schema->upgrade();
             $m->breakHook(false); // exception will not be thrown

@@ -147,12 +147,8 @@ class DeepCopy
 
     /**
      * Will extract non-numeric keys from the array.
-     *
-     * @param $array
-     *
-     * @return array
      */
-    protected function extractKeys($array): array
+    protected function extractKeys(array $array): array
     {
         $result = [];
         foreach ($array as $key=>$val) {
@@ -177,12 +173,12 @@ class DeepCopy
     public function copy()
     {
         return $this->_copy(
-                    $this->source,
-                    $this->destination,
-                    $this->references,
-                    $this->exclusions,
-                    $this->transforms
-            )->reload();
+            $this->source,
+            $this->destination,
+            $this->references,
+            $this->exclusions,
+            $this->transforms
+        )->reload();
     }
 
     /**
