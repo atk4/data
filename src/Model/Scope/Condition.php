@@ -104,8 +104,8 @@ class Condition extends AbstractScope
     public function setModel(?Model $model = null)
     {
         if ($this->model = $model) {
-            // if we have a definitive scalar value and a field
-            // sets default value for field and locks it
+            // if we have a definitive scalar value for a field
+            // sets it as default value for field and locks it
             // new records will automatically get this value assigned for the field
             if ($this->operator === '=' && !is_object($this->value) && !is_array($this->value)) {
                 // key containing '/' means chained references and it is handled in toArray method
@@ -240,7 +240,7 @@ class Condition extends AbstractScope
     public function toWords($asHtml = false)
     {
         if (!$this->model) {
-            throw new Exception(['Model mist be set using setModel to convert to words']);
+            throw new Exception(['Model must be set using setModel to convert to words']);
         }
 
         // make sure clones are used to avoid changes
