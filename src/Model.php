@@ -1187,6 +1187,11 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Get the scope object of the Model
+     * 
+     * @return Model\Scope\Scope
+     */
     public function scope()
     {
         return $this->scope->setModel($this);
