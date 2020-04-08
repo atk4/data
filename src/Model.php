@@ -1182,7 +1182,7 @@ class Model implements \IteratorAggregate
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        $this->scope()->addComponent(Scope::create([func_get_args()]));
+        $this->scope()->and(Scope::create([func_get_args()]));
 
         return $this;
     }
