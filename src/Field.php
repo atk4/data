@@ -12,6 +12,8 @@ use atk4\dsql\Expressionable;
 
 /**
  * Class description?
+ *
+ * @property Model $owner
  */
 class Field implements Expressionable
 {

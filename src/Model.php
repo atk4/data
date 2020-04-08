@@ -19,6 +19,8 @@ use atk4\dsql\Query;
 
 /**
  * Data model class.
+ *
+ * @property Field[]|Reference[] $elements
  */
 class Model implements \ArrayAccess, \IteratorAggregate
 {
@@ -1127,8 +1129,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Execute specified action with specified arguments.
      *
-     * @param $name
-     * @param $args
+     * @param string $name Action name
      *
      * @throws Exception
      * @throws \atk4\core\Exception

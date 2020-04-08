@@ -9,6 +9,8 @@ use atk4\dsql\Expressionable;
 
 /**
  * Class description?
+ *
+ * @property Join\SQL $join
  */
 class Field_SQL extends Field implements Expressionable
 {

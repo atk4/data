@@ -9,6 +9,9 @@ use atk4\data\Model;
 
 /**
  * Join\SQL class.
+ *
+ * @property \atk4\data\Persistence\SQL $persistence
+ * @property SQL $join
  */
 class SQL extends Join implements \atk4\dsql\Expressionable
 {

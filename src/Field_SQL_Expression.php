@@ -69,7 +69,7 @@ class Field_SQL_Expression extends Field_SQL
      * Possibly that user will attempt to insert values here. If that is the case, then
      * we would need to inject it into related hasMany relationship.
      *
-     * @param $m
+     * @param Model $m
      */
     public function afterSave($m)
     {
