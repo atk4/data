@@ -185,7 +185,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         Condition::registerValuePlaceholder('__PERSPECTIVE__', [
             'label' => 'User Perspective',
-            'value' => function (Model $model, Condition $condition) {
+            'value' => function (Condition $condition) {
                 $condition->deactivate();
 
                 return null;

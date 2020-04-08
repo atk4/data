@@ -46,6 +46,13 @@ class Condition extends AbstractScope
         'REGEXP'        => 'is regular expression',
         'NOT REGEXP'    => 'is not regular expression',
     ];
+    
+    protected static $skipValueTypecast = [
+        'LIKE',
+        'NOT LIKE',
+        'REGEXP',
+        'NOT REGEXP',
+    ];
 
     /**
      * Create Condition based on provided arguments
@@ -94,25 +101,23 @@ class Condition extends AbstractScope
         $this->value = $value;
     }
 
-    public function setModel(Model $model = null)
+    public function setModel(?Model $model = null)
     {
-        if ($model && $model !== $this->model) {
-            $this->model = $model;
+        if ($this->model = $model) {
+            // if we have a definitive scalar value and a field
+            // sets default value for field and locks it
+            // new records will automatically get this value assigned for the field
+            if ($this->operator === '=' && !is_object($this->value) && !is_array($this->value)) {
+                // key containing '/' means chained references and it is handled in toArray method
+                if (is_string($field = $this->key) && stripos($field, '/') === false) {
+                    $field = $model->getField($field);
+                }
 
-            // key containing '/' means chained references and it is handled in toArray method
-            if (is_string($field = $this->key) && stripos($field, '/') === false) {
-                $field = $model->getField($field);
-            }
-
-            if ($field instanceof Field) {
-                // sets default value for references
-                if ($this->operator === '=' && !is_object($this->value) && !is_array($this->value)) {
+                if ($field instanceof Field) {
                     $field->system = true;
                     $field->default = $this->value;
                 }
             }
-
-            $this->key = $field;
         }
 
         return $this;
@@ -125,12 +130,14 @@ class Condition extends AbstractScope
 
         $field = $condition->key;
         $operator = $condition->operator;
-        $value = $condition->value;
+        // replace placeholder can also disable the condition
+        $value = $condition->replaceValue($condition->value);
+        
+        if (!$this->isActive()) {
+            return [];
+        }
 
-        if ($model = $condition->model) {
-            // replace placeholder can also disable the condition
-            $value = $condition->replaceValue($model, $value);
-
+        if ($model = $condition->model) {           
             if (is_string($field)) {
                 // shorthand for adding conditions on references
                 // use chained reference names separated by "/"
@@ -146,28 +153,22 @@ class Condition extends AbstractScope
                     // '#' will apply condition directly on the record count (has # referenced records)
                     // otherwise applying condition on the referenced model field (has referenced records where)
                     if ($field !== '#') {
-                        $model->addCondition($field, $this->operator, $this->value);
+                        $model->addCondition($field, $operator, $value);
                         $operator = '>';
                         $value = 0;
                     }
 
                     $field = $model->action('count');
-
-                    return [$field, $operator, $value];
                 }
-
-                $field = $model->getField($field);
-            }
-
-            if ($field instanceof Field) {
-                // @todo: value is array
-                if ($model->persistence && !in_array($operator, ['like', 'regexp'])) {
-                    $value = $model->persistence->typecastSaveField($field, $value);
+                else {
+                    $field = $model->getField($field);
                 }
             }
 
-            if (!$this->isActive()) {
-                return [];
+            // @todo: value is array
+            // convert the value using the typecasting of persistence
+            if ($field instanceof Field && $model->persistence && !in_array(strtoupper($operator), self::$skipValueTypecast)) {
+                $value = $model->persistence->typecastSaveField($field, $value);
             }
 
             // only expression contained in $field
@@ -341,7 +342,7 @@ class Condition extends AbstractScope
         }
 
         // replace placeholders
-        $value = $this->replaceValue($model, $value, true);
+        $value = $this->replaceValue($value, true);
 
         // handling of scope on references
         if (is_string($field = $this->key)) {
@@ -370,11 +371,11 @@ class Condition extends AbstractScope
         return "'".(string) $value."'";
     }
 
-    protected function replaceValue(Model $model, $value, $toWords = false)
+    protected function replaceValue($value, $toWords = false)
     {
         if (is_array($values = $value)) {
             foreach ($values as &$value) {
-                $value = $this->replaceValue($model, $value, $toWords);
+                $value = $this->replaceValue($value, $toWords);
             }
 
             return $values;
@@ -385,7 +386,7 @@ class Condition extends AbstractScope
                 $value = $toWords ? $placeholder['label'] : $placeholder['value'];
 
                 if (is_callable($fx = $value)) {
-                    $value = call_user_func($fx, $model, $this);
+                    $value = call_user_func($fx, $this);
                 }
             }
         }
