@@ -1188,8 +1188,8 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Get the scope object of the Model
-     * 
+     * Get the scope object of the Model.
+     *
      * @return Model\Scope\Scope
      */
     public function scope()
@@ -1548,7 +1548,7 @@ class Model implements \IteratorAggregate
     public function tryLoad($id)
     {
         $this->checkPersistence('tryLoad');
-        
+
         if ($this->loaded()) {
             $this->unload();
         }
@@ -1611,7 +1611,7 @@ class Model implements \IteratorAggregate
     public function tryLoadAny()
     {
         $this->checkPersistence('tryLoadAny');
-        
+
         if ($this->loaded()) {
             $this->unload();
         }
@@ -1718,12 +1718,12 @@ class Model implements \IteratorAggregate
 
         return $this;
     }
-    
+
     /**
      * Check if model has persistence with specified method.
-     * 
+     *
      * @param string $method
-     * 
+     *
      * @throws Exception
      */
     public function checkPersistence(?string $method = null)
@@ -1731,7 +1731,7 @@ class Model implements \IteratorAggregate
         if (!$this->persistence) {
             throw new Exception(['Model is not associated with any persistence']);
         }
-        
+
         if ($method && !$this->persistence->hasMethod($method)) {
             throw new Exception("Persistence does not support $method method");
         }
@@ -1948,7 +1948,7 @@ class Model implements \IteratorAggregate
     public function export($fields = null, $key_field = null, $typecast_data = true): array
     {
         $this->checkPersistence('export');
-        
+
         // no key field - then just do export
         if ($key_field === null) {
             return $this->persistence->export($this, $fields, $typecast_data);
@@ -2176,7 +2176,7 @@ class Model implements \IteratorAggregate
     public function action($mode, $args = [])
     {
         $this->checkPersistence('action');
-        
+
         return $this->persistence->action($this, $mode, $args);
     }
 

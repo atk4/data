@@ -153,8 +153,7 @@ class Condition extends AbstractScope
                             $operator = '>';
                             $value = 0;
                         }
-                    }
-                    else {
+                    } else {
                         // otherwise add the condition to the referenced model
                         // and count if any records match the criteria
                         $model->addCondition($field, $operator, $value);
@@ -271,7 +270,7 @@ class Condition extends AbstractScope
             if (stripos($field, '/') !== false) {
                 $references = explode('/', $field);
 
-                $words[] = $model->getModelCaption();;
+                $words[] = $model->getModelCaption();
 
                 $field = array_pop($references);
 
