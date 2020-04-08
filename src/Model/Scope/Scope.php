@@ -73,21 +73,21 @@ class Scope extends AbstractScope
     {
         return $this->junction;
     }
-    
+
     /**
-     * Checks if junction is OR
-     * 
-     * @return boolean
+     * Checks if junction is OR.
+     *
+     * @return bool
      */
     public function any()
     {
         return $this->junction === self::OR;
     }
-    
+
     /**
-     * Checks if junction is AND
+     * Checks if junction is AND.
      *
-     * @return boolean
+     * @return bool
      */
     public function all()
     {
@@ -100,7 +100,7 @@ class Scope extends AbstractScope
             $this->components[$k] = clone $scope;
         }
     }
-    
+
     public function peel()
     {
         $activeComponents = $this->getActiveComponents();
@@ -113,7 +113,7 @@ class Scope extends AbstractScope
 
         return $component->peel();
     }
-    
+
     public function validate(Model $model, $values)
     {
         if (!$this->isActive()) {
@@ -129,7 +129,7 @@ class Scope extends AbstractScope
 
         return $issues;
     }
-    
+
     /**
      * Use De Morgan's laws to negate.
      *
@@ -270,9 +270,9 @@ class Scope extends AbstractScope
         $this->junction = self::OR;
 
         $this->components = [$self, $scope];
-        
+
         $this->setModel($this->model);
-        
+
         return $this;
     }
 

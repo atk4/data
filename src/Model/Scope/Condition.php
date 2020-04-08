@@ -46,7 +46,7 @@ class Condition extends AbstractScope
         'REGEXP'        => 'is regular expression',
         'NOT REGEXP'    => 'is not regular expression',
     ];
-    
+
     protected static $skipValueTypecast = [
         'LIKE',
         'NOT LIKE',
@@ -132,12 +132,12 @@ class Condition extends AbstractScope
         $operator = $condition->operator;
         // replace placeholder can also disable the condition
         $value = $condition->replaceValue($condition->value);
-        
+
         if (!$this->isActive()) {
             return [];
         }
 
-        if ($model = $condition->model) {           
+        if ($model = $condition->model) {
             if (is_string($field)) {
                 // shorthand for adding conditions on references
                 // use chained reference names separated by "/"
@@ -159,8 +159,7 @@ class Condition extends AbstractScope
                     }
 
                     $field = $model->action('count');
-                }
-                else {
+                } else {
                     $field = $model->getField($field);
                 }
             }

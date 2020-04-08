@@ -128,14 +128,15 @@ abstract class AbstractScope
 
     /**
      * Peels off nested scopes with single contained component.
-     * Useful for convert (((field = value))) to field = value
+     * Useful for convert (((field = value))) to field = value.
      *
      * @return AbstractScope
      */
-    public function peel() {
+    public function peel()
+    {
         return $this;
     }
-    
+
     /**
      * Sets the scope as excluded from applying it to the model.
      *

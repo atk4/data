@@ -390,7 +390,7 @@ class SQL extends Persistence
         if (!$scope || $scope->isEmpty()) {
             return $query;
         }
-        
+
         // peel off the single nested scopes to convert (((field = value))) to field = value
         $scope = $scope->peel();
 
@@ -402,7 +402,7 @@ class SQL extends Persistence
         // nested conditions
         if ($scope instanceof Scope) {
             $expression = $scope->any() ? $query->orExpr() : $query->andExpr();
-            
+
             foreach ($scope->getActiveComponents() as $component) {
                 $expression = $this->initQueryConditions($model, $expression, $component);
             }
