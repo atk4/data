@@ -77,15 +77,9 @@ class Condition extends AbstractScope
 
     public function __construct($key, $operator = null, $value = null)
     {
-        switch (func_num_args()) {
-            case 1:
-                $key = is_string($key) ? new Expression($key) : $key;
-                break;
-
-            case 2:
-                $value = $operator;
-                $operator = '=';
-                break;
+        if (func_num_args() == 2) {
+            $value = $operator;
+            $operator = '=';
         }
 
         if (is_bool($key)) {
@@ -107,6 +101,7 @@ class Condition extends AbstractScope
             // if we have a definitive scalar value for a field
             // sets it as default value for field and locks it
             // new records will automatically get this value assigned for the field
+            // @todo: consider this when condition is part of OR scope
             if ($this->operator === '=' && !is_object($this->value) && !is_array($this->value)) {
                 // key containing '/' means chained references and it is handled in toArray method
                 if (is_string($field = $this->key) && stripos($field, '/') === false) {
@@ -152,7 +147,16 @@ class Condition extends AbstractScope
 
                     // '#' will apply condition directly on the record count (has # referenced records)
                     // otherwise applying condition on the referenced model field (has referenced records where)
-                    if ($field !== '#') {
+                    if ($field === '#') {
+                        // if no operator consider this as 'any records exist'
+                        if (!$operator) {
+                            $operator = '>';
+                            $value = 0;
+                        }
+                    }
+                    else {
+                        // otherwise add the condition to the referenced model
+                        // and count if any records match the criteria
                         $model->addCondition($field, $operator, $value);
                         $operator = '>';
                         $value = 0;
@@ -262,15 +266,14 @@ class Condition extends AbstractScope
         $model = $this->model;
 
         $words = [];
-        $key = $this->key;
 
-        if (is_string($key)) {
-            if (stripos($key, '/') !== false) {
-                $references = explode('/', $key);
+        if (is_string($field = $this->key)) {
+            if (stripos($field, '/') !== false) {
+                $references = explode('/', $field);
 
-                $words[] = 'Record';
+                $words[] = $model->getModelCaption();;
 
-                $key = array_pop($references);
+                $field = array_pop($references);
 
                 foreach ($references as $link) {
                     $words[] = "that has reference $link";
@@ -280,25 +283,19 @@ class Condition extends AbstractScope
 
                 $words[] = 'where';
 
-                if ($key === '#') {
-                    $words[] = 'where number of records';
-                    $key = '';
+                if ($field === '#') {
+                    $words[] = $this->operator ? 'number of records' : 'any referenced record exists';
+                    $field = '';
                 }
             }
 
-            try {
-                $key = $key ? $model->getField($key) : '';
-            } catch (\Exception $e) {
-                // keep $key as it is
-            }
+            $field = $model->hasField($field);
         }
 
-        if ($key instanceof Field) {
-            $key = $key->getCaption();
-
-            $words[] = $key;
-        } elseif ($key instanceof Expression) {
-            $words[] = "expression '{$key->getDebugQuery($asHtml)}'";
+        if ($field instanceof Field) {
+            $words[] = $field->getCaption();
+        } elseif ($field instanceof Expression) {
+            $words[] = "expression '{$field->getDebugQuery($asHtml)}'";
         }
 
         $string = implode(' ', array_filter($words));

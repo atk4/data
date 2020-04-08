@@ -23,6 +23,8 @@ use atk4\dsql\Expression;
 class SCountry extends Model
 {
     public $table = 'country';
+    
+    public $caption = 'Country';
 
     public function init()
     {
@@ -139,7 +141,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $condition = Condition::create('country_id/code', 'US');
 
-        $this->assertEquals('Record that has reference country_id where Code is equal to \'US\'', $condition->on($user)->toWords());
+        $this->assertEquals('User that has reference country_id where Code is equal to \'US\'', $condition->on($user)->toWords());
 
         $condition = Condition::create('country_id', 2);
 
@@ -164,6 +166,12 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $condition = Condition::create($user->getField('surname'), $user->getField('name'));
 
         $this->assertEquals('Surname is equal to User Name', $condition->on($user)->toWords());
+        
+        $country = clone $this->country;
+        
+        $country->addCondition('Users/#');
+        
+        $this->assertEquals('Country that has reference Users where any referenced record exists', $country->scope()->toWords());
     }
 
     public function testConditionValuePlaceholder()
