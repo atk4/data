@@ -375,10 +375,11 @@ class SQL extends Persistence
     }
 
     /**
-     * Will apply scope defined inside $model onto $query.
+     * Will apply scope defined inside $scope or $model->scope() onto $query.
      *
      * @param Model $model
      * @param Query $query
+     * @param AbstractScope $scope
      *
      * @return Query
      */
