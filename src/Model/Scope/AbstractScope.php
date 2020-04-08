@@ -64,7 +64,7 @@ abstract class AbstractScope
     }
 
     /**
-     * Alias for setModel.
+     * Use a model.
      *
      * @param Model $model
      *
@@ -72,7 +72,7 @@ abstract class AbstractScope
      */
     final public function on(Model $model)
     {
-        return $this->setModel($model);
+        return $this->setModel(clone $model);
     }
 
     /**

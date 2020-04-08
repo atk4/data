@@ -127,7 +127,6 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $user->loadAny();
 
-//         $this->assertEquals(1, count($user->conditions));
         $this->assertEquals('Smith', $user['surname']);
     }
 
@@ -149,7 +148,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $condition = Condition::create('name', $user->expr('[surname]'));
 
-        $this->assertEquals('Name is equal to expression \'"user"."surname"\'', $condition->on($user)->toWords());
+        $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->on($user)->toWords());
 
         $condition = Condition::create('country_id', null);
 
