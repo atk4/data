@@ -375,69 +375,24 @@ class SQL extends Persistence
     }
 
     /**
-     * Will apply conditions defined inside $m onto query $q.
+     * Will apply scope defined inside $model onto $query.
+     *
+     * @param Model $model
+     * @param Query $query
+     *
+     * @return Query
      */
-    public function initQueryConditions(Model $m, Query $q): Query
+    public function initQueryConditions(Model $model, Query $query, AbstractScope $scope = null): Query
     {
-        if (!isset($m->conditions)) {
-            // no conditions are set in the model
-            return $q;
-        }
 
-        foreach ($m->conditions as $cond) {
-            // Options here are:
-            // count($cond) == 1, we will pass the only
-            // parameter inside where()
-
-            if (count($cond) === 1) {
-                // OR conditions
-                if (is_array($cond[0])) {
-                    foreach ($cond[0] as &$row) {
-                        if (is_string($row[0])) {
-                            $row[0] = $m->getField($row[0]);
-                        }
-
-                        // "like" or "regexp" conditions do not need typecasting to field type!
-                        if ($row[0] instanceof Field && (count($row) === 2 || !in_array(strtolower($row[1]), ['like', 'regexp'], true))) {
-                            $valueKey = count($row) === 2 ? 1 : 2;
-                            $row[$valueKey] = $this->typecastSaveField($row[0], $row[$valueKey]);
-                        }
-                    }
-                }
-
-                $q->where($cond[0]);
-
-                continue;
-            }
-
-            if (is_string($cond[0])) {
-                $cond[0] = $m->getField($cond[0]);
-            }
-
-            if (count($cond) === 2) {
-                if ($cond[0] instanceof Field) {
-                    $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
-                }
-                $q->where($cond[0], $cond[1]);
-            } else {
-                // "like" or "regexp" conditions do not need typecasting to field type!
-                if ($cond[0] instanceof Field && !in_array(strtolower($cond[1]), ['like', 'regexp'], true)) {
-                    $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
-                }
-                $q->where($cond[0], $cond[1], $cond[2]);
-            }
-        }
-
-        return $q;
-    }
-
-    public function initScopeConditions(Model $model, Query $query, AbstractScope $scope = null): Query
-    {
         $scope = $scope ?? $model->scope();
 
         if (!$scope || $scope->isEmpty()) {
             return $query;
         }
+        
+        // peel off the single nested scopes to convert (((field = value))) to field = value
+        $scope = $scope->peel();
 
         // simple condition
         if ($scope instanceof Condition) {
@@ -446,23 +401,13 @@ class SQL extends Persistence
 
         // nested conditions
         if ($scope instanceof Scope) {
-            if ($scope->isCompound()) {
-                if ($scope->getJunction() === Scope::OR) {
-                    $expression = $query->orExpr();
-                } else {
-                    $expression = $query->andExpr();
-                }
-
-                foreach ($scope->getActiveComponents() as $component) {
-                    $expression = $this->initScopeConditions($model, $expression, $component);
-                }
-
-                $query = $query->where($expression);
-            } else {
-                foreach ($scope->getActiveComponents() as $component) {
-                    $expression = $this->initScopeConditions($model, $query, $component);
-                }
+            $expression = $scope->any() ? $query->orExpr() : $query->andExpr();
+            
+            foreach ($scope->getActiveComponents() as $component) {
+                $expression = $this->initQueryConditions($model, $expression, $component);
             }
+
+            $query = $query->where($expression);
         }
 
         return $query;
@@ -669,7 +614,7 @@ class SQL extends Persistence
                 break;
             case 'delete':
                 $q->mode('delete');
-                $this->initScopeConditions($m, $q);
+                $this->initQueryConditions($m, $q);
                 $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 
                 return $q;
@@ -678,7 +623,7 @@ class SQL extends Persistence
 
                 break;
             case 'count':
-                $this->initScopeConditions($m, $q);
+                $this->initQueryConditions($m, $q);
                 $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q]);
                 if (isset($args['alias'])) {
                     $q->reset('field')->field('count(*)', $args['alias']);
@@ -702,7 +647,7 @@ class SQL extends Persistence
                 } else {
                     $q->reset('field')->field($field);
                 }
-                $this->initScopeConditions($m, $q);
+                $this->initQueryConditions($m, $q);
                 $this->setLimitOrder($m, $q);
 
                 return $q;
@@ -715,7 +660,7 @@ class SQL extends Persistence
 
                 $fx = $args[0];
                 $field = is_string($args[1]) ? $m->getField($args[1]) : $args[1];
-                $this->initScopeConditions($m, $q);
+                $this->initQueryConditions($m, $q);
                 $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 
                 if ($type === 'fx') {
@@ -738,7 +683,7 @@ class SQL extends Persistence
                     ->addMoreInfo('type', $type);
         }
 
-        $this->initScopeConditions($m, $q);
+        $this->initQueryConditions($m, $q);
         $this->setLimitOrder($m, $q);
         $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 

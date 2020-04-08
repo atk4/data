@@ -127,6 +127,16 @@ abstract class AbstractScope
     abstract public function toWords($asHtml = false);
 
     /**
+     * Peels off nested scopes with single contained component.
+     * Useful for convert (((field = value))) to field = value
+     *
+     * @return AbstractScope
+     */
+    public function peel() {
+        return $this;
+    }
+    
+    /**
      * Sets the scope as excluded from applying it to the model.
      *
      * @return $this
