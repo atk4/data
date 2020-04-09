@@ -3,7 +3,6 @@
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
-use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -20,6 +19,13 @@ class Array_ extends Persistence
      * @var array
      */
     public $data;
+    
+    /**
+     * Array of last inserted ids.
+     *
+     * @var array
+     */
+    protected $lastInsertIds = [];
 
     /**
      * Constructor. Can pass array of data in parameters.
@@ -37,7 +43,7 @@ class Array_ extends Persistence
     public function add(Model $m, array $defaults = []): Model
     {
         if (isset($defaults[0])) {
-            $m->table = $defaults[0];
+            $model->table = $defaults[0];
             unset($defaults[0]);
         }
 
@@ -45,9 +51,9 @@ class Array_ extends Persistence
             '_default_seed_join' => \atk4\data\Join\Array_::class,
         ], $defaults);
 
-        $m = parent::add($m, $defaults);
+        $model = parent::add($model, $defaults);
 
-        if ($f = $m->hasField($m->id_field)) {
+        if ($f = $model->hasField($model->id_field)) {
             if (!$f->type) {
                 $f->type = 'integer';
             }
@@ -55,89 +61,88 @@ class Array_ extends Persistence
 
         // if there is no model table specified, then create fake one named 'data'
         // and put all persistence data in there
-        if (!$m->table) {
-            $m->table = 'data'; // fake table name 'data'
-            if (!isset($this->data[$m->table]) || count($this->data) !== 1) {
-                $this->data = [$m->table => $this->data];
+        if (!$model->table) {
+            $model->table = 'data'; // fake table name 'data'
+            if (!isset($this->data[$model->table]) || count($this->data) !== 1) {
+                $this->data = [$model->table => $this->data];
             }
         }
 
         // if there is no such table in persistence, then create empty one
-        if (!isset($this->data[$m->table])) {
-            $this->data[$m->table] = [];
+        if (!isset($this->data[$model->table])) {
+            $this->data[$model->table] = [];
         }
 
-        return $m;
+        return $model;
     }
 
     /**
      * Loads model and returns data record.
      *
+     * @param Model  $model
      * @param mixed  $id
      * @param string $table
      *
      * @return array|false
      */
-    public function load(Model $m, $id, $table = null)
+    public function load(Model $model, $id, $table = null)
     {
-        if (isset($m->table) && !isset($this->data[$m->table])) {
+        if (isset($model->table) && !isset($this->data[$model->table])) {
             throw (new Exception('Table was not found in the array data source'))
                 ->addMoreInfo('table', $m->table);
         }
 
-        if (!isset($this->data[$table ?: $m->table][$id])) {
+        if (!isset($this->data[$table ?: $model->table][$id])) {
             throw (new Exception('Record with specified ID was not found', 404))
                 ->addMoreInfo('id', $id);
         }
 
-        return $this->tryLoad($m, $id, $table);
+        return $this->tryLoad($model, $id, $table);
     }
 
     /**
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
      *
+     * @param Model  $model
      * @param mixed  $id
      * @param string $table
      *
      * @return array|false
      */
-    public function tryLoad(Model $m, $id, $table = null)
+    public function tryLoad(Model $model, $id, $table = null)
     {
-        if (!isset($table)) {
-            $table = $m->table;
-        }
+        $table = $table ?? $model->table;
 
         if (!isset($this->data[$table][$id])) {
             return false; // no record with such id in table
         }
 
-        return $this->typecastLoadRow($m, $this->data[$table][$id]);
+        return $this->typecastLoadRow($model, $this->data[$table][$id]);
     }
 
     /**
      * Tries to load first available record and return data record.
      * Doesn't throw exception if model can't be loaded or there are no data records.
      *
+     * @param Model $model
      * @param mixed $table
      *
      * @return array|false
      */
-    public function tryLoadAny(Model $m, $table = null)
+    public function tryLoadAny(Model $model, $table = null)
     {
-        if (!isset($table)) {
-            $table = $m->table;
-        }
+        $table = $table ?? $model->table;
 
         if (!$this->data[$table]) {
             return false; // no records at all in table
         }
 
         reset($this->data[$table]);
-        $key = key($this->data[$table]);
+        $id = key($this->data[$table]);
 
-        $row = $this->load($m, $key, $table);
-        $m->id = $key;
+        $row = $this->load($model, $id, $table);
+        $model->id = $id;
 
         return $row;
     }
@@ -145,22 +150,21 @@ class Array_ extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
+     * @param Model  $model
      * @param array  $data
      * @param string $table
      *
      * @return mixed
      */
-    public function insert(Model $m, $data, $table = null)
+    public function insert(Model $model, $data, $table = null)
     {
-        if (!isset($table)) {
-            $table = $m->table;
-        }
+        $table = $table ?? $model->table;
 
-        $data = $this->typecastSaveRow($m, $data);
+        $data = $this->typecastSaveRow($model, $data);
 
-        $id = $this->generateNewID($m, $table);
-        if ($m->id_field) {
-            $data[$m->id_field] = $id;
+        $id = $this->generateNewID($model, $table);
+        if ($model->id_field) {
+            $data[$model->id_field] = $id;
         }
         $this->data[$table][$id] = $data;
 
@@ -170,40 +174,34 @@ class Array_ extends Persistence
     /**
      * Updates record in data array and returns record ID.
      *
+     * @param Model  $model
      * @param mixed  $id
      * @param array  $data
      * @param string $table
      *
      * @return mixed
      */
-    public function update(Model $m, $id, $data, $table = null)
+    public function update(Model $model, $id, $data, $table = null)
     {
-        if (!isset($table)) {
-            $table = $m->table;
-        }
+        $table = $table ?? $model->table;
 
-        $data = $this->typecastSaveRow($m, $data);
+        $data = $this->typecastSaveRow($model, $data);
 
-        $this->data[$table][$id] =
-            array_merge(
-                $this->data[$table][$id] ?? [],
-                $data
-            );
-
+        $this->data[$table][$id] = array_merge($this->data[$table][$id] ?? [], $data);
+        
         return $id;
     }
 
     /**
      * Deletes record in data array.
      *
+     * @param Model  $model
      * @param mixed  $id
      * @param string $table
      */
-    public function delete(Model $m, $id, $table = null)
+    public function delete(Model $model, $id, $table = null)
     {
-        if (!isset($table)) {
-            $table = $m->table;
-        }
+        $table = $table ?? $model->table;
 
         unset($this->data[$table][$id]);
     }
@@ -211,20 +209,18 @@ class Array_ extends Persistence
     /**
      * Generates new record ID.
      *
-     * @param Model  $m
+     * @param Model  $model
      * @param string $table
      *
      * @return string
      */
-    public function generateNewID($m, $table = null)
+    public function generateNewID($model, $table = null)
     {
-        if (!isset($table)) {
-            $table = $m->table;
-        }
+        $table = $table ?? $model->table;
 
-        if ($m->id_field) {
+        if ($model->id_field) {
             $ids = array_keys($this->data[$table]);
-            $type = $m->getField($m->id_field)->type;
+            $type = $model->getField($model->id_field)->type;
         } else {
             $ids = [count($this->data[$table])]; // use ids starting from 1
             $type = 'integer';
@@ -232,40 +228,61 @@ class Array_ extends Persistence
 
         switch ($type) {
             case 'integer':
-                return count($ids) === 0 ? 1 : (max($ids) + 1);
+                $id = count($ids) === 0 ? 1 : (max($ids) + 1);
+                break;
+                
             case 'string':
-                return uniqid();
+                $id = uniqid();
+                break;
+                
             default:
                 throw (new Exception('Unsupported id field type. Array supports type=integer or type=string only'))
                     ->addMoreInfo('type', $type);
         }
+        
+        return $this->lastInsertIds[$table] = $id;
+    }
+    
+    /**
+     * Last ID inserted.
+     *
+     * @param Model $model
+     *
+     * @return mixed
+     */
+    public function lastInsertId(Model $model = null)
+    {
+        return $this->lastInsertIds[$model->table] ?? null;
     }
 
     /**
      * Prepare iterator.
      *
+     * @param Model $model
+     *
      * @return array
      */
-    public function prepareIterator(Model $m)
+    public function prepareIterator(Model $model)
     {
-        return $m->action('select')->get();
+        return $model->action('select')->get();
     }
 
     /**
      * Export all DataSet.
      *
+     * @param Model      $model
      * @param array|null $fields
      * @param bool       $typecast_data Should we typecast exported data
      *
      * @return array
      */
-    public function export(Model $m, $fields = null, $typecast_data = true)
+    public function export(Model $model, $fields = null, $typecast_data = true)
     {
-        $data = $m->action('select', [$fields])->get();
+        $data = $model->action('select', [$fields])->get();
 
         if ($typecast_data) {
-            $data = array_map(function ($r) use ($m) {
-                return $this->typecastLoadRow($m, $r);
+            $data = array_map(function ($row) use ($model) {
+                return $this->typecastLoadRow($model, $row);
             }, $data);
         }
 
@@ -275,133 +292,80 @@ class Array_ extends Persistence
     /**
      * Typecast data and return Iterator of data array.
      *
+     * @param Model $model
      * @param array $fields
      *
      * @return \atk4\data\Action\Iterator
      */
-    public function initAction(Model $m, $fields = null)
+    public function initAction(Model $model, $fields = null)
     {
-        $keys = $fields ? array_flip($fields) : null;
-
-        $data = array_map(function ($r) use ($m, $keys) {
-            // typecasting moved to export() method
-            //return $this->typecastLoadRow($m, $keys ? array_intersect_key($r, $keys) : $r);
-            return $keys ? array_intersect_key($r, $keys) : $r;
-        }, $this->data[$m->table]);
-
+        $data = $this->data[$model->table];
+        
+        if ($keys = array_flip((array) $fields)) {
+            $data = array_map(function ($row) use ($model, $keys) {
+                return array_intersect_key($row, $keys);
+            }, $data);
+        }
+        
         return new \atk4\data\Action\Iterator($data);
     }
 
     /**
      * Will set limit defined inside $m onto data.
      *
-     * @param Model         $m
-     * @param ArrayIterator $action
+     * @param Model          $model
+     * @param \ArrayIterator $action
      */
-    protected function setLimitOrder($m, &$action)
+    protected function setLimitOrder(Model $model, &$action)
     {
         // first order by
-        if ($m->order) {
-            $action->order($m->order);
+        if ($model->order) {
+            $action->order($model->order);
         }
 
         // then set limit
-        if ($m->limit && ($m->limit[0] || $m->limit[1])) {
-            $cnt = $m->limit[0] ?? 0;
-            $shift = $m->limit[1] ?? 0;
-
-            $action->limit($cnt, $shift);
+        if ($model->limit && ($model->limit[0] || $model->limit[1])) {
+            $action->limit($model->limit[0] ?? 0, $model->limit[1] ?? 0);
         }
     }
 
     /**
-     * Will apply conditions defined inside $m onto query $q.
+     * Will apply conditions defined inside $model onto $iterator.
      *
-     * @param Model                      $m
-     * @param \atk4\data\Action\Iterator $q
+     * @param Model                      $model
+     * @param \atk4\data\Action\Iterator $iterator
      *
      * @return \atk4\data\Action\Iterator|null
      */
-    public function applyConditions(Model $model, \atk4\data\Action\Iterator $iterator)
+    public function applyScope(Model $model, \atk4\data\Action\Iterator $iterator)
     {
-        if (empty($model->conditions)) {
-            // no conditions are set in the model
-            return $iterator;
-        }
-
-        foreach ($model->conditions as $cond) {
-            // assume the action is "where" if we have only 2 parameters
-            if (count($cond) === 2) {
-                array_splice($cond, -1, 1, ['where', $cond[1]]);
-            }
-
-            // condition must have 3 params at this point
-            if (count($cond) !== 3) {
-                // condition can have up to three params
-                throw (new Exception('Persistence\Array_ driver condition unsupported format'))
-                    ->addMoreInfo('reason', 'condition can have two to three params')
-                    ->addMoreInfo('condition', $cond);
-            }
-
-            // extract
-            $field = $cond[0];
-            $method = strtolower($cond[1]);
-            $value = $cond[2];
-
-            // check if the method is supported by the iterator
-            if (!method_exists($iterator, $method)) {
-                throw (new Exception('Persistence\Array_ driver condition unsupported method'))
-                    ->addMoreInfo('reason', "method {$method} not implemented for Action\\Iterator")
-                    ->addMoreInfo('condition', $cond);
-            }
-
-            // get the model field
-            if (is_string($field)) {
-                $field = $model->getField($field);
-            }
-
-            if (!is_a($field, Field::class)) {
-                throw (new Exception('Persistence\Array_ driver condition unsupported format'))
-                    ->addMoreInfo('reason', 'Unsupported object instance ' . get_class($field))
-                    ->addMoreInfo('condition', $cond);
-            }
-
-            // get the field name
-            $short_name = $field->short_name;
-            // .. the value
-            $value = $this->typecastSaveField($field, $value);
-            // run the (filter) method
-            $iterator->{$method}($short_name, $value);
-        }
+        return $iterator->filter($model->scope());
     }
 
     /**
      * Various actions possible here, mostly for compatibility with SQLs.
      *
-     * @param Model  $m
+     * @param Model  $model
      * @param string $type
      * @param array  $args
      *
      * @return mixed
      */
-    public function action($m, $type, $args = [])
+    public function action(Model $model, $type, $args = [])
     {
-        if (!is_array($args)) {
-            throw (new Exception('$args must be an array'))
-                ->addMoreInfo('args', $args);
-        }
+        $args = (array) $args;
 
         switch ($type) {
             case 'select':
-                $action = $this->initAction($m, $args[0] ?? null);
-                $this->applyConditions($m, $action);
-                $this->setLimitOrder($m, $action);
+                $action = $this->initAction($model, $args[0] ?? null);
+                $this->applyScope($model, $action);
+                $this->setLimitOrder($model, $action);
 
                 return $action;
             case 'count':
-                $action = $this->initAction($m, $args[0] ?? null);
-                $this->applyConditions($m, $action);
-                $this->setLimitOrder($m, $action);
+                $action = $this->initAction($model, $args[0] ?? null);
+                $this->applyScope($model, $action);
+                $this->setLimitOrder($model, $action);
 
                 return $action->count();
             case 'field':
@@ -412,9 +376,9 @@ class Array_ extends Persistence
 
                 $field = is_string($args[0]) ? $args[0] : $args[0][0];
 
-                $action = $this->initAction($m, [$field]);
-                $this->applyConditions($m, $action);
-                $this->setLimitOrder($m, $action);
+                $action = $this->initAction($model, [$field]);
+                $this->applyScope($model, $action);
+                $this->setLimitOrder($model, $action);
 
                 // get first record
                 $row = $action->getRow();

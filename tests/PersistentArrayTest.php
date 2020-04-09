@@ -348,13 +348,13 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $p = new Persistence\Array_($a);
         $m = new Model($p, 'countries');
-        $m->addField('code', ['type' => 'int']);
+        $m->addField('code', ['type' => 'integer']);
         $m->addField('country');
         $m->addField('active', ['type' => 'boolean']);
 
         // if no condition we should get all the data back
         $iterator = $m->action('select');
-        $result = $m->persistence->applyConditions($m, $iterator);
+        $result = $m->persistence->applyScope($m, $iterator);
         $this->assertInstanceOf(\atk4\data\Action\Iterator::class, $result);
         $m->unload();
         unset($iterator);
@@ -369,9 +369,22 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($a['countries'][9], $result[9]);
         unset($result);
         $m->unload();
+        
+        // case : str% NOT LIKE
+        $m->scope()->clear();
+        $m->addCondition('country', 'NOT LIKE', 'La%');
+        $result = $m->action('select')->get();
+        $this->assertEquals(6, count($m->export()));
+        $this->assertEquals($a['countries'][1], $result[1]);
+        $this->assertEquals($a['countries'][2], $result[2]);
+        $this->assertEquals($a['countries'][4], $result[4]);
+        $this->assertEquals($a['countries'][5], $result[5]);
+        $this->assertEquals($a['countries'][6], $result[6]);
+        $this->assertEquals($a['countries'][8], $result[8]);
+        unset($result);
 
         // case : %str
-        $m->conditions = [];
+        $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%ia');
         $result = $m->action('select')->get();
         $this->assertSame(4, count($result));
@@ -383,7 +396,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->unload();
 
         // case : %str%
-        $m->conditions = [];
+        $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%a%');
         $result = $m->action('select')->get();
         $this->assertSame(7, count($result));
@@ -398,29 +411,81 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->unload();
 
         // case : boolean field
-        $m->conditions = [];
+        $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '0');
         $this->assertSame(4, count($m->export()));
 
-        $m->conditions = [];
+        $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '1');
         $this->assertSame(5, count($m->export()));
 
-        $m->conditions = [];
+        $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%0%');
         $this->assertSame(4, count($m->export()));
 
-        $m->conditions = [];
+        $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%1%');
         $this->assertSame(5, count($m->export()));
 
-        $m->conditions = [];
+        $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%999%');
         $this->assertSame(0, count($m->export()));
 
-        $m->conditions = [];
+        $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%ABC%');
         $this->assertSame(0, count($m->export()));
+    }
+    
+    /**
+     * Test Model->addCondition operator REGEXP.
+     */
+    public function testRegexp()
+    {
+        $a = ['countries' => [
+            1 => ['id'=>1, 'name'=>'ABC9', 'code'=>11, 'country'=>'Ireland', 'active'=>1],
+            2 => ['id'=>2, 'name'=>'ABC8', 'code'=>12, 'country'=>'Ireland', 'active'=>0],
+            3 => ['id'=>3, 'code'=>13, 'country'=>'Latvia', 'active'=>1],
+            4 => ['id'=>4, 'name'=>'ABC6', 'code'=>14, 'country'=>'UK', 'active'=>0],
+            5 => ['id'=>5, 'name'=>'ABC5', 'code'=>15, 'country'=>'UK', 'active'=>0],
+            6 => ['id'=>6, 'name'=>'ABC4', 'code'=>16, 'country'=>'Ireland', 'active'=>1],
+            7 => ['id'=>7, 'name'=>'ABC3', 'code'=>17, 'country'=>'Latvia', 'active'=>0],
+            8 => ['id'=>8, 'name'=>'ABC2', 'code'=>18, 'country'=>'Russia', 'active'=>1],
+            9 => ['id'=>9, 'code'=>19, 'country'=>'Latvia', 'active'=>1],
+        ]];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p, 'countries');
+        $m->addField('code', ['type' => 'integer']);
+        $m->addField('country');
+        $m->addField('active', ['type' => 'boolean']);
+
+        // if no condition we should get all the data back
+        $iterator = $m->action('select');
+        $result = $m->persistence->applyScope($m, $iterator);
+        $this->assertInstanceOf(\atk4\data\Action\Iterator::class, $result);
+        $m->unload();
+        unset($iterator);
+        unset($result);
+
+        $m->scope()->clear();
+        $m->addCondition('country', 'REGEXP', 'Ireland|UK');
+        $result = $m->action('select')->get();
+        $this->assertEquals(5, count($result));
+        $this->assertEquals($a['countries'][1], $result[1]);
+        $this->assertEquals($a['countries'][2], $result[2]);
+        $this->assertEquals($a['countries'][4], $result[4]);
+        $this->assertEquals($a['countries'][5], $result[5]);
+        $this->assertEquals($a['countries'][6], $result[6]);
+        unset($result);
+        $m->unload();
+        
+        $m->scope()->clear();
+        $m->addCondition('country', 'NOT REGEXP', 'Ireland|UK|Latvia');
+        $result = $m->action('select')->get();
+        $this->assertEquals(1, count($result));
+        $this->assertEquals($a['countries'][8], $result[8]);
+        unset($result);
+        $m->unload();
     }
 
     /**
@@ -595,16 +660,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->action('foo');
     }
 
-    public function testBadActionArgs()
-    {
-        $a = [1 => ['name' => 'John']];
-        $p = new Persistence\Array_($a);
-        $m = new Model($p);
-        $m->addField('name');
         $this->expectException(Exception::class);
-        $m->action('select', 'foo'); // args should be array
-    }
-
     public function testUnsupportedCondition1()
     {
         $a = [1 => ['name' => 'John']];
@@ -616,35 +672,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->export();
     }
 
-    public function testUnsupportedCondition2()
-    {
-        $a = [1 => ['name' => 'John']];
-        $p = new Persistence\Array_($a);
-        $m = new Model($p);
-        $m->addField('name');
-        $m->addCondition('name', '<>', 'John');
         $this->expectException(Exception::class);
-        $m->export();
-    }
-
-    /**
-     * unsupported format - 4th param.
-     */
-    public function testUnsupportedCondition3()
-    {
-        $a = [1 => ['name' => 'John']];
-        $p = new Persistence\Array_($a);
-        $m = new Model($p);
-        $m->addField('name');
-        $m->addCondition('name', 'like', '%o%', 'CASE_INSENSITIVE');
         $this->expectException(Exception::class);
-        $m->export();
-    }
-
-    /**
      * unsupported format - param[0] not Field::class.
      */
-    public function testUnsupportedCondition5()
+    public function testUnsupportedCondition2()
     {
         $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
