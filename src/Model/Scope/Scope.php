@@ -35,7 +35,7 @@ class Scope extends AbstractScope
     protected $junction = self::AND;
 
     /**
-     * Get array of all components
+     * Get array of all components.
      *
      * @return array
      */
@@ -43,9 +43,9 @@ class Scope extends AbstractScope
     {
         return $this->components;
     }
-    
+
     /**
-     * Get array of only active components
+     * Get array of only active components.
      *
      * @return array
      */
@@ -55,7 +55,7 @@ class Scope extends AbstractScope
             return $scope->isActive();
         });
     }
-    
+
     public function setModel(?Model $model = null)
     {
         $this->model = $model;
@@ -68,10 +68,10 @@ class Scope extends AbstractScope
     }
 
     /**
-     * Add a scope as component to this scope
-     * 
+     * Add a scope as component to this scope.
+     *
      * @param AbstractScope $scope
-     * 
+     *
      * @return static
      */
     public function addComponent(AbstractScope $scope)
@@ -201,7 +201,7 @@ class Scope extends AbstractScope
     /**
      * Create a scope from array of scopes or arrays.
      *
-     * @param mixed $scopeOrArray
+     * @param mixed  $scopeOrArray
      * @param string $junction
      *
      * @return static
@@ -283,7 +283,7 @@ class Scope extends AbstractScope
     }
 
     /**
-     * Merge $scope into current scope AND as junction 
+     * Merge $scope into current scope AND as junction.
      *
      * @param AbstractScope|array $scope
      *
@@ -305,7 +305,7 @@ class Scope extends AbstractScope
     }
 
     /**
-     * Merge $scope into current scope OR as junction
+     * Merge $scope into current scope OR as junction.
      *
      * @param AbstractScope|array $scope
      *
@@ -323,12 +323,12 @@ class Scope extends AbstractScope
     }
 
     /**
-     * Merge number of scopes using AND as junction
-     * 
+     * Merge number of scopes using AND as junction.
+     *
      * @param AbstractScope $scopeA
      * @param AbstractScope $scopeB
      * @param AbstractScope $_
-     * 
+     *
      * @return Scope
      */
     public static function mergeAnd(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null)
@@ -337,7 +337,7 @@ class Scope extends AbstractScope
     }
 
     /**
-     * Merge number of scopes using OR as junction
+     * Merge number of scopes using OR as junction.
      *
      * @param AbstractScope $scopeA
      * @param AbstractScope $scopeB
@@ -351,7 +351,7 @@ class Scope extends AbstractScope
     }
 
     /**
-     * Merge two scopes using $junction
+     * Merge two scopes using $junction.
      *
      * @param AbstractScope $scopeA
      * @param AbstractScope $scopeB

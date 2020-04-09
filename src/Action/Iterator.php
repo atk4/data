@@ -2,11 +2,11 @@
 
 namespace atk4\data\Action;
 
+use atk4\data\Exception;
+use atk4\data\Field;
 use atk4\data\Model\Scope\AbstractScope;
 use atk4\data\Model\Scope\Condition;
 use atk4\data\Model\Scope\Scope;
-use atk4\data\Exception;
-use atk4\data\Field;
 
 /**
  * Class Array_ is returned by $model->action(). Compatible with DSQL to a certain point as it implements
@@ -47,33 +47,34 @@ class Iterator
 
         return $this;
     }
-    
+
     /**
-     * Checks if $row matches $scope
-     * 
-     * @param array $row
+     * Checks if $row matches $scope.
+     *
+     * @param array         $row
      * @param AbstractScope $scope
+     *
      * @throws Exception
-     * 
-     * @return boolean
+     *
+     * @return bool
      */
     protected function match(array $row, AbstractScope $scope)
     {
         $match = false;
-        
+
         // simple condition
         if ($scope instanceof Condition) {
             $args = $scope->toArray();
-            
+
             $field = $args[0];
             $operator = $args[1] ?? null;
             $value = $args[2] ?? null;
             if (count($args) == 2) {
                 $value = $operator;
-                
+
                 $operator = '=';
             }
-            
+
             if (!is_a($field, Field::class)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
@@ -81,86 +82,86 @@ class Iterator
                     'condition' => $scope,
                 ]);
             }
-            
+
             if (isset($row[$field->short_name])) {
                 $match = $this->where($row[$field->short_name], $operator, $value);
             }
         }
-        
+
         // nested conditions
         if ($scope instanceof Scope) {
             $matches = [];
-            
+
             foreach ($scope->getActiveComponents() as $component) {
                 $matches[] = $subMatch = (bool) $this->match($row, $component);
-                
+
                 // do not check all conditions if any match required
                 if ($scope->any() && $subMatch) {
                     break;
                 }
             }
-            
+
             // any matches && all matches the same (if all required)
             $match = array_filter($matches) && ($scope->all() ? count(array_unique($matches)) === 1 : true);
         }
-        
+
         return $match;
     }
-    
+
     protected function where($v1, $operator, $v2)
     {
         $map = [
-            '=' => function($v1, $v2) {
+            '=' => function ($v1, $v2) {
                 return is_array($v2) ? in_array($v1, $v2) : $v1 == $v2;
             },
-            '>' => function($v1, $v2) {
+            '>' => function ($v1, $v2) {
                 return $v1 > $v2;
             },
-            '>=' => function($v1, $v2) {
+            '>=' => function ($v1, $v2) {
                 return $v1 >= $v2;
             },
-            '<' => function($v1, $v2) {
+            '<' => function ($v1, $v2) {
                 return $v1 < $v2;
             },
-            '<=' => function($v1, $v2) {
+            '<=' => function ($v1, $v2) {
                 return $v1 <= $v2;
             },
-            '<>' => function($v1, $v2) {
+            '<>' => function ($v1, $v2) {
                 return is_array($v2) ? !in_array($v1, $v2) : $v1 != $v2;
             },
-            '!=' => function($v1, $v2) {
+            '!=' => function ($v1, $v2) {
                 return is_array($v2) ? !in_array($v1, $v2) : $v1 != $v2;
             },
-            'LIKE' => [$this, 'like'],
-            'NOT LIKE' => function($v1, $v2) {
-                return !$this->like($v1,$v2);
+            'LIKE'     => [$this, 'like'],
+            'NOT LIKE' => function ($v1, $v2) {
+                return !$this->like($v1, $v2);
             },
-            'IN' => function($v1, $v2) {
+            'IN' => function ($v1, $v2) {
                 return is_array($v2) ? in_array($v1, $v2) : false;
             },
-            'NOT IN' => function($v1, $v2) {
+            'NOT IN' => function ($v1, $v2) {
                 return is_array($v2) ? !in_array($v1, $v2) : false;
             },
-            'REGEXP' => function($v1, $v2) {
-                return preg_match('/' . $v2 . '/', $v1);
+            'REGEXP' => function ($v1, $v2) {
+                return preg_match('/'.$v2.'/', $v1);
             },
-            'NOT REGEXP' => function($v1, $v2) {
-                return !preg_match('/' . $v2 . '/', $v1);
+            'NOT REGEXP' => function ($v1, $v2) {
+                return !preg_match('/'.$v2.'/', $v1);
             },
         ];
-        
+
         $fx = $map[strtoupper($operator)] ?? null;
-        
+
         if (!is_callable($fx)) {
             throw new Exception([
                 'Unsupported operator',
                 'operator'    => $operator,
             ]);
         }
-        
+
         return call_user_func($fx, $v1, $v2);
     }
-        
+
     /**
      * Applies FilterIterator condition imitating the sql LIKE operator - $field LIKE %$value% | $value% | %$value.
      *
@@ -171,7 +172,7 @@ class Iterator
      */
     protected function like($v1, $pattern)
     {
-        return preg_match('/^' . str_ireplace('%', '.*?', $pattern) . '$/', $v1);
+        return preg_match('/^'.str_ireplace('%', '.*?', $pattern).'$/', $v1);
     }
 
     /**

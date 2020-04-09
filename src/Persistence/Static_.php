@@ -136,9 +136,9 @@ class Static_ extends Array_
      * Called from AfterAdd hook.
      *
      * @param Static_ $persistence
-     * @param Model              $model
+     * @param Model   $model
      */
-    public function afterAdd(Static_ $persistence, Model $model)
+    public function afterAdd(self $persistence, Model $model)
     {
         if ($persistence->titleForModel) {
             $model->title_field = $persistence->titleForModel;
