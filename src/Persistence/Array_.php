@@ -397,13 +397,13 @@ class Array_ extends Persistence
                         'action' => $type,
                     ]);
                 }
-                
+
                 $fx = $args[0];
                 $field = $args[1] ?? null;
                 $action = $this->initAction($model, $args[1] ?? null);
                 $this->applyScope($model, $action);
                 $this->setLimitOrder($model, $action);
-                
+
                 return $action->aggregate($fx, $field, $type == 'fx0');
 
             default:

@@ -47,44 +47,44 @@ class Iterator
 
         return $this;
     }
-    
+
     /**
-     * Calculates SUM|AVG|MIN|MAX aggragate values for $field
-     * 
+     * Calculates SUM|AVG|MIN|MAX aggragate values for $field.
+     *
      * @param string $fx
      * @param string $field
      * @param bool   $coalesce
-     * 
+     *
      * @throws Exception
-     * 
+     *
      * @return \atk4\data\Action\Iterator
      */
     public function aggregate($fx, $field, $coalesce = false)
     {
         $result = 0;
         $column = array_column(iterator_to_array($this->generator), $field);
-        
+
         switch (strtoupper($fx)) {
             case 'SUM':
                 $result = array_sum($column);
             break;
-            
+
             case 'AVG':
-                $column = $coalesce ? $column : array_filter($column, function($value) {
+                $column = $coalesce ? $column : array_filter($column, function ($value) {
                     return !is_null($value);
                 });
-                
+
                 $result = array_sum($column) / count($column);
             break;
-            
+
             case 'MAX':
                 $result = max($column);
             break;
-            
+
             case 'MIN':
                 $result = min($column);
             break;
-            
+
             default:
                 throw new Exception([
                     'Persistence\Array_ driver action unsupported format',
@@ -94,7 +94,7 @@ class Iterator
         }
 
         $this->generator = new \ArrayIterator([[$result]]);
-        
+
         return $this;
     }
 
