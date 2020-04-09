@@ -655,14 +655,14 @@ class SQL extends Persistence
 
             case 'count':
                 $this->initQueryConditions($m, $q);
+                $this->setLimitOrder($m, $q);
                 $m->hook('initSelectQuery', [$q]);
-                if (isset($args['alias'])) {
-                    $q->reset('field')->field('count(*)', $args['alias']);
-                } else {
-                    $q->reset('field')->field('count(*)');
+
+                if ($m->limit) {
+                    $q = $this->dsql()->table($q, $m->table.'_limit');
                 }
 
-                return $q;
+                return $q->reset('field')->field('count(*)', $args['alias'] ?? null);
 
             case 'field':
                 if (!isset($args[0])) {
