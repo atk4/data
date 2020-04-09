@@ -146,9 +146,11 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->on($user)->toWords());
 
-        $condition = Condition::create('name', $user->expr('[surname]'));
+        if ($this->driver == 'sqlite') {
+            $condition = Condition::create('name', $user->expr('[surname]'));
 
-        $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->on($user)->toWords());
+            $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->on($user)->toWords());
+        }
 
         $condition = Condition::create('country_id', null);
 
