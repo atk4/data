@@ -94,6 +94,18 @@ class Scope extends AbstractScope
         return $this->junction === self::AND;
     }
 
+    /**
+     * Clears the scope from components.
+     *
+     * @return static
+     */
+    public function clear()
+    {
+        $this->components = [];
+
+        return $this;
+    }
+
     public function __clone()
     {
         foreach ($this->components as $k => $scope) {
