@@ -1,9 +1,9 @@
 <phpunit colors="true" bootstrap="vendor/autoload.php" printerClass="atk4\core\PHPUnit_AgileResultPrinter">
     <php>
-        <var name="DB_DSN" value="mysql:dbname=dsql_test;host=localhost" />
-        <var name="DB_USER" value="travis" />
-        <var name="DB_PASSWD" value="" />
-        <var name="DB_DBNAME" value="dsql_test" />
+        <var name="DB_DSN" value="mysql:dbname=db;host=mysql" />
+        <var name="DB_USER" value="root" />
+        <var name="DB_PASSWD" value="password" />
+        <var name="DB_DBNAME" value="db" />
     </php>
     <filter>
         <blacklist>
