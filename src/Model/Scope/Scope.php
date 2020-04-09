@@ -34,13 +34,28 @@ class Scope extends AbstractScope
      */
     protected $junction = self::AND;
 
+    /**
+     * Get array of all components
+     *
+     * @return array
+     */
+    public function getAllComponents()
+    {
+        return $this->components;
+    }
+    
+    /**
+     * Get array of only active components
+     *
+     * @return array
+     */
     public function getActiveComponents()
     {
         return array_filter($this->components, function (AbstractScope $scope) {
             return $scope->isActive();
         });
     }
-
+    
     public function setModel(?Model $model = null)
     {
         $this->model = $model;
@@ -52,6 +67,13 @@ class Scope extends AbstractScope
         return $this;
     }
 
+    /**
+     * Add a scope as component to this scope
+     * 
+     * @param AbstractScope $scope
+     * 
+     * @return static
+     */
     public function addComponent(AbstractScope $scope)
     {
         $this->components[] = $scope->setModel($this->model);
@@ -180,7 +202,7 @@ class Scope extends AbstractScope
      * Create a scope from array of scopes or arrays.
      *
      * @param mixed $scopeOrArray
-     * @param bool  $or
+     * @param string $junction
      *
      * @return static
      */
@@ -198,7 +220,7 @@ class Scope extends AbstractScope
         // use one of JUNCTIONS values, otherwise $junction is truish means OR, falsish means AND
         $this->junction = in_array($junction, self::JUNCTIONS) ? $junction : self::JUNCTIONS[$junction ? 1 : 0];
 
-        // handle it as Expression if it is a string
+        // handle it with Condition if it is a string
         if (is_string($scopes)) {
             $scopes = Condition::create($scopes);
         }
@@ -260,6 +282,13 @@ class Scope extends AbstractScope
         return $ret ?: null;
     }
 
+    /**
+     * Merge $scope into current scope AND as junction 
+     *
+     * @param AbstractScope|array $scope
+     *
+     * @return static
+     */
     public function and($scope)
     {
         if ($this->junction == self::OR) {
@@ -275,6 +304,13 @@ class Scope extends AbstractScope
         return $this->addComponent($scope);
     }
 
+    /**
+     * Merge $scope into current scope OR as junction
+     *
+     * @param AbstractScope|array $scope
+     *
+     * @return static
+     */
     public function or($scope)
     {
         $self = clone $this;
@@ -283,21 +319,46 @@ class Scope extends AbstractScope
 
         $this->components = [$self, $scope];
 
-        $this->setModel($this->model);
-
-        return $this;
+        return $this->setModel($this->model);
     }
 
+    /**
+     * Merge number of scopes using AND as junction
+     * 
+     * @param AbstractScope $scopeA
+     * @param AbstractScope $scopeB
+     * @param AbstractScope $_
+     * 
+     * @return Scope
+     */
     public static function mergeAnd(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null)
     {
         return self::create(func_get_args(), self::AND);
     }
 
+    /**
+     * Merge number of scopes using OR as junction
+     *
+     * @param AbstractScope $scopeA
+     * @param AbstractScope $scopeB
+     * @param AbstractScope $_
+     *
+     * @return Scope
+     */
     public static function mergeOr(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null)
     {
         return self::create(func_get_args(), self::OR);
     }
 
+    /**
+     * Merge two scopes using $junction
+     *
+     * @param AbstractScope $scopeA
+     * @param AbstractScope $scopeB
+     * @param string|bool   $junction
+     *
+     * @return Scope
+     */
     public static function merge(AbstractScope $scopeA, AbstractScope $scopeB, $junction = self::AND)
     {
         return self::create([$scopeA, $scopeB], $junction);
