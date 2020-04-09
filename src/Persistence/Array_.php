@@ -381,8 +381,7 @@ class Array_ extends Persistence
                 $this->setLimitOrder($model, $action);
 
                 // get first record
-                $row = $action->getRow();
-                if ($row) {
+                if ($row = $action->getRow()) {
                     if (isset($args['alias']) && array_key_exists($field, $row)) {
                         $row[$args['alias']] = $row[$field];
                         unset($row[$field]);
@@ -390,12 +389,22 @@ class Array_ extends Persistence
                 }
 
                 return $row;
-            /* These are not implemented yet
             case 'fx':
             case 'fx0':
-
-                return $action->aggregate($field->short_name, $fx);
-            */
+                if (!isset($args[0], $args[1])) {
+                    throw new Exception([
+                        'fx action needs 2 arguments, eg: ["sum", "amount"]',
+                        'action' => $type,
+                    ]);
+                }
+                
+                $fx = $args[0];
+                $field = $args[1] ?? null;
+                $action = $this->initAction($model, $args[1] ?? null);
+                $this->applyScope($model, $action);
+                $this->setLimitOrder($model, $action);
+                
+                return $action->aggregate($fx, $field, $type == 'fx0');
 
             default:
                 throw (new Exception('Unsupported action mode'))

@@ -488,6 +488,33 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->unload();
     }
 
+    public function testAggregates()
+    {
+        $a = ['invoices' => [
+            1 => ['id'=>1, 'number'=>'ABC9', 'items'=>11, 'active'=>1],
+            2 => ['id'=>2, 'number'=>'ABC8', 'items'=>12, 'active'=>0],
+            3 => ['id'=>3, 'items'=>13, 'active'=>1],
+            4 => ['id'=>4, 'number'=>'ABC6', 'items'=>14, 'active'=>0],
+            5 => ['id'=>5, 'number'=>'ABC5', 'items'=>15, 'active'=>0],
+            6 => ['id'=>6, 'number'=>'ABC4', 'items'=>16, 'active'=>1],
+            7 => ['id'=>7, 'number'=>'ABC3', 'items'=>17, 'active'=>0],
+            8 => ['id'=>8, 'number'=>'ABC2', 'items'=>18, 'active'=>1],
+            9 => ['id'=>9, 'items'=>19, 'active'=>1],
+            10 => ['id'=>20, 'items'=>0, 'active'=>1],
+            10 => ['id'=>20, 'items'=>null, 'active'=>1],
+        ]];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p, 'invoices');
+        $m->addField('items', ['type' => 'integer']);
+
+        $this->assertEquals(15, $m->action('fx', ['avg', 'items'])->getOne());
+        $this->assertEquals(13.5, $m->action('fx0', ['avg', 'items'])->getOne());
+        $this->assertEquals(0, $m->action('fx', ['min', 'items'])->getOne());
+        $this->assertEquals(19, $m->action('fx', ['max', 'items'])->getOne());
+        $this->assertEquals(135, $m->action('fx', ['sum', 'items'])->getOne());
+    }
+
     /**
      * Returns exported data, but will use get() instead of export().
      *
