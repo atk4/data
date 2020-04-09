@@ -2,7 +2,11 @@
 
 namespace atk4\data\Action;
 
-use Guzzle\Iterator\FilterIterator;
+use atk4\data\Model\Scope\AbstractScope;
+use atk4\data\Model\Scope\Condition;
+use atk4\data\Model\Scope\Scope;
+use atk4\data\Exception;
+use atk4\data\Field;
 
 /**
  * Class Array_ is returned by $model->action(). Compatible with DSQL to a certain point as it implements
@@ -17,6 +21,8 @@ class Iterator
 
     /**
      * Iterator constructor.
+     *
+     * @param array $data
      */
     public function __construct(array $data)
     {
@@ -31,69 +37,141 @@ class Iterator
      *
      * @return $this
      */
-    public function where($field, $value)
+    public function filter(AbstractScope $scope)
     {
-        $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
-            // skip row. does not have field at all
-            if (!array_key_exists($field, $row)) {
-                return false;
-            }
-
-            // has row and it matches
-            if ($row[$field] == $value) {
-                return true;
-            }
-
-            return false;
-        });
+        if (!$scope->isEmpty()) {
+            $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($scope) {
+                return $this->match($row, $scope);
+            });
+        }
 
         return $this;
     }
-
+    
+    /**
+     * Checks if $row matches $scope
+     * 
+     * @param array $row
+     * @param AbstractScope $scope
+     * @throws Exception
+     * 
+     * @return boolean
+     */
+    protected function match(array $row, AbstractScope $scope)
+    {
+        $match = false;
+        
+        // simple condition
+        if ($scope instanceof Condition) {
+            $args = $scope->toArray();
+            
+            $field = $args[0];
+            $operator = $args[1] ?? null;
+            $value = $args[2] ?? null;
+            if (count($args) == 2) {
+                $value = $operator;
+                
+                $operator = '=';
+            }
+            
+            if (!is_a($field, Field::class)) {
+                throw new Exception([
+                    'Persistence\Array_ driver condition unsupported format',
+                    'reason'    => 'Unsupported object instance '.get_class($field),
+                    'condition' => $scope,
+                ]);
+            }
+            
+            if (isset($row[$field->short_name])) {
+                $match = $this->where($row[$field->short_name], $operator, $value);
+            }
+        }
+        
+        // nested conditions
+        if ($scope instanceof Scope) {
+            $matches = [];
+            
+            foreach ($scope->getActiveComponents() as $component) {
+                $matches[] = $subMatch = (bool) $this->match($row, $component);
+                
+                // do not check all conditions if any match required
+                if ($scope->any() && $subMatch) {
+                    break;
+                }
+            }
+            
+            // any matches && all matches the same (if all required)
+            $match = array_filter($matches) && ($scope->all() ? count(array_unique($matches)) === 1 : true);
+        }
+        
+        return $match;
+    }
+    
+    protected function where($v1, $operator, $v2)
+    {
+        $map = [
+            '=' => function($v1, $v2) {
+                return is_array($v2) ? in_array($v1, $v2) : $v1 == $v2;
+            },
+            '>' => function($v1, $v2) {
+                return $v1 > $v2;
+            },
+            '>=' => function($v1, $v2) {
+                return $v1 >= $v2;
+            },
+            '<' => function($v1, $v2) {
+                return $v1 < $v2;
+            },
+            '<=' => function($v1, $v2) {
+                return $v1 <= $v2;
+            },
+            '<>' => function($v1, $v2) {
+                return is_array($v2) ? !in_array($v1, $v2) : $v1 != $v2;
+            },
+            '!=' => function($v1, $v2) {
+                return is_array($v2) ? !in_array($v1, $v2) : $v1 != $v2;
+            },
+            'LIKE' => [$this, 'like'],
+            'NOT LIKE' => function($v1, $v2) {
+                return !$this->like($v1,$v2);
+            },
+            'IN' => function($v1, $v2) {
+                return is_array($v2) ? in_array($v1, $v2) : false;
+            },
+            'NOT IN' => function($v1, $v2) {
+                return is_array($v2) ? !in_array($v1, $v2) : false;
+            },
+            'REGEXP' => function($v1, $v2) {
+                return preg_match('/' . $v2 . '/', $v1);
+            },
+            'NOT REGEXP' => function($v1, $v2) {
+                return !preg_match('/' . $v2 . '/', $v1);
+            },
+        ];
+        
+        $fx = $map[strtoupper($operator)] ?? null;
+        
+        if (!is_callable($fx)) {
+            throw new Exception([
+                'Unsupported operator',
+                'operator'    => $operator,
+            ]);
+        }
+        
+        return call_user_func($fx, $v1, $v2);
+    }
+        
     /**
      * Applies FilterIterator condition imitating the sql LIKE operator - $field LIKE %$value% | $value% | %$value.
      *
      * @param string $field
-     * @param string $value
+     * @param string $pattern
      *
      * @return $this
      */
-    public function like($field, $value)
+    protected function like($v1, $pattern)
     {
-        $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
-            // skip row. does not have field at all
-            if (!array_key_exists($field, $row)) {
-                return false;
-            }
-
-            $value = trim($value);
-            $clean_value = trim($value, '%');
-            // the row field exists check the position of the "%"(s)
-            switch ($value) {
-                // case "%str%"
-                case substr($value, -1, 1) === '%' && substr($value, 0, 1) === '%':
-                    return strpos($row[$field], $clean_value) !== false;
-
-                    break;
-                // case "str%"
-                case substr($value, -1, 1) === '%':
-                    return substr($row[$field], 0, strlen($clean_value)) === $clean_value;
-
-                    break;
-                // case "%str"
-                case substr($value, 0, 1) === '%':
-                    return substr($row[$field], -strlen($clean_value)) === $clean_value;
-
-                    break;
-                // full match
-                default:
-                    return $row[$field] == $clean_value;
-            }
-
-            return false;
-        });
-
-        return $this;
+        return preg_match('/^' . str_ireplace('%', '.*?', $pattern) . '$/', $v1);
     }
 
     /**
@@ -112,7 +190,6 @@ class Iterator
         foreach ($fields as list($field, $desc)) {
             $args[] = array_column($data, $field);
             $args[] = $desc ? SORT_DESC : SORT_ASC;
-            //$args[] = SORT_STRING; // SORT_STRING | SORT_NUMERIC | SORT_REGULAR
         }
         $args[] = &$data;
 
@@ -128,14 +205,14 @@ class Iterator
     /**
      * Limit Iterator.
      *
-     * @param int $cnt
-     * @param int $shift
+     * @param int $length
+     * @param int $offset
      *
      * @return $this
      */
-    public function limit($cnt, $shift = 0)
+    public function limit($length, $offset = 0)
     {
-        $data = array_slice($this->get(), $shift, $cnt, true);
+        $data = array_slice($this->get(), $offset, $length, true);
 
         // put data back in generator
         $this->generator = new \ArrayIterator($data);
