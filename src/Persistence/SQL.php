@@ -626,13 +626,8 @@ class SQL extends Persistence
             case 'count':
                 $this->initQueryConditions($m, $q);
                 $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q]);
-                if (isset($args['alias'])) {
-                    $q->reset('field')->field('count(*)', $args['alias']);
-                } else {
-                    $q->reset('field')->field('count(*)');
-                }
-
-                return $q;
+                
+                return $q->reset('field')->field('count(*)', $args['alias'] ?? null);
             case 'field':
                 if (!isset($args[0])) {
                     throw (new Exception('This action requires one argument with field name'))
