@@ -503,16 +503,16 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             7  => ['id'=>7, 'number'=>'ABC3', 'items'=>17, 'active'=>0],
             8  => ['id'=>8, 'number'=>'ABC2', 'items'=>18, 'active'=>1],
             9  => ['id'=>9, 'items'=>19, 'active'=>1],
-            10 => ['id'=>20, 'items'=>0, 'active'=>1],
-            10 => ['id'=>20, 'items'=>null, 'active'=>1],
+            10 => ['id'=>10, 'items'=>0, 'active'=>1],
+            11 => ['id'=>11, 'items'=>null, 'active'=>1],
         ]];
 
         $p = new Persistence\Array_($a);
         $m = new Model($p, 'invoices');
         $m->addField('items', ['type' => 'integer']);
 
-        $this->assertEquals(15, $m->action('fx', ['avg', 'items'])->getOne());
-        $this->assertEquals(13.5, $m->action('fx0', ['avg', 'items'])->getOne());
+        $this->assertEquals(13.5, $m->action('fx', ['avg', 'items'])->getOne());
+        $this->assertEquals(12.272727272727273, $m->action('fx0', ['avg', 'items'])->getOne());
         $this->assertEquals(0, $m->action('fx', ['min', 'items'])->getOne());
         $this->assertEquals(19, $m->action('fx', ['max', 'items'])->getOne());
         $this->assertEquals(135, $m->action('fx', ['sum', 'items'])->getOne());
