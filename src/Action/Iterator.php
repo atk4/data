@@ -160,7 +160,7 @@ class Iterator
 
     protected function where($v1, $operator, $v2)
     {
-        switch ($operator) {
+        switch (strtoupper($operator)) {
             case '=':
                 $result = is_array($v2) ? $this->where($v1, 'IN', $v2) : $v1 == $v2;
             break;
