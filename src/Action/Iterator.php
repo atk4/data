@@ -62,7 +62,7 @@ class Iterator
     public function aggregate($fx, $field, $coalesce = false)
     {
         $result = 0;
-        $column = array_column(iterator_to_array($this->generator), $field);
+        $column = array_column($this->get(), $field);
 
         switch (strtoupper($fx)) {
             case 'SUM':
@@ -160,69 +160,67 @@ class Iterator
 
     protected function where($v1, $operator, $v2)
     {
-        $map = [
-            '=' => function ($v1, $v2) {
-                return is_array($v2) ? in_array($v1, $v2) : $v1 == $v2;
-            },
-            '>' => function ($v1, $v2) {
-                return $v1 > $v2;
-            },
-            '>=' => function ($v1, $v2) {
-                return $v1 >= $v2;
-            },
-            '<' => function ($v1, $v2) {
-                return $v1 < $v2;
-            },
-            '<=' => function ($v1, $v2) {
-                return $v1 <= $v2;
-            },
-            '<>' => function ($v1, $v2) {
-                return is_array($v2) ? !in_array($v1, $v2) : $v1 != $v2;
-            },
-            '!=' => function ($v1, $v2) {
-                return is_array($v2) ? !in_array($v1, $v2) : $v1 != $v2;
-            },
-            'LIKE'     => [$this, 'like'],
-            'NOT LIKE' => function ($v1, $v2) {
-                return !$this->like($v1, $v2);
-            },
-            'IN' => function ($v1, $v2) {
-                return is_array($v2) ? in_array($v1, $v2) : false;
-            },
-            'NOT IN' => function ($v1, $v2) {
-                return is_array($v2) ? !in_array($v1, $v2) : false;
-            },
-            'REGEXP' => function ($v1, $v2) {
-                return preg_match('/'.$v2.'/', $v1);
-            },
-            'NOT REGEXP' => function ($v1, $v2) {
-                return !preg_match('/'.$v2.'/', $v1);
-            },
-        ];
+        switch ($operator) {
+            case '=':
+                $result = is_array($v2) ? $this->where($v1, 'IN', $v2) : $v1 == $v2;
+            break;
 
-        $fx = $map[strtoupper($operator)] ?? null;
+            case '>':
+                $result = $v1 > $v2;
+            break;
 
-        if (!is_callable($fx)) {
-            throw new Exception([
-                'Unsupported operator',
-                'operator'    => $operator,
-            ]);
+            case '>=':
+                $result = $v1 >= $v2;
+            break;
+
+            case '<':
+                $result = $v1 < $v2;
+            break;
+
+            case '<=':
+                $result = $v1 <= $v2;
+            break;
+
+            case '!=':
+            case '<>':
+                $result = is_array($v2) ? !in_array($v1, $v2) : $v1 != $v2;
+            break;
+
+            case 'LIKE':
+                $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
+
+                $result = preg_match('/^'.$pattern.'$/', $v1);
+            break;
+
+            case 'NOT LIKE':
+                $result = !$this->where($v1, 'LIKE', $v2);
+            break;
+
+            case 'IN':
+                $result = is_array($v2) ? in_array($v1, $v2) : false;
+            break;
+
+            case 'NOT IN':
+                $result = !$this->where($v1, 'IN', $v2);
+            break;
+
+            case 'REGEXP':
+                $result = preg_match('/'.$v2.'/', $v1);
+            break;
+
+            case 'NOT REGEXP':
+                $result = !$this->where($v1, 'REGEXP', $v2);
+            break;
+
+            default:
+                throw new Exception([
+                    'Unsupported operator',
+                    'operator'    => $operator,
+                ]);
+            break;
         }
 
-        return call_user_func($fx, $v1, $v2);
-    }
-
-    /**
-     * Applies FilterIterator condition imitating the sql LIKE operator - $field LIKE %$value% | $value% | %$value.
-     *
-     * @param string $field
-     * @param string $pattern
-     *
-     * @return $this
-     */
-    protected function like($v1, $pattern)
-    {
-        return preg_match('/^'.str_ireplace('%', '.*?', $pattern).'$/', $v1);
+        return $result;
     }
 
     /**
