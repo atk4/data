@@ -183,7 +183,7 @@ class Iterator
 
             case '!=':
             case '<>':
-                $result = is_array($v2) ? !in_array($v1, $v2) : $v1 != $v2;
+                $result = !$this->where($v1, '=', $v2);
             break;
 
             case 'LIKE':
@@ -197,7 +197,7 @@ class Iterator
             break;
 
             case 'IN':
-                $result = is_array($v2) ? in_array($v1, $v2) : false;
+                $result = is_array($v2) ? in_array($v1, $v2) : $this->where($v1, '=', $v2);
             break;
 
             case 'NOT IN':
