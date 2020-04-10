@@ -21,7 +21,8 @@ class Array_ extends Persistence
     public $data;
 
     /**
-     * Array of last inserted ids.
+     * Array of last inserted ids per table.
+     * Last inserted ID for any table is stored under '$' key
      *
      * @var array
      */
@@ -218,17 +219,13 @@ class Array_ extends Persistence
     {
         $table = $table ?? $model->table;
 
-        if ($model->id_field) {
-            $ids = array_keys($this->data[$table]);
-            $type = $model->getField($model->id_field)->type;
-        } else {
-            $ids = [count($this->data[$table])]; // use ids starting from 1
-            $type = 'integer';
-        }
-
+        $type = $model->id_field ? $model->getField($model->id_field)->type : 'integer';
+        
         switch ($type) {
             case 'integer':
-                $id = count($ids) === 0 ? 1 : (max($ids) + 1);
+                $ids = $model->id_field ? array_keys($this->data[$table]) : [count($this->data[$table])];
+                
+                $id = $ids ? max($ids) + 1 : 1;
                 break;
 
             case 'string':
@@ -240,11 +237,12 @@ class Array_ extends Persistence
                     ->addMoreInfo('type', $type);
         }
 
-        return $this->lastInsertIds[$table] = $id;
+        return $this->lastInsertIds[$table] = $this->lastInsertIds['$'] = $id;
     }
 
     /**
      * Last ID inserted.
+     * Last inserted ID for any table is stored under '$' key
      *
      * @param Model $model
      *
@@ -252,7 +250,11 @@ class Array_ extends Persistence
      */
     public function lastInsertId(Model $model = null)
     {
-        return $this->lastInsertIds[$model->table] ?? null;
+        if ($model) {
+            return $this->lastInsertIds[$model->table] ?? null;
+        }
+        
+        return $this->lastInsertIds['$'] ?? null;
     }
 
     /**
@@ -272,15 +274,15 @@ class Array_ extends Persistence
      *
      * @param Model      $model
      * @param array|null $fields
-     * @param bool       $typecast_data Should we typecast exported data
+     * @param bool       $typecast Should we typecast exported data
      *
      * @return array
      */
-    public function export(Model $model, $fields = null, $typecast_data = true)
+    public function export(Model $model, $fields = null, $typecast = true)
     {
         $data = $model->action('select', [$fields])->get();
 
-        if ($typecast_data) {
+        if ($typecast) {
             $data = array_map(function ($row) use ($model) {
                 return $this->typecastLoadRow($model, $row);
             }, $data);
