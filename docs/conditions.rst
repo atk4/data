@@ -51,7 +51,7 @@ Operations
 
 Most database drivers will support the following additional operations::
 
-    >, <, >=, <=, !=, in, not in
+    >, <, >=, <=, !=, in, not in, like, not like, regexp, not regexp
 
 The operation must be specified as second argument::
 
@@ -113,6 +113,75 @@ This rather unusual condition will show user records who have registered on same
 date when they were born OR if they were born on 10th. (This is really silly
 condition, please don't judge, if you have a better example, I'd love to hear).
 
+Defining your classes
+---------------------
+
+Although I have used in-line addition of the arguments, normally you would want
+to set those conditions inside the init() method of your model::
+
+
+    class Model_Girl extends Model_User
+    {
+        function init(): void
+        {
+            parent::init();
+
+            $this->addCondition('gender', 'F');
+        }
+    }
+
+Note that the field 'gender' should be defined inside Model_User::init().
+
+Advanced Usage
+==============
+
+Scopes
+------
+
+Using the Model::addCondition method is the basic way to limit the model scope of records. Under the hood
+Agile Data utilizes a special set of classes (Condition and Scope) to apply the conditions as filters on records retrieved.
+These classes can be used directly and independently from Model class to define and store Model scope.
+
+.. php:class:: Condition
+
+Condition represents a simple scope in a form [field, operation, value], similar to the functionality of the 
+Model::addCondition method
+
+.. php:class:: Scope
+
+Scope can contain multiple Condition and Scope objects joined by either AND or OR therfore making possible creating Model scopes
+with deep nested conditions, e.g ((Name like 'ABC%' and Country = 'US') or (Name like 'CDE%' and (Country = 'DE' or Surname = 'XYZ')))
+
+Scope can be created using Scope::create method from array or joining Condition objects::
+
+	$condition1 = Condition::create('Name', 'like', 'ABC%');
+	$condition2 = Condition::create('Country', 'US');
+	
+	$scope1 = Scope::mergeAnd($condition1, $condition2);
+	
+	$condition3 = Condition::create('Country', 'DE');
+	$condition4 = Condition::create('Surname', 'XYZ');
+	
+	$scope2 = Scope::mergeOr($condition3, $condition4);
+
+	$condition5 = Condition::create('Name', 'like', 'CDE%');
+	
+	$scope3 = Scope::mergeAnd($condition5, $scope2);
+
+	$scope = Scope::mergeOr($scope1, $scope3);
+	
+	
+Scope is independent object not related to any model. Applying scope to model is using the Model::add method::
+
+	$contact->add($scope); // adding scope to model
+	$contact->scope()->and($conditionXYZ); // adding more conditions
+	
+Scope and Condition objects can be transformed to human readable text using the toWords method after linking it to a Model
+
+	$condition1->on($contact)->toWords();
+	
+Results in "Contact where Name is like 'ABC%'"
+
 Conditions on Referenced Models
 -------------------------------
 
@@ -135,24 +204,25 @@ This will limit the $contact model to those whose company has any tickets.
 'company' and 'tickets' are the name of the chained references ('company' is a reference in the $contact model and
 'tickets' is a reference in Company model)
 
-Defining your classes
----------------------
+Condition Value Placeholder
+---------------------------
 
-Although I have used in-line addition of the arguments, normally you would want
-to set those conditions inside the init() method of your model::
+Condition class enables defining placeholder for a condition value. This functionlity can be useful by defining a single scope object
+which can be applied with different conditions depending on environment factors (like current user, etc)
+E.g when defining access to record using scope we may want to define thatuser has access to the record if he/she created it::
 
-
-    class Model_Girl extends Model_User
-    {
-        function init(): void
-        {
-            parent::init();
-
-            $this->addCondition('gender', 'F');
-        }
-    }
-
-Note that the field 'gender' should be defined inside Model_User::init().
+	// First we register the placeholder using an anonymous function as value
+	Condition::registerValuePlaceholder('__USER__', [
+    	'label' => 'User', // the value that will be used by toWords method
+    	'value' => function(Condition $condition) {
+    		return $this->app->user; // the current user logged into the system
+    	},
+    ]);
+    
+    // Then we can use the placeholder in conditions
+    // This will limit the records to those created by the user
+    $condition = Condition::create('created_by', '__USER__');
+	
 
 Vendor-dependent logic
 ======================
