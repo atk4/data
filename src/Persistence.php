@@ -58,7 +58,7 @@ class Persistence
             case 'counter':
             case 'sqlite':
                 $db = new \atk4\data\Persistence\SQL($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
-                $db->driver = $driver;
+                $db->driverType = $driver;
 
                 return $db;
             default:

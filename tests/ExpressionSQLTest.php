@@ -32,7 +32,7 @@ class ExpressionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
-        if ($this->driver == 'sqlite') {
+        if ($this->driverType == 'sqlite') {
             $this->assertEquals(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()
@@ -49,7 +49,7 @@ class ExpressionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $i->addExpression('double_total_gross', '[total_gross]*2');
 
-        if ($this->driver == 'sqlite') {
+        if ($this->driverType == 'sqlite') {
             $this->assertEquals(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross",(("total_net"+"total_vat")*2) "double_total_gross" from "invoice"',
                 $i->action('select')->render()
@@ -75,7 +75,7 @@ class ExpressionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
             return '[total_net]+[total_vat]';
         });
 
-        if ($this->driver == 'sqlite') {
+        if ($this->driverType == 'sqlite') {
             $this->assertEquals(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()
@@ -104,7 +104,7 @@ class ExpressionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('sum_net', $i->action('fx', ['sum', 'total_net']));
 
-        if ($this->driver == 'sqlite') {
+        if ($this->driverType == 'sqlite') {
             $this->assertEquals(
                 'select "id","total_net","total_vat",(select sum("total_net") from "invoice") "sum_net" from "invoice"',
                 $i->action('select')->render()
@@ -126,10 +126,10 @@ class ExpressionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testExpressions()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
-        if ($this->driver == 'mysql') {
+        if ($this->driverType == 'mysql') {
             $this->markTestIncomplete('This test is not supported on Mysql (|| does not concatenate strings on mysql)');
         }
 
@@ -147,7 +147,7 @@ class ExpressionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $m->addExpression('full_name', '[name] || " " || [surname]');
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
-        if ($this->driver == 'sqlite') {
+        if ($this->driverType == 'sqlite') {
             $this->assertEquals(
                 'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where ("name" || " " || "surname") != "cached_name"',
                 $m->action('select')->render()

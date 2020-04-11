@@ -140,7 +140,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testMandatory4()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -368,7 +368,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testTitle()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -433,7 +433,7 @@ class FieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testActual()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
