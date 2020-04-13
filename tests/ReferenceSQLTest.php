@@ -438,7 +438,7 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
     }
 
     /**
-     * Few tests to test Reference_SQL_One addTitle() method.
+     * Few tests to test Reference\HasOne_SQL addTitle() method.
      */
     public function testAddTitle()
     {

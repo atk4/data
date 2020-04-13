@@ -154,7 +154,7 @@ class HasOne extends Reference
     public $dateTimeZoneClass = 'DateTimeZone';
 
     /**
-     * Reference_One will also add a field corresponding
+     * Reference\HasOne will also add a field corresponding
      * to 'our_field' unless it exists of course.
      *
      * @throws Exception

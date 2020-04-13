@@ -1061,7 +1061,7 @@ class SQL extends Persistence
             ];
         }
 
-        // If our Model has expr() method (inherited from Persistence_SQL) then use it
+        // If our Model has expr() method (inherited from Persistence\SQL) then use it
         if ($field->owner->hasMethod('expr')) {
             $field->owner->expr($mask, $prop);
         }
