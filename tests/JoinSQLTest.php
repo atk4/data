@@ -56,7 +56,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testJoinSaving1()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -161,7 +161,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testJoinSaving3()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -230,7 +230,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testJoinUpdate()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -401,7 +401,7 @@ class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testDoubleJoin()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
