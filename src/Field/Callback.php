@@ -39,7 +39,7 @@ class Callback extends \atk4\data\Field
     /**
      * Initialization.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
 

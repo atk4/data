@@ -52,7 +52,7 @@ class Field_SQL_Expression extends Field_SQL
     /**
      * Initialization.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
 

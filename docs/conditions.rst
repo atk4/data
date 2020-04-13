@@ -122,7 +122,7 @@ to set those conditions inside the init() method of your model::
 
     class Model_Girl extends Model_User
     {
-        function init()
+        function init(): void
         {
             parent::init();
 

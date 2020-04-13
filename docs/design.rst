@@ -202,7 +202,7 @@ behavior.
 Code to declare fields::
 
     class Model_Order extends \atk4\data\Model {
-        public function init() {
+        public function init(): void {
             parent::init();
 
             $this->addField('description');
@@ -233,7 +233,7 @@ work from a specific record, but more on that later.
 Code (add inside `init()`)::
 
     class Model_Client extends Model_User {
-        public function init() {
+        public function init(): void {
             parent::init();
 
             $this->hasMany('Order', new Model_Order());
@@ -241,7 +241,7 @@ Code (add inside `init()`)::
     }
 
     class Model_Order extends \atk4\data\Model {
-        public function init() {
+        public function init(): void {
             parent::init();
 
             $this->hasOne('Client', new Model_Client());
@@ -312,7 +312,7 @@ This is, however, a good point for you to write the initial batch of the code.
 Code::
 
     class Model_User extends \atk4\data\Model {
-        public function init() {
+        public function init(): void {
             parent::init();
 
             $this->addField('password');
@@ -332,7 +332,7 @@ Hooks can help you perform operations when object is being persisted::
 
 
     class Model_User extends \atk4\data\Model {
-        public function init() {
+        public function init(): void {
             parent::init();
 
             // addField() declaration

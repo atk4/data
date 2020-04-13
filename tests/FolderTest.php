@@ -8,7 +8,7 @@ class Folder extends \atk4\data\Model
 {
     public $table = 'folder';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->addField('name');

@@ -59,7 +59,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
     /**
      * This method is to figure out stuff.
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

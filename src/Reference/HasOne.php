@@ -159,7 +159,7 @@ class HasOne extends Reference
      *
      * @throws Exception
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

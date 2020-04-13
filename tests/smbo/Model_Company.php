@@ -8,7 +8,7 @@ class Model_Company extends Model
 {
     public $table = 'system';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 

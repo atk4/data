@@ -21,7 +21,7 @@ class Invoice1 extends Model
     public $table = 'invoice';
     public $title_field = 'ref_no';
 
-    public function init()
+    public function init(): void
     {
         parent:: init();
 
@@ -37,7 +37,7 @@ class Invoice1 extends Model
  */
 class Address1 extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -57,7 +57,7 @@ class Address1 extends Model
  */
 class DoorCode1 extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -73,7 +73,7 @@ class Country1 extends Model
 {
     public $table = 'country';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 

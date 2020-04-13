@@ -133,7 +133,7 @@ This next example builds a complex "Job Profitability Report" by only relying on
 
 ``` php
 class JobReport extends Job {
-  function init() {
+  function init(): void {
     parent::init();
 
     // Invoice contains Lines that may relevant to this job
@@ -358,7 +358,7 @@ Agile Data uses vendor-independent and lightweight `Model` class to describe you
 ``` php
 class Client extends \atk4\data\Model {
   public $table = 'client';
-  function init() {
+  function init(): void {
     parent::init();
 
     $this->addFields(['name','address']);
@@ -575,7 +575,7 @@ namespace my;
 class User extends \atk4\data\Model
 {
     public $table = 'user';
-    function init()
+    function init(): void
     {
         parent::init();
 

@@ -363,7 +363,7 @@ This can be handy if you wish to create a method for your Model to abstract away
 the data::
 
     class Client extends \atk4\data\Model {
-        function init() {
+        function init(): void {
             ...
         }
 
@@ -382,7 +382,7 @@ the data::
 Here is another example using PHP generator::
 
     class Client extends \atk4\data\Model {
-        function init() {
+        function init(): void {
             ...
         }
 
@@ -411,7 +411,7 @@ fetching like this::
 
     class Category extends \atk4\data\Model {
         public $table = 'category';
-        function init() {
+        function init(): void {
             parent::init();
 
             $this->hasOne('parent_id', new self());
@@ -442,7 +442,7 @@ you can significantly affect the query building of an SQL model::
         public $company_id = null; // inject company_id, which will act as a condition/argument
         public $read_only  = true; // instructs rest of the app, that this model is read-only
 
-        function init() {
+        function init(): void {
             parent::init();
 
             $this->addField('date_period');
@@ -485,7 +485,7 @@ procedure inside Model::init() then set $table property to a temporary table::
         public $table = 'temp_nominal_sheet';
         public $read_only = true; // instructs rest of the app, that this model is read-only
 
-        function init() {
+        function init(): void {
             parent::init();
 
             $q = $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
@@ -512,7 +512,7 @@ Technically you can also specify expression as a $table property of your model::
         public $table = null; // will be set in init()
         public $read_only = true; // instructs rest of the app, that this model is read-only
 
-        function init() {
+        function init(): void {
             parent::init();
 
             $this->init = $this->expr("call get_report_data()");

@@ -285,7 +285,7 @@ of References.
 Your init() method for a Field_Currency might look like this::
 
 
-    function init() {
+    function init(): void {
         parent::init();
 
         $this->never_persist = true;

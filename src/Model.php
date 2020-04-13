@@ -398,7 +398,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Extend this method to define fields of your choice.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
 

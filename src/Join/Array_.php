@@ -16,7 +16,7 @@ class Array_ extends Join
     /**
      * This method is to figure out stuff.
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
