@@ -60,7 +60,7 @@ abstract class AbstractScope
     {
         $this->_init();
 
-        $this->owner->scope()->addComponent($this);
+        $this->owner->scope()->and($this);
     }
 
     /**
