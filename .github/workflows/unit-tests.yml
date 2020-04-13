@@ -44,7 +44,7 @@ jobs:
       - run: |
           php --version
           php -i | grep pdo
-          type /etc/my.cnf
+          cat /etc/my.cnf
       - name: Get Composer Cache Directory
         id: composer-cache
         run: |
