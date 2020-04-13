@@ -147,6 +147,54 @@ These classes can be used directly and independently from Model class to define 
 Condition represents a simple scope in a form [field, operation, value], similar to the functionality of the 
 Model::addCondition method
 
+.. php:method:: create($key, $operator = null, $value = null);
+
+Creates condition object based on provided arguments. It acts similar to Model::addCondition
+
+$key can be Model field name, Field object, Expression object, FALSE (interpreted as Expression('false')), TRUE (interpreted as empty condition) or an array in the form of [$key, $operator, $value]
+$operator can be one of the supported operators >, <, >=, <=, !=, in, not in, like, not like, regexp, not regexp
+$value can be Field object, Expression object, array (interpreted as 'any of the values') or other scalar value
+
+If $value is omitted as argument then $operator is considered as $value and '=' is used as operator
+
+.. php:method:: negate();
+
+Negates the condition, e.g::
+
+	// results in 'name is not John'
+	Condition::create('name', 'John')->negate(); 
+
+.. php:method:: setModel(?Model $model = null);
+
+Sets the Model to use when interpreting the condition. When adding condition object to a model it is automatically asigned to the condition
+
+.. php:method:: on(Model $model);
+
+Sets the model of Condition to a clone of $model to avoid changes to the original object.
+
+.. php:method:: toWords($asHtml = false);
+
+Converts the condition object to human readable words. Model must be set first. Recommended is use of Condition::on method to set the model
+as it clones the model object first::
+
+	// results in 'Contact where Name is John'
+	Condition::create('name', 'John')->on($contactModel)->toWords(); 
+
+.. php:method:: validate($values);
+
+Validates $values array if matching the condition when applied on $model. Returns array of conditions that are not met or empty if $values fit ::
+
+	$condition = Condition::create('name', 'John');
+	
+	// as condition is that only contacts named John are valid
+	// $result will return array($condition) as $condition is not met
+	// this array can be used to display validation errors
+	$result = $condition->on($contactModel)->validate(['name' => 'Peter']);	
+
+.. php:method:: find($key);
+
+Returns array of conditions whose key property matches the $key parameter. Useful when renaming fields and updating saved scope objects
+
 .. php:class:: Scope
 
 Scope can contain multiple Condition and Scope objects joined by either AND or OR therfore making possible creating Model scopes
@@ -154,17 +202,17 @@ with deep nested conditions, e.g ((Name like 'ABC%' and Country = 'US') or (Name
 
 Scope can be created using Scope::create method from array or joining Condition objects::
 
-	$condition1 = Condition::create('Name', 'like', 'ABC%');
-	$condition2 = Condition::create('Country', 'US');
+	$condition1 = Condition::create('name', 'like', 'ABC%');
+	$condition2 = Condition::create('country', 'US');
 	
 	$scope1 = Scope::mergeAnd($condition1, $condition2);
 	
-	$condition3 = Condition::create('Country', 'DE');
-	$condition4 = Condition::create('Surname', 'XYZ');
+	$condition3 = Condition::create('country', 'DE');
+	$condition4 = Condition::create('surname', 'XYZ');
 	
 	$scope2 = Scope::mergeOr($condition3, $condition4);
 
-	$condition5 = Condition::create('Name', 'like', 'CDE%');
+	$condition5 = Condition::create('name', 'like', 'CDE%');
 	
 	$scope3 = Scope::mergeAnd($condition5, $scope2);
 
@@ -176,11 +224,79 @@ Scope is independent object not related to any model. Applying scope to model is
 	$contact->add($scope); // adding scope to model
 	$contact->scope()->and($conditionXYZ); // adding more conditions
 	
-Scope and Condition objects can be transformed to human readable text using the toWords method after linking it to a Model
-
-	$condition1->on($contact)->toWords();
 	
-Results in "Contact where Name is like 'ABC%'"
+.. php:method::	create($scopeOrArray = null, $junction = Scope::AND);
+
+Creates a scope object from array. If scope is passed as first argument uses this as result::
+
+	// below will create 2 conditions and join them with AND
+	$scope1 = Scope::create([
+		['name', 'like', 'ABC%'],
+		['country', 'US']
+	]);
+	
+.. php:method:: negate();
+
+Negates the scope using De Morgan's laws, e.g::
+
+	// using $scope1 defined above
+	// results in "(Name not like 'ABC%') or (Country does not equal 'US')"
+	$scope1->negate(); 
+
+.. php:method:: and(AbstractScope $scope);
+
+Merge $scope into current scope using AND as junction. If current scope junction is AND simply adds a component.
+If it is OR then changes it to AND and uses current scope and $scope as two sub-components
+
+.. php:method:: or(AbstractScope $scope);
+
+Merge $scope into current scope using AND as junction. If current scope junction is OR simply adds a component.
+If it is AND then changes it to OR and uses current scope and $scope as two sub-components
+
+.. php:method:: mergeAnd(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null);
+
+Merge number of scopes using AND as junction. Returns the resulting scope.
+
+.. php:method:: mergeOr(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null);
+
+Merge number of scopes using OR as junction. Returns the resulting scope.
+
+.. php:method:: merge(AbstractScope $scopeA, AbstractScope $scopeB, $junction = self::AND);
+
+Merge two scopes using $junction. Returns the resulting scope.
+
+.. php:method:: find($key);
+
+Returns array of conditions whose key property matches the $key parameter. Useful when renaming fields and updating saved scope objects
+
+.. php:method:: addComponent(AbstractScope $scope);
+
+Add a component (sub-scope or sub-condition) to the scope. The scope junction (either AND or OR remains same)
+
+.. php:method:: getAllComponents();
+
+Get array of all scope components.
+
+.. php:method:: getActiveComponents();
+
+Get array of only active scope components.
+
+.. php:method:: peel();
+
+Peels off nested scopes with single contained component. Useful for converting (((field = value))) to field = value.
+
+.. php:method:: clear();
+
+Clears the scope from components.
+
+.. php:method:: any();
+
+Checks if scope components are joined by OR
+
+.. php:method:: all();
+
+Checks if scope components are joined by AND
+
 
 Conditions on Referenced Models
 -------------------------------
