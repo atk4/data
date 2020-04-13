@@ -23,6 +23,7 @@ jobs:
         image: mariadb:10.5.1
         env:
           MYSQL_ROOT_PASSWORD: atk4_pass
+          MYSQL_ROOT_HOST: localhost
           MYSQL_USER: atk4_test
           MYSQL_PASSWORD: atk4_pass
           MYSQL_DATABASE: atk4_test__data
@@ -42,7 +43,8 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           php --version
-          php -r "phpinfo();"
+          php -i | grep pdo
+          type /etc/my.cnf
       - name: Get Composer Cache Directory
         id: composer-cache
         run: |
