@@ -225,7 +225,7 @@ class Condition extends AbstractScope
 
     public function find($key)
     {
-        return ($this->key === $key) ? $this : null;
+        return ($this->key === $key) ? [$this] : [];
     }
 
     public function toWords($asHtml = false)

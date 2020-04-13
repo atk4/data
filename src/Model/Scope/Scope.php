@@ -269,22 +269,14 @@ class Scope extends AbstractScope
                 if ($cc == $key) {
                     $ret[] = $cc;
                 } elseif ($cc instanceof AbstractScope) {
-                    $scope = $cc->find($key);
-                    if (is_array($scope)) {
-                        $ret = array_merge($ret, $scope);
-                    }
+                    $ret = array_merge($ret, (array) $cc->find($key));
                 }
             } else {
-                $scope = $cc->find($key);
-                if (is_array($scope)) {
-                    $ret = array_merge($ret, $scope);
-                } elseif (!is_null($scope)) {
-                    $ret[] = $scope;
-                }
+                $ret = array_merge($ret, (array) $cc->find($key));
             }
         }
 
-        return $ret ?: null;
+        return $ret ?: [];
     }
 
     /**

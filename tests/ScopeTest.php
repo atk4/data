@@ -260,6 +260,25 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->on($user)->toWords());
     }
+    
+    public function testFind()
+    {
+        $user = clone $this->user;
+
+        $condition1 = Condition::create('name', 'Alain');
+        $condition2 = Condition::create('country_code', 'CA');
+
+        $scope1 = Scope::mergeAnd($condition1, $condition2);
+        $condition3 = Condition::create('surname', 'Prost')->negate();
+
+        $scope = Scope::mergeAnd($scope1, $condition3);
+        
+        foreach ($scope->find('name') as $condition) {
+            $condition->key = 'surname';
+        }
+
+        $this->assertEquals('(Surname is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->on($user)->toWords());
+    }
 
 //     public function testValuesToScopeValidation()
 //     {
