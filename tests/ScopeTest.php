@@ -146,7 +146,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->on($user)->toWords());
 
-        if ($this->driver == 'sqlite') {
+        if ($this->driverType == 'sqlite') {
             $condition = Condition::create('name', $user->expr('[surname]'));
 
             $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->on($user)->toWords());
@@ -279,6 +279,62 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals('(Surname is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->on($user)->toWords());
     }
+    
+    public function testNegate()
+    {
+        $user = clone $this->user;
+
+        $condition1 = Condition::create('name', '!=', 'Alain');
+        $condition2 = Condition::create('country_code', '!=', 'FR');
+
+        $scope = Scope::mergeOr($condition1, $condition2)->negate();
+
+        $user->add($scope);
+
+        foreach ($user as $u) {
+            $this->assertTrue($u['name'] == 'Alain' && $u['country_code'] == 'FR');
+        }
+    }
+    
+    public function testAnd()
+    {
+        $user = clone $this->user;
+
+        $condition1 = Condition::create('name', 'Alain');
+        $condition2 = Condition::create('country_code', 'FR');
+
+        $scope = Scope::mergeAnd($condition1, $condition2);
+        
+        $scope->or(Condition::create('name', 'John'));
+
+        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'FR\') or Name is equal to \'John\'', $scope->on($user)->toWords());
+    }
+    
+    public function testOr()
+    {
+        $user = clone $this->user;
+
+        $condition1 = Condition::create('name', 'Alain');
+        $condition2 = Condition::create('country_code', 'FR');
+
+        $scope = Scope::mergeOr($condition1, $condition2);
+        
+        $scope->and(Condition::create('name', 'John'));
+
+        $this->assertEquals('(Name is equal to \'Alain\' or Code is equal to \'FR\') and Name is equal to \'John\'', $scope->on($user)->toWords());
+    }
+    
+    public function testMerge()
+    {
+        $user = clone $this->user;
+
+        $condition1 = Condition::create('name', 'Alain');
+        $condition2 = Condition::create('country_code', 'FR');
+
+        $scope = Scope::merge($condition1, $condition2);
+
+        $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $scope->on($user)->toWords());
+    }
 
 //     public function testValuesToScopeValidation()
 //     {
@@ -287,9 +343,9 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 //         $condition1 = Condition::create('name', 'James');
 //         $condition2 = Condition::create('surname', 'Smith');
 
-//         $scope = Scope::and($condition1, $condition2);
+//         $scope = Scope::mergeAnd($condition1, $condition2);
 
-//         foreach ($scope->validate($user, [
+//         foreach ($scope->on($user)->validate([
 //             'name' => 'John',
 //             'surname' => 'Smith',
 //         ]) as $failedCondition) {
