@@ -2,8 +2,8 @@
 
 namespace atk4\data\Model\Scope;
 
-use atk4\data\Model;
 use atk4\data\Exception;
+use atk4\data\Model;
 
 class Scope extends AbstractScope
 {
