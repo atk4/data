@@ -532,7 +532,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     protected $typeToFieldSeed = [
         'boolean' => [Field\Boolean::class],
-        'blob' => [Field\LazyBlob::class],
+        'blob'    => [Field\LazyBlob::class],
     ];
 
     /**
