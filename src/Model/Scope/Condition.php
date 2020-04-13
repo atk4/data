@@ -210,20 +210,6 @@ class Condition extends AbstractScope
         $model->add($this);
 
         return $model->export() ? [] : [$this];
-
-//     	$match = false;
-
-//     	$model->atomic(function() use ($model, $values, & $match) {
-//     	    $id = $model->persistence->insert($model, $values);
-
-//     	    $model->withID($id)->set($this);
-
-//     	    $match = (bool) $model->export();
-
-//     	    throw new \Exception();
-//     	});
-
-//     	return $match ? [] : $this;
     }
 
     public function negate()
