@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  mysql:
+    image: mariadb:10.5.1
+    environment:
+      MYSQL_ROOT_PASSWORD: atk4_pass
+      MYSQL_ROOT_HOST: localhost
+      MYSQL_USER: atk4_test
+      MYSQL_PASSWORD: atk4_pass
+      MYSQL_DATABASE: atk4_test__data
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: mysqladmin ping
+  postgres:
+    image: postgres:10-alpine
+    environment:
+      POSTGRES_USER: atk4_test
+      POSTGRES_PASSWORD: atk4_pass
+      POSTGRES_DB: atk4_test__data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: pg_isready
+  tests:
+    image: atk4/image:latest
+    container_name: tests
+    depends_on:
+      - mysql
+      - postgres
+    volumes:
+      - .:/app/
+    entrypoint: /app/tools/local-tests.sh
+    stdin_open: true
+    tty: true
+
