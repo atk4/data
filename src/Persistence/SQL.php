@@ -502,6 +502,9 @@ class SQL extends Persistence
                 $v = $v->format($format);
             }
             break;
+        case 'blob':
+            // @TODO
+            break;
         case 'array':
         case 'object':
             // don't encode if we already use some kind of serialization
@@ -600,6 +603,9 @@ class SQL extends Persistence
                     $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                 }
             }
+            break;
+        case 'blob':
+            // @TODO
             break;
         case 'array':
             // don't decode if we already use some kind of serialization

@@ -19,7 +19,7 @@ class HasOne extends Reference
      * Field type.
      *
      * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'array', 'object'.
+     *             'date', 'datetime', 'time', 'blob', 'array', 'object'.
      * Can also be set to unspecified type for your own custom handling.
      *
      * @var string

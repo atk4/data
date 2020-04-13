@@ -34,7 +34,7 @@ class Field implements Expressionable
      * Field type.
      *
      * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'array', 'object'.
+     *             'date', 'datetime', 'time', 'blob', 'array', 'object'.
      * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
@@ -365,6 +365,8 @@ class Field implements Expressionable
                 }
 
                 break;
+            case 'blob':
+                throw new Exception(['Use Field\LazyBlob for type=blob', 'this'=>$this]);
             case 'array':
                 if (is_string($value) && $f->owner && $f->owner->persistence) {
                     $value = $f->owner->persistence->jsonDecode($f, $value, true);
@@ -434,6 +436,8 @@ class Field implements Expressionable
                     }
 
                     return (string) $v;
+                case 'blob':
+                    throw new Exception(['Use Field\LazyBlob for type=blob', 'this'=>$this]);
                 case 'array':
                     return json_encode($v); // todo use Persistence->jsonEncode() instead
                 case 'object':
