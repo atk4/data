@@ -45,7 +45,7 @@ jobs:
           php --version
           php -i | grep pdo
           cat /etc/my.cnf
-          ls /etc/my.cnf.d/*
+          cat /etc/my.cnf.d/mariadb-server.cnf
       - name: Get Composer Cache Directory
         id: composer-cache
         run: |
