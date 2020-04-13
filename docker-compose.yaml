@@ -5,7 +5,6 @@ services:
     image: mariadb:10.5.1
     environment:
       MYSQL_ROOT_PASSWORD: atk4_pass
-      MYSQL_ROOT_HOST: localhost
       MYSQL_USER: atk4_test
       MYSQL_PASSWORD: atk4_pass
       MYSQL_DATABASE: atk4_test__data
