@@ -97,7 +97,7 @@ class Reference
      *
      * @return string
      */
-    public function getDesiredName()
+    public function getDesiredName(): string
     {
         return '#ref_'.$this->link;
     }

@@ -28,7 +28,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
      *
      * @return string
      */
-    public function getDesiredName()
+    public function getDesiredName(): string
     {
         return '_'.($this->foreign_alias ?: $this->foreign_table[0]);
     }

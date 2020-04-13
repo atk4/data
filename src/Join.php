@@ -149,7 +149,7 @@ class Join
      *
      * @return string
      */
-    public function getDesiredName()
+    public function getDesiredName(): string
     {
         return '#join_'.$this->foreign_table;
     }
