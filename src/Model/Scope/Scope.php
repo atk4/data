@@ -3,6 +3,7 @@
 namespace atk4\data\Model\Scope;
 
 use atk4\data\Model;
+use atk4\data\Exception;
 
 class Scope extends AbstractScope
 {
@@ -148,10 +149,14 @@ class Scope extends AbstractScope
         return $component->peel();
     }
 
-    public function validate(Model $model, $values)
+    public function validate($values)
     {
         if (!$this->isActive()) {
             return [];
+        }
+
+        if (!$model = $this->model) {
+            throw new Exception(['Model must be set using setModel to validate']);
         }
 
         $values = is_numeric($id = $values) ? $model->load($id)->get() : $values;
