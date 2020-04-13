@@ -332,7 +332,7 @@ class Join
      * @param string $link
      * @param array  $defaults
      *
-     * @return Reference_One
+     * @return Reference\HasOne
      */
     public function hasOne($link, $defaults = [])
     {
@@ -351,7 +351,7 @@ class Join
      * @param string $link
      * @param array  $defaults
      *
-     * @return Reference_Many
+     * @return Reference\HasMany
      */
     public function hasMany($link, $defaults = [])
     {

@@ -4,7 +4,7 @@ namespace atk4\data\tests;
 
 use atk4\core\Exception;
 use atk4\data\Model;
-use atk4\data\Persistence_Static;
+use atk4\data\Persistence\Static_ as Persistence_Static;
 use atk4\data\UserAction;
 
 /**

@@ -93,7 +93,7 @@ checks:
 #        enabled: false
 #      Controversial/CamelCaseVariableName:  #
 #        enabled: false
-#      Controversial/CamelCaseClassName:     # Because we use Join_SQL where we specifically include _
+#      Controversial/CamelCaseClassName:     # Because we use Join\SQL where we specifically include _
 #        enabled: false
 #      Naming/ShortVariable:             # because sometimes variables should be short
 #        enabled: false
