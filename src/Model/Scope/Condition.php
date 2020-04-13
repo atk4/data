@@ -193,13 +193,15 @@ class Condition extends AbstractScope
         return array_filter([$this->key, $this->operator, $this->value]) ? false : true;
     }
 
-    public function validate(Model $model, $values)
+    public function validate($values)
     {
         if (!$this->isActive()) {
             return [];
         }
 
-        $model = $model->newInstance();
+        if (!$model = $this->model) {
+            throw new Exception(['Model must be set using setModel to validate']);
+        }
 
         $data = [1 => $values];
 

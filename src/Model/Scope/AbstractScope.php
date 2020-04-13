@@ -102,15 +102,14 @@ abstract class AbstractScope
     abstract public function find($keyOrCondition);
 
     /**
-     * Validate the values against the $model with applied this scope
+     * Validate the values against the $this->model with applied this scope
      * Returns array of conditions not met.
      *
-     * @param Model $model
      * @param array $values
      *
      * @return Condition[] array of conditions the values did not validate against, empty array if valid
      */
-    abstract public function validate(Model $model, $values);
+    abstract public function validate($values);
 
     /**
      * Return if scope has any conditions.
