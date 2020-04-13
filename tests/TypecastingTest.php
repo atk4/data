@@ -120,7 +120,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testEmptyValues()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -216,7 +216,7 @@ class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testTypecastNull()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
