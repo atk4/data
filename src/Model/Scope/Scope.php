@@ -282,11 +282,11 @@ class Scope extends AbstractScope
     /**
      * Merge $scope into current scope AND as junction.
      *
-     * @param AbstractScope|array $scope
+     * @param AbstractScope $scope
      *
      * @return static
      */
-    public function and($scope)
+    public function and(AbstractScope $scope)
     {
         if ($this->junction == self::OR) {
             $self = clone $this;
@@ -304,11 +304,11 @@ class Scope extends AbstractScope
     /**
      * Merge $scope into current scope OR as junction.
      *
-     * @param AbstractScope|array $scope
+     * @param AbstractScope $scope
      *
      * @return static
      */
-    public function or($scope)
+    public function or(AbstractScope $scope)
     {
         $self = clone $this;
 
