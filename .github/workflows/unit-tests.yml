@@ -28,7 +28,7 @@ jobs:
           MYSQL_DATABASE: atk4_test__data
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
         ports:
-          - "3306:3306"
+          - 3306:3306
       postgres:
         image: postgres:10-alpine
         env:
@@ -37,7 +37,7 @@ jobs:
           POSTGRES_DB: atk4_test__data
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
-          - "5432:5432"
+          - 5432:5432
     steps:
       - uses: actions/checkout@v2
       - run: php --version
@@ -62,7 +62,7 @@ jobs:
         run: vendor/bin/phpunit --configuration phpunit.xml --coverage-text --exclude-group dns
 
       - name: MySQL Testing
-        run: vendor/bin/phpunit --configuration phpunit-mysql.xml --exclude-group dns
+        run: vendor/bin/phpunit --configuration phpunit-mysql.xml --exclude-group dns || echo 'debug'
 
       - name: PgSQL Testing (expected errors)
         run: vendor/bin/phpunit --configuration phpunit-pgsql.xml --exclude-group dns || echo 'ignoring errors..'

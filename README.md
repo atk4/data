@@ -630,10 +630,6 @@ Please consider our other MIT-licensed project - [Agile UI](http://www.agiletool
 
 Agile Data is **Stable since Jul 2016**. For more recent updates see [Changelog](https://github.com/atk4/data/blob/develop/CHANGELOG.md).
 
-## Local Testing
-
-We've included "docker-compose" for running local tests: `docker-compose run tests`
-
 ## Community and Support
 
 [![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
