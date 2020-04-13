@@ -231,10 +231,10 @@ Start by creating a class::
 
             if (isset($this->owner->deleted_only)) {
                 $this->owner->addCondition('is_deleted', true);
-                $this->owner->addMethod('restore', $this);
+                $this->owner->addMethod('restore', [$this, 'restore']);
             }else{
                 $this->owner->addCondition('is_deleted', false);
-                $this->owner->addMethod('softDelete', $this);
+                $this->owner->addMethod('softDelete', [$this, 'softDelete']);
             }
         }
 
@@ -340,7 +340,7 @@ before and just slightly modifying it::
 
             if (isset($this->owner->deleted_only)) {
                 $this->owner->addCondition('is_deleted', true);
-                $this->owner->addMethod('restore', $this);
+                $this->owner->addMethod('restore', [$this, 'restore']);
             } else {
                 $this->owner->addCondition('is_deleted', false);
                 $this->owner->onHook('beforeDelete', [$this, 'softDelete'], null, 100);

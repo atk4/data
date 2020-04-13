@@ -179,9 +179,9 @@ class SQL extends Persistence
      */
     protected function initPersistence(Model $m)
     {
-        $m->addMethod('expr', $this);
-        $m->addMethod('dsql', $this);
-        $m->addMethod('exprNow', $this);
+        $m->addMethod('expr', [$this, 'expr']);
+        $m->addMethod('dsql', [$this, 'dsql']);
+        $m->addMethod('exprNow', [$this, 'exprNow']);
     }
 
     /**
