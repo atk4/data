@@ -229,7 +229,7 @@ Scope is independent object not related to any model. Applying scope to model is
 
 Creates a scope object from array. If scope is passed as first argument uses this as result::
 
-	// below will create 2 conditions and join them with AND
+	// below will create 2 conditions and join them with OR
 	$scope1 = Scope::create([
 		['name', 'like', 'ABC%'],
 		['country', 'US']
