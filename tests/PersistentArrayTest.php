@@ -588,11 +588,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $p = new Persistence\Array_($a);
         $m = new Model($p, 'invoices');
         $m->addField('items', ['type' => 'integer']);
-        
+
         $this->assertEquals(1, $m->action('exists')->getOne());
-        
+
         $m->delete(1);
-        
+
         $this->assertEquals(0, $m->action('exists')->getOne());
     }
 

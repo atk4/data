@@ -370,7 +370,7 @@ class Array_ extends Persistence
                 $this->setLimitOrder($model, $action);
 
                 return $action->count();
-                
+
             case 'exists':
                 $action = $this->initAction($model, $args[0] ?? null);
                 $this->applyScope($model, $action);

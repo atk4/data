@@ -144,7 +144,7 @@ class Condition extends AbstractScope
                     foreach ($references as $link) {
                         $model = $model->refLink($link);
                     }
-                    
+
                     // '#' -> has # referenced records
                     // '?' -> has any referenced records
                     // '!' -> does not have any referenced records
@@ -153,20 +153,19 @@ class Condition extends AbstractScope
                         if ($field == '#' && !$operator) {
                             $field = '?';
                         }
-                        
+
                         if (in_array($field, ['!', '?'])) {
                             $operator = '=';
                             $value = $field == '?' ? 1 : 0;
                         }
-                    }
-                    else {
+                    } else {
                         // otherwise add the condition to the referenced model
                         // and check if any records exist matching the criteria
                         $model->addCondition($field, $operator, $value);
                     }
-                    
+
                     // if not counting we check for existence only
-                    $field = $field == '#' ? $model->action('count') : $model->action('exists');                    
+                    $field = $field == '#' ? $model->action('count') : $model->action('exists');
                 } else {
                     $field = $model->getField($field);
                 }
@@ -278,12 +277,10 @@ class Condition extends AbstractScope
                 if ($field === '#') {
                     $words[] = $this->operator ? 'number of records' : 'any referenced record exists';
                     $field = '';
-                }
-                elseif ($field === '?') {
+                } elseif ($field === '?') {
                     $words[] = 'any referenced record exists';
                     $field = '';
-                }
-                elseif ($field === '!') {
+                } elseif ($field === '!') {
                     $words[] = 'no referenced records exist';
                     $field = '';
                 }
