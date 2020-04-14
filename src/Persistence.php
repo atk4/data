@@ -63,7 +63,7 @@ class Persistence
                 return $db;
             default:
                 throw new Exception([
-                    'Unable to determine persistence driverType from DSN',
+                    'Unable to determine persistence driver type from DSN',
                     'dsn' => $dsn['dsn'],
                 ]);
         }
