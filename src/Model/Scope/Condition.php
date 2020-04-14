@@ -128,7 +128,7 @@ class Condition extends AbstractScope
         // replace placeholder can also disable the condition
         $value = $condition->replaceValue($condition->value);
 
-        if (!$this->isActive()) {
+        if (!$condition->isActive()) {
             return [];
         }
 

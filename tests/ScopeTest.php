@@ -203,11 +203,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $condition = Condition::create('id', '__PERSPECTIVE__');
 
-        $user = clone $this->user;
-
-        $user->add($condition);
-
-        $this->assertEmpty($user->conditions);
+        $this->assertEmpty($condition->on($user)->toArray());
     }
 
     public function testScope()
