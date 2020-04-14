@@ -280,6 +280,18 @@ class Iterator
     }
 
     /**
+     * Checks if iterator has any rows.
+     *
+     * @return $this
+     */
+    public function exists()
+    {
+        $this->generator = new \ArrayIterator([[$this->generator->valid() ? 1 : 0]]);
+
+        return $this;
+    }
+
+    /**
      * Return all data inside array.
      *
      * @return array

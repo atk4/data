@@ -579,6 +579,23 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertEquals(135, $m->action('fx', ['sum', 'items'])->getOne());
     }
 
+    public function testExists()
+    {
+        $a = ['invoices' => [
+            1  => ['id'=>1, 'number'=>'ABC9', 'items'=>11, 'active'=>1],
+        ]];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p, 'invoices');
+        $m->addField('items', ['type' => 'integer']);
+        
+        $this->assertEquals(1, $m->action('exists')->getOne());
+        
+        $m->delete(1);
+        
+        $this->assertEquals(0, $m->action('exists')->getOne());
+    }
+
     /**
      * Returns exported data, but will use get() instead of export().
      *
