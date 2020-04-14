@@ -162,6 +162,8 @@ class Condition extends AbstractScope
                         // otherwise add the condition to the referenced model
                         // and check if any records exist matching the criteria
                         $model->addCondition($field, $operator, $value);
+                        $operator = '=';
+                        $value = 1;
                     }
 
                     // if not counting we check for existence only
