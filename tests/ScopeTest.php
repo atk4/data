@@ -114,6 +114,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
             ['name'       => 'Jane', 'surname' => 'Doe', 'country_code'=>'LV'],
             ['name'       => 'Alain', 'surname' => 'Prost', 'country_code'=>'FR'],
             ['name'       => 'Aerton', 'surname' => 'Senna', 'country_code'=>'BR'],
+            ['name'       => 'Rubens', 'surname' => 'Barichello', 'country_code'=>'BR'],
         ]);
     }
 
@@ -173,6 +174,39 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $country->addCondition('Users/#');
 
         $this->assertEquals('Country that has reference Users where any referenced record exists', $country->scope()->toWords());
+        
+        $country = clone $this->country;
+        
+        $country->addCondition('Users/!');
+        
+        $this->assertEquals('Country that has reference Users where no referenced records exist', $country->scope()->toWords());
+    }
+    
+    public function testContitionOnReferencedRecords()
+    {
+        $country = clone $this->country;
+        
+        $country->addCondition('Users/!');
+
+        foreach ($country as $c) {
+            $this->assertEmpty($c['user_names']);
+        }
+
+        $country = clone $this->country;
+        
+        $country->addCondition('Users/?');
+        
+        foreach ($country as $c) {
+            $this->assertNotEmpty($c['user_names']);
+        }
+        
+        $country = clone $this->country;
+        
+        $country->addCondition('Users/#', '>', 1);
+        
+        foreach ($country as $c) {
+            $this->assertEquals('BR', $c['code']);
+        }
     }
 
     public function testConditionValuePlaceholder()
@@ -241,7 +275,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $user->add($scope);
 
-        $this->assertEquals(3, count($user->export()));
+        $this->assertEquals(4, count($user->export()));
     }
 
     public function testScopeToWords()

@@ -297,7 +297,6 @@ Checks if scope components are joined by OR
 
 Checks if scope components are joined by AND
 
-
 Conditions on Referenced Models
 -------------------------------
 
@@ -314,11 +313,21 @@ This will limit the $contact model to those whose company is in US.
 If a condition must be set directly on the existence or number of referenced records the special symbol "#" can be
 utilized to indicate the condition is on the number of records::
 
-	$contact->addCondition('company/tickets/#', '>', 0);
+	$contact->addCondition('company/tickets/#', '>', 3);
 	
-This will limit the $contact model to those whose company has any tickets.
+This will limit the $contact model to those whose company have more than 3 tickets.
 'company' and 'tickets' are the name of the chained references ('company' is a reference in the $contact model and
 'tickets' is a reference in Company model)
+
+For applying conditions on existence of records the '?' (has any) and '!' (doesn't have any) special symbols can be used.
+Although it is similar in functionality to checking ('company/tickets/#', '>', 0) or ('company/tickets/#', '=', 0)
+'?' and '!' special symbols use optimized query and are much faster::
+
+	// Contact whose company has any tickets
+	$contact->addCondition('company/tickets/?');
+
+	// Contact whose company doesn't have any tickets
+	$contact->addCondition('company/tickets/!');
 
 Condition Value Placeholder
 ---------------------------
