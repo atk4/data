@@ -26,7 +26,7 @@ class SCountry extends Model
 
     public $caption = 'Country';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -64,7 +64,7 @@ class SUser extends Model
 
     public $caption = 'User';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
