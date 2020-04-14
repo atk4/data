@@ -90,7 +90,6 @@ class Iterator
                     'Persistence\Array_ driver action unsupported format',
                     'action'    => $fx,
                 ]);
-            break;
         }
 
         $this->generator = new \ArrayIterator([[$result]]);
@@ -217,7 +216,6 @@ class Iterator
                     'Unsupported operator',
                     'operator'    => $operator,
                 ]);
-            break;
         }
 
         return $result;
