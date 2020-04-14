@@ -184,8 +184,19 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testContitionOnReferencedRecords()
     {
+        $user = clone $this->user;
+
+        $user->addCondition('country_id/code', 'LV');
+
+        $this->assertEquals(1, $user->action('count')->getOne());
+
+        foreach ($user as $u) {
+            $this->assertEquals('LV', $u['country_code']);
+        }
+
         $country = clone $this->country;
 
+        // countries with no users
         $country->addCondition('Users/!');
 
         foreach ($country as $c) {
@@ -194,6 +205,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $country = clone $this->country;
 
+        // countries with any user
         $country->addCondition('Users/?');
 
         foreach ($country as $c) {
@@ -202,13 +214,14 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $country = clone $this->country;
 
+        // countries with more than one user
         $country->addCondition('Users/#', '>', 1);
 
         foreach ($country as $c) {
             $this->assertEquals('BR', $c['code']);
         }
     }
-
+    
     public function testConditionValuePlaceholder()
     {
         $user = clone $this->user;

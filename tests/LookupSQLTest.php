@@ -369,55 +369,6 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         ], $this->getDB(['country', 'user']));
     }
 
-    public function testQueryByReference()
-    {
-        $c = new LCountry($this->db);
-
-        // Specifying hasMany here will perform input
-        $c->import([
-            ['Canada', 'code'=>'CA'],
-            ['Latvia', 'code'=>'LV'],
-            ['Japan', 'code'=>'JP'],
-            ['Lithuania', 'code'=>'LT', 'is_eu'=>true],
-            ['Russia', 'code'=>'RU'],
-        ]);
-
-        $u = new LUser($this->db);
-
-        $u->import($users = [
-            ['name'       => 'Alain', 'country_code'=>'CA'],
-            ['name'       => 'Imants', 'country_code'=>'LV'],
-        ]);
-
-        $uu1 = clone $u;
-
-        $uu1->addCondition('country_id/code', 'LV');
-
-        $this->assertEquals(1, $uu1->action('count')->getOne());
-
-        foreach ($uu1 as $user) {
-            $this->assertEquals('LV', $user['country_code']);
-        }
-
-        $cc1 = clone $c;
-
-        // countries with 1 user
-        $cc1->addCondition('Users/#', 1);
-
-        foreach ($cc1 as $country) {
-            $this->assertTrue(in_array($country['code'], array_column($users, 'country_code')));
-        }
-
-        $cc2 = clone $c;
-
-        // countries with no user
-        $cc2->addCondition('Users/#', 0);
-
-        foreach ($cc2 as $country) {
-            $this->assertTrue(!in_array($country['code'], array_column($users, 'country_code')));
-        }
-    }
-
     /*
      *
      * TODO - that's left for hasMTM implementation..., to be coming later
