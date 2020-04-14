@@ -335,6 +335,20 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $scope->on($user)->toWords());
     }
+    
+    public function testVarExport()
+    {
+        $user = clone $this->user;
+
+        $condition1 = Condition::create('name', 'Alain');
+        $condition2 = Condition::create('country_code', 'FR');
+
+        $scope = Scope::merge($condition1, $condition2);
+
+        eval('$resurected = ' . var_export($scope, true) . ';');
+        
+        $this->assertEquals($scope, $resurected);        
+    }
 
 //     public function testValuesToScopeValidation()
 //     {

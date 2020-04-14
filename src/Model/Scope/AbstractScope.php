@@ -182,7 +182,8 @@ abstract class AbstractScope
 
     public static function __set_state($array)
     {
-        $scope = new static();
+        // create empty scope
+        $scope = new static(true);
 
         foreach ($array as $property => $value) {
             $scope->{$property} = $value;
