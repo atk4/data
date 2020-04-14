@@ -224,7 +224,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $scope2 = Scope::mergeAnd($condition3, $condition4);
 
         $scope = Scope::mergeOr($scope1, $scope2);
-        
+
         $this->assertEquals(Scope::OR, $scope->getJunction());
 
         $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')', $scope->on($user)->toWords());
@@ -337,7 +337,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $scope->on($user)->toWords());
     }
-    
+
     public function testVarExport()
     {
         $user = clone $this->user;
@@ -347,11 +347,11 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $scope = Scope::merge($condition1, $condition2);
 
-        eval('$resurected = ' . var_export($scope, true) . ';');
-        
-        $this->assertEquals($scope, $resurected);        
+        eval('$resurected = '.var_export($scope, true).';');
+
+        $this->assertEquals($scope, $resurected);
     }
-    
+
     public function testActiveEmpty()
     {
         $user = clone $this->user;
@@ -362,24 +362,24 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $scope = Scope::merge($condition1, $condition2);
 
         $scope->deactivate();
-        
+
         $this->assertFalse($scope->isEmpty());
-        
+
         $this->assertFalse($scope->isActive());
-        
+
         $this->assertEmpty($scope->on($user)->toWords());
-        
+
         $scope->activate();
-        
+
         $this->assertTrue($scope->isActive());
-        
+
         $condition1 = Condition::create('name', 'Alain')->deactivate();
         $condition2 = Condition::create('country_code', 'FR')->deactivate();
-        
+
         $scope = Scope::merge($condition1, $condition2);
-        
+
         $this->assertFalse($scope->isActive());
-        
+
         $this->assertTrue($scope->isEmpty());
     }
 
