@@ -221,7 +221,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
             $this->assertEquals('BR', $c['code']);
         }
     }
-    
+
     public function testConditionValuePlaceholder()
     {
         $user = clone $this->user;
