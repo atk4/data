@@ -31,7 +31,7 @@ class ACClient extends Model
 {
     use ACReminder;
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 

@@ -21,7 +21,7 @@ class LCountry extends Model
 {
     public $table = 'country';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -57,7 +57,7 @@ class LUser extends Model
 {
     public $table = 'user';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -91,7 +91,7 @@ class LFriend extends Model
     public $table = 'friend';
     public $title_field = 'friend_name';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 

@@ -21,7 +21,7 @@ class Invoice2 extends Model
     public $table = 'invoice';
     public $title_field = 'ref_no';
 
-    public function init()
+    public function init(): void
     {
         parent:: init();
 
@@ -58,7 +58,7 @@ class Invoice2 extends Model
  */
 class Line2 extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -93,7 +93,7 @@ class VatRate2 extends Model
 {
     public $table = 'vat_rate';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -107,7 +107,7 @@ class VatRate2 extends Model
  */
 class Discount2 extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 

@@ -146,7 +146,7 @@ Next, exit and create file `src/Model_ContactInfo.php`::
     class Model_ContactInfo extends \atk4\data\Model
     {
         public $table = 'contact_info';
-        function init()
+        function init(): void
         {
             parent::init();
 
@@ -276,7 +276,7 @@ like this::
     {
         public $table = 'user';
 
-        function init() {
+        function init(): void {
             parent::init();
 
             $this->addField('username');

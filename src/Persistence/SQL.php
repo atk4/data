@@ -179,9 +179,9 @@ class SQL extends Persistence
      */
     protected function initPersistence(Model $m)
     {
-        $m->addMethod('expr', $this);
-        $m->addMethod('dsql', $this);
-        $m->addMethod('exprNow', $this);
+        $m->addMethod('expr', [$this, 'expr']);
+        $m->addMethod('dsql', [$this, 'dsql']);
+        $m->addMethod('exprNow', [$this, 'exprNow']);
     }
 
     /**
@@ -758,7 +758,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
 
         if (!$data) {
@@ -826,7 +826,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
 
         if (!$data) {
@@ -904,7 +904,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
 
         $m->hook('afterInsertQuery', [$insert, $st]);
@@ -954,7 +954,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
     }
 
@@ -994,7 +994,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
 
         if ($m->id_field && isset($data[$m->id_field]) && $m->dirty[$m->id_field]) {
@@ -1039,7 +1039,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
     }
 

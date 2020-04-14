@@ -538,7 +538,7 @@ that relate to itself. Here is example::
 
     class Model_Item3 extends \atk4\data\Model {
         public $table='item';
-        function init() {
+        function init(): void {
             parent::init();
 
             $m = new Model_Item3();
@@ -601,7 +601,7 @@ Consider the following two models::
 
     class Model_User extends \atk4\data\Model {
         public $table = 'user';
-        function init() {
+        function init(): void {
             parent::init();
             $this->addField('name');
 
@@ -611,7 +611,7 @@ Consider the following two models::
 
     class Model_Contact extends \atk4\data\Model {
         public $table = 'contact';
-        function init() {
+        function init(): void {
             parent::init();
 
             $this->addField('address');

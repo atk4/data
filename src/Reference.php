@@ -87,7 +87,7 @@ class Reference
     /**
      * Initialization.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
     }
@@ -97,7 +97,7 @@ class Reference
      *
      * @return string
      */
-    public function getDesiredName()
+    public function getDesiredName(): string
     {
         return '#ref_'.$this->link;
     }

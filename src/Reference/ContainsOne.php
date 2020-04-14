@@ -52,7 +52,7 @@ class ContainsOne extends Reference
      * Reference\ContainsOne will also add a field corresponding
      * to 'our_field' unless it exists of course.
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

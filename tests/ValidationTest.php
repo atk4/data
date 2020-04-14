@@ -7,7 +7,7 @@ use atk4\data\Persistence;
 
 class MyValidationModel extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -31,7 +31,7 @@ class MyValidationModel extends Model
 
 class BadValidationModel extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
