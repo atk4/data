@@ -8,7 +8,7 @@ use atk4\data\Persistence;
 /**
  * Various tests to make sure transactions work OK.
  */
-class TransactionTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class TransactionTest extends \atk4\schema\PhpunitTestCase
 {
     public function testAtomicOperations()
     {

@@ -10,7 +10,7 @@ use atk4\data\Persistence;
  *
  * Tests cases when model have to work with data that does not have ID field
  */
-class ModelWithoutIDTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
 {
     public $m;
 

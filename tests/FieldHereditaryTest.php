@@ -5,7 +5,7 @@ namespace atk4\data\tests;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
-class FieldHereditaryTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class FieldHereditaryTest extends \atk4\schema\PhpunitTestCase
 {
     public function testDirty1()
     {

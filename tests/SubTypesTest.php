@@ -133,7 +133,7 @@ class STTransaction_TransferIn extends STGenericTransaction
 /**
  * Implements various tests for deep copying objects.
  */
-class SubTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class SubTypesTest extends \atk4\schema\PhpunitTestCase
 {
     public function setUp()
     {

@@ -4,7 +4,7 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 
-class RefactoredFieldTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class RefactoredFieldTest extends \atk4\schema\PhpunitTestCase
 {
     // === Field_Boolean tests ================================================
 

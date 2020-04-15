@@ -4,7 +4,7 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 
-class DefaultTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class DefaultTest extends \atk4\schema\PhpunitTestCase
 {
     public function testDefaultValue()
     {

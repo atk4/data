@@ -89,7 +89,7 @@ class Country1 extends Model
  * ATK Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
  */
-class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 {
     public function setUp()
     {

@@ -2,7 +2,7 @@
 
 namespace atk4\data\tests\smbo;
 
-class SMBOTestCase extends \atk4\schema\PHPUnit_SchemaTestCase
+class SMBOTestCase extends \atk4\schema\PhpunitTestCase
 {
     public function setUp()
     {

@@ -7,7 +7,7 @@ use atk4\data\Model;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class PersistentSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
 {
     /**
      * Test constructor.

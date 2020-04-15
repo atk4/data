@@ -32,7 +32,7 @@ class MyDateTime extends \DateTime
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class TypecastingTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class TypecastingTest extends \atk4\schema\PhpunitTestCase
 {
     public function testType()
     {
