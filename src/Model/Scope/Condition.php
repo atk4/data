@@ -304,7 +304,7 @@ class Condition extends AbstractScope
 
     protected function operatorToWords($asHtml = false)
     {
-        return $this->operator ? (self::$dictionary[$this->operator] ?? 'is equal to') : '';
+        return $this->operator ? (self::$dictionary[strtoupper($this->operator)] ?? 'is equal to') : '';
     }
 
     protected function valueToWords($value, $asHtml = false)
