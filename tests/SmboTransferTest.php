@@ -1,11 +1,52 @@
 <?php
 
-namespace atk4\data\tests\smbo;
+namespace atk4\data\tests;
 
 use atk4\data\Persistence;
+use atk4\data\tests\Model\Smbo\Account;
+use atk4\data\tests\Model\Smbo\Company;
+use atk4\data\tests\Model\Smbo\Payment;
+use atk4\data\tests\Model\Smbo\Transfer;
 
-class TransferTest extends SMBOTestCase
+/**
+ * Practical test contributed by Sortmybooks.com.
+ */
+class SmboTransferTest extends \atk4\schema\PhpunitTestCase
 {
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $s = $this->getMigrator();
+
+        $x = clone $s;
+        $x->table('account')->drop()
+            ->id()
+            ->field('name')
+            ->create();
+
+        $x = clone $s;
+        $x->table('document')->drop()
+            ->id()
+            ->field('reference')
+            ->field('contact_from_id')
+            ->field('contact_to_id')
+            ->field('doc_type')
+            ->field('amount', ['type' => 'decimal(8,2)'])
+            ->create();
+
+        $x = clone $s;
+        $x->table('payment')->drop()
+            ->id()
+            ->field('document_id', ['type' => 'integer'])
+            ->field('account_id', ['type' => 'integer'])
+            ->field('cheque_no')
+            //->field('misc_payment', ['type' => 'enum(\'N\',\'Y\')'])
+            ->field('misc_payment', ['type' => 'varchar(2)'])
+            ->field('transfer_document_id')
+            ->create();
+    }
+
     /**
      * Testing transfer between two accounts.
      */
@@ -73,7 +114,7 @@ class TransferTest extends SMBOTestCase
         $db = Persistence::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
 
         // Create a new company
-        $company = new Model_Company($db);
+        $company = new Company($db);
         $company->set([
             'name'           => 'Test Company 1',
             'director_name'  => 'Tester Little',
