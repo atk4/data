@@ -2,12 +2,13 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ConditionTest extends \atk4\core\PHPUnit_AgileTestCase
+class ConditionTest extends AtkPhpunit\TestCase
 {
     /**
      * @expectedException \atk4\core\Exception

@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
 use atk4\data\tests\Model\Person as Person;
@@ -9,7 +10,7 @@ use atk4\data\tests\Model\Person as Person;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class CSVTest extends \atk4\core\PHPUnit_AgileTestCase
+class CSVTest extends AtkPhpunit\TestCase
 {
     public $file = 'atk-test.csv';
     public $file2 = 'atk-test-2.csv';

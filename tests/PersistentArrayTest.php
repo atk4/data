@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
 use atk4\data\tests\Model\Female as Female;
@@ -10,7 +11,7 @@ use atk4\data\tests\Model\Male as Male;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
+class PersistentArrayTest extends AtkPhpunit\TestCase
 {
     /**
      * Test constructor.

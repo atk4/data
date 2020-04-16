@@ -2,13 +2,14 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
+class StaticPersistenceTest extends AtkPhpunit\TestCase
 {
     /**
      * Test constructor.

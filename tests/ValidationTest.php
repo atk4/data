@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -44,7 +45,7 @@ class BadValidationModel extends Model
     }
 }
 
-class ValidationTests extends \atk4\core\PHPUnit_AgileTestCase
+class ValidationTests extends AtkPhpunit\TestCase
 {
     public $m;
 
