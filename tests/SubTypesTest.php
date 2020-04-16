@@ -135,7 +135,7 @@ class STTransaction_TransferIn extends STGenericTransaction
  */
 class SubTypesTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

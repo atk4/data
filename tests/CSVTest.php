@@ -25,8 +25,10 @@ class CSVTest extends AtkPhpunit\TestCase
         fclose($f);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
+        parent::tearDown();
+
         // see: https://github.com/atk4/data/issues/271
         try {
             unlink($this->file);

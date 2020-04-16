@@ -49,8 +49,10 @@ class ValidationTests extends AtkPhpunit\TestCase
 {
     public $m;
 
-    public function setUp()
+    public function setUp(): void
     {
+        parent::setUp();
+
         $a = [];
         $p = new Persistence\Array_($a);
         $this->m = new MyValidationModel($p);

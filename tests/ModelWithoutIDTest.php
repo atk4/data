@@ -14,7 +14,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
 {
     public $m;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $a = [

@@ -91,7 +91,7 @@ class Country1 extends Model
  */
 class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

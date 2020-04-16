@@ -12,7 +12,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
 {
     public $pers = null;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

@@ -4,7 +4,7 @@ namespace atk4\data\tests\smbo;
 
 class SMBOTestCase extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

@@ -126,7 +126,7 @@ class Discount2 extends Model
  */
 class ContainsManyTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

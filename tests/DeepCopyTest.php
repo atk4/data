@@ -135,7 +135,7 @@ class DCPayment extends Model
  */
 class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
