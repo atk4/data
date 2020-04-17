@@ -256,7 +256,7 @@ class SQL extends Persistence
         if (!$m->with) {
             return;
         }
-        
+
         foreach ($m->with as $alias => ['model'=>$model, 'mapping'=>$mapping, 'recursive'=>$recursive]) {
             // prepare field names
             $fields_from = $fields_to = [];
@@ -264,7 +264,7 @@ class SQL extends Persistence
                 $fields_from[] = is_int($from) ? $to : $from;
                 $fields_to[] = $to;
             }
-            
+
             // prepare sub-query
             if ($fields_from) {
                 $model->onlyFields($fields_from);
@@ -272,7 +272,7 @@ class SQL extends Persistence
             // 2nd parameter here strictly define which fields should be selected
             // as result system fields will not be added if they are not requested
             $sub_q = $model->action('select', [$fields_from]);
-            
+
             // add With cursor
             $q->with($sub_q, $alias, $fields_to ?: null, $recursive);
         }

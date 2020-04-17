@@ -195,7 +195,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @var array
      */
-    public $with = [];    
+    public $with = [];
 
     /**
      * Currently loaded record data. This record is associative array
@@ -1259,7 +1259,7 @@ class Model implements ArrayAccess, IteratorAggregate
     {
         return $this->addCondition($this->id_field, $id);
     }
-        
+
     /**
      * Adds WITH cursor.
      *
@@ -1275,13 +1275,13 @@ class Model implements ArrayAccess, IteratorAggregate
         if (isset($this->with[$alias])) {
             throw new Exception(['With cursor already set with this alias', 'alias'=>$alias]);
         }
-        
+
         $this->with[$alias] = [
             'model'     => $model,
             'mapping'   => $mapping,
             'recursive' => $recursive,
         ];
-        
+
         return $this;
     }
 
