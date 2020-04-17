@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data;
 
 /**
@@ -10,6 +8,8 @@ namespace atk4\data;
  * getModel() and that's pretty much it.
  *
  * It's possible to extend the basic reference with more meaningful references.
+ *
+ * @property Model $owner
  */
 class Reference
 {
@@ -19,14 +19,6 @@ class Reference
     use \atk4\core\TrackableTrait;
     use \atk4\core\DIContainerTrait;
     use \atk4\core\FactoryTrait;
-
-    /**
-     * Owner Model of the reference.
-     * override the hint type definition already present in TrackableTrait.
-     *
-     * @var Model
-     */
-    public $owner;
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -93,7 +85,7 @@ class Reference
     /**
      * Initialization.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
     }
@@ -103,7 +95,7 @@ class Reference
      *
      * @return string
      */
-    public function getDesiredName()
+    public function getDesiredName(): string
     {
         return '#ref_'.$this->link;
     }
@@ -251,10 +243,8 @@ class Reference
 
     /**
      * Returns array with useful debug info for var_dump.
-     *
-     * @return array
      */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
         $arr = [];
         foreach ($this->__debug_fields as $k => $v) {

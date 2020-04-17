@@ -1,13 +1,9 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
-use atk4\data\Field;
 use atk4\data\Model;
-use atk4\data\Persistence;
 
 /**
  * Implements a very basic array-access pattern:.
@@ -136,11 +132,8 @@ class Static_ extends Array_
     /**
      * Automatically adds missing model fields.
      * Called from AfterAdd hook.
-     *
-     * @param Persistence_Static $p
-     * @param Model              $m
      */
-    public function afterAdd($p, $m)
+    public function afterAdd(self $p, Model $m)
     {
         if ($p->titleForModel) {
             $m->title_field = $p->titleForModel;

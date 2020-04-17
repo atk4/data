@@ -6,7 +6,7 @@ use atk4\data\Model;
 
 class User extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 

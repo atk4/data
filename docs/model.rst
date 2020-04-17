@@ -135,7 +135,7 @@ We actually recommend you to use namespaces instead::
    use \atk4\data\Model;
 
    class User extends Model {
-      function init() {
+      function init(): void {
          parent::init();
 
          $this->addField('name');
@@ -161,7 +161,7 @@ Persistence object. It is commonly used to declare fields, conditions, relations
 
     class Model_User extends atk4\data\Model
     {
-        function init() {
+        function init(): void {
             parent::init();
 
             $this->addField('name');
@@ -309,7 +309,7 @@ This can also be useful for calculating relative times::
    class MyModel extends Model {
       use HumanTiming; // See https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
 
-      function init() {
+      function init(): void {
          parent::init();
 
          $this->addCalculatedField('event_ts_human_friendly', function($m) {
@@ -339,7 +339,7 @@ a user invokable actions::
 
    class User extends Model {
 
-      function init() {
+      function init(): void {
 
          parent::init();
 
@@ -417,7 +417,7 @@ Inheritance
 ATK Data models are really good for structuring hierarchically. Here is example::
 
    class VIPUser extends User {
-      function init() {
+      function init(): void {
          parent::init();
 
          $this->addCondition('purchases', '>', 1000);

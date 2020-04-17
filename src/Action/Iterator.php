@@ -38,7 +38,7 @@ class Iterator
         $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
 
             // skip row. does not have field at all
-            if (!isset($row[$field])) {
+            if (!array_key_exists($field, $row)) {
                 return false;
             }
 
@@ -66,12 +66,13 @@ class Iterator
         $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
 
             // skip row. does not have field at all
-            if (!isset($row[$field])) {
+            if (!array_key_exists($field, $row)) {
                 return false;
             }
 
-            $clean_value = trim(trim($value), '%');
-            // the row field exists check the position of th "%"(s)
+            $value = trim($value);
+            $clean_value = trim($value, '%');
+            // the row field exists check the position of the "%"(s)
             switch ($value) {
                 // case "%str%"
                 case substr($value, -1, 1) == '%' && substr($value, 0, 1) == '%':
@@ -85,6 +86,9 @@ class Iterator
                 case substr($value, 0, 1) == '%':
                     return substr($row[$field], -strlen($clean_value)) === $clean_value;
                     break;
+                // full match
+                default:
+                    return $row[$field] == $clean_value;
             }
 
             return false;

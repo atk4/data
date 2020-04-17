@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
@@ -10,6 +8,8 @@ use atk4\core\TrackableTrait;
 
 /**
  * Class description?
+ *
+ * @property Model $owner
  */
 class Join
 {
@@ -147,7 +147,7 @@ class Join
      *
      * @return string
      */
-    public function getDesiredName()
+    public function getDesiredName(): string
     {
         return '#join_'.$this->foreign_table;
     }
@@ -155,7 +155,7 @@ class Join
     /**
      * Initialization.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
 
@@ -330,7 +330,7 @@ class Join
      * @param string $link
      * @param array  $defaults
      *
-     * @return Reference_One
+     * @return Reference\HasOne
      */
     public function hasOne($link, $defaults = [])
     {
@@ -349,7 +349,7 @@ class Join
      * @param string $link
      * @param array  $defaults
      *
-     * @return Reference_Many
+     * @return Reference\HasMany
      */
     public function hasMany($link, $defaults = [])
     {

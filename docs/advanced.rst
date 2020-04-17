@@ -17,7 +17,7 @@ fields. The pattern suggest you should add a new table "transaction_transfer" an
 store extra fields there. In your code::
 
     class Transaction_Transfer extends Transaction {
-        function init() {
+        function init(): void {
             parent::init();
             $j = $this->join('transaction_transfer.transaction_id');
             $j->addField('destination_account');
@@ -94,7 +94,7 @@ of the record. Finally to help with performance, you can implement a switch::
 
     ...
 
-    function init() {
+    function init(): void {
         ..
 
         if ($this->typeSubstitution) {
@@ -148,7 +148,7 @@ $owner, and $app values (due to AppScopeTrait) as well as execute init() method,
 which I want to define like this::
 
 
-    public function init() {
+    public function init(): void {
         $this->_init();
 
         if(isset($this->owner->no_audit)){
@@ -220,7 +220,7 @@ Start by creating a class::
         }
         use \atk4\core\TrackableTrait;
 
-        function init() {
+        function init(): void {
             $this->_init();
 
             if(isset($this->owner->no_soft_delete)){
@@ -231,10 +231,10 @@ Start by creating a class::
 
             if (isset($this->owner->deleted_only)) {
                 $this->owner->addCondition('is_deleted', true);
-                $this->owner->addMethod('restore', $this);
+                $this->owner->addMethod('restore', [$this, 'restore']);
             }else{
                 $this->owner->addCondition('is_deleted', false);
-                $this->owner->addMethod('softDelete', $this);
+                $this->owner->addMethod('softDelete', [$this, 'softDelete']);
             }
         }
 
@@ -329,7 +329,7 @@ before and just slightly modifying it::
         }
         use \atk4\core\TrackableTrait;
 
-        function init() {
+        function init(): void {
             $this->_init();
 
             if(isset($this->owner->no_soft_delete)){
@@ -340,7 +340,7 @@ before and just slightly modifying it::
 
             if (isset($this->owner->deleted_only)) {
                 $this->owner->addCondition('is_deleted', true);
-                $this->owner->addMethod('restore', $this);
+                $this->owner->addMethod('restore', [$this, 'restore']);
             } else {
                 $this->owner->addCondition('is_deleted', false);
                 $this->owner->onHook('beforeDelete', [$this, 'softDelete'], null, 100);
@@ -417,7 +417,7 @@ inside your model are unique::
 
         protected $fields = null;
 
-        function init() {
+        function init(): void {
             $this->_init();
 
             // by default make 'name' unique
@@ -448,6 +448,33 @@ As expected - when you add a new model the new values are checked against
 existing records. You can also slightly modify the logic to make addCondition
 additive if you are verifying for the combination of matched fields.
 
+Using WITH cursors
+==================
+
+Many SQL database engines support defining WITH cursors to use in select, update
+and even delete statements.
+
+.. php:method:: addWith(Model $model, string $alias, array $fields, bool $recursive = false)
+
+    Agile toolkit data models also support these cursors. Usage is like this::
+
+    $invoices = new Invoice();
+
+    $contacts = new Contact();
+    $contacts->addWith($invoices, 'inv', ['contact_id'=>'cid', 'ref_no', 'total_net'=>'invoiced'], false);
+    $contacts->join('inv.cid');
+
+.. code-block:: sql
+
+    with
+        `inv` (`cid`, `ref_no`, `total_net`) as (select `contact_id`, `ref_no`, `total_net` from `invoice`)
+    select
+        *
+    from `contact`
+        join `inv` on `inv`.`cid`=`contact`.`id`
+
+.. note:: Supported starting from MySQL 8.x. MariaDB supported it earlier.
+
 Creating Many to Many relationship
 ==================================
 
@@ -465,7 +492,7 @@ Create new Model::
 
     class Model_InvoicePayment extends \atk4\data\Model {
         public $table='invoice_payment';
-        function init()
+        function init(): void
         {
             parent::init();
             $this->hasOne('invoice_id', 'Model_Invoice');
@@ -579,7 +606,7 @@ name, not only category_id. First, let me illustrate how can I do that with
 category_id::
 
     class Model_Invoice extends \atk4\data\Model {
-        function init() {
+        function init(): void {
 
             parent::init();
 

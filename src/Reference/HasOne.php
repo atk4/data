@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\Reference;
 
 use atk4\core\Exception;
@@ -131,7 +129,7 @@ class HasOne extends Reference
      *
      * @throws Exception
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

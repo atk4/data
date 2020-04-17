@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
@@ -241,7 +239,43 @@ class SQL extends Persistence
             $query->table($model->table, $model->table_alias ?? null);
         }
 
+        // add With cursors
+        $this->initWithCursors($model, $query);
+
         return $query;
+    }
+
+    /**
+     * Initializes WITH cursors.
+     *
+     * @param Model $m
+     * @param Query $q
+     */
+    public function initWithCursors(Model $m, Query $q)
+    {
+        if (!$m->with) {
+            return;
+        }
+        
+        foreach ($m->with as $alias => ['model'=>$model, 'mapping'=>$mapping, 'recursive'=>$recursive]) {
+            // prepare field names
+            $fields_from = $fields_to = [];
+            foreach ($mapping as $from => $to) {
+                $fields_from[] = is_int($from) ? $to : $from;
+                $fields_to[] = $to;
+            }
+            
+            // prepare sub-query
+            if ($fields_from) {
+                $model->onlyFields($fields_from);
+            }
+            // 2nd parameter here strictly define which fields should be selected
+            // as result system fields will not be added if they are not requested
+            $sub_q = $model->action('select', [$fields_from]);
+            
+            // add With cursor
+            $q->with($sub_q, $alias, $fields_to ?: null, $recursive);
+        }
     }
 
     /**
@@ -878,8 +912,8 @@ class SQL extends Persistence
         $data = $model->action('select', [$fields])->get();
 
         if ($typecast_data) {
-            $data = array_map(function ($r) use ($model) {
-                return $this->typecastLoadRow($model, $r);
+            $data = array_map(function ($row) use ($model) {
+                return $this->typecastLoadRow($model, $row);
             }, $data);
         }
 

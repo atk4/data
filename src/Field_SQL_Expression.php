@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data;
 
 use atk4\core\InitializerTrait;
@@ -52,7 +50,7 @@ class Field_SQL_Expression extends Field
     /**
      * Initialization.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
 
@@ -69,7 +67,7 @@ class Field_SQL_Expression extends Field
      * Possibly that user will attempt to insert values here. If that is the case, then
      * we would need to inject it into related hasMany relationship.
      *
-     * @param $m
+     * @param Model $m
      */
     public function afterSave($m)
     {
@@ -78,10 +76,8 @@ class Field_SQL_Expression extends Field
     /**
      * Should this field use alias?
      * Expression fields always need alias.
-     *
-     * @return bool
      */
-    public function useAlias()
+    public function useAlias(): bool
     {
         return true;
     }

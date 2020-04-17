@@ -21,7 +21,7 @@ class Invoice2 extends Model
     public $table = 'invoice';
     public $title_field = 'ref_no';
 
-    public function init()
+    public function init(): void
     {
         parent:: init();
 
@@ -58,7 +58,7 @@ class Invoice2 extends Model
  */
 class Line2 extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -93,7 +93,7 @@ class VatRate2 extends Model
 {
     public $table = 'vat_rate';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -107,7 +107,7 @@ class VatRate2 extends Model
  */
 class Discount2 extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -304,13 +304,13 @@ class ContainsManyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(
             json_encode([
                 '1' => [
-                    'id' => 1, 'vat_rate_id' => 1, 'price' => '10', 'qty' => '2', 'add_date' => (new \DateTime('2019-06-01'))->format('Y-m-d\TH:i:sP'), 'discounts' => json_encode([
+                    'id' => 1, 'vat_rate_id' => '1', 'price' => '10', 'qty' => '2', 'add_date' => (new \DateTime('2019-06-01'))->format('Y-m-d\TH:i:sP'), 'discounts' => json_encode([
                         '1' => ['id' => 1, 'percent' => '5', 'valid_till' => (new \DateTime('2019-07-15'))->format('Y-m-d\TH:i:sP')],
                         '2' => ['id' => 2, 'percent' => '10', 'valid_till' => (new \DateTime('2019-07-30'))->format('Y-m-d\TH:i:sP')],
                     ]),
                 ],
                 '2' => [
-                    'id' => 2, 'vat_rate_id' => 2, 'price' => '15', 'qty' => '5', 'add_date' => (new \DateTime('2019-07-01'))->format('Y-m-d\TH:i:sP'), 'discounts' => json_encode([
+                    'id' => 2, 'vat_rate_id' => '2', 'price' => '15', 'qty' => '5', 'add_date' => (new \DateTime('2019-07-01'))->format('Y-m-d\TH:i:sP'), 'discounts' => json_encode([
                         '1' => ['id' => 1, 'percent' => '20', 'valid_till' => (new \DateTime('2019-12-31'))->format('Y-m-d\TH:i:sP')],
                     ]),
                 ],

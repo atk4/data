@@ -1,13 +1,13 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data;
 
 use atk4\dsql\Expressionable;
 
 /**
  * @deprecated class
+ *
+ * @property Join\SQL $join
  */
 class Field_SQL extends Field implements Expressionable
 {

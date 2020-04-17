@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\Reference;
 
 use atk4\data\Exception;
@@ -38,8 +36,6 @@ class HasMany extends Reference
 
     /**
      * Returns our field or id field.
-     *
-     * @return Field
      */
     protected function referenceOurValue(): Field
     {
@@ -54,8 +50,6 @@ class HasMany extends Reference
      * @param array $defaults Properties
      *
      * @throws Exception
-     *
-     * @return Model
      */
     public function ref($defaults = []): Model
     {
@@ -72,8 +66,6 @@ class HasMany extends Reference
      * @param array $defaults Properties
      *
      * @throws Exception
-     *
-     * @return Model
      */
     public function refLink($defaults = []): Model
     {
@@ -92,8 +84,6 @@ class HasMany extends Reference
      * @param array  $defaults Properties
      *
      * @throws Exception
-     *
-     * @return Field
      */
     public function addField($n, $defaults = []): Field
     {
@@ -107,8 +97,8 @@ class HasMany extends Reference
 
         $defaults['aggregate_relation'] = $this;
 
-        $field_n = isset($defaults['field']) ? $defaults['field'] : $n;
-        $field = isset($defaults['field']) ? $defaults['field'] : null;
+        $field_n = $defaults['field'] ?? $n;
+        $field = $defaults['field'] ?? null;
 
         if (isset($defaults['concat'])) {
             $defaults['aggregate'] = $this->owner->dsql()->groupConcat($field_n, $defaults['concat']);
@@ -122,7 +112,7 @@ class HasMany extends Reference
 
                 return $r->action('field', [$r->expr(
                     $defaults['expr'],
-                    isset($defaults['args']) ? $defaults['args'] : null
+                    $defaults['args'] ?? null
                 ), 'alias'=>$field]);
             };
             unset($defaults['args']);

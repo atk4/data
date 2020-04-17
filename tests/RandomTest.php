@@ -9,7 +9,7 @@ class Model_Rate extends \atk4\data\Model
 {
     public $table = 'rate';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->addField('dat');
@@ -21,11 +21,11 @@ class Model_Item extends \atk4\data\Model
 {
     public $table = 'item';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->addField('name');
-        $this->hasOne('parent_item_id', '\atk4\data\tests\Model_Item')
+        $this->hasOne('parent_item_id', self::class)
             ->addTitle();
     }
 }
@@ -33,7 +33,7 @@ class Model_Item2 extends \atk4\data\Model
 {
     public $table = 'item';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->addField('name');
@@ -46,7 +46,7 @@ class Model_Item3 extends \atk4\data\Model
 {
     public $table = 'item';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -110,7 +110,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testAddFields()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -137,7 +137,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testAddFields2()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -173,7 +173,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testSameTable()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -196,7 +196,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testSameTable2()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -225,7 +225,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testSameTable3()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -350,7 +350,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $db = new Persistence\SQL($this->db->connection);
         $m = new Model_Item($db);
 
-        $m->hasOne('foo', '\atk4\data\tests\Model_Item')
+        $m->hasOne('foo', Model_Item::class)
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 
@@ -398,7 +398,7 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testGetTitle()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 

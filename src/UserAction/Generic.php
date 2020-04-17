@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\UserAction;
 
 use atk4\core\DIContainerTrait;
@@ -16,6 +14,8 @@ use atk4\data\Model;
  * action trigger (button) correctly in an automated way.
  *
  * Action must NOT rely on any specific UI implementation.
+ *
+ * @property Model $owner
  */
 class Generic
 {
@@ -24,9 +24,6 @@ class Generic
     use InitializerTrait {
         init as init_;
     }
-
-    /** @var Model */
-    public $owner;
 
     /** Defining scope of the action */
     const NO_RECORDS = 'none'; // e.g. add
@@ -67,13 +64,13 @@ class Generic
     /** @var array Argument definition. */
     public $args = [];
 
-    /** @var array|null Specify which fields may be dirty when invoking action. NO_RECORDS|SINGLE_RECORD scopes for adding/modifying */
+    /** @var array|bool Specify which fields may be dirty when invoking action. NO_RECORDS|SINGLE_RECORD scopes for adding/modifying */
     public $fields = [];
 
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
-    public function init()
+    public function init(): void
     {
         $this->init_();
     }
@@ -111,9 +108,9 @@ class Generic
                         'permitted' => $this->fields,
                     ]);
                 }
-            } elseif ($this->fields !== false) {
+            } elseif (!is_bool($this->fields)) {
                 throw new Exception([
-                    'Argument `fields` for the action must be either array or `false`.',
+                    'Argument `fields` for the action must be either array or boolean.',
                     'fields'=> $this->fields,
                 ]);
             }

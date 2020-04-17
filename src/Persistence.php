@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data;
 
 /**
@@ -20,7 +18,7 @@ class Persistence
     use \atk4\core\DIContainerTrait;
 
     /** @var string Connection driver name, for example, mysql, pgsql, oci etc. */
-    public $driver;
+    public $driverType;
 
     /**
      * Connects database.
@@ -40,9 +38,9 @@ class Persistence
         // Process DSN string
         $dsn = \atk4\dsql\Connection::normalizeDSN($dsn, $user, $password);
 
-        $driver = isset($args['driver']) ? strtolower($args['driver']) : $dsn['driver'];
+        $driverType = strtolower($args['driver']/*BC compatibility*/ ?? $args['driverType'] ?? $dsn['driverType']);
 
-        switch ($driver) {
+        switch ($driverType) {
             case 'mysql':
             case 'oci':
             case 'oci12':
@@ -58,12 +56,12 @@ class Persistence
             case 'counter':
             case 'sqlite':
                 $db = new \atk4\data\Persistence\SQL($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
-                $db->driver = $driver;
+                $db->driverType = $driverType;
 
                 return $db;
             default:
                 throw new Exception([
-                    'Unable to determine persistence driver from DSN',
+                    'Unable to determine persistence driver type from DSN',
                     'dsn' => $dsn['dsn'],
                 ]);
         }

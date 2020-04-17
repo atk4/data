@@ -33,7 +33,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $mm->tryLoad(2);
         $this->assertEquals(null, $mm['name']);
 
-        if ($this->driver == 'sqlite') {
+        if ($this->driverType == 'sqlite') {
             $this->assertEquals(
                 'select "id","name","gender" from "user" where "gender" = :a',
                 $mm->action('select')->render()
@@ -46,6 +46,33 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(null, $mm['name']);
         $mm->tryLoad(2);
         $this->assertEquals('Sue', $mm['name']);
+    }
+
+    public function testNull()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
+                2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
+                3 => ['id' => 3, 'name' => 'Null1', 'gender' => null],
+                4 => ['id' => 4, 'name' => 'Null2', 'gender' => null],
+            ], ];
+        $this->setDB($a);
+
+        $m = new Model($this->db, 'user');
+        $m->addFields(['name', 'gender']);
+
+        $m->addCondition('gender', null);
+
+        $nullCount = 0;
+        foreach ($m as $user) {
+            $this->assertNull($user['gender']);
+            $this->assertContains('Null', $user['name']);
+
+            $nullCount++;
+        }
+
+        $this->assertEquals(2, $nullCount);
     }
 
     public function testOperations()
@@ -174,7 +201,7 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
     public function testExpressionJoin()
     {
-        if ($this->driver == 'pgsql') {
+        if ($this->driverType == 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -372,5 +399,40 @@ class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals([], $u->conditions); // should be no conditions
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value
+    }
+
+    /**
+     * Test LIKE condition.
+     */
+    public function testLikeCondition()
+    {
+        $a = [
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'active' => 1, 'created' => '2020-01-01 15:00:30'],
+                2 => ['id' => 2, 'name' => 'Peter', 'active' => 0, 'created' => '2019-05-20 12:13:14'],
+                3 => ['id' => 3, 'name' => 'Joe', 'active' => 1, 'created' => '2019-07-15 09:55:05'],
+            ],
+        ];
+        $this->setDB($a);
+
+        $u = new Model($this->db, 'user');
+        $u->addField('name', ['type' => 'string']);
+        $u->addField('active', ['type' => 'integer']);
+        $u->addField('created', ['type' => 'datetime']);
+
+        $t = (clone $u)->addCondition('created', 'like', '%19%');
+        $this->assertEquals(2, count($t->export())); // only year 2019 records
+
+        $t = (clone $u)->addCondition('active', 'like', '%1%');
+        $this->assertEquals(2, count($t->export())); // only active records
+
+        $t = (clone $u)->addCondition('active', 'like', '%0%');
+        $this->assertEquals(1, count($t->export())); // only inactive records
+
+        $t = (clone $u)->addCondition('active', 'like', '%999%');
+        $this->assertEquals(0, count($t->export())); // bad value, so it will not match anything
+
+        $t = (clone $u)->addCondition('active', 'like', '%ABC%');
+        $this->assertEquals(0, count($t->export())); // bad value, so it will not match anything
     }
 }
