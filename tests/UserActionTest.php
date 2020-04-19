@@ -49,11 +49,11 @@ class ACClient extends Model
 /**
  * Implements various tests for UserAction.
  */
-class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class UserActionTest extends \atk4\schema\PhpunitTestCase
 {
     public $pers = null;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence;
@@ -11,7 +12,7 @@ use atk4\data\tests\Model\User as User;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
+class BusinessModelTest extends AtkPhpunit\TestCase
 {
     /**
      * Test constructor.

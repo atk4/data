@@ -8,11 +8,11 @@ use atk4\data\Persistence\Static_ as Persistence_Static;
 /**
  * Test various Field.
  */
-class FieldTypesTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class FieldTypesTest extends \atk4\schema\PhpunitTestCase
 {
     public $pers = null;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

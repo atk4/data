@@ -1,10 +1,10 @@
 <?php
 
-namespace atk4\data\tests\smbo;
+namespace atk4\data\tests\Model\Smbo;
 
 use atk4\data\Model;
 
-class Model_Company extends Model
+class Company extends Model
 {
     public $table = 'system';
 
