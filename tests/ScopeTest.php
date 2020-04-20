@@ -226,7 +226,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
     {
         $user = clone $this->user;
 
-        Condition::registerValuePlaceholder('__PERSPECTIVE__', [
+        Condition::registerPlaceholder('__PERSPECTIVE__', [
             'label' => 'User Perspective',
             'value' => 1,
         ]);
@@ -239,7 +239,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $this->assertEquals(1, $user->loadAny()->id);
 
-        Condition::registerValuePlaceholder('__PERSPECTIVE__', [
+        Condition::registerPlaceholder('__PERSPECTIVE__', [
             'label' => 'User Perspective',
             'value' => function (Condition $condition) {
                 $condition->deactivate();

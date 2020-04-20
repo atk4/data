@@ -337,7 +337,7 @@ which can be applied with different conditions depending on environment factors 
 E.g when defining access to record using scope we may want to define thatuser has access to the record if he/she created it::
 
 	// First we register the placeholder using an anonymous function as value
-	Condition::registerValuePlaceholder('__USER__', [
+	Condition::registerPlaceholder('__USER__', [
     	'label' => 'User', // the value that will be used by toWords method
     	'value' => function(Condition $condition) {
     		return $this->app->user; // the current user logged into the system

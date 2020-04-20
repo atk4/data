@@ -55,6 +55,31 @@ class Condition extends AbstractScope
     ];
 
     /**
+     * Contains the placeholder registry in $key => $options format.
+     *
+     * @var array
+     */
+    protected static $placeholders = [];
+    
+    /**
+     * Register placeholoder for a value to be replaced
+     * The $options array may contain
+     * - label : string - the label to use when converting toWords
+     * - value : string|Callable - the actual value to be used when applying the scope
+     * If value is Callable the it is called with $model, $scope as arguments.
+     *
+     * @param string          $key
+     * @param string|callable $options
+     */
+    final public static function registerPlaceholder($key, $options)
+    {
+        self::$placeholders[$key] = is_array($options) ? $options : [
+            'label' => $key,
+            'value' => $options,
+        ];
+    }
+
+    /**
      * Create Condition based on provided arguments
      * Arguments can also be passed to the $key as array.
      *
