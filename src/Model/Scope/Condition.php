@@ -63,7 +63,7 @@ class Condition extends AbstractScope
      * @var array
      */
     protected static $placeholders = [];
-    
+
     /**
      * Register placeholoder for a value to be replaced
      * The $options array may contain
