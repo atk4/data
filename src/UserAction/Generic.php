@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\UserAction;
 
 use atk4\core\DIContainerTrait;
@@ -72,7 +70,7 @@ class Generic
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
-    public function init()
+    public function init(): void
     {
         $this->init_();
     }

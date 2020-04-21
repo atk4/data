@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data;
 
 /**
@@ -87,7 +85,7 @@ class Reference
     /**
      * Initialization.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
     }
@@ -97,7 +95,7 @@ class Reference
      *
      * @return string
      */
-    public function getDesiredName()
+    public function getDesiredName(): string
     {
         return '#ref_'.$this->link;
     }

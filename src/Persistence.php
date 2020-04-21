@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data;
 
 /**
@@ -63,7 +61,7 @@ class Persistence
                 return $db;
             default:
                 throw new Exception([
-                    'Unable to determine persistence driverType from DSN',
+                    'Unable to determine persistence driver type from DSN',
                     'dsn' => $dsn['dsn'],
                 ]);
         }
@@ -302,7 +300,7 @@ class Persistence
             // run persistence-specific typecasting of field value
             return $this->_typecastSaveField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to typecast field value on save', 'field' => $f->name], null, $e);
+            throw new Exception(['Unable to typecast field value on save', 'field' => $f->name], 0, $e);
         }
     }
 
@@ -337,7 +335,7 @@ class Persistence
             // run persistence-specific typecasting of field value
             return $this->_typecastLoadField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to typecast field value on load', 'field' => $f->name], null, $e);
+            throw new Exception(['Unable to typecast field value on load', 'field' => $f->name], 0, $e);
         }
     }
 
@@ -389,7 +387,7 @@ class Persistence
             // run persistence-specific serialization of field value
             return $this->_serializeSaveField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to serialize field value on save', 'field' => $f->name], null, $e);
+            throw new Exception(['Unable to serialize field value on save', 'field' => $f->name], 0, $e);
         }
     }
 
@@ -413,7 +411,7 @@ class Persistence
             // run persistence-specific un-serialization of field value
             return $this->_serializeLoadField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to serialize field value on load', 'field' => $f->name], null, $e);
+            throw new Exception(['Unable to serialize field value on load', 'field' => $f->name], 0, $e);
         }
     }
 

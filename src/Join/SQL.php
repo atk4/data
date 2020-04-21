@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\Join;
 
 use atk4\data\Join;
@@ -28,7 +26,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
      *
      * @return string
      */
-    public function getDesiredName()
+    public function getDesiredName(): string
     {
         return '_'.($this->foreign_alias ?: $this->foreign_table[0]);
     }
@@ -59,7 +57,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
     /**
      * This method is to figure out stuff.
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

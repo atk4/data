@@ -8,7 +8,7 @@ use atk4\data\Persistence;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class JoinSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class JoinSQLTest extends \atk4\schema\PhpunitTestCase
 {
     public function testDirection()
     {

@@ -7,7 +7,7 @@ use atk4\data\Model;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ConditionSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
 {
     public function testBasic()
     {

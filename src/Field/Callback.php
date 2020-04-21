@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\Field;
 
 use atk4\core\InitializerTrait;
@@ -39,7 +37,7 @@ class Callback extends \atk4\data\Field
     /**
      * Initialization.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
 

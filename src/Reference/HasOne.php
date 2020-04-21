@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\Reference;
 
 use atk4\core\Exception;
@@ -154,12 +152,12 @@ class HasOne extends Reference
     public $dateTimeZoneClass = 'DateTimeZone';
 
     /**
-     * Reference_One will also add a field corresponding
+     * Reference\HasOne will also add a field corresponding
      * to 'our_field' unless it exists of course.
      *
      * @throws Exception
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

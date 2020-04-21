@@ -2,13 +2,14 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\core\Translator\Translator;
 use atk4\data\Exception;
 use atk4\data\Locale;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
-class LocaleTest extends \PHPUnit_Framework_TestCase
+class LocaleTest extends AtkPhpunit\TestCase
 {
     public function testException()
     {

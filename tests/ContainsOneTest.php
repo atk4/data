@@ -21,7 +21,7 @@ class Invoice1 extends Model
     public $table = 'invoice';
     public $title_field = 'ref_no';
 
-    public function init()
+    public function init(): void
     {
         parent:: init();
 
@@ -37,7 +37,7 @@ class Invoice1 extends Model
  */
 class Address1 extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -57,7 +57,7 @@ class Address1 extends Model
  */
 class DoorCode1 extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -73,7 +73,7 @@ class Country1 extends Model
 {
     public $table = 'country';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -89,9 +89,9 @@ class Country1 extends Model
  * ATK Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
  */
-class ContainsOneTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

@@ -2,12 +2,13 @@
 
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
 class MyValidationModel extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -31,7 +32,7 @@ class MyValidationModel extends Model
 
 class BadValidationModel extends Model
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -44,12 +45,14 @@ class BadValidationModel extends Model
     }
 }
 
-class ValidationTests extends \atk4\core\PHPUnit_AgileTestCase
+class ValidationTests extends AtkPhpunit\TestCase
 {
     public $m;
 
-    public function setUp()
+    public function setUp(): void
     {
+        parent::setUp();
+
         $a = [];
         $p = new Persistence\Array_($a);
         $this->m = new MyValidationModel($p);

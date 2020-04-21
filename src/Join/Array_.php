@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\Join;
 
 use atk4\data\Exception;
@@ -16,7 +14,7 @@ class Array_ extends Join
     /**
      * This method is to figure out stuff.
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

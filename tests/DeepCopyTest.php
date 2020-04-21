@@ -9,7 +9,7 @@ class DCClient extends Model
 {
     public $table = 'client';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -25,7 +25,7 @@ class DCInvoice extends Model
 {
     public $table = 'invoice';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -55,7 +55,7 @@ class DCQuote extends Model
 {
     public $table = 'quote';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->hasOne('client_id', new DCClient());
@@ -73,7 +73,7 @@ class DCInvoiceLine extends Model
 {
     public $table = 'line';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->hasOne('parent_id', new DCInvoice());
@@ -96,7 +96,7 @@ class DCQuoteLine extends Model
 {
     public $table = 'line';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -119,7 +119,7 @@ class DCPayment extends Model
 {
     public $table = 'payment';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->hasOne('client_id', new DCClient());
@@ -133,9 +133,9 @@ class DCPayment extends Model
 /**
  * Implements various tests for deep copying objects.
  */
-class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

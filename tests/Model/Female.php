@@ -4,7 +4,7 @@ namespace atk4\data\tests\Model;
 
 class Female extends Person
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->addCondition('gender', 'F');

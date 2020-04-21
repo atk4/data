@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data;
 
 use atk4\core\AppScopeTrait;
@@ -398,7 +396,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Extend this method to define fields of your choice.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
 

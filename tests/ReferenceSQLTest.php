@@ -11,7 +11,7 @@ use atk4\data\Model;
  * also that the original model can be re-loaded with a different
  * value without making any condition stick.
  */
-class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 {
     public function testBasic()
     {
@@ -438,7 +438,7 @@ class ReferenceSQLTest extends \atk4\schema\PHPUnit_SchemaTestCase
     }
 
     /**
-     * Few tests to test Reference_SQL_One addTitle() method.
+     * Few tests to test Reference\HasOne_SQL addTitle() method.
      */
     public function testAddTitle()
     {

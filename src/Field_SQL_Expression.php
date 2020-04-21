@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data;
 
 use atk4\core\InitializerTrait;
@@ -52,7 +50,7 @@ class Field_SQL_Expression extends Field_SQL
     /**
      * Initialization.
      */
-    public function init()
+    public function init(): void
     {
         $this->_init();
 

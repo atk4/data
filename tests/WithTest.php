@@ -8,7 +8,7 @@ use atk4\data\Persistence;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class WithTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class WithTest extends \atk4\schema\PhpunitTestCase
 {
     public function testWith()
     {

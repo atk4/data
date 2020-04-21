@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
@@ -179,9 +177,9 @@ class SQL extends Persistence
      */
     protected function initPersistence(Model $m)
     {
-        $m->addMethod('expr', $this);
-        $m->addMethod('dsql', $this);
-        $m->addMethod('exprNow', $this);
+        $m->addMethod('expr', [$this, 'expr']);
+        $m->addMethod('dsql', [$this, 'dsql']);
+        $m->addMethod('exprNow', [$this, 'exprNow']);
     }
 
     /**
@@ -758,7 +756,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
 
         if (!$data) {
@@ -826,7 +824,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
 
         if (!$data) {
@@ -904,7 +902,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
 
         $m->hook('afterInsertQuery', [$insert, $st]);
@@ -954,7 +952,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
     }
 
@@ -994,7 +992,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
 
         if ($m->id_field && isset($data[$m->id_field]) && $m->dirty[$m->id_field]) {
@@ -1039,7 +1037,7 @@ class SQL extends Persistence
                 'message'    => $e->getMessage(),
                 'model'      => $m,
                 'conditions' => $m->conditions,
-            ], null, $e);
+            ], 0, $e);
         }
     }
 
@@ -1061,7 +1059,7 @@ class SQL extends Persistence
             ];
         }
 
-        // If our Model has expr() method (inherited from Persistence_SQL) then use it
+        // If our Model has expr() method (inherited from Persistence\SQL) then use it
         if ($field->owner->hasMethod('expr')) {
             $field->owner->expr($mask, $prop);
         }

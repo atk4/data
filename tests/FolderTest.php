@@ -8,7 +8,7 @@ class Folder extends \atk4\data\Model
 {
     public $table = 'folder';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->addField('name');
@@ -27,7 +27,7 @@ class Folder extends \atk4\data\Model
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class FolderTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class FolderTest extends \atk4\schema\PhpunitTestCase
 {
     public function testRate()
     {

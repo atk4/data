@@ -9,7 +9,7 @@ class Model_Rate extends \atk4\data\Model
 {
     public $table = 'rate';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->addField('dat');
@@ -21,7 +21,7 @@ class Model_Item extends \atk4\data\Model
 {
     public $table = 'item';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->addField('name');
@@ -33,7 +33,7 @@ class Model_Item2 extends \atk4\data\Model
 {
     public $table = 'item';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->addField('name');
@@ -46,7 +46,7 @@ class Model_Item3 extends \atk4\data\Model
 {
     public $table = 'item';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -66,7 +66,7 @@ class Model_Item3 extends \atk4\data\Model
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class RandomTest extends \atk4\schema\PhpunitTestCase
 {
     public function testRate()
     {

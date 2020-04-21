@@ -8,7 +8,7 @@ use atk4\data\Persistence;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class IteratorTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class IteratorTest extends \atk4\schema\PhpunitTestCase
 {
     /**
      * If first argument is array, then second argument should not be used.

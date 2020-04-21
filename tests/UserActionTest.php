@@ -4,7 +4,7 @@ namespace atk4\data\tests;
 
 use atk4\core\Exception;
 use atk4\data\Model;
-use atk4\data\Persistence_Static;
+use atk4\data\Persistence\Static_ as Persistence_Static;
 use atk4\data\UserAction;
 
 /**
@@ -31,7 +31,7 @@ class ACClient extends Model
 {
     use ACReminder;
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -49,11 +49,11 @@ class ACClient extends Model
 /**
  * Implements various tests for UserAction.
  */
-class UserActionTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class UserActionTest extends \atk4\schema\PhpunitTestCase
 {
     public $pers = null;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

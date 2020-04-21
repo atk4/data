@@ -1,6 +1,6 @@
 <?php
 
-namespace atk4\data\tests\smbo;
+namespace atk4\data\tests\Model\Smbo;
 
 class Transfer extends Payment
 {
@@ -8,7 +8,7 @@ class Transfer extends Payment
 
     public $other_leg_creation = null;
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 

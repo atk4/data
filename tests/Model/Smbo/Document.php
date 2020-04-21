@@ -1,12 +1,12 @@
 <?php
 
-namespace atk4\data\tests\smbo;
+namespace atk4\data\tests\Model\Smbo;
 
 class Document extends \atk4\data\Model
 {
     public $table = 'document';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 

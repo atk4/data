@@ -1,7 +1,5 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
-
 namespace atk4\data\Reference;
 
 use atk4\data\Exception;
@@ -52,7 +50,7 @@ class ContainsOne extends Reference
      * Reference\ContainsOne will also add a field corresponding
      * to 'our_field' unless it exists of course.
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

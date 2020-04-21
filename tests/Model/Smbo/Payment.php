@@ -1,10 +1,10 @@
 <?php
 
-namespace atk4\data\tests\smbo;
+namespace atk4\data\tests\Model\Smbo;
 
 class Payment extends Document
 {
-    public function init()
+    public function init(): void
     {
         parent::init();
 
