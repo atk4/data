@@ -476,10 +476,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function add($obj, $args = [])
     {
-        $obj = $this->_add($obj, $args);
         if ($obj instanceof Field) {
             throw new Exception(['You should always use addField() for adding fields, not add()']);
         }
+
+        $obj = $this->_add($obj, $args);
 
         return $obj;
     }
