@@ -123,7 +123,7 @@ with Agile UI form, it will be displayed as radio button or a drop-down::
     // Agile UI code:
     $app = new \atk4\ui\App('my app');
     $app->initLayout('Centered');
-    $app->add('Form')->setModel($model);
+    Form::addTo($app)->setModel($model);
 
 You will also not be able to set value which is not one of the `enum` values
 even if you don't use UI.

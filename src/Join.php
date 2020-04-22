@@ -251,13 +251,8 @@ class Join
 
     /**
      * Adds any object to owner model.
-     *
-     * @param object|string $object
-     * @param array         $defaults
-     *
-     * @return object
      */
-    public function add($object, $defaults = [])
+    public function add(object $object, array $defaults = []): object
     {
         if (!is_array($defaults)) {
             $defaults = ['name' => $defaults];

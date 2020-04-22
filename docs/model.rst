@@ -370,7 +370,7 @@ but using `$this->addAction()` exposes that method to the ATK UI wigets,
 so if your admin is using `CRUD`, a new button will be available allowing
 passwords to be generated and sent to the users::
 
-   $app->add('CRUD')->setModel(new User($app->db));
+   CRUD::addTo($app)->setModel(new User($app->db));
 
 Read more about :php:class:`UserAction`
 

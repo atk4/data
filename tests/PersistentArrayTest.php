@@ -65,7 +65,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $m = new Male($p);
         $m->load(1);
-        $m->saveAs(new Female());
+        $m->saveAs(Female::class);
         $m->delete();
 
         $this->assertEquals([

@@ -175,7 +175,7 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
         }
 
         // Now let's execute report
-        $debt = $john->add('Model_Report_Debtors');
+        $debt = $john->add(new Model_Report_Debtors());
 
         // This should give us total amount owed by all clients:
         // (100.00+10.00) + (61.50 + 12.30) - 10.20*2

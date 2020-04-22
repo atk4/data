@@ -472,16 +472,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * TEMPORARY to spot any use of $model->add(new Field(), 'bleh'); form.
+     * TEMPORARY to spot any use of $model->add(new Field(), ['bleh']); form.
      */
-    public function add($obj, $args = [])
+    public function add(object $obj, array $defaults = []): object
     {
-        $obj = $this->_add($obj, $args);
         if ($obj instanceof Field) {
             throw new Exception(['You should always use addField() for adding fields, not add()']);
         }
 
-        return $obj;
+        return $this->_add($obj, $defaults);
     }
 
     /**
@@ -1467,13 +1466,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * but will assume that both models are compatible,
      * therefore will not perform any loading.
-     *
-     * @param string|Model $class
-     * @param array        $options
-     *
-     * @return Model
      */
-    public function saveAs($class, $options = [])
+    public function saveAs(string $class, array $options = []): self
     {
         return $this->asModel($class, $options)->save();
     }
@@ -1504,13 +1498,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * This will cast Model into another class without
      * loosing state of your active record.
-     *
-     * @param string|Model $class
-     * @param array        $options
-     *
-     * @return Model
      */
-    public function asModel($class, $options = [])
+    public function asModel(string $class, array $options = []): self
     {
         $m = $this->newInstance($class, $options);
 
@@ -1531,28 +1520,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Create new model from the same base class
      * as $this.
      *
-     * @param string|Model $class
-     * @param array        $options
-     *
-     * @return Model
+     * @return static
      */
-    public function newInstance($class = null, $options = [])
+    public function newInstance(string $class = null, array $options = [])
     {
-        if ($class === null) {
-            $class = static::class;
-        } elseif ($class instanceof self) {
-            $class = get_class($class);
-        }
-
-        if (is_string($class) && $class[0] !== '\\') {
-            $class = '\\' . $class;
-        }
+        $model = $this->factory($class ?? static::class, $options);
 
         if ($this->persistence) {
-            return $this->persistence->add($class, $options);
+            return $this->persistence->add($model);
         }
 
-        return new $class($options);
+        return $model;
     }
 
     /**

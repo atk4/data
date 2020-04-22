@@ -825,7 +825,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $this->expectException(Exception::class);
         $model = new Model();
-        $model->add(new Field(), 'test');
+        $model->add(new Field(), ['test']);
     }
 
     public function testGetFields()
