@@ -433,7 +433,7 @@ as an Action
 
 .. important:: Not all SQL vendors may support this approach.
 
-Method :php:meth:`Persistence\SQL::action` and :php:meth:`Model::action`
+Method :php:meth:`Persistence\\SQL::action` and :php:meth:`Model::action`
 generates queries for most of model operations.  By re-defining this method,
 you can significantly affect the query building of an SQL model::
 

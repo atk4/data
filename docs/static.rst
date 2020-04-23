@@ -7,7 +7,7 @@ Static Persistence
 
 .. php:class:: Persistence\Static_
 
-Static Persistence extends :php:class:`Persistence\Array_` to implement
+Static Persistence extends :php:class:`Persistence\\Array_` to implement
 a user-friendly way of specifying data through an array.
 
 Usage

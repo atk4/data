@@ -62,7 +62,7 @@ like this::
 
 
 Core Concepts
-==============
+=============
 
 Business Model (see :ref:`Model`)
     You define business logic inside your own classes that extend :php:class:`Model`.
@@ -499,7 +499,7 @@ Implementation of References
 
 When reference is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
 the new object is created and added into Model of class :php:class:`Reference\HasMany`
-or :php:class:`Reference\HasOne` (or :php:class:`Reference\HasOne_SQL` in case you
+or :php:class:`Reference\\HasOne` (or :php:class:`Reference\\HasOne_SQL` in case you
 use SQL database). The object itself is quite simple and you can fetch it from
 the model if you keep the return value of hasOne() / hasMany() or call
 :php:meth:`Model::getRef()` with the same identifier later on.

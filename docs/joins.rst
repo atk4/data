@@ -252,7 +252,7 @@ SQL-specific joins
 ==================
 
 When your model is associated with SQL-capable driver, then instead of using
-'Join' class, the 'Join\SQL' is used instead. This class is designed to improve
+`Join` class, the `Join\\SQL` is used instead. This class is designed to improve
 loading technique, because SQL vendors can query multiple tables simultaneously.
 
 Vendors that cannot do JOINs will have to implement compatibility by pulling
@@ -272,7 +272,7 @@ Implementation Details
 Specifying complex ON logic
 ---------------------------
 
-When you're dealing with SQL drivers, you can specify dsql\Expression for your
+When you're dealing with SQL drivers, you can specify `\\atk4\\dsql\\Expression` for your
 "on" clause::
 
     $stats = $user->join('stats', [

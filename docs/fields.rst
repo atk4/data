@@ -88,7 +88,7 @@ Conversions between types is what we call :ref:`Typecasting` and there is a
 documentation section dedicated to it.
 
 Finally, because Field is a class, it can be further extended. For some
-interesting examples, check out :php:class:`Field\Password`. I'll explain how to
+interesting examples, check out :php:class:`Field\\Password`. I'll explain how to
 create your own field classes and where they can be beneficial.
 
 Valid types are: string, integer, boolean, datetime, date, time.
@@ -265,7 +265,7 @@ Password (after 1.5.0 release)
 
 .. php:class:: Password
 
-Field\Password is a class that implements proper handling of data passwords.
+`Field\\Password` is a class that implements proper handling of data passwords.
 Without this class your password will be stored **unencrypted**.
 Here is how to use it properly::
 
