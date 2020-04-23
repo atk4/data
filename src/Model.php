@@ -888,7 +888,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         // @TODO prepend normalization breaker hook to return null immediatelly
         try {
-            $this->set($field, null);
+            //$this->set($field, null);
+            $this->data[$field] = null;
         } finally {
             // @TODO restore hooks
         }
