@@ -443,7 +443,7 @@ for example, this hook may be placed in the "User" class init()::
       }
    });
 
-See also :php:class:`Field\SubTypeSwitch`
+See also :php:class:`Field\\SubTypeSwitch`
 
 
 Associating Model with Database
@@ -471,7 +471,7 @@ of static persistence::
    $m->load(1);
    echo $m['name'];  // peter
 
-See :php:class:`Persistence\Static_`
+See :php:class:`Persistence\\Static_`
 
 .. php:attr:: persistence
 

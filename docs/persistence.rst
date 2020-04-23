@@ -894,7 +894,7 @@ The default action type can be set when executing action, for example::
 SQL Actions
 -----------
 
-The following actions are currently supported by Persistence\SQL:
+The following actions are currently supported by `Persistence\\SQL`:
 
  - select - produces query that returns DataSet  (array of hashes)
  - delete - produces query for deleting DataSet (no result)
@@ -967,7 +967,7 @@ the action used.
 
 
 Action Matrix
---------------
+-------------
 
 SQL actions apply the following:
 

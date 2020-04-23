@@ -229,7 +229,7 @@ using Agile UI::
 
     echo $htmltable->render();
 
-Class "\atk4\ui\Table" here is designed to work with persistences and models -
+Class `\\atk4\\ui\\Table` here is designed to work with persistences and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
 You can use :php:class:`Persistence\Static_` for that::

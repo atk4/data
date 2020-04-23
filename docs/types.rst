@@ -28,7 +28,7 @@ We also allow use of custom Field implementation::
 A properly implemented type will still be able to offer some means to present
 it in human-readable format, however in some cases, if you plan on using ATK UI,
 you would have to create a custom decorators/FormField to properly read and
-present your type value. See :php:attr:`\atk4\ui\Field::ui`.
+present your type value. See :php:attr:`\\atk4\\ui\\Field::ui`.
 
 Persistence mechanics and Serialization
 =======================================
