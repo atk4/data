@@ -889,4 +889,71 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals($dt->format('H:i:s.u'), $model->getField('time')->toString());
         $this->assertEquals($dt->format('Y-m-d\TH:i:s.uP'), $model->getField('datetime')->toString());
     }
+
+    public function testSetNull()
+    {
+        $m = new Model();
+        $m->addField('a');
+        $m->addField('b', ['mandatory' => true]);
+        $m->addField('c', ['required' => true]);
+
+        // valid value for set()
+        $m->set('a', 'x');
+        $m->set('b', 'x');
+        $m->set('c', 'x');
+        $m->set('a', '');
+        $m->set('b', '');
+        $m->set('a', null);
+
+        // null must pass
+        $m->setNull('a');
+        $m->setNull('b');
+        $m->setNull('c');
+        $this->assertNull($m->get('a'));
+        $this->assertNull($m->get('b'));
+        $this->assertNull($m->get('c'));
+
+        // invalid value for set() - normalization must fail
+        $this->expectException(\atk4\data\Exception::class);
+        $m->set('b', null);
+    }
+
+    public function testBoolean()
+    {
+        $m = new Model();
+        $m->addField('is_vip_1', ['type' => 'boolean', 'enum' => ['No', 'Yes']]);
+        $m->addField('is_vip_2', ['type' => 'boolean', 'valueTrue' => 1, 'valueFalse' => 0]);
+        $m->addField('is_vip_3', ['type' => 'boolean', 'valueTrue' => 'Y', 'valueFalse' => 'N']);
+
+        $m->set('is_vip_1', 'No');
+        $this->assertEquals(false, $m['is_vip_1']);
+        $m->set('is_vip_1', 'Yes');
+        $this->assertEquals(true, $m['is_vip_1']);
+        $m->set('is_vip_1', false);
+        $this->assertEquals(false, $m['is_vip_1']);
+        $m->set('is_vip_1', true);
+        $this->assertEquals(true, $m['is_vip_1']);
+        $m->set('is_vip_1', 0);
+        $this->assertEquals(false, $m['is_vip_1']);
+        $m->set('is_vip_1', 1);
+        $this->assertEquals(true, $m['is_vip_1']);
+
+        $m->set('is_vip_2', 0);
+        $this->assertEquals(false, $m['is_vip_2']);
+        $m->set('is_vip_2', 1);
+        $this->assertEquals(true, $m['is_vip_2']);
+        $m->set('is_vip_2', false);
+        $this->assertEquals(false, $m['is_vip_2']);
+        $m->set('is_vip_2', true);
+        $this->assertEquals(true, $m['is_vip_2']);
+
+        $m->set('is_vip_3', 'N');
+        $this->assertEquals(false, $m['is_vip_3']);
+        $m->set('is_vip_3', 'Y');
+        $this->assertEquals(true, $m['is_vip_3']);
+        $m->set('is_vip_3', false);
+        $this->assertEquals(false, $m['is_vip_3']);
+        $m->set('is_vip_3', true);
+        $this->assertEquals(true, $m['is_vip_3']);
+    }
 }

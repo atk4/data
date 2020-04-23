@@ -878,6 +878,25 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Unset field value even if null value is not allowed.
+     *
+     * @param string|array|Model $field
+     *
+     * @return $this
+     */
+    public function setNull($field)
+    {
+        // @TODO prepend normalization breaker hook to return null immediatelly
+        try {
+            $this->set($field, null);
+        } finally {
+            // @TODO restore hooks
+        }
+
+        return $this;
+    }
+
+    /**
      * Returns field value.
      * If no field is passed, then returns array of all field values.
      *
