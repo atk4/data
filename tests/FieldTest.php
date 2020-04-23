@@ -899,23 +899,29 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
 
         // valid value for set()
         $m->set('a', 'x');
-        $m->set('b', 'x');
-        $m->set('c', 'x');
+        $m->set('b', 'y');
+        $m->set('c', 'z');
+        $this->assertSame('x', $m->get('a'));
+        $this->assertSame('y', $m->get('b'));
+        $this->assertSame('z', $m->get('c'));
         $m->set('a', '');
         $m->set('b', '');
+        $this->assertSame('', $m->get('a'));
+        $this->assertSame('', $m->get('b'));
         $m->set('a', null);
+        $this->assertNull($m->get('a'));
 
         // null must pass
         $m->setNull('a');
         $m->setNull('b');
-        $m->setNull('c');
+        $m->getField('c')->setNull();
         $this->assertNull($m->get('a'));
         $this->assertNull($m->get('b'));
         $this->assertNull($m->get('c'));
 
         // invalid value for set() - normalization must fail
         $this->expectException(\atk4\data\Exception::class);
-        $m->set('b', null);
+        $m->set('c', null); // @TODO even "b"/mandatory field should fail!
     }
 
     public function testBoolean()

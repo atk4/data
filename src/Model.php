@@ -886,12 +886,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function setNull($field)
     {
-        // @TODO prepend normalization breaker hook to return null immediatelly
+        // set temporary hook to disable any normalization (null validation)
+        $hookIndex = $this->onHook('normalize', function () {
+            throw new \atk4\core\HookBreaker(false);
+        }, [], PHP_INT_MIN);
+
         try {
-            //$this->set($field, null);
-            $this->data[$field] = null;
+            $this->set($field, null);
         } finally {
-            // @TODO restore hooks
+            $this->removeHook('normalize', $hookIndex, true);
         }
 
         return $this;
