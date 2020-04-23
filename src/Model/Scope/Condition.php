@@ -3,12 +3,12 @@
 namespace atk4\data\Model\Scope;
 
 use atk4\core\Exception;
+use atk4\core\ReadableCaptionTrait;
 use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence\Array_;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
-use atk4\core\ReadableCaptionTrait;
 
 class Condition extends AbstractScope
 {
