@@ -8,9 +8,12 @@ use atk4\data\Model;
 use atk4\data\Persistence\Array_;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
+use atk4\core\ReadableCaptionTrait;
 
 class Condition extends AbstractScope
 {
+    use ReadableCaptionTrait;
+
     public $key;
 
     public $operator;
@@ -294,7 +297,7 @@ class Condition extends AbstractScope
                 $field = array_pop($references);
 
                 foreach ($references as $link) {
-                    $words[] = "that has reference $link";
+                    $words[] = "that has reference {$this->readableCaption($link)}";
 
                     $model = $model->refLink($link);
                 }
