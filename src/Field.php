@@ -469,6 +469,16 @@ class Field implements Expressionable
     }
 
     /**
+     * Unset field value even if null value is not allowed.
+     */
+    public function setNull(): self
+    {
+        $this->owner->setNull($this->short_name);
+
+        return $this;
+    }
+
+    /**
      * This method can be extended. See Model::compare for
      * use examples.
      *

@@ -878,6 +878,29 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Unset field value even if null value is not allowed.
+     *
+     * @param string|array|Model $field
+     *
+     * @return $this
+     */
+    public function setNull($field)
+    {
+        // set temporary hook to disable any normalization (null validation)
+        $hookIndex = $this->onHook('normalize', function () {
+            throw new \atk4\core\HookBreaker(false);
+        }, [], PHP_INT_MIN);
+
+        try {
+            $this->set($field, null);
+        } finally {
+            $this->removeHook('normalize', $hookIndex, true);
+        }
+
+        return $this;
+    }
+
+    /**
      * Returns field value.
      * If no field is passed, then returns array of all field values.
      *
