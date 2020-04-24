@@ -67,7 +67,10 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install PHP dependencies
-        run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+        run: |
+          if [ "${{ matrix.type }}" != "Phpunit" ]; then composer remove --no-interaction --no-update phpunit/phpunit phpunit/dbunit phpunit/phpcov codeclimate/php-test-reporter --dev ; fi
+          if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer --dev ; fi
+          composer install --no-suggest --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
       - name: Init
         run: |
@@ -87,7 +90,7 @@ jobs:
         continue-on-error: true
         run: "vendor/bin/phpunit --configuration phpunit-pgsql.xml \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\""
 
-      - name: "Run tests: Check Coding Style (only for CodingStyle)"
+      - name: Check Coding Style (only for CodingStyle)
         if: matrix.type == 'CodingStyle'
         continue-on-error: true # remove once CS is fully fixer
         run: vendor/bin/php-cs-fixer fix --dry-run --using-cache=yes --cache-file="${{ steps.composer-cache.outputs.dir }}/.php_cs.cache" --diff --diff-format=udiff --verbose --show-progress=dots
