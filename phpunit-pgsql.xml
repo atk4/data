@@ -1,9 +1,9 @@
 <phpunit colors="true" bootstrap="vendor/autoload.php" printerClass="atk4\core\AtkPhpunit\ResultPrinter">
     <php>
-        <var name="DB_DSN" value="pgsql:dbname=atk4-dsql-test;host=localhost" />
-        <var name="DB_USER" value="postgres" />
-        <var name="DB_PASSWD" value="password" />
-        <var name="DB_DBNAME" value="atk4-dsql-test" />
+        <var name="DB_DSN" value="pgsql:dbname=atk4_test__data;host=postgres" />
+        <var name="DB_USER" value="atk4_test" />
+        <var name="DB_PASSWD" value="atk4_pass" />
+        <var name="DB_DBNAME" value="atk4_test__data" />
     </php>
     <filter>
         <blacklist>
