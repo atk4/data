@@ -40,19 +40,19 @@
   },
   "require-dev": {
     "atk4/schema": "dev-develop",
-    "phpunit/phpunit": "<6",
+    "codeclimate/php-test-reporter": "*",
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/dbunit": ">=1.2",
     "phpunit/phpcov": "*",
-    "codeclimate/php-test-reporter": "*"
+    "phpunit/phpunit": "<6"
   },
   "require-dev-release": {
     "atk4/schema": "^2.0",
-    "phpunit/phpunit": "<6",
+    "codeclimate/php-test-reporter": "*",
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/dbunit": ">=1.2",
     "phpunit/phpcov": "*",
-    "codeclimate/php-test-reporter": "*"
+    "phpunit/phpunit": "<6"
   },
   "autoload": {
     "psr-4": {
