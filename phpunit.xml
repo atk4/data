@@ -1,16 +1,13 @@
 <phpunit colors="true" bootstrap="vendor/autoload.php" printerClass="atk4\core\AtkPhpunit\ResultPrinter">
     <php>
         <var name="DB_DSN" value="sqlite::memory:" />
-        <var name="DB_USER" value="travis" />
-        <var name="DB_PASSWD" value="" />
+        <var name="DB_USER" value="atk4_test" />
+        <var name="DB_PASSWD" value="atk4_pass" />
         <var name="DB_DBNAME" value="dsql_test" />
     </php>
     <filter>
-        <blacklist>
-            <directory suffix=".php">./vendor</directory>
-        </blacklist>
         <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">./src</directory>
+            <directory suffix=".php">src</directory>
         </whitelist>
     </filter>
     <testsuites>

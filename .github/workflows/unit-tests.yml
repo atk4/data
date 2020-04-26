@@ -34,7 +34,7 @@ jobs:
           MYSQL_DATABASE: atk4_test__data
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
       postgres:
-        image: postgres:10-alpine
+        image: postgres:12-alpine
         env:
           POSTGRES_USER: atk4_test
           POSTGRES_PASSWORD: atk4_pass
@@ -75,7 +75,6 @@ jobs:
       - name: Init
         run: |
           mkdir -p build/logs
-          # mysql -uroot -ppassword -h mysql -e 'CREATE DATABASE db;'
 
       - name: "Run tests: SQLite (only for Phpunit)"
         if: matrix.type == 'Phpunit'
