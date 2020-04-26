@@ -41,7 +41,6 @@
   },
   "require-dev": {
     "atk4/schema": "dev-develop",
-    "codeclimate/php-test-reporter": "*",
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/dbunit": ">=1.2",
     "phpunit/phpcov": "*",
@@ -49,7 +48,6 @@
   },
   "require-dev-release": {
     "atk4/schema": "^2.0",
-    "codeclimate/php-test-reporter": "*",
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/dbunit": ">=1.2",
     "phpunit/phpcov": "*",
