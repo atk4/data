@@ -90,10 +90,14 @@ jobs:
         continue-on-error: true
         run: "vendor/bin/phpunit --configuration phpunit-pgsql.xml \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\""
 
+      - name: Lint / check syntax (only for CodingStyle)
+        if: matrix.type == 'CodingStyle'
+        run: find . \( -type d \( -path './vendor/*' \) \) -prune -o ! -type d -name '*.php' -print0 | xargs -0 -n1 php -l
+
       - name: Check Coding Style (only for CodingStyle)
         if: matrix.type == 'CodingStyle'
         continue-on-error: true # remove once CS is fully fixer
-        run: vendor/bin/php-cs-fixer fix --dry-run --using-cache=yes --cache-file="${{ steps.composer-cache.outputs.dir }}/.php_cs.cache" --diff --diff-format=udiff --verbose --show-progress=dots
+        run: vendor/bin/php-cs-fixer fix --dry-run --using-cache=no --diff --diff-format=udiff --verbose --show-progress=dots
 
       - name: Upload coverage logs 1/2 (only for "latest" Phpunit)
         if: env.LOG_COVERAGE
