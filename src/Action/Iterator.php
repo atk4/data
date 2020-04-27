@@ -17,8 +17,6 @@ class Iterator
 
     /**
      * Iterator constructor.
-     *
-     * @param array $data
      */
     public function __construct(array $data)
     {
@@ -36,7 +34,6 @@ class Iterator
     public function where($field, $value)
     {
         $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
-
             // skip row. does not have field at all
             if (!array_key_exists($field, $row)) {
                 return false;
@@ -64,7 +61,6 @@ class Iterator
     public function like($field, $value)
     {
         $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
-
             // skip row. does not have field at all
             if (!array_key_exists($field, $row)) {
                 return false;
@@ -77,14 +73,17 @@ class Iterator
                 // case "%str%"
                 case substr($value, -1, 1) == '%' && substr($value, 0, 1) == '%':
                     return strpos($row[$field], $clean_value) !== false;
+
                     break;
                 // case "str%"
                 case substr($value, -1, 1) == '%':
                     return substr($row[$field], 0, strlen($clean_value)) === $clean_value;
+
                     break;
                 // case "%str"
                 case substr($value, 0, 1) == '%':
                     return substr($row[$field], -strlen($clean_value)) === $clean_value;
+
                     break;
                 // full match
                 default:

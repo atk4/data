@@ -75,7 +75,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     /**
      * @expectedException Exception
      */
-    public function testRequired1_1()
+    public function testRequired11()
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
@@ -116,7 +116,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, 'user');
         $m->addField('name', ['required' => true]);
         $m->addField('surname');
-        $m->insert(['surname' => 'qq', 'name'=>'']);
+        $m->insert(['surname' => 'qq', 'name' => '']);
     }
 
     /**
@@ -172,10 +172,10 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $f = $m->addField('user_defined_entity');
         $this->assertEquals('User Defined Entity', $f->getCaption());
 
-        $f = $m->addField('foo2', ['caption'=>'My Foo']);
+        $f = $m->addField('foo2', ['caption' => 'My Foo']);
         $this->assertEquals('My Foo', $f->getCaption());
 
-        $f = $m->addField('foo3', ['ui'=>['caption'=>'My Foo']]);
+        $f = $m->addField('foo3', ['ui' => ['caption' => 'My Foo']]);
         $this->assertEquals('My Foo', $f->getCaption());
 
         $f = $m->addField('userDefinedEntity');
@@ -270,7 +270,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     public function testValues2()
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [3=>'bar']]);
+        $m->addField('foo', ['values' => [3 => 'bar']]);
         $m['foo'] = 3;
 
         $this->assertSame(3, $m['foo']);
@@ -285,7 +285,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     public function testValues3()
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [1=>'bar']]);
+        $m->addField('foo', ['values' => [1 => 'bar']]);
         $m['foo'] = true;
     }
 
@@ -295,7 +295,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     public function testValues3a()
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [1=>'bar']]);
+        $m->addField('foo', ['values' => [1 => 'bar']]);
         $m['foo'] = 'bar';
     }
 
@@ -305,7 +305,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         // This test has no purpose but it stands testament
         // to a weird behaviours of PHP
         $m = new Model();
-        $m->addField('foo', ['values' => ['1a'=>'bar']]);
+        $m->addField('foo', ['values' => ['1a' => 'bar']]);
         $m['foo'] = '1a';
     }
 
@@ -553,7 +553,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('name', ['mandatory' => true]);
         $m->addField('secret', [
             //'password'  => 'bonkers',
-            'typecast'  => [$encrypt, $decrypt],
+            'typecast' => [$encrypt, $decrypt],
         ]);
         $m->save(['name' => 'John', 'secret' => 'i am a woman']);
 
@@ -577,7 +577,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('boolean_enum', ['type' => 'boolean', 'enum'=>['N', 'Y']]);
+        $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -798,7 +798,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('boolean_enum', ['type' => 'boolean', 'enum'=>['N', 'Y']]);
+        $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -817,8 +817,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
         $this->assertSame('2019-01-20T12:23:34+00:00', $m->getField('datetime')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
         $this->assertSame('12:23:34', $m->getField('time')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
-        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('array')->toString(['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
-        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object) ['foo'=>'bar', 'int'=>123, 'rows'=>['a', 'b']]));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('array')->toString(['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
     }
 
     public function testAddFieldDirectly()
@@ -831,12 +831,12 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     public function testGetFields()
     {
         $model = new Model();
-        $model->addField('system', ['system'=>true]);
-        $model->addField('editable', ['ui'=>['editable'=>true]]);
-        $model->addField('editable_system', ['ui'=>['editable'=>true], 'system'=>true]);
-        $model->addField('visible', ['ui'=>['visible'=>true]]);
-        $model->addField('visible_system', ['ui'=>['visible'=>true], 'system'=>true]);
-        $model->addField('not_editable', ['ui'=>['editable'=>false]]);
+        $model->addField('system', ['system' => true]);
+        $model->addField('editable', ['ui' => ['editable' => true]]);
+        $model->addField('editable_system', ['ui' => ['editable' => true], 'system' => true]);
+        $model->addField('visible', ['ui' => ['visible' => true]]);
+        $model->addField('visible_system', ['ui' => ['visible' => true], 'system' => true]);
+        $model->addField('not_editable', ['ui' => ['editable' => false]]);
 
         $this->assertEquals(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
         $this->assertEquals(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));

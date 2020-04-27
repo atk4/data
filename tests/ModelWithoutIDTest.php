@@ -25,7 +25,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         $db = new Persistence\SQL($this->db->connection);
-        $this->m = new Model($db, ['user', 'id_field'=>false]);
+        $this->m = new Model($db, ['user', 'id_field' => false]);
 
         $this->m->addFields(['name', 'gender']);
     }
@@ -67,7 +67,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $this->m->insert(['name'=>'Joe']);
+        $this->m->insert(['name' => 'Joe']);
         $this->assertEquals(3, $this->m->action('count')->getOne());
     }
 

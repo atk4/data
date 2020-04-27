@@ -18,7 +18,7 @@ class Callback extends \atk4\data\Field
      *
      * @var mixed
      */
-    public $expr = null;
+    public $expr;
 
     /**
      * Expressions are always read_only.

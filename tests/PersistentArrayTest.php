@@ -71,7 +71,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertEquals([
             'person' => [
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
-                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F', 'id'=>3],
+                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F', 'id' => 3],
             ],
         ], $a);
     }
@@ -323,12 +323,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertEquals(2, $m->action('count')->getOne());
 
         // use alias as array key if it is set
-        $q = $m->action('field', ['name', 'alias'=>'first_name']);
-        $this->assertEquals(['first_name'=>'John'], $q);
+        $q = $m->action('field', ['name', 'alias' => 'first_name']);
+        $this->assertEquals(['first_name' => 'John'], $q);
 
         // if alias is not set, then use field name as key
         $q = $m->action('field', ['name']);
-        $this->assertEquals(['name'=>'John'], $q);
+        $this->assertEquals(['name' => 'John'], $q);
     }
 
     /**
@@ -337,15 +337,15 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     public function testLike()
     {
         $a = ['countries' => [
-            1 => ['id'=>1, 'name'=>'ABC9', 'code'=>11, 'country'=>'Ireland', 'active'=>1],
-            2 => ['id'=>2, 'name'=>'ABC8', 'code'=>12, 'country'=>'Ireland', 'active'=>0],
-            3 => ['id'=>3, 'code'=>13, 'country'=>'Latvia', 'active'=>1],
-            4 => ['id'=>4, 'name'=>'ABC6', 'code'=>14, 'country'=>'UK', 'active'=>0],
-            5 => ['id'=>5, 'name'=>'ABC5', 'code'=>15, 'country'=>'UK', 'active'=>0],
-            6 => ['id'=>6, 'name'=>'ABC4', 'code'=>16, 'country'=>'Ireland', 'active'=>1],
-            7 => ['id'=>7, 'name'=>'ABC3', 'code'=>17, 'country'=>'Latvia', 'active'=>0],
-            8 => ['id'=>8, 'name'=>'ABC2', 'code'=>18, 'country'=>'Russia', 'active'=>1],
-            9 => ['id'=>9, 'code'=>19, 'country'=>'Latvia', 'active'=>1],
+            1 => ['id' => 1, 'name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
+            2 => ['id' => 2, 'name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
+            3 => ['id' => 3, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
+            4 => ['id' => 4, 'name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
+            5 => ['id' => 5, 'name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
+            6 => ['id' => 6, 'name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
+            7 => ['id' => 7, 'name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
+            8 => ['id' => 8, 'name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
+            9 => ['id' => 9, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
         ]];
 
         $p = new Persistence\Array_($a);
@@ -428,12 +428,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Returns exported data, but will use get() instead of export().
      *
-     * @param \atk4\data\Model $m
-     * @param array            $fields
+     * @param array $fields
      *
      * @return array
      */
-    protected function _getRows(\atk4\data\Model $m, $fields = [])
+    protected function _getRows(Model $m, $fields = [])
     {
         $d = [];
         foreach ($m as $junk) {
@@ -468,12 +467,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->setOrder('f1');
         $d = $this->_getRows($m, ['f1']);
         $this->assertEquals([
-            ['f1'=>'A'],
-            ['f1'=> 'A'],
-            ['f1'=> 'C'],
-            ['f1'=> 'D'],
-            ['f1'=> 'D'],
-            ['f1'=> 'E'],
+            ['f1' => 'A'],
+            ['f1' => 'A'],
+            ['f1' => 'C'],
+            ['f1' => 'D'],
+            ['f1' => 'D'],
+            ['f1' => 'E'],
         ], $d);
         $this->assertEquals($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
@@ -486,12 +485,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->setOrder('f1', true);
         $d = $this->_getRows($m, ['f1']);
         $this->assertEquals([
-            ['f1'=>'E'],
-            ['f1'=> 'D'],
-            ['f1'=> 'D'],
-            ['f1'=> 'C'],
-            ['f1'=> 'A'],
-            ['f1'=> 'A'],
+            ['f1' => 'E'],
+            ['f1' => 'D'],
+            ['f1' => 'D'],
+            ['f1' => 'C'],
+            ['f1' => 'A'],
+            ['f1' => 'A'],
         ], $d);
         $this->assertEquals($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
@@ -506,12 +505,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->setOrder('f2', true);
         $d = $this->_getRows($m, ['f1', 'f2', 'id']);
         $this->assertEquals([
-            ['f1'=>'E', 'f2'=>'A', 'id'=>5],
-            ['f1'=> 'D', 'f2'=>'C', 'id'=>3],
-            ['f1'=> 'D', 'f2'=>'A', 'id'=>2],
-            ['f1'=> 'C', 'f2'=>'A', 'id'=>6],
-            ['f1'=> 'A', 'f2'=>'C', 'id'=>4],
-            ['f1'=> 'A', 'f2'=>'B', 'id'=>1],
+            ['f1' => 'E', 'f2' => 'A', 'id' => 5],
+            ['f1' => 'D', 'f2' => 'C', 'id' => 3],
+            ['f1' => 'D', 'f2' => 'A', 'id' => 2],
+            ['f1' => 'C', 'f2' => 'A', 'id' => 6],
+            ['f1' => 'A', 'f2' => 'C', 'id' => 4],
+            ['f1' => 'A', 'f2' => 'B', 'id' => 1],
         ], $d);
         $this->assertEquals($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }
@@ -581,8 +580,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $m->addCondition('surname', 'Smith');
         $this->assertEquals(1, $m->action('count')->getOne());
-        $this->assertEquals([4=>['name'=>'Sarah', 'surname'=>'Smith']], $m->export());
-        $this->assertEquals([4=>['name'=>'Sarah', 'surname'=>'Smith']], $m->action('select')->get());
+        $this->assertEquals([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->export());
+        $this->assertEquals([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->action('select')->get());
 
         $m->addCondition('surname', 'Siiiith');
         $this->assertEquals(0, $m->action('count')->getOne());
@@ -593,7 +592,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testUnsupportedAction()
     {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
@@ -605,7 +604,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testBadActionArgs()
     {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
@@ -617,7 +616,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testUnsupportedCondition1()
     {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
@@ -632,7 +631,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testUnsupportedCondition2()
     {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
@@ -647,7 +646,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testUnsupportedCondition3()
     {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
@@ -662,7 +661,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testUnsupportedCondition5()
     {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
@@ -677,10 +676,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     {
         $a = [
             'user' => [
-                1 => ['name' => 'John', 'surname' => 'Smith', 'country_id'=>1],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id'=>2],
+                1 => ['name' => 'John', 'surname' => 'Smith', 'country_id' => 1],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id' => 2],
             ],
-            'country'=> [
+            'country' => [
                 1 => ['name' => 'Latvia'],
                 2 => ['name' => 'UK'],
             ],
@@ -712,11 +711,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     {
         $a = [
             'user' => [
-                1 => ['name' => 'John', 'surname' => 'Smith', 'country_id'=>1],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id'=>2],
-                3 => ['name' => 'Janis', 'surname' => 'Berzins', 'country_id'=>1],
+                1 => ['name' => 'John', 'surname' => 'Smith', 'country_id' => 1],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id' => 2],
+                3 => ['name' => 'Janis', 'surname' => 'Berzins', 'country_id' => 1],
             ],
-            'country'=> [
+            'country' => [
                 1 => ['name' => 'Latvia'],
                 2 => ['name' => 'UK'],
             ],

@@ -35,7 +35,7 @@ class Boolean extends \atk4\data\Field
      *
      * @var array
      */
-    public $enum = null;
+    public $enum;
 
     /**
      * Constructor.

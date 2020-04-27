@@ -51,6 +51,7 @@ class Persistence
                     $dsn['dsn'] .= ';charset=utf8mb4';
                 }
 
+                // no break
             case 'pgsql':
             case 'dumper':
             case 'counter':
@@ -120,8 +121,6 @@ class Persistence
      * Extend this method to enhance model to work with your persistence. Here
      * you can define additional methods or store additional data. This method
      * is executed before model's init().
-     *
-     * @param Model $m
      */
     protected function initPersistence(Model $m)
     {
@@ -161,7 +160,6 @@ class Persistence
      *     'is_married'=>1
      *   ]
      *
-     * @param Model $m
      * @param array $row
      *
      * @return array
@@ -174,7 +172,6 @@ class Persistence
 
         $result = [];
         foreach ($row as $key => $value) {
-
             // Look up field object
             $f = $m->hasField($key);
 
@@ -185,6 +182,7 @@ class Persistence
             // we will leave it as-is.
             if (!$f) {
                 $result[$field] = $value;
+
                 continue;
             }
 
@@ -200,6 +198,7 @@ class Persistence
                 $value === null
             ) {
                 $result[$field] = $value;
+
                 continue;
             }
 
@@ -228,7 +227,6 @@ class Persistence
      * may be "aliased" from SQL persistences or mapped depending on persistence
      * driver.
      *
-     * @param Model $m
      * @param array $row
      *
      * @return array
@@ -241,7 +239,6 @@ class Persistence
 
         $result = [];
         foreach ($row as $key => &$value) {
-
             // Look up field object
             $f = $m->hasField($key);
 
@@ -249,12 +246,14 @@ class Persistence
             // we will leave it as-is.
             if (!$f) {
                 $result[$key] = $value;
+
                 continue;
             }
 
             // ignore null values
             if ($value === null) {
                 $result[$key] = $value;
+
                 continue;
             }
 
@@ -279,7 +278,6 @@ class Persistence
      * Prepare value of a specific field by converting it to
      * persistence-friendly format.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -308,7 +306,6 @@ class Persistence
      * Cast specific field value from the way how it's stored inside
      * persistence to a PHP format.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -343,7 +340,6 @@ class Persistence
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -357,7 +353,6 @@ class Persistence
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -371,7 +366,6 @@ class Persistence
      * Provided with a value, will perform field serialization.
      * Can be used for the purposes of encryption or storing unsupported formats.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -395,7 +389,6 @@ class Persistence
      * Provided with a value, will perform field un-serialization.
      * Can be used for the purposes of encryption or storing unsupported formats.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -418,7 +411,6 @@ class Persistence
     /**
      * Override this to fine-tune serialization for your persistence.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -446,7 +438,6 @@ class Persistence
     /**
      * Override this to fine-tune un-serialization for your persistence.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -466,7 +457,6 @@ class Persistence
     /**
      * JSON decoding with proper error treatment.
      *
-     * @param Field  $f
      * @param string $value
      * @param bool   $assoc
      *
@@ -483,7 +473,7 @@ class Persistence
         if (JSON_THROW_ON_ERROR == 0 && json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception([
                 'There was error while decoding JSON',
-                'code'  => json_last_error(),
+                'code' => json_last_error(),
                 'error' => json_last_error_msg(),
             ]);
         }
@@ -494,7 +484,6 @@ class Persistence
     /**
      * JSON encoding with proper error treatment.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return string
@@ -510,7 +499,7 @@ class Persistence
         if (JSON_THROW_ON_ERROR == 0 && json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception([
                 'There was error while encoding JSON',
-                'code'  => json_last_error(),
+                'code' => json_last_error(),
                 'error' => json_last_error_msg(),
             ]);
         }

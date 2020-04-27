@@ -13,7 +13,6 @@ class ArrayOfStrings extends Array_
     /**
      * Typecast all values to strings when saving.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -26,7 +25,6 @@ class ArrayOfStrings extends Array_
     /**
      * Typecast all values from string to correct ones while loading.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed

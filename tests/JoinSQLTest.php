@@ -84,7 +84,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_u->unload();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
+            'user' => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $this->getDB('user,contact'));
 
@@ -125,7 +125,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'name' => 'John']],
+            'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
         ], $this->getDB('user,contact'));
 
@@ -186,7 +186,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
+            'user' => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $this->getDB('user,contact'));
     }
@@ -394,7 +394,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'name' => 'John']],
+            'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
         ], $this->getDB('user,contact'));
     }
@@ -416,7 +416,6 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
             ], 'country' => [
-
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
@@ -460,7 +459,6 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
                     300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
                     301 => ['id' => 301, 'contact_phone' => '+000', 'country_id' => 4],
                 ], 'country' => [
-
                     2 => ['id' => 2, 'name' => 'USA'],
                     3 => ['id' => 3, 'name' => 'India'],
                     4 => ['id' => 4, 'name' => 'LV'],
@@ -482,7 +480,6 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
             ], 'country' => [
-
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
@@ -514,7 +511,6 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
                     200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                     300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
                 ], 'country' => [
-
                     2 => ['id' => 2, 'name' => 'US'],
                     3 => ['id' => 3, 'name' => 'India'],
                 ], ],
@@ -588,7 +584,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_e = new Model($db, 'email');
         $m_e->addField('contact_id');
         $m_e->addField('address');
-        $ref = $j->hasMany('Email', [$m_e, 'our_field'=>'contact_id', 'their_field'=>'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+        $ref = $j->hasMany('Email', [$m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
 
         $m_u->load(1);
         $this->assertEquals([

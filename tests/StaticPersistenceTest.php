@@ -43,7 +43,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
     public function testArrayOfHashes()
     {
-        $p = new Persistence\Static_([['foo'=>'hello'], ['foo'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello'], ['foo' => 'world']]);
         $m = new Model($p);
 
         $m->load(1);
@@ -53,7 +53,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
     public function testIDArg()
     {
-        $p = new Persistence\Static_([['id'=>20, 'foo'=>'hello'], ['id'=>21, 'foo'=>'world']]);
+        $p = new Persistence\Static_([['id' => 20, 'foo' => 'hello'], ['id' => 21, 'foo' => 'world']]);
         $m = new Model($p);
 
         $m->load(21);
@@ -63,7 +63,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
     public function testIDKey()
     {
-        $p = new Persistence\Static_([20=>['foo'=>'hello'], 21=>['foo'=>'world']]);
+        $p = new Persistence\Static_([20 => ['foo' => 'hello'], 21 => ['foo' => 'world']]);
         $m = new Model($p);
 
         $m->load(21);
@@ -83,27 +83,27 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
     public function testCustomField()
     {
-        $p = new Persistence\Static_([['foo'=>'hello'], ['foo'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello'], ['foo' => 'world']]);
         $m = new StaticPersistenceModel($p);
 
         $this->assertEquals('custom field', $m->getField('foo')->caption);
 
-        $p = new Persistence\Static_([['foo'=>'hello', 'bar'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'bar' => 'world']]);
         $m = new StaticPersistenceModel($p);
         $this->assertEquals('foo', $m->title_field);
     }
 
     public function testTitleOrName()
     {
-        $p = new Persistence\Static_([['foo'=>'hello', 'bar'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'bar' => 'world']]);
         $m = new Model($p);
         $this->assertEquals('foo', $m->title_field);
 
-        $p = new Persistence\Static_([['foo'=>'hello', 'name'=>'x']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'name' => 'x']]);
         $m = new Model($p);
         $this->assertEquals('name', $m->title_field);
 
-        $p = new Persistence\Static_([['foo'=>'hello', 'title'=>'x']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'title' => 'x']]);
         $m = new Model($p);
         $this->assertEquals('title', $m->title_field);
     }
@@ -111,15 +111,15 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
     public function testFieldTypes()
     {
         $p = new Persistence\Static_([[
-            'name'        => 'hello',
-            'test_int'    => 123,
-            'test_float'  => 123.45,
-            'test_date'   => new \DateTime(),
-            'test_array'  => ['a', 'b', 'c'],
+            'name' => 'hello',
+            'test_int' => 123,
+            'test_float' => 123.45,
+            'test_date' => new \DateTime(),
+            'test_array' => ['a', 'b', 'c'],
             'test_object' => new \DateInterval('P1Y'),
-            'test_str_1'  => 'abc',
-            'test_str_2'  => '123',
-            'test_str_3'  => '123.45',
+            'test_str_1' => 'abc',
+            'test_str_2' => '123',
+            'test_str_3' => '123.45',
         ]]);
         $m = new Model($p);
 
@@ -145,6 +145,6 @@ class StaticPersistenceModel extends Model
     {
         parent::init();
 
-        $this->addField('foo', ['caption'=>'custom field']);
+        $this->addField('foo', ['caption' => 'custom field']);
     }
 }

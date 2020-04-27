@@ -45,7 +45,7 @@ class CSV extends Persistence
      *
      * @var resource
      */
-    public $handle = null;
+    public $handle;
 
     /**
      * Mode of operation. 'r' for reading and 'w' for writing.
@@ -54,7 +54,7 @@ class CSV extends Persistence
      *
      * @var string
      */
-    public $mode = null;
+    public $mode;
 
     /**
      * Delimiter in CSV file.
@@ -142,7 +142,7 @@ class CSV extends Persistence
     {
         $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape_char);
         if ($data) {
-            $this->line++;
+            ++$this->line;
         }
 
         return $data;
@@ -170,7 +170,7 @@ class CSV extends Persistence
         $this->openFile('r');
 
         $header = $this->getLine();
-        $this->line--; // because we don't want to count header line
+        --$this->line; // because we don't want to count header line
 
         $this->initializeHeader($header);
     }
@@ -178,15 +178,13 @@ class CSV extends Persistence
     /**
      * When load operation starts, this will open file and read
      * the first line. This line is then used to identify columns.
-     *
-     * @param Model $m
      */
     public function saveHeader(Model $m)
     {
         $this->openFile('w');
 
         $header = [];
-        foreach ($m->getFields() as $name=>$field) {
+        foreach ($m->getFields() as $name => $field) {
             if ($name == $m->id_field) {
                 continue;
             }
@@ -216,7 +214,6 @@ class CSV extends Persistence
     /**
      * Typecasting when load data row.
      *
-     * @param Model $m
      * @param array $row
      *
      * @return array
@@ -253,8 +250,6 @@ class CSV extends Persistence
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
      *
-     * @param Model $m
-     *
      * @return array|null
      */
     public function tryLoadAny(Model $m)
@@ -282,8 +277,6 @@ class CSV extends Persistence
 
     /**
      * Prepare iterator.
-     *
-     * @param Model $m
      *
      * @return array
      */
@@ -314,8 +307,6 @@ class CSV extends Persistence
     /**
      * Loads any one record.
      *
-     * @param Model $m
-     *
      * @return array
      */
     public function loadAny(Model $m)
@@ -335,7 +326,6 @@ class CSV extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
-     * @param Model  $m
      * @param array  $data
      * @param string $table
      *
@@ -365,7 +355,6 @@ class CSV extends Persistence
     /**
      * Updates record in data array and returns record ID.
      *
-     * @param Model  $m
      * @param mixed  $id
      * @param array  $data
      * @param string $table
@@ -378,7 +367,6 @@ class CSV extends Persistence
     /**
      * Deletes record in data array.
      *
-     * @param Model  $m
      * @param mixed  $id
      * @param string $table
      */
@@ -421,7 +409,6 @@ class CSV extends Persistence
     /**
      * Export all DataSet.
      *
-     * @param Model      $m
      * @param array|null $fields
      *
      * @return array

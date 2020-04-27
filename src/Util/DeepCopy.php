@@ -59,8 +59,6 @@ class DeepCopy
     /**
      * Set model from which to copy records.
      *
-     * @param Model $source
-     *
      * @return $this
      */
     public function from(Model $source)
@@ -72,8 +70,6 @@ class DeepCopy
 
     /**
      * Set model in which to copy records into.
-     *
-     * @param Model $destination
      *
      * @return $this
      */
@@ -91,8 +87,6 @@ class DeepCopy
     /**
      * Set references to copy.
      *
-     * @param array $references
-     *
      * @return $this
      */
     public function with(array $references)
@@ -106,8 +100,6 @@ class DeepCopy
      * Specifies which fields shouldn't be copied. May also contain arrays
      * for related entries.
      * ->excluding(['name', 'address_id'=>['city']]);.
-     *
-     * @param array $exclusions
      *
      * @return $this
      */
@@ -151,7 +143,7 @@ class DeepCopy
     protected function extractKeys(array $array): array
     {
         $result = [];
-        foreach ($array as $key=>$val) {
+        foreach ($array as $key => $val) {
             if (is_int($key)) {
                 $result[$val] = [];
             } else {
@@ -184,11 +176,8 @@ class DeepCopy
     /**
      * Internal method for copying records.
      *
-     * @param Model $source
-     * @param Model $destination
-     * @param array $references
-     * @param array $exclusions  of fields to exclude
-     * @param array $transforms  callbacks for data transforming
+     * @param array $exclusions of fields to exclude
+     * @param array $transforms callbacks for data transforming
      *
      * @throws DeepCopyException
      * @throws Exception
@@ -200,11 +189,11 @@ class DeepCopy
         try {
             // Perhaps source was already copied, then simply load destination model and return
             if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->id])) {
-                $this->debug('Skipping '.get_class($source));
+                $this->debug('Skipping ' . get_class($source));
 
                 $destination->load($this->mapping[$source->table][$source->id]);
             } else {
-                $this->debug('Copying '.get_class($source));
+                $this->debug('Copying ' . get_class($source));
 
                 $data = $source->get();
 
@@ -240,10 +229,10 @@ class DeepCopy
 
             // Look for hasOne references that needs to be mapped. Make sure records can be mapped, or copy them
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
-                $this->debug("Considering $ref_key");
+                $this->debug("Considering {$ref_key}");
 
                 if (($ref = $source->hasRef($ref_key)) && $ref instanceof HasOne) {
-                    $this->debug("Proceeding with $ref_key");
+                    $this->debug("Proceeding with {$ref_key}");
 
                     // load destination model through $source
                     $source_table = $ref->refModel()->table;
@@ -254,12 +243,13 @@ class DeepCopy
                     ) {
                         // no need to deep copy, simply alter ID
                         $destination[$ref_key] = $this->mapping[$source_table][$source[$ref_key]];
-                        $this->debug(' already copied '.$source[$ref_key].' as '.$destination[$ref_key]);
+                        $this->debug(' already copied ' . $source[$ref_key] . ' as ' . $destination[$ref_key]);
                     } else {
                         // hasOne points to null!
-                        $this->debug('Value is '.$source[$ref_key]);
+                        $this->debug('Value is ' . $source[$ref_key]);
                         if (!$source[$ref_key]) {
                             $destination[$ref_key] = $source[$ref_key];
+
                             continue;
                         }
 
@@ -272,9 +262,9 @@ class DeepCopy
                                 $exclusions[$ref_key] ?? [],
                                 $transforms[$ref_key] ?? []
                             )->id;
-                            $this->debug(' ... mapped into '.$destination[$ref_key]);
+                            $this->debug(' ... mapped into ' . $destination[$ref_key]);
                         } catch (DeepCopyException $e) {
-                            $this->debug('escalating a problem from '.$ref_key);
+                            $this->debug('escalating a problem from ' . $ref_key);
 
                             throw $e->addDepth($ref_key);
                         }
@@ -287,13 +277,12 @@ class DeepCopy
 
             // Store mapping
             $this->mapping[$source->table][$source->id] = $destination->id;
-            $this->debug(' .. copied '.get_class($source).' '.$source->id.' '.$destination->id);
+            $this->debug(' .. copied ' . get_class($source) . ' ' . $source->id . ' ' . $destination->id);
 
             // Next look for hasMany relationships and copy those too
 
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
                 if (($ref = $source->hasRef($ref_key)) && $ref instanceof HasMany) {
-
                     // No mapping, will always copy
                     foreach ($source->ref($ref_key) as $ref_model) {
                         $this->_copy(
@@ -315,12 +304,12 @@ class DeepCopy
 
             throw new DeepCopyException([
                 'Problem cloning model',
-                'source'          => $source,
-                'source_info'     => $source->__debugInfo(),
-                'source_data'     => $source->get(),
-                'destination'     => $destination,
-                'destination_info'=> $destination->__debugInfo(),
-                'depth'           => $e->getParams()['field'] ?? '?',
+                'source' => $source,
+                'source_info' => $source->__debugInfo(),
+                'source_data' => $source->get(),
+                'destination' => $destination,
+                'destination_info' => $destination->__debugInfo(),
+                'depth' => $e->getParams()['field'] ?? '?',
             ], 0, $e);
         }
     }

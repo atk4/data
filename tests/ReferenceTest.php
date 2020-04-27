@@ -101,10 +101,10 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $db = new Persistence();
         $order = new Model($db, ['table' => 'order']);
         $order->addRef('archive', function ($m) {
-            return $m->newInstance(null, ['table' => $m->table.'_archive']);
+            return $m->newInstance(null, ['table' => $m->table . '_archive']);
         });
         $order->addRef('archive', function ($m) {
-            return $m->newInstance(null, ['table' => $m->table.'_archive']);
+            return $m->newInstance(null, ['table' => $m->table . '_archive']);
         });
     }
 
@@ -115,7 +115,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
 
         $m = new Model($p, ['table' => 'user']);
         $m->addRef('archive', function ($m) {
-            return $m->newInstance(null, ['table' => $m->table.'_archive']);
+            return $m->newInstance(null, ['table' => $m->table . '_archive']);
         });
 
         $this->assertEquals('user_archive', $m->ref('archive')->table);

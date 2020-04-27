@@ -257,13 +257,13 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $i = (new Model($this->db, 'invoice'))->addFields(['ref_no']);
         $l = (new Model($this->db, 'invoice_line'))->addFields([
             'invoice_id',
-            ['total_net', 'type'=>'money'],
-            ['total_vat', 'type'=>'money'],
-            ['total_gross', 'type'=>'money'],
+            ['total_net', 'type' => 'money'],
+            ['total_vat', 'type' => 'money'],
+            ['total_gross', 'type' => 'money'],
         ]);
         $i->hasMany('line', $l)
             ->addFields([
-                ['total_vat', 'aggregate' => 'sum', 'type'=>'money'],
+                ['total_vat', 'aggregate' => 'sum', 'type' => 'money'],
                 ['total_net', 'aggregate' => 'sum'],
                 ['total_gross', 'aggregate' => 'sum'],
             ]);
@@ -308,11 +308,11 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 2 => ['id' => 2, 'name' => 'Veg'],
                 3 => ['id' => 3, 'name' => 'Fruit'],
             ], 'item' => [
-                ['name' => 'Apple',  'code' => 'ABC', 'list_id'=>3],
-                ['name' => 'Banana', 'code' => 'DEF', 'list_id'=>3],
-                ['name' => 'Pork',   'code' => 'GHI', 'list_id'=>1],
-                ['name' => 'Chicken', 'code'=> null,  'list_id'=>1],
-                ['name' => 'Pear',   'code' => null,  'list_id'=>3],
+                ['name' => 'Apple',  'code' => 'ABC', 'list_id' => 3],
+                ['name' => 'Banana', 'code' => 'DEF', 'list_id' => 3],
+                ['name' => 'Pork',   'code' => 'GHI', 'list_id' => 1],
+                ['name' => 'Chicken', 'code' => null,  'list_id' => 1],
+                ['name' => 'Pear',   'code' => null,  'list_id' => 3],
             ], ];
 
         $this->setDB($a);
@@ -324,11 +324,11 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['items_name', 'aggregate' => 'count', 'field' => 'name'],
                 ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
                 ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
-                ['items_c:',  'concat' => '::', 'field'=>'name'],
+                ['items_c:',  'concat' => '::', 'field' => 'name'],
                 ['items_c-',  'aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
                 ['len',       'aggregate' => $i->expr('sum(length([name]))')],
                 ['len2',      'expr' => 'sum(length([name]))'],
-                ['chicken5',  'expr' => 'sum([])', 'args'=>['5']],
+                ['chicken5',  'expr' => 'sum([])', 'args' => ['5']],
             ]);
         $l->load(1);
 
@@ -409,8 +409,8 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['name' => 'Ronaldo'],
             ],
             'stadium' => [
-                ['name' => 'Sue bernabeu', 'player_id'=>'3'],
-                ['name' => 'John camp', 'player_id'=>'1'],
+                ['name' => 'Sue bernabeu', 'player_id' => '3'],
+                ['name' => 'John camp', 'player_id' => '1'],
             ],
         ];
         $this->setDB($a);
@@ -421,10 +421,10 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $s->addFields(['name']);
         $s->hasOne('player_id', $p);
 
-        $p->hasOne('Stadium', [$s, 'our_field'=>'id', 'their_field'=>'player_id']);
+        $p->hasOne('Stadium', [$s, 'our_field' => 'id', 'their_field' => 'player_id']);
 
         $p->load(2);
-        $p->ref('Stadium')->import([['name'=>'Nou camp nou']]);
+        $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
         $this->assertEquals('Nou camp nou', $p->ref('Stadium')['name']);
         $this->assertEquals('2', $p->ref('Stadium')['player_id']);
     }
@@ -510,7 +510,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         // with custom title_field='last_name'
-        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, 'order'));
         $o->hasOne('user_id', $u)->addTitle();
 
@@ -527,9 +527,9 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, 'order'));
-        $o->hasOne('my_user', [$u, 'our_field'=>'user_id'])->addTitle();
+        $o->hasOne('my_user', [$u, 'our_field' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o->load(1);
@@ -544,9 +544,9 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, 'order'));
-        $o->hasOne('my_user', [$u, 'our_field'=>'user_id'])->addTitle();
+        $o->hasOne('my_user', [$u, 'our_field' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o->load(1);
@@ -566,7 +566,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
     public function testHasOneReferenceCaption()
     {
         $a = [
-            'user'  => [
+            'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
                 2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
                 3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
@@ -580,7 +580,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         // restore DB
         $this->setDB($a);
-        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
 
         // Test : Now the caption is null and is generated from field name
         $this->assertEquals('Last Name', $u->getField('last_name')->getCaption());
@@ -591,7 +591,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, 'order'));
-        $order_user_ref = $o->hasOne('my_user', [$u, 'our_field'=>'user_id']);
+        $order_user_ref = $o->hasOne('my_user', [$u, 'our_field' => 'user_id']);
         $order_user_ref->addField('user_last_name', 'last_name');
 
         $referenced_caption = $o->getField('user_last_name')->getCaption();

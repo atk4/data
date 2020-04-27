@@ -143,7 +143,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         $a = [
             'user' => [
-                1 => ['name' => 'John', 'last_name'=>null, 'login'=>null, 'salary'=>null, 'tax'=>null, 'vat'=>null],
+                1 => ['name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
             ], ];
         $this->setDB($a);
 
@@ -152,17 +152,17 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->addFields(['name'], ['default' => 'anonymous']);
         $m->addFields([
             'last_name',
-            'login'  => ['default' => 'unknown'],
-            'salary' => ['type'=>'money', CustomField::class, 'default' => 100],
-            ['tax', CustomField::class, 'type'=>'money', 'default' => 20],
-            'vat' => new CustomField(['type'=>'money', 'default' => 15]),
+            'login' => ['default' => 'unknown'],
+            'salary' => ['type' => 'money', CustomField::class, 'default' => 100],
+            ['tax', CustomField::class, 'type' => 'money', 'default' => 20],
+            'vat' => new CustomField(['type' => 'money', 'default' => 15]),
         ]);
 
         $m->insert([]);
 
         $this->assertEquals([
-            ['id'=>1, 'name'=>'John', 'last_name'=>null, 'login'=>null, 'salary'=>null, 'tax'=>null, 'vat'=>null],
-            ['id'=> 2, 'name'=>'anonymous', 'last_name'=>null, 'login'=>'unknown', 'salary'=>100, 'tax'=>20, 'vat'=>15],
+            ['id' => 1, 'name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
+            ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100, 'tax' => 20, 'vat' => 15],
         ], $m->export());
 
         $m->load(2);
@@ -271,15 +271,14 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->load(2);
 
         $m->onHook('afterUpdateQuery', function ($m, $update, $st) {
-
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
                 throw new \atk4\core\Exception([
                     'Update didn\'t affect any records',
-                    'query'      => $update->getDebugQuery(false),
-                    'statement'  => $st,
-                    'model'      => $m,
+                    'query' => $update->getDebugQuery(false),
+                    'statement' => $st,
+                    'model' => $m,
                     'conditions' => $m->conditions,
                 ]);
             }
@@ -324,7 +323,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         });
 
         $m->onHook('beforeLoad', function ($m, $id) {
-            $m->data = ['name' => 'rec #'.$id];
+            $m->data = ['name' => 'rec #' . $id];
             $m->id = $id;
             $m->breakHook(false);
         });
@@ -368,7 +367,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $db = new Persistence\SQL($this->db->connection);
         $a = [
             'rate' => [
-                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1'=>'y1', 'x2'=>'y2'],
+                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
             ],
         ];
         $this->setDB($a);
@@ -414,11 +413,11 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         // default title_field = name
         $this->assertEquals(null, $m->getTitle()); // not loaded model returns null
-        $this->assertEquals([1=>'John', 2=>'Sue'], $m->getTitles()); // all titles
+        $this->assertEquals([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
         $m->load(2);
         $this->assertEquals('Sue', $m->getTitle()); // loaded returns title_field value
-        $this->assertEquals([1=>'John', 2=>'Sue'], $m->getTitles()); // all titles
+        $this->assertEquals([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
         // set custom title_field
         $m->title_field = 'parent_item_id';
@@ -437,7 +436,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->title_field = 'my_name';
         $m->load(2);
         $this->assertEquals(2, $m->getTitle()); // loaded returns id value
-        $this->assertEquals([1=>1, 2=>2], $m->getTitles()); // all titles (my_name)
+        $this->assertEquals([1 => 1, 2 => 2], $m->getTitles()); // all titles (my_name)
     }
 
     /**
@@ -453,7 +452,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         // model without id field
-        $m1 = new Model($this->db, ['table'=>'user', 'id_field'=>false]);
+        $m1 = new Model($this->db, ['table' => 'user', 'id_field' => false]);
         $m1->addField('code');
         $m1->addField('name');
 

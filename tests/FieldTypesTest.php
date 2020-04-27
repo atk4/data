@@ -10,15 +10,15 @@ use atk4\data\Persistence\Static_ as Persistence_Static;
  */
 class FieldTypesTest extends \atk4\schema\PhpunitTestCase
 {
-    public $pers = null;
+    public $pers;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->pers = new Persistence_Static([
-            1 => ['name'=>'John'],
-            2 => ['name'=>'Peter'],
+            1 => ['name' => 'John'],
+            2 => ['name' => 'Peter'],
         ]);
     }
 
@@ -41,7 +41,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model($this->pers);
         $m->addField('email', ['Email']);
-        $m->addField('emails', ['Email', 'allow_multiple'=>true]);
+        $m->addField('emails', ['Email', 'allow_multiple' => true]);
 
         $m['emails'] = 'bar@exampe.com ,foo@example.com';
         $this->assertEquals('bar@exampe.com, foo@example.com', $m['emails']);
@@ -53,7 +53,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
     public function testEmail3()
     {
         $m = new Model($this->pers);
-        $m->addField('email', ['Email', 'dns_check'=>true]);
+        $m->addField('email', ['Email', 'dns_check' => true]);
 
         $m['email'] = ' foo@gmail.com';
 
@@ -66,9 +66,9 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
     public function testEmail4()
     {
         $m = new Model($this->pers);
-        $m->addField('email_name', ['Email', 'include_names'=>true]);
-        $m->addField('email_names', ['Email', 'include_names'=>true, 'allow_multiple'=>true, 'dns_check'=>true, 'separator'=>[',', ';']]);
-        $m->addField('email_idn', ['Email', 'dns_check'=>true]);
+        $m->addField('email_name', ['Email', 'include_names' => true]);
+        $m->addField('email_names', ['Email', 'include_names' => true, 'allow_multiple' => true, 'dns_check' => true, 'separator' => [',', ';']]);
+        $m->addField('email_idn', ['Email', 'dns_check' => true]);
         $m->addField('email', ['Email']);
 
         $m['email_name'] = 'Romans <me@gmail.com>';

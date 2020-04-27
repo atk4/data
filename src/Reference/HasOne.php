@@ -22,7 +22,7 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $type = null;
+    public $type;
 
     /**
      * Is it system field?
@@ -37,14 +37,14 @@ class HasOne extends Reference
      *
      * @var Join|null
      */
-    protected $join = null;
+    protected $join;
 
     /**
      * Default value of field.
      *
      * @var mixed
      */
-    public $default = null;
+    public $default;
 
     /**
      * Setting this to true will never actually store
@@ -71,7 +71,7 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $caption = null;
+    public $caption;
 
     /**
      * Array with UI flags like editable, visible and hidden.
@@ -102,18 +102,18 @@ class HasOne extends Reference
      *
      * Value can be array [$typecast_save_callback, $typecast_load_callback].
      *
-     * @var null|bool|array
+     * @var bool|array|null
      */
-    public $typecast = null;
+    public $typecast;
 
     /**
      * Should we use serialization when saving/loading data to/from persistence.
      *
      * Value can be array [$encode_callback, $decode_callback].
      *
-     * @var null|bool|array|string
+     * @var bool|array|string|null
      */
-    public $serialize = null;
+    public $serialize;
 
     /**
      * Persisting format for type = 'date', 'datetime', 'time' fields.
@@ -122,7 +122,7 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $persist_format = null;
+    public $persist_format;
 
     /**
      * Persisting timezone for type = 'date', 'datetime', 'time' fields.
@@ -167,22 +167,22 @@ class HasOne extends Reference
 
         if (!$this->owner->hasField($this->our_field)) {
             $this->owner->addField($this->our_field, [
-                'type'              => $this->type,
-                'reference'         => $this,
-                'system'            => $this->system,
-                'join'              => $this->join,
-                'default'           => $this->default,
-                'never_persist'     => $this->never_persist,
-                'read_only'         => $this->read_only,
-                'caption'           => $this->caption,
-                'ui'                => $this->ui,
-                'mandatory'         => $this->mandatory,
-                'required'          => $this->required,
-                'typecast'          => $this->typecast,
-                'serialize'         => $this->serialize,
-                'persist_format'    => $this->persist_format,
-                'persist_timezone'  => $this->persist_timezone,
-                'dateTimeClass'     => $this->dateTimeClass,
+                'type' => $this->type,
+                'reference' => $this,
+                'system' => $this->system,
+                'join' => $this->join,
+                'default' => $this->default,
+                'never_persist' => $this->never_persist,
+                'read_only' => $this->read_only,
+                'caption' => $this->caption,
+                'ui' => $this->ui,
+                'mandatory' => $this->mandatory,
+                'required' => $this->required,
+                'typecast' => $this->typecast,
+                'serialize' => $this->serialize,
+                'persist_format' => $this->persist_format,
+                'persist_timezone' => $this->persist_timezone,
+                'dateTimeClass' => $this->dateTimeClass,
                 'dateTimeZoneClass' => $this->dateTimeZoneClass,
             ]);
         }
@@ -192,8 +192,6 @@ class HasOne extends Reference
      * Returns our field or id field.
      *
      * @throws Exception
-     *
-     * @return Field
      */
     protected function referenceOurValue(): Field
     {
@@ -212,8 +210,6 @@ class HasOne extends Reference
      *
      * @throws Exception
      * @throws \atk4\data\Exception
-     *
-     * @return Model
      */
     public function ref($defaults = []): Model
     {

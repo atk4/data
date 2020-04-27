@@ -28,10 +28,10 @@ class LCountry extends Model
         $this->addField('name');
         $this->addField('code');
 
-        $this->addField('is_eu', ['type'=>'boolean', 'default'=>false]);
+        $this->addField('is_eu', ['type' => 'boolean', 'default' => false]);
 
         $this->hasMany('Users', new LUser())
-            ->addField('user_names', ['field'=>'name', 'concat'=>',']);
+            ->addField('user_names', ['field' => 'name', 'concat' => ',']);
     }
 }
 
@@ -62,14 +62,14 @@ class LUser extends Model
         parent::init();
 
         $this->addField('name');
-        $this->addField('is_vip', ['type'=>'boolean', 'default'=>false]);
+        $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
         $this->hasOne('country_id', new LCountry())
             ->withTitle()
-            ->addFields(['country_code'=>'code', 'is_eu']);
+            ->addFields(['country_code' => 'code', 'is_eu']);
 
         $this->hasMany('Friends', new LFriend())
-            ->addField('friend_names', ['field'=>'friend_name', 'concat'=>',']);
+            ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
     }
 }
 
@@ -146,7 +146,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         $export = var_export($expression, true);
         $export = preg_replace('/^([ ]*)(.*)/m', '$1$1$2', $export);
         $array = preg_split("/\r\n|\n|\r/", $export);
-        $array = preg_replace(["/\s*array\s\($/", "/\)(,)?$/", "/\s=>\s$/"], [null, ']$1', ' => ['], $array);
+        $array = preg_replace(['/\\s*array\\s\\($/', '/\\)(,)?$/', '/\\s=>\\s$/'], [null, ']$1', ' => ['], $array);
         $export = implode(PHP_EOL, array_filter(['['] + $array));
         if ((bool) $return) {
             return $export;
@@ -178,64 +178,64 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         $c->saveAndUnload('Canada');
 
         // adds another country, but with more fields
-        $c->saveAndUnload(['Latvia', 'code'=>'LV', 'is_eu'=>true]);
+        $c->saveAndUnload(['Latvia', 'code' => 'LV', 'is_eu' => true]);
 
         // setting field prior will affect save()
         $c['is_eu'] = true;
-        $c->save(['Estonia', 'code'=>'ES']);
+        $c->save(['Estonia', 'code' => 'ES']);
 
         // is_eu will NOT BLEED into this record, because insert() does not make use of current model values.
-        $c->insert(['Korea', 'code'=>'KR']);
+        $c->insert(['Korea', 'code' => 'KR']);
 
         // is_eu will NOT BLEED into Japan or Russia, because import() treats all records individually
         $c->import([
-            ['Japan', 'code'=>'JP'],
-            ['Lithuania', 'code'=>'LT', 'is_eu'=>true],
-            ['Russia', 'code'=>'RU'],
+            ['Japan', 'code' => 'JP'],
+            ['Lithuania', 'code' => 'LT', 'is_eu' => true],
+            ['Russia', 'code' => 'RU'],
         ]);
 
         $this->assertEquals([
             'country' => [
                 1 => [
-                    'id'    => '1',
-                    'name'  => 'Canada',
-                    'code'  => null,
+                    'id' => '1',
+                    'name' => 'Canada',
+                    'code' => null,
                     'is_eu' => '0',
                 ],
                 2 => [
-                    'id'    => '2',
-                    'name'  => 'Latvia',
-                    'code'  => 'LV',
+                    'id' => '2',
+                    'name' => 'Latvia',
+                    'code' => 'LV',
                     'is_eu' => '1',
                 ],
                 3 => [
-                    'id'    => '3',
-                    'name'  => 'Estonia',
-                    'code'  => 'ES',
+                    'id' => '3',
+                    'name' => 'Estonia',
+                    'code' => 'ES',
                     'is_eu' => '1',
                 ],
                 4 => [
-                    'id'    => '4',
-                    'name'  => 'Korea',
-                    'code'  => 'KR',
+                    'id' => '4',
+                    'name' => 'Korea',
+                    'code' => 'KR',
                     'is_eu' => '0',
                 ],
                 5 => [
-                    'id'    => '5',
-                    'name'  => 'Japan',
-                    'code'  => 'JP',
+                    'id' => '5',
+                    'name' => 'Japan',
+                    'code' => 'JP',
                     'is_eu' => '0',
                 ],
                 6 => [
-                    'id'    => '6',
-                    'name'  => 'Lithuania',
-                    'code'  => 'LT',
+                    'id' => '6',
+                    'name' => 'Lithuania',
+                    'code' => 'LT',
                     'is_eu' => '1',
                 ],
                 7 => [
-                    'id'    => '7',
-                    'name'  => 'Russia',
-                    'code'  => 'RU',
+                    'id' => '7',
+                    'name' => 'Russia',
+                    'code' => 'RU',
                     'is_eu' => '0',
                 ],
             ],
@@ -247,50 +247,50 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         $c = new LCountry($this->db);
 
         // Specifying hasMany here will perform input
-        $c->insert(['name'=>'Canada', 'Users'=>['Alain', ['Duncan', 'is_vip'=>true]]]);
+        $c->insert(['name' => 'Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
         // Both lines will work quite similar
-        $c->insert(['Latvia', 'user_names'=>'imants,juris']);
+        $c->insert(['Latvia', 'user_names' => 'imants,juris']);
 
         //$this->varexport($this->getDB(['country','user']));
         $this->assertEquals([
             'country' => [
                 1 => [
-                    'id'    => '1',
-                    'name'  => 'Canada',
-                    'code'  => null,
+                    'id' => '1',
+                    'name' => 'Canada',
+                    'code' => null,
                     'is_eu' => '0',
                 ],
                 2 => [
-                    'id'    => '2',
-                    'name'  => 'Latvia',
-                    'code'  => null,
+                    'id' => '2',
+                    'name' => 'Latvia',
+                    'code' => null,
                     'is_eu' => '0',
                 ],
             ],
             'user' => [
                 1 => [
-                    'id'         => '1',
-                    'name'       => 'Alain',
-                    'is_vip'     => '0',
+                    'id' => '1',
+                    'name' => 'Alain',
+                    'is_vip' => '0',
                     'country_id' => '1',
                 ],
                 2 => [
-                    'id'         => '2',
-                    'name'       => 'Duncan',
-                    'is_vip'     => '1',
+                    'id' => '2',
+                    'name' => 'Duncan',
+                    'is_vip' => '1',
                     'country_id' => '1',
                 ],
                 3 => [
-                    'id'         => '3',
-                    'name'       => 'imants',
-                    'is_vip'     => '0',
+                    'id' => '3',
+                    'name' => 'imants',
+                    'is_vip' => '0',
                     'country_id' => '2',
                 ],
                 4 => [
-                    'id'         => '4',
-                    'name'       => 'juris',
-                    'is_vip'     => '0',
+                    'id' => '4',
+                    'name' => 'juris',
+                    'is_vip' => '0',
                     'country_id' => '2',
                 ],
             ],
@@ -303,18 +303,18 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
 
         // Specifying hasMany here will perform input
         $c->import([
-            ['Canada', 'code'=>'CA'],
-            ['Latvia', 'code'=>'LV'],
-            ['Japan', 'code'=>'JP'],
-            ['Lithuania', 'code'=>'LT', 'is_eu'=>true],
-            ['Russia', 'code'=>'RU'],
+            ['Canada', 'code' => 'CA'],
+            ['Latvia', 'code' => 'LV'],
+            ['Japan', 'code' => 'JP'],
+            ['Lithuania', 'code' => 'LT', 'is_eu' => true],
+            ['Russia', 'code' => 'RU'],
         ]);
 
         $u = new LUser($this->db);
 
         $u->import([
-            ['name'       => 'Alain', 'country_code'=>'CA'],
-            ['name'       => 'Imants', 'country_code'=>'LV'],
+            ['name' => 'Alain', 'country_code' => 'CA'],
+            ['name' => 'Imants', 'country_code' => 'LV'],
             //[ 'name'       => 'Romans', 'country_code'=>'UK'],  // does not exist
         ]);
     }

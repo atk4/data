@@ -25,7 +25,7 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         $db = new Persistence\SQL($this->db->connection);
-        $this->m = new Model($db, ['user', 'read_only'=>true]);
+        $this->m = new Model($db, ['user', 'read_only' => true]);
 
         $this->m->addFields(['name', 'gender']);
     }
@@ -76,7 +76,7 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
      */
     public function testInsert()
     {
-        $this->m->insert(['name'=>'Joe']);
+        $this->m->insert(['name' => 'Joe']);
     }
 
     /**

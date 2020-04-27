@@ -152,6 +152,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
         $data = [];
         foreach ($i->rawIterator() as $row) {
             $data[] = $row;
+
             break;
         }
 

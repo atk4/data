@@ -18,7 +18,7 @@ trait ACReminder
     {
         $this->save(['reminder_sent' => true]);
 
-        return 'sent reminder to '.$this->getTitle();
+        return 'sent reminder to ' . $this->getTitle();
     }
 
     public function backup_clients()
@@ -36,7 +36,7 @@ class ACClient extends Model
         parent::init();
 
         $this->addField('name');
-        $this->addField('reminder_sent', ['type'=>'boolean']);
+        $this->addField('reminder_sent', ['type' => 'boolean']);
 
         // this action can be invoked from UI
         $this->addAction('send_reminder');
@@ -51,15 +51,15 @@ class ACClient extends Model
  */
 class UserActionTest extends \atk4\schema\PhpunitTestCase
 {
-    public $pers = null;
+    public $pers;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->pers = new Persistence_Static([
-            1 => ['name'=>'John'],
-            2 => ['name'=>'Peter'],
+            1 => ['name' => 'John'],
+            2 => ['name' => 'Peter'],
         ]);
     }
 
@@ -113,11 +113,11 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals('John', $client->getAction('say_name')->execute());
 
         $client->getAction('say_name')->preview = function ($m, $arg) {
-            return ($m instanceof ACClient) ? 'will say '.$m['name'] : 'will fail';
+            return ($m instanceof ACClient) ? 'will say ' . $m['name'] : 'will fail';
         };
         $this->assertEquals('will say John', $client->getAction('say_name')->preview('x'));
 
-        $client->addAction('also_backup', ['callback'=>'backup_clients']);
+        $client->addAction('also_backup', ['callback' => 'backup_clients']);
         $this->assertEquals('backs up all clients', $client->getAction('also_backup')->execute());
 
         $client->getAction('also_backup')->preview = 'backup_clients';
@@ -143,7 +143,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     public function testScope2()
     {
         $client = new ACClient($this->pers);
-        $client->addAction('new_client', ['scope'=>UserAction\Generic::NO_RECORDS]);
+        $client->addAction('new_client', ['scope' => UserAction\Generic::NO_RECORDS]);
         $client->load(1);
 
         $this->expectExceptionMessage('executed on existing record');
@@ -153,7 +153,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     public function testScope3()
     {
         $client = new ACClient($this->pers);
-        $client->addAction('new_client', ['scope'=>UserAction\Generic::NO_RECORDS, 'atomic'=>false]);
+        $client->addAction('new_client', ['scope' => UserAction\Generic::NO_RECORDS, 'atomic' => false]);
 
         $this->expectExceptionMessage('not defined');
         $client->executeAction('new_client');
@@ -224,7 +224,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     public function testFieldsTooDirty1()
     {
         $client = new ACClient($this->pers);
-        $a = $client->addAction('change_details', ['callback'=>'save', 'fields'=>['name']]);
+        $a = $client->addAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
 
         $client->load(1);
 
@@ -239,7 +239,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     public function testFieldsIncorrect()
     {
         $client = new ACClient($this->pers);
-        $a = $client->addAction('change_details', ['callback'=>'save', 'fields'=>'whops_forgot_brackets']);
+        $a = $client->addAction('change_details', ['callback' => 'save', 'fields' => 'whops_forgot_brackets']);
 
         $client->load(1);
 

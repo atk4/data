@@ -55,7 +55,7 @@ class Array_ extends Join
             throw new Exception([
                 'Unable to load joined record',
                 'table' => $this->foreign_table,
-                'id'    => $this->id,
+                'id' => $this->id,
             ], $e->getCode(), $e);
         }
         $model->data = array_merge($data, $model->data);

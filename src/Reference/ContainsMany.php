@@ -50,8 +50,6 @@ class ContainsMany extends ContainsOne
      * Returns referenced model.
      *
      * @param array $defaults Properties
-     *
-     * @return Model
      */
     public function ref($defaults = []): Model
     {
@@ -60,7 +58,7 @@ class ContainsMany extends ContainsOne
         $m = $this->getModel(array_merge($defaults, [
             'contained_in_root_model' => $this->owner->contained_in_root_model ?: $this->owner,
             //'id_field'              => false,
-            'table'                   => $this->table_alias,
+            'table' => $this->table_alias,
         ]));
 
         // set some hooks for ref_model

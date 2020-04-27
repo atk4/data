@@ -112,8 +112,8 @@ class CSVTest extends AtkPhpunit\TestCase
     public function testPersistenceCopy()
     {
         $data = [
-            ['name' => 'John', 'surname' => 'Smith', 'gender'=>'M'],
-            ['name' => 'Sarah', 'surname' => 'Jones', 'gender'=>'F'],
+            ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
+            ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
         ];
 
         $this->setDB($data);

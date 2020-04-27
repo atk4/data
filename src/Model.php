@@ -128,28 +128,28 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var string|array
      */
-    public $table = null;
+    public $table;
 
     /**
      * Use alias for $table.
      *
      * @var string
      */
-    public $table_alias = null;
+    public $table_alias;
 
     /**
      * Sequence name. Some DB engines use sequence for generating auto_increment IDs.
      *
      * @var string
      */
-    public $sequence = null;
+    public $sequence;
 
     /**
      * Persistence driver inherited from atk4\data\Persistence.
      *
      * @var Persistence
      */
-    public $persistence = null;
+    public $persistence;
 
     /**
      * Persistence store some custom information in here that may be useful
@@ -235,7 +235,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var mixed
      */
-    public $id = null;
+    public $id;
 
     /**
      * While in most cases your id field will be called 'id', sometimes
@@ -264,7 +264,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var string
      */
-    public $caption = null;
+    public $caption;
 
     /**
      * When using onlyFields() this property will contain list of desired
@@ -326,7 +326,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var bool|null
      */
-    public $reload_after_save = null;
+    public $reload_after_save;
 
     /**
      * If this model is "contained into" another model by using containsOne
@@ -335,7 +335,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @var Model|null
      */
-    public $contained_in_root_model = null;
+    public $contained_in_root_model;
 
     // }}}
 
@@ -414,21 +414,21 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         // Declare our basic CRUD actions for the model.
         $this->addAction('add', [
-            'fields'      => true,
-            'scope'       => UserAction\Generic::NO_RECORDS,
-            'callback'    => 'save',
-            'description' => 'Add '.$this->getModelCaption(),
-            'ui'          => ['icon'=>'plus'],
+            'fields' => true,
+            'scope' => UserAction\Generic::NO_RECORDS,
+            'callback' => 'save',
+            'description' => 'Add ' . $this->getModelCaption(),
+            'ui' => ['icon' => 'plus'],
         ]);
         $this->addAction('edit', [
-            'fields'  => true,
-            'scope'   => UserAction\Generic::SINGLE_RECORD,
-            'callback'=> 'save',
-            'ui'      => ['icon'=>'edit', 'button'=>[null, 'icon'=>'edit'], 'execButton'=>['Button', 'Save', 'blue']],
+            'fields' => true,
+            'scope' => UserAction\Generic::SINGLE_RECORD,
+            'callback' => 'save',
+            'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => 'edit'], 'execButton' => ['Button', 'Save', 'blue']],
         ]);
         $this->addAction('delete', [
-            'scope'    => UserAction\Generic::SINGLE_RECORD,
-            'ui'       => ['icon'=>'trash', 'button'=>[null, 'icon'=>'red trash'], 'confirm'=>'Are you sure?'],
+            'scope' => UserAction\Generic::SINGLE_RECORD,
+            'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => 'red trash'], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
             },
@@ -436,10 +436,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $this->addAction('validate', [
             //'scope'=> any!
-            'description'=> 'Provided with modified values will validate them but will not save',
-            'fields'     => true,
-            'system'     => true, // don't show by default
-            'args'       => ['intent'=>'string'],
+            'description' => 'Provided with modified values will validate them but will not save',
+            'fields' => true,
+            'system' => true, // don't show by default
+            'args' => ['intent' => 'string'],
         ]);
     }
 
@@ -535,7 +535,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Adds multiple fields into model.
      *
-     * @param array $fields
      * @param array $defaults
      *
      * @throws \atk4\core\Exception
@@ -571,8 +570,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Remove field that was added previously.
      *
-     * @param string $name
-     *
      * @throws \atk4\core\Exception
      *
      * @return $this
@@ -589,8 +586,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * to hasElement() but with extra checks to make sure it's certainly a field you are
      * getting.
      *
-     * @param string $name
-     *
      * @return Field|false
      */
     public function hasField(string $name)
@@ -601,8 +596,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Same as hasField, but will throw exception if field not found.
      * Similar to getElement().
-     *
-     * @param string $name
      *
      * @throws \atk4\core\Exception
      *
@@ -675,7 +668,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             if (!in_array($field, $this->only_fields) && !$this->getField($field)->system) {
                 throw new Exception([
                     'Attempt to use field outside of those set by onlyFields',
-                    'field'       => $field,
+                    'field' => $field,
                     'only_fields' => $this->only_fields,
                 ]);
             }
@@ -684,8 +677,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->strict_field_check && !$this->hasField($field)) {
             throw new Exception([
                 'Field is not defined inside a Model',
-                'field'       => $field,
-                'model'       => $this,
+                'field' => $field,
+                'model' => $this,
             ]);
         }
 
@@ -729,7 +722,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $filter = is_string($filter) ? explode(',', $filter) : $filter;
 
         return array_filter($this->fields, function (Field $field, $name) use ($filter) {
-
             // do not return fields outside of "only_fields" scope
             if ($this->only_fields && !in_array($name, $this->only_fields)) {
                 return false;
@@ -743,7 +735,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 ) {
                     return true;
                 } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'])) {
-                    throw new Exception(['Filter is not supported', 'filter'=>$f]);
+                    throw new Exception(['Filter is not supported', 'filter' => $f]);
                 }
             }
 
@@ -832,7 +824,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                         'field' => $field,
                         'model' => $this,
                         'value' => $value,
-                        'enum'  => $f->enum,
+                        'enum' => $f->enum,
                     ]);
                 }
             }
@@ -849,15 +841,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
                         'field' => $field,
                         'model' => $this,
                         'value' => $value,
-                        'values'=> $f->values,
+                        'values' => $f->values,
                     ]);
                 } elseif (!array_key_exists($value, $f->values)) {
                     throw new Exception([
                         'This is not one of the allowed values for the field',
-                        'field'   => $field,
-                        'model'   => $this,
-                        'value'   => $value,
-                        'values'  => $f->values,
+                        'field' => $field,
+                        'model' => $this,
+                        'value' => $value,
+                        'values' => $f->values,
                     ]);
                 }
             }
@@ -911,7 +903,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function get($field = null)
     {
         if ($field === null) {
-
             // Collect list of eligible fields
             $data = [];
             if ($this->only_fields) {
@@ -1078,13 +1069,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param array|callable $defaults
      *
      * @throws \atk4\core\Exception
-     *
-     * @return UserAction\Generic
      */
     public function addAction($name, $defaults = []): UserAction\Generic
     {
         if (is_callable($defaults)) {
-            $defaults = ['callback'=>$defaults];
+            $defaults = ['callback' => $defaults];
         }
 
         if (!isset($defaults['caption'])) {
@@ -1106,8 +1095,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param int $scope e.g. UserAction::ALL_RECORDS
      *
      * @throws \atk4\core\Exception
-     *
-     * @return array
      */
     public function getActions($scope = null): array
     {
@@ -1139,8 +1126,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @throws \atk4\core\Exception
      * @throws Exception
-     *
-     * @return UserAction\Generic
      */
     public function getAction($name): UserAction\Generic
     {
@@ -1220,7 +1205,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->conditions[] = [$field];
 
             return $this;
-
             /*
             $or = $this->persistence->orExpr();
 
@@ -1277,22 +1261,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Adds WITH cursor.
      *
-     * @param Model  $model
-     * @param string $alias
-     * @param array  $mapping
-     * @param bool   $recursive
+     * @param Model $model
      *
      * @return $this
      */
     public function addWith(self $model, string $alias, array $mapping = [], bool $recursive = false)
     {
         if (isset($this->with[$alias])) {
-            throw new Exception(['With cursor already set with this alias', 'alias'=>$alias]);
+            throw new Exception(['With cursor already set with this alias', 'alias' => $alias]);
         }
 
         $this->with[$alias] = [
-            'model'     => $model,
-            'mapping'   => $mapping,
+            'model' => $model,
+            'mapping' => $mapping,
             'recursive' => $recursive,
         ];
 
@@ -1316,7 +1297,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         // fields passed as array
         if (is_array($field)) {
-            if (null !== $desc) {
+            if ($desc !== null) {
                 throw new Exception([
                     'If first argument is array, second argument must not be used',
                     'arg1' => $field,
@@ -1324,7 +1305,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 ]);
             }
 
-            foreach (array_reverse($field) as $key=>$o) {
+            foreach (array_reverse($field) as $key => $o) {
                 if (is_int($key)) {
                     if (is_array($o)) {
                         // format [field,order]
@@ -1343,7 +1324,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         // extract sort order from field name string
-        if (null === $desc && is_string($field)) {
+        if ($desc === null && is_string($field)) {
             // no realistic workaround in PHP for 2nd argument being null
             $field = trim($field);
             if (strpos($field, ' ') !== false) {
@@ -1428,7 +1409,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         $this->data = $from_persistence->load($this, $id);
-        if (null === $this->id) {
+        if ($this->id === null) {
             $this->id = $id;
         }
 
@@ -1533,9 +1514,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $m = $this->newInstance($class, $options);
 
-        foreach ($this->data as $field=> $value) {
+        foreach ($this->data as $field => $value) {
             if ($value !== null && $value !== $this->getField($field)->default) {
-
                 // Copying only non-default value
                 $m[$field] = $value;
             }
@@ -1565,7 +1545,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if (is_string($class) && $class[0] != '\\') {
-            $class = '\\'.$class;
+            $class = '\\' . $class;
         }
 
         if ($this->persistence) {
@@ -1791,8 +1771,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Try to load record by condition.
      * Will not throw exception if record doesn't exist.
      *
-     * @param string $field_name
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @throws \atk4\core\Exception
      *
@@ -1970,10 +1949,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
         // references instead
         $refs = [];
         foreach ($row as $key => $value) {
-
             // no field exists
             if ($field = $this->hasField($key)) {
-
                 // In certain cases, there may be exceptions when providing field values
                 if ($field instanceof Field_SQL_Expression && $field->concat && is_string($value) && $field->aggregate_relation) {
                     $refs[$field->aggregate_relation->link] = explode($field->concat, $value);
@@ -2076,7 +2053,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $fields = [];
 
             if ($this->only_fields) {
-
                 // Add requested fields first
                 foreach ($this->only_fields as $field) {
                     $f_object = $this->getField($field);
@@ -2098,7 +2074,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
                 $fields = array_keys($fields);
             } else {
-
                 // Add all model fields
                 foreach ($this->getFields() as $field => $f_object) {
                     if ($f_object->never_persist) {
@@ -2200,7 +2175,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         foreach ($this as $rec) {
             if (is_string($method)) {
-                $rec->$method();
+                $rec->{$method}();
             } elseif (is_callable($method)) {
                 call_user_func($method, $rec);
             }
@@ -2370,13 +2345,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @throws Exception
      * @throws \atk4\core\Exception
-     *
-     * @return Reference
      */
     protected function _hasReference($c, $link, $defaults = []): Reference
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model_'.$link];
+            $defaults = ['model' => $defaults ?: 'Model_' . $link];
         } elseif (isset($defaults[0])) {
             $defaults['model'] = $defaults[0];
             unset($defaults[0]);
@@ -2390,8 +2363,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->hasElement($name = $obj->getDesiredName())) {
             throw new Exception([
                 'Reference with such name already exists',
-                'name'     => $name,
-                'link'     => $link,
+                'name' => $name,
+                'link' => $link,
                 'defaults' => $defaults,
             ]);
         }
@@ -2408,8 +2381,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
      *
      * @throws Exception
      * @throws \atk4\core\Exception
-     *
-     * @return Reference
      */
     public function addRef($link, $callback): Reference
     {
@@ -2531,18 +2502,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * @param string $link
      *
      * @throws \atk4\core\Exception
-     *
-     * @return Reference
      */
     public function getRef($link): Reference
     {
-        return $this->getElement('#ref_'.$link);
+        return $this->getElement('#ref_' . $link);
     }
 
     /**
      * Returns all reference fields.
-     *
-     * @return array
      */
     public function getRefs(): array
     {
@@ -2565,7 +2532,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function hasRef($link)
     {
-        return $this->hasElement('#ref_'.$link);
+        return $this->hasElement('#ref_' . $link);
     }
 
     // }}}
@@ -2652,7 +2619,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function __debugInfo(): array
     {
         $arr = [
-            'id'         => $this->id,
+            'id' => $this->id,
             'conditions' => $this->conditions,
         ];
 

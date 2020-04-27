@@ -73,7 +73,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
+            'user' => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $a);
 
@@ -123,7 +123,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'name' => 'John']],
+            'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
         ], $a);
 
@@ -172,7 +172,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
+            'user' => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $a);
     }

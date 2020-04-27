@@ -9,7 +9,7 @@ use atk4\data\Model;
  * Join\SQL class.
  *
  * @property \atk4\data\Persistence\SQL $persistence
- * @property SQL $join
+ * @property SQL                        $join
  */
 class SQL extends Join implements \atk4\dsql\Expressionable
 {
@@ -19,16 +19,14 @@ class SQL extends Join implements \atk4\dsql\Expressionable
      *
      * @var \atk4\dsql\Expression
      */
-    protected $on = null;
+    protected $on;
 
     /**
      * Will use either foreign_alias or create #join_<table>.
-     *
-     * @return string
      */
     public function getDesiredName(): string
     {
-        return '_'.($this->foreign_alias ?: $this->foreign_table[0]);
+        return '_' . ($this->foreign_alias ?: $this->foreign_table[0]);
     }
 
     /**
@@ -70,7 +68,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
 
         // Our short name will be unique
         if (!$this->foreign_alias) {
-            $this->foreign_alias = ($this->owner->table_alias ?: '').$this->short_name;
+            $this->foreign_alias = ($this->owner->table_alias ?: '') . $this->short_name;
         }
 
         $this->owner->onHook('initSelectQuery', $this);
@@ -82,7 +80,6 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             $this->owner->onHook('beforeDelete', [$this, 'doDelete'], [], -5);
             $this->owner->onHook('afterLoad', $this);
         } else {
-
             // Master field indicates ID of the joined item. In the past it had to be
             // defined as a physical field in the main table. Now it is a model field
             // so you can use expressions or fields inside joined entities.

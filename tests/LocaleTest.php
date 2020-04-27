@@ -19,8 +19,8 @@ class LocaleTest extends AtkPhpunit\TestCase
 
     public function testGetPath()
     {
-        $rootDir = realpath(dirname(__DIR__).'/src/..');
-        $this->assertEquals($rootDir.DIRECTORY_SEPARATOR.'locale', realpath(Locale::getPath()));
+        $rootDir = realpath(dirname(__DIR__) . '/src/..');
+        $this->assertEquals($rootDir . DIRECTORY_SEPARATOR . 'locale', realpath(Locale::getPath()));
     }
 
     public function testLocaleIntegration()
