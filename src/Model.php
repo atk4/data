@@ -939,7 +939,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function getModelCaption()
     {
-        return $this->caption ?: $this->readableCaption(get_class($this));
+        return $this->caption ?: $this->readableCaption(static::class);
     }
 
     /**
@@ -1539,7 +1539,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function newInstance($class = null, $options = [])
     {
         if ($class === null) {
-            $class = get_class($this);
+            $class = static::class;
         } elseif ($class instanceof self) {
             $class = get_class($class);
         }
@@ -1589,7 +1589,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if (!$class) {
-            $class = get_class($this);
+            $class = static::class;
         }
 
         $m = new $class($persistence);

@@ -201,6 +201,6 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(10, $data[1]['total_net']);
         $this->assertEquals(20, $data[2]['total_net']);
         $this->assertEquals(15, $data[3]['total_net']);
-        $this->assertEquals(null, $i['total_net']);
+        $this->assertNull($i['total_net']);
     }
 }

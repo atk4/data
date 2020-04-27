@@ -63,7 +63,7 @@ class Boolean extends \atk4\data\Field
      */
     public function normalize($value)
     {
-        if (is_null($value) || $value === '') {
+        if ($value === null || $value === '') {
             return;
         }
         if (is_bool($value)) {

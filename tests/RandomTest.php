@@ -412,7 +412,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m = new Model_Item($db, 'item');
 
         // default title_field = name
-        $this->assertEquals(null, $m->getTitle()); // not loaded model returns null
+        $this->assertNull($m->getTitle()); // not loaded model returns null
         $this->assertEquals([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
         $m->load(2);

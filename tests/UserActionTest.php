@@ -53,7 +53,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 {
     public $pers;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

@@ -14,29 +14,29 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['default' => 'abc']);
 
-        $this->assertEquals(false, $m->isDirty('foo'));
+        $this->assertFalse($m->isDirty('foo'));
 
         $m['foo'] = 'abc';
-        $this->assertEquals(false, $m->isDirty('foo'));
+        $this->assertFalse($m->isDirty('foo'));
 
         $m['foo'] = 'bca';
-        $this->assertEquals(true, $m->isDirty('foo'));
+        $this->assertTrue($m->isDirty('foo'));
 
         $m['foo'] = 'abc';
-        $this->assertEquals(false, $m->isDirty('foo'));
+        $this->assertFalse($m->isDirty('foo'));
 
         // set initial data
         $m->data['foo'] = 'xx';
-        $this->assertEquals(false, $m->isDirty('foo'));
+        $this->assertFalse($m->isDirty('foo'));
 
         $m['foo'] = 'abc';
-        $this->assertEquals(true, $m->isDirty('foo'));
+        $this->assertTrue($m->isDirty('foo'));
 
         $m['foo'] = 'bca';
-        $this->assertEquals(true, $m->isDirty('foo'));
+        $this->assertTrue($m->isDirty('foo'));
 
         $m['foo'] = 'xx';
-        $this->assertEquals(false, $m->isDirty('foo'));
+        $this->assertFalse($m->isDirty('foo'));
     }
 
     public function testCompare()
@@ -44,11 +44,11 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['default' => 'abc']);
 
-        $this->assertEquals(true, $m->compare('foo', 'abc'));
+        $this->assertTrue($m->compare('foo', 'abc'));
         $m['foo'] = 'zzz';
 
-        $this->assertEquals(false, $m->compare('foo', 'abc'));
-        $this->assertEquals(true, $m->compare('foo', 'zzz'));
+        $this->assertFalse($m->compare('foo', 'abc'));
+        $this->assertTrue($m->compare('foo', 'zzz'));
     }
 
     public function testMandatory1()
@@ -254,7 +254,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
         $m['foo'] = null;
 
-        $this->assertSame(null, $m['foo']);
+        $this->assertNull($m['foo']);
     }
 
     /**
@@ -276,7 +276,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame(3, $m['foo']);
 
         $m['foo'] = null;
-        $this->assertSame(null, $m['foo']);
+        $this->assertNull($m['foo']);
     }
 
     /**
@@ -503,8 +503,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['system' => true]);
         $m->addField('bar');
-        $this->assertEquals(false, $m->getField('foo')->isEditable());
-        $this->assertEquals(false, $m->getField('foo')->isVisible());
+        $this->assertFalse($m->getField('foo')->isEditable());
+        $this->assertFalse($m->getField('foo')->isVisible());
 
         $m->onlyFields(['bar']);
         // TODO: build a query and see if the field is there
@@ -616,14 +616,14 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
 
         // boolean
         $m['boolean'] = 0;
-        $this->assertSame(false, $m['boolean']);
+        $this->assertFalse($m['boolean']);
         $m['boolean'] = 1;
-        $this->assertSame(true, $m['boolean']);
+        $this->assertTrue($m['boolean']);
 
         $m['boolean_enum'] = 'N';
-        $this->assertSame(false, $m['boolean_enum']);
+        $this->assertFalse($m['boolean_enum']);
         $m['boolean_enum'] = 'Y';
-        $this->assertSame(true, $m['boolean_enum']);
+        $this->assertTrue($m['boolean_enum']);
 
         // date, datetime, time
         $m['date'] = 123;
@@ -932,34 +932,34 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('is_vip_3', ['type' => 'boolean', 'valueTrue' => 'Y', 'valueFalse' => 'N']);
 
         $m->set('is_vip_1', 'No');
-        $this->assertEquals(false, $m['is_vip_1']);
+        $this->assertFalse($m['is_vip_1']);
         $m->set('is_vip_1', 'Yes');
-        $this->assertEquals(true, $m['is_vip_1']);
+        $this->assertTrue($m['is_vip_1']);
         $m->set('is_vip_1', false);
-        $this->assertEquals(false, $m['is_vip_1']);
+        $this->assertFalse($m['is_vip_1']);
         $m->set('is_vip_1', true);
-        $this->assertEquals(true, $m['is_vip_1']);
+        $this->assertTrue($m['is_vip_1']);
         $m->set('is_vip_1', 0);
-        $this->assertEquals(false, $m['is_vip_1']);
+        $this->assertFalse($m['is_vip_1']);
         $m->set('is_vip_1', 1);
-        $this->assertEquals(true, $m['is_vip_1']);
+        $this->assertTrue($m['is_vip_1']);
 
         $m->set('is_vip_2', 0);
-        $this->assertEquals(false, $m['is_vip_2']);
+        $this->assertFalse($m['is_vip_2']);
         $m->set('is_vip_2', 1);
-        $this->assertEquals(true, $m['is_vip_2']);
+        $this->assertTrue($m['is_vip_2']);
         $m->set('is_vip_2', false);
-        $this->assertEquals(false, $m['is_vip_2']);
+        $this->assertFalse($m['is_vip_2']);
         $m->set('is_vip_2', true);
-        $this->assertEquals(true, $m['is_vip_2']);
+        $this->assertTrue($m['is_vip_2']);
 
         $m->set('is_vip_3', 'N');
-        $this->assertEquals(false, $m['is_vip_3']);
+        $this->assertFalse($m['is_vip_3']);
         $m->set('is_vip_3', 'Y');
-        $this->assertEquals(true, $m['is_vip_3']);
+        $this->assertTrue($m['is_vip_3']);
         $m->set('is_vip_3', false);
-        $this->assertEquals(false, $m['is_vip_3']);
+        $this->assertFalse($m['is_vip_3']);
         $m->set('is_vip_3', true);
-        $this->assertEquals(true, $m['is_vip_3']);
+        $this->assertTrue($m['is_vip_3']);
     }
 }

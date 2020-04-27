@@ -44,7 +44,7 @@ class DCInvoice extends Model
         $this->addField('is_paid', ['type' => 'boolean', 'default' => false]);
 
         $this->onHook('afterCopy', function ($m, $s) {
-            if (get_class($s) == get_class($this)) {
+            if (get_class($s) == static::class) {
                 $m['ref'] = $m['ref'] . '_copy';
             }
         });
@@ -135,7 +135,7 @@ class DCPayment extends Model
  */
 class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

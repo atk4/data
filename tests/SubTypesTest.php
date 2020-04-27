@@ -75,7 +75,7 @@ class STGenericTransaction extends Model
         $this->addField('amount');
 
         $this->onHook('afterLoad', function (self $m) {
-            if (get_class($this) != $m->getClassName()) {
+            if (static::class != $m->getClassName()) {
                 $cl = '\\' . $this->getClassName();
                 $cl = new $cl($this->persistence);
                 $cl->load($m->id);
@@ -135,7 +135,7 @@ class STTransaction_TransferIn extends STGenericTransaction
  */
 class SubTypesTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

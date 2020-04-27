@@ -25,7 +25,7 @@ class CSVTest extends AtkPhpunit\TestCase
         fclose($f);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
 

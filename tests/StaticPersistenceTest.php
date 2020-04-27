@@ -38,7 +38,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
         $this->assertEquals('world', $m['name']);
         $this->assertEquals('xy', $m['field1']);
-        $this->assertEquals(false, $m['field2']);
+        $this->assertFalse($m['field2']);
     }
 
     public function testArrayOfHashes()

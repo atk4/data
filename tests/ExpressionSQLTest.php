@@ -155,7 +155,7 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
         }
 
         $m->tryLoad(1);
-        $this->assertEquals(null, $m['name']);
+        $this->assertNull($m['name']);
         $m->tryLoad(2);
         $this->assertEquals('Sue', $m['name']);
     }
@@ -194,7 +194,7 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
         $m->save(['a' => 3]);
         $this->assertEquals(4, $m['sum']);
 
-        $this->assertEquals(null, $m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
+        $this->assertNull($m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
     }
 
     public function testExpressionActionAlias()

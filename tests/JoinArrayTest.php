@@ -18,27 +18,27 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m = new Model($db, 'user');
 
         $j = $m->join('contact');
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertEquals('contact_id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact2.test_id');
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertEquals('id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('test_id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact3', 'test_id');
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact3', ['test_id']);
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact4.foo_id', ['test_id', 'reverse' => true]);
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('foo_id', $this->getProtected($j, 'foreign_field'));
     }
@@ -52,7 +52,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $db = new Persistence\Array_($a);
         $m = new Model($db, 'user');
         $j = $m->join('contact4.foo_id', 'test_id');
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('foo_id', $this->getProtected($j, 'foreign_field'));
     }

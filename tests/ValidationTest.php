@@ -49,7 +49,7 @@ class ValidationTests extends AtkPhpunit\TestCase
 {
     public $m;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

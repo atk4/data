@@ -16,27 +16,27 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, 'user');
 
         $j = $m->join('contact');
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertEquals('contact_id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact2.test_id');
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertEquals('id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('test_id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact3', 'test_id');
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact3', ['test_id']);
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact4.foo_id', ['test_id', 'reverse' => true]);
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('foo_id', $this->getProtected($j, 'foreign_field'));
     }
@@ -49,7 +49,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'user');
         $j = $m->join('contact4.foo_id', 'test_id');
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
         $this->assertEquals('foo_id', $this->getProtected($j, 'foreign_field'));
     }
@@ -440,7 +440,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_u->save();
 
         $m_u->tryLoad(40);
-        $this->assertEquals(false, $m_u->loaded());
+        $this->assertFalse($m_u->loaded());
 
         $this->assertSame($m_u->getField('country_id')->join, $m_u->getField('contact_phone')->join);
 

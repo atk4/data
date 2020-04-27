@@ -13,7 +13,7 @@ use atk4\data\tests\Model\Smbo\Transfer;
  */
 class SmboTransferTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

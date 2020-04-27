@@ -155,7 +155,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         }
     }
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

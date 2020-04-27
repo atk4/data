@@ -38,17 +38,17 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $oo->tryLoad(1);
         $this->assertEquals(20, $oo['amount']);
         $oo->tryLoad(2);
-        $this->assertEquals(null, $oo['amount']);
+        $this->assertNull($oo['amount']);
         $oo->tryLoad(3);
         $this->assertEquals(5, $oo['amount']);
 
         $oo = $u->load(2)->ref('Orders');
         $oo->tryLoad(1);
-        $this->assertEquals(null, $oo['amount']);
+        $this->assertNull($oo['amount']);
         $oo->tryLoad(2);
         $this->assertEquals(15, $oo['amount']);
         $oo->tryLoad(3);
-        $this->assertEquals(null, $oo['amount']);
+        $this->assertNull($oo['amount']);
 
         $oo = $u->unload()->addCondition('id', '>', '1')->ref('Orders');
         if ($this->driverType == 'sqlite') {
@@ -273,7 +273,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals('money', $i->getField('total_vat')->type);
 
         // type was not set and is not inherited
-        $this->assertEquals(null, $i->getField('total_net')->type);
+        $this->assertNull($i->getField('total_net')->type);
 
         $this->assertEquals(40, $i['total_net']);
         $this->assertEquals(9.2, $i['total_vat']);
@@ -347,9 +347,9 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(0, $l['items_star']);
         $this->assertEquals('', $l['items_c:']);
         $this->assertEquals('', $l['items_c-']);
-        $this->assertEquals(null, $l['len']);
-        $this->assertEquals(null, $l['len2']);
-        $this->assertEquals(null, $l['chicken5']);
+        $this->assertNull($l['len']);
+        $this->assertNull($l['len2']);
+        $this->assertNull($l['chicken5']);
     }
 
     public function testReferenceHook()
@@ -378,9 +378,9 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals('John contact', $u->ref('contact_id')['address']);
 
         $u->load(2);
-        $this->assertEquals(null, $u['address']);
-        $this->assertEquals(null, $u['contact_id']);
-        $this->assertEquals(null, $u->ref('contact_id')['address']);
+        $this->assertNull($u['address']);
+        $this->assertNull($u['contact_id']);
+        $this->assertNull($u->ref('contact_id')['address']);
 
         $u->load(3);
         $this->assertEquals('Joe contact', $u['address']);
@@ -389,7 +389,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $u->load(2);
         $u->ref('contact_id')->save(['address' => 'Peters new contact']);
 
-        $this->assertNotEquals(null, $u['contact_id']);
+        $this->assertNotNull($u['contact_id']);
         $this->assertEquals('Peters new contact', $u->ref('contact_id')['address']);
 
         $u->save()->reload();

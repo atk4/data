@@ -160,10 +160,10 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
         foreach ($a['user'] as $id => $row) {
             $ids[] = $this->db->insert($m, $row);
         }
-        $this->assertEquals(false, $m->loaded());
+        $this->assertFalse($m->loaded());
 
         $m->delete($ids[0]);
-        $this->assertEquals(false, $m->loaded());
+        $this->assertFalse($m->loaded());
 
         $m->load($ids[1]);
         $this->assertEquals('Jones', $m['surname']);
@@ -171,7 +171,7 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
         $m->save();
 
         $m->tryLoad($ids[0]);
-        $this->assertEquals(false, $m->loaded());
+        $this->assertFalse($m->loaded());
 
         $m->load($ids[1]);
         $this->assertEquals('Smith', $m['surname']);

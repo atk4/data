@@ -97,7 +97,7 @@ class SQL extends Persistence
     {
         parent::disconnect();
 
-        unset($this->connection);
+        $this->connection = null;
     }
 
     /**
@@ -736,7 +736,7 @@ class SQL extends Persistence
             return;
         }
 
-        if (!isset($data[$m->id_field]) || is_null($data[$m->id_field])) {
+        if (!isset($data[$m->id_field]) || $data[$m->id_field] === null) {
             throw new Exception([
                 'Model uses "id_field" but it wasn\'t available in the database',
                 'model' => $m,

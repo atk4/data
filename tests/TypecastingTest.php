@@ -70,7 +70,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->load(1);
 
         $this->assertSame('foo', $m['string']);
-        $this->assertSame(true, $m['boolean']);
+        $this->assertTrue($m['boolean']);
         $this->assertSame(8.20, $m['money']);
         $this->assertEquals(new \DateTime('2013-02-20'), $m['date']);
         $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $m['datetime']);
@@ -165,30 +165,30 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         // Only
         $this->assertSame('', $m['string']);
         $this->assertSame('', $m['notype']);
-        $this->assertSame(null, $m['date']);
-        $this->assertSame(null, $m['datetime']);
-        $this->assertSame(null, $m['time']);
-        $this->assertSame(null, $m['boolean']);
-        $this->assertSame(null, $m['integer']);
-        $this->assertSame(null, $m['money']);
-        $this->assertSame(null, $m['float']);
-        $this->assertSame(null, $m['array']);
-        $this->assertSame(null, $m['object']);
+        $this->assertNull($m['date']);
+        $this->assertNull($m['datetime']);
+        $this->assertNull($m['time']);
+        $this->assertNull($m['boolean']);
+        $this->assertNull($m['integer']);
+        $this->assertNull($m['money']);
+        $this->assertNull($m['float']);
+        $this->assertNull($m['array']);
+        $this->assertNull($m['object']);
 
         unset($v['id']);
         $m->set($v);
 
         $this->assertSame('', $m['string']);
         $this->assertSame('', $m['notype']);
-        $this->assertSame(null, $m['date']);
-        $this->assertSame(null, $m['datetime']);
-        $this->assertSame(null, $m['time']);
-        $this->assertSame(null, $m['boolean']);
-        $this->assertSame(null, $m['integer']);
-        $this->assertSame(null, $m['money']);
-        $this->assertSame(null, $m['float']);
-        $this->assertSame(null, $m['array']);
-        $this->assertSame(null, $m['object']);
+        $this->assertNull($m['date']);
+        $this->assertNull($m['datetime']);
+        $this->assertNull($m['time']);
+        $this->assertNull($m['boolean']);
+        $this->assertNull($m['integer']);
+        $this->assertNull($m['money']);
+        $this->assertNull($m['float']);
+        $this->assertNull($m['array']);
+        $this->assertNull($m['object']);
         $this->assertEquals([], $m->dirty);
 
         $m->save();
@@ -289,8 +289,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals('2013-02-20', (string) $m['date']);
         $this->assertEquals('12:00:50.235689', (string) $m['time']);
 
-        $this->assertEquals(true, $m['b1']);
-        $this->assertEquals(false, $m['b2']);
+        $this->assertTrue($m['b1']);
+        $this->assertFalse($m['b2']);
 
         $m->duplicate()->save()->delete(1);
 

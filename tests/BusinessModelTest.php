@@ -66,13 +66,13 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     public function testFieldAccess2()
     {
         $m = new Model(['strict_field_check' => false]);
-        $this->assertEquals(false, isset($m['name']));
+        $this->assertFalse(isset($m['name']));
         $m->set(['name' => 5]);
-        $this->assertEquals(true, isset($m['name']));
+        $this->assertTrue(isset($m['name']));
         $this->assertEquals(5, $m['name']);
 
         $m['name'] = null;
-        $this->assertEquals(false, isset($m['name']));
+        $this->assertFalse(isset($m['name']));
 
         $m = new Model();
         $n = $m->addField('name');
@@ -163,7 +163,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m['name'] = null;
         $this->assertEquals(['name' => 'John'], $m->dirty);
         $this->assertEquals(['name' => null], $m->data);
-        $this->assertEquals(null, $m['name']);
+        $this->assertNull($m['name']);
 
         unset($m['name']);
         $this->assertEquals('John', $m->get('name'));
@@ -314,7 +314,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertSame('', $m['name']);
 
         $m['age'] = '';
-        $this->assertSame(null, $m['age']);
+        $this->assertNull($m['age']);
 
         $m['data'] = '';
         $this->assertSame('', $m['data']);
@@ -326,23 +326,23 @@ class BusinessModelTest extends AtkPhpunit\TestCase
 
         $m->addField('salary', ['default' => 1000]);
 
-        $this->assertEquals(false, isset($m['salary']));   // false
+        $this->assertFalse(isset($m['salary']));   // false
         $this->assertEquals(1000, $m['salary']);           // 1000
 
         // Next we load record from $db
         $m->data = ['salary' => 2000];
 
         $this->assertEquals(2000, $m['salary']);           // 2000 (from db)
-        $this->assertEquals(false, isset($m['salary']));   // false, was not changed
+        $this->assertFalse(isset($m['salary']));   // false, was not changed
 
         $m['salary'] = 3000;
 
         $this->assertEquals(3000, $m['salary']);          // 3000 (changed)
-        $this->assertEquals(true, isset($m['salary']));   // true
+        $this->assertTrue(isset($m['salary']));   // true
 
         unset($m['salary']);        // return to original value
 
         $this->assertEquals(2000, $m['salary']);          // 2000
-        $this->assertEquals(false, isset($m['salary']));  // false
+        $this->assertFalse(isset($m['salary']));  // false
     }
 }

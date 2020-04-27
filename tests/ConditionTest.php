@@ -48,8 +48,8 @@ class ConditionTest extends AtkPhpunit\TestCase
         $m->addField('gender');
         $m->addCondition('gender', 'M');
 
-        $this->assertEquals(true, $m->getField('gender')->system);
-        $this->assertEquals(false, $m->getField('gender')->isEditable());
+        $this->assertTrue($m->getField('gender')->system);
+        $this->assertFalse($m->getField('gender')->isEditable());
     }
 
     public function testEditableHasOne()
@@ -61,7 +61,7 @@ class ConditionTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->hasOne('gender_id', $gender);
 
-        $this->assertEquals(false, $m->getField('gender_id')->system);
-        $this->assertEquals(true, $m->getField('gender_id')->isEditable());
+        $this->assertFalse($m->getField('gender_id')->system);
+        $this->assertTrue($m->getField('gender_id')->isEditable());
     }
 }
