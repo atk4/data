@@ -47,7 +47,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testNoFieldException()
     {
@@ -191,7 +191,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
      */
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testException1()
     {
@@ -233,7 +233,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      *
      * fields can't be numeric
      */
@@ -244,7 +244,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      *
      * fields can't be numeric
      */
@@ -255,7 +255,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      *
      * fields can't be numeric
      */
@@ -266,7 +266,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      *
      * fields can't be numeric
      */
@@ -277,7 +277,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      *
      * fields can't be numeric
      */
@@ -288,7 +288,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testException3()
     {

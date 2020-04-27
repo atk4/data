@@ -342,7 +342,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testIssue220()
     {

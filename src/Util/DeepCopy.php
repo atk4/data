@@ -22,12 +22,12 @@ class DeepCopy
     use \atk4\core\DebugTrait;
 
     /**
-     * @var \atk4\data\Model from which we want to copy records.
+     * @var \atk4\data\Model from which we want to copy records
      */
     protected $source;
 
     /**
-     * @var \atk4\data\Model in which we want to copy records into.
+     * @var \atk4\data\Model in which we want to copy records into
      */
     protected $destination;
 
@@ -198,13 +198,13 @@ class DeepCopy
                 $data = $source->get();
 
                 // exclude not needed field values
-                // @see excluding()
+                // see self::excluding()
                 foreach ($this->extractKeys($exclusions) as $key => $val) {
                     unset($data[$key]);
                 }
 
                 // do data transformation from source to destination
-                // @see transformData()
+                // see self::transformData()
                 if (isset($transforms[0]) && is_callable($transforms[0])) {
                     $data = call_user_func($transforms[0], $data);
                 }

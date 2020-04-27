@@ -119,7 +119,7 @@ class Discount2 extends Model
 // ============================================================================
 
 /**
- * @coversDefaultClass Model
+ * @coversDefaultClass \atk4\data\Model
  *
  * ATK Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
@@ -215,7 +215,7 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model should be loaded before traversing to containsMany relation.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     /* Imants: it looks that this is not actually required - disabling
     public function testEx1()

@@ -51,7 +51,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testFail1()
     {
@@ -118,7 +118,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testFailDelete1()
     {
@@ -128,7 +128,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
     /**
      * Additional checks are done if ID is manually set.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testFailDelete2()
     {
@@ -139,7 +139,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
     /**
      * Additional checks are done if ID is manually set.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testFailUpdate()
     {

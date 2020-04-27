@@ -69,7 +69,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testRefName1()
     {
@@ -82,7 +82,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testRefName2()
     {
@@ -94,7 +94,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testRefName3()
     {

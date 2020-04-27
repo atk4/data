@@ -50,7 +50,7 @@ class WithTest extends \atk4\schema\PhpunitTestCase
     /**
      * Alias should be unique.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testUniqueAliasException()
     {

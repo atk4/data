@@ -195,7 +195,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
     /**
      * Unsupported order parameter.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testExceptionUnsupportedOrderParam()
     {

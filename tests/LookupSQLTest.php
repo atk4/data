@@ -135,7 +135,7 @@ class LFriend extends Model
 }
 
 /**
- * @coversDefaultClass Model
+ * @coversDefaultClass \atk4\data\Model
  *
  * ATK Data has an option to lookup ID values if their "lookup" values are specified.
  */
@@ -150,9 +150,9 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         $export = implode(PHP_EOL, array_filter(['['] + $array));
         if ((bool) $return) {
             return $export;
-        } else {
-            echo $export;
         }
+
+        echo $export;
     }
 
     protected function setUp(): void

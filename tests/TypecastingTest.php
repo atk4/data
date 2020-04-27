@@ -464,7 +464,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testBadTimestamp()
     {

@@ -98,9 +98,9 @@ class Static_ extends Array_
                     $must_override = true;
 
                     continue;
-                } else {
-                    $this->titleForModel = $key;
                 }
+
+                $this->titleForModel = $key;
             }
 
             if (is_int($key)) {

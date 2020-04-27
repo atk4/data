@@ -23,15 +23,15 @@ class HasMany extends Reference
             return $this->our_field
                 ? $this->owner[$this->our_field]
                 : $this->owner->id;
-        } else {
-            // create expression based on existing conditions
-            return $this->owner->action(
-                'field',
-                [
-                    $this->our_field ?: ($this->owner->id_field ?: 'id'),
-                ]
-            );
         }
+
+        // create expression based on existing conditions
+        return $this->owner->action(
+            'field',
+            [
+                $this->our_field ?: ($this->owner->id_field ?: 'id'),
+            ]
+        );
     }
 
     /**

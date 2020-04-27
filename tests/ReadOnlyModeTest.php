@@ -60,7 +60,7 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model cannot be saved.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testLoadSave()
     {
@@ -72,7 +72,7 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     /**
      * Insert should fail too.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testInsert()
     {
@@ -82,7 +82,7 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     /**
      * Different attempt that should also fail.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testSave1()
     {
@@ -107,7 +107,7 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testFailDelete1()
     {

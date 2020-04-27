@@ -231,7 +231,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Some persistences don't support tryLoad() method.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testTryLoadNotSupportedException()
     {
@@ -242,7 +242,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Some persistences don't support loadAny() method.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testLoadAnyNotSupportedException()
     {
@@ -253,7 +253,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Some persistences don't support tryLoadAny() method.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testTryLoadAnyNotSupportedException()
     {
@@ -588,7 +588,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testUnsupportedAction()
     {
@@ -600,7 +600,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testBadActionArgs()
     {
@@ -612,7 +612,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testUnsupportedCondition1()
     {
@@ -627,7 +627,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * unsupported method.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testUnsupportedCondition2()
     {
@@ -642,7 +642,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * unsupported format - 4th param.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testUnsupportedCondition3()
     {
@@ -657,7 +657,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * unsupported format - param[0] not Field::class.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testUnsupportedCondition5()
     {

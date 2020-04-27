@@ -44,7 +44,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testDirection2()
     {
@@ -349,7 +349,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testLoadMissing()
     {

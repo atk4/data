@@ -151,9 +151,9 @@ class Generic
 
             if ($this->atomic) {
                 return $this->owner->atomic($run);
-            } else {
-                return $run();
             }
+
+            return $run();
         } catch (Exception $e) {
             $e->addMoreInfo('action', $this);
 

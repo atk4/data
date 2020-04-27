@@ -62,7 +62,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testRequired1()
     {
@@ -73,7 +73,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testRequired11()
     {
@@ -84,7 +84,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testMandatory2()
     {
@@ -102,7 +102,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testRequired2()
     {
@@ -120,7 +120,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testMandatory3()
     {
@@ -189,7 +189,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testReadOnly1()
     {
@@ -214,7 +214,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testEnum1()
     {
@@ -236,7 +236,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testEnum3()
     {
@@ -258,7 +258,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testValues1()
     {
@@ -280,7 +280,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testValues3()
     {
@@ -290,7 +290,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testValues3a()
     {
@@ -415,7 +415,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testStrictException1()
     {

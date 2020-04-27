@@ -453,7 +453,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Always use
      *   return array_merge(parent::validate($intent), $errors);
      *
-     * @param string $intent By default only 'save' is used (from beforeSave) but you can use other intents yourself.
+     * @param string $intent by default only 'save' is used (from beforeSave) but you can use other intents yourself
      *
      * @throws \atk4\core\Exception
      *
@@ -769,10 +769,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 //$this->id = $field->id;
 
                 return $this;
-            } else {
-                $value = $field;
-                $field = $this->title_field;
             }
+
+            $value = $field;
+            $field = $this->title_field;
         }
 
         $field = $this->normalizeFieldName($field);
@@ -2219,9 +2219,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 $this->unload();
 
                 return $this;
-            } else {
-                throw new Exception(['No active record is set, unable to delete.']);
             }
+
+            throw new Exception(['No active record is set, unable to delete.']);
         });
     }
 
