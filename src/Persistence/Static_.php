@@ -104,7 +104,7 @@ class Static_ extends Array_
             }
 
             if (is_int($key)) {
-                $key_override[] = 'field'.$key;
+                $key_override[] = 'field' . $key;
                 $must_override = true;
                 continue;
             }

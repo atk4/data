@@ -389,7 +389,7 @@ class Array_ extends Persistence
             if (!is_a($field, Field::class)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
-                    'reason'    => 'Unsupported object instance '.get_class($field),
+                    'reason'    => 'Unsupported object instance ' . get_class($field),
                     'condition' => $cond,
                 ]);
             }

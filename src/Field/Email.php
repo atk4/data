@@ -50,7 +50,7 @@ class Email extends Field
     public function normalize($value)
     {
         // split value by any number of separator characters
-        $emails = preg_split('/['.implode('', array_map('preg_quote', $this->separator)).']+/', $value, -1, PREG_SPLIT_NO_EMPTY);
+        $emails = preg_split('/[' . implode('', array_map('preg_quote', $this->separator)) . ']+/', $value, -1, PREG_SPLIT_NO_EMPTY);
 
         if (!$this->allow_multiple && count($emails) > 1) {
             throw new ValidationException([$this->name => 'Only a single email can be entered']);
@@ -68,7 +68,7 @@ class Email extends Field
             $p = explode('@', $email);
             $user = $p[0] ?? null;
             $domain = $p[1] ?? null;
-            if (!filter_var($user.'@'.$this->idn_to_ascii($domain), FILTER_VALIDATE_EMAIL)) {
+            if (!filter_var($user . '@' . $this->idn_to_ascii($domain), FILTER_VALIDATE_EMAIL)) {
                 throw new ValidationException([$this->name => 'Email format is invalid']);
             }
 

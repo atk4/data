@@ -324,7 +324,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         });
 
         $m->onHook('beforeLoad', function ($m, $id) {
-            $m->data = ['name' => 'rec #'.$id];
+            $m->data = ['name' => 'rec #' . $id];
             $m->id = $id;
             $m->breakHook(false);
         });
