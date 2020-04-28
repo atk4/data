@@ -450,7 +450,7 @@ class Persistence
         case 'json':
             return $this->jsonDecode($f, $value, $f->type == 'array');
         case 'base64':
-            return base64_decode($value);
+            return base64_decode($value, true);
         }
     }
 

@@ -546,7 +546,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
             $iv = mcrypt_create_iv( $iv_length, MCRYPT_RAND );
             return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
              */
-            return base64_decode($value);
+            return base64_decode($value, true);
         };
 
         $m = new Model($db, 'user');

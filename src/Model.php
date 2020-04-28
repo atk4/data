@@ -665,7 +665,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if ($this->only_fields) {
-            if (!in_array($field, $this->only_fields) && !$this->getField($field)->system) {
+            if (!in_array($field, $this->only_fields, true) && !$this->getField($field)->system) {
                 throw new Exception([
                     'Attempt to use field outside of those set by onlyFields',
                     'field' => $field,
@@ -723,7 +723,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         return array_filter($this->fields, function (Field $field, $name) use ($filter) {
             // do not return fields outside of "only_fields" scope
-            if ($this->only_fields && !in_array($name, $this->only_fields)) {
+            if ($this->only_fields && !in_array($name, $this->only_fields, true)) {
                 return false;
             }
             foreach ($filter as $f) {
@@ -734,7 +734,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     || ($f == 'visible' && $field->isVisible())
                 ) {
                     return true;
-                } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'])) {
+                } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'], true)) {
                     throw new Exception(['Filter is not supported', 'filter' => $f]);
                 }
             }
@@ -2085,7 +2085,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         // add key_field to array if it's not there
-        if (!in_array($key_field, $fields)) {
+        if (!in_array($key_field, $fields, true)) {
             $fields[] = $key_field;
             $key_field_added = true;
         }
