@@ -18,7 +18,7 @@ trait ACReminder
     {
         $this->save(['reminder_sent' => true]);
 
-        return 'sent reminder to ' . $this->getTitle();
+        return 'sent reminder to '.$this->getTitle();
     }
 
     public function backup_clients()
@@ -113,7 +113,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals('John', $client->getAction('say_name')->execute());
 
         $client->getAction('say_name')->preview = function ($m, $arg) {
-            return ($m instanceof ACClient) ? 'will say ' . $m['name'] : 'will fail';
+            return ($m instanceof ACClient) ? 'will say '.$m['name'] : 'will fail';
         };
         $this->assertEquals('will say John', $client->getAction('say_name')->preview('x'));
 

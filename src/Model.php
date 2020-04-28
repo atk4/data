@@ -417,7 +417,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             'fields'      => true,
             'scope'       => UserAction\Generic::NO_RECORDS,
             'callback'    => 'save',
-            'description' => 'Add ' . $this->getModelCaption(),
+            'description' => 'Add '.$this->getModelCaption(),
             'ui'          => ['icon'=>'plus'],
         ]);
         $this->addAction('edit', [
@@ -1565,7 +1565,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         if (is_string($class) && $class[0] != '\\') {
-            $class = '\\' . $class;
+            $class = '\\'.$class;
         }
 
         if ($this->persistence) {
@@ -2376,7 +2376,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     protected function _hasReference($c, $link, $defaults = []): Reference
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model_' . $link];
+            $defaults = ['model' => $defaults ?: 'Model_'.$link];
         } elseif (isset($defaults[0])) {
             $defaults['model'] = $defaults[0];
             unset($defaults[0]);
@@ -2536,7 +2536,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function getRef($link): Reference
     {
-        return $this->getElement('#ref_' . $link);
+        return $this->getElement('#ref_'.$link);
     }
 
     /**
@@ -2565,7 +2565,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function hasRef($link)
     {
-        return $this->hasElement('#ref_' . $link);
+        return $this->hasElement('#ref_'.$link);
     }
 
     // }}}

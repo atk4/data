@@ -565,7 +565,7 @@ class SQL extends Persistence
             $tz_class = $f->dateTimeZoneClass ?? \DateTimeZone::class;
 
             if (is_numeric($v)) {
-                $v = new $dt_class('@' . $v);
+                $v = new $dt_class('@'.$v);
             } elseif (is_string($v)) {
                 // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
                 $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
@@ -707,7 +707,7 @@ class SQL extends Persistence
                 if (isset($args['alias'])) {
                     $q->reset('field')->field($q->expr($expr, [$field]), $args['alias']);
                 } elseif ($field instanceof Field_SQL_Expression) {
-                    $q->reset('field')->field($q->expr($expr, [$field]), $fx . '_' . $field->short_name);
+                    $q->reset('field')->field($q->expr($expr, [$field]), $fx.'_'.$field->short_name);
                 } else {
                     $q->reset('field')->field($q->expr($expr, [$field]));
                 }

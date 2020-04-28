@@ -215,7 +215,7 @@ class HasOne_SQL extends HasOne
 
         $field = isset($defaults['field'])
                     ? $defaults['field']
-                    : preg_replace('/_' . ($this->owner->id_field ?: 'id') . '$/i', '', $this->link);
+                    : preg_replace('/_'.($this->owner->id_field ?: 'id').'$/i', '', $this->link);
 
         if ($this->owner->hasField($field)) {
             throw new Exception([

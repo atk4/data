@@ -6,7 +6,7 @@ class DeepCopyException extends \atk4\data\Exception
 {
     public function addDepth($prefix)
     {
-        $this->addMoreInfo('depth', $prefix . ':' . $this->getParams()['depth']);
+        $this->addMoreInfo('depth', $prefix.':'.$this->getParams()['depth']);
 
         return $this;
     }

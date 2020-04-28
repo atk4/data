@@ -45,7 +45,7 @@ class DCInvoice extends Model
 
         $this->onHook('afterCopy', function ($m, $s) {
             if (get_class($s) == get_class($this)) {
-                $m['ref'] = $m['ref'] . '_copy';
+                $m['ref'] = $m['ref'].'_copy';
             }
         });
     }

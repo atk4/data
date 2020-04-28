@@ -55,7 +55,7 @@ class HasMany extends Reference
     {
         return $this->getModel($defaults)
             ->addCondition(
-                $this->their_field ?: ($this->owner->table . '_' . ($this->owner->id_field ?: 'id')),
+                $this->their_field ?: ($this->owner->table.'_'.($this->owner->id_field ?: 'id')),
                 $this->getOurValue()
             );
     }
@@ -71,7 +71,7 @@ class HasMany extends Reference
     {
         return $this->getModel($defaults)
             ->addCondition(
-                $this->their_field ?: ($this->owner->table . '_' . ($this->owner->id_field ?: 'id')),
+                $this->their_field ?: ($this->owner->table.'_'.($this->owner->id_field ?: 'id')),
                 $this->referenceOurValue()
             );
     }

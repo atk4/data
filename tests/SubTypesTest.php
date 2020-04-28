@@ -76,7 +76,7 @@ class STGenericTransaction extends Model
 
         $this->onHook('afterLoad', function (self $m) {
             if (get_class($this) != $m->getClassName()) {
-                $cl = '\\' . $this->getClassName();
+                $cl = '\\'.$this->getClassName();
                 $cl = new $cl($this->persistence);
                 $cl->load($m->id);
 
@@ -87,7 +87,7 @@ class STGenericTransaction extends Model
 
     public function getClassName()
     {
-        return __NAMESPACE__ . '\STTransaction_' . $this['type'];
+        return __NAMESPACE__.'\STTransaction_'.$this['type'];
     }
 }
 
