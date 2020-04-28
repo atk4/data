@@ -78,16 +78,16 @@ jobs:
 
       - name: "Run tests: SQLite (only for Phpunit)"
         if: matrix.type == 'Phpunit'
-        run: "vendor/bin/phpunit \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\""
+        run: "vendor/bin/phpunit \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: MySQL (only for Phpunit)"
         if: matrix.type == 'Phpunit'
-        run: "vendor/bin/phpunit --configuration phpunit-mysql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\""
+        run: "vendor/bin/phpunit --configuration phpunit-mysql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: PostgreSQL (expected errors) (only for Phpunit)"
         if: matrix.type == 'Phpunit'
         continue-on-error: true
-        run: "vendor/bin/phpunit --configuration phpunit-pgsql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\""
+        run: "vendor/bin/phpunit --configuration phpunit-pgsql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: Lint / check syntax (only for CodingStyle)
         if: matrix.type == 'CodingStyle'
