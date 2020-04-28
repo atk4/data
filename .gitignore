@@ -16,4 +16,3 @@ cache
 /phpunit.xml
 /phpunit-mysql.xml
 /phpunit-pgsql.xml
-/tests/atk-test*.csv

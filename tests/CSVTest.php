@@ -12,34 +12,46 @@ use atk4\data\tests\Model\Person as Person;
  */
 class CSVTest extends AtkPhpunit\TestCase
 {
-    public $file = 'atk-test.csv';
-    public $file2 = 'atk-test-2.csv';
+    protected $file;
+    protected $file2;
 
-    public function setDB($data)
+    protected function setUp(): void
     {
-        $f = fopen($this->file, 'w');
-        fputcsv($f, array_keys(current($data)));
-        foreach ($data as $row) {
-            fputcsv($f, $row);
+        parent::setUp();
+
+        // better to skip this test on Windows, prevent permissions issues
+        // see also https://github.com/atk4/data/issues/271
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $this->markTestSkipped('Skip on Windows');
         }
-        fclose($f);
+
+        $this->file = sys_get_temp_dir() . '/atk4_test__data__a.csv';
+        $this->file2 = sys_get_temp_dir() . '/atk4_test__data__b.csv';
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
 
-        // see: https://github.com/atk4/data/issues/271
-        try {
+        if (file_exists($this->file)) {
             unlink($this->file);
-            if (file_exists($this->file2)) {
-                unlink($this->file2);
-            }
-        } catch (\Exception $e) {
+        }
+        if (file_exists($this->file2)) {
+            unlink($this->file2);
         }
     }
 
-    public function getDB()
+    protected function setDB($data): void
+    {
+        $f = fopen($this->file, 'w');
+        fputcsv($f, array_keys(reset($data)));
+        foreach ($data as $row) {
+            fputcsv($f, $row);
+        }
+        fclose($f);
+    }
+
+    protected function getDB(): array
     {
         $f = fopen($this->file, 'r');
         $keys = fgetcsv($f);
