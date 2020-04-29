@@ -63,7 +63,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
      */
     public function testInsert()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -76,7 +76,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
      */
     public function testSave1()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -91,7 +91,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
      */
     public function testSave2()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 

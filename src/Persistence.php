@@ -320,7 +320,7 @@ class Persistence
 
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
-            if ($f->type && $f->type != 'string' && $value === '') {
+            if ($f->type && $f->type !== 'string' && $value === '') {
                 return;
             }
 
@@ -448,7 +448,7 @@ class Persistence
         case 'serialize':
             return unserialize($value);
         case 'json':
-            return $this->jsonDecode($f, $value, $f->type == 'array');
+            return $this->jsonDecode($f, $value, $f->type === 'array');
         case 'base64':
             return base64_decode($value, true);
         }
@@ -470,7 +470,7 @@ class Persistence
         }
 
         $res = json_decode($value, $assoc, 512, JSON_THROW_ON_ERROR);
-        if (JSON_THROW_ON_ERROR == 0 && json_last_error() !== JSON_ERROR_NONE) {
+        if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception([
                 'There was error while decoding JSON',
                 'code' => json_last_error(),
@@ -496,7 +496,7 @@ class Persistence
         }
 
         $res = json_encode($value, JSON_THROW_ON_ERROR, 512);
-        if (JSON_THROW_ON_ERROR == 0 && json_last_error() !== JSON_ERROR_NONE) {
+        if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception([
                 'There was error while encoding JSON',
                 'code' => json_last_error(),

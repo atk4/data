@@ -69,7 +69,7 @@ class Static_ extends Array_
 
         foreach ($row1 as $key => $value) {
             // id information present, use it instead
-            if ($key == 'id') {
+            if ($key === 'id') {
                 $must_override = true;
             }
 

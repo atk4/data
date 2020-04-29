@@ -110,7 +110,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testAddFields()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -137,7 +137,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testAddFields2()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -173,7 +173,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testSameTable()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -196,7 +196,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testSameTable2()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -225,7 +225,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testSameTable3()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -397,7 +397,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testGetTitle()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 

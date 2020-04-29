@@ -21,7 +21,7 @@ return PhpCsFixer\Config::create()
         ],
 
         // disable some too strict rules
-        'strict_comparison' => false,
+        'strict_comparison' => false, // @TODO once all strict comparisons are fully fixed
         'phpdoc_types_order' => [
             'null_adjustment' => 'always_last',
             'sort_algorithm' => 'none',

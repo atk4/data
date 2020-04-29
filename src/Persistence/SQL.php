@@ -464,7 +464,7 @@ class SQL extends Persistence
                 $format = $f->persist_format ?: $format[$f->type];
 
                 // datetime only - set to persisting timezone
-                if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                if ($f->type === 'datetime' && isset($f->persist_timezone)) {
                     $v = new \DateTime($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                     $v->setTimezone(new $tz_class($f->persist_timezone));
                 }
@@ -555,7 +555,7 @@ class SQL extends Persistence
                 }
 
                 // datetime only - set from persisting timezone
-                if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                if ($f->type === 'datetime' && isset($f->persist_timezone)) {
                     $v = $dt_class::createFromFormat($format, $v, new $tz_class($f->persist_timezone));
                     if ($v !== false) {
                         $v->setTimezone(new $tz_class(date_default_timezone_get()));
@@ -570,7 +570,7 @@ class SQL extends Persistence
 
                 // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
                 // this is what Carbon::instance(DateTime $dt) method does for example
-                if ($dt_class != 'DateTime') {
+                if ($dt_class !== 'DateTime') {
                     $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                 }
             }
@@ -673,7 +673,7 @@ class SQL extends Persistence
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);
 
-                if ($type == 'fx') {
+                if ($type === 'fx') {
                     $expr = "{$fx}([])";
                 } else {
                     $expr = "coalesce({$fx}([]), 0)";

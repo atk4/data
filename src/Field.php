@@ -258,7 +258,7 @@ class Field implements Expressionable
 
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
-            if ($f->type && $f->type != 'string' && $value === '') {
+            if ($f->type && $f->type !== 'string' && $value === '') {
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
                 }
@@ -358,11 +358,11 @@ class Field implements Expressionable
                     }
                 }
 
-                if ($f->type == 'date' && $value->format('H:i:s.u') !== '00:00:00.000000') {
+                if ($f->type === 'date' && $value->format('H:i:s.u') !== '00:00:00.000000') {
                     // remove time portion from date type value
                     $value = (clone $value)->setTime(0, 0, 0);
                 }
-                if ($f->type == 'time' && $value->format('Y-m-d') !== '1970-01-01') {
+                if ($f->type === 'time' && $value->format('Y-m-d') !== '1970-01-01') {
                     // remove date portion from date type value
                     // need 1970 in place of 0 - DB
                     $value = (clone $value)->setDate(1970, 1, 1);

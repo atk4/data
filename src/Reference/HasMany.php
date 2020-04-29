@@ -120,7 +120,7 @@ class HasMany extends Reference
             $cb = function () use ($defaults, $field) {
                 return $this->refLink()->action('field', [$defaults['aggregate'], 'alias' => $field]);
             };
-        } elseif ($defaults['aggregate'] == 'count' && !isset($defaults['field'])) {
+        } elseif ($defaults['aggregate'] === 'count' && !isset($defaults['field'])) {
             $cb = function () use ($defaults, $field) {
                 return $this->refLink()->action('count', ['alias' => $field]);
             };

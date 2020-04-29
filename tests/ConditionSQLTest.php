@@ -33,7 +33,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $mm->tryLoad(2);
         $this->assertNull($mm['name']);
 
-        if ($this->driverType == 'sqlite') {
+        if ($this->driverType === 'sqlite') {
             $this->assertEquals(
                 'select "id","name","gender" from "user" where "gender" = :a',
                 $mm->action('select')->render()
@@ -201,7 +201,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
 
     public function testExpressionJoin()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 

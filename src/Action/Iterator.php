@@ -71,17 +71,17 @@ class Iterator
             // the row field exists check the position of the "%"(s)
             switch ($value) {
                 // case "%str%"
-                case substr($value, -1, 1) == '%' && substr($value, 0, 1) == '%':
+                case substr($value, -1, 1) === '%' && substr($value, 0, 1) === '%':
                     return strpos($row[$field], $clean_value) !== false;
 
                     break;
                 // case "str%"
-                case substr($value, -1, 1) == '%':
+                case substr($value, -1, 1) === '%':
                     return substr($row[$field], 0, strlen($clean_value)) === $clean_value;
 
                     break;
                 // case "%str"
-                case substr($value, 0, 1) == '%':
+                case substr($value, 0, 1) === '%':
                     return substr($row[$field], -strlen($clean_value)) === $clean_value;
 
                     break;

@@ -62,7 +62,7 @@ class Array_ extends Persistence
         // and put all persistence data in there
         if (!$m->table) {
             $m->table = 'data'; // fake table name 'data'
-            if (!isset($this->data[$m->table]) || count($this->data) != 1) {
+            if (!isset($this->data[$m->table]) || count($this->data) !== 1) {
                 $this->data = [$m->table => $this->data];
             }
         }
@@ -342,12 +342,12 @@ class Array_ extends Persistence
 
         foreach ($model->conditions as $cond) {
             // assume the action is "where" if we have only 2 parameters
-            if (count($cond) == 2) {
+            if (count($cond) === 2) {
                 array_splice($cond, -1, 1, ['where', $cond[1]]);
             }
 
             // condition must have 3 params at this point
-            if (count($cond) != 3) {
+            if (count($cond) !== 3) {
                 // condition can have up to three params
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',

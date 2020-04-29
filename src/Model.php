@@ -728,10 +728,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
             foreach ($filter as $f) {
                 if (
-                    ($f == 'system' && $field->system)
-                    || ($f == 'not system' && !$field->system)
-                    || ($f == 'editable' && $field->isEditable())
-                    || ($f == 'visible' && $field->isVisible())
+                    ($f === 'system' && $field->system)
+                    || ($f === 'not system' && !$field->system)
+                    || ($f === 'editable' && $field->isEditable())
+                    || ($f === 'visible' && $field->isVisible())
                 ) {
                     return true;
                 } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'], true)) {
@@ -753,7 +753,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function set($field, $value = null)
     {
-        if (func_num_args() == 1) {
+        if (func_num_args() === 1) {
             if (is_array($field)) {
                 foreach ($field as $key => $value) {
                     if ($key === '0' || $key === 0) {
@@ -814,7 +814,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             }
 
             // enum property support
-            if (isset($f->enum) && $f->enum && $f->type != 'boolean') {
+            if (isset($f->enum) && $f->enum && $f->type !== 'boolean') {
                 if ($value === '') {
                     $value = null;
                 }
@@ -1231,7 +1231,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
         $f = is_string($field) ? $this->getField($field) : ($field instanceof Field ? $field : false);
         if ($f) {
-            if ($operator === '=' || func_num_args() == 2) {
+            if ($operator === '=' || func_num_args() === 2) {
                 $v = ($operator === '=' ? $value : $operator);
 
                 if (!is_object($v) && !is_array($v)) {
@@ -1544,7 +1544,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $class = get_class($class);
         }
 
-        if (is_string($class) && $class[0] != '\\') {
+        if (is_string($class) && $class[0] !== '\\') {
             $class = '\\' . $class;
         }
 
@@ -2515,7 +2515,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $refs = [];
         foreach ($this->elements as $key => $val) {
-            if (substr($key, 0, 5) == '#ref_') {
+            if (substr($key, 0, 5) === '#ref_') {
                 $refs[substr($key, 5)] = $val;
             }
         }

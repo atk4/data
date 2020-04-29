@@ -56,7 +56,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinSaving1()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -161,7 +161,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinSaving3()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -230,7 +230,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinUpdate()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -384,7 +384,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $j->addField('contact_phone');
 
         $m_u->onHook('afterSave', function ($m) {
-            if ($m['contact_phone'] != '+123') {
+            if ($m['contact_phone'] !== '+123') {
                 $m['contact_phone'] = '+123';
                 $m->save();
             }
@@ -401,7 +401,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
 
     public function testDoubleJoin()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 

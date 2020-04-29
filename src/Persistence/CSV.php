@@ -185,7 +185,7 @@ class CSV extends Persistence
 
         $header = [];
         foreach ($m->getFields() as $name => $field) {
-            if ($name == $m->id_field) {
+            if ($name === $m->id_field) {
                 continue;
             }
 
@@ -256,7 +256,7 @@ class CSV extends Persistence
     {
         if (!$this->mode) {
             $this->mode = 'r';
-        } elseif ($this->mode == 'w') {
+        } elseif ($this->mode === 'w') {
             throw new Exception(['Currently writing records, so loading is not possible.']);
         }
 
@@ -284,7 +284,7 @@ class CSV extends Persistence
     {
         if (!$this->mode) {
             $this->mode = 'r';
-        } elseif ($this->mode == 'w') {
+        } elseif ($this->mode === 'w') {
             throw new Exception(['Currently writing records, so loading is not possible.']);
         }
 
@@ -335,7 +335,7 @@ class CSV extends Persistence
     {
         if (!$this->mode) {
             $this->mode = 'w';
-        } elseif ($this->mode == 'r') {
+        } elseif ($this->mode === 'r') {
             throw new Exception(['Currently reading records, so writing is not possible.']);
         }
 
