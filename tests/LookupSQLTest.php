@@ -194,7 +194,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
             ['Russia', 'code' => 'RU'],
         ]);
 
-        $this->assertEquals([
+        $this->assertSame([
             'country' => [
                 1 => [
                     'id' => '1',
@@ -253,7 +253,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         $c->insert(['Latvia', 'user_names' => 'imants,juris']);
 
         //$this->varexport($this->getDB(['country','user']));
-        $this->assertEquals([
+        $this->assertSame([
             'country' => [
                 1 => [
                     'id' => '1',

@@ -121,9 +121,9 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         $a = (new Invoice1($this->db))->ref('addr');
 
         // test caption of containsOne reference
-        $this->assertEquals('Secret Code', $a->getField('door_code')->getCaption());
-        $this->assertEquals('Secret Code', $a->refModel('door_code')->getModelCaption());
-        $this->assertEquals('Secret Code', $a->ref('door_code')->getModelCaption());
+        $this->assertSame('Secret Code', $a->getField('door_code')->getCaption());
+        $this->assertSame('Secret Code', $a->refModel('door_code')->getModelCaption());
+        $this->assertSame('Secret Code', $a->ref('door_code')->getModelCaption());
     }
 
     /**
@@ -149,7 +149,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // now try to change some field in address
         $i->ref('addr')->set('address', 'bar')->save();
-        $this->assertEquals('bar', $i->ref('addr')['address']);
+        $this->assertSame('bar', $i->ref('addr')['address']);
 
         // now add nested containsOne - DoorCode
         $c = $i->ref('addr')->ref('door_code');
@@ -164,14 +164,14 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // try hasOne reference
         $c = $i->ref('addr')->ref('country_id');
-        $this->assertEquals('Latvia', $c['name']);
+        $this->assertSame('Latvia', $c['name']);
         $i->ref('addr')->set('country_id', 2)->save();
         $c = $i->ref('addr')->ref('country_id');
-        $this->assertEquals('United Kingdom', $c['name']);
+        $this->assertSame('United Kingdom', $c['name']);
 
         // let's test how it all looks in persistence without typecasting
         $exp_addr = $i->export(null, null, false)[0]['addr'];
-        $this->assertEquals(
+        $this->assertSame(
             '{"country_id":"2","address":"bar","built_date":"2019-01-01T00:00:00+00:00","tags":"[\"foo\",\"bar\"]","door_code":"{\"code\":\"DEF\",\"valid_till\":\"2019-07-01T00:00:00+00:00\"}"}',
             $exp_addr
         );
@@ -207,7 +207,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         $a->set('post_index', 'LV-1234');
         $a->save();
 
-        $this->assertEquals(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
+        $this->assertSame(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
 
         // now this one is a bit tricky
         // each time you call ref() it returns you new model object so it will not have post_index field

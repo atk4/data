@@ -31,7 +31,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->save();
 
         // padding removed
-        $this->assertEquals('foo@example.com', $m['email']);
+        $this->assertSame('foo@example.com', $m['email']);
 
         $this->expectExceptionMessage('format is invalid');
         $m['email'] = 'qq';
@@ -44,7 +44,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->addField('emails', ['Email', 'allow_multiple' => true]);
 
         $m['emails'] = 'bar@exampe.com ,foo@example.com';
-        $this->assertEquals('bar@exampe.com, foo@example.com', $m['emails']);
+        $this->assertSame('bar@exampe.com, foo@example.com', $m['emails']);
 
         $this->expectExceptionMessage('a single email');
         $m['email'] = 'bar@exampe.com ,foo@example.com';

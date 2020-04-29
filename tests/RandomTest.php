@@ -188,7 +188,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         $m = new Model_Item($db, 'item');
 
-        $this->assertEquals(
+        $this->assertSame(
             ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
@@ -217,7 +217,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         $m = new Model_Item2($db, 'item');
 
-        $this->assertEquals(
+        $this->assertSame(
             ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
@@ -252,7 +252,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         );
 
         $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->action('count')->getOne());
-        $this->assertEquals('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
+        $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 
     public function testUpdateCondition()
@@ -284,7 +284,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             }
         });
 
-        $this->assertEquals('Sue', $m['name']);
+        $this->assertSame('Sue', $m['name']);
 
         $a = [
             'item' => [
@@ -336,7 +336,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->set('john');
         $m->save();
 
-        $this->assertEquals('rec #3', $m->load(3)['name']);
+        $this->assertSame('rec #3', $m->load(3)['name']);
 
         $m->delete();
     }
@@ -378,8 +378,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->load(1);
 
         $this->assertEquals(3.4, $m['bid']);
-        $this->assertEquals('y1', $m['x1']);
-        $this->assertEquals('y2', $m['x2']);
+        $this->assertSame('y1', $m['x1']);
+        $this->assertSame('y2', $m['x2']);
     }
 
     public function testModelCaption()
@@ -388,11 +388,11 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, 'user');
 
         // caption is not set, so generate it from class name \atk4\data\Model
-        $this->assertEquals('Atk 4 Data Model', $m->getModelCaption());
+        $this->assertSame('Atk 4 Data Model', $m->getModelCaption());
 
         // caption is set
         $m->caption = 'test';
-        $this->assertEquals('test', $m->getModelCaption());
+        $this->assertSame('test', $m->getModelCaption());
     }
 
     public function testGetTitle()
@@ -413,11 +413,11 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         // default title_field = name
         $this->assertNull($m->getTitle()); // not loaded model returns null
-        $this->assertEquals([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
+        $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
         $m->load(2);
-        $this->assertEquals('Sue', $m->getTitle()); // loaded returns title_field value
-        $this->assertEquals([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
+        $this->assertSame('Sue', $m->getTitle()); // loaded returns title_field value
+        $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
         // set custom title_field
         $m->title_field = 'parent_item_id';
@@ -425,7 +425,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         // set custom title_field as title_field from linked model
         $m->title_field = 'parent_item';
-        $this->assertEquals('John', $m->getTitle()); // returns parent record title_field
+        $this->assertSame('John', $m->getTitle()); // returns parent record title_field
 
         // no title_field set - return id value
         $m->title_field = null;
@@ -473,12 +473,12 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         ], $m2->export());
 
         // export fields explicitly set
-        $this->assertEquals([
+        $this->assertSame([
             0 => ['name' => 'John'],
             1 => ['name' => 'Sarah'],
         ], $m1->export(['name']));
 
-        $this->assertEquals([
+        $this->assertSame([
             0 => ['name' => 'John'],
             1 => ['name' => 'Sarah'],
         ], $m2->export(['name']));
@@ -495,12 +495,12 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         ], $m2->export(null, 'code'));
 
         // field names and key field explicitly set
-        $this->assertEquals([
+        $this->assertSame([
             10 => ['name' => 'John'],
             20 => ['name' => 'Sarah'],
         ], $m1->export(['name'], 'code'));
 
-        $this->assertEquals([
+        $this->assertSame([
             10 => ['name' => 'John'],
             20 => ['name' => 'Sarah'],
         ], $m2->export(['name'], 'code'));
@@ -546,7 +546,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         $q = 'select "id","name","user_id",(select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a';
         $q = str_replace('"', $this->getEscapeChar(), $q);
-        $this->assertEquals(
+        $this->assertSame(
             $q,
             $d->action('select')->render()
         );

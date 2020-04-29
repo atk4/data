@@ -33,7 +33,7 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         if ($this->driverType === 'sqlite') {
-            $this->assertEquals(
+            $this->assertSame(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()
             );
@@ -76,7 +76,7 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
         });
 
         if ($this->driverType === 'sqlite') {
-            $this->assertEquals(
+            $this->assertSame(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()
             );
@@ -105,7 +105,7 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
         $i->addExpression('sum_net', $i->action('fx', ['sum', 'total_net']));
 
         if ($this->driverType === 'sqlite') {
-            $this->assertEquals(
+            $this->assertSame(
                 'select "id","total_net","total_vat",(select sum("total_net") from "invoice") "sum_net" from "invoice"',
                 $i->action('select')->render()
             );
@@ -148,7 +148,7 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
         if ($this->driverType === 'sqlite') {
-            $this->assertEquals(
+            $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where ("name" || " " || "surname") != "cached_name"',
                 $m->action('select')->render()
             );
@@ -157,7 +157,7 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
         $m->tryLoad(1);
         $this->assertNull($m['name']);
         $m->tryLoad(2);
-        $this->assertEquals('Sue', $m['name']);
+        $this->assertSame('Sue', $m['name']);
     }
 
     public function testReloading()

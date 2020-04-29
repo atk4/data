@@ -35,7 +35,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertEquals('Sue', $this->getDB()['item'][2]['name']);
+        $this->assertSame('Sue', $this->getDB()['item'][2]['name']);
 
         $m->onHook('afterDelete', function ($m) {
             throw new \Exception('Awful thing happened');
@@ -46,7 +46,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertEquals('Sue', $this->getDB()['item'][2]['name']);
+        $this->assertSame('Sue', $this->getDB()['item'][2]['name']);
     }
 
     public function testBeforeSaveHook()
@@ -131,6 +131,6 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         $m->save();
 
         $this->assertTrue($hook_called);
-        $this->assertEquals($m->get(), $values);
+        $this->assertSame($m->get(), $values);
     }
 }

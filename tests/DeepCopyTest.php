@@ -171,13 +171,13 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
             ->copy();
 
         // price now will be with VAT
-        $this->assertEquals('q1', $invoice['ref']);
+        $this->assertSame('q1', $invoice['ref']);
         $this->assertEquals(108.90, $invoice['total']);
         $this->assertEquals(1, $invoice->id);
 
         // Note that we did not specify that 'client_id' should be copied, so same value here
-        $this->assertEquals($quote['client_id'], $invoice['client_id']);
-        $this->assertEquals('John', $invoice->ref('client_id')['name']);
+        $this->assertSame($quote['client_id'], $invoice['client_id']);
+        $this->assertSame('John', $invoice->ref('client_id')['name']);
 
         // now to add payment for the invoice. Payment originates from the same client as noted on the invoice
         $invoice->ref('Payments')->insert(['amount' => $invoice['total'] - 5, 'client_id' => $invoice['client_id']]);
@@ -198,20 +198,20 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
             ->copy();
 
         // Invoice copy receives a new ID
-        $this->assertNotEquals($invoice->id, $invoice_copy->id);
-        $this->assertEquals('q1_copy', $invoice_copy['ref']);
+        $this->assertNotSame($invoice->id, $invoice_copy->id);
+        $this->assertSame('q1_copy', $invoice_copy['ref']);
 
         // ..however the due amount is the same - 5
         $this->assertEquals(5, $invoice_copy['due']);
 
         // ..client record was created in the process
-        $this->assertNotEquals($invoice_copy['client_id'], $invoice['client_id']);
+        $this->assertNotSame($invoice_copy['client_id'], $invoice['client_id']);
 
         // ..but he is still called John
-        $this->assertEquals('John', $invoice_copy->ref('client_id')['name']);
+        $this->assertSame('John', $invoice_copy->ref('client_id')['name']);
 
         // finally, the client_id used for newly created payment and new invoice correspond
-        $this->assertEquals($invoice_copy['client_id'], $invoice_copy->ref('Payments')->loadAny()['client_id']);
+        $this->assertSame($invoice_copy['client_id'], $invoice_copy->ref('Payments')->loadAny()['client_id']);
 
         // the final test is to copy client entirely!
 
@@ -292,7 +292,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
                 ->with(['Lines', 'Lines2'])
                 ->copy();
         } catch (\atk4\data\Util\DeepCopyException $e) {
-            $this->assertEquals('no ref', $e->getPrevious()->getMessage());
+            $this->assertSame('no ref', $e->getPrevious()->getMessage());
 
             throw $e;
         }
@@ -334,7 +334,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
                 ->with(['Lines'])
                 ->copy();
         } catch (\atk4\data\Util\DeepCopyException $e) {
-            $this->assertEquals('Mandatory field value cannot be null', $e->getPrevious()->getMessage());
+            $this->assertSame('Mandatory field value cannot be null', $e->getPrevious()->getMessage());
 
             throw $e;
         }

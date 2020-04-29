@@ -14,14 +14,14 @@ class SerializeTest extends \atk4\schema\PhpunitTestCase
 
         $f = $m->addField('data', ['serialize' => 'serialize']);
 
-        $this->assertEquals(
+        $this->assertSame(
             ['data' => 'a:1:{s:3:"foo";s:3:"bar";}'],
             $db->typecastSaveRow(
                 $m,
                 ['data' => ['foo' => 'bar']]
             )
         );
-        $this->assertEquals(
+        $this->assertSame(
             ['data' => ['foo' => 'bar']],
             $db->typecastLoadRow(
                 $m,
@@ -31,14 +31,14 @@ class SerializeTest extends \atk4\schema\PhpunitTestCase
 
         $f->serialize = 'json';
         $f->type = 'array';
-        $this->assertEquals(
+        $this->assertSame(
             ['data' => '{"foo":"bar"}'],
             $db->typecastSaveRow(
                 $m,
                 ['data' => ['foo' => 'bar']]
             )
         );
-        $this->assertEquals(
+        $this->assertSame(
             ['data' => ['foo' => 'bar']],
             $db->typecastLoadRow(
                 $m,

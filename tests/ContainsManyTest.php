@@ -156,9 +156,9 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         $i = new Invoice2($this->db);
 
         // test caption of containsMany reference
-        $this->assertEquals('My Invoice Lines', $i->getField('lines')->getCaption());
-        $this->assertEquals('My Invoice Lines', $i->refModel('lines')->getModelCaption());
-        $this->assertEquals('My Invoice Lines', $i->ref('lines')->getModelCaption());
+        $this->assertSame('My Invoice Lines', $i->getField('lines')->getCaption());
+        $this->assertSame('My Invoice Lines', $i->refModel('lines')->getModelCaption());
+        $this->assertSame('My Invoice Lines', $i->ref('lines')->getModelCaption());
     }
 
     /**
@@ -199,15 +199,15 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
 
         // try hasOne reference
         $v = $i->ref('lines')->load(4)->ref('vat_rate_id');
-        $this->assertEquals(15, $v['rate']);
+        $this->assertSame(15, $v['rate']);
 
         // test expression fields
         $v = $i->ref('lines')->load(4);
-        $this->assertEquals(50 * 3 * (1 + 15 / 100), $v['total_gross']);
+        $this->assertSame(50 * 3 * (1 + 15 / 100), $v['total_gross']);
 
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
-        $this->assertEquals(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i['total_gross']); // =245.10
+        $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i['total_gross']); // =245.10
 
         //var_dump($i->export(), $i->export(null,null,false));
     }
@@ -259,14 +259,14 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         ], $i->ref('lines')->load(1)->ref('discounts')->export());
 
         // is total_gross correctly calculated?
-        $this->assertEquals(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i['total_gross']); // =110.45
+        $this->assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i['total_gross']); // =110.45
 
         // do we also correctly calculate discounts from nested containsMany?
-        $this->assertEquals(24.2 * 15 / 100 + 86.25 * 20 / 100, $i['discounts_total_sum']); // =20.88
+        $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i['discounts_total_sum']); // =20.88
 
         // let's test how it all looks in persistence without typecasting
         $exp_lines = $i->export(null, null, false)[0]['lines'];
-        $this->assertEquals(
+        $this->assertSame(
             json_encode([
                 '1' => [
                     'id' => 1, 'vat_rate_id' => '1', 'price' => '10', 'qty' => '2', 'add_date' => (new \DateTime('2019-06-01'))->format('Y-m-d\TH:i:sP'), 'discounts' => json_encode([

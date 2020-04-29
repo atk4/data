@@ -21,7 +21,6 @@ return PhpCsFixer\Config::create()
         ],
 
         // disable some too strict rules
-        'strict_comparison' => false, // @TODO once all strict comparisons are fully fixed
         'phpdoc_types_order' => [
             'null_adjustment' => 'always_last',
             'sort_algorithm' => 'none',
@@ -54,9 +53,9 @@ return PhpCsFixer\Config::create()
             'use_nullable_type_declaration' => false,
         ],
 
-        // may be fixed/removed later
+        // @TODO fix later
+        'strict_comparison' => false,
         'php_unit_strict' => false,
-        
     ])
     ->setFinder($finder)
     ->setCacheFile(__DIR__ . '/.php_cs.cache');

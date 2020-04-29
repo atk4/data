@@ -28,6 +28,6 @@ class _Template extends \atk4\schema\PhpunitTestCase
 
         $this->assertNotNull($m->id);
 
-        $this->assertEquals($a, $this->getDB());
+        $this->assertSame($a, $this->getDB());
     }
 }

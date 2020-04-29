@@ -167,25 +167,25 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $f = $m->addField('foo');
-        $this->assertEquals('Foo', $f->getCaption());
+        $this->assertSame('Foo', $f->getCaption());
 
         $f = $m->addField('user_defined_entity');
-        $this->assertEquals('User Defined Entity', $f->getCaption());
+        $this->assertSame('User Defined Entity', $f->getCaption());
 
         $f = $m->addField('foo2', ['caption' => 'My Foo']);
-        $this->assertEquals('My Foo', $f->getCaption());
+        $this->assertSame('My Foo', $f->getCaption());
 
         $f = $m->addField('foo3', ['ui' => ['caption' => 'My Foo']]);
-        $this->assertEquals('My Foo', $f->getCaption());
+        $this->assertSame('My Foo', $f->getCaption());
 
         $f = $m->addField('userDefinedEntity');
-        $this->assertEquals('User Defined Entity', $f->getCaption());
+        $this->assertSame('User Defined Entity', $f->getCaption());
 
         $f = $m->addField('newNASA_module');
-        $this->assertEquals('New NASA Module', $f->getCaption());
+        $this->assertSame('New NASA Module', $f->getCaption());
 
         $f = $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
-        $this->assertEquals('This Is NASA My Big Bull Shit 123 Foo', $f->getCaption());
+        $this->assertSame('This Is NASA My Big Bull Shit 123 Foo', $f->getCaption());
     }
 
     /**
@@ -324,7 +324,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->load(1);
 
         $this->assertNull($m['name']);
-        $this->assertEquals('Smith', $m['surname']);
+        $this->assertSame('Smith', $m['surname']);
 
         $m['name'] = 'Bill';
         $m['surname'] = 'Stalker';
@@ -332,7 +332,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals($a, $this->getDB());
 
         $m->reload();
-        $this->assertEquals('Smith', $m['surname']);
+        $this->assertSame('Smith', $m['surname']);
         $m->getField('surname')->never_save = false;
         $m['surname'] = 'Stalker';
         $m->save();
@@ -356,14 +356,14 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals($a, $this->getDB());
         $this->assertNull($m['name']);
-        $this->assertEquals('X', $m['surname']);
+        $this->assertSame('X', $m['surname']);
 
         $m['surname'] = 'Y';
         $m->save();
 
         $this->assertEquals($a, $this->getDB());
-        $this->assertEquals('Y', $m['name']);
-        $this->assertEquals('X', $m['surname']);
+        $this->assertSame('Y', $m['name']);
+        $this->assertSame('X', $m['surname']);
     }
 
     public function testTitle()
@@ -395,8 +395,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
 
         $m->load(1);
 
-        $this->assertEquals('John', $m['name']);
-        $this->assertEquals('Programmer', $m['category']);
+        $this->assertSame('John', $m['name']);
+        $this->assertSame('Programmer', $m['category']);
 
         $m->insert(['Peter', 'category' => 'Sales']);
 
@@ -449,10 +449,10 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('surname');
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
         $m->loadBy('first_name', 'John');
-        $this->assertEquals('John', $m['first_name']);
+        $this->assertSame('John', $m['first_name']);
 
         $d = $m->export();
-        $this->assertEquals('John', $d[0]['first_name']);
+        $this->assertSame('John', $d[0]['first_name']);
 
         $a = [
             'user' => [
@@ -559,10 +559,10 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
 
         $a = $this->getDB();
         $this->assertNotNull($a['user'][1]['secret']);
-        $this->assertNotEquals('i am a woman', $a['user'][1]['secret']);
+        $this->assertNotSame('i am a woman', $a['user'][1]['secret']);
 
         $m->unload()->load(1);
-        $this->assertEquals('i am a woman', $m['secret']);
+        $this->assertSame('i am a woman', $m['secret']);
     }
 
     public function testNormalize()
@@ -838,21 +838,21 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $model->addField('visible_system', ['ui' => ['visible' => true], 'system' => true]);
         $model->addField('not_editable', ['ui' => ['editable' => false]]);
 
-        $this->assertEquals(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
-        $this->assertEquals(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
-        $this->assertEquals(['editable', 'visible', 'not_editable'], array_keys($model->getFields('not system')));
-        $this->assertEquals(['editable', 'editable_system', 'visible'], array_keys($model->getFields('editable')));
-        $this->assertEquals(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
-        $this->assertEquals(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
-        $this->assertEquals(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible,editable')));
+        $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+        $this->assertSame(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
+        $this->assertSame(['editable', 'visible', 'not_editable'], array_keys($model->getFields('not system')));
+        $this->assertSame(['editable', 'editable_system', 'visible'], array_keys($model->getFields('editable')));
+        $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
+        $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
+        $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible,editable')));
 
         $model->onlyFields(['system', 'visible', 'not_editable']);
 
         // getFields() is unaffected by only_fields, will always return all fields
-        $this->assertEquals(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+        $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
 
         // only return subset of only_fields
-        $this->assertEquals(['visible', 'not_editable'], array_keys($model->getFields('visible')));
+        $this->assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
 
         $this->expectExceptionMessage('not supported');
         $model->getFields('foo');
@@ -865,9 +865,9 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $model->addField('time', ['type' => 'time']);
         $model->addField('datetime', ['type' => 'datetime']);
 
-        $this->assertEquals('', $model->getField('date')->toString());
-        $this->assertEquals('', $model->getField('time')->toString());
-        $this->assertEquals('', $model->getField('datetime')->toString());
+        $this->assertSame('', $model->getField('date')->toString());
+        $this->assertSame('', $model->getField('time')->toString());
+        $this->assertSame('', $model->getField('datetime')->toString());
 
         // datetime without microseconds
         $dt = new \DateTime('2020-01-21 21:09:42');
@@ -875,9 +875,9 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
-        $this->assertEquals($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertEquals($dt->format('H:i:s'), $model->getField('time')->toString());
-        $this->assertEquals($dt->format('c'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
+        $this->assertSame($dt->format('H:i:s'), $model->getField('time')->toString());
+        $this->assertSame($dt->format('c'), $model->getField('datetime')->toString());
 
         // datetime with microseconds
         $dt = new \DateTime('2020-01-21 21:09:42.895623');
@@ -885,9 +885,9 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
-        $this->assertEquals($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertEquals($dt->format('H:i:s.u'), $model->getField('time')->toString());
-        $this->assertEquals($dt->format('Y-m-d\TH:i:s.uP'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
+        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
+        $this->assertSame($dt->format('Y-m-d\TH:i:s.uP'), $model->getField('datetime')->toString());
     }
 
     public function testSetNull()

@@ -76,7 +76,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $m['datetime']);
         $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $m['time']);
         $this->assertSame(2940, $m['integer']);
-        $this->assertEquals([1, 2, 3], $m['array']);
+        $this->assertSame([1, 2, 3], $m['array']);
         $this->assertSame(8.202343, $m['float']);
 
         $m->duplicate()->save();
@@ -189,7 +189,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertNull($m['float']);
         $this->assertNull($m['array']);
         $this->assertNull($m['object']);
-        $this->assertEquals([], $m->dirty);
+        $this->assertSame([], $m->dirty);
 
         $m->save();
         $this->assertEquals($a, $this->getDB());
@@ -285,9 +285,9 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('hello world', $m['rot13']);
         $this->assertSame(1, (int) $m->id);
         $this->assertSame(1, (int) $m['id']);
-        $this->assertEquals('2013-02-21 05:00:12.235689', (string) $m['datetime']);
-        $this->assertEquals('2013-02-20', (string) $m['date']);
-        $this->assertEquals('12:00:50.235689', (string) $m['time']);
+        $this->assertSame('2013-02-21 05:00:12.235689', (string) $m['datetime']);
+        $this->assertSame('2013-02-20', (string) $m['date']);
+        $this->assertSame('12:00:50.235689', (string) $m['time']);
 
         $this->assertTrue($m['b1']);
         $this->assertFalse($m['b2']);
@@ -401,7 +401,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $f = $m->addField('closed', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
 
-        $this->assertEquals('N', $db->typecastSaveField($f, 'N'));
+        $this->assertSame('N', $db->typecastSaveField($f, 'N'));
     }
 
     public function testTypecastTimezone()
@@ -414,9 +414,9 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         date_default_timezone_set('UTC');
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertEquals('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertEquals('22:52:01.000000', $db->typecastSaveField($t, $s));
+        $this->assertSame('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
+        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
+        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
@@ -424,9 +424,9 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         date_default_timezone_set('Asia/Tokyo');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertEquals('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertEquals('22:52:01.000000', $db->typecastSaveField($t, $s));
+        $this->assertSame('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
+        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
+        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
@@ -434,9 +434,9 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         date_default_timezone_set('America/Los_Angeles');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01'); // uses servers default timezone
-        $this->assertEquals('2005-08-16 07:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertEquals('22:52:01.000000', $db->typecastSaveField($t, $s));
+        $this->assertSame('2005-08-16 07:52:01.000000', $db->typecastSaveField($dt, $s));
+        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
+        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $db->typecastLoadField($dt, '2005-08-16 07:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));

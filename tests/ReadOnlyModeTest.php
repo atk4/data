@@ -36,17 +36,17 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     public function testBasic()
     {
         $this->m->tryLoadAny();
-        $this->assertEquals('John', $this->m['name']);
+        $this->assertSame('John', $this->m['name']);
 
         $this->m->setOrder('name desc');
         $this->m->tryLoadAny();
-        $this->assertEquals('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m['name']);
 
         $n = [];
         foreach ($this->m as $row) {
             $n[] = $row['name'];
         }
-        $this->assertEquals(['Sue', 'John'], $n);
+        $this->assertSame(['Sue', 'John'], $n);
     }
 
     /**
@@ -96,14 +96,14 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     public function testLoadBy()
     {
         $this->m->loadBy('name', 'Sue');
-        $this->assertEquals('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m['name']);
     }
 
     public function testLoadCondition()
     {
         $this->m->addCondition('name', 'Sue');
         $this->m->loadAny();
-        $this->assertEquals('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m['name']);
     }
 
     /**

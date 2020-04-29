@@ -76,7 +76,7 @@ class CSVTest extends AtkPhpunit\TestCase
 
         $this->setDB($data);
         $data2 = $this->getDB();
-        $this->assertEquals($data, $data2);
+        $this->assertSame($data, $data2);
     }
 
     public function testLoadAny()
@@ -94,8 +94,8 @@ class CSVTest extends AtkPhpunit\TestCase
         $m->addField('surname');
         $m->loadAny();
 
-        $this->assertEquals('John', $m['name']);
-        $this->assertEquals('Smith', $m['surname']);
+        $this->assertSame('John', $m['name']);
+        $this->assertSame('Smith', $m['surname']);
     }
 
     public function testLoadAnyException()
@@ -114,8 +114,8 @@ class CSVTest extends AtkPhpunit\TestCase
         $m->loadAny();
         $m->loadAny();
 
-        $this->assertEquals('Sarah', $m['name']);
-        $this->assertEquals('Jones', $m['surname']);
+        $this->assertSame('Sarah', $m['name']);
+        $this->assertSame('Jones', $m['surname']);
 
         $m->tryLoadAny();
         $this->assertFalse($m->loaded());
@@ -141,7 +141,7 @@ class CSVTest extends AtkPhpunit\TestCase
             $m2->save($m);
         }
 
-        $this->assertEquals(
+        $this->assertSame(
             file_get_contents($this->file2),
             file_get_contents($this->file)
         );
@@ -163,12 +163,12 @@ class CSVTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertEquals([
+        $this->assertSame([
             ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
-        $this->assertEquals([
+        $this->assertSame([
             ['surname' => 'Smith'],
             ['surname' => 'Jones'],
         ], $m->export(['surname']));
