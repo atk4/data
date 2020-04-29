@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 return [
     'Field requires array for defaults' => 'Field requires array for defaults',
