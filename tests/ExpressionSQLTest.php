@@ -126,13 +126,6 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
 
     public function testExpressions()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-        if ($this->driverType === 'mysql') {
-            $this->markTestIncomplete('This test is not supported on Mysql (|| does not concatenate strings on mysql)');
-        }
-
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'cached_name' => 'John Smith'],
@@ -144,12 +137,22 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, 'user');
         $m->addFields(['name', 'surname', 'cached_name']);
 
-        $m->addExpression('full_name', '[name] || " " || [surname]');
+        if ($this->driverType === 'sqlite') {
+            $m->addExpression('full_name', '[name] || " " || [surname]');
+        } else {
+            $m->addExpression('full_name', 'CONCAT([name], \' \', [surname])');
+        }
+
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
         if ($this->driverType === 'sqlite') {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where ("name" || " " || "surname") != "cached_name"',
+                $m->action('select')->render()
+            );
+        } elseif ($this->driverType === 'mysql') {
+            $this->assertSame(
+                'select `id`,`name`,`surname`,`cached_name`,(CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where (CONCAT(`name`, \' \', `surname`)) != `cached_name`',
                 $m->action('select')->render()
             );
         }
