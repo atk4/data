@@ -424,7 +424,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             'fields'  => true,
             'scope'   => UserAction\Generic::SINGLE_RECORD,
             'callback'=> 'save',
-            'ui'      => ['icon'=>'edit', 'button'=>[null, 'icon'=>'edit'], 'execButton'=>['Button', 'Save', 'blue']],
+            'ui'      => ['icon'=>'edit', 'button'=>[null, 'icon'=>'edit'], 'execButton'=>[\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
         $this->addAction('delete', [
             'scope'    => UserAction\Generic::SINGLE_RECORD,
