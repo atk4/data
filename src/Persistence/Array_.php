@@ -62,7 +62,7 @@ class Array_ extends Persistence
         // and put all persistence data in there
         if (!$m->table) {
             $m->table = 'data'; // fake table name 'data'
-            if (!isset($this->data[$m->table]) || count($this->data) != 1) {
+            if (!isset($this->data[$m->table]) || count($this->data) !== 1) {
                 $this->data = [$m->table => $this->data];
             }
         }
@@ -78,7 +78,6 @@ class Array_ extends Persistence
     /**
      * Loads model and returns data record.
      *
-     * @param Model  $m
      * @param mixed  $id
      * @param string $table
      *
@@ -107,7 +106,6 @@ class Array_ extends Persistence
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
      *
-     * @param Model  $m
      * @param mixed  $id
      * @param string $table
      *
@@ -130,7 +128,6 @@ class Array_ extends Persistence
      * Tries to load first available record and return data record.
      * Doesn't throw exception if model can't be loaded or there are no data records.
      *
-     * @param Model $m
      * @param mixed $table
      *
      * @return array|false
@@ -157,7 +154,6 @@ class Array_ extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
-     * @param Model  $m
      * @param array  $data
      * @param string $table
      *
@@ -183,7 +179,6 @@ class Array_ extends Persistence
     /**
      * Updates record in data array and returns record ID.
      *
-     * @param Model  $m
      * @param mixed  $id
      * @param array  $data
      * @param string $table
@@ -210,7 +205,6 @@ class Array_ extends Persistence
     /**
      * Deletes record in data array.
      *
-     * @param Model  $m
      * @param mixed  $id
      * @param string $table
      */
@@ -261,8 +255,6 @@ class Array_ extends Persistence
     /**
      * Prepare iterator.
      *
-     * @param Model $m
-     *
      * @return array
      */
     public function prepareIterator(Model $m)
@@ -273,7 +265,6 @@ class Array_ extends Persistence
     /**
      * Export all DataSet.
      *
-     * @param Model      $m
      * @param array|null $fields
      * @param bool       $typecast_data Should we typecast exported data
      *
@@ -295,7 +286,6 @@ class Array_ extends Persistence
     /**
      * Typecast data and return Iterator of data array.
      *
-     * @param Model $m
      * @param array $fields
      *
      * @return \atk4\data\Action\Iterator
@@ -351,19 +341,18 @@ class Array_ extends Persistence
         }
 
         foreach ($model->conditions as $cond) {
-
             // assume the action is "where" if we have only 2 parameters
-            if (count($cond) == 2) {
+            if (count($cond) === 2) {
                 array_splice($cond, -1, 1, ['where', $cond[1]]);
             }
 
             // condition must have 3 params at this point
-            if (count($cond) != 3) {
+            if (count($cond) !== 3) {
                 // condition can have up to three params
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
-                    'reason'   => 'condition can have two to three params',
-                    'condition'=> $cond,
+                    'reason' => 'condition can have two to three params',
+                    'condition' => $cond,
                 ]);
             }
 
@@ -376,7 +365,7 @@ class Array_ extends Persistence
             if (!method_exists($iterator, $method)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported method',
-                    'reason'    => "method $method not implemented for Action\Iterator",
+                    'reason' => "method {$method} not implemented for Action\\Iterator",
                     'condition' => $cond,
                 ]);
             }
@@ -389,7 +378,7 @@ class Array_ extends Persistence
             if (!is_a($field, Field::class)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
-                    'reason'    => 'Unsupported object instance ' . get_class($field),
+                    'reason' => 'Unsupported object instance ' . get_class($field),
                     'condition' => $cond,
                 ]);
             }
@@ -428,14 +417,12 @@ class Array_ extends Persistence
                 $this->setLimitOrder($m, $action);
 
                 return $action;
-
             case 'count':
                 $action = $this->initAction($m, $args[0] ?? null);
                 $this->applyConditions($m, $action);
                 $this->setLimitOrder($m, $action);
 
                 return $action->count();
-
             case 'field':
                 if (!isset($args[0])) {
                     throw new Exception([
@@ -460,7 +447,6 @@ class Array_ extends Persistence
                 }
 
                 return $row;
-
             /* These are not implemented yet
             case 'fx':
             case 'fx0':

@@ -27,30 +27,30 @@ class WithTest extends \atk4\schema\PhpunitTestCase
         // setup models
         $m_user = new Model($db, 'user');
         $m_user->addField('name');
-        $m_user->addField('salary', ['type'=>'money']);
+        $m_user->addField('salary', ['type' => 'money']);
 
         $m_invoice = new Model($db, 'invoice');
-        $m_invoice->addField('net', ['type'=>'money']);
+        $m_invoice->addField('net', ['type' => 'money']);
         $m_invoice->hasOne('user_id', $m_user);
         $m_invoice->addCondition('net', '>', 100);
 
         // setup test model
         $m = clone $m_user;
-        $m->addWith($m_invoice, 'i', ['user_id', 'net'=>'invoiced']); // add cursor
+        $m->addWith($m_invoice, 'i', ['user_id', 'net' => 'invoiced']); // add cursor
         $j_invoice = $m->join('i.user_id'); // join cursor
         $j_invoice->addField('invoiced');   // add field from joined cursor
 
         // tests
         $q = 'with "i" ("user_id","invoiced") as (select "user_id","net" from "invoice" where "net" > 100) select "user"."id","user"."name","user"."salary","_i"."invoiced" from "user" inner join "i" as "_i" on "_i"."user_id" = "user"."id"';
         $q = str_replace('"', $this->getEscapeChar(), $q);
-        $this->assertEquals($q, $m->action('select')->getDebugQuery());
-        $this->assertEquals(2, count($m->export()));
+        $this->assertSame($q, $m->action('select')->getDebugQuery());
+        $this->assertSame(2, count($m->export()));
     }
 
     /**
      * Alias should be unique.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testUniqueAliasException()
     {

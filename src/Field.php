@@ -26,7 +26,7 @@ class Field implements Expressionable
      *
      * @var mixed
      */
-    public $default = null;
+    public $default;
 
     /**
      * Field type.
@@ -37,14 +37,14 @@ class Field implements Expressionable
      *
      * @var string
      */
-    public $type = null;
+    public $type;
 
     /**
      * For several types enum can provide list of available options. ['blue', 'red'].
      *
      * @var array|null
      */
-    public $enum = null;
+    public $enum;
 
     /**
      * For fields that can be selected, values can represent interpretation of the values,
@@ -52,7 +52,7 @@ class Field implements Expressionable
      *
      * @var array|null
      */
-    public $values = null;
+    public $values;
 
     /**
      * If value of this field can be described by a model, this property
@@ -62,21 +62,21 @@ class Field implements Expressionable
      *
      * @var Reference|null
      */
-    public $reference = null;
+    public $reference;
 
     /**
      * Actual field name.
      *
      * @var string|null
      */
-    public $actual = null;
+    public $actual;
 
     /**
      * Join object.
      *
      * @var Join|null
      */
-    public $join = null;
+    public $join;
 
     /**
      * Is it system field?
@@ -120,7 +120,7 @@ class Field implements Expressionable
      *
      * @var string
      */
-    public $caption = null;
+    public $caption;
 
     /**
      * Array with UI flags like editable, visible and hidden.
@@ -153,18 +153,18 @@ class Field implements Expressionable
      *
      * Value can be array [$typecast_save_callback, $typecast_load_callback].
      *
-     * @var null|bool|array
+     * @var bool|array|null
      */
-    public $typecast = null;
+    public $typecast;
 
     /**
      * Should we use serialization when saving/loading data to/from persistence.
      *
      * Value can be array [$encode_callback, $decode_callback].
      *
-     * @var null|bool|array
+     * @var bool|array|null
      */
-    public $serialize = null;
+    public $serialize;
 
     /**
      * Persisting format for type = 'date', 'datetime', 'time' fields.
@@ -173,7 +173,7 @@ class Field implements Expressionable
      *
      * @var string
      */
-    public $persist_format = null;
+    public $persist_format;
 
     /**
      * Persisting timezone for type = 'date', 'datetime', 'time' fields.
@@ -220,9 +220,9 @@ class Field implements Expressionable
         }
         foreach ($defaults as $key => $val) {
             if (is_array($val)) {
-                $this->$key = array_merge(isset($this->$key) && is_array($this->$key) ? $this->$key : [], $val);
+                $this->{$key} = array_merge(isset($this->{$key}) && is_array($this->{$key}) ? $this->{$key} : [], $val);
             } else {
-                $this->$key = $val;
+                $this->{$key} = $val;
             }
         }
     }
@@ -258,7 +258,7 @@ class Field implements Expressionable
 
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
-            if ($f->type && $f->type != 'string' && $value === '') {
+            if ($f->type && $f->type !== 'string' && $value === '') {
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
                 }
@@ -267,7 +267,7 @@ class Field implements Expressionable
             }
 
             // validate scalar values
-            if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float']) && !is_scalar($value)) {
+            if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float'], true) && !is_scalar($value)) {
                 throw new ValidationException([$this->name => 'Must use scalar value']);
             }
 
@@ -277,6 +277,7 @@ class Field implements Expressionable
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
                 }
+
                 break;
             case 'string':
                 // remove all line-ends and trim
@@ -284,6 +285,7 @@ class Field implements Expressionable
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
                 }
+
                 break;
             case 'text':
                 // normalize line-ends to LF and trim
@@ -291,6 +293,7 @@ class Field implements Expressionable
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty']);
                 }
+
                 break;
             case 'integer':
                 // we clear out thousand separator, but will change to
@@ -305,6 +308,7 @@ class Field implements Expressionable
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be a zero']);
                 }
+
                 break;
             case 'float':
                 $value = trim(str_replace(["\r", "\n"], '', $value));
@@ -316,6 +320,7 @@ class Field implements Expressionable
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be a zero']);
                 }
+
                 break;
             case 'money':
                 $value = trim(str_replace(["\r", "\n"], '', $value));
@@ -327,9 +332,10 @@ class Field implements Expressionable
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be a zero']);
                 }
+
                 break;
             case 'boolean':
-                throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
+                throw new Exception(['Use Field\Boolean for type=boolean', 'this' => $this]);
             case 'date':
             case 'datetime':
             case 'time':
@@ -352,11 +358,11 @@ class Field implements Expressionable
                     }
                 }
 
-                if ($f->type == 'date' && $value->format('H:i:s.u') !== '00:00:00.000000') {
+                if ($f->type === 'date' && $value->format('H:i:s.u') !== '00:00:00.000000') {
                     // remove time portion from date type value
                     $value = (clone $value)->setTime(0, 0, 0);
                 }
-                if ($f->type == 'time' && $value->format('Y-m-d') !== '1970-01-01') {
+                if ($f->type === 'time' && $value->format('Y-m-d') !== '1970-01-01') {
                     // remove date portion from date type value
                     // need 1970 in place of 0 - DB
                     $value = (clone $value)->setDate(1970, 1, 1);
@@ -371,6 +377,7 @@ class Field implements Expressionable
                 if (!is_array($value)) {
                     throw new ValidationException([$this->name => 'Must be an array']);
                 }
+
                 break;
             case 'object':
                if (is_string($value) && $f->owner && $f->owner->persistence) {
@@ -380,6 +387,7 @@ class Field implements Expressionable
                 if (!is_object($value)) {
                     throw new ValidationException([$this->name => 'Must be an object']);
                 }
+
                 break;
             case 'int':
             case 'str':
@@ -388,6 +396,7 @@ class Field implements Expressionable
                     'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
                     'type' => $f->type,
                 ]);
+
                 break;
             }
 
@@ -413,7 +422,7 @@ class Field implements Expressionable
                 case null: // loose comparison, but is OK here
                     return $v;
                 case 'boolean':
-                    throw new Exception(['Use Field\Boolean for type=boolean', 'this'=>$this]);
+                    throw new Exception(['Use Field\Boolean for type=boolean', 'this' => $this]);
                 case 'date':
                 case 'datetime':
                 case 'time':
@@ -548,7 +557,7 @@ class Field implements Expressionable
         if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence\SQL) {
             throw new Exception([
                 'Field must have SQL persistence if it is used as part of expression',
-                'persistence'=> $this->owner->persistence ?? null,
+                'persistence' => $this->owner->persistence ?? null,
             ]);
         }
 
@@ -564,14 +573,14 @@ class Field implements Expressionable
     {
         $arr = [
             'short_name' => $this->short_name,
-            'value'      => $this->get(),
+            'value' => $this->get(),
         ];
 
         foreach ([
             'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'join',
         ] as $key) {
-            if (isset($this->$key)) {
-                $arr[$key] = $this->$key;
+            if (isset($this->{$key})) {
+                $arr[$key] = $this->{$key};
             }
         }
 

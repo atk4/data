@@ -110,7 +110,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testAddFields()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -137,13 +137,13 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testAddFields2()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $a = [
             'user' => [
-                1 => ['name' => 'John', 'last_name'=>null, 'login'=>null, 'salary'=>null, 'tax'=>null, 'vat'=>null],
+                1 => ['name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
             ], ];
         $this->setDB($a);
 
@@ -152,17 +152,17 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->addFields(['name'], ['default' => 'anonymous']);
         $m->addFields([
             'last_name',
-            'login'  => ['default' => 'unknown'],
-            'salary' => ['type'=>'money', CustomField::class, 'default' => 100],
-            ['tax', CustomField::class, 'type'=>'money', 'default' => 20],
-            'vat' => new CustomField(['type'=>'money', 'default' => 15]),
+            'login' => ['default' => 'unknown'],
+            'salary' => ['type' => 'money', CustomField::class, 'default' => 100],
+            ['tax', CustomField::class, 'type' => 'money', 'default' => 20],
+            'vat' => new CustomField(['type' => 'money', 'default' => 15]),
         ]);
 
         $m->insert([]);
 
         $this->assertEquals([
-            ['id'=>1, 'name'=>'John', 'last_name'=>null, 'login'=>null, 'salary'=>null, 'tax'=>null, 'vat'=>null],
-            ['id'=> 2, 'name'=>'anonymous', 'last_name'=>null, 'login'=>'unknown', 'salary'=>100, 'tax'=>20, 'vat'=>15],
+            ['id' => 1, 'name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
+            ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100, 'tax' => 20, 'vat' => 15],
         ], $m->export());
 
         $m->load(2);
@@ -173,7 +173,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testSameTable()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -188,7 +188,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         $m = new Model_Item($db, 'item');
 
-        $this->assertEquals(
+        $this->assertSame(
             ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
@@ -196,7 +196,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testSameTable2()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -217,7 +217,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         $m = new Model_Item2($db, 'item');
 
-        $this->assertEquals(
+        $this->assertSame(
             ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
@@ -225,7 +225,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testSameTable3()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -252,7 +252,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         );
 
         $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->action('count')->getOne());
-        $this->assertEquals('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
+        $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 
     public function testUpdateCondition()
@@ -271,21 +271,20 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->load(2);
 
         $m->onHook('afterUpdateQuery', function ($m, $update, $st) {
-
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
                 throw new \atk4\core\Exception([
                     'Update didn\'t affect any records',
-                    'query'      => $update->getDebugQuery(false),
-                    'statement'  => $st,
-                    'model'      => $m,
+                    'query' => $update->getDebugQuery(false),
+                    'statement' => $st,
+                    'model' => $m,
                     'conditions' => $m->conditions,
                 ]);
             }
         });
 
-        $this->assertEquals('Sue', $m['name']);
+        $this->assertSame('Sue', $m['name']);
 
         $a = [
             'item' => [
@@ -337,13 +336,13 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->set('john');
         $m->save();
 
-        $this->assertEquals('rec #3', $m->load(3)['name']);
+        $this->assertSame('rec #3', $m->load(3)['name']);
 
         $m->delete();
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testIssue220()
     {
@@ -368,7 +367,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $db = new Persistence\SQL($this->db->connection);
         $a = [
             'rate' => [
-                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1'=>'y1', 'x2'=>'y2'],
+                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
             ],
         ];
         $this->setDB($a);
@@ -379,8 +378,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->load(1);
 
         $this->assertEquals(3.4, $m['bid']);
-        $this->assertEquals('y1', $m['x1']);
-        $this->assertEquals('y2', $m['x2']);
+        $this->assertSame('y1', $m['x1']);
+        $this->assertSame('y2', $m['x2']);
     }
 
     public function testModelCaption()
@@ -389,16 +388,16 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, 'user');
 
         // caption is not set, so generate it from class name \atk4\data\Model
-        $this->assertEquals('Atk 4 Data Model', $m->getModelCaption());
+        $this->assertSame('Atk 4 Data Model', $m->getModelCaption());
 
         // caption is set
         $m->caption = 'test';
-        $this->assertEquals('test', $m->getModelCaption());
+        $this->assertSame('test', $m->getModelCaption());
     }
 
     public function testGetTitle()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -413,12 +412,12 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m = new Model_Item($db, 'item');
 
         // default title_field = name
-        $this->assertEquals(null, $m->getTitle()); // not loaded model returns null
-        $this->assertEquals([1=>'John', 2=>'Sue'], $m->getTitles()); // all titles
+        $this->assertNull($m->getTitle()); // not loaded model returns null
+        $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
         $m->load(2);
-        $this->assertEquals('Sue', $m->getTitle()); // loaded returns title_field value
-        $this->assertEquals([1=>'John', 2=>'Sue'], $m->getTitles()); // all titles
+        $this->assertSame('Sue', $m->getTitle()); // loaded returns title_field value
+        $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
         // set custom title_field
         $m->title_field = 'parent_item_id';
@@ -426,7 +425,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         // set custom title_field as title_field from linked model
         $m->title_field = 'parent_item';
-        $this->assertEquals('John', $m->getTitle()); // returns parent record title_field
+        $this->assertSame('John', $m->getTitle()); // returns parent record title_field
 
         // no title_field set - return id value
         $m->title_field = null;
@@ -437,7 +436,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->title_field = 'my_name';
         $m->load(2);
         $this->assertEquals(2, $m->getTitle()); // loaded returns id value
-        $this->assertEquals([1=>1, 2=>2], $m->getTitles()); // all titles (my_name)
+        $this->assertEquals([1 => 1, 2 => 2], $m->getTitles()); // all titles (my_name)
     }
 
     /**
@@ -453,7 +452,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         // model without id field
-        $m1 = new Model($this->db, ['table'=>'user', 'id_field'=>false]);
+        $m1 = new Model($this->db, ['table' => 'user', 'id_field' => false]);
         $m1->addField('code');
         $m1->addField('name');
 
@@ -474,12 +473,12 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         ], $m2->export());
 
         // export fields explicitly set
-        $this->assertEquals([
+        $this->assertSame([
             0 => ['name' => 'John'],
             1 => ['name' => 'Sarah'],
         ], $m1->export(['name']));
 
-        $this->assertEquals([
+        $this->assertSame([
             0 => ['name' => 'John'],
             1 => ['name' => 'Sarah'],
         ], $m2->export(['name']));
@@ -496,12 +495,12 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         ], $m2->export(null, 'code'));
 
         // field names and key field explicitly set
-        $this->assertEquals([
+        $this->assertSame([
             10 => ['name' => 'John'],
             20 => ['name' => 'Sarah'],
         ], $m1->export(['name'], 'code'));
 
-        $this->assertEquals([
+        $this->assertSame([
             10 => ['name' => 'John'],
             20 => ['name' => 'Sarah'],
         ], $m2->export(['name'], 'code'));
@@ -547,7 +546,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         $q = 'select "id","name","user_id",(select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a';
         $q = str_replace('"', $this->getEscapeChar(), $q);
-        $this->assertEquals(
+        $this->assertSame(
             $q,
             $d->action('select')->render()
         );

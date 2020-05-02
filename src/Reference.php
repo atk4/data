@@ -54,7 +54,7 @@ class Reference
      *
      * @var string
      */
-    protected $our_field = null;
+    protected $our_field;
 
     /**
      * This is an optional property which can be used by your implementation
@@ -62,7 +62,7 @@ class Reference
      *
      * @var string
      */
-    protected $their_field = null;
+    protected $their_field;
 
     /**
      * Caption of the reeferenced model. Can be used in UI components, for example.
@@ -70,7 +70,7 @@ class Reference
      *
      * @var string
      */
-    public $caption = null;
+    public $caption;
 
     /**
      * Default constructor. Will copy argument into properties.
@@ -92,8 +92,6 @@ class Reference
 
     /**
      * Will use #ref_<link>.
-     *
-     * @return string
      */
     public function getDesiredName(): string
     {
@@ -107,8 +105,6 @@ class Reference
      * @param array $defaults Properties
      *
      * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
     public function getModel($defaults = []): Model
     {
@@ -165,8 +161,6 @@ class Reference
      *
      * @throws Exception
      * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
     protected function addToPersistence($model, $defaults = []): Model
     {
@@ -210,8 +204,6 @@ class Reference
      * @param array $defaults Properties
      *
      * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
     public function ref($defaults = []): Model
     {
@@ -226,8 +218,6 @@ class Reference
      * @param array $defaults Properties
      *
      * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
     public function refModel($defaults = []): Model
     {
@@ -249,8 +239,8 @@ class Reference
         $arr = [];
         foreach ($this->__debug_fields as $k => $v) {
             $k = is_numeric($k) ? $v : $k;
-            if (isset($this->$v)) {
-                $arr[$k] = $this->$v;
+            if (isset($this->{$v})) {
+                $arr[$k] = $this->{$v};
             }
         }
 

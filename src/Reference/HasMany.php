@@ -23,15 +23,15 @@ class HasMany extends Reference
             return $this->our_field
                 ? $this->owner[$this->our_field]
                 : $this->owner->id;
-        } else {
-            // create expression based on existing conditions
-            return $this->owner->action(
-                'field',
-                [
-                    $this->our_field ?: ($this->owner->id_field ?: 'id'),
-                ]
-            );
         }
+
+        // create expression based on existing conditions
+        return $this->owner->action(
+            'field',
+            [
+                $this->our_field ?: ($this->owner->id_field ?: 'id'),
+            ]
+        );
     }
 
     /**
@@ -90,7 +90,7 @@ class HasMany extends Reference
         if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
             throw new Exception([
                 'Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()',
-                'field'    => $n,
+                'field' => $n,
                 'defaults' => $defaults,
             ]);
         }
@@ -113,18 +113,18 @@ class HasMany extends Reference
                 return $r->action('field', [$r->expr(
                     $defaults['expr'],
                     $defaults['args'] ?? null
-                ), 'alias'=>$field]);
+                ), 'alias' => $field]);
             };
             unset($defaults['args']);
         } elseif (is_object($defaults['aggregate'])) {
             $cb = function () use ($defaults, $field) {
-                return $this->refLink()->action('field', [$defaults['aggregate'], 'alias'=>$field]);
+                return $this->refLink()->action('field', [$defaults['aggregate'], 'alias' => $field]);
             };
-        } elseif ($defaults['aggregate'] == 'count' && !isset($defaults['field'])) {
+        } elseif ($defaults['aggregate'] === 'count' && !isset($defaults['field'])) {
             $cb = function () use ($defaults, $field) {
-                return $this->refLink()->action('count', ['alias'=>$field]);
+                return $this->refLink()->action('count', ['alias' => $field]);
             };
-        } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'])) {
+        } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {
             $cb = function () use ($defaults, $field_n) {
                 return $this->refLink()->action('fx0', [$defaults['aggregate'], $field_n]);
             };

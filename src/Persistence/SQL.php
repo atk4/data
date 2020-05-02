@@ -42,7 +42,7 @@ class SQL extends Persistence
      *
      * @var string
      */
-    public $_default_seed_hasMany = null; // \atk4\data\Reference\HasMany::class;
+    public $_default_seed_hasMany; // \atk4\data\Reference\HasMany::class;
 
     /**
      * Default class when adding Expression field.
@@ -97,13 +97,11 @@ class SQL extends Persistence
     {
         parent::disconnect();
 
-        unset($this->connection);
+        $this->connection = null;
     }
 
     /**
      * Returns Query instance.
-     *
-     * @return Query
      */
     public function dsql(): Query
     {
@@ -129,19 +127,17 @@ class SQL extends Persistence
      *
      * @param Model|string $m        Model which will use this persistence
      * @param array        $defaults Properties
-     *
-     * @return Model
      */
     public function add($m, $defaults = []): Model
     {
         // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
         $defaults = array_merge([
-            '_default_seed_addField'      => $this->_default_seed_addField,
-            '_default_seed_hasOne'        => $this->_default_seed_hasOne,
-            '_default_seed_hasMany'       => $this->_default_seed_hasMany,
+            '_default_seed_addField' => $this->_default_seed_addField,
+            '_default_seed_hasOne' => $this->_default_seed_hasOne,
+            '_default_seed_hasMany' => $this->_default_seed_hasMany,
             '_default_seed_addExpression' => $this->_default_seed_addExpression,
-            '_default_seed_join'          => $this->_default_seed_join,
+            '_default_seed_join' => $this->_default_seed_join,
         ], $defaults);
 
         $m = parent::add($m, $defaults);
@@ -172,8 +168,6 @@ class SQL extends Persistence
 
     /**
      * Initialize persistence.
-     *
-     * @param Model $m
      */
     protected function initPersistence(Model $m)
     {
@@ -185,11 +179,8 @@ class SQL extends Persistence
     /**
      * Creates new Expression object from expression string.
      *
-     * @param Model $m
      * @param mixed $expr
      * @param array $args
-     *
-     * @return Expression
      */
     public function expr(Model $m, $expr, $args = []): Expression
     {
@@ -227,10 +218,6 @@ class SQL extends Persistence
 
     /**
      * Initializes base query for model $m.
-     *
-     * @param Model $m
-     *
-     * @return Query
      */
     public function initQuery(Model $m): Query
     {
@@ -252,9 +239,6 @@ class SQL extends Persistence
 
     /**
      * Initializes WITH cursors.
-     *
-     * @param Model $m
-     * @param Query $q
      */
     public function initWithCursors(Model $m, Query $q)
     {
@@ -262,7 +246,7 @@ class SQL extends Persistence
             return;
         }
 
-        foreach ($m->with as $alias => ['model'=>$model, 'mapping'=>$mapping, 'recursive'=>$recursive]) {
+        foreach ($m->with as $alias => ['model' => $model, 'mapping' => $mapping, 'recursive' => $recursive]) {
             // prepare field names
             $fields_from = $fields_to = [];
             foreach ($mapping as $from => $to) {
@@ -285,9 +269,6 @@ class SQL extends Persistence
 
     /**
      * Adds Field in Query.
-     *
-     * @param Query $q
-     * @param Field $field
      */
     public function initField(Query $q, Field $field)
     {
@@ -301,9 +282,8 @@ class SQL extends Persistence
     /**
      * Adds model fields in Query.
      *
-     * @param Model            $m
      * @param Query            $q
-     * @param array|null|false $fields
+     * @param array|false|null $fields
      */
     public function initQueryFields(Model $m, $q, $fields = null)
     {
@@ -314,7 +294,6 @@ class SQL extends Persistence
 
         // init fields
         if (is_array($fields)) {
-
             // Set of fields is strictly defined for purposes of export,
             // so we will ignore even system fields.
             foreach ($fields as $field) {
@@ -354,9 +333,6 @@ class SQL extends Persistence
 
     /**
      * Will set limit defined inside $m onto query $q.
-     *
-     * @param Model $m
-     * @param Query $q
      */
     protected function setLimitOrder(Model $m, Query $q)
     {
@@ -389,11 +365,6 @@ class SQL extends Persistence
 
     /**
      * Will apply conditions defined inside $m onto query $q.
-     *
-     * @param Model $m
-     * @param Query $q
-     *
-     * @return Query
      */
     public function initQueryConditions(Model $m, Query $q): Query
     {
@@ -403,13 +374,11 @@ class SQL extends Persistence
         }
 
         foreach ($m->conditions as $cond) {
-
             // Options here are:
             // count($cond) == 1, we will pass the only
             // parameter inside where()
 
             if (count($cond) === 1) {
-
                 // OR conditions
                 if (is_array($cond[0])) {
                     foreach ($cond[0] as &$row) {
@@ -418,7 +387,7 @@ class SQL extends Persistence
                         }
 
                         // "like" or "regexp" conditions do not need typecasting to field type!
-                        if ($row[0] instanceof Field && (count($row) === 2 || !in_array(strtolower($row[1]), ['like', 'regexp']))) {
+                        if ($row[0] instanceof Field && (count($row) === 2 || !in_array(strtolower($row[1]), ['like', 'regexp'], true))) {
                             $valueKey = count($row) === 2 ? 1 : 2;
                             $row[$valueKey] = $this->typecastSaveField($row[0], $row[$valueKey]);
                         }
@@ -426,6 +395,7 @@ class SQL extends Persistence
                 }
 
                 $q->where($cond[0]);
+
                 continue;
             }
 
@@ -440,7 +410,7 @@ class SQL extends Persistence
                 $q->where($cond[0], $cond[1]);
             } else {
                 // "like" or "regexp" conditions do not need typecasting to field type!
-                if ($cond[0] instanceof Field && !in_array(strtolower($cond[1]), ['like', 'regexp'])) {
+                if ($cond[0] instanceof Field && !in_array(strtolower($cond[1]), ['like', 'regexp'], true)) {
                     $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
                 }
                 $q->where($cond[0], $cond[1], $cond[2]);
@@ -454,7 +424,6 @@ class SQL extends Persistence
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -469,6 +438,7 @@ class SQL extends Persistence
             // if enum is not set, then simply cast value to integer
             if (!isset($f->enum) || !$f->enum) {
                 $v = (int) $v;
+
                 break;
             }
 
@@ -481,6 +451,7 @@ class SQL extends Persistence
 
             // finally, convert into appropriate value
             $v = $v ? $f->enum[1] : $f->enum[0];
+
             break;
         case 'date':
         case 'datetime':
@@ -493,17 +464,19 @@ class SQL extends Persistence
                 $format = $f->persist_format ?: $format[$f->type];
 
                 // datetime only - set to persisting timezone
-                if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                if ($f->type === 'datetime' && isset($f->persist_timezone)) {
                     $v = new \DateTime($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                     $v->setTimezone(new $tz_class($f->persist_timezone));
                 }
                 $v = $v->format($format);
             }
+
             break;
         case 'array':
         case 'object':
             // don't encode if we already use some kind of serialization
             $v = $f->serialize ? $v : $this->jsonEncode($f, $v);
+
             break;
         }
 
@@ -514,7 +487,6 @@ class SQL extends Persistence
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -536,12 +508,15 @@ class SQL extends Persistence
             break;
         case 'integer':
             $v = (int) $v;
+
             break;
         case 'float':
             $v = (float) $v;
+
             break;
         case 'money':
             $v = round($v, 4);
+
             break;
         case 'boolean':
             if (isset($f->enum) && is_array($f->enum)) {
@@ -557,6 +532,7 @@ class SQL extends Persistence
             } else {
                 $v = (bool) $v;
             }
+
             break;
         case 'date':
         case 'datetime':
@@ -579,7 +555,7 @@ class SQL extends Persistence
                 }
 
                 // datetime only - set from persisting timezone
-                if ($f->type == 'datetime' && isset($f->persist_timezone)) {
+                if ($f->type === 'datetime' && isset($f->persist_timezone)) {
                     $v = $dt_class::createFromFormat($format, $v, new $tz_class($f->persist_timezone));
                     if ($v !== false) {
                         $v->setTimezone(new $tz_class(date_default_timezone_get()));
@@ -594,18 +570,21 @@ class SQL extends Persistence
 
                 // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
                 // this is what Carbon::instance(DateTime $dt) method does for example
-                if ($dt_class != 'DateTime') {
+                if ($dt_class !== 'DateTime') {
                     $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                 }
             }
+
             break;
         case 'array':
             // don't decode if we already use some kind of serialization
             $v = $f->serialize ? $v : $this->jsonDecode($f, $v, true);
+
             break;
         case 'object':
             // don't decode if we already use some kind of serialization
             $v = $f->serialize ? $v : $this->jsonDecode($f, $v, false);
+
             break;
         }
 
@@ -615,7 +594,6 @@ class SQL extends Persistence
     /**
      * Executing $model->action('update') will call this method.
      *
-     * @param Model  $m
      * @param string $type
      * @param array  $args
      *
@@ -638,19 +616,18 @@ class SQL extends Persistence
 
             case 'update':
                 $q->mode('update');
-                break;
 
+                break;
             case 'delete':
                 $q->mode('delete');
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);
 
                 return $q;
-
             case 'select':
                 $this->initQueryFields($m, $q, $args[0] ?? null);
-                break;
 
+                break;
             case 'count':
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q]);
@@ -661,7 +638,6 @@ class SQL extends Persistence
                 }
 
                 return $q;
-
             case 'field':
                 if (!isset($args[0])) {
                     throw new Exception([
@@ -683,7 +659,6 @@ class SQL extends Persistence
                 $this->setLimitOrder($m, $q);
 
                 return $q;
-
             case 'fx':
             case 'fx0':
                 if (!isset($args[0], $args[1])) {
@@ -698,10 +673,10 @@ class SQL extends Persistence
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);
 
-                if ($type == 'fx') {
-                    $expr = "$fx([])";
+                if ($type === 'fx') {
+                    $expr = "{$fx}([])";
                 } else {
-                    $expr = "coalesce($fx([]), 0)";
+                    $expr = "coalesce({$fx}([]), 0)";
                 }
 
                 if (isset($args['alias'])) {
@@ -713,7 +688,6 @@ class SQL extends Persistence
                 }
 
                 return $q;
-
             default:
                 throw new Exception([
                     'Unsupported action mode',
@@ -731,7 +705,6 @@ class SQL extends Persistence
     /**
      * Tries to load data record, but will not fail if record can't be loaded.
      *
-     * @param Model $m
      * @param mixed $id
      *
      * @return array
@@ -739,7 +712,7 @@ class SQL extends Persistence
     public function tryLoad(Model $m, $id)
     {
         if (!$m->id_field) {
-            throw new Exception(['Unable to load field by "id" when Model->id_field is not defined.', 'id'=>$id]);
+            throw new Exception(['Unable to load field by "id" when Model->id_field is not defined.', 'id' => $id]);
         }
 
         $load = $m->action('select');
@@ -752,9 +725,9 @@ class SQL extends Persistence
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to load due to query error',
-                'query'      => $load->getDebugQuery(false),
-                'message'    => $e->getMessage(),
-                'model'      => $m,
+                'query' => $load->getDebugQuery(false),
+                'message' => $e->getMessage(),
+                'model' => $m,
                 'conditions' => $m->conditions,
             ], 0, $e);
         }
@@ -763,13 +736,13 @@ class SQL extends Persistence
             return;
         }
 
-        if (!isset($data[$m->id_field]) || is_null($data[$m->id_field])) {
+        if (!isset($data[$m->id_field]) || $data[$m->id_field] === null) {
             throw new Exception([
                 'Model uses "id_field" but it wasn\'t available in the database',
-                'model'       => $m,
-                'id_field'    => $m->id_field,
-                'id'          => $id,
-                'data'        => $data,
+                'model' => $m,
+                'id_field' => $m->id_field,
+                'id' => $id,
+                'data' => $data,
             ]);
         }
 
@@ -781,7 +754,6 @@ class SQL extends Persistence
     /**
      * Loads a record from model and returns a associative array.
      *
-     * @param Model $m
      * @param mixed $id
      *
      * @return array
@@ -793,8 +765,8 @@ class SQL extends Persistence
         if (!$data) {
             throw new Exception([
                 'Record was not found',
-                'model'      => $m,
-                'id'         => $id,
+                'model' => $m,
+                'id' => $id,
                 'conditions' => $m->conditions,
             ], 404);
         }
@@ -804,8 +776,6 @@ class SQL extends Persistence
 
     /**
      * Tries to load any one record.
-     *
-     * @param Model $m
      *
      * @return array
      */
@@ -820,9 +790,9 @@ class SQL extends Persistence
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to load due to query error',
-                'query'      => $load->getDebugQuery(false),
-                'message'    => $e->getMessage(),
-                'model'      => $m,
+                'query' => $load->getDebugQuery(false),
+                'message' => $e->getMessage(),
+                'model' => $m,
                 'conditions' => $m->conditions,
             ], 0, $e);
         }
@@ -832,16 +802,15 @@ class SQL extends Persistence
         }
 
         if ($m->id_field) {
-
             // If id_field is not set, model will be read-only
             if (isset($data[$m->id_field])) {
                 $m->id = $data[$m->id_field];
             } else {
                 throw new Exception([
                     'Model uses "id_field" but it was not available in the database',
-                    'model'       => $m,
-                    'id_field'    => $m->id_field,
-                    'data'        => $data,
+                    'model' => $m,
+                    'id_field' => $m->id_field,
+                    'data' => $data,
                 ]);
             }
         }
@@ -852,8 +821,6 @@ class SQL extends Persistence
     /**
      * Loads any one record.
      *
-     * @param Model $m
-     *
      * @return array
      */
     public function loadAny(Model $m)
@@ -863,7 +830,7 @@ class SQL extends Persistence
         if (!$data) {
             throw new Exception([
                 'No matching records were found',
-                'model'      => $m,
+                'model' => $m,
                 'conditions' => $m->conditions,
             ], 404);
         }
@@ -874,7 +841,6 @@ class SQL extends Persistence
     /**
      * Inserts record in database and returns new record ID.
      *
-     * @param Model $m
      * @param array $data
      *
      * @return mixed
@@ -898,9 +864,9 @@ class SQL extends Persistence
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to execute insert query',
-                'query'      => $insert->getDebugQuery(false),
-                'message'    => $e->getMessage(),
-                'model'      => $m,
+                'query' => $insert->getDebugQuery(false),
+                'message' => $e->getMessage(),
+                'model' => $m,
                 'conditions' => $m->conditions,
             ], 0, $e);
         }
@@ -913,7 +879,6 @@ class SQL extends Persistence
     /**
      * Export all DataSet.
      *
-     * @param Model      $m
      * @param array|null $fields
      * @param bool       $typecast_data Should we typecast exported data
      *
@@ -935,8 +900,6 @@ class SQL extends Persistence
     /**
      * Prepare iterator.
      *
-     * @param Model $m
-     *
      * @return \PDOStatement
      */
     public function prepareIterator(Model $m)
@@ -948,9 +911,9 @@ class SQL extends Persistence
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to execute iteration query',
-                'query'      => $export->getDebugQuery(false),
-                'message'    => $e->getMessage(),
-                'model'      => $m,
+                'query' => $export->getDebugQuery(false),
+                'message' => $e->getMessage(),
+                'model' => $m,
                 'conditions' => $m->conditions,
             ], 0, $e);
         }
@@ -959,7 +922,6 @@ class SQL extends Persistence
     /**
      * Updates record in database.
      *
-     * @param Model $m
      * @param mixed $id
      * @param array $data
      */
@@ -988,9 +950,9 @@ class SQL extends Persistence
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to update due to query error',
-                'query'      => $update->getDebugQuery(false),
-                'message'    => $e->getMessage(),
-                'model'      => $m,
+                'query' => $update->getDebugQuery(false),
+                'message' => $e->getMessage(),
+                'model' => $m,
                 'conditions' => $m->conditions,
             ], 0, $e);
         }
@@ -1014,7 +976,6 @@ class SQL extends Persistence
     /**
      * Deletes record from database.
      *
-     * @param Model $m
      * @param mixed $id
      */
     public function delete(Model $m, $id)
@@ -1033,9 +994,9 @@ class SQL extends Persistence
         } catch (\PDOException $e) {
             throw new Exception([
                 'Unable to delete due to query error',
-                'query'      => $delete->getDebugQuery(false),
-                'message'    => $e->getMessage(),
-                'model'      => $m,
+                'query' => $delete->getDebugQuery(false),
+                'message' => $e->getMessage(),
+                'model' => $m,
                 'conditions' => $m->conditions,
             ], 0, $e);
         }

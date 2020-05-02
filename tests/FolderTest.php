@@ -49,11 +49,11 @@ class FolderTest extends \atk4\schema\PhpunitTestCase
         $f->load(4);
 
         $this->assertEquals([
-            'id'         => 4,
-            'name'       => 'My Projects',
-            'count'      => 3,
-            'parent_id'  => 1,
-            'parent'     => 'Desktop',
+            'id' => 4,
+            'name' => 'My Projects',
+            'count' => 3,
+            'parent_id' => 1,
+            'parent' => 'Desktop',
             'is_deleted' => 0,
         ], $f->get());
     }

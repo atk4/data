@@ -24,8 +24,8 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $user->hasMany('Orders', [$order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders');
 
-        $this->assertEquals(20, $o['amount']);
-        $this->assertEquals(1, $o['user_id']);
+        $this->assertSame(20, $o['amount']);
+        $this->assertSame(1, $o['user_id']);
 
         $user->hasMany('BigOrders', function () {
             $m = new Model();
@@ -35,7 +35,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
             return $m;
         });
 
-        $this->assertEquals(100, $user->ref('BigOrders')['amount']);
+        $this->assertSame(100, $user->ref('BigOrders')['amount']);
     }
 
     /**
@@ -54,8 +54,8 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $user->hasMany('Orders', [$order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
-        $this->assertEquals('My Orders', $user->refModel('Orders')->getModelCaption());
-        $this->assertEquals('My Orders', $user->ref('Orders')->getModelCaption());
+        $this->assertSame('My Orders', $user->refModel('Orders')->getModelCaption());
+        $this->assertSame('My Orders', $user->ref('Orders')->getModelCaption());
     }
 
     public function testModelProperty()
@@ -65,11 +65,11 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $user->id = 1;
         $user->hasOne('order_id', ['model' => ['atk4/data/Model', 'table' => 'order']]);
         $o = $user->ref('order_id');
-        $this->assertEquals('order', $o->table);
+        $this->assertSame('order', $o->table);
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testRefName1()
     {
@@ -82,7 +82,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testRefName2()
     {
@@ -94,7 +94,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testRefName3()
     {
@@ -118,6 +118,6 @@ class ReferenceTest extends AtkPhpunit\TestCase
             return $m->newInstance(null, ['table' => $m->table . '_archive']);
         });
 
-        $this->assertEquals('user_archive', $m->ref('archive')->table);
+        $this->assertSame('user_archive', $m->ref('archive')->table);
     }
 }

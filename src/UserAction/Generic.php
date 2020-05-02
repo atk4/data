@@ -35,16 +35,16 @@ class Generic
     public $scope = self::SINGLE_RECORD;
 
     /** @var callable code to execute. By default will call method with same name */
-    public $callback = null;
+    public $callback;
 
     /** @var callable code, identical to callback, but would generate preview of action without permanent effect */
-    public $preview = null;
+    public $preview;
 
     /** @var string caption to put on the button */
-    public $caption = null;
+    public $caption;
 
     /** @var string a longer description of this action */
-    public $description = null;
+    public $description;
 
     /** @var bool Specifies that the action is dangerous. Should be displayed in red. */
     public $dangerous = false;
@@ -104,14 +104,14 @@ class Generic
                         'Calling action on a Model with dirty fields that are not allowed by this action.',
 
                         'too_dirty' => $too_dirty,
-                        'dirty'     => array_keys($this->owner->dirty),
+                        'dirty' => array_keys($this->owner->dirty),
                         'permitted' => $this->fields,
                     ]);
                 }
             } elseif (!is_bool($this->fields)) {
                 throw new Exception([
                     'Argument `fields` for the action must be either array or boolean.',
-                    'fields'=> $this->fields,
+                    'fields' => $this->fields,
                 ]);
             }
 
@@ -124,6 +124,7 @@ class Generic
                             'id' => $this->owner->id,
                         ]);
                     }
+
                     break;
                 case self::SINGLE_RECORD:
                     if (!$this->owner->loaded()) {
@@ -131,6 +132,7 @@ class Generic
                             'This action scope requires you to load existing record first.',
                         ]);
                     }
+
                     break;
             }
 
@@ -149,9 +151,9 @@ class Generic
 
             if ($this->atomic) {
                 return $this->owner->atomic($run);
-            } else {
-                return $run();
             }
+
+            return $run();
         } catch (Exception $e) {
             $e->addMoreInfo('action', $this);
 

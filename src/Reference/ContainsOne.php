@@ -35,7 +35,7 @@ class ContainsOne extends Reference
      * @var array
      */
     public $ui = [
-        'visible'  => false, // not visible in UI Table, Grid and CRUD
+        'visible' => false, // not visible in UI Table, Grid and CRUD
         'editable' => true, // but should be editable in UI Form
     ];
 
@@ -60,11 +60,11 @@ class ContainsOne extends Reference
 
         if (!$this->owner->hasElement($this->our_field)) {
             $this->owner->addField($this->our_field, [
-                'type'              => $this->type,
-                'reference'         => $this,
-                'system'            => $this->system,
-                'caption'           => $this->caption, // it's ref models caption, but we can use it here for field too
-                'ui'                => $this->ui,
+                'type' => $this->type,
+                'reference' => $this,
+                'system' => $this->system,
+                'caption' => $this->caption, // it's ref models caption, but we can use it here for field too
+                'ui' => $this->ui,
             ]);
         }
     }
@@ -103,8 +103,6 @@ class ContainsOne extends Reference
      * Returns referenced model with loaded data record.
      *
      * @param array $defaults Properties
-     *
-     * @return Model
      */
     public function ref($defaults = []): Model
     {
@@ -112,8 +110,8 @@ class ContainsOne extends Reference
         // will not use ID field
         $m = $this->getModel(array_merge($defaults, [
             'contained_in_root_model' => $this->owner->contained_in_root_model ?: $this->owner,
-            'id_field'                => false,
-            'table'                   => $this->table_alias,
+            'id_field' => false,
+            'table' => $this->table_alias,
         ]));
 
         // set some hooks for ref_model

@@ -49,7 +49,7 @@ class ValidationTests extends AtkPhpunit\TestCase
 {
     public $m;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -94,7 +94,7 @@ class ValidationTests extends AtkPhpunit\TestCase
             $this->m->save();
             $this->fail('Expected exception');
         } catch (\atk4\data\ValidationException $e) {
-            $this->assertEquals('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
+            $this->assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
 
             return;
         }
@@ -118,7 +118,7 @@ class ValidationTests extends AtkPhpunit\TestCase
     {
         $this->m->onHook('validate', function ($m) {
             if ($m['name'] === 'C#') {
-                return ['name'=>'No sharp objects allowed'];
+                return ['name' => 'No sharp objects allowed'];
             }
         });
 
@@ -130,7 +130,7 @@ class ValidationTests extends AtkPhpunit\TestCase
             $this->m->save();
             $this->fail('Expected exception');
         } catch (\atk4\data\ValidationException $e) {
-            $this->assertEquals('No sharp objects allowed', $e->errors['name']);
+            $this->assertSame('No sharp objects allowed', $e->errors['name']);
         }
 
         try {
@@ -139,7 +139,7 @@ class ValidationTests extends AtkPhpunit\TestCase
             $this->m->save();
             $this->fail('Expected exception');
         } catch (\atk4\data\ValidationException $e) {
-            $this->assertEquals(2, count($e->errors));
+            $this->assertSame(2, count($e->errors));
         }
     }
 }

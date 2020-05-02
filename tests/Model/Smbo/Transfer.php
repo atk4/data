@@ -6,7 +6,7 @@ class Transfer extends Payment
 {
     public $detached = false;
 
-    public $other_leg_creation = null;
+    public $other_leg_creation;
 
     public function init(): void
     {
@@ -22,11 +22,8 @@ class Transfer extends Payment
         $this->addField('destination_account_id', ['never_persist' => true]);
 
         $this->onHook('beforeSave', function ($m) {
-
             // only for new records and when destination_account_id is set
             if ($m['destination_account_id'] && !$m->id) {
-
-                /**/
                 // In this section we test if "clone" works ok
 
                 $this->other_leg_creation = $m2 = clone $m;
@@ -45,7 +42,7 @@ class Transfer extends Payment
                 $m2['account_id'] = $m['destination_account_id'];
                 $m2['amount'] = -$m2['amount']; // neagtive amount
 
-                // **/
+                // */
 
                 $m2->reload_after_save = false; // avoid check
 

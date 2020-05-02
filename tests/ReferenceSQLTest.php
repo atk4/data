@@ -38,21 +38,21 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $oo->tryLoad(1);
         $this->assertEquals(20, $oo['amount']);
         $oo->tryLoad(2);
-        $this->assertEquals(null, $oo['amount']);
+        $this->assertNull($oo['amount']);
         $oo->tryLoad(3);
         $this->assertEquals(5, $oo['amount']);
 
         $oo = $u->load(2)->ref('Orders');
         $oo->tryLoad(1);
-        $this->assertEquals(null, $oo['amount']);
+        $this->assertNull($oo['amount']);
         $oo->tryLoad(2);
         $this->assertEquals(15, $oo['amount']);
         $oo->tryLoad(3);
-        $this->assertEquals(null, $oo['amount']);
+        $this->assertNull($oo['amount']);
 
         $oo = $u->unload()->addCondition('id', '>', '1')->ref('Orders');
-        if ($this->driverType == 'sqlite') {
-            $this->assertEquals(
+        if ($this->driverType === 'sqlite') {
+            $this->assertSame(
                 'select "id","amount","user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)',
                 $oo->action('select')->render()
             );
@@ -69,8 +69,8 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         $u->hasMany('Orders', $o);
 
-        if ($this->driverType == 'sqlite') {
-            $this->assertEquals(
+        if ($this->driverType === 'sqlite') {
+            $this->assertSame(
                 'select "id","amount","user_id" from "order" where "user_id" = "user"."id"',
                 $u->refLink('Orders')->action('select')->render()
             );
@@ -98,11 +98,11 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         $cc = $u->load(1)->ref('cur');
         $cc->tryLoadAny();
-        $this->assertEquals('Euro', $cc['name']);
+        $this->assertSame('Euro', $cc['name']);
 
         $cc = $u->load(2)->ref('cur');
         $cc->tryLoadAny();
-        $this->assertEquals('Pound', $cc['name']);
+        $this->assertSame('Pound', $cc['name']);
     }
 
     public function testLink2()
@@ -112,8 +112,8 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         $u->hasMany('cur', [$c, 'our_field' => 'currency_code', 'their_field' => 'code']);
 
-        if ($this->driverType == 'sqlite') {
-            $this->assertEquals(
+        if ($this->driverType === 'sqlite') {
+            $this->assertSame(
                 'select "id","code","name" from "currency" where "code" = "user"."currency_code"',
                 $u->refLink('cur')->action('select')->render()
             );
@@ -145,17 +145,17 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         $o->hasOne('user_id', $u);
 
-        $this->assertEquals('John', $o->load(1)->ref('user_id')['name']);
-        $this->assertEquals('Peter', $o->load(2)->ref('user_id')['name']);
-        $this->assertEquals('John', $o->load(3)->ref('user_id')['name']);
-        $this->assertEquals('Joe', $o->load(5)->ref('user_id')['name']);
+        $this->assertSame('John', $o->load(1)->ref('user_id')['name']);
+        $this->assertSame('Peter', $o->load(2)->ref('user_id')['name']);
+        $this->assertSame('John', $o->load(3)->ref('user_id')['name']);
+        $this->assertSame('Joe', $o->load(5)->ref('user_id')['name']);
 
         $o->unload();
         $o->addCondition('amount', '>', 6);
         $o->addCondition('amount', '<', 9);
 
-        if ($this->driverType == 'sqlite') {
-            $this->assertEquals(
+        if ($this->driverType === 'sqlite') {
+            $this->assertSame(
                 'select "id","name" from "user" where "id" in (select "user_id" from "order" where "amount" > :a and "amount" < :b)',
                 $o->ref('user_id')->action('select')->render()
             );
@@ -186,17 +186,17 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $o = (new Model($this->db, 'order'))->addFields(['amount']);
         $o->hasOne('user_id', $u)->addFields(['username' => 'name', ['date', 'type' => 'date']]);
 
-        $this->assertEquals('John', $o->load(1)['username']);
+        $this->assertSame('John', $o->load(1)['username']);
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['date']);
 
-        $this->assertEquals('Peter', $o->load(2)['username']);
-        $this->assertEquals('John', $o->load(3)['username']);
-        $this->assertEquals('Joe', $o->load(5)['username']);
+        $this->assertSame('Peter', $o->load(2)['username']);
+        $this->assertSame('John', $o->load(3)['username']);
+        $this->assertSame('Joe', $o->load(5)['username']);
 
         // few more tests
         $o = (new Model($this->db, 'order'))->addFields(['amount']);
         $o->hasOne('user_id', $u)->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
-        $this->assertEquals('John', $o->load(1)['username']);
+        $this->assertSame('John', $o->load(1)['username']);
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)['thedate']);
 
         $o = (new Model($this->db, 'order'))->addFields(['amount']);
@@ -228,8 +228,8 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
 
-        if ($this->driverType == 'sqlite') {
-            $this->assertEquals(
+        if ($this->driverType === 'sqlite') {
+            $this->assertSame(
                 'select "invoice"."id","invoice"."ref_no",(select sum("total_net") from "invoice_line" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
                 $i->action('select')->render()
             );
@@ -257,23 +257,23 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $i = (new Model($this->db, 'invoice'))->addFields(['ref_no']);
         $l = (new Model($this->db, 'invoice_line'))->addFields([
             'invoice_id',
-            ['total_net', 'type'=>'money'],
-            ['total_vat', 'type'=>'money'],
-            ['total_gross', 'type'=>'money'],
+            ['total_net', 'type' => 'money'],
+            ['total_vat', 'type' => 'money'],
+            ['total_gross', 'type' => 'money'],
         ]);
         $i->hasMany('line', $l)
             ->addFields([
-                ['total_vat', 'aggregate' => 'sum', 'type'=>'money'],
+                ['total_vat', 'aggregate' => 'sum', 'type' => 'money'],
                 ['total_net', 'aggregate' => 'sum'],
                 ['total_gross', 'aggregate' => 'sum'],
             ]);
         $i->load('1');
 
         // type was set explicitly
-        $this->assertEquals('money', $i->getField('total_vat')->type);
+        $this->assertSame('money', $i->getField('total_vat')->type);
 
         // type was not set and is not inherited
-        $this->assertEquals(null, $i->getField('total_net')->type);
+        $this->assertNull($i->getField('total_net')->type);
 
         $this->assertEquals(40, $i['total_net']);
         $this->assertEquals(9.2, $i['total_vat']);
@@ -308,11 +308,11 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 2 => ['id' => 2, 'name' => 'Veg'],
                 3 => ['id' => 3, 'name' => 'Fruit'],
             ], 'item' => [
-                ['name' => 'Apple',  'code' => 'ABC', 'list_id'=>3],
-                ['name' => 'Banana', 'code' => 'DEF', 'list_id'=>3],
-                ['name' => 'Pork',   'code' => 'GHI', 'list_id'=>1],
-                ['name' => 'Chicken', 'code'=> null,  'list_id'=>1],
-                ['name' => 'Pear',   'code' => null,  'list_id'=>3],
+                ['name' => 'Apple',  'code' => 'ABC', 'list_id' => 3],
+                ['name' => 'Banana', 'code' => 'DEF', 'list_id' => 3],
+                ['name' => 'Pork',   'code' => 'GHI', 'list_id' => 1],
+                ['name' => 'Chicken', 'code' => null,  'list_id' => 1],
+                ['name' => 'Pear',   'code' => null,  'list_id' => 3],
             ], ];
 
         $this->setDB($a);
@@ -324,19 +324,19 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['items_name', 'aggregate' => 'count', 'field' => 'name'],
                 ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
                 ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
-                ['items_c:',  'concat' => '::', 'field'=>'name'],
+                ['items_c:',  'concat' => '::', 'field' => 'name'],
                 ['items_c-',  'aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
                 ['len',       'aggregate' => $i->expr('sum(length([name]))')],
                 ['len2',      'expr' => 'sum(length([name]))'],
-                ['chicken5',  'expr' => 'sum([])', 'args'=>['5']],
+                ['chicken5',  'expr' => 'sum([])', 'args' => ['5']],
             ]);
         $l->load(1);
 
         $this->assertEquals(2, $l['items_name']); // 2 not-null values
         $this->assertEquals(1, $l['items_code']); // only 1 not-null value
         $this->assertEquals(2, $l['items_star']); // 2 rows in total
-        $this->assertEquals('Pork::Chicken', $l['items_c:']);
-        $this->assertEquals('Pork-Chicken', $l['items_c-']);
+        $this->assertSame('Pork::Chicken', $l['items_c:']);
+        $this->assertSame('Pork-Chicken', $l['items_c-']);
         $this->assertEquals(strlen('Chicken') + strlen('Pork'), $l['len']);
         $this->assertEquals(strlen('Chicken') + strlen('Pork'), $l['len2']);
         $this->assertEquals(10, $l['chicken5']);
@@ -347,9 +347,9 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(0, $l['items_star']);
         $this->assertEquals('', $l['items_c:']);
         $this->assertEquals('', $l['items_c-']);
-        $this->assertEquals(null, $l['len']);
-        $this->assertEquals(null, $l['len2']);
-        $this->assertEquals(null, $l['chicken5']);
+        $this->assertNull($l['len']);
+        $this->assertNull($l['len2']);
+        $this->assertNull($l['chicken5']);
     }
 
     public function testReferenceHook()
@@ -374,27 +374,27 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
             ->addField('address');
 
         $u->load(1);
-        $this->assertEquals('John contact', $u['address']);
-        $this->assertEquals('John contact', $u->ref('contact_id')['address']);
+        $this->assertSame('John contact', $u['address']);
+        $this->assertSame('John contact', $u->ref('contact_id')['address']);
 
         $u->load(2);
-        $this->assertEquals(null, $u['address']);
-        $this->assertEquals(null, $u['contact_id']);
-        $this->assertEquals(null, $u->ref('contact_id')['address']);
+        $this->assertNull($u['address']);
+        $this->assertNull($u['contact_id']);
+        $this->assertNull($u->ref('contact_id')['address']);
 
         $u->load(3);
-        $this->assertEquals('Joe contact', $u['address']);
-        $this->assertEquals('Joe contact', $u->ref('contact_id')['address']);
+        $this->assertSame('Joe contact', $u['address']);
+        $this->assertSame('Joe contact', $u->ref('contact_id')['address']);
 
         $u->load(2);
         $u->ref('contact_id')->save(['address' => 'Peters new contact']);
 
-        $this->assertNotEquals(null, $u['contact_id']);
-        $this->assertEquals('Peters new contact', $u->ref('contact_id')['address']);
+        $this->assertNotNull($u['contact_id']);
+        $this->assertSame('Peters new contact', $u->ref('contact_id')['address']);
 
         $u->save()->reload();
-        $this->assertEquals('Peters new contact', $u->ref('contact_id')['address']);
-        $this->assertEquals('Peters new contact', $u['address']);
+        $this->assertSame('Peters new contact', $u->ref('contact_id')['address']);
+        $this->assertSame('Peters new contact', $u['address']);
     }
 
     /**
@@ -409,8 +409,8 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['name' => 'Ronaldo'],
             ],
             'stadium' => [
-                ['name' => 'Sue bernabeu', 'player_id'=>'3'],
-                ['name' => 'John camp', 'player_id'=>'1'],
+                ['name' => 'Sue bernabeu', 'player_id' => '3'],
+                ['name' => 'John camp', 'player_id' => '1'],
             ],
         ];
         $this->setDB($a);
@@ -421,12 +421,12 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $s->addFields(['name']);
         $s->hasOne('player_id', $p);
 
-        $p->hasOne('Stadium', [$s, 'our_field'=>'id', 'their_field'=>'player_id']);
+        $p->hasOne('Stadium', [$s, 'our_field' => 'id', 'their_field' => 'player_id']);
 
         $p->load(2);
-        $p->ref('Stadium')->import([['name'=>'Nou camp nou']]);
-        $this->assertEquals('Nou camp nou', $p->ref('Stadium')['name']);
-        $this->assertEquals('2', $p->ref('Stadium')['player_id']);
+        $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
+        $this->assertSame('Nou camp nou', $p->ref('Stadium')['name']);
+        $this->assertSame('2', $p->ref('Stadium')['player_id']);
     }
 
     public function testModelProperty()
@@ -434,7 +434,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $user = new Model($this->db, ['table' => 'user']);
         $user->hasMany('Orders', ['model' => ['atk4/data/Model', 'table' => 'order'], 'their_field' => 'id']);
         $o = $user->ref('Orders');
-        $this->assertEquals('order', $o->table);
+        $this->assertSame('order', $o->table);
     }
 
     /**
@@ -456,12 +456,12 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         // by default not set
         $o->hasOne('user_id', $u);
-        $this->assertEquals($o->getField('user_id')->isVisible(), true);
+        $this->assertSame($o->getField('user_id')->isVisible(), true);
 
         $o->getRef('user_id')->addTitle();
-        $this->assertEquals((bool) $o->hasField('user'), true);
-        $this->assertEquals($o->getField('user')->isVisible(), true);
-        $this->assertEquals($o->getField('user_id')->isVisible(), false);
+        $this->assertSame((bool) $o->hasField('user'), true);
+        $this->assertSame($o->getField('user')->isVisible(), true);
+        $this->assertSame($o->getField('user_id')->isVisible(), false);
 
         // if it is set manually then it will not be changed
         $o = (new Model($this->db, 'order'))->addFields(['amount']);
@@ -469,7 +469,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $o->getField('user_id')->ui['visible'] = true;
         $o->getRef('user_id')->addTitle();
 
-        $this->assertEquals($o->getField('user_id')->isVisible(), true);
+        $this->assertSame($o->getField('user_id')->isVisible(), true);
     }
 
     /**
@@ -510,7 +510,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         // with custom title_field='last_name'
-        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, 'order'));
         $o->hasOne('user_id', $u)->addTitle();
 
@@ -527,9 +527,9 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, 'order'));
-        $o->hasOne('my_user', [$u, 'our_field'=>'user_id'])->addTitle();
+        $o->hasOne('my_user', [$u, 'our_field' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o->load(1);
@@ -544,9 +544,9 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, 'order'));
-        $o->hasOne('my_user', [$u, 'our_field'=>'user_id'])->addTitle();
+        $o->hasOne('my_user', [$u, 'our_field' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o->load(1);
@@ -566,7 +566,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
     public function testHasOneReferenceCaption()
     {
         $a = [
-            'user'  => [
+            'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'last_name' => 'Doe'],
                 2 => ['id' => 2, 'name' => 'Peter', 'last_name' => 'Foo'],
                 3 => ['id' => 3, 'name' => 'Goofy', 'last_name' => 'Goo'],
@@ -580,18 +580,18 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         // restore DB
         $this->setDB($a);
-        $u = (new Model($this->db, ['user', 'title_field'=>'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
 
         // Test : Now the caption is null and is generated from field name
-        $this->assertEquals('Last Name', $u->getField('last_name')->getCaption());
+        $this->assertSame('Last Name', $u->getField('last_name')->getCaption());
 
         $u->getField('last_name')->caption = 'Surname';
 
         // Test : Now the caption is not null and the value is returned
-        $this->assertEquals('Surname', $u->getField('last_name')->getCaption());
+        $this->assertSame('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, 'order'));
-        $order_user_ref = $o->hasOne('my_user', [$u, 'our_field'=>'user_id']);
+        $order_user_ref = $o->hasOne('my_user', [$u, 'our_field' => 'user_id']);
         $order_user_ref->addField('user_last_name', 'last_name');
 
         $referenced_caption = $o->getField('user_last_name')->getCaption();
@@ -599,6 +599,6 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         // Test : $field->caption for the field 'last_name' is defined in referenced model (User)
         // When Order add field from Referenced model User
         // caption will be passed to Order field user_last_name
-        $this->assertEquals('Surname', $referenced_caption);
+        $this->assertSame('Surname', $referenced_caption);
     }
 }

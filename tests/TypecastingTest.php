@@ -39,15 +39,15 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'string'   => 'foo',
-                    'date'     => '2013-02-20',
+                    'string' => 'foo',
+                    'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
-                    'time'     => '12:00:50.000000',
-                    'boolean'  => 1,
-                    'integer'  => '2940',
-                    'money'    => '8.20',
-                    'float'    => '8.202343',
-                    'array'    => '[1,2,3]',
+                    'time' => '12:00:50.000000',
+                    'boolean' => 1,
+                    'integer' => '2940',
+                    'money' => '8.20',
+                    'float' => '8.202343',
+                    'array' => '[1,2,3]',
                 ],
             ],
         ];
@@ -70,13 +70,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->load(1);
 
         $this->assertSame('foo', $m['string']);
-        $this->assertSame(true, $m['boolean']);
+        $this->assertTrue($m['boolean']);
         $this->assertSame(8.20, $m['money']);
         $this->assertEquals(new \DateTime('2013-02-20'), $m['date']);
         $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $m['datetime']);
         $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $m['time']);
         $this->assertSame(2940, $m['integer']);
-        $this->assertEquals([1, 2, 3], $m['array']);
+        $this->assertSame([1, 2, 3], $m['array']);
         $this->assertSame(8.202343, $m['float']);
 
         $m->duplicate()->save();
@@ -84,28 +84,28 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 1 => [
-                    'id'       => '1',
-                    'string'   => 'foo',
-                    'date'     => '2013-02-20',
+                    'id' => '1',
+                    'string' => 'foo',
+                    'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
-                    'time'     => '12:00:50.000000',
-                    'boolean'  => 1,
-                    'integer'  => 2940,
-                    'money'    => 8.20,
-                    'float'    => 8.202343,
-                    'array'    => '[1,2,3]',
+                    'time' => '12:00:50.000000',
+                    'boolean' => 1,
+                    'integer' => 2940,
+                    'money' => 8.20,
+                    'float' => 8.202343,
+                    'array' => '[1,2,3]',
                 ],
                 2 => [
-                    'id'       => '2',
-                    'string'   => 'foo',
-                    'date'     => '2013-02-20',
+                    'id' => '2',
+                    'string' => 'foo',
+                    'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.000000',
-                    'time'     => '12:00:50.000000',
-                    'boolean'  => '1',
-                    'integer'  => '2940',
-                    'money'    => '8.2',
-                    'float'    => '8.202343',
-                    'array'    => '[1,2,3]',
+                    'time' => '12:00:50.000000',
+                    'boolean' => '1',
+                    'integer' => '2940',
+                    'money' => '8.2',
+                    'float' => '8.202343',
+                    'array' => '[1,2,3]',
                 ],
             ], ];
         $this->assertEquals($a, $this->getDB());
@@ -120,25 +120,25 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
     public function testEmptyValues()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
         $a = [
             'types' => [
                 1 => $v = [
-                    'id'       => 1,
-                    'string'   => '',
-                    'notype'   => '',
-                    'date'     => '',
+                    'id' => 1,
+                    'string' => '',
+                    'notype' => '',
+                    'date' => '',
                     'datetime' => '',
-                    'time'     => '',
-                    'boolean'  => '',
-                    'integer'  => '',
-                    'money'    => '',
-                    'float'    => '',
-                    'array'    => '',
-                    'object'   => '',
+                    'time' => '',
+                    'boolean' => '',
+                    'integer' => '',
+                    'money' => '',
+                    'float' => '',
+                    'array' => '',
+                    'object' => '',
                 ],
             ],
         ];
@@ -165,31 +165,31 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         // Only
         $this->assertSame('', $m['string']);
         $this->assertSame('', $m['notype']);
-        $this->assertSame(null, $m['date']);
-        $this->assertSame(null, $m['datetime']);
-        $this->assertSame(null, $m['time']);
-        $this->assertSame(null, $m['boolean']);
-        $this->assertSame(null, $m['integer']);
-        $this->assertSame(null, $m['money']);
-        $this->assertSame(null, $m['float']);
-        $this->assertSame(null, $m['array']);
-        $this->assertSame(null, $m['object']);
+        $this->assertNull($m['date']);
+        $this->assertNull($m['datetime']);
+        $this->assertNull($m['time']);
+        $this->assertNull($m['boolean']);
+        $this->assertNull($m['integer']);
+        $this->assertNull($m['money']);
+        $this->assertNull($m['float']);
+        $this->assertNull($m['array']);
+        $this->assertNull($m['object']);
 
         unset($v['id']);
         $m->set($v);
 
         $this->assertSame('', $m['string']);
         $this->assertSame('', $m['notype']);
-        $this->assertSame(null, $m['date']);
-        $this->assertSame(null, $m['datetime']);
-        $this->assertSame(null, $m['time']);
-        $this->assertSame(null, $m['boolean']);
-        $this->assertSame(null, $m['integer']);
-        $this->assertSame(null, $m['money']);
-        $this->assertSame(null, $m['float']);
-        $this->assertSame(null, $m['array']);
-        $this->assertSame(null, $m['object']);
-        $this->assertEquals([], $m->dirty);
+        $this->assertNull($m['date']);
+        $this->assertNull($m['datetime']);
+        $this->assertNull($m['time']);
+        $this->assertNull($m['boolean']);
+        $this->assertNull($m['integer']);
+        $this->assertNull($m['money']);
+        $this->assertNull($m['float']);
+        $this->assertNull($m['array']);
+        $this->assertNull($m['object']);
+        $this->assertSame([], $m->dirty);
 
         $m->save();
         $this->assertEquals($a, $this->getDB());
@@ -197,18 +197,18 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->duplicate()->save();
 
         $a['types'][2] = [
-            'id'       => 2,
-            'string'   => '',
-            'notype'   => '',
-            'date'     => null,
+            'id' => 2,
+            'string' => '',
+            'notype' => '',
+            'date' => null,
             'datetime' => null,
-            'time'     => null,
-            'boolean'  => null,
-            'integer'  => null,
-            'money'    => null,
-            'float'    => null,
-            'array'    => null,
-            'object'   => null,
+            'time' => null,
+            'boolean' => null,
+            'integer' => null,
+            'money' => null,
+            'float' => null,
+            'array' => null,
+            'object' => null,
         ];
 
         $this->assertEquals($a, $this->getDB());
@@ -216,7 +216,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
     public function testTypecastNull()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -237,7 +237,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->set($v);
         $m->save();
 
-        $a['test'][2] = array_merge(['id'=>'2'], $v);
+        $a['test'][2] = array_merge(['id' => '2'], $v);
 
         $this->assertEquals($a, $this->getDB());
     }
@@ -247,15 +247,15 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => '2013-02-20',
+                    'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.235689',
-                    'time'     => '12:00:50.235689',
-                    'b1'       => 'Y',
-                    'b2'       => 'N',
-                    'integer'  => '2940',
-                    'money'    => '8.20',
-                    'float'    => '8.202343',
-                    'rot13'    => 'uryyb jbeyq',
+                    'time' => '12:00:50.235689',
+                    'b1' => 'Y',
+                    'b2' => 'N',
+                    'integer' => '2940',
+                    'money' => '8.20',
+                    'float' => '8.202343',
+                    'rot13' => 'uryyb jbeyq',
                 ],
             ], ];
         $this->setDB($a);
@@ -285,28 +285,28 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('hello world', $m['rot13']);
         $this->assertSame(1, (int) $m->id);
         $this->assertSame(1, (int) $m['id']);
-        $this->assertEquals('2013-02-21 05:00:12.235689', (string) $m['datetime']);
-        $this->assertEquals('2013-02-20', (string) $m['date']);
-        $this->assertEquals('12:00:50.235689', (string) $m['time']);
+        $this->assertSame('2013-02-21 05:00:12.235689', (string) $m['datetime']);
+        $this->assertSame('2013-02-20', (string) $m['date']);
+        $this->assertSame('12:00:50.235689', (string) $m['time']);
 
-        $this->assertEquals(true, $m['b1']);
-        $this->assertEquals(false, $m['b2']);
+        $this->assertTrue($m['b1']);
+        $this->assertFalse($m['b2']);
 
         $m->duplicate()->save()->delete(1);
 
         $a = [
             'types' => [
                 2 => [
-                    'id'       => '2',
-                    'date'     => '2013-02-20',
+                    'id' => '2',
+                    'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.235689',
-                    'time'     => '12:00:50.235689',
-                    'b1'       => 'Y',
-                    'b2'       => 'N',
-                    'integer'  => '2940',
-                    'money'    => '8.20',
-                    'float'    => '8.202343',
-                    'rot13'    => 'uryyb jbeyq', // str_rot13(hello world)
+                    'time' => '12:00:50.235689',
+                    'b1' => 'Y',
+                    'b2' => 'N',
+                    'integer' => '2940',
+                    'money' => '8.20',
+                    'float' => '8.202343',
+                    'rot13' => 'uryyb jbeyq', // str_rot13(hello world)
                 ],
             ], ];
         $this->assertEquals($a, $this->getDB());
@@ -317,7 +317,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => '2013-02-20',
+                    'date' => '2013-02-20',
                 ],
             ], ];
         $this->setDB($a);
@@ -337,7 +337,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => '2013-02-20',
+                    'date' => '2013-02-20',
                 ],
             ], ];
         $this->setDB($a);
@@ -357,7 +357,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => '2013-02-20',
+                    'date' => '2013-02-20',
                 ],
             ], ];
         $this->setDB($a);
@@ -377,7 +377,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => '2013-02-20',
+                    'date' => '2013-02-20',
                 ],
             ], ];
         $this->setDB($a);
@@ -401,7 +401,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $f = $m->addField('closed', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
 
-        $this->assertEquals('N', $db->typecastSaveField($f, 'N'));
+        $this->assertSame('N', $db->typecastSaveField($f, 'N'));
     }
 
     public function testTypecastTimezone()
@@ -414,9 +414,9 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         date_default_timezone_set('UTC');
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertEquals('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertEquals('22:52:01.000000', $db->typecastSaveField($t, $s));
+        $this->assertSame('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
+        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
+        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
@@ -424,9 +424,9 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         date_default_timezone_set('Asia/Tokyo');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertEquals('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertEquals('22:52:01.000000', $db->typecastSaveField($t, $s));
+        $this->assertSame('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
+        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
+        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
@@ -434,9 +434,9 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         date_default_timezone_set('America/Los_Angeles');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01'); // uses servers default timezone
-        $this->assertEquals('2005-08-16 07:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertEquals('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertEquals('22:52:01.000000', $db->typecastSaveField($t, $s));
+        $this->assertSame('2005-08-16 07:52:01.000000', $db->typecastSaveField($dt, $s));
+        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
+        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $db->typecastLoadField($dt, '2005-08-16 07:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
@@ -449,7 +449,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => $sql_time,
+                    'date' => $sql_time,
                 ],
             ], ];
         $this->setDB($a);
@@ -464,7 +464,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testBadTimestamp()
     {
@@ -473,7 +473,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => $sql_time,
+                    'date' => $sql_time,
                 ],
             ], ];
         $this->setDB($a);
@@ -491,7 +491,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => $sql_time,
+                    'date' => $sql_time,
                 ],
             ], ];
         $this->setDB($a);
@@ -510,7 +510,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => '',
+                    'date' => '',
                 ],
             ], ];
         $this->setDB($a);
@@ -573,7 +573,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => $sql_time,
+                    'date' => $sql_time,
                 ],
             ], ];
         $this->setDB($a);
@@ -601,7 +601,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'types' => [
                 [
-                    'date'     => null,
+                    'date' => null,
                 ],
             ], ];
         $this->setDB($a);

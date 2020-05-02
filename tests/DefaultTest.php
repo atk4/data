@@ -12,10 +12,10 @@ class DefaultTest extends \atk4\schema\PhpunitTestCase
         $m->addField('nodefault');
         $m->addField('withdefault', ['default' => 'abc']);
 
-        $this->assertEquals(null, $m->get('nodefault'));
-        $this->assertEquals('abc', $m->get('withdefault'));
+        $this->assertNull($m->get('nodefault'));
+        $this->assertSame('abc', $m->get('withdefault'));
 
-        $this->assertEquals(null, $m->getField('nodefault')->get());
-        $this->assertEquals('abc', $m->getField('withdefault')->get());
+        $this->assertNull($m->getField('nodefault')->get());
+        $this->assertSame('abc', $m->getField('withdefault')->get());
     }
 }

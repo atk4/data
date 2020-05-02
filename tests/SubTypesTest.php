@@ -15,12 +15,12 @@ class STAccount extends Model
         $this->addField('name');
 
         $this->hasMany('Transactions', new STGenericTransaction())
-            ->addField('balance', ['aggregate'=>'sum', 'field'=>'amount']);
+            ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount']);
 
         $this->hasMany('Transactions:Deposit', new STTransaction_Deposit());
         $this->hasMany('Transactions:Withdrawal', new STTransaction_Withdrawal());
         $this->hasMany('Transactions:OB', new STTransaction_OB())
-            ->addField('opening_balance', ['aggregate'=>'sum', 'field'=>'amount']);
+            ->addField('opening_balance', ['aggregate' => 'sum', 'field' => 'amount']);
 
         $this->hasMany('Transactions:TransferOut', new STTransaction_TransferOut());
         $this->hasMany('Transactions:TransferIn', new STTransaction_TransferIn());
@@ -32,7 +32,7 @@ class STAccount extends Model
         $m->save($name);
 
         if ($amount) {
-            $m->ref('Transactions:OB')->save(['amount'=>$amount]);
+            $m->ref('Transactions:OB')->save(['amount' => $amount]);
         }
 
         return $m;
@@ -40,18 +40,18 @@ class STAccount extends Model
 
     public function deposit($amount)
     {
-        return $this->ref('Transactions:Deposit')->save(['amount'=>$amount]);
+        return $this->ref('Transactions:Deposit')->save(['amount' => $amount]);
     }
 
     public function withdraw($amount)
     {
-        return $this->ref('Transactions:Withdrawal')->save(['amount'=>$amount]);
+        return $this->ref('Transactions:Withdrawal')->save(['amount' => $amount]);
     }
 
     public function transferTo(self $account, $amount)
     {
-        $out = $this->ref('Transactions:TransferOut')->save(['amount'=>$amount]);
-        $in = $account->ref('Transactions:TransferIn')->save(['amount'=>$amount, 'link_id'=>$out->id]);
+        $out = $this->ref('Transactions:TransferOut')->save(['amount' => $amount]);
+        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->id]);
         $out['link_id'] = $in->id;
         $out->save();
     }
@@ -60,14 +60,14 @@ class STAccount extends Model
 class STGenericTransaction extends Model
 {
     public $table = 'transaction';
-    public $type = null;
+    public $type;
 
     public function init(): void
     {
         parent::init();
 
         $this->hasOne('account_id', new STAccount());
-        $this->addField('type', ['enum'=>['OB', 'Deposit', 'Withdrawal', 'TransferOut', 'TransferIn']]);
+        $this->addField('type', ['enum' => ['OB', 'Deposit', 'Withdrawal', 'TransferOut', 'TransferIn']]);
 
         if ($this->type) {
             $this->addCondition('type', $this->type);
@@ -75,7 +75,7 @@ class STGenericTransaction extends Model
         $this->addField('amount');
 
         $this->onHook('afterLoad', function (self $m) {
-            if (get_class($this) != $m->getClassName()) {
+            if (static::class !== $m->getClassName()) {
                 $cl = '\\' . $this->getClassName();
                 $cl = new $cl($this->persistence);
                 $cl->load($m->id);
@@ -135,7 +135,7 @@ class STTransaction_TransferIn extends STGenericTransaction
  */
 class SubTypesTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -152,16 +152,16 @@ class SubTypesTest extends \atk4\schema\PhpunitTestCase
         $inheritance->transferTo($current, 500);
         $current->withdraw(350);
 
-        $this->assertEquals(STTransaction_OB::class, get_class($inheritance->ref('Transactions')->load(1)));
-        $this->assertEquals(STTransaction_TransferOut::class, get_class($inheritance->ref('Transactions')->load(2)));
-        $this->assertEquals(STTransaction_TransferIn::class, get_class($current->ref('Transactions')->load(3)));
-        $this->assertEquals(STTransaction_Withdrawal::class, get_class($current->ref('Transactions')->load(4)));
+        $this->assertSame(STTransaction_OB::class, get_class($inheritance->ref('Transactions')->load(1)));
+        $this->assertSame(STTransaction_TransferOut::class, get_class($inheritance->ref('Transactions')->load(2)));
+        $this->assertSame(STTransaction_TransferIn::class, get_class($current->ref('Transactions')->load(3)));
+        $this->assertSame(STTransaction_Withdrawal::class, get_class($current->ref('Transactions')->load(4)));
 
         $cl = [];
         foreach ($current->ref('Transactions') as $tr) {
             $cl[] = get_class($tr);
         }
 
-        $this->assertEquals([STTransaction_TransferIn::class, STTransaction_Withdrawal::class], $cl);
+        $this->assertSame([STTransaction_TransferIn::class, STTransaction_Withdrawal::class], $cl);
     }
 }

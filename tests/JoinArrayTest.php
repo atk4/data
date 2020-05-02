@@ -18,33 +18,33 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m = new Model($db, 'user');
 
         $j = $m->join('contact');
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('contact_id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
+        $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact2.test_id');
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('test_id', $this->getProtected($j, 'foreign_field'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
+        $this->assertSame('id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('test_id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact3', 'test_id');
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
+        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact3', ['test_id']);
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
+        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact4.foo_id', ['test_id', 'reverse' => true]);
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('foo_id', $this->getProtected($j, 'foreign_field'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
+        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testDirection2()
     {
@@ -52,9 +52,9 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $db = new Persistence\Array_($a);
         $m = new Model($db, 'user');
         $j = $m->join('contact4.foo_id', 'test_id');
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('foo_id', $this->getProtected($j, 'foreign_field'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
+        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
     public function testJoinSaving1()
@@ -73,7 +73,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
+            'user' => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $a);
 
@@ -123,7 +123,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'name' => 'John']],
+            'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
         ], $a);
 
@@ -172,7 +172,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
+            'user' => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $a);
     }
@@ -259,7 +259,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u['contact_phone'] = '+555';
         $m_u->save();
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'user' => [
                     1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
@@ -277,7 +277,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u['contact_phone'] = '+999';
         $m_u->save();
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'user' => [
                     1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
@@ -334,7 +334,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u->load(1);
         $m_u->delete();
 
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'user' => [
                     2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -349,7 +349,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testLoadMissing()
     {

@@ -14,7 +14,7 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
 {
     public $m;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $a = [
@@ -25,7 +25,7 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         $db = new Persistence\SQL($this->db->connection);
-        $this->m = new Model($db, ['user', 'read_only'=>true]);
+        $this->m = new Model($db, ['user', 'read_only' => true]);
 
         $this->m->addFields(['name', 'gender']);
     }
@@ -36,17 +36,17 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     public function testBasic()
     {
         $this->m->tryLoadAny();
-        $this->assertEquals('John', $this->m['name']);
+        $this->assertSame('John', $this->m['name']);
 
         $this->m->setOrder('name desc');
         $this->m->tryLoadAny();
-        $this->assertEquals('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m['name']);
 
         $n = [];
         foreach ($this->m as $row) {
             $n[] = $row['name'];
         }
-        $this->assertEquals(['Sue', 'John'], $n);
+        $this->assertSame(['Sue', 'John'], $n);
     }
 
     /**
@@ -60,7 +60,7 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model cannot be saved.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testLoadSave()
     {
@@ -72,17 +72,17 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     /**
      * Insert should fail too.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testInsert()
     {
-        $this->m->insert(['name'=>'Joe']);
+        $this->m->insert(['name' => 'Joe']);
     }
 
     /**
      * Different attempt that should also fail.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testSave1()
     {
@@ -96,18 +96,18 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     public function testLoadBy()
     {
         $this->m->loadBy('name', 'Sue');
-        $this->assertEquals('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m['name']);
     }
 
     public function testLoadCondition()
     {
         $this->m->addCondition('name', 'Sue');
         $this->m->loadAny();
-        $this->assertEquals('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m['name']);
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testFailDelete1()
     {

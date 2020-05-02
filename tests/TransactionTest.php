@@ -35,7 +35,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertEquals('Sue', $this->getDB()['item'][2]['name']);
+        $this->assertSame('Sue', $this->getDB()['item'][2]['name']);
 
         $m->onHook('afterDelete', function ($m) {
             throw new \Exception('Awful thing happened');
@@ -46,7 +46,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertEquals('Sue', $this->getDB()['item'][2]['name']);
+        $this->assertSame('Sue', $this->getDB()['item'][2]['name']);
     }
 
     public function testBeforeSaveHook()
@@ -65,7 +65,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         $m->onHook('beforeSave', function ($model, $is_update) use ($self) {
             $self->assertFalse($is_update);
         });
-        $m->save(['name'=>'Foo']);
+        $m->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($db, 'item');
@@ -73,7 +73,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         $m->onHook('afterSave', function ($model, $is_update) use ($self) {
             $self->assertTrue($is_update);
         });
-        $m->loadBy('name', 'John')->save(['name'=>'Foo']);
+        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testAfterSaveHook()
@@ -92,7 +92,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         $m->onHook('afterSave', function ($model, $is_update) use ($self) {
             $self->assertFalse($is_update);
         });
-        $m->save(['name'=>'Foo']);
+        $m->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($db, 'item');
@@ -100,7 +100,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         $m->onHook('afterSave', function ($model, $is_update) use ($self) {
             $self->assertTrue($is_update);
         });
-        $m->loadBy('name', 'John')->save(['name'=>'Foo']);
+        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testOnRollbackHook()
@@ -127,10 +127,10 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         });
 
         // this will fail because field foo is not in DB and call onRollback hook
-        $m->set(['name'=>'Jane', 'foo'=>'bar']);
+        $m->set(['name' => 'Jane', 'foo' => 'bar']);
         $m->save();
 
         $this->assertTrue($hook_called);
-        $this->assertEquals($m->get(), $values);
+        $this->assertSame($m->get(), $values);
     }
 }

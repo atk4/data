@@ -22,19 +22,19 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addFields(['name', 'gender']);
 
         $m->tryLoad(1);
-        $this->assertEquals('John', $m['name']);
+        $this->assertSame('John', $m['name']);
         $m->tryLoad(2);
-        $this->assertEquals('Sue', $m['name']);
+        $this->assertSame('Sue', $m['name']);
 
         $mm = clone $m;
         $mm->addCondition('gender', 'M');
         $mm->tryLoad(1);
-        $this->assertEquals('John', $mm['name']);
+        $this->assertSame('John', $mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
 
-        if ($this->driverType == 'sqlite') {
-            $this->assertEquals(
+        if ($this->driverType === 'sqlite') {
+            $this->assertSame(
                 'select "id","name","gender" from "user" where "gender" = :a',
                 $mm->action('select')->render()
             );
@@ -43,9 +43,9 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $mm = clone $m;
         $mm->withID(2); // = addCondition(id, 2)
         $mm->tryLoad(1);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals('Sue', $mm['name']);
+        $this->assertSame('Sue', $mm['name']);
     }
 
     public function testNull()
@@ -69,10 +69,10 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
             $this->assertNull($user['gender']);
             $this->assertContains('Null', $user['name']);
 
-            $nullCount++;
+            ++$nullCount;
         }
 
-        $this->assertEquals(2, $nullCount);
+        $this->assertSame(2, $nullCount);
     }
 
     public function testOperations()
@@ -88,37 +88,37 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addFields(['name', 'gender']);
 
         $m->tryLoad(1);
-        $this->assertEquals('John', $m['name']);
+        $this->assertSame('John', $m['name']);
         $m->tryLoad(2);
-        $this->assertEquals('Sue', $m['name']);
+        $this->assertSame('Sue', $m['name']);
 
         $mm = clone $m;
         $mm->addCondition('gender', 'M');
         $mm->tryLoad(1);
-        $this->assertEquals('John', $mm['name']);
+        $this->assertSame('John', $mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
 
         $mm = clone $m;
         $mm->addCondition('gender', '!=', 'M');
         $mm->tryLoad(1);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals('Sue', $mm['name']);
+        $this->assertSame('Sue', $mm['name']);
 
         $mm = clone $m;
         $mm->addCondition('id', '>', 1);
         $mm->tryLoad(1);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals('Sue', $mm['name']);
+        $this->assertSame('Sue', $mm['name']);
 
         $mm = clone $m;
         $mm->addCondition('id', 'in', [1, 3]);
         $mm->tryLoad(1);
-        $this->assertEquals('John', $mm['name']);
+        $this->assertSame('John', $mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
     }
 
     public function testExpressions1()
@@ -134,23 +134,23 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addFields(['name', 'gender']);
 
         $m->tryLoad(1);
-        $this->assertEquals('John', $m['name']);
+        $this->assertSame('John', $m['name']);
         $m->tryLoad(2);
-        $this->assertEquals('Sue', $m['name']);
+        $this->assertSame('Sue', $m['name']);
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[] > 1', [$mm->getField('id')]));
         $mm->tryLoad(1);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals('Sue', $mm['name']);
+        $this->assertSame('Sue', $mm['name']);
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[id] > 1'));
         $mm->tryLoad(1);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals('Sue', $mm['name']);
+        $this->assertSame('Sue', $mm['name']);
     }
 
     public function testExpressions2()
@@ -166,42 +166,42 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addFields(['name', 'gender', 'surname']);
 
         $m->tryLoad(1);
-        $this->assertEquals('John', $m['name']);
+        $this->assertSame('John', $m['name']);
         $m->tryLoad(2);
-        $this->assertEquals('Sue', $m['name']);
+        $this->assertSame('Sue', $m['name']);
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] = [surname]'));
         $mm->tryLoad(1);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals('Sue', $mm['name']);
+        $this->assertSame('Sue', $mm['name']);
 
         $mm = clone $m;
         $mm->addCondition($m->getField('name'), $m->getField('surname'));
         $mm->tryLoad(1);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals('Sue', $mm['name']);
+        $this->assertSame('Sue', $mm['name']);
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] != [surname]'));
         $mm->tryLoad(1);
-        $this->assertEquals('John', $mm['name']);
+        $this->assertSame('John', $mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
 
         $mm = clone $m;
         $mm->addCondition($m->getField('name'), '!=', $m->getField('surname'));
         $mm->tryLoad(1);
-        $this->assertEquals('John', $mm['name']);
+        $this->assertSame('John', $mm['name']);
         $mm->tryLoad(2);
-        $this->assertEquals(null, $mm['name']);
+        $this->assertNull($mm['name']);
     }
 
     public function testExpressionJoin()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -222,36 +222,36 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $m->join('contact')->addField('contact_phone');
 
         $m->tryLoad(1);
-        $this->assertEquals('John', $m['name']);
-        $this->assertEquals('+123 smiths', $m['contact_phone']);
+        $this->assertSame('John', $m['name']);
+        $this->assertSame('+123 smiths', $m['contact_phone']);
         $m->tryLoad(2);
-        $this->assertEquals('Sue', $m['name']);
-        $this->assertEquals('+321 sues', $m['contact_phone']);
+        $this->assertSame('Sue', $m['name']);
+        $this->assertSame('+321 sues', $m['contact_phone']);
         $m->tryLoad(3);
-        $this->assertEquals('Peter', $m['name']);
-        $this->assertEquals('+123 smiths', $m['contact_phone']);
+        $this->assertSame('Peter', $m['name']);
+        $this->assertSame('+123 smiths', $m['contact_phone']);
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] = [surname]'));
         $mm->tryLoad(1);
-        $this->assertEquals(false, $mm->loaded());
+        $this->assertFalse($mm->loaded());
         $mm->tryLoad(2);
-        $this->assertEquals('Sue', $mm['name']);
-        $this->assertEquals('+321 sues', $mm['contact_phone']);
+        $this->assertSame('Sue', $mm['name']);
+        $this->assertSame('+321 sues', $mm['contact_phone']);
         $mm->tryLoad(3);
-        $this->assertEquals(false, $mm->loaded());
+        $this->assertFalse($mm->loaded());
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('"+123 smiths" = [contact_phone]'));
         $mm->tryLoad(1);
-        $this->assertEquals('John', $mm['name']);
-        $this->assertEquals('+123 smiths', $mm['contact_phone']);
+        $this->assertSame('John', $mm['name']);
+        $this->assertSame('+123 smiths', $mm['contact_phone']);
         $mm->tryLoad(2);
-        $this->assertEquals(null, $mm['name']);
-        $this->assertEquals(null, $mm['contact_phone']);
+        $this->assertNull($mm['name']);
+        $this->assertNull($mm['contact_phone']);
         $mm->tryLoad(3);
-        $this->assertEquals('Peter', $mm['name']);
-        $this->assertEquals('+123 smiths', $mm['contact_phone']);
+        $this->assertSame('Peter', $mm['name']);
+        $this->assertSame('+123 smiths', $mm['contact_phone']);
     }
 
     public function testArrayCondition()
@@ -267,22 +267,22 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', ['John', 'Doe']);
-        $this->assertEquals(1, count($m->export()));
+        $this->assertSame(1, count($m->export()));
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', 'in', ['Johhny', 'Doe', 'Mary']);
-        $this->assertEquals(2, count($m->export()));
+        $this->assertSame(2, count($m->export()));
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', []); // this should not fail, always should be false
-        $this->assertEquals(0, count($m->export()));
+        $this->assertSame(0, count($m->export()));
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', 'not', []); // this should not fail, always should be true
-        $this->assertEquals(3, count($m->export()));
+        $this->assertSame(3, count($m->export()));
     }
 
     public function testDateCondition()
@@ -296,10 +296,10 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
-        $m->addField('date', ['type'=>'date']);
+        $m->addField('date', ['type' => 'date']);
 
         $m->tryLoadBy('date', new \DateTime('08-12-1982'));
-        $this->assertEquals('Sue', $m['name']);
+        $this->assertSame('Sue', $m['name']);
     }
 
     public function testDateCondition2()
@@ -313,15 +313,15 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
-        $m->addField('date', ['type'=>'date']);
+        $m->addField('date', ['type' => 'date']);
 
         $m->addCondition('date', new \DateTime('08-12-1982'));
         $m->loadAny();
-        $this->assertEquals('Sue', $m['name']);
+        $this->assertSame('Sue', $m['name']);
 
         $m->addCondition([['date', new \DateTime('08-12-1982')]]);
         $m->loadAny();
-        $this->assertEquals('Sue', $m['name']);
+        $this->assertSame('Sue', $m['name']);
     }
 
     /**
@@ -338,7 +338,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
-        $m->addField('date', ['type'=>'date']);
+        $m->addField('date', ['type' => 'date']);
 
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
@@ -391,12 +391,12 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $u = (new Model($this->db, 'user'))->addFields(['name']);
 
         $u->loadBy('name', 'John');
-        $this->assertEquals([], $u->conditions); // should be no conditions
+        $this->assertSame([], $u->conditions); // should be no conditions
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value
 
         $u->tryLoadBy('name', 'John');
-        $this->assertEquals([], $u->conditions); // should be no conditions
+        $this->assertSame([], $u->conditions); // should be no conditions
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value
     }
@@ -421,18 +421,18 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $u->addField('created', ['type' => 'datetime']);
 
         $t = (clone $u)->addCondition('created', 'like', '%19%');
-        $this->assertEquals(2, count($t->export())); // only year 2019 records
+        $this->assertSame(2, count($t->export())); // only year 2019 records
 
         $t = (clone $u)->addCondition('active', 'like', '%1%');
-        $this->assertEquals(2, count($t->export())); // only active records
+        $this->assertSame(2, count($t->export())); // only active records
 
         $t = (clone $u)->addCondition('active', 'like', '%0%');
-        $this->assertEquals(1, count($t->export())); // only inactive records
+        $this->assertSame(1, count($t->export())); // only inactive records
 
         $t = (clone $u)->addCondition('active', 'like', '%999%');
-        $this->assertEquals(0, count($t->export())); // bad value, so it will not match anything
+        $this->assertSame(0, count($t->export())); // bad value, so it will not match anything
 
         $t = (clone $u)->addCondition('active', 'like', '%ABC%');
-        $this->assertEquals(0, count($t->export())); // bad value, so it will not match anything
+        $this->assertSame(0, count($t->export())); // bad value, so it will not match anything
     }
 }

@@ -16,47 +16,47 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, 'user');
 
         $j = $m->join('contact');
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('contact_id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
+        $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact2.test_id');
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('test_id', $this->getProtected($j, 'foreign_field'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
+        $this->assertSame('id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('test_id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact3', 'test_id');
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
+        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact3', ['test_id']);
-        $this->assertEquals(false, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('id', $this->getProtected($j, 'foreign_field'));
+        $this->assertFalse($this->getProtected($j, 'reverse'));
+        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $j = $m->join('contact4.foo_id', ['test_id', 'reverse' => true]);
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('foo_id', $this->getProtected($j, 'foreign_field'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
+        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testDirection2()
     {
         $db = new Persistence\SQL($this->db->connection);
         $m = new Model($db, 'user');
         $j = $m->join('contact4.foo_id', 'test_id');
-        $this->assertEquals(true, $this->getProtected($j, 'reverse'));
-        $this->assertEquals('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertEquals('foo_id', $this->getProtected($j, 'foreign_field'));
+        $this->assertTrue($this->getProtected($j, 'reverse'));
+        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
+        $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
     public function testJoinSaving1()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -84,7 +84,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_u->unload();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
+            'user' => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $this->getDB('user,contact'));
 
@@ -125,7 +125,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'name' => 'John']],
+            'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
         ], $this->getDB('user,contact'));
 
@@ -161,7 +161,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinSaving3()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -186,7 +186,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
+            'user' => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $this->getDB('user,contact'));
     }
@@ -230,7 +230,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinUpdate()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -384,7 +384,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $j->addField('contact_phone');
 
         $m_u->onHook('afterSave', function ($m) {
-            if ($m['contact_phone'] != '+123') {
+            if ($m['contact_phone'] !== '+123') {
                 $m['contact_phone'] = '+123';
                 $m->save();
             }
@@ -394,14 +394,14 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user'    => [1 => ['id' => 1, 'name' => 'John']],
+            'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
         ], $this->getDB('user,contact'));
     }
 
     public function testDoubleJoin()
     {
-        if ($this->driverType == 'pgsql') {
+        if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
@@ -416,7 +416,6 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
             ], 'country' => [
-
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
@@ -441,7 +440,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_u->save();
 
         $m_u->tryLoad(40);
-        $this->assertEquals(false, $m_u->loaded());
+        $this->assertFalse($m_u->loaded());
 
         $this->assertSame($m_u->getField('country_id')->join, $m_u->getField('contact_phone')->join);
 
@@ -460,7 +459,6 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
                     300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
                     301 => ['id' => 301, 'contact_phone' => '+000', 'country_id' => 4],
                 ], 'country' => [
-
                     2 => ['id' => 2, 'name' => 'USA'],
                     3 => ['id' => 3, 'name' => 'India'],
                     4 => ['id' => 4, 'name' => 'LV'],
@@ -482,7 +480,6 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
             ], 'country' => [
-
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
@@ -514,7 +511,6 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
                     200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                     300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
                 ], 'country' => [
-
                     2 => ['id' => 2, 'name' => 'US'],
                     3 => ['id' => 3, 'name' => 'India'],
                 ], ],
@@ -588,7 +584,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $m_e = new Model($db, 'email');
         $m_e->addField('contact_id');
         $m_e->addField('address');
-        $ref = $j->hasMany('Email', [$m_e, 'our_field'=>'contact_id', 'their_field'=>'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+        $ref = $j->hasMany('Email', [$m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
 
         $m_u->load(1);
         $this->assertEquals([

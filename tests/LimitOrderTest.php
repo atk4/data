@@ -109,7 +109,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
         // pass parameters as array elements [field=>order]
         $i = clone $ii;
-        $i->setOrder(['net'=>true, 'vat'=>false]);
+        $i->setOrder(['net' => true, 'vat' => false]);
         $i->onlyFields(['net', 'vat']);
         $this->assertEquals([
             ['net' => 15, 'vat' => 4],
@@ -119,7 +119,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
         // pass parameters as array elements [field=>order], same as above but use 'desc' instead of true
         $i = clone $ii;
-        $i->setOrder(['net'=>'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
+        $i->setOrder(['net' => 'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
         $i->onlyFields(['net', 'vat']);
         $this->assertEquals([
             ['net' => 15, 'vat' => 4],
@@ -155,7 +155,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         $i->order = []; // reset
         $i->setOrder($i->expr('[net]*[vat]'));
         $i->onlyFields(['code']);
-        $this->assertEquals([
+        $this->assertSame([
             ['code' => 'B'], // 10 * 4 = 40
             ['code' => 'A'], // 10 * 5 = 50
             ['code' => 'C'], // 15 * 4 = 60
@@ -165,7 +165,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         $i->order = []; // reset
         $i->setOrder($i->expr('[net]*[vat] desc'));
         $i->onlyFields(['code']);
-        $this->assertEquals([
+        $this->assertSame([
             ['code' => 'C'], // 15 * 4 = 60
             ['code' => 'A'], // 10 * 5 = 50
             ['code' => 'B'], // 10 * 4 = 40
@@ -175,7 +175,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         $i->order = []; // reset
         $i->setOrder($i->expr('[net]*[vat]'), 'desc');
         $i->onlyFields(['code']);
-        $this->assertEquals([
+        $this->assertSame([
             ['code' => 'C'], // 15 * 4 = 60
             ['code' => 'A'], // 10 * 5 = 50
             ['code' => 'B'], // 10 * 4 = 40
@@ -185,7 +185,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         $i->order = []; // reset
         $i->setOrder(['vat', $i->expr('[net]*[vat]')]);
         $i->onlyFields(['code']);
-        $this->assertEquals([
+        $this->assertSame([
             ['code' => 'B'], // 4, 10 * 4 = 40
             ['code' => 'C'], // 4, 15 * 4 = 60
             ['code' => 'A'], // 5, 10 * 5 = 50
@@ -195,7 +195,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
     /**
      * Unsupported order parameter.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testExceptionUnsupportedOrderParam()
     {

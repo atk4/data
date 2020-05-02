@@ -33,14 +33,14 @@ class Join
      *
      * @var Persistence
      */
-    protected $persistence = null;
+    protected $persistence;
 
     /**
      * ID used by a joined table.
      *
      * @var mixed
      */
-    protected $id = null;
+    protected $id;
 
     /**
      * Field that is used as native "ID" in the foreign table.
@@ -128,7 +128,7 @@ class Join
      *
      * @var Join
      */
-    protected $join = null;
+    protected $join;
 
     /**
      * Default constructor. Will copy argument into properties.
@@ -144,8 +144,6 @@ class Join
 
     /**
      * Will use either foreign_alias or create #join_<table>.
-     *
-     * @return string
      */
     public function getDesiredName(): string
     {
@@ -358,7 +356,7 @@ class Join
         }
 
         $defaults = array_merge([
-            'our_field'   => $this->id_field,
+            'our_field' => $this->id_field,
             'their_field' => $this->owner->table . '_' . $this->id_field,
         ], $defaults);
 

@@ -18,7 +18,7 @@ class Field_SQL_Expression extends Field_SQL
      *
      * @var mixed
      */
-    public $expr = null;
+    public $expr;
 
     /**
      * Expressions are always read_only.
@@ -30,22 +30,22 @@ class Field_SQL_Expression extends Field_SQL
     /**
      * Specifies how to aggregate this.
      */
-    public $aggregate = null;
+    public $aggregate;
 
     /**
      * Aggregation by concatenation.
      */
-    public $concat = null;
+    public $concat;
 
     /**
      * When defining as aggregate, this will point to relation object.
      */
-    public $aggregate_relation = null;
+    public $aggregate_relation;
 
     /**
      * Specifies which field to use.
      */
-    public $field = null;
+    public $field;
 
     /**
      * Initialization.

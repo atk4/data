@@ -18,7 +18,7 @@ class FieldHereditaryTest extends \atk4\schema\PhpunitTestCase
         });
 
         $m->load(1);
-        $this->assertEquals('world', $m['name']);
-        $this->assertEquals('WORLD', $m['caps']);
+        $this->assertSame('world', $m['name']);
+        $this->assertSame('WORLD', $m['caps']);
     }
 }

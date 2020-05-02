@@ -28,13 +28,13 @@ class ValidationException extends Exception
                 'Multiple unhandled validation errors',
                 'errors' => $errors,
                 'intent' => $intent,
-                'model'  => $model,
+                'model' => $model,
             ]);
         }
 
         if ($c === 1) {
             // foreach here just to get key/value from a single member
-            foreach ($errors as $field=>$error) {
+            foreach ($errors as $field => $error) {
                 return parent::__construct([
                     $error,
                     'field' => $field,
@@ -47,7 +47,7 @@ class ValidationException extends Exception
             'Incorrect use of ValidationException, argument should be an array',
             'errors' => $errors,
             'intent' => $intent,
-            'model'  => $model,
+            'model' => $model,
         ]);
     }
 }

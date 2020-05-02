@@ -22,10 +22,21 @@
       "name": "Romans Malinovskis",
       "email": "romans@agiletoolkit.org",
       "homepage": "https://nearly.guru/"
+    },
+    {
+      "name": "Imants Horsts",
+      "homepage": "https://darkside.lv/"
+    },
+    {
+      "name": "Michael Voříšek",
+      "homepage": "https://mvorisek.cz/"
     }
   ],
   "minimum-stability": "dev",
   "prefer-stable": true,
+  "config": {
+    "sort-packages": true
+  },
   "require": {
     "php": ">=7.2.0",
     "ext-intl": "*",
@@ -40,17 +51,22 @@
   },
   "require-dev": {
     "atk4/schema": "dev-develop",
-    "phpunit/phpunit": "<6",
+    "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/dbunit": ">=1.2",
     "phpunit/phpcov": "*",
-    "codeclimate/php-test-reporter": "*"
+    "phpunit/phpunit": "<6"
   },
   "require-dev-release": {
     "atk4/schema": "^2.0",
-    "phpunit/phpunit": "<6",
+    "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/dbunit": ">=1.2",
     "phpunit/phpcov": "*",
-    "codeclimate/php-test-reporter": "*"
+    "phpunit/phpunit": "<6"
+  },
+  "replace": {
+    "atk4/data": "self.version"
+  },
+  "replace-release": {
   },
   "autoload": {
     "psr-4": {

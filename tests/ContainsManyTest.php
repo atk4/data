@@ -119,14 +119,14 @@ class Discount2 extends Model
 // ============================================================================
 
 /**
- * @coversDefaultClass Model
+ * @coversDefaultClass \atk4\data\Model
  *
  * ATK Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
  */
 class ContainsManyTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -156,9 +156,9 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         $i = new Invoice2($this->db);
 
         // test caption of containsMany reference
-        $this->assertEquals('My Invoice Lines', $i->getField('lines')->getCaption());
-        $this->assertEquals('My Invoice Lines', $i->refModel('lines')->getModelCaption());
-        $this->assertEquals('My Invoice Lines', $i->ref('lines')->getModelCaption());
+        $this->assertSame('My Invoice Lines', $i->getField('lines')->getCaption());
+        $this->assertSame('My Invoice Lines', $i->refModel('lines')->getModelCaption());
+        $this->assertSame('My Invoice Lines', $i->ref('lines')->getModelCaption());
     }
 
     /**
@@ -172,9 +172,9 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         // now let's add some lines
         $l = $i->ref('lines');
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
-            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
-            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
+            1 => ['id' => 1, 'vat_rate_id' => 1, 'price' => 10, 'qty' => 2, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
+            2 => ['id' => 2, 'vat_rate_id' => 2, 'price' => 15, 'qty' => 5, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
+            3 => ['id' => 3, 'vat_rate_id' => 1, 'price' => 40, 'qty' => 1, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
         ];
 
         foreach ($rows as $row) {
@@ -189,25 +189,25 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         // now let's delete line with id=2 and add one more line
         $i->ref('lines')
             ->load(2)->delete()
-            ->insert(['vat_rate_id'=>2, 'price' => 50, 'qty' => 3, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')]);
+            ->insert(['vat_rate_id' => 2, 'price' => 50, 'qty' => 3, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')]);
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
-            3 => ['id' => 3, 'vat_rate_id'=>1, 'price' => 40, 'qty' => 1, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
-            4 => ['id' => 4, 'vat_rate_id'=>2, 'price' => 50, 'qty' => 3, 'discounts' => null, 'add_date'=>new \DateTime('2019-01-01')],
+            1 => ['id' => 1, 'vat_rate_id' => 1, 'price' => 10, 'qty' => 2, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
+            3 => ['id' => 3, 'vat_rate_id' => 1, 'price' => 40, 'qty' => 1, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
+            4 => ['id' => 4, 'vat_rate_id' => 2, 'price' => 50, 'qty' => 3, 'discounts' => null, 'add_date' => new \DateTime('2019-01-01')],
         ];
         $this->assertEquals($rows, $i->ref('lines')->export());
 
         // try hasOne reference
         $v = $i->ref('lines')->load(4)->ref('vat_rate_id');
-        $this->assertEquals(15, $v['rate']);
+        $this->assertSame(15, $v['rate']);
 
         // test expression fields
         $v = $i->ref('lines')->load(4);
-        $this->assertEquals(50 * 3 * (1 + 15 / 100), $v['total_gross']);
+        $this->assertSame(50 * 3 * (1 + 15 / 100), $v['total_gross']);
 
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
-        $this->assertEquals(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i['total_gross']); // =245.10
+        $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i['total_gross']); // =245.10
 
         //var_dump($i->export(), $i->export(null,null,false));
     }
@@ -215,7 +215,7 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model should be loaded before traversing to containsMany relation.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     /* Imants: it looks that this is not actually required - disabling
     public function testEx1()
@@ -237,8 +237,8 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         $l = $i->ref('lines');
 
         $rows = [
-            1 => ['id' => 1, 'vat_rate_id'=>1, 'price' => 10, 'qty' => 2, 'add_date' => new \DateTime('2019-06-01')],
-            2 => ['id' => 2, 'vat_rate_id'=>2, 'price' => 15, 'qty' => 5, 'add_date' => new \DateTime('2019-07-01')],
+            1 => ['id' => 1, 'vat_rate_id' => 1, 'price' => 10, 'qty' => 2, 'add_date' => new \DateTime('2019-06-01')],
+            2 => ['id' => 2, 'vat_rate_id' => 2, 'price' => 15, 'qty' => 5, 'add_date' => new \DateTime('2019-07-01')],
         ];
         foreach ($rows as $row) {
             $l->insert($row);
@@ -259,14 +259,14 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         ], $i->ref('lines')->load(1)->ref('discounts')->export());
 
         // is total_gross correctly calculated?
-        $this->assertEquals(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i['total_gross']); // =110.45
+        $this->assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i['total_gross']); // =110.45
 
         // do we also correctly calculate discounts from nested containsMany?
-        $this->assertEquals(24.2 * 15 / 100 + 86.25 * 20 / 100, $i['discounts_total_sum']); // =20.88
+        $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i['discounts_total_sum']); // =20.88
 
         // let's test how it all looks in persistence without typecasting
         $exp_lines = $i->export(null, null, false)[0]['lines'];
-        $this->assertEquals(
+        $this->assertSame(
             json_encode([
                 '1' => [
                     'id' => 1, 'vat_rate_id' => '1', 'price' => '10', 'qty' => '2', 'add_date' => (new \DateTime('2019-06-01'))->format('Y-m-d\TH:i:sP'), 'discounts' => json_encode([

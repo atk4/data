@@ -13,7 +13,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * If first argument is array, then second argument should not be used.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testException1()
     {
@@ -25,7 +25,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testException2()
     {
@@ -36,7 +36,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testException3()
     {
@@ -47,7 +47,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testException4()
     {
@@ -58,7 +58,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testException5()
     {
@@ -69,7 +69,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testException6()
     {
@@ -80,7 +80,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      *
-     * @expectedException Exception
+     * @expectedException \atk4\data\Exception
      */
     public function testException7()
     {
@@ -152,6 +152,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
         $data = [];
         foreach ($i->rawIterator() as $row) {
             $data[] = $row;
+
             break;
         }
 
@@ -200,6 +201,6 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(10, $data[1]['total_net']);
         $this->assertEquals(20, $data[2]['total_net']);
         $this->assertEquals(15, $data[3]['total_net']);
-        $this->assertEquals(null, $i['total_net']);
+        $this->assertNull($i['total_net']);
     }
 }

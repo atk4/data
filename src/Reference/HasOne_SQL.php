@@ -18,15 +18,12 @@ class HasOne_SQL extends HasOne
      *
      * Returns Expression in case you want to do something else with it.
      *
-     * @param string|Field|array $field       or [$field, ..defaults]
-     * @param string|null        $their_field
+     * @param string|Field|array $field or [$field, ..defaults]
      *
      * @throws Exception
      * @throws \atk4\core\Exception
-     *
-     * @return Field_SQL_Expression
      */
-    public function addField($field, ?string $their_field = null): Field_SQL_Expression
+    public function addField($field, string $their_field = null): Field_SQL_Expression
     {
         if (is_array($field)) {
             $defaults = $field;
@@ -133,8 +130,6 @@ class HasOne_SQL extends HasOne
      * @param array $defaults Properties
      *
      * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
     public function refLink($defaults = []): Model
     {
@@ -155,8 +150,6 @@ class HasOne_SQL extends HasOne
      *
      * @throws Exception
      * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
     public function ref($defaults = []): Model
     {
@@ -178,7 +171,7 @@ class HasOne_SQL extends HasOne
         // we should persist the relation in condtition
         // example - $m->load(1)->ref('refLink')->import($rows);
         if ($this->owner->loaded() && !$m->loaded()) {
-            if ($this->owner->id_field == $this->our_field) {
+            if ($this->owner->id_field === $this->our_field) {
                 $condition_field = $this->their_field ?: $m->id_field;
                 $condition_value = $this->owner[$this->our_field ?: $this->owner->id_field];
                 $m->addCondition($condition_field, $condition_value);
@@ -201,8 +194,6 @@ class HasOne_SQL extends HasOne
      *
      * @throws Exception
      * @throws \atk4\core\Exception
-     *
-     * @return Field_SQL_Expression
      */
     public function addTitle($defaults = []): Field_SQL_Expression
     {
@@ -233,13 +224,13 @@ class HasOne_SQL extends HasOne
                     return $mm->action('field', [$mm->title_field])->reset('order');
                 },
                 'type' => null,
-                'ui'   => ['editable' => false, 'visible' => true],
+                'ui' => ['editable' => false, 'visible' => true],
             ],
             $defaults,
             [
                 // to be able to change title field, but not save it
                 // afterSave hook will take care of the rest
-                'read_only'  => false,
+                'read_only' => false,
                 'never_save' => true,
             ]
         ));

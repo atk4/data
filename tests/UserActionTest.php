@@ -36,7 +36,7 @@ class ACClient extends Model
         parent::init();
 
         $this->addField('name');
-        $this->addField('reminder_sent', ['type'=>'boolean']);
+        $this->addField('reminder_sent', ['type' => 'boolean']);
 
         // this action can be invoked from UI
         $this->addAction('send_reminder');
@@ -51,15 +51,15 @@ class ACClient extends Model
  */
 class UserActionTest extends \atk4\schema\PhpunitTestCase
 {
-    public $pers = null;
+    public $pers;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
         $this->pers = new Persistence_Static([
-            1 => ['name'=>'John'],
-            2 => ['name'=>'Peter'],
+            1 => ['name' => 'John'],
+            2 => ['name' => 'Peter'],
         ]);
     }
 
@@ -68,14 +68,14 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $client = new ACClient($this->pers);
 
         $actions = $client->getActions();
-        $this->assertEquals(4, count($actions)); // don't return system actions here, but include add/edit/delete
-        $this->assertEquals(0, count($client->getActions(UserAction\Generic::ALL_RECORDS))); // don't return system actions here
+        $this->assertSame(4, count($actions)); // don't return system actions here, but include add/edit/delete
+        $this->assertSame(0, count($client->getActions(UserAction\Generic::ALL_RECORDS))); // don't return system actions here
 
         $act1 = $actions['send_reminder'];
 
         // action takes no arguments. If it would, we should be able to find info about those
-        $this->assertEquals([], $act1->args);
-        $this->assertEquals(UserAction\Generic::SINGLE_RECORD, $act1->scope);
+        $this->assertSame([], $act1->args);
+        $this->assertSame(UserAction\Generic::SINGLE_RECORD, $act1->scope);
 
         // load record, before executing, because scope is single record
         $client->load(1);
@@ -84,18 +84,18 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $res = $act1->execute();
         $this->assertTrue($client['reminder_sent']);
 
-        $this->assertEquals('sent reminder to John', $res);
+        $this->assertSame('sent reminder to John', $res);
         $client->unload();
 
         // test system action
         $act2 = $client->getAction('backup_clients');
 
         // action takes no arguments. If it would, we should be able to find info about those
-        $this->assertEquals([], $act2->args);
-        $this->assertEquals(UserAction\Generic::ALL_RECORDS, $act2->scope);
+        $this->assertSame([], $act2->args);
+        $this->assertSame(UserAction\Generic::ALL_RECORDS, $act2->scope);
 
         $res = $act2->execute();
-        $this->assertEquals('backs up all clients', $res);
+        $this->assertSame('backs up all clients', $res);
 
         // non-existing action
         $act3 = $client->hasAction('foo');
@@ -110,20 +110,20 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         });
 
         $client->load(1);
-        $this->assertEquals('John', $client->getAction('say_name')->execute());
+        $this->assertSame('John', $client->getAction('say_name')->execute());
 
         $client->getAction('say_name')->preview = function ($m, $arg) {
             return ($m instanceof ACClient) ? 'will say ' . $m['name'] : 'will fail';
         };
-        $this->assertEquals('will say John', $client->getAction('say_name')->preview('x'));
+        $this->assertSame('will say John', $client->getAction('say_name')->preview('x'));
 
-        $client->addAction('also_backup', ['callback'=>'backup_clients']);
-        $this->assertEquals('backs up all clients', $client->getAction('also_backup')->execute());
+        $client->addAction('also_backup', ['callback' => 'backup_clients']);
+        $this->assertSame('backs up all clients', $client->getAction('also_backup')->execute());
 
         $client->getAction('also_backup')->preview = 'backup_clients';
-        $this->assertEquals('backs up all clients', $client->getAction('also_backup')->preview());
+        $this->assertSame('backs up all clients', $client->getAction('also_backup')->preview());
 
-        $this->assertEquals('Will execute Also Backup', $client->getAction('also_backup')->getDescription());
+        $this->assertSame('Will execute Also Backup', $client->getAction('also_backup')->getDescription());
     }
 
     public function testPreviewFail()
@@ -143,7 +143,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     public function testScope2()
     {
         $client = new ACClient($this->pers);
-        $client->addAction('new_client', ['scope'=>UserAction\Generic::NO_RECORDS]);
+        $client->addAction('new_client', ['scope' => UserAction\Generic::NO_RECORDS]);
         $client->load(1);
 
         $this->expectExceptionMessage('executed on existing record');
@@ -153,7 +153,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     public function testScope3()
     {
         $client = new ACClient($this->pers);
-        $client->addAction('new_client', ['scope'=>UserAction\Generic::NO_RECORDS, 'atomic'=>false]);
+        $client->addAction('new_client', ['scope' => UserAction\Generic::NO_RECORDS, 'atomic' => false]);
 
         $this->expectExceptionMessage('not defined');
         $client->executeAction('new_client');
@@ -210,10 +210,10 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
             $client->load(1);
 
-            $this->assertNotEquals('Peter', $client['name']);
+            $this->assertNotSame('Peter', $client['name']);
             $client['name'] = 'Peter';
             $a->execute();
-            $this->assertEquals('Peter', $client['name']);
+            $this->assertSame('Peter', $client['name']);
         } catch (Exception $e) {
             echo $e->getColorfulText();
 
@@ -224,30 +224,30 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     public function testFieldsTooDirty1()
     {
         $client = new ACClient($this->pers);
-        $a = $client->addAction('change_details', ['callback'=>'save', 'fields'=>['name']]);
+        $a = $client->addAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
 
         $client->load(1);
 
-        $this->assertNotEquals('Peter', $client['name']);
+        $this->assertNotSame('Peter', $client['name']);
         $client['name'] = 'Peter';
         $client['reminder_sent'] = true;
         $this->expectExceptionMessage('dirty fields');
         $a->execute();
-        $this->assertEquals('Peter', $client['name']);
+        $this->assertSame('Peter', $client['name']);
     }
 
     public function testFieldsIncorrect()
     {
         $client = new ACClient($this->pers);
-        $a = $client->addAction('change_details', ['callback'=>'save', 'fields'=>'whops_forgot_brackets']);
+        $a = $client->addAction('change_details', ['callback' => 'save', 'fields' => 'whops_forgot_brackets']);
 
         $client->load(1);
 
-        $this->assertNotEquals('Peter', $client['name']);
+        $this->assertNotSame('Peter', $client['name']);
         $client['name'] = 'Peter';
         $this->expectExceptionMessage('array');
         $a->execute();
-        $this->assertEquals('Peter', $client['name']);
+        $this->assertSame('Peter', $client['name']);
     }
 
     /**
@@ -263,9 +263,9 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $this->assertFalse($action->getConfirmation());
 
         $action->confirmation = true;
-        $this->assertEquals('Are you sure you wish to Test John?', $action->getConfirmation());
+        $this->assertSame('Are you sure you wish to Test John?', $action->getConfirmation());
 
         $action->confirmation = 'Are you sure?';
-        $this->assertEquals('Are you sure?', $action->getConfirmation());
+        $this->assertSame('Are you sure?', $action->getConfirmation());
     }
 }
