@@ -1032,8 +1032,6 @@ class SQL extends Persistence
     /**
      * Last ID inserted.
      *
-     * @throws Exception
-     *
      * @return mixed
      */
     public function lastInsertID(Model $m)
@@ -1041,7 +1039,7 @@ class SQL extends Persistence
         $con = $this->connection();
         $seq = $m->sequence ?: null;
 
-        // PostGRE SQL PDO always requires sequence name in lastInertID method as parameter
+        // PostGRE SQL PDO always requires sequence name in lastInsertID method as parameter
         // So let's use its default one if no specific is set
         if ($con instanceof \atk4\dsql\Connection_PgSQL && $seq === null) {
             $seq = $m->table . '_' . $m->id_field . '_seq';
