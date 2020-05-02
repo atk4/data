@@ -421,10 +421,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             'ui' => ['icon' => 'plus'],
         ]);
         $this->addAction('edit', [
-            'fields' => true,
-            'scope' => UserAction\Generic::SINGLE_RECORD,
-            'callback' => 'save',
-            'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => 'edit'], 'execButton' => ['Button', 'Save', 'blue']],
+            'fields'  => true,
+            'scope'   => UserAction\Generic::SINGLE_RECORD,
+            'callback'=> 'save',
+            'ui'      => ['icon'=>'edit', 'button'=>[null, 'icon'=>'edit'], 'execButton'=>[\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
         $this->addAction('delete', [
             'scope' => UserAction\Generic::SINGLE_RECORD,
