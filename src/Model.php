@@ -2602,8 +2602,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function lastInsertID()
     {
-        if (isset($this->persistence) && $this->persistence instanceof Persistence\SQL) {
-            return $this->persistence->connection->lastInsertId($this);
+        if ($this->persistence instanceof Persistence\SQL) {
+            return $this->persistence->lastInsertID($this);
         }
 
         throw new Exception('Model is not associated with SQL-enabled persistence');
