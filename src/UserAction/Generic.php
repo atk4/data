@@ -7,6 +7,7 @@ use atk4\core\Exception;
 use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
 use atk4\data\Model;
+use atk4\ui\ActionExecutor\Interface_;
 
 /**
  * Implements generic user action. Assigned to a model it can be invoked by a user. UserAction class contains a
@@ -222,5 +223,17 @@ class Generic
     public function getModel()
     {
         return $this->owner;
+    }
+
+    /**
+     * Set an UI Action Executor for this action.
+     *
+     * @return Interface_
+     */
+    public function setUiExecutor(Interface_ $executor): Interface_
+    {
+        $this->ui['executor'] = $executor;
+
+        return $executor;
     }
 }
