@@ -2591,10 +2591,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     // }}}
 
-    // {{{ Misc methods
-
-    // }}}
-
     // {{{ Debug Methods
 
     /**
