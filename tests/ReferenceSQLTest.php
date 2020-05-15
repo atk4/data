@@ -337,8 +337,8 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(2, $l['items_star']); // 2 rows in total
         $this->assertSame('Pork::Chicken', $l['items_c:']);
         $this->assertSame('Pork-Chicken', $l['items_c-']);
-        $this->assertEquals(strlen('Chicken') + strlen('Pork'), $l['len']);
-        $this->assertEquals(strlen('Chicken') + strlen('Pork'), $l['len2']);
+        $this->assertEquals(mb_strlen('Chicken') + mb_strlen('Pork'), $l['len']);
+        $this->assertEquals(mb_strlen('Chicken') + mb_strlen('Pork'), $l['len2']);
         $this->assertEquals(10, $l['chicken5']);
 
         $l->load(2);

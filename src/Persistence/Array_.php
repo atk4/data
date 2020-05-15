@@ -358,7 +358,7 @@ class Array_ extends Persistence
 
             // extract
             $field = $cond[0];
-            $method = strtolower($cond[1]);
+            $method = mb_strtolower($cond[1]);
             $value = $cond[2];
 
             // check if the method is supported by the iterator

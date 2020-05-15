@@ -1291,7 +1291,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function setOrder($field, $desc = null)
     {
         // fields passed as CSV string
-        if (is_string($field) && strpos($field, ',') !== false) {
+        if (is_string($field) && mb_strpos($field, ',') !== false) {
             $field = explode(',', $field);
         }
 
@@ -1327,7 +1327,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($desc === null && is_string($field)) {
             // no realistic workaround in PHP for 2nd argument being null
             $field = trim($field);
-            if (strpos($field, ' ') !== false) {
+            if (mb_strpos($field, ' ') !== false) {
                 list($field, $desc) = array_map('trim', explode(' ', $field, 2));
             }
         }
@@ -2515,8 +2515,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $refs = [];
         foreach ($this->elements as $key => $val) {
-            if (substr($key, 0, 5) === '#ref_') {
-                $refs[substr($key, 5)] = $val;
+            if (mb_substr($key, 0, 5) === '#ref_') {
+                $refs[mb_substr($key, 5)] = $val;
             }
         }
 

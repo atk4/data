@@ -190,7 +190,7 @@ class SQL extends Persistence
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
             function ($matches) use (&$args, $m) {
-                $identifier = substr($matches[0], 1, -1);
+                $identifier = mb_substr($matches[0], 1, -1);
                 if ($identifier && !isset($args[$identifier])) {
                     $args[$identifier] = $m->getField($identifier);
                 }
@@ -387,7 +387,7 @@ class SQL extends Persistence
                         }
 
                         // "like" or "regexp" conditions do not need typecasting to field type!
-                        if ($row[0] instanceof Field && (count($row) === 2 || !in_array(strtolower($row[1]), ['like', 'regexp'], true))) {
+                        if ($row[0] instanceof Field && (count($row) === 2 || !in_array(mb_strtolower($row[1]), ['like', 'regexp'], true))) {
                             $valueKey = count($row) === 2 ? 1 : 2;
                             $row[$valueKey] = $this->typecastSaveField($row[0], $row[$valueKey]);
                         }
@@ -410,7 +410,7 @@ class SQL extends Persistence
                 $q->where($cond[0], $cond[1]);
             } else {
                 // "like" or "regexp" conditions do not need typecasting to field type!
-                if ($cond[0] instanceof Field && !in_array(strtolower($cond[1]), ['like', 'regexp'], true)) {
+                if ($cond[0] instanceof Field && !in_array(mb_strtolower($cond[1]), ['like', 'regexp'], true)) {
                     $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
                 }
                 $q->where($cond[0], $cond[1], $cond[2]);
@@ -549,7 +549,7 @@ class SQL extends Persistence
                     $format = $f->persist_format;
                 } else {
                     $format = $format[$f->type];
-                    if (strpos($v, '.') !== false) { // time possibly with microseconds, otherwise invalid format
+                    if (mb_strpos($v, '.') !== false) { // time possibly with microseconds, otherwise invalid format
                         $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
                     }
                 }
