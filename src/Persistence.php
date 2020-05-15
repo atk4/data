@@ -38,7 +38,7 @@ class Persistence
         // Process DSN string
         $dsn = \atk4\dsql\Connection::normalizeDSN($dsn, $user, $password);
 
-        $driverType = mb_strtolower($args['driver']/*BC compatibility*/ ?? $args['driverType'] ?? $dsn['driverType']);
+        $driverType = strtolower($args['driver']/*BC compatibility*/ ?? $args['driverType'] ?? $dsn['driverType']);
 
         switch ($driverType) {
             case 'mysql':
@@ -47,7 +47,7 @@ class Persistence
                 // Omitting UTF8 is always a bad problem, so unless it's specified we will do that
                 // to prevent nasty problems. This is un-tested on other databases, so moving it here.
                 // It gives problem with sqlite
-                if (mb_strpos($dsn['dsn'], ';charset=') === false) {
+                if (strpos($dsn['dsn'], ';charset=') === false) {
                     $dsn['dsn'] .= ';charset=utf8mb4';
                 }
 

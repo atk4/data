@@ -2515,8 +2515,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         $refs = [];
         foreach ($this->elements as $key => $val) {
-            if (mb_substr($key, 0, 5) === '#ref_') {
-                $refs[mb_substr($key, 5)] = $val;
+            if (substr($key, 0, 5) === '#ref_') {
+                $refs[substr($key, 5)] = $val;
             }
         }
 
