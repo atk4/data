@@ -52,7 +52,6 @@ return PhpCsFixer\Config::create()
         'nullable_type_declaration_for_default_null_value' => [
             'use_nullable_type_declaration' => false,
         ],
-        'mb_str_functions' => true,
 
         // @TODO fix later
         'strict_comparison' => false,

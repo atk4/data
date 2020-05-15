@@ -21,7 +21,7 @@ class CSVTest extends AtkPhpunit\TestCase
 
         // better to skip this test on Windows, prevent permissions issues
         // see also https://github.com/atk4/data/issues/271
-        if (mb_strtoupper(mb_substr(PHP_OS, 0, 3)) === 'WIN') {
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $this->markTestSkipped('Skip on Windows');
         }
 

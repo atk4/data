@@ -160,7 +160,7 @@ class Join
         // handle foreign table containing a dot
         if (
             is_string($this->foreign_table)
-            && mb_strpos($this->foreign_table, '.') !== false
+            && strpos($this->foreign_table, '.') !== false
         ) {
             if (!isset($this->reverse)) {
                 $this->reverse = true;
