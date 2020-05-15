@@ -20,7 +20,7 @@ use atk4\dsql\Query;
  *
  * @property Field[]|Reference[] $elements
  */
-class Model implements \ArrayAccess, \IteratorAggregate
+class Model implements \IteratorAggregate
 {
     use ContainerTrait {
         add as _add;
@@ -991,6 +991,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Does field exist?
+     */
+    public function _isset(string $name): bool
+    {
+        return array_key_exists($this->normalizeFieldName($name), $this->dirty);
+    }
+
+    /**
      * Remove current field value and use default.
      *
      * @param string|array $name
@@ -1006,55 +1014,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         return $this;
-    }
-
-    // }}}
-
-    // {{{ ArrayAccess support
-
-    /**
-     * Do field exist?
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function offsetExists($name)
-    {
-        return array_key_exists($this->normalizeFieldName($name), $this->dirty);
-    }
-
-    /**
-     * Returns field value.
-     *
-     * @param string $name
-     *
-     * @return mixed
-     */
-    public function offsetGet($name)
-    {
-        return $this->get($name);
-    }
-
-    /**
-     * Set field value.
-     *
-     * @param string $name
-     * @param mixed  $val
-     */
-    public function offsetSet($name, $val)
-    {
-        $this->set($name, $val);
-    }
-
-    /**
-     * Redo field value.
-     *
-     * @param string $name
-     */
-    public function offsetUnset($name)
-    {
-        $this->_unset($name);
     }
 
     // }}}
