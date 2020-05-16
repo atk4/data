@@ -10,7 +10,6 @@ use atk4\core\DynamicMethodTrait;
 use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
-use atk4\core\NameTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\data\UserAction\Generic;
 use atk4\dsql\Query;
@@ -30,7 +29,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use InitializerTrait {
         init as _init;
     }
-    use NameTrait;
     use DIContainerTrait;
     use FactoryTrait;
     use AppScopeTrait;
