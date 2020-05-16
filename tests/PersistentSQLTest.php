@@ -26,18 +26,18 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addField('surname');
 
         $m->load(1);
-        $this->assertSame('John', $m->get('name'));
+        $this->assertSame('John', $m['name']);
 
         $m->load(2);
-        $this->assertSame('Jones', $m->get('surname'));
-        $m->set('surname', 'Smith');
+        $this->assertSame('Jones', $m['surname']);
+        $m['surname'] = 'Smith';
         $m->save();
 
         $m->load(1);
-        $this->assertSame('John', $m->get('name'));
+        $this->assertSame('John', $m['name']);
 
         $m->load(2);
-        $this->assertSame('Smith', $m->get('surname'));
+        $this->assertSame('Smith', $m['surname']);
     }
 
     public function testPersistenceInsert()
@@ -56,23 +56,23 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addField('surname');
 
         $ids = [];
-        foreach ($a->get('user') as $id => $row) {
+        foreach ($a['user'] as $id => $row) {
             $ids[] = $this->db->insert($m, $row);
         }
 
-        $m->load($ids->get(0));
-        $this->assertSame('John', $m->get('name'));
+        $m->load($ids[0]);
+        $this->assertSame('John', $m['name']);
 
-        $m->load($ids->get(1));
-        $this->assertSame('Jones', $m->get('surname'));
-        $m->set('surname', 'Smith');
+        $m->load($ids[1]);
+        $this->assertSame('Jones', $m['surname']);
+        $m['surname'] = 'Smith';
         $m->save();
 
-        $m->load($ids->get(0));
-        $this->assertSame('John', $m->get('name'));
+        $m->load($ids[0]);
+        $this->assertSame('John', $m['name']);
 
-        $m->load($ids->get(1));
-        $this->assertSame('Smith', $m->get('surname'));
+        $m->load($ids[1]);
+        $this->assertSame('Smith', $m['surname']);
     }
 
     public function testModelInsert()
@@ -90,13 +90,13 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addField('surname');
 
         $ms = [];
-        foreach ($a->get('user') as $id => $row) {
+        foreach ($a['user'] as $id => $row) {
             $ms[] = $m->insert($row);
         }
 
-        $this->assertSame('John', $m->load($ms->get(0))['name']);
+        $this->assertSame('John', $m->load($ms[0])['name']);
 
-        $this->assertSame('Jones', $m->load($ms->get(1))['surname']);
+        $this->assertSame('Jones', $m->load($ms[1])['surname']);
     }
 
     public function testModelSaveNoReload()
@@ -116,11 +116,11 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
         // insert new record, model id field
         $m->reload_after_save = false;
         $m->save(['name' => 'Jane', 'surname' => 'Doe']);
-        $this->assertSame('Jane', $m->get('name'));
-        $this->assertSame('Doe', $m->get('surname'));
+        $this->assertSame('Jane', $m['name']);
+        $this->assertSame('Doe', $m['surname']);
         $this->assertEquals(3, $m->id);
         // id field value is set with new id value even if reload_after_save = false
-        $this->assertEquals(3, $m->get($m->id_field));
+        $this->assertEquals(3, $m[$m->id_field]);
     }
 
     public function testModelInsertRows()
@@ -137,7 +137,7 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $m->import($a->get('user')); // import data
+        $m->import($a['user']); // import data
 
         $this->assertEquals(2, $m->action('count')->getOne());
     }
@@ -157,24 +157,24 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addField('surname');
 
         $ids = [];
-        foreach ($a->get('user') as $id => $row) {
+        foreach ($a['user'] as $id => $row) {
             $ids[] = $this->db->insert($m, $row);
         }
         $this->assertFalse($m->loaded());
 
-        $m->delete($ids->get(0));
+        $m->delete($ids[0]);
         $this->assertFalse($m->loaded());
 
-        $m->load($ids->get(1));
-        $this->assertSame('Jones', $m->get('surname'));
-        $m->set('surname', 'Smith');
+        $m->load($ids[1]);
+        $this->assertSame('Jones', $m['surname']);
+        $m['surname'] = 'Smith';
         $m->save();
 
-        $m->tryLoad($ids->get(0));
+        $m->tryLoad($ids[0]);
         $this->assertFalse($m->loaded());
 
-        $m->load($ids->get(1));
-        $this->assertSame('Smith', $m->get('surname'));
+        $m->load($ids[1]);
+        $this->assertSame('Smith', $m['surname']);
     }
 
     /**

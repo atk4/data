@@ -36,7 +36,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $m->set('name', 5);
+        $m['name'] = 5;
         $this->assertSame(5, $m->get('name'));
 
         $m->set('surname', 'Bilbo');
@@ -59,26 +59,26 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     {
         $m = new Model(['strict_field_check' => false]);
         $m->set(['name' => 5]);
-        $m->set('name', null);
+        $m['name'] = null;
         $this->assertSame(['name' => null], $m->data);
     }
 
     public function testFieldAccess2()
     {
         $m = new Model(['strict_field_check' => false]);
-        $this->assertFalse($m->_isset('name'));
+        $this->assertFalse(isset($m['name']));
         $m->set(['name' => 5]);
-        $this->assertTrue($m->_isset('name'));
-        $this->assertSame(5, $m->get('name'));
+        $this->assertTrue(isset($m['name']));
+        $this->assertSame(5, $m['name']);
 
-        $m->set('name', null);
-        $this->assertFalse($m->_isset('name'));
+        $m['name'] = null;
+        $this->assertFalse(isset($m['name']));
 
         $m = new Model();
         $n = $m->addField('name');
         $m->set($n, 5);
         $m->set($n, 5);
-        $this->assertSame(5, $m->get('name'));
+        $this->assertSame(5, $m['name']);
     }
 
     public function testGet()
@@ -107,50 +107,50 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m = new Model();
         $m->addField('name');
         $m->data = ['name' => 5];
-        $m->set('name', 5);
+        $m['name'] = 5;
         $this->assertSame([], $m->dirty);
 
-        $m->set('name', 10);
+        $m['name'] = 10;
         $this->assertSame(['name' => 5], $m->dirty);
 
-        $m->set('name', 15);
+        $m['name'] = 15;
         $this->assertSame(['name' => 5], $m->dirty);
 
-        $m->set('name', 5);
+        $m['name'] = 5;
         $this->assertSame([], $m->dirty);
 
-        $m->set('name', '5');
+        $m['name'] = '5';
         $this->assertSame(5, $m->dirty['name']);
 
-        $m->set('name', '6');
+        $m['name'] = '6';
         $this->assertSame(5, $m->dirty['name']);
-        $m->set('name', '5');
+        $m['name'] = '5';
         $this->assertSame(5, $m->dirty['name']);
 
-        $m->set('name', '5.0');
+        $m['name'] = '5.0';
         $this->assertSame(5, $m->dirty['name']);
 
         $m->dirty = [];
         $m->data = ['name' => ''];
-        $m->set('name', '');
+        $m['name'] = '';
         $this->assertSame([], $m->dirty);
 
         $m->data = ['name' => '5'];
-        $m->set('name', 5);
+        $m['name'] = 5;
         $this->assertSame('5', $m->dirty['name']);
-        $m->set('name', 6);
+        $m['name'] = 6;
         $this->assertSame('5', $m->dirty['name']);
-        $m->set('name', 5);
+        $m['name'] = 5;
         $this->assertSame('5', $m->dirty['name']);
-        $m->set('name', '5');
+        $m['name'] = '5';
         $this->assertSame([], $m->dirty);
 
         $m->data = ['name' => 4.28];
-        $m->set('name', '4.28');
+        $m['name'] = '4.28';
         $this->assertSame(4.28, $m->dirty['name']);
-        $m->set('name', '5.28');
+        $m['name'] = '5.28';
         $this->assertSame(4.28, $m->dirty['name']);
-        $m->set('name', 4.28);
+        $m['name'] = 4.28;
         $this->assertSame([], $m->dirty);
 
         // now with defaults
@@ -160,20 +160,20 @@ class BusinessModelTest extends AtkPhpunit\TestCase
 
         $this->assertSame('John', $m->get('name'));
 
-        $m->set('name', null);
+        $m['name'] = null;
         $this->assertSame(['name' => 'John'], $m->dirty);
         $this->assertSame(['name' => null], $m->data);
-        $this->assertNull($m->get('name'));
+        $this->assertNull($m['name']);
 
-        $m->_unset('name');
+        unset($m['name']);
         $this->assertSame('John', $m->get('name'));
     }
 
     /*
      * This is no longer the case after PR #69
      *
-     * Now changing $m->get('id') will actually update the value
-     * of original records. In a way $m->get('id') is not a direct
+     * Now changing $m['id'] will actually update the value
+     * of original records. In a way $m['id'] is not a direct
      * alias to ID, but has a deeper meaning and behaves more
      * like a regular field.
      *
@@ -185,7 +185,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
 
         $this->assertNotNull($m->getField('id'));
 
-        $m->set('id', 20);
+        $m['id'] = 20;
         $this->assertEquals(20, $m->id);
     }
      */
@@ -200,7 +200,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->addField('surname');
         $m->onlyFields(['surname']);
 
-        $m->set('name', 5);
+        $m['name'] = 5;
     }
 
     public function testException1fixed()
@@ -212,7 +212,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
 
         $m->allFields();
 
-        $m->set('name', 5);
+        $m['name'] = 5;
     }
 
     /**
@@ -223,13 +223,13 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m = new Model();
         $m->addField('name');
         $m->set('foo');
-        $this->assertSame($m->get('name'), 'foo');
+        $this->assertSame($m['name'], 'foo');
 
         $m->set(['bar']);
-        $this->assertSame($m->get('name'), 'bar');
+        $this->assertSame($m['name'], 'bar');
 
         $m->set(['name' => 'baz']);
-        $this->assertSame($m->get('name'), 'baz');
+        $this->assertSame($m['name'], 'baz');
     }
 
     /**
@@ -300,7 +300,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     {
         $p = new Persistence();
         $c = new Client($p);
-        $this->assertEquals(10, $c->get('order'));
+        $this->assertEquals(10, $c['order']);
     }
 
     public function testNormalize()
@@ -310,14 +310,14 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->addField('age', ['type' => 'int']);
         $m->addField('data');
 
-        $m->set('name', '');
-        $this->assertSame('', $m->get('name'));
+        $m['name'] = '';
+        $this->assertSame('', $m['name']);
 
-        $m->set('age', '');
-        $this->assertNull($m->get('age'));
+        $m['age'] = '';
+        $this->assertNull($m['age']);
 
-        $m->set('data', '');
-        $this->assertSame('', $m->get('data'));
+        $m['data'] = '';
+        $this->assertSame('', $m['data']);
     }
 
     public function testExampleFromDoc()
@@ -326,23 +326,23 @@ class BusinessModelTest extends AtkPhpunit\TestCase
 
         $m->addField('salary', ['default' => 1000]);
 
-        $this->assertSame(1000, $m->get('salary'));           // 1000
-        $this->assertFalse($m->_isset('salary'));
+        $this->assertFalse(isset($m['salary']));   // false
+        $this->assertSame(1000, $m['salary']);           // 1000
 
         // Next we load record from $db
         $m->data = ['salary' => 2000];
 
-        $this->assertSame(2000, $m->get('salary'));           // 2000 (from db)
-        $this->assertFalse($m->_isset('salary'));          // was not changed
+        $this->assertSame(2000, $m['salary']);           // 2000 (from db)
+        $this->assertFalse(isset($m['salary']));   // false, was not changed
 
-        $m->set('salary', 3000);
+        $m['salary'] = 3000;
 
-        $this->assertSame(3000, $m->get('salary'));          // 3000 (changed)
-        $this->assertTrue($m->_isset('salary'));
+        $this->assertSame(3000, $m['salary']);          // 3000 (changed)
+        $this->assertTrue(isset($m['salary']));   // true
 
-        $m->_unset('salary');        // return to original value
+        unset($m['salary']);        // return to original value
 
-        $this->assertSame(2000, $m->get('salary'));          // 2000
-        $this->assertFalse($m->_isset('salary'));
+        $this->assertSame(2000, $m['salary']);          // 2000
+        $this->assertFalse(isset($m['salary']));  // false
     }
 }

@@ -224,7 +224,7 @@ You can load / unload records like this::
 
     $m->get();     // inside console, this will show you what's inside your model
 
-    $m->set('email', 'test@example.com');
+    $m['email'] = 'test@example.com';
     $m->save();
 
 You can call `$m->loaded()` to see if there is active record and `$m->id` will
@@ -238,11 +238,11 @@ be saved inside DataSet::
 
     $m = new Model_User($db);
     $m->addCondition('country_id', 2);
-    $m->set('username', 'peter');
+    $m['username'] = 'peter';
     $m->save();
 
     $m->get(); // will show country_id as 2
-    $m->set('country_id', 3);
+    $m['country_id'] = 3;
     $m->save();  // will generate exception because model you try to save doesn't match conditions set
 
 
@@ -387,14 +387,14 @@ The `$dsn` can also be using the PEAR-style DSN format, such as:
 For some persistence classes, you should use constructor directly::
 
     $array = [];
-    $array->set(1, ['name'=>'John']);
-    $array->set(2, ['name'=>'Peter']);
+    $array[1] = ['name'=>'John'];
+    $array[2] = ['name'=>'Peter'];
 
     $db = new \atk4\data\Persistence\Array_($array);
     $m = new \atk4\data\Model($db);
     $m->addField('name');
     $m->load(2);
-    echo $m->get('name');  // Peter
+    echo $m['name'];  // Peter
 
 There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
@@ -402,8 +402,8 @@ Lets load up our console and try out a different persistence::
     $a=['user'=>[],'contact_info'=>[]];
     $ar = new \atk4\data\Persistence\Array_($a);
     $m = new Model_User($ar);
-    $m->set('username', 'test');
-    $m->set('address_1', 'street');
+    $m['username']='test';
+    $m['address_1']='street'
 
     $m->save();
 
@@ -610,9 +610,9 @@ Actions prove to be very useful in various situations. For instance, if you are
 looking to add a new user::
 
     $m = new Model_User($db);
-    $m->set('username', 'peter');
-    $m->set('address_1', 'street 49');
-    $m->set('country', 'UK');
+    $m['username'] = 'peter';
+    $m['address_1'] = 'street 49';
+    $m['country'] = 'UK';
     $m->save();
 
 Normally this would not work, because country is read-only expression, however
@@ -620,9 +620,9 @@ if you wish to avoid creating an intermediate select to determine ID for 'UK',
 you could do this::
 
     $m = new Model_User($db);
-    $m->set('username', 'peter');
-    $m->set('address_1', 'street 49');
-    $m->set('country_id', (new Model_Country($db))->addCondition('name','UK')->action('field',['id']));
+    $m['username'] = 'peter';
+    $m['address_1'] = 'street 49';
+    $m['country_id'] = (new Model_Country($db))->addCondition('name','UK')->action('field',['id']);
     $m->save();
 
 This way it will not execute any code, but instead it will provide expression

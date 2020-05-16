@@ -31,6 +31,13 @@ can set and read value of that field::
 
     echo $model->get('name');  // john
 
+Agile Data supports and prefers a ArrayAccess format of interacting with fields::
+
+    $model->addField('age');
+    $model['age'] = 29;
+
+    echo $model['age'];
+
 Just like you can reuse :php:class:`Model` to access multiple data records,
 :php:class:`Field` object will be reused also.
 
@@ -54,9 +61,9 @@ Field Type
 Probably a most useful quality of Field is that it has a clear type::
 
     $model->addField('age', ['type'=>'integer']);
-    $model->set('age', "123");
+    $model['age'] = "123";
 
-    var_dump($model->get('age'));   // int(123)
+    var_dump($model['age']);   // int(123)
 
 Agile Data defines some basic types to make sure that values:
 
@@ -67,7 +74,7 @@ Agile Data defines some basic types to make sure that values:
 A good example would be a `date` type::
 
     $model->addField('birth', ['type' => 'date']);
-    $model->set('birth', DateTime::createFromFormat('m/d/Y', '1/10/2014'));
+    $model['birth'] = DateTime::createFromFormat('m/d/Y', '1/10/2014');
 
     $model->save();
 
@@ -148,10 +155,10 @@ the field, but you won't be able to save it.
 
 Example::
 
-    $model->set('age', 0);
+    $model['age'] = 0;
     $model->save();
 
-    $model->set('age', null);
+    $model['age'] = null;
     $model->save();  // exception
 
 
@@ -167,10 +174,10 @@ Some examples that are not allowed are:
 
 Example::
 
-    $model->set('age', 0);
+    $model['age'] = 0;
     $model->save();  // exception
 
-    $model->set('age', null);
+    $model['age'] = null;
     $model->save();  // exception
 
 
@@ -264,7 +271,7 @@ Here is how to use it properly::
 
     $user->addField('mypass', ['Password']);
 
-    $user->set('mypass', 'secret');
+    $user['mypass'] = 'secret';
     $user->save();
 
 Password is automatically hashed with `password_encrypt` before storing. If you
@@ -287,6 +294,6 @@ stored. Final example::
             throw new Exception('Old password is incorrect');
         }
 
-        $this->set('password', $new_pass);
+        $this['password'] = $new_pass;
         $this->save();
     }

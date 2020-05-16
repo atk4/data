@@ -162,7 +162,7 @@ Code::
     class Model_Client extends Model_User {
         public function sendPasswordReminder() {
 
-            mail($this->get('email'), 'Your password is: '.$this->get('password'));
+            mail($this['email'], 'Your password is: '.$this['password']);
         }
     }
 
@@ -213,7 +213,7 @@ Code to declare fields::
 
 Code to access field values::
 
-    $order->set('amount', 1200.20);
+    $order['amount'] = 1200.20;
 
 Domain Model Relationship
 -------------------------
@@ -273,7 +273,7 @@ Each object is stored with some unique identifier, so you can load and store
 object if you know it's ID::
 
     $order->load(20);
-    $order->set('amount', 1200.20);
+    $order['amount'] = 1200.20;
     $order->save();
 
 
@@ -340,8 +340,8 @@ Hooks can help you perform operations when object is being persisted::
 
             $this->onHook('beforeSave', function($m) {
                 if ($m->isDirty('password')) {
-                    $m->set('password', encrypt_password($m->get('password')));
-                    $m->set('password_change_date', $m->expr('now()'));
+                    $m['password'] = encrypt_password($m['password']);
+                    $m['password_change_date'] = $m->expr('now()');
                 }
             });
         }
@@ -373,19 +373,19 @@ Orders::
     $sum = 0;
     $order = $db->add('Model_Order');
     $order->load(10);
-    $sum += $order->get('amount');
+    $sum += $order['amount'];
 
     $order->load(11);
-    $sum += $order->get('amount');
+    $sum += $order['amount'];
 
     $order->load(13);
-    $sum += $order->get('amount');
+    $sum += $order['amount'];
 
 You can iterate over the DataSet::
 
     $sum = 0;
     foreach($db->add('Model_Order') as $order) {
-        $sum += $order->get('amount');
+        $sum += $order['amount'];
     }
 
 You must remember that the code above will only create a single object and
@@ -409,7 +409,7 @@ worrying that you will introduce unnecessary bindings into persistence and break
 single-purpose principle of your objects::
 
     foreach ($clients as $client) {
-        // echo $client->get('name')."\n";
+        // echo $client['name']."\n";
     }
 
 The above is a Domain Model code. It will iterate through the DataSet of
@@ -418,7 +418,7 @@ a restriction::
 
     $sum = 0;
     foreach($db->add('Model_Order')->addCondition('is_paid', true) as $order) {
-        $sum += $order->get('amount');
+        $sum += $order['amount'];
     }
 
 And again it's much more effective to do this on database side::

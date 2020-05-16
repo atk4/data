@@ -14,7 +14,7 @@ operation. Here is the sequence and sample::
     // instructs AD that we will be using it for staring dates
     // through 'DateTime' class.
 
-    $m->set('birthday', 'Jan 1 1960');
+    $m['birthday'] = 'Jan 1 1960';
     // If non-compatible value is provided, it will be converted
     // into a proper date through Normalization process. After
     // this line value of 'birthday' field will be DateTime.
@@ -53,8 +53,8 @@ Here is another example with booleans::
         'enum' => ['No', 'Yes']
     ]);
 
-    $m->set('is_married', 'Yes');  // normalizes into true
-    $m->set('is_married', true);   // better way because no need to normalize
+    $m['is_married'] = 'Yes';  // normalizes into true
+    $m['is_married'] = true;   // better way because no need to normalize
 
     $m->save();   // stores as "Yes" because of type-casting
 
@@ -63,8 +63,8 @@ Value types
 
 Any type can have a value of `null`::
 
-    $m->set('is_married', null);
-    if (!$m->get('is_married')) {
+    $m['is_married'] = null;
+    if (!$m['is_married']) {
         // either null or false
     }
 
@@ -74,11 +74,11 @@ to normalize value::
     $m->addField('age', ['type'=>'integer']);
     $m->addField('name', ['type'=>'string']);
 
-    $m->set('age', '49.80');
-    $m->set('name', '       John');
+    $m['age'] = '49.80';
+    $m['name'] = '       John';
 
-    echo $m->get('age'); // 49 - normalization cast value to integer
-    echo $m->get('name'); // 'John' - normalization trims value
+    echo $m['age']; // 49 - normalization cast value to integer
+    echo $m['name']; // 'John' - normalization trims value
 
 Undefined type
 --------------

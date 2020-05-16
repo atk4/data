@@ -69,15 +69,15 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->addField('array', ['type' => 'array']);
         $m->load(1);
 
-        $this->assertSame('foo', $m->get('string'));
-        $this->assertTrue($m->get('boolean'));
-        $this->assertSame(8.20, $m->get('money'));
-        $this->assertEquals(new \DateTime('2013-02-20'), $m->get('date'));
-        $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $m->get('datetime'));
-        $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $m->get('time'));
-        $this->assertSame(2940, $m->get('integer'));
-        $this->assertSame([1, 2, 3], $m->get('array'));
-        $this->assertSame(8.202343, $m->get('float'));
+        $this->assertSame('foo', $m['string']);
+        $this->assertTrue($m['boolean']);
+        $this->assertSame(8.20, $m['money']);
+        $this->assertEquals(new \DateTime('2013-02-20'), $m['date']);
+        $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $m['datetime']);
+        $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $m['time']);
+        $this->assertSame(2940, $m['integer']);
+        $this->assertSame([1, 2, 3], $m['array']);
+        $this->assertSame(8.202343, $m['float']);
 
         $m->duplicate()->save();
 
@@ -163,32 +163,32 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->load(1);
 
         // Only
-        $this->assertSame('', $m->get('string'));
-        $this->assertSame('', $m->get('notype'));
-        $this->assertNull($m->get('date'));
-        $this->assertNull($m->get('datetime'));
-        $this->assertNull($m->get('time'));
-        $this->assertNull($m->get('boolean'));
-        $this->assertNull($m->get('integer'));
-        $this->assertNull($m->get('money'));
-        $this->assertNull($m->get('float'));
-        $this->assertNull($m->get('array'));
-        $this->assertNull($m->get('object'));
+        $this->assertSame('', $m['string']);
+        $this->assertSame('', $m['notype']);
+        $this->assertNull($m['date']);
+        $this->assertNull($m['datetime']);
+        $this->assertNull($m['time']);
+        $this->assertNull($m['boolean']);
+        $this->assertNull($m['integer']);
+        $this->assertNull($m['money']);
+        $this->assertNull($m['float']);
+        $this->assertNull($m['array']);
+        $this->assertNull($m['object']);
 
         unset($v['id']);
         $m->set($v);
 
-        $this->assertSame('', $m->get('string'));
-        $this->assertSame('', $m->get('notype'));
-        $this->assertNull($m->get('date'));
-        $this->assertNull($m->get('datetime'));
-        $this->assertNull($m->get('time'));
-        $this->assertNull($m->get('boolean'));
-        $this->assertNull($m->get('integer'));
-        $this->assertNull($m->get('money'));
-        $this->assertNull($m->get('float'));
-        $this->assertNull($m->get('array'));
-        $this->assertNull($m->get('object'));
+        $this->assertSame('', $m['string']);
+        $this->assertSame('', $m['notype']);
+        $this->assertNull($m['date']);
+        $this->assertNull($m['datetime']);
+        $this->assertNull($m['time']);
+        $this->assertNull($m['boolean']);
+        $this->assertNull($m['integer']);
+        $this->assertNull($m['money']);
+        $this->assertNull($m['float']);
+        $this->assertNull($m['array']);
+        $this->assertNull($m['object']);
         $this->assertSame([], $m->dirty);
 
         $m->save();
@@ -282,15 +282,15 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $m->load(1);
 
-        $this->assertSame('hello world', $m->get('rot13'));
+        $this->assertSame('hello world', $m['rot13']);
         $this->assertSame(1, (int) $m->id);
-        $this->assertSame(1, (int) $m->get('id'));
-        $this->assertSame('2013-02-21 05:00:12.235689', (string) $m->get('datetime'));
-        $this->assertSame('2013-02-20', (string) $m->get('date'));
-        $this->assertSame('12:00:50.235689', (string) $m->get('time'));
+        $this->assertSame(1, (int) $m['id']);
+        $this->assertSame('2013-02-21 05:00:12.235689', (string) $m['datetime']);
+        $this->assertSame('2013-02-20', (string) $m['date']);
+        $this->assertSame('12:00:50.235689', (string) $m['time']);
 
-        $this->assertTrue($m->get('b1'));
-        $this->assertFalse($m->get('b2'));
+        $this->assertTrue($m['b1']);
+        $this->assertFalse($m['b2']);
 
         $m->duplicate()->save()->delete(1);
 
@@ -329,7 +329,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $m->tryLoad(1);
 
-        $this->assertTrue($m->get('date') instanceof MyDate);
+        $this->assertTrue($m['date'] instanceof MyDate);
     }
 
     public function testTryLoadAny()
@@ -349,7 +349,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $m->tryLoadAny();
 
-        $this->assertTrue($m->get('date') instanceof MyDate);
+        $this->assertTrue($m['date'] instanceof MyDate);
     }
 
     public function testTryLoadBy()
@@ -369,7 +369,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $m->loadBy('id', 1);
 
-        $this->assertTrue($m->get('date') instanceof MyDate);
+        $this->assertTrue($m['date'] instanceof MyDate);
     }
 
     public function testLoadBy()
@@ -386,7 +386,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
         $m->loadAny();
-        $d = $m->get('date');
+        $d = $m['date'];
         $m->unload();
 
         $m->loadBy('date', $d)->unload();
@@ -460,7 +460,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->loadAny();
 
         // must respect 'actual'
-        $this->assertNotNull($m->get('ts'));
+        $this->assertNotNull($m['ts']);
     }
 
     /**
@@ -500,7 +500,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $m->loadAny();
-        $m->set('ts', clone $m->get('ts'));
+        $m['ts'] = clone $m['ts'];
 
         $this->assertFalse($m->isDirty('ts'));
     }
@@ -519,7 +519,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
         $m->loadAny();
-        $m->set('ts', new \DateTime('2012-02-30'));
+        $m['ts'] = new \DateTime('2012-02-30');
         $m->save();
 
         // stores valid date.
@@ -536,13 +536,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->data['i'] = 1;
         $this->assertSame([], $m->dirty);
 
-        $m->set('i', '1');
+        $m['i'] = '1';
         $this->assertSame([], $m->dirty);
 
-        $m->set('i', '2');
+        $m['i'] = '2';
         $this->assertSame(['i' => 1], $m->dirty);
 
-        $m->set('i', '1');
+        $m['i'] = '1';
         $this->assertSame([], $m->dirty);
 
         // same test without type integer
@@ -552,16 +552,16 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->data['i'] = 1;
         $this->assertSame([], $m->dirty);
 
-        $m->set('i', '1');
+        $m['i'] = '1';
         $this->assertSame(1, $m->dirty['i']);
 
-        $m->set('i', '2');
+        $m['i'] = '2';
         $this->assertSame(1, $m->dirty['i']);
 
-        $m->set('i', '1');
+        $m['i'] = '1';
         $this->assertSame(1, $m->dirty['i']);
 
-        $m->set('i', 1);
+        $m['i'] = 1;
         $this->assertSame([], $m->dirty);
     }
 
@@ -583,13 +583,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
         $m->loadAny();
 
-        $m->set('ts', $sql_time_new);
+        $m['ts'] = $sql_time_new;
         $this->assertTrue($m->isDirty('ts'));
 
-        $m->set('ts', $sql_time);
+        $m['ts'] = $sql_time;
         $this->assertFalse($m->isDirty('ts'));
 
-        $m->set('ts', $sql_time_new);
+        $m['ts'] = $sql_time_new;
         $this->assertTrue($m->isDirty('ts'));
     }
 
@@ -611,16 +611,16 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
         $m->loadAny();
 
-        $m->set('ts', $sql_time);
+        $m['ts'] = $sql_time;
         $this->assertTrue($m->isDirty('ts'));
 
         $m->save();
         $m->reload();
 
-        $m->set('ts', $sql_time);
+        $m['ts'] = $sql_time;
         $this->assertFalse($m->isDirty('ts'));
 
-        $m->set('ts', $sql_time_new);
+        $m['ts'] = $sql_time_new;
         $this->assertTrue($m->isDirty('ts'));
     }
 }

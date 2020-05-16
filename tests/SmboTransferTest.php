@@ -64,7 +64,7 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
 
         $data = $t->export(['id', 'transfer_document_id']);
         usort($data, function ($e1, $e2) {
-            return $e1->get('id') < $e2->get('id') ? -1 : 1;
+            return $e1['id'] < $e2['id'] ? -1 : 1;
         });
         $this->assertSame([
             ['id' => '1', 'transfer_document_id' => '2'],
@@ -111,7 +111,7 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
     /*
     public function testBasicEntities()
     {
-        $db = Persistence::connect($GLOBALS->get('DB_DSN'), $GLOBALS->get('DB_USER'), $GLOBALS->get('DB_PASSWD'));
+        $db = Persistence::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
 
         // Create a new company
         $company = new Company($db);

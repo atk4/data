@@ -39,7 +39,7 @@ If driver is unable to query both tables simultaneously, then it will load one
 record first, then load other record and will collect fields together::
 
     $user_data = $user->find($id);
-    $contact_data = $contact->find($user_data->get('contact_id'));
+    $contact_data = $contact->find($user_data['contact_id']);
 
 When saving the record, Joins will automatically record data correctly:
 
@@ -284,7 +284,7 @@ You can also specify ``'on'=>false`` then the ON clause will not be used at all
 and you'll have to add additional where() condition yourself.
 
 ``foreign_alias`` can be specified and will be used as table alias and prefix
-for all fields. It will default to ``"_".$foreign_table->get(0)``. Agile Data will
+for all fields. It will default to ``"_".$foreign_table[0]``. Agile Data will
 also resolve situations when multiple tables have same first character so the
 prefixes will be named '_c' ,'_c_2', '_c_3' etc.
 

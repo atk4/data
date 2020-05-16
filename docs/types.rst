@@ -112,9 +112,9 @@ Additionally there is a support for
 All measurements are implemented with :php:class:`Units` and can be further extended::
 
     $model->addField('speed', ['Units', 'postfix'=>'/s', 'scale'=>['m'=>1, 'km'=>1000]]);
-    $model->set('speed', '30km/s');
+    $model['speed'] = '30km/s';
 
-    echo $model->get('speed'); // 30000
+    echo $model['speed']; // 30000
     echo $model->getField('speed')->format(); // 30km/s
     echo $model->getField('speed')->format('m'); // 30000m/s
 

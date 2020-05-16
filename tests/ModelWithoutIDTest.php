@@ -44,7 +44,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
 
         $n = [];
         foreach ($this->m as $row) {
-            $n[] = $row->get('name');
+            $n[] = $row['name'];
             $this->assertNull($row->id);
         }
         $this->assertSame(['Sue', 'John'], $n);

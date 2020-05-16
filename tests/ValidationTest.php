@@ -19,11 +19,11 @@ class MyValidationModel extends Model
     public function validate($intent = null)
     {
         $errors = [];
-        if ($this->get('name') === 'Python') {
-            $errors->set('name', 'Snakes are not allowed on this plane');
+        if ($this['name'] === 'Python') {
+            $errors['name'] = 'Snakes are not allowed on this plane';
         }
-        if ($this->get('domain') === 'example.com') {
-            $errors->set('domain', 'This domain is reserved for examples only');
+        if ($this['domain'] === 'example.com') {
+            $errors['domain'] = 'This domain is reserved for examples only';
         }
 
         return array_merge(parent::validate(), $errors);
@@ -110,14 +110,14 @@ class ValidationTests extends AtkPhpunit\TestCase
         $p = new Persistence\Array_($a);
         $m = new BadValidationModel($p);
 
-        $m->set('name', 'john');
+        $m['name'] = 'john';
         $m->save();
     }
 
     public function testValidateHook()
     {
         $this->m->onHook('validate', function ($m) {
-            if ($m->get('name') === 'C#') {
+            if ($m['name'] === 'C#') {
                 return ['name' => 'No sharp objects allowed'];
             }
         });

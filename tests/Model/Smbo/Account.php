@@ -22,11 +22,11 @@ class Account extends \atk4\data\Model
     public function transfer(self $a, $amount)
     {
         $t = new Transfer($this->persistence, ['detached' => true]);
-        $t->set('account_id', $this->id);
+        $t['account_id'] = $this->id;
 
-        $t->set('destination_account_id', $a->id);
+        $t['destination_account_id'] = $a->id;
 
-        $t->set('amount', -$amount);
+        $t['amount'] = -$amount;
 
         return $t;
     }

@@ -110,8 +110,8 @@ class LFriend extends Model
             $c = clone $m;
             $c->skip_reverse = true;
             $this->insert([
-                'user_id'=>$m->get('friend_id'),
-                'friend_id'=>$m->get('user_id')
+                'user_id'=>$m['friend_id'],
+                'friend_id'=>$m['user_id']
             ]);
         });
 
@@ -124,8 +124,8 @@ class LFriend extends Model
             $c->skip_reverse = true;
 
             $c->loadBy([
-                'user_id'=>$m->get('friend_id'),
-                'friend_id'=>$m->get('user_id')
+                'user_id'=>$m['friend_id'],
+                'friend_id'=>$m['user_id']
             ])->delete();
 
 
@@ -181,7 +181,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         $c->saveAndUnload(['Latvia', 'code' => 'LV', 'is_eu' => true]);
 
         // setting field prior will affect save()
-        $c->set('is_eu', true);
+        $c['is_eu'] = true;
         $c->save(['Estonia', 'code' => 'ES']);
 
         // is_eu will NOT BLEED into this record, because insert() does not make use of current model values.

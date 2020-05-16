@@ -46,7 +46,7 @@ There are several ways to link your model up with the persistence::
     Load active record from the DataSet::
 
         $m->load(10);
-        echo $m->get('name');
+        echo $m['name'];
 
     If record not found, will throw exception.
 
@@ -56,7 +56,7 @@ There are several ways to link your model up with the persistence::
     a new record::
 
         $m->load(10);
-        $m->set('name', 'John');
+        $m['name'] = 'John';
         $$m->save();
 
     You can pass argument to save() to set() and save()::
@@ -84,7 +84,7 @@ There are several ways to link your model up with the persistence::
     setOrder()::
 
         $m->loadAny();
-        echo $m->get('name');
+        echo $m['name'];
 
 .. php:method:: tryLoadAny
 
@@ -98,7 +98,7 @@ There are several ways to link your model up with the persistence::
         $m->load(10);
         $m->unload();
 
-        $m->set('name', 'New User');
+        $m['name'] = 'New User';
         $m->save();         // creates new user
 
 .. php:method:: delete($id = null)
@@ -113,7 +113,7 @@ Inserting Record with a specific ID
 When you add a new record with save(), insert() or import, you can specify ID
 explicitly::
 
-    $m->set('id', 123);
+    $m['id'] = 123;
     $m->save();
 
     // or $m->insert(['Record with ID=123', 'id'=>123']);
@@ -122,7 +122,7 @@ However if you change the ID for record that was loaded, then your database
 record will also have its ID changed. Here is example::
 
     $m->load(123);
-    $m->set($m->id_field, 321);
+    $m[$m->id_field] = 321;
     $m->save();
 
 After this your database won't have a record with ID 123 anymore.
@@ -138,19 +138,19 @@ Agile Data ensures that regardless of the selected database, types are converted
 correctly for saving and restored as they were when loading::
 
     $m->addField('is_admin', ['type'=>'boolean']);
-    $m->set('is_admin', false);
+    $m['is_admin'] = false;
     $m->save();
 
     // SQL database will actually store `0`
 
     $m->load();
 
-    $m->get('is_admin');  // converted back to `false`
+    $m['is_admin'];  // converted back to `false`
 
 Behind a two simple lines might be a long path for the value. The various
 components are essential and as developer you must understand the full sequence::
 
-    $m->set('is_admin', false);
+    $m['is_admin'] = false;
     $m->save();
 
 Strict Types an Normalization
@@ -163,30 +163,30 @@ Calling "set()" or using array-access to set the value will start by casting
 the value to an appropriate data-type. If it is impossible to cast the value,
 then exception will be generated::
 
-    $m->set('is_admin', "1"); // OK, but stores as `true`
+    $m['is_admin'] = "1"; // OK, but stores as `true`
 
-    $m->set('is_admin', 123); // throws exception.
+    $m['is_admin'] = 123; // throws exception.
 
 It's not only the 'type' property, but 'enum' can also imply restrictions::
 
     $m->addField('access_type', ['enum' => ['read_only', 'full']]);
 
-    $m->set('access_type', 'full'); // OK
-    $m->set('access_type', 'half-full'); // Exception
+    $m['access_type'] = 'full'; // OK
+    $m['access_type'] = 'half-full'; // Exception
 
 There are also non-trivial types in Agile Data::
 
     $m->addField('salary', ['type' => 'money']);
-    $m->set('salary', "20");  // converts to 20.00
+    $m['salary'] = "20";  // converts to 20.00
 
     $m->addField('date', ['type' => 'date']);
-    $m->set('date', time());  // converts to DateTime class
+    $m['date'] = time();  // converts to DateTime class
 
 Finally, you may create your own custom field types that follow a more
 complex logic::
 
     $m->add(new Field_Currency(), 'balance');
-    $m->set('balance', '12,200.00 EUR');
+    $m['balance'] = '12,200.00 EUR';
 
     // May transparently work with 2 columns: 'balance_amount' and
     // 'balance_currency_id' for example.
@@ -210,9 +210,9 @@ and if set, then value of a field may not be modified directly::
     $m->addField('ref_no', ['read_only' => true]);
     $m->load(123);
 
-    $m->get('ref_no'); // perfect for reading field that is populated by trigger.
+    $m['ref_no']; // perfect for reading field that is populated by trigger.
 
-    $m->set('ref_no', 'foo'); // exception
+    $m['ref_no'] = 'foo'; // exception
 
 Note that `read_only` can still have a default value::
 
@@ -269,7 +269,7 @@ Multi-column fields
 Lets talk more about this currency field::
 
     $m->add(new Field_Currency(), 'balance');
-    $m->set('balance', '12,200.00 EUR');
+    $m['balance'] = '12,200.00 EUR';
 
 It may be designed to split up the value by using two fields in the database:
 `balance_amount` and `balance_currency_id`.
@@ -501,15 +501,15 @@ Start by creating a beforeSave handler for Order::
 
             if (
                 $m->newInstance()
-                    ->addCondition('client_id', $m->get('client_id')) // same client
+                    ->addCondition('client_id', $m['client_id']) // same client
                     ->addCondition($m->id_field, '!=', $m->id)   // has another order
-                    ->tryLoadBy('ref', $m->get('ref'))                // with same ref
+                    ->tryLoadBy('ref', $m['ref'])                // with same ref
                     ->loaded()
             ) {
                 throw new Exception([
                     'Order with ref already exists for this client',
-                    'client' => $this->get('client_id'),
-                    'ref'    => $this->get('ref')
+                    'client' => $this['client_id'],
+                    'ref'    => $this['ref']
                 ]);
             }
         }
@@ -531,7 +531,7 @@ as archived and return that order back. Here is the usage pattern::
     $o->addCondition('is_archived', false); // to restrict loading of archived orders
     $o->load(123);
     $archive = $o->archive();
-    $archive->set('note', $archive->get('note') . "\nArchived on $date.");
+    $archive['note'] .= "\nArchived on $date.";
     $archive->save();
 
 With Agile Data API building it's quite common to create a method that does not
@@ -547,7 +547,7 @@ after-save reloading::
 
     function archive() {
         $this->reload_after_save = false;
-        $this->set('is_archived', true);
+        $this['is_archived'] = true;
         return $this;
     }
 
@@ -561,7 +561,7 @@ The other, more appropriate option is to re-use a vanilla Order record::
 
         $archive = $this->newInstance();
         $archive->load($this->id);
-        $archive->set('is_archived', true);
+        $archive['is_archived'] = true;
 
         $this->unload(); // active record is no longer accessible
 
@@ -603,7 +603,7 @@ The above example would then work like this::
         $this->save(); // just to be sure, no dirty stuff is left over
 
         $archive = $o->asModel('Order');
-        $archive->set('is_archived', true);
+        $archive['is_archived'] = true;
 
         $this->unload(); // active record is no longer accessible.
 
@@ -700,7 +700,7 @@ To use it with any model::
 
     $m = $app->loadQuick(new Order(), 123);
 
-    $m->set('completed', true);
+    $m['completed'] = true;
     $m->save();
 
 To look in more details into the actual method, I have broken it down into chunks::
@@ -756,7 +756,7 @@ done with a single record::
 
     $m = new Order($read_replica);
 
-    $m->set('completed', true);
+    $m['completed'] = true;
 
     $m->withPersistence($write_replica)->save();
     $m->dirty = [];

@@ -67,8 +67,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u->set('name', 'John');
-        $m_u->set('contact_phone', '+123');
+        $m_u['name'] = 'John';
+        $m_u['contact_phone'] = '+123';
 
         $m_u->save();
 
@@ -78,8 +78,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $a);
 
         $m_u->unload();
-        $m_u->set('name', 'Peter');
-        $m_u->set('contact_id', 1);
+        $m_u['name'] = 'Peter';
+        $m_u['contact_id'] = 1;
         $m_u->save();
         $m_u->unload();
 
@@ -92,8 +92,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ],
         ], $a);
 
-        $m_u->set('name', 'Joe');
-        $m_u->set('contact_phone', '+321');
+        $m_u['name'] = 'Joe';
+        $m_u['contact_phone'] = '+321';
         $m_u->save();
 
         $this->assertEquals([
@@ -117,8 +117,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $j = $m_u->join('contact.test_id');
         $j->addField('contact_phone');
 
-        $m_u->set('name', 'John');
-        $m_u->set('contact_phone', '+123');
+        $m_u['name'] = 'John';
+        $m_u['contact_phone'] = '+123';
 
         $m_u->save();
 
@@ -128,7 +128,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $a);
 
         $m_u->unload();
-        $m_u->set('name', 'Peter');
+        $m_u['name'] = 'Peter';
         $m_u->save();
         $this->assertEquals([
             'user' => [
@@ -142,8 +142,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
         unset($a['contact'][2]);
         $m_u->unload();
-        $m_u->set('name', 'Sue');
-        $m_u->set('contact_phone', '+444');
+        $m_u['name'] = 'Sue';
+        $m_u['contact_phone'] = '+444';
         $m_u->save();
         $this->assertEquals([
             'user' => [
@@ -166,8 +166,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $j = $m_u->join('contact', 'test_id');
         $j->addField('contact_phone');
 
-        $m_u->set('name', 'John');
-        $m_u->set('contact_phone', '+123');
+        $m_u['name'] = 'John';
+        $m_u['contact_phone'] = '+123';
 
         $m_u->save();
 
@@ -188,9 +188,9 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $j = $m_u->join('contact.code','code');
         $j->addField('contact_phone');
 
-        $m_u->get('name')='John';
-        $m_u->get('code')='C28';
-        $m_u->get('contact_phone')='+123';
+        $m_u['name']='John';
+        $m_u['code']='C28';
+        $m_u['contact_phone']='+123';
 
         $m_u->save();
 
@@ -255,8 +255,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $j->addField('contact_phone');
 
         $m_u->load(1);
-        $m_u->set('name', 'John 2');
-        $m_u->set('contact_phone', '+555');
+        $m_u['name'] = 'John 2';
+        $m_u['contact_phone'] = '+555';
         $m_u->save();
 
         $this->assertSame(
@@ -273,8 +273,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         );
 
         $m_u->load(3);
-        $m_u->set('name', 'XX');
-        $m_u->set('contact_phone', '+999');
+        $m_u['name'] = 'XX';
+        $m_u['contact_phone'] = '+999';
         $m_u->save();
 
         $this->assertSame(
@@ -291,8 +291,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         );
 
         $m_u->tryLoad(4);
-        $m_u->set('name', 'YYY');
-        $m_u->set('contact_phone', '+777');
+        $m_u['name'] = 'YYY';
+        $m_u['contact_phone'] = '+777';
         $m_u->save();
 
         $this->assertEquals(
