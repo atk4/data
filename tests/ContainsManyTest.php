@@ -35,7 +35,7 @@ class Invoice2 extends Model
         $this->addCalculatedField('total_gross', function ($m) {
             $total = 0;
             foreach ($m->ref('lines') as $line) {
-                $total += $line['total_gross'];
+                $total += $line->get('total_gross');
             }
 
             return $total;
@@ -45,7 +45,7 @@ class Invoice2 extends Model
         $this->addCalculatedField('discounts_total_sum', function ($m) {
             $total = 0;
             foreach ($m->ref('lines') as $line) {
-                $total += $line['total_gross'] * $line['discounts_percent'] / 100;
+                $total += $line->get('total_gross') * $line->get('discounts_percent') / 100;
             }
 
             return $total;
@@ -69,7 +69,7 @@ class Line2 extends Model
         $this->addField('add_date', ['type' => 'datetime']);
 
         $this->addExpression('total_gross', function ($m) {
-            return $m['price'] * $m['qty'] * (1 + $m->ref('vat_rate_id')['rate'] / 100);
+            return $m->get('price') * $m->get('qty') * (1 + $m->ref('vat_rate_id')->get('rate') / 100);
         });
 
         // each line can have multiple discounts and calculate total of these discounts
@@ -78,7 +78,7 @@ class Line2 extends Model
         $this->addCalculatedField('discounts_percent', function ($m) {
             $total = 0;
             foreach ($m->ref('discounts') as $d) {
-                $total += $d['percent'];
+                $total += $d->get('percent');
             }
 
             return $total;
@@ -199,15 +199,15 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
 
         // try hasOne reference
         $v = $i->ref('lines')->load(4)->ref('vat_rate_id');
-        $this->assertSame(15, $v['rate']);
+        $this->assertSame(15, $v->get('rate'));
 
         // test expression fields
         $v = $i->ref('lines')->load(4);
-        $this->assertSame(50 * 3 * (1 + 15 / 100), $v['total_gross']);
+        $this->assertSame(50 * 3 * (1 + 15 / 100), $v->get('total_gross'));
 
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
-        $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i['total_gross']); // =245.10
+        $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->get('total_gross')); // =245.10
 
         //var_dump($i->export(), $i->export(null,null,false));
     }
@@ -259,10 +259,10 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         ], $i->ref('lines')->load(1)->ref('discounts')->export());
 
         // is total_gross correctly calculated?
-        $this->assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i['total_gross']); // =110.45
+        $this->assertSame(10 * 2 * (1 + 21 / 100) + 15 * 5 * (1 + 15 / 100), $i->get('total_gross')); // =110.45
 
         // do we also correctly calculate discounts from nested containsMany?
-        $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i['discounts_total_sum']); // =20.88
+        $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->get('discounts_total_sum')); // =20.88
 
         // let's test how it all looks in persistence without typecasting
         $exp_lines = $i->export(null, null, false)[0]['lines'];

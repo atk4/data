@@ -21,12 +21,12 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         // default title field
         $m = new Model($p);
         $m->load(1);
-        $this->assertSame('world', $m['name']);
+        $this->assertSame('world', $m->get('name'));
 
         // custom title field and try loading from same static twice
         $m = new Model($p); //, ['title_field' => 'foo']);
         $m->load(1);
-        $this->assertSame('world', $m['name']); // still 'name' here not 'foo'
+        $this->assertSame('world', $m->get('name')); // still 'name' here not 'foo'
     }
 
     public function testArrayOfArrays()
@@ -36,9 +36,9 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
         $m->load(1);
 
-        $this->assertSame('world', $m['name']);
-        $this->assertSame('xy', $m['field1']);
-        $this->assertFalse($m['field2']);
+        $this->assertSame('world', $m->get('name'));
+        $this->assertSame('xy', $m->get('field1'));
+        $this->assertFalse($m->get('field2'));
     }
 
     public function testArrayOfHashes()
@@ -48,7 +48,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
         $m->load(1);
 
-        $this->assertSame('world', $m['foo']);
+        $this->assertSame('world', $m->get('foo'));
     }
 
     public function testIDArg()
@@ -58,7 +58,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
         $m->load(21);
 
-        $this->assertSame('world', $m['foo']);
+        $this->assertSame('world', $m->get('foo'));
     }
 
     public function testIDKey()
@@ -68,7 +68,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
         $m->load(21);
 
-        $this->assertSame('world', $m['foo']);
+        $this->assertSame('world', $m->get('foo'));
     }
 
     public function testEmpty()
