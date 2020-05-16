@@ -71,6 +71,7 @@ jobs:
           if [ "${{ matrix.type }}" != "Phpunit" ]; then composer remove --no-interaction --no-update phpunit/phpunit phpunit/dbunit phpunit/phpcov --dev ; fi
           if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer --dev ; fi
           composer install --no-suggest --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+          (cd vendor/atk4 && rm -R core && git clone https://github.com/atk4/core.git && cd core && git fetch origin pull/196/head && git checkout FETCH_HEAD)
 
       - name: Init
         run: |
