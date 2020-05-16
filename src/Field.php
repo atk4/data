@@ -462,7 +462,7 @@ class Field implements Expressionable
      */
     public function get()
     {
-        return $this->owner[$this->short_name];
+        return $this->owner->get($this->short_name);
     }
 
     /**
@@ -495,7 +495,7 @@ class Field implements Expressionable
      */
     public function compare($value): bool
     {
-        return $this->owner[$this->short_name] == $value;
+        return $this->get() == $value;
     }
 
     /**
