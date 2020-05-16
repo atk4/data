@@ -58,7 +58,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->set('foo', 'abc');
         $m->set('foo', null);
         $m->set('foo', '');
-        $m->_unset('name');
+        $m->_unset('foo');
     }
 
     /**
@@ -69,7 +69,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['required' => true]);
         $m->set('foo', '');
-        $m->_unset('name');
+        $m->_unset('foo');
     }
 
     /**
@@ -80,7 +80,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['required' => true]);
         $m->set('foo', null);
-        $m->_unset('name');
+        $m->_unset('foo');
     }
 
     /**
