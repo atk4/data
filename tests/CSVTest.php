@@ -94,8 +94,8 @@ class CSVTest extends AtkPhpunit\TestCase
         $m->addField('surname');
         $m->loadAny();
 
-        $this->assertSame('John', $m['name']);
-        $this->assertSame('Smith', $m['surname']);
+        $this->assertSame('John', $m->get('name'));
+        $this->assertSame('Smith', $m->get('surname'));
     }
 
     public function testLoadAnyException()
@@ -114,8 +114,8 @@ class CSVTest extends AtkPhpunit\TestCase
         $m->loadAny();
         $m->loadAny();
 
-        $this->assertSame('Sarah', $m['name']);
-        $this->assertSame('Jones', $m['surname']);
+        $this->assertSame('Sarah', $m->get('name'));
+        $this->assertSame('Jones', $m->get('surname'));
 
         $m->tryLoadAny();
         $this->assertFalse($m->loaded());

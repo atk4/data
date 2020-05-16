@@ -33,10 +33,10 @@ class ContainsMany extends ContainsOne
         */
 
         // set data source of referenced array persistence
-        $rows = $m[$this->our_field] ?: [];
+        $rows = $m->get($this->our_field) ?: [];
         /*
         foreach ($rows as $id=>$row) {
-            $rows[$id] = $this->owner->persistence->typecastLoadRow($m, $row); // we need this typecasting because we set persistence data directly
+            $rows->set($id, $this->owner->persistence->typecastLoadRow($m, $row)); // we need this typecasting because we set persistence data directly
         }
         */
 

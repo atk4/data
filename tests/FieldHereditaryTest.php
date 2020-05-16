@@ -14,11 +14,11 @@ class FieldHereditaryTest extends \atk4\schema\PhpunitTestCase
         // default title field
         $m = new Model($p);
         $m->addExpression('caps', function ($m) {
-            return strtoupper($m['name']);
+            return strtoupper($m->get('name'));
         });
 
         $m->load(1);
-        $this->assertSame('world', $m['name']);
-        $this->assertSame('WORLD', $m['caps']);
+        $this->assertSame('world', $m->get('name'));
+        $this->assertSame('WORLD', $m->get('caps'));
     }
 }

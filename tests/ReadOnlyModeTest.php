@@ -44,7 +44,7 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
 
         $n = [];
         foreach ($this->m as $row) {
-            $n[] = $row['name'];
+            $n[] = $row->get('name');
         }
         $this->assertSame(['Sue', 'John'], $n);
     }

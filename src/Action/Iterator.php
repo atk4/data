@@ -40,7 +40,7 @@ class Iterator
             }
 
             // has row and it matches
-            if ($row[$field] == $value) {
+            if ($row->get($field) == $value) {
                 return true;
             }
 
@@ -72,22 +72,22 @@ class Iterator
             switch ($value) {
                 // case "%str%"
                 case substr($value, -1, 1) === '%' && substr($value, 0, 1) === '%':
-                    return strpos($row[$field], $clean_value) !== false;
+                    return strpos($row->get($field), $clean_value) !== false;
 
                     break;
                 // case "str%"
                 case substr($value, -1, 1) === '%':
-                    return substr($row[$field], 0, strlen($clean_value)) === $clean_value;
+                    return substr($row->get($field), 0, strlen($clean_value)) === $clean_value;
 
                     break;
                 // case "%str"
                 case substr($value, 0, 1) === '%':
-                    return substr($row[$field], -strlen($clean_value)) === $clean_value;
+                    return substr($row->get($field), -strlen($clean_value)) === $clean_value;
 
                     break;
                 // full match
                 default:
-                    return $row[$field] == $clean_value;
+                    return $row->get($field) == $clean_value;
             }
 
             return false;

@@ -227,7 +227,7 @@ class HasOne extends Reference
             }
 
             $m->onHook('afterSave', function ($m) {
-                $this->owner[$this->our_field] = $m[$this->their_field];
+                $this->owner[$this->our_field] = $m->get($this->their_field);
             });
         } else {
             if ($this->owner[$this->our_field]) {

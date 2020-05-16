@@ -21,8 +21,8 @@ class JoinTest extends AtkPhpunit\TestCase
         $j = $m->join('contact');
         $j->addField('contact_phone');
 
-        $m['name'] = 'John';
-        $m['contact_phone'] = '+123';
+        $m->set('name', 'John');
+        $m->set('contact_phone', '+123');
         $m->save();
 
         /*

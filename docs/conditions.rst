@@ -13,7 +13,7 @@ either explicitly or through a $table property inside a model::
 
     $m = new Model_User($db, 'user');
     $m->load(1);
-    echo $m['gender'];   // "M"
+    echo $m->get('gender');   // "M"
 
 
 Following this line, you can load ANY record from the table. It's possible to

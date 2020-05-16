@@ -134,7 +134,7 @@ using::
     $user = new User($db);
 
     $user->load(20);            // load specific user record into PHP
-    echo $user['name'].': ';    // access field values
+    echo $user->get('name').': ';    // access field values
 
     $gross = $user->ref('Invoice')
         ->addCondition('status', 'due')
@@ -167,7 +167,7 @@ MongoDB), you would need to define the field differently::
 
     $model->addField('gross');
     $model->onHook('beforeSave', function($m) {
-        $m['gross'] = $m['net'] + $m['vat'];
+        $m->set('gross', $m->get('net') + $m->get('vat'));
     });
 
 When you use persistence-specific code, you must be aware that it will not map
@@ -187,7 +187,7 @@ you want it to work with NoSQL, then your solution might be::
         // persistence does not support expressions
         $model->addField('gross');
         $model->onHook('beforeSave', function($m) {
-            $m['gross'] = $m['net'] + $m['vat'];
+            $m->set('gross', $m->get('net') + $m->get('vat'));
         });
 
     }

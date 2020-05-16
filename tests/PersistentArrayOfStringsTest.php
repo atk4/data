@@ -71,10 +71,10 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
 
         // typecasting enabled in export()
         $data = $m->export(null, null, true);
-        $this->assertInstanceOf('DateTime', $data[1]['date']);
-        $this->assertInstanceOf('DateTime', $data[1]['datetime']);
-        $this->assertInstanceOf('DateTime', $data[1]['time']);
-        $this->assertTrue(is_array($data[1]['array']));
-        $this->assertTrue(is_object($data[1]['object']));
+        $this->assertInstanceOf('DateTime', $data->get(1)['date']);
+        $this->assertInstanceOf('DateTime', $data->get(1)['datetime']);
+        $this->assertInstanceOf('DateTime', $data->get(1)['time']);
+        $this->assertTrue(is_array($data->get(1)['array']));
+        $this->assertTrue(is_object($data->get(1)['object']));
     }
 }

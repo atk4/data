@@ -943,7 +943,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Return value of $model[$model->title_field]. If not set, returns id value.
+     * Return value of $model->get($model->title_field). If not set, returns id value.
      *
      * @return mixed
      */
@@ -967,13 +967,13 @@ class Model implements \IteratorAggregate
         $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
 
         return array_map(function ($row) use ($field) {
-            return $row[$field];
+            return $row->get($field);
         }, $this->export([$field], $this->id_field));
     }
 
     /**
      * You can compare new value of the field with existing one without
-     * retrieving. In the trivial case it's same as ($value == $model[$name])
+     * retrieving. In the trivial case it's same as ($value == $model->get($name))
      * but this method can be used for:.
      *
      *  - comparing values that can't be received - passwords, encrypted data
@@ -1409,7 +1409,7 @@ class Model implements \IteratorAggregate
         $this->id = null;
 
         if ($this->id_field) {
-            $this[$this->id_field] = $new_id;
+            $this->set($this->id_field, $new_id);
         }
 
         return $this;
@@ -1476,7 +1476,7 @@ class Model implements \IteratorAggregate
         foreach ($this->data as $field => $value) {
             if ($value !== null && $value !== $this->getField($field)->default) {
                 // Copying only non-default value
-                $m[$field] = $value;
+                $m->set($field, $value);
             }
         }
 
@@ -1503,7 +1503,7 @@ class Model implements \IteratorAggregate
             $class = get_class($class);
         }
 
-        if (is_string($class) && $class[0] !== '\\') {
+        if (is_string($class) && $class->get(0) !== '\\') {
             $class = '\\' . $class;
         }
 
@@ -1556,10 +1556,10 @@ class Model implements \IteratorAggregate
         if ($this->id_field) {
             if ($id === true) {
                 $m->id = $this->id;
-                $m[$m->id_field] = $this[$this->id_field];
+                $m->set($m->id_field, $this->get($this->id_field));
             } elseif ($id) {
                 $m->id = null; // record shouldn't exist yet
-                $m[$m->id_field] = $id;
+                $m->set($m->id_field, $id);
             }
         }
 
@@ -1818,7 +1818,7 @@ class Model implements \IteratorAggregate
                         // storing into a different table join
                         $field->join->set($name, $value);
                     } else {
-                        $data[$name] = $value;
+                        $data->set($name, $value);
                     }
                 }
 
@@ -1846,7 +1846,7 @@ class Model implements \IteratorAggregate
                         // storing into a different table join
                         $field->join->set($name, $value);
                     } else {
-                        $data[$name] = $value;
+                        $data->set($name, $value);
                     }
                 }
 
@@ -2077,13 +2077,13 @@ class Model implements \IteratorAggregate
         foreach ($this->rawIterator() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $this->id = $data[$this->id_field] ?? null;
+                $this->id = $data->get($this->id_field) ?? null;
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:
             // $model->onHook('afterLoad', function ($m) {
-            //     if ($m['date'] < $m->date_from) $m->breakHook(false);
+            //     if ($m->get('date') < $m->date_from) $m->breakHook(false);
             // })
 
             // you can also use breakHook() with specific object which will then be returned

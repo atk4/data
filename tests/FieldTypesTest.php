@@ -27,14 +27,14 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($this->pers);
         $m->addField('email', ['Email']);
 
-        $m['email'] = ' foo@example.com';
+        $m->set('email', ' foo@example.com');
         $m->save();
 
         // padding removed
-        $this->assertSame('foo@example.com', $m['email']);
+        $this->assertSame('foo@example.com', $m->get('email'));
 
         $this->expectExceptionMessage('format is invalid');
-        $m['email'] = 'qq';
+        $m->set('email', 'qq');
     }
 
     public function testEmail2()
@@ -43,11 +43,11 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->addField('email', ['Email']);
         $m->addField('emails', ['Email', 'allow_multiple' => true]);
 
-        $m['emails'] = 'bar@exampe.com ,foo@example.com';
-        $this->assertSame('bar@exampe.com, foo@example.com', $m['emails']);
+        $m->set('emails', 'bar@exampe.com ,foo@example.com');
+        $this->assertSame('bar@exampe.com, foo@example.com', $m->get('emails'));
 
         $this->expectExceptionMessage('a single email');
-        $m['email'] = 'bar@exampe.com ,foo@example.com';
+        $m->set('email', 'bar@exampe.com ,foo@example.com');
     }
 
     public function testEmail3()
@@ -55,12 +55,12 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($this->pers);
         $m->addField('email', ['Email', 'dns_check' => true]);
 
-        $m['email'] = ' foo@gmail.com';
+        $m->set('email', ' foo@gmail.com');
 
         $this->markTestIncomplete(); // @TODO, test below is failing, to be solved later
 
         $this->expectExceptionMessage('does not exist');
-        $m['email'] = ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com';
+        $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
 
     public function testEmail4()
@@ -71,11 +71,11 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->addField('email_idn', ['Email', 'dns_check' => true]);
         $m->addField('email', ['Email']);
 
-        $m['email_name'] = 'Romans <me@gmail.com>';
-        $m['email_names'] = 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans3 <me3@gmail.com>';
-        $m['email_idn'] = 'test@日本レジストリサービス.jp';
+        $m->set('email_name', 'Romans <me@gmail.com>');
+        $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans3 <me3@gmail.com>');
+        $m->set('email_idn', 'test@日本レジストリサービス.jp');
 
         $this->expectExceptionMessage('format is invalid');
-        $m['email'] = 'Romans <me@gmail.com>';
+        $m->set('email', 'Romans <me@gmail.com>');
     }
 }

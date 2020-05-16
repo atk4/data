@@ -89,7 +89,7 @@ If you are worried about performance you can keep 2 models in memory::
     $client = $order->refModel('client_id');
 
     foreach($order as $o) {
-        $client->load($o['client_id']);
+        $client->load($o->get('client_id'));
     }
 
 .. warning:: This code is seriously flawed and is called "N+1 Problem".
@@ -204,7 +204,7 @@ You can also specify a type yourself::
     ->addField('paid_amount', ['aggregate'=>'sum', 'field'=>'amount', 'type'=>'money']);
 
 Aggregate fields are always declared read-only, and if you try to
-change them (`$m['paid_amount'] = 123;`), you will receive exception.
+change them (`$m->set('paid_amount', 123);`), you will receive exception.
 
 Available Aggregation Functions
 -------------------------------
@@ -407,15 +407,15 @@ This would create 'currency' field containing name of the currency::
 
     $i->load(20);
 
-    echo "Currency for invoice 20 is ".$i['currency'];   // EUR
+    echo "Currency for invoice 20 is ".$i->get('currency');   // EUR
 
 Unlike addField() which creates fields read-only, title field can in fact be
 modified::
 
-    $i['currency'] = 'GBP';
+    $i->set('currency', 'GBP');
     $i->save();
 
-    // will update $i['currency_id'] to the corresponding ID for currency with name GBP.
+    // will update $i->get('currency_id') to the corresponding ID for currency with name GBP.
 
 This behavior is awesome when you are importing large amounts of data, because
 the lookup for the currency_id is entirely done in a database.
@@ -466,7 +466,7 @@ Reference Discovery
 You can call :php:meth:`Model::getRefs()` to fetch all the references of a model::
 
     $refs = $model->getRefs();
-    $ref = $refs['owner_id'];
+    $ref = $refs->get('owner_id');
 
 or if you know the reference you'd like to fetch, you can use :php:meth:`Model::getRef()`::
 
@@ -623,7 +623,7 @@ working with a new model::
 
     $m = new Model_User($db);
 
-    $m['name'] = 'John';
+    $m->set('name', 'John');
     $m->save();
 
 In this scenario, a new record will be added into 'user' with 'contact_id' equal
@@ -631,12 +631,12 @@ to null. The next example will traverse into the contact to set it up::
 
     $m = new Model_User($db);
 
-    $m['name'] = 'John';
+    $m->set('name', 'John');
     $m->ref('address_id')->save(['address'=>'street']);
     $m->save();
 
 When entity which you have referenced through ref() is saved, it will automatically
-populate $m['contact_id'] field and the final $m->save() will also store the reference.
+populate $m->get('contact_id') field and the final $m->save() will also store the reference.
 
 ID setting is implemented through a basic hook. Related model will have afterSave
 hook, which will update address_id field of the $m.

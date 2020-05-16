@@ -16,26 +16,26 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertFalse($m->isDirty('foo'));
 
-        $m['foo'] = 'abc';
+        $m->set('foo', 'abc');
         $this->assertFalse($m->isDirty('foo'));
 
-        $m['foo'] = 'bca';
+        $m->set('foo', 'bca');
         $this->assertTrue($m->isDirty('foo'));
 
-        $m['foo'] = 'abc';
+        $m->set('foo', 'abc');
         $this->assertFalse($m->isDirty('foo'));
 
         // set initial data
         $m->data['foo'] = 'xx';
         $this->assertFalse($m->isDirty('foo'));
 
-        $m['foo'] = 'abc';
+        $m->set('foo', 'abc');
         $this->assertTrue($m->isDirty('foo'));
 
-        $m['foo'] = 'bca';
+        $m->set('foo', 'bca');
         $this->assertTrue($m->isDirty('foo'));
 
-        $m['foo'] = 'xx';
+        $m->set('foo', 'xx');
         $this->assertFalse($m->isDirty('foo'));
     }
 
@@ -45,7 +45,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('foo', ['default' => 'abc']);
 
         $this->assertTrue($m->compare('foo', 'abc'));
-        $m['foo'] = 'zzz';
+        $m->set('foo', 'zzz');
 
         $this->assertFalse($m->compare('foo', 'abc'));
         $this->assertTrue($m->compare('foo', 'zzz'));
@@ -55,10 +55,10 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['mandatory' => true]);
-        $m['foo'] = 'abc';
-        $m['foo'] = null;
-        $m['foo'] = '';
-        unset($m['foo']);
+        $m->set('foo', 'abc');
+        $m->set('foo', null);
+        $m->set('foo', '');
+        $m->_unset('name');
     }
 
     /**
@@ -68,8 +68,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
-        $m['foo'] = '';
-        unset($m['foo']);
+        $m->set('foo', '');
+        $m->_unset('name');
     }
 
     /**
@@ -79,8 +79,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
-        $m['foo'] = null;
-        unset($m['foo']);
+        $m->set('foo', null);
+        $m->_unset('name');
     }
 
     /**
@@ -195,14 +195,14 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['read_only' => true]);
-        $m['foo'] = 'bar';
+        $m->set('foo', 'bar');
     }
 
     public function testReadOnly2()
     {
         $m = new Model();
         $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
-        $m['foo'] = 'abc';
+        $m->set('foo', 'abc');
     }
 
     public function testReadOnly3()
@@ -210,7 +210,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
         $m->data['foo'] = 'xx';
-        $m['foo'] = 'xx';
+        $m->set('foo', 'xx');
     }
 
     /**
@@ -220,19 +220,19 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['enum' => ['foo', 'bar']]);
-        $m['foo'] = 'xx';
+        $m->set('foo', 'xx');
     }
 
     public function testEnum2()
     {
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar']]);
-        $m['foo'] = 1;
+        $m->set('foo', 1);
 
-        $this->assertSame(1, $m['foo']);
+        $this->assertSame(1, $m->get('foo'));
 
-        $m['foo'] = 'bar';
-        $this->assertSame('bar', $m['foo']);
+        $m->set('foo', 'bar');
+        $this->assertSame('bar', $m->get('foo'));
     }
 
     /**
@@ -242,7 +242,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar']]);
-        $m['foo'] = true;
+        $m->set('foo', true);
     }
 
     public function testEnum4()
@@ -252,9 +252,9 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         // to a weird behaviours of PHP
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
-        $m['foo'] = null;
+        $m->set('foo', null);
 
-        $this->assertNull($m['foo']);
+        $this->assertNull($m->get('foo'));
     }
 
     /**
@@ -264,19 +264,19 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['values' => ['foo', 'bar']]);
-        $m['foo'] = 4;
+        $m->set('foo', 4);
     }
 
     public function testValues2()
     {
         $m = new Model();
         $m->addField('foo', ['values' => [3 => 'bar']]);
-        $m['foo'] = 3;
+        $m->set('foo', 3);
 
-        $this->assertSame(3, $m['foo']);
+        $this->assertSame(3, $m->get('foo'));
 
-        $m['foo'] = null;
-        $this->assertNull($m['foo']);
+        $m->set('foo', null);
+        $this->assertNull($m->get('foo'));
     }
 
     /**
@@ -286,7 +286,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['values' => [1 => 'bar']]);
-        $m['foo'] = true;
+        $m->set('foo', true);
     }
 
     /**
@@ -296,7 +296,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['values' => [1 => 'bar']]);
-        $m['foo'] = 'bar';
+        $m->set('foo', 'bar');
     }
 
     public function testValues4()
@@ -306,7 +306,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         // to a weird behaviours of PHP
         $m = new Model();
         $m->addField('foo', ['values' => ['1a' => 'bar']]);
-        $m['foo'] = '1a';
+        $m->set('foo', '1a');
     }
 
     public function testPersist()
@@ -323,47 +323,47 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('surname', ['never_save' => true]);
         $m->load(1);
 
-        $this->assertNull($m['name']);
-        $this->assertSame('Smith', $m['surname']);
+        $this->assertNull($m->get('name'));
+        $this->assertSame('Smith', $m->get('surname'));
 
-        $m['name'] = 'Bill';
-        $m['surname'] = 'Stalker';
+        $m->set('name', 'Bill');
+        $m->set('surname', 'Stalker');
         $m->save();
         $this->assertEquals($a, $this->getDB());
 
         $m->reload();
-        $this->assertSame('Smith', $m['surname']);
+        $this->assertSame('Smith', $m->get('surname'));
         $m->getField('surname')->never_save = false;
-        $m['surname'] = 'Stalker';
+        $m->set('surname', 'Stalker');
         $m->save();
-        $a['item'][1]['surname'] = 'Stalker';
+        $a->get('item')[1]['surname'] = 'Stalker';
         $this->assertEquals($a, $this->getDB());
 
         $m->onHook('beforeSave', function ($m) {
             if ($m->isDirty('name')) {
-                $m['surname'] = $m['name'];
-                unset($m['name']);
+                $m->set('surname', $m->get('name'));
+                $m->_unset('name');
             } elseif ($m->isDirty('surname')) {
-                $m['name'] = $m['surname'];
-                unset($m['surname']);
+                $m->set('name', $m->get('surname'));
+                $m->_unset('surname');
             }
         });
 
-        $m['name'] = 'X';
+        $m->set('name', 'X');
         $m->save();
 
-        $a['item'][1]['surname'] = 'X';
+        $a->get('item')[1]['surname'] = 'X';
 
         $this->assertEquals($a, $this->getDB());
-        $this->assertNull($m['name']);
-        $this->assertSame('X', $m['surname']);
+        $this->assertNull($m->get('name'));
+        $this->assertSame('X', $m->get('surname'));
 
-        $m['surname'] = 'Y';
+        $m->set('surname', 'Y');
         $m->save();
 
         $this->assertEquals($a, $this->getDB());
-        $this->assertSame('Y', $m['name']);
-        $this->assertSame('X', $m['surname']);
+        $this->assertSame('Y', $m->get('name'));
+        $this->assertSame('X', $m->get('surname'));
     }
 
     public function testTitle()
@@ -395,8 +395,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
 
         $m->load(1);
 
-        $this->assertSame('John', $m['name']);
-        $this->assertSame('Programmer', $m['category']);
+        $this->assertSame('John', $m->get('name'));
+        $this->assertSame('Programmer', $m->get('category'));
 
         $m->insert(['Peter', 'category' => 'Sales']);
 
@@ -421,14 +421,14 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo');
-        $m['baz'] = 'bar';
+        $m->set('baz', 'bar');
     }
 
     public function testStrict1()
     {
         $m = new Model(['strict_field_check' => false]);
         $m->addField('foo');
-        $m['baz'] = 'bar';
+        $m->set('baz', 'bar');
     }
 
     public function testActual()
@@ -449,10 +449,10 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('surname');
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
         $m->loadBy('first_name', 'John');
-        $this->assertSame('John', $m['first_name']);
+        $this->assertSame('John', $m->get('first_name'));
 
         $d = $m->export();
-        $this->assertSame('John', $d[0]['first_name']);
+        $this->assertSame('John', $d->get(0)['first_name']);
 
         $a = [
             'user' => [
@@ -461,7 +461,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
             ], ];
         $this->assertEquals($a, $this->getDB());
 
-        $m['first_name'] = 'Scott';
+        $m->set('first_name', 'Scott');
         $m->save();
 
         $a = [
@@ -485,14 +485,14 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('net', ['type' => 'money']);
         $m->addField('vat', ['type' => 'money']);
         $m->addCalculatedField('total', function ($m) {
-            return $m['net'] + $m['vat'];
+            return $m->get('net') + $m->get('vat');
         });
         $m->insert(['net' => 30, 'vat' => 8]);
 
         $m->load(1);
-        $this->assertEquals(121, $m['total']);
+        $this->assertEquals(121, $m->get('total'));
         $m->load(2);
-        $this->assertEquals(38, $m['total']);
+        $this->assertEquals(38, $m->get('total'));
 
         $d = $m->export(); // in export calculated fields are not included
         $this->assertFalse(isset($d[0]['total']));
@@ -558,11 +558,11 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->save(['name' => 'John', 'secret' => 'i am a woman']);
 
         $a = $this->getDB();
-        $this->assertNotNull($a['user'][1]['secret']);
-        $this->assertNotSame('i am a woman', $a['user'][1]['secret']);
+        $this->assertNotNull($a->get('user')[1]['secret']);
+        $this->assertNotSame('i am a woman', $a->get('user')[1]['secret']);
 
         $m->unload()->load(1);
-        $this->assertSame('i am a woman', $m['secret']);
+        $this->assertSame('i am a woman', $m->get('secret'));
     }
 
     public function testNormalize()
@@ -585,65 +585,65 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('object', ['type' => 'object']);
 
         // string
-        $m['string'] = "Two\r\nLines  ";
-        $this->assertSame('TwoLines', $m['string']);
+        $m->set('string', "Two\r\nLines  ");
+        $this->assertSame('TwoLines', $m->get('string'));
 
-        $m['string'] = "Two\rLines  ";
-        $this->assertSame('TwoLines', $m['string']);
+        $m->set('string', "Two\rLines  ");
+        $this->assertSame('TwoLines', $m->get('string'));
 
-        $m['string'] = "Two\nLines  ";
-        $this->assertSame('TwoLines', $m['string']);
+        $m->set('string', "Two\nLines  ");
+        $this->assertSame('TwoLines', $m->get('string'));
 
         // text
-        $m['text'] = "Two\r\nLines  ";
-        $this->assertSame("Two\nLines", $m['text']);
+        $m->set('text', "Two\r\nLines  ");
+        $this->assertSame("Two\nLines", $m->get('text'));
 
-        $m['text'] = "Two\rLines  ";
-        $this->assertSame("Two\nLines", $m['text']);
+        $m->set('text', "Two\rLines  ");
+        $this->assertSame("Two\nLines", $m->get('text'));
 
-        $m['text'] = "Two\nLines  ";
-        $this->assertSame("Two\nLines", $m['text']);
+        $m->set('text', "Two\nLines  ");
+        $this->assertSame("Two\nLines", $m->get('text'));
 
         // integer, money, float
-        $m['integer'] = '12,345.67676767'; // no digits after dot
-        $this->assertSame(12345, $m['integer']);
+        $m->set('integer', '12,345.67676767'); // no digits after dot
+        $this->assertSame(12345, $m->get('integer'));
 
-        $m['money'] = '12,345.67676767'; // 4 digits after dot
-        $this->assertSame(12345.6768, $m['money']);
+        $m->set('money', '12,345.67676767'); // 4 digits after dot
+        $this->assertSame(12345.6768, $m->get('money'));
 
-        $m['float'] = '12,345.67676767'; // don't round
-        $this->assertSame(12345.67676767, $m['float']);
+        $m->set('float', '12,345.67676767'); // don't round
+        $this->assertSame(12345.67676767, $m->get('float'));
 
         // boolean
-        $m['boolean'] = 0;
-        $this->assertFalse($m['boolean']);
-        $m['boolean'] = 1;
-        $this->assertTrue($m['boolean']);
+        $m->set('boolean', 0);
+        $this->assertFalse($m->get('boolean'));
+        $m->set('boolean', 1);
+        $this->assertTrue($m->get('boolean'));
 
-        $m['boolean_enum'] = 'N';
-        $this->assertFalse($m['boolean_enum']);
-        $m['boolean_enum'] = 'Y';
-        $this->assertTrue($m['boolean_enum']);
+        $m->set('boolean_enum', 'N');
+        $this->assertFalse($m->get('boolean_enum'));
+        $m->set('boolean_enum', 'Y');
+        $this->assertTrue($m->get('boolean_enum'));
 
         // date, datetime, time
-        $m['date'] = 123;
-        $this->assertInstanceof('DateTime', $m['date']);
-        $m['date'] = '123';
-        $this->assertInstanceof('DateTime', $m['date']);
-        $m['date'] = '2018-05-31';
-        $this->assertInstanceof('DateTime', $m['date']);
-        $m['datetime'] = 123;
-        $this->assertInstanceof('DateTime', $m['datetime']);
-        $m['datetime'] = '123';
-        $this->assertInstanceof('DateTime', $m['datetime']);
-        $m['datetime'] = '2018-05-31 12:13:14';
-        $this->assertInstanceof('DateTime', $m['datetime']);
-        $m['time'] = 123;
-        $this->assertInstanceof('DateTime', $m['time']);
-        $m['time'] = '123';
-        $this->assertInstanceof('DateTime', $m['time']);
-        $m['time'] = '12:13:14';
-        $this->assertInstanceof('DateTime', $m['time']);
+        $m->set('date', 123);
+        $this->assertInstanceof('DateTime', $m->get('date'));
+        $m->set('date', '123');
+        $this->assertInstanceof('DateTime', $m->get('date'));
+        $m->set('date', '2018-05-31');
+        $this->assertInstanceof('DateTime', $m->get('date'));
+        $m->set('datetime', 123);
+        $this->assertInstanceof('DateTime', $m->get('datetime'));
+        $m->set('datetime', '123');
+        $this->assertInstanceof('DateTime', $m->get('datetime'));
+        $m->set('datetime', '2018-05-31 12:13:14');
+        $this->assertInstanceof('DateTime', $m->get('datetime'));
+        $m->set('time', 123);
+        $this->assertInstanceof('DateTime', $m->get('time'));
+        $m->set('time', '123');
+        $this->assertInstanceof('DateTime', $m->get('time'));
+        $m->set('time', '12:13:14');
+        $this->assertInstanceof('DateTime', $m->get('time'));
     }
 
     /**
@@ -653,7 +653,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'string']);
-        $m['foo'] = [];
+        $m->set('foo', []);
     }
 
     /**
@@ -663,7 +663,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'text']);
-        $m['foo'] = [];
+        $m->set('foo', []);
     }
 
     /**
@@ -673,7 +673,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'integer']);
-        $m['foo'] = [];
+        $m->set('foo', []);
     }
 
     /**
@@ -683,7 +683,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'money']);
-        $m['foo'] = [];
+        $m->set('foo', []);
     }
 
     /**
@@ -693,7 +693,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'float']);
-        $m['foo'] = [];
+        $m->set('foo', []);
     }
 
     /**
@@ -703,7 +703,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'date']);
-        $m['foo'] = [];
+        $m->set('foo', []);
     }
 
     /**
@@ -713,7 +713,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'datetime']);
-        $m['foo'] = [];
+        $m->set('foo', []);
     }
 
     /**
@@ -723,7 +723,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'time']);
-        $m['foo'] = [];
+        $m->set('foo', []);
     }
 
     /**
@@ -733,7 +733,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'integer']);
-        $m['foo'] = '123---456';
+        $m->set('foo', '123---456');
     }
 
     /**
@@ -743,7 +743,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'money']);
-        $m['foo'] = '123---456';
+        $m->set('foo', '123---456');
     }
 
     /**
@@ -753,7 +753,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'float']);
-        $m['foo'] = '123---456';
+        $m->set('foo', '123---456');
     }
 
     /**
@@ -763,7 +763,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'array']);
-        $m['foo'] = 'ABC';
+        $m->set('foo', 'ABC');
     }
 
     /**
@@ -773,7 +773,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'object']);
-        $m['foo'] = 'ABC';
+        $m->set('foo', 'ABC');
     }
 
     /**
@@ -783,7 +783,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model(['strict_types' => true]);
         $m->addField('foo', ['type' => 'boolean']);
-        $m['foo'] = 'ABC';
+        $m->set('foo', 'ABC');
     }
 
     public function testToString()
@@ -932,34 +932,34 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->addField('is_vip_3', ['type' => 'boolean', 'valueTrue' => 'Y', 'valueFalse' => 'N']);
 
         $m->set('is_vip_1', 'No');
-        $this->assertFalse($m['is_vip_1']);
+        $this->assertFalse($m->get('is_vip_1'));
         $m->set('is_vip_1', 'Yes');
-        $this->assertTrue($m['is_vip_1']);
+        $this->assertTrue($m->get('is_vip_1'));
         $m->set('is_vip_1', false);
-        $this->assertFalse($m['is_vip_1']);
+        $this->assertFalse($m->get('is_vip_1'));
         $m->set('is_vip_1', true);
-        $this->assertTrue($m['is_vip_1']);
+        $this->assertTrue($m->get('is_vip_1'));
         $m->set('is_vip_1', 0);
-        $this->assertFalse($m['is_vip_1']);
+        $this->assertFalse($m->get('is_vip_1'));
         $m->set('is_vip_1', 1);
-        $this->assertTrue($m['is_vip_1']);
+        $this->assertTrue($m->get('is_vip_1'));
 
         $m->set('is_vip_2', 0);
-        $this->assertFalse($m['is_vip_2']);
+        $this->assertFalse($m->get('is_vip_2'));
         $m->set('is_vip_2', 1);
-        $this->assertTrue($m['is_vip_2']);
+        $this->assertTrue($m->get('is_vip_2'));
         $m->set('is_vip_2', false);
-        $this->assertFalse($m['is_vip_2']);
+        $this->assertFalse($m->get('is_vip_2'));
         $m->set('is_vip_2', true);
-        $this->assertTrue($m['is_vip_2']);
+        $this->assertTrue($m->get('is_vip_2'));
 
         $m->set('is_vip_3', 'N');
-        $this->assertFalse($m['is_vip_3']);
+        $this->assertFalse($m->get('is_vip_3'));
         $m->set('is_vip_3', 'Y');
-        $this->assertTrue($m['is_vip_3']);
+        $this->assertTrue($m->get('is_vip_3'));
         $m->set('is_vip_3', false);
-        $this->assertFalse($m['is_vip_3']);
+        $this->assertFalse($m->get('is_vip_3'));
         $m->set('is_vip_3', true);
-        $this->assertTrue($m['is_vip_3']);
+        $this->assertTrue($m->get('is_vip_3'));
     }
 }

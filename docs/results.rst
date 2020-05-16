@@ -20,7 +20,7 @@ Create your persistence object first then iterate it::
     $m = new Model_Client($db);
 
     foreach($m as $id => $item) {
-        echo $id.": ".$item['name']."\n";
+        echo $id.": ".$item->get('name')."\n";
     }
 
 You must be aware that $item will actually be same as $m and will point to the model.
@@ -50,7 +50,7 @@ will consume memory), you can do it like this::
     $cat = [];
 
     foreach(new Model_Category($db) as $id => $c) {
-        $cat[$id] = clone $c;
+        $cat->set($id, clone $c);
     }
 
 

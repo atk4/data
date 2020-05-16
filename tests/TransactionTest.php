@@ -28,7 +28,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         $m->onHook('afterSave', function ($m) {
             throw new \Exception('Awful thing happened');
         });
-        $m['name'] = 'XXX';
+        $m->set('name', 'XXX');
 
         try {
             $m->save();

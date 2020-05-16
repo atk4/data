@@ -31,7 +31,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $m->load(1);
-        $this->assertSame('John', $m['name']);
+        $this->assertSame('John', $m->get('name'));
 
         $m->unload();
         $this->assertFalse($m->loaded());
@@ -40,15 +40,15 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertTrue($m->loaded());
 
         $m->load(2);
-        $this->assertSame('Jones', $m['surname']);
-        $m['surname'] = 'Smith';
+        $this->assertSame('Jones', $m->get('surname'));
+        $m->set('surname', 'Smith');
         $m->save();
 
         $m->load(1);
-        $this->assertSame('John', $m['name']);
+        $this->assertSame('John', $m->get('name'));
 
         $m->load(2);
-        $this->assertSame('Smith', $m['surname']);
+        $this->assertSame('Smith', $m->get('surname'));
     }
 
     public function testSaveAs()
@@ -90,7 +90,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $m->load(1);
         $this->assertTrue($m->loaded());
-        $m['gender'] = 'F';
+        $m->set('gender', 'F');
         $m->saveAndUnload();
         $this->assertFalse($m->loaded());
 
@@ -121,13 +121,13 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $m->load(1);
-        $m['name'] = 'Peter';
+        $m->set('name', 'Peter');
         $m->save();
 
         $m->load(2);
-        $m['surname'] = 'Smith';
+        $m->set('surname', 'Smith');
         $m->save();
-        $m['surname'] = 'QQ';
+        $m->set('surname', 'QQ');
         $m->save();
 
         $this->assertSame([
@@ -192,7 +192,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $output = '';
 
         foreach ($m as $row) {
-            $output .= $row['name'];
+            $output .= $row->get('name');
         }
 
         $this->assertSame('JohnSarah', $output);
@@ -214,18 +214,18 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $m->load(1);
-        $this->assertSame('John', $m['name']);
+        $this->assertSame('John', $m->get('name'));
 
         $m->load(2);
-        $this->assertSame('Jones', $m['surname']);
-        $m['surname'] = 'Smith';
+        $this->assertSame('Jones', $m->get('surname'));
+        $m->set('surname', 'Smith');
         $m->save();
 
         $m->load(1);
-        $this->assertSame('John', $m['name']);
+        $this->assertSame('John', $m->get('name'));
 
         $m->load(2);
-        $this->assertSame('Smith', $m['surname']);
+        $this->assertSame('Smith', $m->get('surname'));
     }
 
     /**
@@ -366,9 +366,9 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('country', 'LIKE', 'La%');
         $result = $m->action('select')->get();
         $this->assertSame(3, count($result));
-        $this->assertSame($a['countries'][3], $result[3]);
-        $this->assertSame($a['countries'][7], $result[7]);
-        $this->assertSame($a['countries'][9], $result[9]);
+        $this->assertSame($a->get('countries')[3], $result->get(3));
+        $this->assertSame($a->get('countries')[7], $result->get(7));
+        $this->assertSame($a->get('countries')[9], $result->get(9));
         unset($result);
         $m->unload();
 
@@ -377,10 +377,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('country', 'LIKE', '%ia');
         $result = $m->action('select')->get();
         $this->assertSame(4, count($result));
-        $this->assertSame($a['countries'][3], $result[3]);
-        $this->assertSame($a['countries'][7], $result[7]);
-        $this->assertSame($a['countries'][8], $result[8]);
-        $this->assertSame($a['countries'][9], $result[9]);
+        $this->assertSame($a->get('countries')[3], $result->get(3));
+        $this->assertSame($a->get('countries')[7], $result->get(7));
+        $this->assertSame($a->get('countries')[8], $result->get(8));
+        $this->assertSame($a->get('countries')[9], $result->get(9));
         unset($result);
         $m->unload();
 
@@ -389,13 +389,13 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('country', 'LIKE', '%a%');
         $result = $m->action('select')->get();
         $this->assertSame(7, count($result));
-        $this->assertSame($a['countries'][1], $result[1]);
-        $this->assertSame($a['countries'][2], $result[2]);
-        $this->assertSame($a['countries'][3], $result[3]);
-        $this->assertSame($a['countries'][6], $result[6]);
-        $this->assertSame($a['countries'][7], $result[7]);
-        $this->assertSame($a['countries'][8], $result[8]);
-        $this->assertSame($a['countries'][9], $result[9]);
+        $this->assertSame($a->get('countries')[1], $result->get(1));
+        $this->assertSame($a->get('countries')[2], $result->get(2));
+        $this->assertSame($a->get('countries')[3], $result->get(3));
+        $this->assertSame($a->get('countries')[6], $result->get(6));
+        $this->assertSame($a->get('countries')[7], $result->get(7));
+        $this->assertSame($a->get('countries')[8], $result->get(8));
+        $this->assertSame($a->get('countries')[9], $result->get(9));
         unset($result);
         $m->unload();
 
@@ -573,7 +573,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $this->assertSame(4, $m->action('count')->getOne());
-        $this->assertSame($a['data'], $m->export());
+        $this->assertSame($a->get('data'), $m->export());
 
         $m->addCondition('name', 'Sarah');
         $this->assertSame(3, $m->action('count')->getOne());

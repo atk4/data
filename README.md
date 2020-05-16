@@ -258,11 +258,11 @@ While in most cases modern SQL sub-queries have comparable speed to JOIN, Agile 
 
 You can, however, [import fields through joins too](http://agile-data.readthedocs.io/en/develop/joins.html)
 
-#### Q: I don't like the `$book['field'] = 123`, I prefer properties
+#### Q: I don't like the `$book->set('field', 123)`, I prefer properties
 
 Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$model->id`, `$model->persistence` and `model->data`.
 
-To simplify work with model records, you can use `$model['field']` which will be routed to `$model->data['field']`. Read more on [working with individual data records](http://agile-data.readthedocs.io/en/develop/persistence.html).
+Read more on [working with individual data records](http://agile-data.readthedocs.io/en/develop/persistence.html).
 
 #### Q: I do not like to use class `\atk4\data\Model` as a parent
 

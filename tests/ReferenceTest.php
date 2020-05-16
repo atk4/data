@@ -24,8 +24,8 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $user->hasMany('Orders', [$order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders');
 
-        $this->assertSame(20, $o['amount']);
-        $this->assertSame(1, $o['user_id']);
+        $this->assertSame(20, $o->get('amount'));
+        $this->assertSame(1, $o->get('user_id'));
 
         $user->hasMany('BigOrders', function () {
             $m = new Model();

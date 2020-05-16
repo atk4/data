@@ -74,7 +74,7 @@ class Array_ extends Join
         }
 
         if ($model->hasField($this->master_field)
-            && $model[$this->master_field]
+            && $model->get($this->master_field)
         ) {
             // The value for the master_field is set,
             // we are going to use existing record.
@@ -91,7 +91,7 @@ class Array_ extends Join
             $this->foreign_table
         );
 
-        $data[$this->master_field] = $this->id;
+        $data->set($this->master_field, $this->id);
 
         //$this->owner->set($this->master_field, $this->id);
     }

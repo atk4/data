@@ -189,7 +189,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         }
 
         // The value for the master_field is set, so we are going to use existing record anyway
-        if ($model->hasField($this->master_field) && $model[$this->master_field]) {
+        if ($model->hasField($this->master_field) && $model->get($this->master_field)) {
             return;
         }
 
@@ -204,7 +204,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         if ($this->join) {
             $this->join->set($this->master_field, $this->id);
         } else {
-            $data[$this->master_field] = $this->id;
+            $data->set($this->master_field, $this->id);
         }
     }
 
@@ -255,7 +255,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         if ($this->reverse) {
             $update->where($this->foreign_field, $model->id);
         } else {
-            $update->where($this->foreign_field, $model[$this->master_field]);
+            $update->where($this->foreign_field, $model->get($this->master_field));
         }
 
         $update->update();
