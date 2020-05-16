@@ -7,7 +7,7 @@ namespace atk4\data;
  * class CustomModel extends \atk4\data\Model implements \ArrayAccess
  * {
  *     use \atk4\data\ModelArrayAccessTrait;
- * }
+ * }.
  */
 class ModelArrayAccessTrait
 {
@@ -20,7 +20,7 @@ class ModelArrayAccessTrait
      */
     public function offsetExists($name)
     {
-        return $this->_isset($name);;
+        return $this->_isset($name);
     }
 
     /**

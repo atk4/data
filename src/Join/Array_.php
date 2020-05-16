@@ -91,7 +91,7 @@ class Array_ extends Join
             $this->foreign_table
         );
 
-        $data->set($this->master_field, $this->id);
+        $data[$this->master_field] = $this->id;
 
         //$this->owner->set($this->master_field, $this->id);
     }

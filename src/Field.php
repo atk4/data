@@ -580,7 +580,7 @@ class Field implements Expressionable
             'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'join',
         ] as $key) {
             if (isset($this->{$key})) {
-                $arr->set($key, $this->{$key});
+                $arr[$key] = $this->{$key};
             }
         }
 

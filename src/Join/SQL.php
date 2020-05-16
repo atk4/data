@@ -204,7 +204,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         if ($this->join) {
             $this->join->set($this->master_field, $this->id);
         } else {
-            $data->set($this->master_field, $this->id);
+            $data[$this->master_field] = $this->id;
         }
     }
 
@@ -277,7 +277,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         if ($this->reverse) {
             $delete->where($this->foreign_field, $this->owner->id);
         } else {
-            $delete->where($this->foreign_field, $this->owner[$this->master_field]);
+            $delete->where($this->foreign_field, $this->owner->get($this->master_field));
         }
 
         $delete->delete()->execute();

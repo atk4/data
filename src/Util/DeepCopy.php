@@ -200,7 +200,7 @@ class DeepCopy
                 // exclude not needed field values
                 // see self::excluding()
                 foreach ($this->extractKeys($exclusions) as $key => $val) {
-                    $data->_unset($key);
+                    unset($data[$key]);
                 }
 
                 // do data transformation from source to destination
@@ -213,7 +213,7 @@ class DeepCopy
                 // foreach($destination->unique fields) { try load by
 
                 // if we still have id field, then remove it
-                $data->_unset($source->id_field);
+                unset($data[$source->id_field]);
 
                 // Copy fields as they are
                 foreach ($data as $key => $val) {

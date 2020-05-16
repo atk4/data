@@ -967,7 +967,7 @@ class Model implements \IteratorAggregate
         $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
 
         return array_map(function ($row) use ($field) {
-            return $row->get($field);
+            return $row[$field];
         }, $this->export([$field], $this->id_field));
     }
 
@@ -1503,7 +1503,7 @@ class Model implements \IteratorAggregate
             $class = get_class($class);
         }
 
-        if (is_string($class) && $class->get(0) !== '\\') {
+        if (is_string($class) && $class[0] !== '\\') {
             $class = '\\' . $class;
         }
 
@@ -1818,7 +1818,7 @@ class Model implements \IteratorAggregate
                         // storing into a different table join
                         $field->join->set($name, $value);
                     } else {
-                        $data->set($name, $value);
+                        $data[$name] = $value;
                     }
                 }
 
@@ -1846,7 +1846,7 @@ class Model implements \IteratorAggregate
                         // storing into a different table join
                         $field->join->set($name, $value);
                     } else {
-                        $data->set($name, $value);
+                        $data[$name] = $value;
                     }
                 }
 
@@ -2077,7 +2077,7 @@ class Model implements \IteratorAggregate
         foreach ($this->rawIterator() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $this->id = $data->get($this->id_field) ?? null;
+                $this->id = $data[$this->id_field] ?? null;
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row

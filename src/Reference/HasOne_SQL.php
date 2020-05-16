@@ -173,7 +173,7 @@ class HasOne_SQL extends HasOne
         if ($this->owner->loaded() && !$m->loaded()) {
             if ($this->owner->id_field === $this->our_field) {
                 $condition_field = $this->their_field ?: $m->id_field;
-                $condition_value = $this->owner[$this->our_field ?: $this->owner->id_field];
+                $condition_value = $this->owner->get($this->our_field ?: $this->owner->id_field);
                 $m->addCondition($condition_field, $condition_value);
             }
         }

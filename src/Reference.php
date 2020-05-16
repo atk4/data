@@ -240,7 +240,7 @@ class Reference
         foreach ($this->__debug_fields as $k => $v) {
             $k = is_numeric($k) ? $v : $k;
             if (isset($this->{$v})) {
-                $arr->set($k, $this->{$v});
+                $arr[$k] = $this->{$v};
             }
         }
 
