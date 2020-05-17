@@ -802,13 +802,9 @@ Store a specific record
 
 If you are using authentication mechanism to log a user in and you wish to
 store his details into Session, so that you don't have to reload every time,
-you can implement it like this::
+you can use Session persistence and implement it like this::
 
-    if (!isset($_SESSION['ad'])) {
-        $_SESSION['ad'] = []; // initialize
-    }
-
-    $sess = new \atk4\data\Persistence\Array_($_SESSION['ad']);
+    $sess = new \atk4\data\Persistence\Session();
     $logged_user = new User($sess);
     $logged_user->load('active_user');
 
@@ -819,8 +815,7 @@ user record that I'm going to store there.
 How to add record inside session, e.g. log the user in? Here is the code::
 
     $u = new User($db);
-    $u->load(123);
-
+    // this will save record with id='active_user' into session persistence
     $u->withPersistence($sess, 'active_user')->save();
 
 .. _Action:

@@ -13,6 +13,7 @@ use atk4\core\InitializerTrait;
 use atk4\core\NameTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\data\UserAction\Generic;
+use atk4\data\Persistence;
 use atk4\dsql\Query;
 
 /**
@@ -145,7 +146,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public $sequence;
 
     /**
-     * Persistence driver inherited from atk4\data\Persistence.
+     * Persistence driver inherited from Persistence.
      *
      * @var Persistence
      */
@@ -1568,26 +1569,17 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * If you wish to fully copy the data from one
      * model to another you should use:
      *
-     * $m->withPersistence($p2, false)->set($m)->save();
+     * $m->withPersistence($p2, false)->set($m->get())->save();
      *
      * See https://github.com/atk4/data/issues/111 for
      * use-case examples.
      *
-     * @param Persistence $persistence
      * @param mixed       $id
-     * @param string      $class
      *
      * @return $this
      */
-    public function withPersistence($persistence, $id = null, string $class = null)
+    public function withPersistence(Persistence $persistence, $id = null, string $class = null)
     {
-        if (!$persistence instanceof Persistence) {
-            throw new Exception([
-                'Please supply valid persistence',
-                'arg' => $persistence,
-            ]);
-        }
-
         if (!$class) {
             $class = static::class;
         }
