@@ -1874,7 +1874,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 throw new ValidationException($errors, $this);
             }
             $is_update = $this->loaded();
-            if ($this->hook(Model::HOOK_BEFORE_SAVE, [$is_update]) === false) {
+            if ($this->hook(self::HOOK_BEFORE_SAVE, [$is_update]) === false) {
                 return $this;
             }
 
