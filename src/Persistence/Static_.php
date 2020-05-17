@@ -43,7 +43,7 @@ class Static_ extends Array_
         // chomp off first row, we will use it to deduct fields
         $row1 = reset($data);
 
-        $this->onHook('afterAdd', [$this, 'afterAdd']);
+        $this->onHook('afterAdd', \Closure::fromCallable([$this, 'afterAdd']));
 
         if (!is_array($row1)) {
             // We are dealing with array of strings. Convert it into array of hashes

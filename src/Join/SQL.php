@@ -71,14 +71,14 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             $this->foreign_alias = ($this->owner->table_alias ?: '') . $this->short_name;
         }
 
-        $this->owner->onHook('initSelectQuery', $this);
+        $this->owner->onHook('initSelectQuery', \Closure::fromCallable([$this, 'initSelectQuery']));
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->owner->onHook('afterInsert', $this);
-            $this->owner->onHook('beforeUpdate', $this);
-            $this->owner->onHook('beforeDelete', [$this, 'doDelete'], [], -5);
-            $this->owner->onHook('afterLoad', $this);
+            $this->owner->onHook('afterInsert', \Closure::fromCallable([$this, 'afterInsert']));
+            $this->owner->onHook('beforeUpdate', \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->owner->onHook('beforeDelete', \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->owner->onHook('afterLoad', \Closure::fromCallable([$this, 'afterLoad']));
         } else {
             // Master field indicates ID of the joined item. In the past it had to be
             // defined as a physical field in the main table. Now it is a model field
@@ -97,10 +97,10 @@ class SQL extends Join implements \atk4\dsql\Expressionable
                 }
             }
 
-            $this->owner->onHook('beforeInsert', $this, [], -5);
-            $this->owner->onHook('beforeUpdate', $this);
-            $this->owner->onHook('afterDelete', [$this, 'doDelete']);
-            $this->owner->onHook('afterLoad', $this);
+            $this->owner->onHook('beforeInsert', \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
+            $this->owner->onHook('beforeUpdate', \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->owner->onHook('afterDelete', \Closure::fromCallable([$this, 'doDelete']));
+            $this->owner->onHook('afterLoad', \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 

@@ -343,7 +343,7 @@ before and just slightly modifying it::
                 $this->owner->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
             } else {
                 $this->owner->addCondition('is_deleted', false);
-                $this->owner->onHook('beforeDelete', [$this, 'softDelete'], null, 100);
+                $this->owner->onHook('beforeDelete', \Closure::fromCallable([$this, 'softDelete']), null, 100);
             }
         }
 
@@ -425,7 +425,7 @@ inside your model are unique::
                 $this->fields = [$this->owner->title_field];
             }
 
-            $this->owner->onHook('beforeSave', $this);
+            $this->owner->onHook('beforeSave', \Closure::fromCallable([$this, 'beforeSave']));
         }
 
         function beforeSave($m)

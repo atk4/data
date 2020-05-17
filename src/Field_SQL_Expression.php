@@ -59,7 +59,7 @@ class Field_SQL_Expression extends Field_SQL
         }
 
         if ($this->concat) {
-            $this->owner->onHook('afterSave', $this);
+            $this->owner->onHook('afterSave', \Closure::fromCallable([$this, 'afterSave']));
         }
     }
 

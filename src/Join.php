@@ -202,7 +202,7 @@ class Join
             }
         }
 
-        $this->owner->onHook('afterUnload', $this);
+        $this->owner->onHook('afterUnload', \Closure::fromCallable([$this, 'afterUnload']));
     }
 
     /**
