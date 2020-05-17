@@ -37,7 +37,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertSame('Sue', $this->getDB()['item'][2]['name']);
 
-        $m->onHook('afterDelete', function ($m) {
+        $m->onHook(Model::HOOK_AFTER_DELETE, function ($m) {
             throw new \Exception('Awful thing happened');
         });
 

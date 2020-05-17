@@ -75,9 +75,9 @@ class SQL extends Join implements \atk4\dsql\Expressionable
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->owner->onHook('afterInsert', \Closure::fromCallable([$this, 'afterInsert']));
-            $this->owner->onHook('beforeUpdate', \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->owner->onHook('beforeDelete', \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->owner->onHook(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
+            $this->owner->onHook(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->owner->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
             $this->owner->onHook(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         } else {
             // Master field indicates ID of the joined item. In the past it had to be
@@ -97,9 +97,9 @@ class SQL extends Join implements \atk4\dsql\Expressionable
                 }
             }
 
-            $this->owner->onHook('beforeInsert', \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
-            $this->owner->onHook('beforeUpdate', \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->owner->onHook('afterDelete', \Closure::fromCallable([$this, 'doDelete']));
+            $this->owner->onHook(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
+            $this->owner->onHook(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->owner->onHook(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
             $this->owner->onHook(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }

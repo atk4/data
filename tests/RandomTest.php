@@ -270,7 +270,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->addField('name');
         $m->load(2);
 
-        $m->onHook('afterUpdateQuery', function ($m, $update, $st) {
+        $m->onHook(Persistence\SQL::HOOK_AFTER_UPDATE_QUERY, function ($m, $update, $st) {
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
@@ -328,7 +328,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             $m->breakHook(false);
         });
 
-        $m->onHook('beforeDelete', function ($m, $id) {
+        $m->onHook(Model::HOOK_BEFORE_DELETE, function ($m, $id) {
             $m->unload();
             $m->breakHook(false);
         });

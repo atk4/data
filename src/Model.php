@@ -46,11 +46,23 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
     /** @const string */
     public const HOOK_AFTER_LOAD = self::class . '@afterLoad';
-
     /** @const string */
     public const HOOK_BEFORE_UNLOAD = self::class . '@beforeUnload';
     /** @const string */
     public const HOOK_AFTER_UNLOAD = self::class . '@afterUnload';
+
+    /** @const string */
+    public const HOOK_BEFORE_INSERT = self::class . '@beforeInsert';
+    /** @const string */
+    public const HOOK_AFTER_INSERT = self::class . '@afterInsert';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE = self::class . '@beforeUpdate';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE = self::class . '@afterUpdate';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE = self::class . '@beforeDelete';
+    /** @const string */
+    public const HOOK_AFTER_DELETE = self::class . '@afterDelete';
 
     /** @const string Executed when execution of self::atomic() failed. */
     public const HOOK_ROLLBACK = self::class . '@rollback';
@@ -1886,13 +1898,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     return $this;
                 }
 
-                if ($this->hook('beforeUpdate', [&$data]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_UPDATE, [&$data]) === false) {
                     return $this;
                 }
 
                 $to_persistence->update($this, $this->id, $data);
 
-                $this->hook('afterUpdate', [&$data]);
+                $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             } else {
                 $data = [];
                 foreach ($this->get() as $name => $value) {
@@ -1909,7 +1921,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     }
                 }
 
-                if ($this->hook('beforeInsert', [&$data]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_INSERT, [&$data]) === false) {
                     return $this;
                 }
 
@@ -1920,12 +1932,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
                     // Model inserted without any ID fields. Theoretically
                     // we should ignore $this->id even if it was returned.
                     $this->id = null;
-                    $this->hook('afterInsert', [null]);
+                    $this->hook(self::HOOK_AFTER_INSERT, [null]);
 
                     $this->dirty = [];
                 } elseif ($this->id) {
                     $this->set($this->id_field, $this->id);
-                    $this->hook('afterInsert', [$this->id]);
+                    $this->hook(self::HOOK_AFTER_INSERT, [$this->id]);
 
                     if ($this->reload_after_save !== false) {
                         $d = $this->dirty;
@@ -2229,11 +2241,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
                 return $this;
             } elseif ($this->loaded()) {
-                if ($this->hook('beforeDelete', [$this->id]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->id]) === false) {
                     return $this;
                 }
                 $this->persistence->delete($this, $this->id);
-                $this->hook('afterDelete', [$this->id]);
+                $this->hook(self::HOOK_AFTER_DELETE, [$this->id]);
                 $this->unload();
 
                 return $this;

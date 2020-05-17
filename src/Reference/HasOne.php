@@ -216,7 +216,7 @@ class HasOne extends Reference
         $m = $this->getModel($defaults);
 
         // add hook to set our_field = null when record of referenced model is deleted
-        $m->onHook('afterDelete', function ($m) {
+        $m->onHook(Model::HOOK_AFTER_DELETE, function ($m) {
             $this->owner[$this->our_field] = null;
         });
 

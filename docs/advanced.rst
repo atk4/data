@@ -166,7 +166,7 @@ which I want to define like this::
 
         $this->owner->addField('updated_dts', ['type'=>'datetime']);
 
-        $this->owner->onHook('beforeUpdate', function($m, $data) {
+        $this->owner->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
             if(isset($this->app->user) and $this->app->user->loaded()) {
                 $data['updated_by'] = $this->app->user->id;
             }
@@ -343,7 +343,7 @@ before and just slightly modifying it::
                 $this->owner->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
             } else {
                 $this->owner->addCondition('is_deleted', false);
-                $this->owner->onHook('beforeDelete', \Closure::fromCallable([$this, 'softDelete']), null, 100);
+                $this->owner->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'softDelete']), null, 100);
             }
         }
 
@@ -359,7 +359,7 @@ before and just slightly modifying it::
             $m->save(['is_deleted'=>true])->unload();
             $m->reload_after_save = $rs;
 
-            $m->hook('afterDelete', [$id]);
+            $m->hook(Model::HOOK_AFTER_DELETE, [$id]);
 
             $m->breakHook(false); // this will cancel original delete()
         }
@@ -515,7 +515,7 @@ Next we need to define reference. Inside Model_Invoice add::
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field'=>'invoice_id']);
 
-    $this->onHook('beforeDelete',function($m){
+    $this->onHook(Model::HOOK_BEFORE_DELETE, function($m){
         $m->ref('InvoicePayment')->action('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment

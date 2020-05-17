@@ -688,7 +688,7 @@ application::
             $m->withPersistence($this->sql)->save();
         });
 
-        $m->onHook('beforeDelete', function($m){
+        $m->onHook(Model::HOOK_BEFORE_DELETE, function($m){
             $m->withPersistence($this->sql)->delete();
         });
 
@@ -733,7 +733,7 @@ also::
         $m->withPersistence($this->sql)->save();
     });
 
-    $m->onHook('beforeDelete', function($m){
+    $m->onHook(Model::HOOK_BEFORE_DELETE, function($m){
         $m->withPersistence($this->sql)->delete();
     });
 

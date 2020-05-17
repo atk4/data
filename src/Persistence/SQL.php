@@ -16,6 +16,19 @@ use atk4\dsql\Query;
  */
 class SQL extends Persistence
 {
+    /** @const string */
+    public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsertQuery';
+    /** @const string */
+    public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsertQuery';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdateQuery';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdateQuery';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
+    /** @const string */
+    public const HOOK_AFTER_DELETE_QUERY = self::class . '@afterDeleteQuery';
+
     /**
      * Connection object.
      *
@@ -859,7 +872,7 @@ class SQL extends Persistence
         $st = null;
 
         try {
-            $m->hook('beforeInsertQuery', [$insert]);
+            $m->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
             $st = $insert->execute();
         } catch (\PDOException $e) {
             throw new Exception([
@@ -871,7 +884,7 @@ class SQL extends Persistence
             ], 0, $e);
         }
 
-        $m->hook('afterInsertQuery', [$insert, $st]);
+        $m->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
 
         return $m->lastInsertID();
     }
@@ -943,7 +956,7 @@ class SQL extends Persistence
         $st = null;
 
         try {
-            $m->hook('beforeUpdateQuery', [$update]);
+            $m->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
             if ($data) {
                 $st = $update->execute();
             }
@@ -962,7 +975,7 @@ class SQL extends Persistence
             $m->id = $data[$m->id_field];
         }
 
-        $m->hook('afterUpdateQuery', [$update, $st]);
+        $m->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
 
         // if any rows were updated in database, and we had expressions, reload
         if ($m->reload_after_save === true && (!$st || $st->rowCount())) {
@@ -987,7 +1000,7 @@ class SQL extends Persistence
         $delete = $this->initQuery($m);
         $delete->mode('delete');
         $delete->where($m->id_field, $id);
-        $m->hook('beforeDeleteQuery', [$delete]);
+        $m->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
             $delete->execute();

@@ -193,7 +193,7 @@ and your update() may not actually update anything. This does not normally
 generate an error, however if you want to actually make sure that update() was
 effective, you can implement this through a hook::
 
-    $m->onHook('afterUpdateQuery',function($m, $update, $st) {
+    $m->onHook(Persistence\SQL::HOOK_AFTER_UPDATE_QUERY, function($m, $update, $st) {
         if (!$st->rowCount()) {
             throw new \atk4\core\Exception([
                 'Update didn\'t affect any records',
