@@ -37,6 +37,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use CollectionTrait;
     use ReadableCaptionTrait;
 
+    /** @const string */
+    public const HOOK_NORMALIZE = self::class . '@normalize';
+    /** @const string */
+    public const HOOK_VALIDATE = self::class . '@validate';
+
     // {{{ Properties of the class
 
     /**
@@ -462,7 +467,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function validate($intent = null)
     {
         $errors = [];
-        foreach ($this->hook('validate', [$intent]) as $handler_error) {
+        foreach ($this->hook(self::HOOK_VALIDATE, [$intent]) as $handler_error) {
             if ($handler_error) {
                 $errors = array_merge($errors, $handler_error);
             }
@@ -780,7 +785,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $f = $this->hasField($field);
 
         try {
-            if ($f && $this->hook('normalize', [$f, $value]) !== false) {
+            if ($f && $this->hook(self::HOOK_NORMALIZE, [$f, $value]) !== false) {
                 $value = $f->normalize($value);
             }
         } catch (Exception $e) {
@@ -879,14 +884,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function setNull($field)
     {
         // set temporary hook to disable any normalization (null validation)
-        $hookIndex = $this->onHook('normalize', function () {
+        $hookIndex = $this->onHook(self::HOOK_NORMALIZE, function () {
             throw new \atk4\core\HookBreaker(false);
         }, [], PHP_INT_MIN);
 
         try {
             $this->set($field, null);
         } finally {
-            $this->removeHook('normalize', $hookIndex, true);
+            $this->removeHook(self::HOOK_NORMALIZE, $hookIndex, true);
         }
 
         return $this;
