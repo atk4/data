@@ -28,8 +28,6 @@ class SQL extends Persistence
     public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdateQuery';
     /** @const string */
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
-    /** @const string */
-    public const HOOK_AFTER_DELETE_QUERY = self::class . '@afterDeleteQuery';
 
     /**
      * Connection object.
