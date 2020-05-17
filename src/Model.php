@@ -13,7 +13,6 @@ use atk4\core\InitializerTrait;
 use atk4\core\NameTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\data\UserAction\Generic;
-use atk4\data\Persistence;
 use atk4\dsql\Query;
 
 /**
@@ -1574,7 +1573,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * See https://github.com/atk4/data/issues/111 for
      * use-case examples.
      *
-     * @param mixed       $id
+     * @param mixed $id
      *
      * @return $this
      */

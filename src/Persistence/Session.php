@@ -17,9 +17,9 @@ class Session extends Array_
     /**
      * Constructor. Can pass array of data in parameters.
      */
-    public function __construct(&$data = [], ?string $key = null)
+    public function __construct(&$data = [], string $key = null)
     {
-        $key = $key ?? $this->name ?? get_class($this);
+        $key = $key ?? $this->name ?? static::class;
 
         parent::__construct($data);
         $_SESSION[$this->session_key][$key] = &$this->data;
