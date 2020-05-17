@@ -43,6 +43,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public const HOOK_VALIDATE = self::class . '@validate';
 
     /** @const string */
+    public const HOOK_BEFORE_UNLOAD = self::class . '@beforeUnload';
+    /** @const string */
+    public const HOOK_AFTER_UNLOAD = self::class . '@afterUnload';
+
+    /** @const string Executed when execution of self::atomic() failed. */
     public const HOOK_ROLLBACK = self::class . '@rollback';
 
     // {{{ Properties of the class
@@ -51,7 +56,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * The class used by addField() method.
      *
      * @todo use Field::class here and refactor addField() method to not use namespace prefixes.
-     *       but because that's backward incomatible change, then we can do that only in next
+     *       but because that's backward incompatible change, then we can do that only in next
      *       major version.
      *
      * @var string|array
@@ -1382,11 +1387,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function unload()
     {
-        $this->hook('beforeUnload');
+        $this->hook(self::HOOK_BEFORE_UNLOAD);
         $this->id = null;
         $this->data = [];
         $this->dirty = [];
-        $this->hook('afterUnload');
+        $this->hook(self::HOOK_AFTER_UNLOAD);
 
         return $this;
     }
