@@ -37,20 +37,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use CollectionTrait;
     use ReadableCaptionTrait;
 
-    /** @const string Executed for every field set using self::set() method. */
-    public const HOOK_NORMALIZE = self::class . '@normalize';
-    /** @const string Executed when self::validate() method is called. */
-    public const HOOK_VALIDATE = self::class . '@validate';
-
-    /** @const string */
-    public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
-    /** @const string */
-    public const HOOK_AFTER_LOAD = self::class . '@afterLoad';
-    /** @const string */
-    public const HOOK_BEFORE_UNLOAD = self::class . '@beforeUnload';
-    /** @const string */
-    public const HOOK_AFTER_UNLOAD = self::class . '@afterUnload';
-
     /** @const string */
     public const HOOK_BEFORE_INSERT = self::class . '@beforeInsert';
     /** @const string */
@@ -64,8 +50,22 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /** @const string */
     public const HOOK_AFTER_DELETE = self::class . '@afterDelete';
 
+    /** @const string */
+    public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
+    /** @const string */
+    public const HOOK_AFTER_LOAD = self::class . '@afterLoad';
+    /** @const string */
+    public const HOOK_BEFORE_UNLOAD = self::class . '@beforeUnload';
+    /** @const string */
+    public const HOOK_AFTER_UNLOAD = self::class . '@afterUnload';
+
     /** @const string Executed when execution of self::atomic() failed. */
     public const HOOK_ROLLBACK = self::class . '@rollback';
+
+    /** @const string Executed for every field set using self::set() method. */
+    public const HOOK_NORMALIZE = self::class . '@normalize';
+    /** @const string Executed when self::validate() method is called. */
+    public const HOOK_VALIDATE = self::class . '@validate';
 
     // {{{ Properties of the class
 
