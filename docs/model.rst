@@ -187,7 +187,7 @@ To invoke code from `init()` methods of ALL models (for example soft-delete logi
 you use Persistence's "afterAdd" hook. This will not affect ALL models but just models
 which are associated with said persistence::
 
-   $db->onHook('afterAdd', function($p, $m) use($acl) {
+   $db->onHook(Persistence::HOOK_AFTER_ADD, function($p, $m) use($acl) {
 
       $fields = $m->getFields();
 

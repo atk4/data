@@ -12,7 +12,6 @@ use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\NameTrait;
 use atk4\core\ReadableCaptionTrait;
-use atk4\data\UserAction\Generic;
 use atk4\dsql\Query;
 
 /**
@@ -71,6 +70,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public const HOOK_NORMALIZE = self::class . '@normalize';
     /** @const string Executed when self::validate() method is called. */
     public const HOOK_VALIDATE = self::class . '@validate';
+    /** @const string Executed when self::onlyFields() method is called. */
+    public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
     // {{{ Properties of the class
 
@@ -655,7 +656,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function onlyFields($fields = [])
     {
-        $this->hook('onlyFields', [&$fields]);
+        $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
         $this->only_fields = $fields;
 
         return $this;
