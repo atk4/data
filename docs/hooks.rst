@@ -52,7 +52,7 @@ Example with beforeSave
 The next code snippet demonstrates a basic usage of a `beforeSave` hook.
 This one will update field values just before record is saved::
 
-    $m->onHook('beforeSave', function($m) {
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
         $m['name'] = strtoupper($m['name']);
         $m['surname'] = strtoupper($m['surname']);
     });
@@ -136,7 +136,7 @@ of save.
 
 You may actually drop validation exception inside save, insert or update hooks::
 
-    $m->onHook('beforeSave', function($m) {
+    $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
         if ($m['name'] = 'Yagi') {
             throw new \atk4\data\ValidationException(['name'=>"We don't serve like you"]);
         }

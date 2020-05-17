@@ -425,7 +425,7 @@ inside your model are unique::
                 $this->fields = [$this->owner->title_field];
             }
 
-            $this->owner->onHook('beforeSave', \Closure::fromCallable([$this, 'beforeSave']));
+            $this->owner->onHook(Model::HOOK_BEFORE_SAVE, \Closure::fromCallable([$this, 'beforeSave']));
         }
 
         function beforeSave($m)
@@ -650,7 +650,7 @@ Here is how to add them. First you need to create fields::
 I have declared those fields with never_persist so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
-    $this->onHook('beforeSave', function($m) {
+    $this->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
         if(isset($m['client_code']) && !isset($m['client_id'])) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('code',$m['client_code']);
@@ -739,7 +739,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->onHook('afterSave', function($m, $is_update){
+    $this->onHook(Model::HOOK_AFTER_SAVE, function($m, $is_update){
         if(isset($m['payment'])) {
             $m->ref('Payment')->insert($m['payment']);
         }

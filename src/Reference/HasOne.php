@@ -226,7 +226,7 @@ class HasOne extends Reference
                 $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
             }
 
-            $m->onHook('afterSave', function ($m) {
+            $m->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
                 $this->owner[$this->our_field] = $m[$this->their_field];
             });
         } else {
@@ -234,7 +234,7 @@ class HasOne extends Reference
                 $m->tryLoad($this->owner[$this->our_field]);
             }
 
-            $m->onHook('afterSave', function ($m) {
+            $m->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
                 $this->owner[$this->our_field] = $m->id;
             });
         }

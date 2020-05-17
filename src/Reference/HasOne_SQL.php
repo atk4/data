@@ -61,7 +61,7 @@ class HasOne_SQL extends HasOne
         $e->never_save = true;
 
         // Will try to execute last
-        $this->owner->onHook('beforeSave', function (Model $m) use ($field, $their_field) {
+        $this->owner->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) use ($field, $their_field) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
             if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
@@ -236,7 +236,7 @@ class HasOne_SQL extends HasOne
         ));
 
         // Will try to execute last
-        $this->owner->onHook('beforeSave', function (Model $m) use ($field) {
+        $this->owner->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) use ($field) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
             if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {

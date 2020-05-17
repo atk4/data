@@ -318,7 +318,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, 'user');
         $m->addField('name');
 
-        $m->onHook('beforeSave', function ($m) {
+        $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
             $m->breakHook(false);
         });
 

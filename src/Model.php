@@ -38,6 +38,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use ReadableCaptionTrait;
 
     /** @const string */
+    public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
+    /** @const string */
+    public const HOOK_AFTER_LOAD = self::class . '@afterLoad';
+    /** @const string */
+    public const HOOK_BEFORE_UNLOAD = self::class . '@beforeUnload';
+    /** @const string */
+    public const HOOK_AFTER_UNLOAD = self::class . '@afterUnload';
+
+    /** @const string */
     public const HOOK_BEFORE_INSERT = self::class . '@beforeInsert';
     /** @const string */
     public const HOOK_AFTER_INSERT = self::class . '@afterInsert';
@@ -51,13 +60,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public const HOOK_AFTER_DELETE = self::class . '@afterDelete';
 
     /** @const string */
-    public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
+    public const HOOK_BEFORE_SAVE = self::class . '@beforeSave';
     /** @const string */
-    public const HOOK_AFTER_LOAD = self::class . '@afterLoad';
-    /** @const string */
-    public const HOOK_BEFORE_UNLOAD = self::class . '@beforeUnload';
-    /** @const string */
-    public const HOOK_AFTER_UNLOAD = self::class . '@afterUnload';
+    public const HOOK_AFTER_SAVE = self::class . '@afterSave';
 
     /** @const string Executed when execution of self::atomic() failed. */
     public const HOOK_ROLLBACK = self::class . '@rollback';
@@ -1868,7 +1873,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 throw new ValidationException($errors, $this);
             }
             $is_update = $this->loaded();
-            if ($this->hook('beforeSave', [$is_update]) === false) {
+            if ($this->hook(Model::HOOK_BEFORE_SAVE, [$is_update]) === false) {
                 return $this;
             }
 
@@ -1949,7 +1954,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
             }
 
-            $this->hook('afterSave', [$is_update]);
+            $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
 
             if ($this->loaded()) {
                 $this->dirty = $this->_dirty_after_reload;
