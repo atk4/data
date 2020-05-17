@@ -25,7 +25,7 @@ Example will calculate "total_gross" by adding up values for "net" and "vat"::
     $m->addExpression('total_gross', '[total_net]+[total_vat]');
     $m->load(1);
 
-    echo $m['total_gross'];
+    echo $m->get('total_gross');
 
 The query using during load() will look like this:
 
@@ -66,7 +66,7 @@ example::
     $m = new Model($db, false);
     $m->addExpression('now', 'now()');
     $m->loadAny();
-    echo $m['now'];
+    echo $m->get('now');
 
 In this example the query will look like this:
 
@@ -128,12 +128,12 @@ the following model::
     }
 
     $m = new Model_Math($db);
-    $m['a'] = 4;
-    $m['b'] = 6;
+    $m->set('a', 4);
+    $m->set('b', 6);
 
     $m->save();
 
-    echo $m['sum'];
+    echo $m->get('sum');
 
 When $m->save() is executed, Agile Data will perform reloading of the model.
 This is to ensure that expression 'sum' would be re-calculated for the values of
@@ -143,15 +143,15 @@ Reload after save will only be executed if you have defined any expressions
 inside your model, however you can affect this behavior::
 
     $m = new Model_Math($db, ['reload_after_save' => false]);
-    $m['a'] = 4;
-    $m['b'] = 6;
+    $m->set('a', 4);
+    $m->set('b', 6);
 
     $m->save();
 
-    echo $m['sum'];   // outputs null
+    echo $m->get('sum');   // outputs null
 
     $m->reload();
-    echo $m['sum'];   // outputs 10
+    echo $m->get('sum');   // outputs 10
 
 Now it requires an explicit reload for your model to fetch the result. There
 is another scenario when your database defines default fields:
@@ -174,21 +174,21 @@ Then try the following code::
     }
 
     $m = new Model_Math($db);
-    $m['a'] = 4;
+    $m->set('a', 4);
 
     $m->save();
 
-    echo $m['a']+$m['b'];
+    echo $m->get('a')+$m->get('b');
 
 This will output 4, because model didn't reload itself due to lack of any
 expressions. This time you can explicitly enable reload after save::
 
     $m = new Model_Math($db, ['reload_after_save' => true]);
-    $m['a'] = 4;
+    $m->set('a', 4);
 
     $m->save();
 
-    echo $m['a']+$m['b']; // outputs 14
+    echo $m->get('a')+$m->get('b'); // outputs 14
 
 .. note:: If your model is using reload_after_save, but you wish to insert
     data without additional query - use :php:meth:`Model::insert()` or
