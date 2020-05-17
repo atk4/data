@@ -239,13 +239,13 @@ This can be used in various situations.
 
 Save information into auditLog about failure:
 
-    $m->onHook('onRollback', function($m){ 
+    $m->onHook(Model::HOOK_ROLLBACK, function($m){ 
         $m->auditLog->registerFailure();
     });
 
 Upgrade schema:
 
-    $m->onHook('onRollback', function($m, $exception) { 
+    $m->onHook(Model::HOOK_ROLLBACK, function($m, $exception) { 
         if ($exception instanceof \PDOException) {
             $m->schema->upgrade();
             $m->breakHook(false); // exception will not be thrown

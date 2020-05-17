@@ -37,10 +37,13 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use CollectionTrait;
     use ReadableCaptionTrait;
 
-    /** @const string */
+    /** @const string Executed for every field set using self::set() method. */
     public const HOOK_NORMALIZE = self::class . '@normalize';
-    /** @const string */
+    /** @const string Executed when self::validate() method is called. */
     public const HOOK_VALIDATE = self::class . '@validate';
+
+    /** @const string */
+    public const HOOK_ROLLBACK = self::class . '@rollback';
 
     // {{{ Properties of the class
 
@@ -2248,7 +2251,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         try {
             return $persistence->atomic($f);
         } catch (\Exception $e) {
-            if ($this->hook('onRollback', [$this, $e]) !== false) {
+            if ($this->hook(self::HOOK_ROLLBACK, [$this, $e]) !== false) {
                 throw $e;
             }
         }

@@ -120,7 +120,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
 
         $hook_called = false;
         $values = [];
-        $m->onHook('onRollback', function ($mm, $e) use (&$hook_called, &$values) {
+        $m->onHook(Model::HOOK_ROLLBACK, function ($mm, $e) use (&$hook_called, &$values) {
             $hook_called = true;
             $values = $mm->get(); // model field values are still the same no matter we rolled back
             $mm->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
