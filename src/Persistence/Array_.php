@@ -461,4 +461,12 @@ class Array_ extends Persistence
                 ]);
         }
     }
+
+    /**
+     * Deletes all data.
+     */
+    public function clearData()
+    {
+        $this->data = [];
+    }
 }
