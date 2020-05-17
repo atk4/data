@@ -17,6 +17,8 @@ use atk4\dsql\Query;
 class SQL extends Persistence
 {
     /** @const string */
+    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
+    /** @const string */
     public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsertQuery';
     /** @const string */
     public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsertQuery';
@@ -634,7 +636,7 @@ class SQL extends Persistence
             case 'delete':
                 $q->mode('delete');
                 $this->initQueryConditions($m, $q);
-                $m->hook('initSelectQuery', [$q, $type]);
+                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 
                 return $q;
             case 'select':
@@ -643,7 +645,7 @@ class SQL extends Persistence
                 break;
             case 'count':
                 $this->initQueryConditions($m, $q);
-                $m->hook('initSelectQuery', [$q]);
+                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q]);
                 if (isset($args['alias'])) {
                     $q->reset('field')->field('count(*)', $args['alias']);
                 } else {
@@ -660,7 +662,7 @@ class SQL extends Persistence
                 }
 
                 $field = is_string($args[0]) ? $m->getField($args[0]) : $args[0];
-                $m->hook('initSelectQuery', [$q, $type]);
+                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
                 if (isset($args['alias'])) {
                     $q->reset('field')->field($field, $args['alias']);
                 } elseif ($field instanceof Field_SQL_Expression) {
@@ -684,7 +686,7 @@ class SQL extends Persistence
                 $fx = $args[0];
                 $field = is_string($args[1]) ? $m->getField($args[1]) : $args[1];
                 $this->initQueryConditions($m, $q);
-                $m->hook('initSelectQuery', [$q, $type]);
+                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 
                 if ($type === 'fx') {
                     $expr = "{$fx}([])";
@@ -710,7 +712,7 @@ class SQL extends Persistence
 
         $this->initQueryConditions($m, $q);
         $this->setLimitOrder($m, $q);
-        $m->hook('initSelectQuery', [$q, $type]);
+        $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 
         return $q;
     }

@@ -4,12 +4,13 @@ namespace atk4\data\Join;
 
 use atk4\data\Join;
 use atk4\data\Model;
+use atk4\data\Persistence;
 
 /**
  * Join\SQL class.
  *
- * @property \atk4\data\Persistence\SQL $persistence
- * @property SQL                        $join
+ * @property Persistence\SQL $persistence
+ * @property SQL             $join
  */
 class SQL extends Join implements \atk4\dsql\Expressionable
 {
@@ -71,7 +72,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             $this->foreign_alias = ($this->owner->table_alias ?: '') . $this->short_name;
         }
 
-        $this->owner->onHook('initSelectQuery', \Closure::fromCallable([$this, 'initSelectQuery']));
+        $this->owner->onHook(Persistence\SQL::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
 
         // Add necessary hooks
         if ($this->reverse) {
