@@ -85,7 +85,7 @@ model will assume the operation was successful.
 
 You can also break beforeLoad hook which can be used to skip rows::
 
-    $model->onHook('afterLoad', function ($m) {
+    $model->onHook(Model::HOOK_AFTER_LOAD, function ($m) {
         if ($m['date'] < $m->date_from) {
             $m->breakHook(false); // will not yield such data row
         }
@@ -213,7 +213,7 @@ In some cases you want to prevent default actions from executing.
 Suppose you want to check 'memcache' before actually loading the record from
 the database. Here is how you can implement this functionality::
 
-    $m->onHook('beforeLoad',function($m, $id) {
+    $m->onHook(Model::HOOK_BEFORE_LOAD, function($m, $id) {
         $data = $m->app->cacheFetch($m->table, $id);
         if ($data) {
             $m->data = $data;

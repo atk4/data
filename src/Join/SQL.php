@@ -78,7 +78,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             $this->owner->onHook('afterInsert', \Closure::fromCallable([$this, 'afterInsert']));
             $this->owner->onHook('beforeUpdate', \Closure::fromCallable([$this, 'beforeUpdate']));
             $this->owner->onHook('beforeDelete', \Closure::fromCallable([$this, 'doDelete']), [], -5);
-            $this->owner->onHook('afterLoad', \Closure::fromCallable([$this, 'afterLoad']));
+            $this->owner->onHook(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         } else {
             // Master field indicates ID of the joined item. In the past it had to be
             // defined as a physical field in the main table. Now it is a model field
@@ -100,7 +100,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             $this->owner->onHook('beforeInsert', \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
             $this->owner->onHook('beforeUpdate', \Closure::fromCallable([$this, 'beforeUpdate']));
             $this->owner->onHook('afterDelete', \Closure::fromCallable([$this, 'doDelete']));
-            $this->owner->onHook('afterLoad', \Closure::fromCallable([$this, 'afterLoad']));
+            $this->owner->onHook(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 

@@ -43,6 +43,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public const HOOK_VALIDATE = self::class . '@validate';
 
     /** @const string */
+    public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
+    /** @const string */
+    public const HOOK_AFTER_LOAD = self::class . '@afterLoad';
+
+    /** @const string */
     public const HOOK_BEFORE_UNLOAD = self::class . '@beforeUnload';
     /** @const string */
     public const HOOK_AFTER_UNLOAD = self::class . '@afterUnload';
@@ -1417,7 +1422,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->unload();
         }
 
-        if ($this->hook('beforeLoad', [$id]) === false) {
+        if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
             return $this;
         }
 
@@ -1426,7 +1431,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $this->id = $id;
         }
 
-        $ret = $this->hook('afterLoad');
+        $ret = $this->hook(self::HOOK_AFTER_LOAD);
         if ($ret === false) {
             return $this->unload();
         } elseif (is_object($ret)) {
@@ -1649,7 +1654,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->data) {
             $this->id = $id;
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
@@ -1687,7 +1692,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 $this->id = $this->data[$this->id_field];
             }
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
@@ -1728,7 +1733,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
                 }
             }
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
@@ -2136,14 +2141,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:
-            // $model->onHook('afterLoad', function ($m) {
+            // $model->onHook(self::HOOK_AFTER_LOAD, function ($m) {
             //     if ($m['date'] < $m->date_from) $m->breakHook(false);
             // })
 
             // you can also use breakHook() with specific object which will then be returned
             // as a next iterator value
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
 
             if ($ret === false) {
                 continue;

@@ -32,7 +32,7 @@ class Array_ extends Join
             $this->owner->onHook('beforeInsert', \Closure::fromCallable([$this, 'beforeInsert']));
             $this->owner->onHook('beforeUpdate', \Closure::fromCallable([$this, 'beforeUpdate']));
             $this->owner->onHook('afterDelete', \Closure::fromCallable([$this, 'doDelete']));
-            $this->owner->onHook('afterLoad', \Closure::fromCallable([$this, 'afterLoad']));
+            $this->owner->onHook(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 

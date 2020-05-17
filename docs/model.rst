@@ -437,7 +437,7 @@ action - `send_gift`.
 There are some advanced techniques like "SubTypes" or class substitution,
 for example, this hook may be placed in the "User" class init()::
 
-   $this->onHook('afterLoad', function($m) {
+   $this->onHook(Model::HOOK_AFTER_LOAD, function($m) {
       if ($m['purchases'] > 1000) {
          $this->breakHook($this->asModel(VIPUser::class);
       }

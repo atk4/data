@@ -77,7 +77,7 @@ Another scenario which could benefit by type substitution would be::
 ATK Data allow class substitution during load and iteration by breaking "afterLoad"
 hook. Place the following inside Transaction::init()::
 
-    $this->onHook('afterLoad', function ($m) {
+    $this->onHook(Model::HOOK_AFTER_LOAD, function ($m) {
         if (get_class($this) != $m->getClassName()) {
             $cl = '\\'.$this->getClassName();
             $cl = new $cl($this->persistence);
@@ -98,7 +98,7 @@ of the record. Finally to help with performance, you can implement a switch::
         ..
 
         if ($this->typeSubstitution) {
-            $this->onHook('afterLoad',
+            $this->onHook(Model::HOOK_AFTER_LOAD,
                 ..........
             )
         }
