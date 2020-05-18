@@ -190,7 +190,7 @@ class SQL extends Persistence
         preg_replace_callback(
             '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
             function ($matches) use (&$args, $m) {
-                $identifier = mb_substr($matches[0], 1, -1);
+                $identifier = substr($matches[0], 1, -1);
                 if ($identifier && !isset($args[$identifier])) {
                     $args[$identifier] = $m->getField($identifier);
                 }

@@ -14,7 +14,7 @@ class FieldHereditaryTest extends \atk4\schema\PhpunitTestCase
         // default title field
         $m = new Model($p);
         $m->addExpression('caps', function ($m) {
-            return mb_strtoupper($m['name']);
+            return strtoupper($m['name']);
         });
 
         $m->load(1);
