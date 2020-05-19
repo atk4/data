@@ -238,8 +238,8 @@ Example::
     $model['age'] = 0;
     $model->save();
 
-    $model->getElement('age')->setNull(); // no exception
-    $model->save();         // still getting exception here
+    $model->getField('age')->setNull(); // no exception
+    $model->save(); // still getting exception here
 
 
 See also :php:method:`Model::setNull`.
