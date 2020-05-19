@@ -150,16 +150,15 @@ for these values.
 
 .. php:attr:: mandatory
 
-Set this to true if field value must not be NULL. You can set the NULL value to
-the field, but you won't be able to save it.
-
+Set this to true if field value must not be NULL. Attempting to set field
+value to "NULL" will result in exception.
 Example::
 
     $model['age'] = 0;
     $model->save();
 
-    $model['age'] = null;
-    $model->save();  // exception
+    $model['age'] = null;  // exception
+    $model->save();
 
 
 .. php:attr:: required
@@ -174,11 +173,10 @@ Some examples that are not allowed are:
 
 Example::
 
-    $model['age'] = 0;
-    $model->save();  // exception
+    $model['age'] = 0; // exception
 
-    $model['age'] = null;
-    $model->save();  // exception
+    // or
+    $model['age'] = null; // exception
 
 
 .. php:attr:: read_only
@@ -225,6 +223,26 @@ if user should be allowed to edit this field.
 .. php:method:: set
 
 Set the value of the field. Same as $model->set($field_name, $value);
+
+.. php:method:: setNull
+
+Set field value to NULL. This will bypass "mandatory" and "required" checks and
+should only be used if you are planning to set a different value to the field
+before executing save().
+
+If you do not set non-null value to a mandatory field, save() will fail with
+exception.
+
+Example::
+
+    $model['age'] = 0;
+    $model->save();
+
+    $model->getField('age')->setNull(); // no exception
+    $model->save(); // still getting exception here
+
+
+See also :php:method:`Model::setNull`.
 
 .. php:method:: get
 
@@ -297,3 +315,4 @@ stored. Final example::
         $this['password'] = $new_pass;
         $this->save();
     }
+
