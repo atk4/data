@@ -1,8 +1,13 @@
-# See https://github.com/release-drafter/release-drafter#configuration
 categories:
-  - title: 'Enhancements'
+  - title: "Breaking Changes"
     labels:
-      - enhancement
+      - "BC-break"
+  - title: "Major Features"
+    labels:
+      - "MAJOR"
+  - title: "Documentation enhancements"
+    labels:
+      - "Documentation :books:"
 template: |
   ## What’s Changed
 
