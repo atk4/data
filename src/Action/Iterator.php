@@ -127,7 +127,7 @@ class Iterator
             if (!is_a($field, Field::class)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
-                    'reason'    => 'Unsupported object instance '.get_class($field),
+                    'reason'    => 'Unsupported object instance ' . get_class($field),
                     'condition' => $scope,
                 ]);
             }
@@ -188,7 +188,7 @@ class Iterator
             case 'LIKE':
                 $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
 
-                $result = preg_match('/^'.$pattern.'$/', $v1);
+                $result = preg_match('/^' . $pattern . '$/', $v1);
             break;
 
             case 'NOT LIKE':
@@ -204,7 +204,7 @@ class Iterator
             break;
 
             case 'REGEXP':
-                $result = preg_match('/'.$v2.'/', $v1);
+                $result = preg_match('/' . $v2 . '/', $v1);
             break;
 
             case 'NOT REGEXP':

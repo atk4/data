@@ -198,7 +198,7 @@ class Scope extends AbstractScope
             $parts[] = $this->isCompound() && $scope->isCompound() ? "($words)" : $words;
         }
 
-        $glue = ' '.strtolower($this->junction).' ';
+        $glue = ' ' . strtolower($this->junction) . ' ';
 
         return implode($glue, $parts);
     }

@@ -390,7 +390,7 @@ class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
 
         $scope = Scope::merge($condition1, $condition2);
 
-        eval('$resurected = '.var_export($scope, true).';');
+        eval('$resurected = ' . var_export($scope, true) . ';');
 
         $this->assertEquals($scope, $resurected);
     }

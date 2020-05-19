@@ -251,7 +251,7 @@ class Condition extends AbstractScope
         if ($this->operator && isset(self::$opposites[$this->operator])) {
             $this->operator = self::$opposites[$this->operator];
         } else {
-            throw new Exception(['Negation of condition is not supported for '.($this->operator ?: 'no').' operator']);
+            throw new Exception(['Negation of condition is not supported for ' . ($this->operator ?: 'no') . ' operator']);
         }
 
         return $this;
@@ -354,14 +354,14 @@ class Condition extends AbstractScope
 
         if (is_object($value)) {
             if ($value instanceof Field) {
-                return $value->owner->getModelCaption().' '.$value->getCaption();
+                return $value->owner->getModelCaption() . ' ' . $value->getCaption();
             }
 
             if ($value instanceof Expression || $value instanceof Expressionable) {
                 return "expression '{$value->getDebugQuery()}'";
             }
 
-            return 'object '.print_r($value, true);
+            return 'object ' . print_r($value, true);
         }
 
         // replace placeholders
@@ -391,7 +391,7 @@ class Condition extends AbstractScope
             $value = $field->reference->ref()->getTitle() ?: $value;
         }
 
-        return "'".(string) $value."'";
+        return "'" . (string) $value . "'";
     }
 
     protected function replaceValue($value, $toWords = false)
