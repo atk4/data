@@ -584,6 +584,11 @@ When you modify active record, it keeps the original value in the $dirty array:
     $dirty property. If you pass non-array, then the value will be assigned
     to the :ref:`title_field`.
 
+.. php:method:: setNull
+
+    Set value of a specified field to NULL, temporarily ignoring normalization routine.
+    Only use this if you intend to set a correct value shortly after.
+
 .. php:method:: unset
 
     Restore field value to it's original::
