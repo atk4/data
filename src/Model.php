@@ -11,7 +11,7 @@ use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\ReadableCaptionTrait;
-use atk4\data\UserAction\Generic;
+use atk4\data\UserAction;
 use atk4\dsql\Query;
 
 /**
@@ -413,7 +413,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         // Declare our basic CRUD actions for the model.
         $this->addAction('add', [
             'fields' => true,
-            'modifier' => Generic::MODIFIER_CREATE,
+            'modifier' => UserAction\Generic::MODIFIER_CREATE,
             'scope' => UserAction\Generic::NO_RECORDS,
             'callback' => 'save',
             'description' => 'Add ' . $this->getModelCaption(),
@@ -421,14 +421,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         ]);
         $this->addAction('edit', [
             'fields' => true,
-            'modifier' => Generic::MODIFIER_UPDATE,
+            'modifier' => UserAction\Generic::MODIFIER_UPDATE,
             'scope' => UserAction\Generic::SINGLE_RECORD,
             'callback' => 'save',
             'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => 'edit'], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
         $this->addAction('delete', [
             'scope' => UserAction\Generic::SINGLE_RECORD,
-            'modifier' => Generic::MODIFIER_DELETE,
+            'modifier' => UserAction\Generic::MODIFIER_DELETE,
             'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => 'red trash'], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
@@ -438,7 +438,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->addAction('validate', [
             //'scope'=> any!
             'description' => 'Provided with modified values will validate them but will not save',
-            'modifier' => Generic::MODIFIER_READ,
+            'modifier' => UserAction\Generic::MODIFIER_READ,
             'fields' => true,
             'system' => true, // don't show by default
             'args' => ['intent' => 'string'],
