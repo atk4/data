@@ -413,6 +413,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         // Declare our basic CRUD actions for the model.
         $this->addAction('add', [
             'fields' => true,
+            'modifier' => Generic::CREATE,
             'scope' => UserAction\Generic::NO_RECORDS,
             'callback' => 'save',
             'description' => 'Add ' . $this->getModelCaption(),
@@ -420,12 +421,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
         ]);
         $this->addAction('edit', [
             'fields' => true,
+            'modifier' => Generic::UPDATE,
             'scope' => UserAction\Generic::SINGLE_RECORD,
             'callback' => 'save',
             'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => 'edit'], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
         $this->addAction('delete', [
             'scope' => UserAction\Generic::SINGLE_RECORD,
+            'modifier' => Generic::DELETE,
             'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => 'red trash'], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
@@ -435,6 +438,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->addAction('validate', [
             //'scope'=> any!
             'description' => 'Provided with modified values will validate them but will not save',
+            'modifier' => Generic::READ,
             'fields' => true,
             'system' => true, // don't show by default
             'args' => ['intent' => 'string'],
