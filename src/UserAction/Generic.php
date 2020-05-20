@@ -34,6 +34,15 @@ class Generic
     /** @var string by default - action is for a single-record */
     public $scope = self::SINGLE_RECORD;
 
+    /** Defining action modifier */
+    public const MODIFIER_CREATE = 'create'; // create new record(s).
+    public const MODIFIER_UPDATE = 'update'; // update existing record(s).
+    public const MODIFIER_DELETE = 'delete'; // delete record(s).
+    public const MODIFIER_READ = 'read'; // just read, does not modify record(s).
+
+    /** @var string How this action interact with record. default = 'read' */
+    public $modifier = self::MODIFIER_READ;
+
     /** @var callable code to execute. By default will call method with same name */
     public $callback;
 
