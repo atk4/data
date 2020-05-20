@@ -445,15 +445,15 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     public function testConditions()
     {
         $a = ['countries' => [
-            1 => ['id'=>1, 'name'=>'ABC9', 'code'=>11, 'country'=>'Ireland', 'active'=>1],
-            2 => ['id'=>2, 'name'=>'ABC8', 'code'=>12, 'country'=>'Ireland', 'active'=>0],
-            3 => ['id'=>3, 'code'=>13, 'country'=>'Latvia', 'active'=>1],
-            4 => ['id'=>4, 'name'=>'ABC6', 'code'=>14, 'country'=>'UK', 'active'=>0],
-            5 => ['id'=>5, 'name'=>'ABC5', 'code'=>15, 'country'=>'UK', 'active'=>0],
-            6 => ['id'=>6, 'name'=>'ABC4', 'code'=>16, 'country'=>'Ireland', 'active'=>1],
-            7 => ['id'=>7, 'name'=>'ABC3', 'code'=>17, 'country'=>'Latvia', 'active'=>0],
-            8 => ['id'=>8, 'name'=>'ABC2', 'code'=>18, 'country'=>'Russia', 'active'=>1],
-            9 => ['id'=>9, 'code'=>19, 'country'=>'Latvia', 'active'=>1],
+            1 => ['id' => 1, 'name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
+            2 => ['id' => 2, 'name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
+            3 => ['id' => 3, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
+            4 => ['id' => 4, 'name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
+            5 => ['id' => 5, 'name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
+            6 => ['id' => 6, 'name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
+            7 => ['id' => 7, 'name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
+            8 => ['id' => 8, 'name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
+            9 => ['id' => 9, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
         ]];
 
         $p = new Persistence\Array_($a);
@@ -555,17 +555,17 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     public function testAggregates()
     {
         $a = ['invoices' => [
-            1  => ['id'=>1, 'number'=>'ABC9', 'items'=>11, 'active'=>1],
-            2  => ['id'=>2, 'number'=>'ABC8', 'items'=>12, 'active'=>0],
-            3  => ['id'=>3, 'items'=>13, 'active'=>1],
-            4  => ['id'=>4, 'number'=>'ABC6', 'items'=>14, 'active'=>0],
-            5  => ['id'=>5, 'number'=>'ABC5', 'items'=>15, 'active'=>0],
-            6  => ['id'=>6, 'number'=>'ABC4', 'items'=>16, 'active'=>1],
-            7  => ['id'=>7, 'number'=>'ABC3', 'items'=>17, 'active'=>0],
-            8  => ['id'=>8, 'number'=>'ABC2', 'items'=>18, 'active'=>1],
-            9  => ['id'=>9, 'items'=>19, 'active'=>1],
-            10 => ['id'=>10, 'items'=>0, 'active'=>1],
-            11 => ['id'=>11, 'items'=>null, 'active'=>1],
+            1 => ['id' => 1, 'number' => 'ABC9', 'items' => 11, 'active' => 1],
+            2 => ['id' => 2, 'number' => 'ABC8', 'items' => 12, 'active' => 0],
+            3 => ['id' => 3, 'items' => 13, 'active' => 1],
+            4 => ['id' => 4, 'number' => 'ABC6', 'items' => 14, 'active' => 0],
+            5 => ['id' => 5, 'number' => 'ABC5', 'items' => 15, 'active' => 0],
+            6 => ['id' => 6, 'number' => 'ABC4', 'items' => 16, 'active' => 1],
+            7 => ['id' => 7, 'number' => 'ABC3', 'items' => 17, 'active' => 0],
+            8 => ['id' => 8, 'number' => 'ABC2', 'items' => 18, 'active' => 1],
+            9 => ['id' => 9, 'items' => 19, 'active' => 1],
+            10 => ['id' => 10, 'items' => 0, 'active' => 1],
+            11 => ['id' => 11, 'items' => null, 'active' => 1],
         ]];
 
         $p = new Persistence\Array_($a);
@@ -582,7 +582,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     public function testExists()
     {
         $a = ['invoices' => [
-            1  => ['id'=>1, 'number'=>'ABC9', 'items'=>11, 'active'=>1],
+            1 => ['id' => 1, 'number' => 'ABC9', 'items' => 11, 'active' => 1],
         ]];
 
         $p = new Persistence\Array_($a);
@@ -772,7 +772,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testUnsupportedAggregate()
     {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
@@ -780,7 +780,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \Exception
     public function testUnsupportedCondition1()
     {
         $a = [1 => ['name' => 'John']];

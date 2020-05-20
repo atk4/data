@@ -80,7 +80,6 @@ class Array_ extends Persistence
     /**
      * Loads model and returns data record.
      *
-     * @param Model  $model
      * @param mixed  $id
      * @param string $table
      *
@@ -105,7 +104,6 @@ class Array_ extends Persistence
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
      *
-     * @param Model  $model
      * @param mixed  $id
      * @param string $table
      *
@@ -126,7 +124,6 @@ class Array_ extends Persistence
      * Tries to load first available record and return data record.
      * Doesn't throw exception if model can't be loaded or there are no data records.
      *
-     * @param Model $model
      * @param mixed $table
      *
      * @return array|false
@@ -151,7 +148,6 @@ class Array_ extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
-     * @param Model  $model
      * @param array  $data
      * @param string $table
      *
@@ -175,7 +171,6 @@ class Array_ extends Persistence
     /**
      * Updates record in data array and returns record ID.
      *
-     * @param Model  $model
      * @param mixed  $id
      * @param array  $data
      * @param string $table
@@ -196,7 +191,6 @@ class Array_ extends Persistence
     /**
      * Deletes record in data array.
      *
-     * @param Model  $model
      * @param mixed  $id
      * @param string $table
      */
@@ -226,12 +220,12 @@ class Array_ extends Persistence
                 $ids = $model->id_field ? array_keys($this->data[$table]) : [count($this->data[$table])];
 
                 $id = $ids ? max($ids) + 1 : 1;
-                break;
 
+                break;
             case 'string':
                 $id = uniqid();
-                break;
 
+                break;
             default:
                 throw (new Exception('Unsupported id field type. Array supports type=integer or type=string only'))
                     ->addMoreInfo('type', $type);
@@ -260,8 +254,6 @@ class Array_ extends Persistence
     /**
      * Prepare iterator.
      *
-     * @param Model $model
-     *
      * @return array
      */
     public function prepareIterator(Model $model)
@@ -272,7 +264,6 @@ class Array_ extends Persistence
     /**
      * Export all DataSet.
      *
-     * @param Model      $model
      * @param array|null $fields
      * @param bool       $typecast Should we typecast exported data
      *
@@ -294,7 +285,6 @@ class Array_ extends Persistence
     /**
      * Typecast data and return Iterator of data array.
      *
-     * @param Model $model
      * @param array $fields
      *
      * @return \atk4\data\Action\Iterator
@@ -315,7 +305,6 @@ class Array_ extends Persistence
     /**
      * Will set limit defined inside $m onto data.
      *
-     * @param Model          $model
      * @param \ArrayIterator $action
      */
     protected function setLimitOrder(Model $model, &$action)
@@ -334,9 +323,6 @@ class Array_ extends Persistence
     /**
      * Will apply conditions defined inside $model onto $iterator.
      *
-     * @param Model                      $model
-     * @param \atk4\data\Action\Iterator $iterator
-     *
      * @return \atk4\data\Action\Iterator|null
      */
     public function applyScope(Model $model, \atk4\data\Action\Iterator $iterator)
@@ -347,7 +333,6 @@ class Array_ extends Persistence
     /**
      * Various actions possible here, mostly for compatibility with SQLs.
      *
-     * @param Model  $model
      * @param string $type
      * @param array  $args
      *
@@ -370,13 +355,11 @@ class Array_ extends Persistence
                 $this->setLimitOrder($model, $action);
 
                 return $action->count();
-
             case 'exists':
                 $action = $this->initAction($model, $args[0] ?? null);
                 $this->applyScope($model, $action);
 
                 return $action->exists();
-
             case 'field':
                 if (!isset($args[0])) {
                     throw (new Exception('This action requires one argument with field name'))
@@ -414,7 +397,6 @@ class Array_ extends Persistence
                 $this->setLimitOrder($model, $action);
 
                 return $action->aggregate($fx, $field, $type == 'fx0');
-
             default:
                 throw (new Exception('Unsupported action mode'))
                     ->addMoreInfo('type', $type);

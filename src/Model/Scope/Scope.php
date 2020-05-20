@@ -57,7 +57,7 @@ class Scope extends AbstractScope
         });
     }
 
-    public function setModel(?Model $model = null)
+    public function setModel(Model $model = null)
     {
         $this->model = $model;
 
@@ -70,8 +70,6 @@ class Scope extends AbstractScope
 
     /**
      * Add a scope as component to this scope.
-     *
-     * @param AbstractScope $scope
      *
      * @return static
      */
@@ -195,7 +193,7 @@ class Scope extends AbstractScope
         foreach ($this->components as $scope) {
             $words = $scope->on($this->model)->toWords($asHtml);
 
-            $parts[] = $this->isCompound() && $scope->isCompound() ? "($words)" : $words;
+            $parts[] = $this->isCompound() && $scope->isCompound() ? "({$words})" : $words;
         }
 
         $glue = ' ' . strtolower($this->junction) . ' ';
@@ -223,7 +221,7 @@ class Scope extends AbstractScope
     public function __construct($scopes = null, $junction = self::AND)
     {
         // use one of JUNCTIONS values, otherwise $junction is truish means OR, falsish means AND
-        $this->junction = in_array($junction, self::JUNCTIONS) ? $junction : self::JUNCTIONS[$junction ? 1 : 0];
+        $this->junction = in_array($junction, self::JUNCTIONS, true) ? $junction : self::JUNCTIONS[$junction ? 1 : 0];
 
         // handle it with Condition if it is a string
         if (is_string($scopes)) {
@@ -282,8 +280,6 @@ class Scope extends AbstractScope
     /**
      * Merge $scope into current scope AND as junction.
      *
-     * @param AbstractScope $scope
-     *
      * @return static
      */
     public function and(AbstractScope $scope)
@@ -304,8 +300,6 @@ class Scope extends AbstractScope
     /**
      * Merge $scope into current scope OR as junction.
      *
-     * @param AbstractScope $scope
-     *
      * @return static
      */
     public function or(AbstractScope $scope)
@@ -322,8 +316,6 @@ class Scope extends AbstractScope
     /**
      * Merge number of scopes using AND as junction.
      *
-     * @param AbstractScope $scopeA
-     * @param AbstractScope $scopeB
      * @param AbstractScope $_
      *
      * @return Scope
@@ -336,8 +328,6 @@ class Scope extends AbstractScope
     /**
      * Merge number of scopes using OR as junction.
      *
-     * @param AbstractScope $scopeA
-     * @param AbstractScope $scopeB
      * @param AbstractScope $_
      *
      * @return Scope
@@ -350,9 +340,7 @@ class Scope extends AbstractScope
     /**
      * Merge two scopes using $junction.
      *
-     * @param AbstractScope $scopeA
-     * @param AbstractScope $scopeB
-     * @param string|bool   $junction
+     * @param string|bool $junction
      *
      * @return Scope
      */

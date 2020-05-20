@@ -33,10 +33,10 @@ class SCountry extends Model
         $this->addField('name');
         $this->addField('code');
 
-        $this->addField('is_eu', ['type'=>'boolean', 'default'=>false]);
+        $this->addField('is_eu', ['type' => 'boolean', 'default' => false]);
 
         $this->hasMany('Users', new SUser())
-        ->addField('user_names', ['field'=>'name', 'concat'=>',']);
+            ->addField('user_names', ['field' => 'name', 'concat' => ',']);
     }
 }
 
@@ -70,11 +70,11 @@ class SUser extends Model
 
         $this->addField('name');
         $this->addField('surname');
-        $this->addField('is_vip', ['type'=>'boolean', 'default'=>false]);
+        $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
         $this->hasOne('country_id', new SCountry())
-        ->withTitle()
-        ->addFields(['country_code'=>'code', 'is_eu']);
+            ->withTitle()
+            ->addFields(['country_code' => 'code', 'is_eu']);
     }
 }
 
@@ -86,7 +86,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     protected $user;
     protected $country;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -96,13 +96,13 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         // Specifying hasMany here will perform input
         $this->country->import([
-            ['Canada', 'code'=>'CA'],
-            ['Latvia', 'code'=>'LV'],
-            ['Japan', 'code'=>'JP'],
-            ['Lithuania', 'code'=>'LT', 'is_eu'=>true],
-            ['Russia', 'code'=>'RU'],
-            ['France', 'code'=>'FR'],
-            ['Brazil', 'code'=>'BR'],
+            ['Canada', 'code' => 'CA'],
+            ['Latvia', 'code' => 'LV'],
+            ['Japan', 'code' => 'JP'],
+            ['Lithuania', 'code' => 'LT', 'is_eu' => true],
+            ['Russia', 'code' => 'RU'],
+            ['France', 'code' => 'FR'],
+            ['Brazil', 'code' => 'BR'],
         ]);
 
         $this->user = new SUser($this->db);
@@ -110,11 +110,11 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $this->getMigrator($this->user)->drop()->create();
 
         $this->user->import([
-            ['name'       => 'John', 'surname' => 'Smith', 'country_code'=>'CA'],
-            ['name'       => 'Jane', 'surname' => 'Doe', 'country_code'=>'LV'],
-            ['name'       => 'Alain', 'surname' => 'Prost', 'country_code'=>'FR'],
-            ['name'       => 'Aerton', 'surname' => 'Senna', 'country_code'=>'BR'],
-            ['name'       => 'Rubens', 'surname' => 'Barichello', 'country_code'=>'BR'],
+            ['name' => 'John', 'surname' => 'Smith', 'country_code' => 'CA'],
+            ['name' => 'Jane', 'surname' => 'Doe', 'country_code' => 'LV'],
+            ['name' => 'Alain', 'surname' => 'Prost', 'country_code' => 'FR'],
+            ['name' => 'Aerton', 'surname' => 'Senna', 'country_code' => 'BR'],
+            ['name' => 'Rubens', 'surname' => 'Barichello', 'country_code' => 'BR'],
         ]);
     }
 

@@ -377,11 +377,7 @@ class SQL extends Persistence
     /**
      * Will apply scope defined inside $scope or $model->scope() onto $query.
      *
-     * @param Model         $model
-     * @param Query         $query
      * @param AbstractScope $scope
-     *
-     * @return Query
      */
     public function initQueryConditions(Model $model, Query $query, AbstractScope $scope = null): Query
     {
@@ -627,7 +623,6 @@ class SQL extends Persistence
                 $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 
                 return $q->reset('field')->field('count(*)', $args['alias'] ?? null);
-
             case 'exists':
                 $this->initQueryConditions($m, $q);
                 $m->hook('initSelectQuery', [$q, $type]);

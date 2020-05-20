@@ -21,33 +21,33 @@ class Condition extends AbstractScope
     public $value;
 
     protected static $opposites = [
-        '='             => '!=',
-        '!='            => '=',
-        '<'             => '>=',
-        '>'             => '<=',
-        '>='            => '<',
-        '<='            => '>',
-        'LIKE'          => 'NOT LIKE',
-        'NOT LIKE'      => 'LIKE',
-        'IN'            => 'NOT IN',
-        'NOT IN'        => 'IN',
-        'REGEXP'        => 'NOT REGEXP',
-        'NOT REGEXP'    => 'REGEXP',
+        '=' => '!=',
+        '!=' => '=',
+        '<' => '>=',
+        '>' => '<=',
+        '>=' => '<',
+        '<=' => '>',
+        'LIKE' => 'NOT LIKE',
+        'NOT LIKE' => 'LIKE',
+        'IN' => 'NOT IN',
+        'NOT IN' => 'IN',
+        'REGEXP' => 'NOT REGEXP',
+        'NOT REGEXP' => 'REGEXP',
     ];
 
     protected static $dictionary = [
-        '='             => 'is equal to',
-        '!='            => 'is not equal to',
-        '<'             => 'is smaller than',
-        '>'             => 'is greater than',
-        '>='            => 'is greater or equal to',
-        '<='            => 'is smaller or equal to',
-        'LIKE'          => 'is like',
-        'NOT LIKE'      => 'is not like',
-        'IN'            => 'is one of',
-        'NOT IN'        => 'is not one of',
-        'REGEXP'        => 'is regular expression',
-        'NOT REGEXP'    => 'is not regular expression',
+        '=' => 'is equal to',
+        '!=' => 'is not equal to',
+        '<' => 'is smaller than',
+        '>' => 'is greater than',
+        '>=' => 'is greater or equal to',
+        '<=' => 'is smaller or equal to',
+        'LIKE' => 'is like',
+        'NOT LIKE' => 'is not like',
+        'IN' => 'is one of',
+        'NOT IN' => 'is not one of',
+        'REGEXP' => 'is regular expression',
+        'NOT REGEXP' => 'is not regular expression',
     ];
 
     protected static $skipValueTypecast = [
@@ -123,7 +123,7 @@ class Condition extends AbstractScope
         $this->value = $value;
     }
 
-    public function setModel(?Model $model = null)
+    public function setModel(Model $model = null)
     {
         if ($this->model = $model) {
             // if we have a definitive scalar value for a field
@@ -176,13 +176,13 @@ class Condition extends AbstractScope
                     // '#' -> has # referenced records
                     // '?' -> has any referenced records
                     // '!' -> does not have any referenced records
-                    if (in_array($field, ['#', '!', '?'])) {
+                    if (in_array($field, ['#', '!', '?'], true)) {
                         // if no operator consider '#' as 'any record exists'
                         if ($field == '#' && !$operator) {
                             $field = '?';
                         }
 
-                        if (in_array($field, ['!', '?'])) {
+                        if (in_array($field, ['!', '?'], true)) {
                             $operator = '=';
                             $value = $field == '?' ? 1 : 0;
                         }
@@ -203,7 +203,7 @@ class Condition extends AbstractScope
 
             // @todo: value is array
             // convert the value using the typecasting of persistence
-            if ($field instanceof Field && $model->persistence && !in_array(strtoupper($operator), self::$skipValueTypecast)) {
+            if ($field instanceof Field && $model->persistence && !in_array(strtoupper($operator), self::$skipValueTypecast, true)) {
                 $value = $model->persistence->typecastSaveField($field, $value);
             }
 
@@ -327,7 +327,7 @@ class Condition extends AbstractScope
 
         $string = implode(' ', array_filter($words));
 
-        return $asHtml ? "<strong>$string</strong>" : $string;
+        return $asHtml ? "<strong>{$string}</strong>" : $string;
     }
 
     protected function operatorToWords($asHtml = false)
@@ -339,7 +339,7 @@ class Condition extends AbstractScope
     {
         $model = $this->model;
 
-        if (is_null($value)) {
+        if ($value === null) {
             return $this->operator ? 'empty' : '';
         }
 

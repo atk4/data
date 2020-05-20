@@ -41,8 +41,6 @@ abstract class AbstractScope
     /**
      * Use a model.
      *
-     * @param Model $model
-     *
      * @return static
      */
     final public function on(Model $model)

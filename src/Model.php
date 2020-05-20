@@ -1726,14 +1726,14 @@ class Model implements \IteratorAggregate
      *
      * @throws Exception
      */
-    public function checkPersistence(?string $method = null)
+    public function checkPersistence(string $method = null)
     {
         if (!$this->persistence) {
             throw new Exception(['Model is not associated with any persistence']);
         }
 
         if ($method && !$this->persistence->hasMethod($method)) {
-            throw new Exception("Persistence does not support $method method");
+            throw new Exception("Persistence does not support {$method} method");
         }
     }
 

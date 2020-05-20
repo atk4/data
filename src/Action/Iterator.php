@@ -21,8 +21,6 @@ class Iterator
 
     /**
      * Iterator constructor.
-     *
-     * @param array $data
      */
     public function __construct(array $data)
     {
@@ -67,28 +65,28 @@ class Iterator
         switch (strtoupper($fx)) {
             case 'SUM':
                 $result = array_sum($column);
-            break;
 
+            break;
             case 'AVG':
                 $column = $coalesce ? $column : array_filter($column, function ($value) {
-                    return !is_null($value);
+                    return $value !== null;
                 });
 
                 $result = array_sum($column) / count($column);
-            break;
 
+            break;
             case 'MAX':
                 $result = max($column);
-            break;
 
+            break;
             case 'MIN':
                 $result = min($column);
-            break;
 
+            break;
             default:
                 throw new Exception([
                     'Persistence\Array_ driver action unsupported format',
-                    'action'    => $fx,
+                    'action' => $fx,
                 ]);
         }
 
@@ -99,9 +97,6 @@ class Iterator
 
     /**
      * Checks if $row matches $scope.
-     *
-     * @param array         $row
-     * @param AbstractScope $scope
      *
      * @throws Exception
      *
@@ -127,7 +122,7 @@ class Iterator
             if (!is_a($field, Field::class)) {
                 throw new Exception([
                     'Persistence\Array_ driver condition unsupported format',
-                    'reason'    => 'Unsupported object instance ' . get_class($field),
+                    'reason' => 'Unsupported object instance ' . get_class($field),
                     'condition' => $scope,
                 ]);
             }
@@ -162,59 +157,59 @@ class Iterator
         switch (strtoupper($operator)) {
             case '=':
                 $result = is_array($v2) ? $this->where($v1, 'IN', $v2) : $v1 == $v2;
-            break;
 
+            break;
             case '>':
                 $result = $v1 > $v2;
-            break;
 
+            break;
             case '>=':
                 $result = $v1 >= $v2;
-            break;
 
+            break;
             case '<':
                 $result = $v1 < $v2;
-            break;
 
+            break;
             case '<=':
                 $result = $v1 <= $v2;
-            break;
 
+            break;
             case '!=':
             case '<>':
                 $result = !$this->where($v1, '=', $v2);
-            break;
 
+            break;
             case 'LIKE':
                 $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
 
                 $result = preg_match('/^' . $pattern . '$/', $v1);
-            break;
 
+            break;
             case 'NOT LIKE':
                 $result = !$this->where($v1, 'LIKE', $v2);
-            break;
 
+            break;
             case 'IN':
-                $result = is_array($v2) ? in_array($v1, $v2) : $this->where($v1, '=', $v2);
-            break;
+                $result = is_array($v2) ? in_array($v1, $v2, true) : $this->where($v1, '=', $v2);
 
+            break;
             case 'NOT IN':
                 $result = !$this->where($v1, 'IN', $v2);
-            break;
 
+            break;
             case 'REGEXP':
                 $result = preg_match('/' . $v2 . '/', $v1);
-            break;
 
+            break;
             case 'NOT REGEXP':
                 $result = !$this->where($v1, 'REGEXP', $v2);
-            break;
 
+            break;
             default:
                 throw new Exception([
                     'Unsupported operator',
-                    'operator'    => $operator,
+                    'operator' => $operator,
                 ]);
         }
 
