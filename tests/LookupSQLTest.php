@@ -69,7 +69,7 @@ class LUser extends Model
             ->addFields(['country_code' => 'code', 'is_eu']);
 
 //         $this->hasMany('Friends', new LFriend())
-            ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
+//             ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
     }
 }
 
