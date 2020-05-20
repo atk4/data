@@ -86,7 +86,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     protected $user;
     protected $country;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -141,7 +141,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $condition = Condition::create('country_id/code', 'US');
 
-        $this->assertEquals('User that has reference country_id where Code is equal to \'US\'', $condition->on($user)->toWords());
+        $this->assertEquals('User that has reference Country Id where Code is equal to \'US\'', $condition->on($user)->toWords());
 
         $condition = Condition::create('country_id', 2);
 

@@ -970,18 +970,6 @@ class SQL extends Persistence
         }
     }
 
-    /**
-     * Last ID inserted.
-     *
-     * @param Model $model
-     *
-     * @return mixed
-     */
-    public function lastInsertId(Model $model = null)
-    {
-        return $this->connection->lastInsertID($model);
-    }
-
     public function getFieldSQLExpression(Field $field, Expression $expression)
     {
         if (isset($field->owner->persistence_data['use_table_prefixes'])) {
@@ -1014,14 +1002,14 @@ class SQL extends Persistence
      *
      * @return mixed
      */
-    public function lastInsertID(Model $m)
+    public function lastInsertID(Model $model)
     {
-        $seq = $m->sequence ?: null;
+        $seq = $model->sequence ?: null;
 
         // PostGRE SQL PDO always requires sequence name in lastInsertID method as parameter
         // So let's use its default one if no specific is set
         if ($this->connection instanceof \atk4\dsql\Connection_PgSQL && $seq === null) {
-            $seq = $m->table . '_' . $m->id_field . '_seq';
+            $seq = $model->table . '_' . $model->id_field . '_seq';
         }
 
         return $this->connection->lastInsertID($seq);
