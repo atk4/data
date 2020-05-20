@@ -81,7 +81,7 @@ class SUser extends Model
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ScopeTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class ScopeTest extends \atk4\schema\PhpunitTestCase
 {
     protected $user;
     protected $country;
