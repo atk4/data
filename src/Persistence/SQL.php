@@ -385,7 +385,6 @@ class SQL extends Persistence
      */
     public function initQueryConditions(Model $model, Query $query, AbstractScope $scope = null): Query
     {
-
         $scope = $scope ?? $model->scope();
 
         if (!$scope || $scope->isEmpty()) {
