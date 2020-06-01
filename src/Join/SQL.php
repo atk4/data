@@ -4,12 +4,13 @@ namespace atk4\data\Join;
 
 use atk4\data\Join;
 use atk4\data\Model;
+use atk4\data\Persistence;
 
 /**
  * Join\SQL class.
  *
- * @property \atk4\data\Persistence\SQL $persistence
- * @property SQL                        $join
+ * @property Persistence\SQL $persistence
+ * @property SQL             $join
  */
 class SQL extends Join implements \atk4\dsql\Expressionable
 {
@@ -71,14 +72,14 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             $this->foreign_alias = ($this->owner->table_alias ?: '') . $this->short_name;
         }
 
-        $this->owner->onHook('initSelectQuery', $this);
+        $this->owner->onHook(Persistence\SQL::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->owner->onHook('afterInsert', $this);
-            $this->owner->onHook('beforeUpdate', $this);
-            $this->owner->onHook('beforeDelete', [$this, 'doDelete'], [], -5);
-            $this->owner->onHook('afterLoad', $this);
+            $this->owner->onHook(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
+            $this->owner->onHook(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->owner->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->owner->onHook(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         } else {
             // Master field indicates ID of the joined item. In the past it had to be
             // defined as a physical field in the main table. Now it is a model field
@@ -97,10 +98,10 @@ class SQL extends Join implements \atk4\dsql\Expressionable
                 }
             }
 
-            $this->owner->onHook('beforeInsert', $this, [], -5);
-            $this->owner->onHook('beforeUpdate', $this);
-            $this->owner->onHook('afterDelete', [$this, 'doDelete']);
-            $this->owner->onHook('afterLoad', $this);
+            $this->owner->onHook(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
+            $this->owner->onHook(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->owner->onHook(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->owner->onHook(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 

@@ -187,7 +187,7 @@ To invoke code from `init()` methods of ALL models (for example soft-delete logi
 you use Persistence's "afterAdd" hook. This will not affect ALL models but just models
 which are associated with said persistence::
 
-   $db->onHook('afterAdd', function($p, $m) use($acl) {
+   $db->onHook(Persistence::HOOK_AFTER_ADD, function($p, $m) use($acl) {
 
       $fields = $m->getFields();
 
@@ -391,7 +391,7 @@ a hook::
 
    $this->addField('name');
 
-   $this->onHook('validate', function($m) {
+   $this->onHook(Model::HOOK_VALIDATE, function($m) {
       if ($m->get('name') === 'C#') {
          return ['name'=>'No sharp objects are allowed'];
       }
@@ -437,7 +437,7 @@ action - `send_gift`.
 There are some advanced techniques like "SubTypes" or class substitution,
 for example, this hook may be placed in the "User" class init()::
 
-   $this->onHook('afterLoad', function($m) {
+   $this->onHook(Model::HOOK_AFTER_LOAD, function($m) {
       if ($m->get('purchases') > 1000) {
          $this->breakHook($this->asModel(VIPUser::class);
       }
@@ -583,6 +583,11 @@ When you modify active record, it keeps the original value in the $dirty array:
     Set field to a specified value. The original value will be stored in
     $dirty property. If you pass non-array, then the value will be assigned
     to the :ref:`title_field`.
+
+.. php:method:: setNull
+
+    Set value of a specified field to NULL, temporarily ignoring normalization routine.
+    Only use this if you intend to set a correct value shortly after.
 
 .. php:method:: unset
 

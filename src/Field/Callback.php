@@ -3,6 +3,7 @@
 namespace atk4\data\Field;
 
 use atk4\core\InitializerTrait;
+use atk4\data\Model;
 
 /**
  * Evaluate php expression after load.
@@ -43,7 +44,7 @@ class Callback extends \atk4\data\Field
 
         $this->ui['table']['sortable'] = false;
 
-        $this->owner->onHook('afterLoad', function ($m) {
+        $this->owner->onHook(Model::HOOK_AFTER_LOAD, function ($m) {
             $m->data[$this->short_name] = call_user_func($this->expr, $m);
         });
     }

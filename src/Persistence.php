@@ -17,6 +17,9 @@ class Persistence
     use \atk4\core\NameTrait;
     use \atk4\core\DIContainerTrait;
 
+    /** @const string */
+    public const HOOK_AFTER_ADD = self::class . '@afterAdd';
+
     /** @var string Connection driver name, for example, mysql, pgsql, oci etc. */
     public $driverType;
 
@@ -112,7 +115,7 @@ class Persistence
         $this->initPersistence($m);
         $m = $this->_add($m);
 
-        $this->hook('afterAdd', [$m]);
+        $this->hook(self::HOOK_AFTER_ADD, [$m]);
 
         return $m;
     }

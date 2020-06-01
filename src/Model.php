@@ -10,9 +10,7 @@ use atk4\core\DynamicMethodTrait;
 use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
-use atk4\core\NameTrait;
 use atk4\core\ReadableCaptionTrait;
-use atk4\data\UserAction\Generic;
 use atk4\dsql\Query;
 
 /**
@@ -30,12 +28,48 @@ class Model implements \IteratorAggregate
     use InitializerTrait {
         init as _init;
     }
-    use NameTrait;
     use DIContainerTrait;
     use FactoryTrait;
     use AppScopeTrait;
     use CollectionTrait;
     use ReadableCaptionTrait;
+
+    /** @const string */
+    public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
+    /** @const string */
+    public const HOOK_AFTER_LOAD = self::class . '@afterLoad';
+    /** @const string */
+    public const HOOK_BEFORE_UNLOAD = self::class . '@beforeUnload';
+    /** @const string */
+    public const HOOK_AFTER_UNLOAD = self::class . '@afterUnload';
+
+    /** @const string */
+    public const HOOK_BEFORE_INSERT = self::class . '@beforeInsert';
+    /** @const string */
+    public const HOOK_AFTER_INSERT = self::class . '@afterInsert';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE = self::class . '@beforeUpdate';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE = self::class . '@afterUpdate';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE = self::class . '@beforeDelete';
+    /** @const string */
+    public const HOOK_AFTER_DELETE = self::class . '@afterDelete';
+
+    /** @const string */
+    public const HOOK_BEFORE_SAVE = self::class . '@beforeSave';
+    /** @const string */
+    public const HOOK_AFTER_SAVE = self::class . '@afterSave';
+
+    /** @const string Executed when execution of self::atomic() failed. */
+    public const HOOK_ROLLBACK = self::class . '@rollback';
+
+    /** @const string Executed for every field set using self::set() method. */
+    public const HOOK_NORMALIZE = self::class . '@normalize';
+    /** @const string Executed when self::validate() method is called. */
+    public const HOOK_VALIDATE = self::class . '@validate';
+    /** @const string Executed when self::onlyFields() method is called. */
+    public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
     // {{{ Properties of the class
 
@@ -43,7 +77,7 @@ class Model implements \IteratorAggregate
      * The class used by addField() method.
      *
      * @todo use Field::class here and refactor addField() method to not use namespace prefixes.
-     *       but because that's backward incomatible change, then we can do that only in next
+     *       but because that's backward incompatible change, then we can do that only in next
      *       major version.
      *
      * @var string|array
@@ -415,6 +449,7 @@ class Model implements \IteratorAggregate
         // Declare our basic CRUD actions for the model.
         $this->addAction('add', [
             'fields' => true,
+            'modifier' => UserAction\Generic::MODIFIER_CREATE,
             'scope' => UserAction\Generic::NO_RECORDS,
             'callback' => 'save',
             'description' => 'Add ' . $this->getModelCaption(),
@@ -422,12 +457,14 @@ class Model implements \IteratorAggregate
         ]);
         $this->addAction('edit', [
             'fields' => true,
+            'modifier' => UserAction\Generic::MODIFIER_UPDATE,
             'scope' => UserAction\Generic::SINGLE_RECORD,
             'callback' => 'save',
             'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => 'edit'], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
         $this->addAction('delete', [
             'scope' => UserAction\Generic::SINGLE_RECORD,
+            'modifier' => UserAction\Generic::MODIFIER_DELETE,
             'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => 'red trash'], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
@@ -437,6 +474,7 @@ class Model implements \IteratorAggregate
         $this->addAction('validate', [
             //'scope'=> any!
             'description' => 'Provided with modified values will validate them but will not save',
+            'modifier' => UserAction\Generic::MODIFIER_READ,
             'fields' => true,
             'system' => true, // don't show by default
             'args' => ['intent' => 'string'],
@@ -462,7 +500,7 @@ class Model implements \IteratorAggregate
     public function validate($intent = null)
     {
         $errors = [];
-        foreach ($this->hook('validate', [$intent]) as $handler_error) {
+        foreach ($this->hook(self::HOOK_VALIDATE, [$intent]) as $handler_error) {
             if ($handler_error) {
                 $errors = array_merge($errors, $handler_error);
             }
@@ -620,7 +658,7 @@ class Model implements \IteratorAggregate
      */
     public function onlyFields($fields = [])
     {
-        $this->hook('onlyFields', [&$fields]);
+        $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
         $this->only_fields = $fields;
 
         return $this;
@@ -780,7 +818,7 @@ class Model implements \IteratorAggregate
         $f = $this->hasField($field);
 
         try {
-            if ($f && $this->hook('normalize', [$f, $value]) !== false) {
+            if ($f && $this->hook(self::HOOK_NORMALIZE, [$f, $value]) !== false) {
                 $value = $f->normalize($value);
             }
         } catch (Exception $e) {
@@ -879,14 +917,14 @@ class Model implements \IteratorAggregate
     public function setNull($field)
     {
         // set temporary hook to disable any normalization (null validation)
-        $hookIndex = $this->onHook('normalize', function () {
+        $hookIndex = $this->onHook(self::HOOK_NORMALIZE, function () {
             throw new \atk4\core\HookBreaker(false);
         }, [], PHP_INT_MIN);
 
         try {
             $this->set($field, null);
         } finally {
-            $this->removeHook('normalize', $hookIndex, true);
+            $this->removeHook(self::HOOK_NORMALIZE, $hookIndex, true);
         }
 
         return $this;
@@ -1333,11 +1371,11 @@ class Model implements \IteratorAggregate
      */
     public function unload()
     {
-        $this->hook('beforeUnload');
+        $this->hook(self::HOOK_BEFORE_UNLOAD);
         $this->id = null;
         $this->data = [];
         $this->dirty = [];
-        $this->hook('afterUnload');
+        $this->hook(self::HOOK_AFTER_UNLOAD);
 
         return $this;
     }
@@ -1363,7 +1401,7 @@ class Model implements \IteratorAggregate
             $this->unload();
         }
 
-        if ($this->hook('beforeLoad', [$id]) === false) {
+        if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
             return $this;
         }
 
@@ -1372,7 +1410,7 @@ class Model implements \IteratorAggregate
             $this->id = $id;
         }
 
-        $ret = $this->hook('afterLoad');
+        $ret = $this->hook(self::HOOK_AFTER_LOAD);
         if ($ret === false) {
             return $this->unload();
         } elseif (is_object($ret)) {
@@ -1595,7 +1633,7 @@ class Model implements \IteratorAggregate
         if ($this->data) {
             $this->id = $id;
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
@@ -1633,7 +1671,7 @@ class Model implements \IteratorAggregate
                 $this->id = $this->data[$this->id_field];
             }
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
@@ -1674,7 +1712,7 @@ class Model implements \IteratorAggregate
                 }
             }
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
@@ -1797,7 +1835,7 @@ class Model implements \IteratorAggregate
                 throw new ValidationException($errors, $this);
             }
             $is_update = $this->loaded();
-            if ($this->hook('beforeSave', [$is_update]) === false) {
+            if ($this->hook(self::HOOK_BEFORE_SAVE, [$is_update]) === false) {
                 return $this;
             }
 
@@ -1827,13 +1865,13 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                if ($this->hook('beforeUpdate', [&$data]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_UPDATE, [&$data]) === false) {
                     return $this;
                 }
 
                 $to_persistence->update($this, $this->id, $data);
 
-                $this->hook('afterUpdate', [&$data]);
+                $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             } else {
                 $data = [];
                 foreach ($this->get() as $name => $value) {
@@ -1850,7 +1888,7 @@ class Model implements \IteratorAggregate
                     }
                 }
 
-                if ($this->hook('beforeInsert', [&$data]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_INSERT, [&$data]) === false) {
                     return $this;
                 }
 
@@ -1861,12 +1899,12 @@ class Model implements \IteratorAggregate
                     // Model inserted without any ID fields. Theoretically
                     // we should ignore $this->id even if it was returned.
                     $this->id = null;
-                    $this->hook('afterInsert', [null]);
+                    $this->hook(self::HOOK_AFTER_INSERT, [null]);
 
                     $this->dirty = [];
                 } elseif ($this->id) {
                     $this->set($this->id_field, $this->id);
-                    $this->hook('afterInsert', [$this->id]);
+                    $this->hook(self::HOOK_AFTER_INSERT, [$this->id]);
 
                     if ($this->reload_after_save !== false) {
                         $d = $this->dirty;
@@ -1878,7 +1916,7 @@ class Model implements \IteratorAggregate
                 }
             }
 
-            $this->hook('afterSave', [$is_update]);
+            $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
 
             if ($this->loaded()) {
                 $this->dirty = $this->_dirty_after_reload;
@@ -2082,14 +2120,14 @@ class Model implements \IteratorAggregate
 
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:
-            // $model->onHook('afterLoad', function ($m) {
+            // $model->onHook(self::HOOK_AFTER_LOAD, function ($m) {
             //     if ($m->get('date') < $m->date_from) $m->breakHook(false);
             // })
 
             // you can also use breakHook() with specific object which will then be returned
             // as a next iterator value
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
 
             if ($ret === false) {
                 continue;
@@ -2170,11 +2208,11 @@ class Model implements \IteratorAggregate
 
                 return $this;
             } elseif ($this->loaded()) {
-                if ($this->hook('beforeDelete', [$this->id]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->id]) === false) {
                     return $this;
                 }
                 $this->persistence->delete($this, $this->id);
-                $this->hook('afterDelete', [$this->id]);
+                $this->hook(self::HOOK_AFTER_DELETE, [$this->id]);
                 $this->unload();
 
                 return $this;
@@ -2202,7 +2240,7 @@ class Model implements \IteratorAggregate
         try {
             return $persistence->atomic($f);
         } catch (\Exception $e) {
-            if ($this->hook('onRollback', [$this, $e]) !== false) {
+            if ($this->hook(self::HOOK_ROLLBACK, [$this, $e]) !== false) {
                 throw $e;
             }
         }

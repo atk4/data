@@ -216,7 +216,7 @@ class HasOne extends Reference
         $m = $this->getModel($defaults);
 
         // add hook to set our_field = null when record of referenced model is deleted
-        $m->onHook('afterDelete', function ($m) {
+        $m->onHook(Model::HOOK_AFTER_DELETE, function ($m) {
             $this->owner->set($this->our_field, null);
         });
 
@@ -226,7 +226,7 @@ class HasOne extends Reference
                 $m->tryLoadBy($this->their_field, $this->owner->get($this->our_field));
             }
 
-            $m->onHook('afterSave', function ($m) {
+            $m->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
                 $this->owner->set($this->our_field, $m->get($this->their_field));
             });
         } else {
@@ -234,7 +234,7 @@ class HasOne extends Reference
                 $m->tryLoad($this->owner->get($this->our_field));
             }
 
-            $m->onHook('afterSave', function ($m) {
+            $m->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
                 $this->owner->set($this->our_field, $m->id);
             });
         }

@@ -202,7 +202,7 @@ class Join
             }
         }
 
-        $this->owner->onHook('afterUnload', $this);
+        $this->owner->onHook(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
     }
 
     /**
@@ -477,10 +477,8 @@ class Join
 
     /**
      * Clears id and save buffer.
-     *
-     * @todo CHECK IF WE ACTUALLY USE THIS METHOD SOMEWHERE
      */
-    public function afterUnload()
+    protected function afterUnload()
     {
         $this->id = null;
         $this->save_buffer = [];

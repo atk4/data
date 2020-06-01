@@ -21,7 +21,7 @@ class Transfer extends Payment
 
         $this->addField('destination_account_id', ['never_persist' => true]);
 
-        $this->onHook('beforeSave', function ($m) {
+        $this->onHook(self::HOOK_BEFORE_SAVE, function ($m) {
             // only for new records and when destination_account_id is set
             if ($m->get('destination_account_id') && !$m->id) {
                 // In this section we test if "clone" works ok
@@ -50,7 +50,7 @@ class Transfer extends Payment
             }
         });
 
-        $this->onHook('afterSave', function ($m) {
+        $this->onHook(self::HOOK_AFTER_SAVE, function ($m) {
             if ($m->other_leg_creation) {
                 $m->other_leg_creation->set('transfer_document_id', $m->id)->save();
             }

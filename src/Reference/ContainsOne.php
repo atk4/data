@@ -115,11 +115,13 @@ class ContainsOne extends Reference
         ]));
 
         // set some hooks for ref_model
-        $m->onHook(['afterSave', 'afterDelete'], function ($model) {
-            $row = $model->persistence->data[$this->table_alias];
-            $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
-            $this->owner->save([$this->our_field => $row]);
-        });
+        foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
+            $m->onHook($spot, function ($model) {
+                $row = $model->persistence->data[$this->table_alias];
+                $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
+                $this->owner->save([$this->our_field => $row]);
+            });
+        }
 
         // try to load any (actually only one possible) record
         $m->tryLoadAny();

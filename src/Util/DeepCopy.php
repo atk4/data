@@ -21,6 +21,9 @@ class DeepCopy
 {
     use \atk4\core\DebugTrait;
 
+    /** @const string */
+    public const HOOK_AFTER_COPY = self::class . '@afterCopy';
+
     /**
      * @var \atk4\data\Model from which we want to copy records
      */
@@ -225,7 +228,7 @@ class DeepCopy
                     }
                 }
             }
-            $destination->hook('afterCopy', [$source]);
+            $destination->hook(self::HOOK_AFTER_COPY, [$source]);
 
             // Look for hasOne references that needs to be mapped. Make sure records can be mapped, or copy them
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {

@@ -77,7 +77,7 @@ Another scenario which could benefit by type substitution would be::
 ATK Data allow class substitution during load and iteration by breaking "afterLoad"
 hook. Place the following inside Transaction::init()::
 
-    $this->onHook('afterLoad', function ($m) {
+    $this->onHook(Model::HOOK_AFTER_LOAD, function ($m) {
         if (get_class($this) != $m->getClassName()) {
             $cl = '\\'.$this->getClassName();
             $cl = new $cl($this->persistence);
@@ -98,7 +98,7 @@ of the record. Finally to help with performance, you can implement a switch::
         ..
 
         if ($this->typeSubstitution) {
-            $this->onHook('afterLoad',
+            $this->onHook(Model::HOOK_AFTER_LOAD,
                 ..........
             )
         }
@@ -166,7 +166,7 @@ which I want to define like this::
 
         $this->owner->addField('updated_dts', ['type'=>'datetime']);
 
-        $this->owner->onHook('beforeUpdate', function($m, $data) {
+        $this->owner->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
             if(isset($this->app->user) and $this->app->user->loaded()) {
                 $data['updated_by'] = $this->app->user->id;
             }
@@ -231,10 +231,10 @@ Start by creating a class::
 
             if (isset($this->owner->deleted_only)) {
                 $this->owner->addCondition('is_deleted', true);
-                $this->owner->addMethod('restore', [$this, 'restore']);
-            }else{
+                $this->owner->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
+            } else {
                 $this->owner->addCondition('is_deleted', false);
-                $this->owner->addMethod('softDelete', [$this, 'softDelete']);
+                $this->owner->addMethod('softDelete', \Closure::fromCallable([$this, 'softDelete']));
             }
         }
 
@@ -340,10 +340,10 @@ before and just slightly modifying it::
 
             if (isset($this->owner->deleted_only)) {
                 $this->owner->addCondition('is_deleted', true);
-                $this->owner->addMethod('restore', [$this, 'restore']);
+                $this->owner->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
             } else {
                 $this->owner->addCondition('is_deleted', false);
-                $this->owner->onHook('beforeDelete', [$this, 'softDelete'], null, 100);
+                $this->owner->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'softDelete']), null, 100);
             }
         }
 
@@ -359,7 +359,7 @@ before and just slightly modifying it::
             $m->save(['is_deleted'=>true])->unload();
             $m->reload_after_save = $rs;
 
-            $m->hook('afterDelete', [$id]);
+            $m->hook(Model::HOOK_AFTER_DELETE, [$id]);
 
             $m->breakHook(false); // this will cancel original delete()
         }
@@ -425,7 +425,7 @@ inside your model are unique::
                 $this->fields = [$this->owner->title_field];
             }
 
-            $this->owner->onHook('beforeSave', $this);
+            $this->owner->onHook(Model::HOOK_BEFORE_SAVE, \Closure::fromCallable([$this, 'beforeSave']));
         }
 
         function beforeSave($m)
@@ -515,7 +515,7 @@ Next we need to define reference. Inside Model_Invoice add::
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field'=>'invoice_id']);
 
-    $this->onHook('beforeDelete',function($m){
+    $this->onHook(Model::HOOK_BEFORE_DELETE, function($m){
         $m->ref('InvoicePayment')->action('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment
@@ -650,7 +650,7 @@ Here is how to add them. First you need to create fields::
 I have declared those fields with never_persist so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
-    $this->onHook('beforeSave', function($m) {
+    $this->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
         if($m->_isset($m['client_code') && !$m->_isset($m['client_id')) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('code',$m->get('client_code'));
@@ -739,7 +739,7 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->onHook('afterSave', function($m, $is_update){
+    $this->onHook(Model::HOOK_AFTER_SAVE, function($m, $is_update){
         if($m->_isset('payment')) {
             $m->ref('Payment')->insert($m->get('payment'));
         }

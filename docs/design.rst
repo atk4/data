@@ -338,7 +338,7 @@ Hooks can help you perform operations when object is being persisted::
             // addField() declaration
             // addExpression('is_password_expired')
 
-            $this->onHook('beforeSave', function($m) {
+            $this->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
                 if ($m->isDirty('password')) {
                     $m->set('password', encrypt_password($m->get('password')));
                     $m->set('password_change_date', $m->expr('now()'));
