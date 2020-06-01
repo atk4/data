@@ -16,6 +16,19 @@ use atk4\dsql\Query;
  */
 class SQL extends Persistence
 {
+    /** @const string */
+    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
+    /** @const string */
+    public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsertQuery';
+    /** @const string */
+    public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsertQuery';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdateQuery';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdateQuery';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
+
     /**
      * Connection object.
      *
@@ -171,9 +184,9 @@ class SQL extends Persistence
      */
     protected function initPersistence(Model $m)
     {
-        $m->addMethod('expr', [$this, 'expr']);
-        $m->addMethod('dsql', [$this, 'dsql']);
-        $m->addMethod('exprNow', [$this, 'exprNow']);
+        $m->addMethod('expr', \Closure::fromCallable([$this, 'expr']));
+        $m->addMethod('dsql', \Closure::fromCallable([$this, 'dsql']));
+        $m->addMethod('exprNow', \Closure::fromCallable([$this, 'exprNow']));
     }
 
     /**
@@ -621,7 +634,7 @@ class SQL extends Persistence
             case 'delete':
                 $q->mode('delete');
                 $this->initQueryConditions($m, $q);
-                $m->hook('initSelectQuery', [$q, $type]);
+                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 
                 return $q;
             case 'select':
@@ -630,7 +643,7 @@ class SQL extends Persistence
                 break;
             case 'count':
                 $this->initQueryConditions($m, $q);
-                $m->hook('initSelectQuery', [$q]);
+                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q]);
                 if (isset($args['alias'])) {
                     $q->reset('field')->field('count(*)', $args['alias']);
                 } else {
@@ -647,7 +660,7 @@ class SQL extends Persistence
                 }
 
                 $field = is_string($args[0]) ? $m->getField($args[0]) : $args[0];
-                $m->hook('initSelectQuery', [$q, $type]);
+                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
                 if (isset($args['alias'])) {
                     $q->reset('field')->field($field, $args['alias']);
                 } elseif ($field instanceof Field_SQL_Expression) {
@@ -671,7 +684,7 @@ class SQL extends Persistence
                 $fx = $args[0];
                 $field = is_string($args[1]) ? $m->getField($args[1]) : $args[1];
                 $this->initQueryConditions($m, $q);
-                $m->hook('initSelectQuery', [$q, $type]);
+                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 
                 if ($type === 'fx') {
                     $expr = "{$fx}([])";
@@ -697,7 +710,7 @@ class SQL extends Persistence
 
         $this->initQueryConditions($m, $q);
         $this->setLimitOrder($m, $q);
-        $m->hook('initSelectQuery', [$q, $type]);
+        $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 
         return $q;
     }
@@ -859,7 +872,7 @@ class SQL extends Persistence
         $st = null;
 
         try {
-            $m->hook('beforeInsertQuery', [$insert]);
+            $m->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
             $st = $insert->execute();
         } catch (\PDOException $e) {
             throw new Exception([
@@ -871,7 +884,7 @@ class SQL extends Persistence
             ], 0, $e);
         }
 
-        $m->hook('afterInsertQuery', [$insert, $st]);
+        $m->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
 
         return $m->lastInsertID();
     }
@@ -943,7 +956,7 @@ class SQL extends Persistence
         $st = null;
 
         try {
-            $m->hook('beforeUpdateQuery', [$update]);
+            $m->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
             if ($data) {
                 $st = $update->execute();
             }
@@ -962,7 +975,7 @@ class SQL extends Persistence
             $m->id = $data[$m->id_field];
         }
 
-        $m->hook('afterUpdateQuery', [$update, $st]);
+        $m->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
 
         // if any rows were updated in database, and we had expressions, reload
         if ($m->reload_after_save === true && (!$st || $st->rowCount())) {
@@ -987,7 +1000,7 @@ class SQL extends Persistence
         $delete = $this->initQuery($m);
         $delete->mode('delete');
         $delete->where($m->id_field, $id);
-        $m->hook('beforeDeleteQuery', [$delete]);
+        $m->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
             $delete->execute();

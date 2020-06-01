@@ -62,10 +62,12 @@ class ContainsMany extends ContainsOne
         ]));
 
         // set some hooks for ref_model
-        $m->onHook(['afterSave', 'afterDelete'], function ($model) {
-            $rows = $model->persistence->data[$this->table_alias];
-            $this->owner->save([$this->our_field => $rows ?: null]);
-        });
+        foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
+            $m->onHook($spot, function ($model) {
+                $rows = $model->persistence->data[$this->table_alias];
+                $this->owner->save([$this->our_field => $rows ?: null]);
+            });
+        }
 
         return $m;
     }
