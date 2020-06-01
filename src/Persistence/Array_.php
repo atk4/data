@@ -32,14 +32,9 @@ class Array_ extends Persistence
     }
 
     /**
-     * Associate model with the data driver.
-     *
-     * @param Model|string $m        Model which will use this persistence
-     * @param array        $defaults Properties
-     *
-     * @return Model
+     * {@inheritdoc}
      */
-    public function add($m, $defaults = [])
+    public function add(Model $m, array $defaults = []): Model
     {
         if (isset($defaults[0])) {
             $m->table = $defaults[0];

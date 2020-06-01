@@ -136,12 +136,9 @@ class SQL extends Persistence
     }
 
     /**
-     * Associate model with the data driver.
-     *
-     * @param Model|string $m        Model which will use this persistence
-     * @param array        $defaults Properties
+     * {@inheritdoc}
      */
-    public function add($m, $defaults = []): Model
+    public function add(Model $m, array $defaults = []): Model
     {
         // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
