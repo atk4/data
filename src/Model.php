@@ -18,7 +18,7 @@ use atk4\dsql\Query;
  *
  * @property Field[]|Reference[] $elements
  */
-class Model implements \ArrayAccess, \IteratorAggregate
+class Model implements \IteratorAggregate
 {
     use ContainerTrait {
         add as _add;
@@ -981,7 +981,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Return value of $model[$model->title_field]. If not set, returns id value.
+     * Return value of $model->get($model->title_field). If not set, returns id value.
      *
      * @return mixed
      */
@@ -1011,7 +1011,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
 
     /**
      * You can compare new value of the field with existing one without
-     * retrieving. In the trivial case it's same as ($value == $model[$name])
+     * retrieving. In the trivial case it's same as ($value == $model->get($name))
      * but this method can be used for:.
      *
      *  - comparing values that can't be received - passwords, encrypted data
@@ -1026,6 +1026,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public function compare($name, $value)
     {
         return $this->getField($name)->compare($value);
+    }
+
+    /**
+     * Does field exist?
+     */
+    public function _isset(string $name): bool
+    {
+        return array_key_exists($this->normalizeFieldName($name), $this->dirty);
     }
 
     /**
@@ -1044,55 +1052,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         return $this;
-    }
-
-    // }}}
-
-    // {{{ ArrayAccess support
-
-    /**
-     * Do field exist?
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function offsetExists($name)
-    {
-        return array_key_exists($this->normalizeFieldName($name), $this->dirty);
-    }
-
-    /**
-     * Returns field value.
-     *
-     * @param string $name
-     *
-     * @return mixed
-     */
-    public function offsetGet($name)
-    {
-        return $this->get($name);
-    }
-
-    /**
-     * Set field value.
-     *
-     * @param string $name
-     * @param mixed  $val
-     */
-    public function offsetSet($name, $val)
-    {
-        $this->set($name, $val);
-    }
-
-    /**
-     * Redo field value.
-     *
-     * @param string $name
-     */
-    public function offsetUnset($name)
-    {
-        $this->_unset($name);
     }
 
     // }}}
@@ -1488,7 +1447,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->id = null;
 
         if ($this->id_field) {
-            $this[$this->id_field] = $new_id;
+            $this->set($this->id_field, $new_id);
         }
 
         return $this;
@@ -1555,7 +1514,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
         foreach ($this->data as $field => $value) {
             if ($value !== null && $value !== $this->getField($field)->default) {
                 // Copying only non-default value
-                $m[$field] = $value;
+                $m->set($field, $value);
             }
         }
 
@@ -1635,10 +1594,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
         if ($this->id_field) {
             if ($id === true) {
                 $m->id = $this->id;
-                $m[$m->id_field] = $this[$this->id_field];
+                $m->set($m->id_field, $this->get($this->id_field));
             } elseif ($id) {
                 $m->id = null; // record shouldn't exist yet
-                $m[$m->id_field] = $id;
+                $m->set($m->id_field, $id);
             }
         }
 
@@ -2162,7 +2121,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:
             // $model->onHook(self::HOOK_AFTER_LOAD, function ($m) {
-            //     if ($m['date'] < $m->date_from) $m->breakHook(false);
+            //     if ($m->get('date') < $m->date_from) $m->breakHook(false);
             // })
 
             // you can also use breakHook() with specific object which will then be returned

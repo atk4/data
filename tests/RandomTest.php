@@ -284,7 +284,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             }
         });
 
-        $this->assertSame('Sue', $m['name']);
+        $this->assertSame('Sue', $m->get('name'));
 
         $a = [
             'item' => [
@@ -292,7 +292,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             ], ];
         $this->setDB($a);
 
-        $m['name'] = 'Peter';
+        $m->set('name', 'Peter');
 
         try {
             $m->save();
@@ -336,7 +336,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->set('john');
         $m->save();
 
-        $this->assertSame('rec #3', $m->load(3)['name']);
+        $this->assertSame('rec #3', $m->load(3)->get('name'));
 
         $m->delete();
     }
@@ -377,9 +377,9 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->addField('x2', new \atk4\data\Field());
         $m->load(1);
 
-        $this->assertEquals(3.4, $m['bid']);
-        $this->assertSame('y1', $m['x1']);
-        $this->assertSame('y2', $m['x2']);
+        $this->assertEquals(3.4, $m->get('bid'));
+        $this->assertSame('y1', $m->get('x1'));
+        $this->assertSame('y2', $m->get('x2'));
     }
 
     public function testModelCaption()

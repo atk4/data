@@ -76,8 +76,8 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u['name'] = 'John';
-        $m_u['contact_phone'] = '+123';
+        $m_u->set('name', 'John');
+        $m_u->set('contact_phone', '+123');
 
         $m_u->save();
 
@@ -88,8 +88,8 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $this->getDB('user,contact'));
 
-        $m_u['name'] = 'Joe';
-        $m_u['contact_phone'] = '+321';
+        $m_u->set('name', 'Joe');
+        $m_u->set('contact_phone', '+321');
         $m_u->save();
 
         $this->assertEquals([
@@ -119,8 +119,8 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $j = $m_u->join('contact.test_id');
         $j->addFields(['contact_phone']);
 
-        $m_u['name'] = 'John';
-        $m_u['contact_phone'] = '+123';
+        $m_u->set('name', 'John');
+        $m_u->set('contact_phone', '+123');
 
         $m_u->save();
 
@@ -130,7 +130,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         ], $this->getDB('user,contact'));
 
         $m_u->unload();
-        $m_u['name'] = 'Peter';
+        $m_u->set('name', 'Peter');
         $m_u->save();
         $this->assertEquals([
             'user' => [
@@ -144,8 +144,8 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
 
         $this->db->connection->dsql()->table('contact')->where('id', 2)->delete();
         $m_u->unload();
-        $m_u['name'] = 'Sue';
-        $m_u['contact_phone'] = '+444';
+        $m_u->set('name', 'Sue');
+        $m_u->set('contact_phone', '+444');
         $m_u->save();
         $this->assertEquals([
             'user' => [
@@ -180,8 +180,8 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $j = $m_u->join('contact', 'test_id');
         $j->addField('contact_phone');
 
-        $m_u['name'] = 'John';
-        $m_u['contact_phone'] = '+123';
+        $m_u->set('name', 'John');
+        $m_u->set('contact_phone', '+123');
 
         $m_u->save();
 
@@ -254,8 +254,8 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $j->addField('contact_phone');
 
         $m_u->load(1);
-        $m_u['name'] = 'John 2';
-        $m_u['contact_phone'] = '+555';
+        $m_u->set('name', 'John 2');
+        $m_u->set('contact_phone', '+555');
         $m_u->save();
 
         $this->assertEquals(
@@ -272,10 +272,10 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         );
 
         $m_u->load(1);
-        $m_u['name'] = 'XX';
-        $m_u['contact_phone'] = '+999';
+        $m_u->set('name', 'XX');
+        $m_u->set('contact_phone', '+999');
         $m_u->load(3);
-        $m_u['name'] = 'XX';
+        $m_u->set('name', 'XX');
         $m_u->save();
 
         $this->assertEquals(
@@ -291,7 +291,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
             $this->getDB()
         );
 
-        $m_u['contact_phone'] = '+999';
+        $m_u->set('contact_phone', '+999');
         $m_u->save();
 
         $this->assertEquals(
@@ -308,8 +308,8 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         );
 
         $m_u->tryLoad(4);
-        $m_u['name'] = 'YYY';
-        $m_u['contact_phone'] = '+777';
+        $m_u->set('name', 'YYY');
+        $m_u->set('contact_phone', '+777');
         $m_u->save();
 
         $this->assertEquals(
@@ -384,13 +384,13 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $j->addField('contact_phone');
 
         $m_u->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
-            if ($m['contact_phone'] !== '+123') {
-                $m['contact_phone'] = '+123';
+            if ($m->get('contact_phone') !== '+123') {
+                $m->set('contact_phone', '+123');
                 $m->save();
             }
         });
 
-        $m_u['name'] = 'John';
+        $m_u->set('name', 'John');
         $m_u->save();
 
         $this->assertEquals([
@@ -436,7 +436,7 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
 
         $m_u->loadBy('country_name', 'US');
         $this->assertEquals(30, $m_u->id);
-        $m_u['country_name'] = 'USA';
+        $m_u->set('country_name', 'USA');
         $m_u->save();
 
         $m_u->tryLoad(40);

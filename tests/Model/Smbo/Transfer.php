@@ -23,14 +23,14 @@ class Transfer extends Payment
 
         $this->onHook(self::HOOK_BEFORE_SAVE, function ($m) {
             // only for new records and when destination_account_id is set
-            if ($m['destination_account_id'] && !$m->id) {
+            if ($m->get('destination_account_id') && !$m->id) {
                 // In this section we test if "clone" works ok
 
                 $this->other_leg_creation = $m2 = clone $m;
-                $m2['account_id'] = $m2['destination_account_id'];
-                $m2['amount'] = -$m2['amount'];
+                $m2->set('account_id', $m2->get('destination_account_id'));
+                $m2->set('amount', -$m2->get('amount'));
 
-                unset($m2['destination_account_id']);
+                $m2->_unset('destination_account_id');
 
                 /*/
 
@@ -39,14 +39,14 @@ class Transfer extends Payment
                 $this->other_leg_creation = $m2 = new Transfer($this->persistence);
                 $m2->set($m->get());
                 $m2->unset('destination_account_id');
-                $m2['account_id'] = $m['destination_account_id'];
-                $m2['amount'] = -$m2['amount']; // neagtive amount
+                $m2->set('account_id', $m->get('destination_account_id'));
+                $m2->set('amount', -$m2->get('amount')); // neagtive amount
 
                 // */
 
                 $m2->reload_after_save = false; // avoid check
 
-                $m['transfer_document_id'] = $m2->save()->id;
+                $m->set('transfer_document_id', $m2->save()->id);
             }
         });
 

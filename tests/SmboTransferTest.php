@@ -59,8 +59,8 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
 
         $t->save();
 
-        $this->assertEquals(-100, $aib->reload()['balance']);
-        $this->assertEquals(100, $boi->reload()['balance']);
+        $this->assertEquals(-100, $aib->reload()->get('balance'));
+        $this->assertEquals(100, $boi->reload()->get('balance'));
 
         $data = $t->export(['id', 'transfer_document_id']);
         usort($data, function ($e1, $e2) {

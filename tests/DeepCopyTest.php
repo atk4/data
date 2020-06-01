@@ -45,7 +45,7 @@ class DCInvoice extends Model
 
         $this->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m, $s) {
             if (get_class($s) === static::class) {
-                $m['ref'] = $m['ref'] . '_copy';
+                $m->set('ref', $m->get('ref') . '_copy');
             }
         });
     }
@@ -161,7 +161,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $quote->loadAny();
 
         // total price should match
-        $this->assertEquals(90.00, $quote['total']);
+        $this->assertEquals(90.00, $quote->get('total'));
 
         $dc = new DeepCopy();
         $invoice = $dc
@@ -171,21 +171,21 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
             ->copy();
 
         // price now will be with VAT
-        $this->assertSame('q1', $invoice['ref']);
-        $this->assertEquals(108.90, $invoice['total']);
+        $this->assertSame('q1', $invoice->get('ref'));
+        $this->assertEquals(108.90, $invoice->get('total'));
         $this->assertEquals(1, $invoice->id);
 
         // Note that we did not specify that 'client_id' should be copied, so same value here
-        $this->assertSame($quote['client_id'], $invoice['client_id']);
-        $this->assertSame('John', $invoice->ref('client_id')['name']);
+        $this->assertSame($quote->get('client_id'), $invoice->get('client_id'));
+        $this->assertSame('John', $invoice->ref('client_id')->get('name'));
 
         // now to add payment for the invoice. Payment originates from the same client as noted on the invoice
-        $invoice->ref('Payments')->insert(['amount' => $invoice['total'] - 5, 'client_id' => $invoice['client_id']]);
+        $invoice->ref('Payments')->insert(['amount' => $invoice->get('total') - 5, 'client_id' => $invoice->get('client_id')]);
 
         $invoice->reload();
 
         // now that invoice is mostly paid, due amount will reflect that
-        $this->assertEquals(5, $invoice['due']);
+        $this->assertEquals(5, $invoice->get('due'));
 
         // Next we copy invocie into simply a new record. Duplicate. However this time we will also duplicate payments,
         // and client. Because Payment references client too, we need to duplicate that one also, this way new record
@@ -199,19 +199,19 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 
         // Invoice copy receives a new ID
         $this->assertNotSame($invoice->id, $invoice_copy->id);
-        $this->assertSame('q1_copy', $invoice_copy['ref']);
+        $this->assertSame('q1_copy', $invoice_copy->get('ref'));
 
         // ..however the due amount is the same - 5
-        $this->assertEquals(5, $invoice_copy['due']);
+        $this->assertEquals(5, $invoice_copy->get('due'));
 
         // ..client record was created in the process
-        $this->assertNotSame($invoice_copy['client_id'], $invoice['client_id']);
+        $this->assertNotSame($invoice_copy->get('client_id'), $invoice->get('client_id'));
 
         // ..but he is still called John
-        $this->assertSame('John', $invoice_copy->ref('client_id')['name']);
+        $this->assertSame('John', $invoice_copy->ref('client_id')->get('name'));
 
         // finally, the client_id used for newly created payment and new invoice correspond
-        $this->assertSame($invoice_copy['client_id'], $invoice_copy->ref('Payments')->loadAny()['client_id']);
+        $this->assertSame($invoice_copy->get('client_id'), $invoice_copy->ref('Payments')->loadAny()->get('client_id'));
 
         // the final test is to copy client entirely!
 
@@ -274,13 +274,13 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 
         $invoice = new DCInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m) {
-            if (!$m['ref']) {
+            if (!$m->get('ref')) {
                 throw new \atk4\core\Exception('no ref');
             }
         });
 
         // total price should match
-        $this->assertEquals(90.00, $quote['total']);
+        $this->assertEquals(90.00, $quote->get('total'));
 
         $dc = new DeepCopy();
 
@@ -316,13 +316,13 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 
         $invoice = new DCInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m) {
-            if (!$m['ref']) {
+            if (!$m->get('ref')) {
                 throw new \atk4\core\Exception('no ref');
             }
         });
 
         // total price should match
-        $this->assertEquals(90.00, $quote['total']);
+        $this->assertEquals(90.00, $quote->get('total'));
 
         $dc = new DeepCopy();
 

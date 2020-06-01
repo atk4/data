@@ -175,10 +175,10 @@ This method allows you to execute code within a 'START TRANSACTION / COMMIT' blo
 
             $this->persistence->atomic(function() use ($p) {
 
-                $this['paid'] = true;
+                $this->set('paid', true);
                 $this->save();
 
-                $p['applied'] = true;
+                $p->set('applied', true);
                 $p->save();
 
             });
@@ -268,7 +268,7 @@ You can also specify alias::
 
     $action = $model->action('count', ['alias'=>'cc']);
     $data = $action->getRow();
-    $cnt = $data['cc'];
+    $cnt = $data->get('cc');
 
 Action: field
 -------------

@@ -149,7 +149,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // now try to change some field in address
         $i->ref('addr')->set('address', 'bar')->save();
-        $this->assertSame('bar', $i->ref('addr')['address']);
+        $this->assertSame('bar', $i->ref('addr')->get('address'));
 
         // now add nested containsOne - DoorCode
         $c = $i->ref('addr')->ref('door_code');
@@ -164,10 +164,10 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // try hasOne reference
         $c = $i->ref('addr')->ref('country_id');
-        $this->assertSame('Latvia', $c['name']);
+        $this->assertSame('Latvia', $c->get('name'));
         $i->ref('addr')->set('country_id', 2)->save();
         $c = $i->ref('addr')->ref('country_id');
-        $this->assertSame('United Kingdom', $c['name']);
+        $this->assertSame('United Kingdom', $c->get('name'));
 
         // let's test how it all looks in persistence without typecasting
         $exp_addr = $i->export(null, null, false)[0]['addr'];

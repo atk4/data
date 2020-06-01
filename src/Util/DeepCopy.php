@@ -242,30 +242,30 @@ class DeepCopy
 
                     if (
                         isset($this->mapping[$source_table]) &&
-                        array_key_exists($source[$ref_key], $this->mapping[$source_table])
+                        array_key_exists($source->get($ref_key), $this->mapping[$source_table])
                     ) {
                         // no need to deep copy, simply alter ID
-                        $destination[$ref_key] = $this->mapping[$source_table][$source[$ref_key]];
-                        $this->debug(' already copied ' . $source[$ref_key] . ' as ' . $destination[$ref_key]);
+                        $destination->set($ref_key, $this->mapping[$source_table][$source->get($ref_key)]);
+                        $this->debug(' already copied ' . $source->get($ref_key) . ' as ' . $destination->get($ref_key));
                     } else {
                         // hasOne points to null!
-                        $this->debug('Value is ' . $source[$ref_key]);
-                        if (!$source[$ref_key]) {
-                            $destination[$ref_key] = $source[$ref_key];
+                        $this->debug('Value is ' . $source->get($ref_key));
+                        if (!$source->get($ref_key)) {
+                            $destination->set($ref_key, $source->get($ref_key));
 
                             continue;
                         }
 
                         // pointing to non-existent record. Would need to copy
                         try {
-                            $destination[$ref_key] = $this->_copy(
+                            $destination->set($ref_key, $this->_copy(
                                 $source->ref($ref_key),
                                 $destination->refModel($ref_key),
                                 $ref_val,
                                 $exclusions[$ref_key] ?? [],
                                 $transforms[$ref_key] ?? []
-                            )->id;
-                            $this->debug(' ... mapped into ' . $destination[$ref_key]);
+                            )->id);
+                            $this->debug(' ... mapped into ' . $destination->get($ref_key));
                         } catch (DeepCopyException $e) {
                             $this->debug('escalating a problem from ' . $ref_key);
 

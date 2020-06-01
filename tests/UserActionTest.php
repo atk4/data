@@ -80,9 +80,9 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         // load record, before executing, because scope is single record
         $client->load(1);
 
-        $this->assertNotTrue($client['reminder_sent']);
+        $this->assertNotTrue($client->get('reminder_sent'));
         $res = $act1->execute();
-        $this->assertTrue($client['reminder_sent']);
+        $this->assertTrue($client->get('reminder_sent'));
 
         $this->assertSame('sent reminder to John', $res);
         $client->unload();
@@ -106,14 +106,14 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     {
         $client = new ACClient($this->pers);
         $client->addAction('say_name', function ($m) {
-            return $m['name'];
+            return $m->get('name');
         });
 
         $client->load(1);
         $this->assertSame('John', $client->getAction('say_name')->execute());
 
         $client->getAction('say_name')->preview = function ($m, $arg) {
-            return ($m instanceof ACClient) ? 'will say ' . $m['name'] : 'will fail';
+            return ($m instanceof ACClient) ? 'will say ' . $m->get('name') : 'will fail';
         };
         $this->assertSame('will say John', $client->getAction('say_name')->preview('x'));
 
@@ -210,10 +210,10 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
             $client->load(1);
 
-            $this->assertNotSame('Peter', $client['name']);
-            $client['name'] = 'Peter';
+            $this->assertNotSame('Peter', $client->get('name'));
+            $client->set('name', 'Peter');
             $a->execute();
-            $this->assertSame('Peter', $client['name']);
+            $this->assertSame('Peter', $client->get('name'));
         } catch (Exception $e) {
             echo $e->getColorfulText();
 
@@ -228,12 +228,12 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
         $client->load(1);
 
-        $this->assertNotSame('Peter', $client['name']);
-        $client['name'] = 'Peter';
-        $client['reminder_sent'] = true;
+        $this->assertNotSame('Peter', $client->get('name'));
+        $client->set('name', 'Peter');
+        $client->set('reminder_sent', true);
         $this->expectExceptionMessage('dirty fields');
         $a->execute();
-        $this->assertSame('Peter', $client['name']);
+        $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testFieldsIncorrect()
@@ -243,11 +243,11 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
         $client->load(1);
 
-        $this->assertNotSame('Peter', $client['name']);
-        $client['name'] = 'Peter';
+        $this->assertNotSame('Peter', $client->get('name'));
+        $client->set('name', 'Peter');
         $this->expectExceptionMessage('array');
         $a->execute();
-        $this->assertSame('Peter', $client['name']);
+        $this->assertSame('Peter', $client->get('name'));
     }
 
     /**

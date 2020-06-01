@@ -22,7 +22,7 @@ object you can load/unload individual records (See Single record Operations belo
    $m = new User($db);
 
    $m->load(3);
-   $m['note'] = 'just updating';
+   $m->set('note', 'just updating');
    $m->save();
    $m->unload();
 
@@ -179,7 +179,7 @@ You may safely rely on `$this->persistence` property to make choices::
 
       // Fallback
       $this->addCalculatedField('total', function($m) {
-         return $m['amount'] + $m['vat'];
+         return $m->get('amount') + $m->get('vat');
       } );
    }
 
@@ -313,7 +313,7 @@ This can also be useful for calculating relative times::
          parent::init();
 
          $this->addCalculatedField('event_ts_human_friendly', function($m) {
-            return $this->humanTiming($m['event_ts']);
+            return $this->humanTiming($m->get('event_ts'));
          });
 
       }
@@ -357,7 +357,7 @@ a user invokable actions::
 
          $this->save(['password'=> .. ]);
 
-         return 'generated and sent password to '.$m['name'];
+         return 'generated and sent password to '.$m->get('name');
       }
    }
 
@@ -392,17 +392,17 @@ a hook::
    $this->addField('name');
 
    $this->onHook(Model::HOOK_VALIDATE, function($m) {
-      if ($m['name'] == 'C#') {
+      if ($m->get('name') === 'C#') {
          return ['name'=>'No sharp objects are allowed'];
       }
    });
 
 Now if you attempt to save object, you will receive :php:class:`ValidationException`::
 
-   $model['name'] = 'Swift';
+   $model->set('name', 'Swift');
    $model->saveAndUnload();      // all good
 
-   $model['name'] = 'C#';
+   $model->set('name', 'C#');
    $model->saveAndUnload();      // exception here
 
 
@@ -438,7 +438,7 @@ There are some advanced techniques like "SubTypes" or class substitution,
 for example, this hook may be placed in the "User" class init()::
 
    $this->onHook(Model::HOOK_AFTER_LOAD, function($m) {
-      if ($m['purchases'] > 1000) {
+      if ($m->get('purchases') > 1000) {
          $this->breakHook($this->asModel(VIPUser::class);
       }
    });
@@ -469,7 +469,7 @@ of static persistence::
    $m = new Model(new Persistence\Static_(['john', 'peter', 'steve']);
 
    $m->load(1);
-   echo $m['name'];  // peter
+   echo $m->get('name');  // peter
 
 See :php:class:`Persistence\\Static_`
 
@@ -573,8 +573,8 @@ property:
 Model allows you to work with the data of single a record directly. You should
 use the following syntax when accessing fields of an active record::
 
-    $m['name'] = 'John';
-    $m['surname'] = 'Peter';
+    $m->set('name', 'John');
+    $m->set('surname', 'Peter');
 
 When you modify active record, it keeps the original value in the $dirty array:
 
@@ -593,11 +593,11 @@ When you modify active record, it keeps the original value in the $dirty array:
 
     Restore field value to it's original::
 
-        $m['name'] = 'John';
-        echo $m['name']; // John
+        $m->set('name', 'John');
+        echo $m->get('name'); // John
 
-        unset($m['name']);
-        echo $m['name']; // Original value is shown
+        $m->_unset('name');
+        echo $m->get('name'); // Original value is shown
 
     This will restore original value of the field.
 
@@ -614,9 +614,9 @@ When you modify active record, it keeps the original value in the $dirty array:
 
     Return true if field contains unsaved changes (dirty)::
 
-        isset($m['name']); // returns false
-        $m['name'] = 'Other Name';
-        isset($m['name']); // returns true
+        $m->_isset('name'); // returns false
+        $m->set('name', 'Other Name');
+        $m->_isset('name'); // returns true
 
 
 .. php:method:: isDirty
@@ -624,7 +624,7 @@ When you modify active record, it keeps the original value in the $dirty array:
     Return true if one or multiple fields contain unsaved changes (dirty)::
 
         if ($m->isDirty(['name','surname'])) {
-           $m['full_name'] = $m['name'].' '.$m['surname'];
+           $m->set('full_name', $m->get('name').' '.$m->get('surname'));
         }
 
     When the code above is placed in beforeSave hook, it will only be executed
@@ -656,30 +656,30 @@ Full example::
     // Fields can be added after model is created
     $m->addField('salary', ['default'=>1000]);
 
-    echo isset($m['salary']);   // false
-    echo $m['salary'];          // 1000
+    echo $m->_isset('salary');  // false
+    echo $m->get('salary');          // 1000
 
     // Next we load record from $db
     $m->load(1);
 
-    echo $m['salary'];          // 2000 (from db)
-    echo isset($m['salary']);   // false, was not changed
+    echo $m->get('salary');          // 2000 (from db)
+    echo $m->_isset('salary');  // false, was not changed
 
-    $m['salary'] = 3000;
+    $m->set('salary', 3000);
 
-    echo $m['salary'];          // 3000 (changed)
-    echo isset($m['salary']);   // true
+    echo $m->get('salary');          // 3000 (changed)
+    echo $m->_isset('salary');  // true
 
-    unset($m['salary']);        // return to original value
+    $m->_unset('salary');        // return to original value
 
-    echo $m['salary'];          // 2000
-    echo isset($m['salary']);   // false
+    echo $m->get('salary');          // 2000
+    echo $m->_isset('salary');  // false
 
-    $m['salary'] = 3000;
+    $m->set('salary', 3000);
     $m->save();
 
-    echo $m['salary'];          // 3000 (now in db)
-    echo isset($m['salary']);   // false
+    echo $m->get('salary');          // 3000 (now in db)
+    echo $m->_isset('salary');  // false
 
 .. php:method:: protected normalizeFieldName
 
@@ -711,7 +711,7 @@ ID Field
 
 .. tip:: You can change ID value of the current ID field by calling::
 
-        $m['id'] = $new_id;
+        $m->set('id', $new_id);
         $m->save();
 
     This will update existing record with new $id. If you want to save your

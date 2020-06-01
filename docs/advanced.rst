@@ -434,10 +434,10 @@ inside your model are unique::
                 if ($m->dirty[$field]) {
                     $mm = clone $m;
                     $mm->addCondition($mm->id_field != $this->id);
-                    $mm->tryLoadBy($field, $m[$field]);
+                    $mm->tryLoadBy($field, $m->get($field));
 
                     if ($mm->loaded()) {
-                        throw new \atk4\core\Exception(['Duplicate record exists', 'field'=>$field, 'value'=>$m[$field]]);
+                        throw new \atk4\core\Exception(['Duplicate record exists', 'field'=>$field, 'value'=>$m->get($field)]);
                     }
                 }
             }
@@ -534,7 +534,7 @@ we cannot close amount that is bigger than invoice's total::
 
     $i->ref('Payment')->insert([
         'amount'=>$paid,
-        'amount_closed'=> min($paid, $i['total']),
+        'amount_closed'=> min($paid, $i->get('total')),
         'payment_code'=>'XYZ'
     ]);
 
@@ -563,10 +563,10 @@ payment towards a most suitable invoice::
         // Prioritize older invoices
         $invoices->setOrder('date');
 
-        while($this['amount_due'] > 0) {
+        while($this->get('amount_due') > 0) {
 
             // See if any invoices match by 'reference';
-            $invoices->tryLoadBy('reference', $this['reference']);
+            $invoices->tryLoadBy('reference', $this->get('reference'));
 
             if (!$invoices->loaded()) {
 
@@ -581,7 +581,7 @@ payment towards a most suitable invoice::
             }
 
             // How much we can allocate to this invoice
-            $alloc = min($this['amount_due'], $invoices['amount_due'])
+            $alloc = min($this->get('amount_due'), $invoices->get('amount_due'))
             $this->ref('InvoicePayment')->insert(['amount_closed'=>$alloc, 'invoice_id'=>$invoices->id]);
 
             // Reload ourselves to refresh amount_due
@@ -651,22 +651,22 @@ I have declared those fields with never_persist so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
     $this->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
-        if(isset($m['client_code']) && !isset($m['client_id'])) {
+        if($m->_isset($m['client_code') && !$m->_isset($m['client_id')) {
             $cl = $this->refModel('client_id');
-            $cl->addCondition('code',$m['client_code']);
-            $m['client_id'] = $cl->action('field',['id']);
+            $cl->addCondition('code',$m->get('client_code'));
+            $m->set('client_id', $cl->action('field',['id']));
         }
 
-        if(isset($m['client_name']) && !isset($m['client_id'])) {
+        if($m->_isset('client_name') && !$m->_isset('client_id')) {
             $cl = $this->refModel('client_id');
-            $cl->addCondition('name', 'like', $m['client_name']);
-            $m['client_id'] = $cl->action('field',['id']);
+            $cl->addCondition('name', 'like', $m->get('client_name'));
+            $m->set('client_id', $cl->action('field',['id']));
         }
 
-        if(isset($m['category']) && !isset($m['category_id'])) {
+        if($m->_isset('category') && !$m->_isset('category_id')) {
             $c = $this->refModel('category_id');
-            $c->addCondition($c->title_field, 'like', $m['category']);
-            $m['category_id'] = $c->action('field',['id']);
+            $c->addCondition($c->title_field, 'like', $m->get('category'));
+            $m->set('category_id', $c->action('field',['id']));
         }
     });
 
@@ -682,22 +682,22 @@ Fallback to default value
 You might wonder, with the lookup like that, how the default values will work?
 What if the user-specified entry is not found? Lets look at the code::
 
-    if(isset($m['category']) && !isset($m['category_id'])) {
+    if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
-        $c->addCondition($c->title_field, 'like', $m['category']);
-        $m['category_id'] = $c->action('field',['id']);
+        $c->addCondition($c->title_field, 'like', $m->get('category'));
+        $m->set('category_id', $c->action('field',['id']));
     }
 
 So if category with a name is not found, then sub-query will return "NULL".
 If you wish to use a different value instead, you can create an expression::
 
-    if(isset($m['category']) && !isset($m['category_id'])) {
+    if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
-        $c->addCondition($c->title_field, 'like', $m['category']);
-        $m['category_id'] = $this->expr('coalesce([],[])',[
+        $c->addCondition($c->title_field, 'like', $m->get('category'));
+        $m->set('category_id', $this->expr('coalesce([],[])',[
             $c->action('field',['id']),
             $m->getField('category_id')->default
-        ]);
+        ]));
     }
 
 The beautiful thing about this approach is that default can also be defined
@@ -740,12 +740,12 @@ Next both payment and lines need to be added after invoice is actually created,
 so::
 
     $this->onHook(Model::HOOK_AFTER_SAVE, function($m, $is_update){
-        if(isset($m['payment'])) {
-            $m->ref('Payment')->insert($m['payment']);
+        if($m->_isset('payment')) {
+            $m->ref('Payment')->insert($m->get('payment'));
         }
 
-        if(isset($m['lines'])) {
-            $m->ref('Line')->import($m['lines']);
+        if($m->_isset('lines')) {
+            $m->ref('Line')->import($m->get('lines'));
         }
     });
 
@@ -754,7 +754,9 @@ further manipulation, you can reload a clone::
 
     $mm = clone $m;
     $mm->reload();
-    if ($mm['amount_due'] == 0) $mm->save(['status'=>'paid']);
+    if ($mm->get('amount_due') == 0) {
+        $mm->save(['status'=>'paid']);
+    }
 
 Related Record Conditioning
 ===========================
@@ -800,16 +802,16 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
     /// how to use
 
     $m = new Model_Invoice($db);
-    $m['client_id'] = 123;
+    $m->set('client_id', 123);
 
-    $m['payment_invoice_id'] = $m->ref('payment_invoice_id')->tryLoadAny()->id;
+    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->id);
 
 In this case the payment_invoice_id will be set to ID of any payment by client
 123. There also may be some better uses::
 
     $cl->ref('Invoice')->each(function($m) {
 
-        $m['payment_invoice_id'] = $m->ref('payment_invoice_id')->tryLoadAny()->id;
+        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->id);
         $m->save();
 
     });

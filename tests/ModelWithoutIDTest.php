@@ -36,15 +36,15 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
     public function testBasic()
     {
         $this->m->tryLoadAny();
-        $this->assertSame('John', $this->m['name']);
+        $this->assertSame('John', $this->m->get('name'));
 
         $this->m->setOrder('name desc');
         $this->m->tryLoadAny();
-        $this->assertSame('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m->get('name'));
 
         $n = [];
         foreach ($this->m as $row) {
-            $n[] = $row['name'];
+            $n[] = $row->get('name');
             $this->assertNull($row->id);
         }
         $this->assertSame(['Sue', 'John'], $n);
@@ -107,14 +107,14 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
     public function testLoadBy()
     {
         $this->m->loadBy('name', 'Sue');
-        $this->assertSame('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m->get('name'));
     }
 
     public function testLoadCondition()
     {
         $this->m->addCondition('name', 'Sue');
         $this->m->loadAny();
-        $this->assertSame('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m->get('name'));
     }
 
     /**
@@ -144,7 +144,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
     public function testFailUpdate()
     {
         $this->m->id = 1;
-        $this->m['name'] = 'foo';
+        $this->m->set('name', 'foo');
         $this->m->saveAndUnload();
     }
 }

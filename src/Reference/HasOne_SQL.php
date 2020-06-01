@@ -67,9 +67,9 @@ class HasOne_SQL extends HasOne
             if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
                 $mm = $this->getModel();
 
-                $mm->addCondition($their_field, $m[$field]);
-                $m[$this->our_field] = $mm->action('field', [$mm->id_field]);
-                unset($m[$field]);
+                $mm->addCondition($their_field, $m->get($field));
+                $m->set($this->our_field, $mm->action('field', [$mm->id_field]));
+                $m->_unset($field);
             }
         }, [], 21);
 
@@ -173,7 +173,7 @@ class HasOne_SQL extends HasOne
         if ($this->owner->loaded() && !$m->loaded()) {
             if ($this->owner->id_field === $this->our_field) {
                 $condition_field = $this->their_field ?: $m->id_field;
-                $condition_value = $this->owner[$this->our_field ?: $this->owner->id_field];
+                $condition_value = $this->owner->get($this->our_field ?: $this->owner->id_field);
                 $m->addCondition($condition_field, $condition_value);
             }
         }
@@ -242,8 +242,8 @@ class HasOne_SQL extends HasOne
             if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
                 $mm = $this->getModel();
 
-                $mm->addCondition($mm->title_field, $m[$field]);
-                $m[$this->our_field] = $mm->action('field', [$mm->id_field]);
+                $mm->addCondition($mm->title_field, $m->get($field));
+                $m->set($this->our_field, $mm->action('field', [$mm->id_field]));
             }
         }, [], 20);
 

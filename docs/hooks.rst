@@ -53,8 +53,8 @@ The next code snippet demonstrates a basic usage of a `beforeSave` hook.
 This one will update field values just before record is saved::
 
     $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
-        $m['name'] = strtoupper($m['name']);
-        $m['surname'] = strtoupper($m['surname']);
+        $m->set('name', strtoupper($m->get('name')));
+        $m->set('surname', strtoupper($m->get('surname')));
     });
 
     $m->insert(['name'=>'John', 'surname'=>'Smith']);
@@ -86,7 +86,7 @@ model will assume the operation was successful.
 You can also break beforeLoad hook which can be used to skip rows::
 
     $model->onHook(Model::HOOK_AFTER_LOAD, function ($m) {
-        if ($m['date'] < $m->date_from) {
+        if ($m->get('date') < $m->date_from) {
             $m->breakHook(false); // will not yield such data row
         }
         // otherwise yields data row
@@ -137,7 +137,7 @@ of save.
 You may actually drop validation exception inside save, insert or update hooks::
 
     $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
-        if ($m['name'] = 'Yagi') {
+        if ($m->get('name') === 'Yagi') {
             throw new \atk4\data\ValidationException(['name'=>"We don't serve like you"]);
         }
     });

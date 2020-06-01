@@ -90,7 +90,7 @@ class ContainsOne extends Reference
         */
 
         // set data source of referenced array persistence
-        $row = $m[$this->our_field] ?: [];
+        $row = $m->get($this->our_field) ?: [];
         //$row = $m->persistence->typecastLoadRow($m, $row); // we need this typecasting because we set persistence data directly
 
         $data = [$this->table_alias => $row ? [1 => $row] : []];

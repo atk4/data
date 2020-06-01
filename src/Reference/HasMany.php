@@ -21,7 +21,7 @@ class HasMany extends Reference
     {
         if ($this->owner->loaded()) {
             return $this->our_field
-                ? $this->owner[$this->our_field]
+                ? $this->owner->get($this->our_field)
                 : $this->owner->id;
         }
 

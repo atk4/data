@@ -52,7 +52,7 @@ class STAccount extends Model
     {
         $out = $this->ref('Transactions:TransferOut')->save(['amount' => $amount]);
         $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->id]);
-        $out['link_id'] = $in->id;
+        $out->set('link_id', $in->id);
         $out->save();
     }
 }
@@ -87,7 +87,7 @@ class STGenericTransaction extends Model
 
     public function getClassName()
     {
-        return __NAMESPACE__ . '\STTransaction_' . $this['type'];
+        return __NAMESPACE__ . '\STTransaction_' . $this->get('type');
     }
 }
 
