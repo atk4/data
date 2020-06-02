@@ -841,11 +841,9 @@ class SQL extends Persistence
     /**
      * Inserts record in database and returns new record ID.
      *
-     * @param array $data
-     *
      * @return mixed
      */
-    public function insert(Model $m, $data)
+    public function insert(Model $m, array $data)
     {
         $insert = $m->action('insert');
 
@@ -873,7 +871,7 @@ class SQL extends Persistence
 
         $m->hook('afterInsertQuery', [$insert, $st]);
 
-        return $m->persistence->lastInsertID();
+        return $m->persistence->lastInsertID($m);
     }
 
     /**
