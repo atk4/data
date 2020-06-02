@@ -63,7 +63,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $db = new Persistence();
         $user = new Model($db, ['table' => 'user']);
         $user->id = 1;
-        $user->hasOne('order_id', ['model' => ['atk4/data/Model', 'table' => 'order']]);
+        $user->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
         $o = $user->ref('order_id');
         $this->assertSame('order', $o->table);
     }
