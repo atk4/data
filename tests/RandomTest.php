@@ -358,7 +358,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $db = new Persistence\SQL($this->db->connection);
         $m = new Model_Item($db);
 
-        $m->hasOne('Person', 'atk4/data/tests/Model/Person');
+        $m->hasOne('Person', Model\Person::class);
         $person = $m->ref('Person');
     }
 
