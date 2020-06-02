@@ -199,7 +199,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         $this->save_buffer = [];
         $insert->set($this->foreign_field, null);
         $insert->insert();
-        $this->id = $this->owner->lastInsertID();
+        $this->id = $this->owner->persistence->lastInsertID($this->owner);
 
         if ($this->join) {
             $this->join->set($this->master_field, $this->id);
