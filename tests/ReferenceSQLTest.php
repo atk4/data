@@ -432,7 +432,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
     public function testModelProperty()
     {
         $user = new Model($this->db, ['table' => 'user']);
-        $user->hasMany('Orders', ['model' => ['atk4/data/Model', 'table' => 'order'], 'their_field' => 'id']);
+        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'their_field' => 'id']);
         $o = $user->ref('Orders');
         $this->assertSame('order', $o->table);
     }

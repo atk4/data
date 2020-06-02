@@ -2566,26 +2566,6 @@ class Model implements \IteratorAggregate
 
     // }}}
 
-    // {{{ Misc methods
-
-    /**
-     * Last ID inserted.
-     *
-     * @throws Exception
-     *
-     * @return mixed
-     */
-    public function lastInsertID()
-    {
-        if ($this->persistence instanceof Persistence\SQL) {
-            return $this->persistence->lastInsertID($this);
-        }
-
-        throw new Exception('Model is not associated with SQL-enabled persistence');
-    }
-
-    // }}}
-
     // {{{ Debug Methods
 
     /**
