@@ -229,7 +229,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
                 isset($this->join) ? $this->join->id : $id
             );
         $insert->insert();
-        $this->id = $this->owner->lastInsertID();
+        $this->id = $this->owner->persistence->lastInsertID($this->owner);
     }
 
     /**
