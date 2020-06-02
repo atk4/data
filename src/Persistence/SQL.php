@@ -873,7 +873,7 @@ class SQL extends Persistence
 
         $m->hook('afterInsertQuery', [$insert, $st]);
 
-        return $m->lastInsertID();
+        return $m->persistence->lastInsertID();
     }
 
     /**
