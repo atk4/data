@@ -2,8 +2,8 @@
 
 namespace atk4\data\tests;
 
-use atk4\data\Model;
 use atk4\data\Field;
+use atk4\data\Model;
 use atk4\data\Persistence\Static_ as Persistence_Static;
 
 /**
