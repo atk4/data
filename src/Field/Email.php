@@ -9,10 +9,10 @@ use atk4\data\ValidationException;
  * Stores valid email(s) as per configuration.
  *
  * Usage:
- *  $user->addField('email', ['Email']);
- *  $user->addField('email_mx_check', ['Email', 'dns_check'=>true]);
- *  $user->addField('email_with_name', ['Email', 'include_names'=>true]);
- *  $user->addField('emails', ['Email', 'allow_multiple'=>true, 'separator'=>[',',';']]);
+ *  $user->addField('email', [Field\Email::class]);
+ *  $user->addField('email_mx_check', [Field\Email::class, 'dns_check'=>true]);
+ *  $user->addField('email_with_name', [Field\Email::class, 'include_names'=>true]);
+ *  $user->addField('emails', [Field\Email::class, 'allow_multiple'=>true, 'separator'=>[',',';']]);
  *
  * Various options can also be combined.
  */

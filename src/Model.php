@@ -560,7 +560,7 @@ class Model implements \IteratorAggregate
         );
 
         /** @var Field $field */
-        $field = $this->factory($seed, null, Field::class);
+        $field = $this->factory($seed);
 
         return $field;
     }

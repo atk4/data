@@ -278,7 +278,7 @@ Password (after 1.5.0 release)
 Without this class your password will be stored **unencrypted**.
 Here is how to use it properly::
 
-    $user->addField('mypass', ['Password']);
+    $user->addField('mypass', [\atk4\ui\FormField\Password::class]);
 
     $user->set('mypass', 'secret');
     $user->save();
