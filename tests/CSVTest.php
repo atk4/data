@@ -138,7 +138,7 @@ class CSVTest extends AtkPhpunit\TestCase
         $m2 = $m->withPersistence($p2);
 
         foreach ($m as $row) {
-            $m2->save($m);
+            $m2->save($row->get());
         }
 
         $this->assertSame(
