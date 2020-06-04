@@ -474,8 +474,7 @@ class Model implements \IteratorAggregate
             $this->_default_seed_addField
         );
 
-        /** @var Field $field */
-        $field = $this->factory($seed);
+        $field = Field::fromSeed($seed);
 
         return $field;
     }
