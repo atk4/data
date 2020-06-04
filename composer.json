@@ -53,13 +53,13 @@
     "atk4/schema": "dev-develop",
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/phpcov": "*",
-    "phpunit/phpunit": "*",
+    "phpunit/phpunit": "*"
   },
   "require-dev-release": {
     "atk4/schema": "^2.0",
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/phpcov": "*",
-    "phpunit/phpunit": "*",
+    "phpunit/phpunit": "*"
   },
   "replace": {
     "atk4/data": "self.version"
