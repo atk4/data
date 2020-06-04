@@ -110,7 +110,7 @@ class Array_ extends Persistence
         }
 
         if (!isset($this->data[$table][$id])) {
-            return null; // no record with such id in table
+            return null;
         }
 
         return $this->typecastLoadRow($m, $this->data[$table][$id]);
@@ -129,7 +129,7 @@ class Array_ extends Persistence
         }
 
         if (!$this->data[$table]) {
-            return null; // no records at all in table
+            return null;
         }
 
         reset($this->data[$table]);
@@ -242,10 +242,8 @@ class Array_ extends Persistence
 
     /**
      * Prepare iterator.
-     *
-     * @return array
      */
-    public function prepareIterator(Model $m)
+    public function prepareIterator(Model $m): iterable
     {
         return $m->action('select')->get();
     }
@@ -253,12 +251,9 @@ class Array_ extends Persistence
     /**
      * Export all DataSet.
      *
-     * @param array|null $fields
-     * @param bool       $typecast_data Should we typecast exported data
-     *
-     * @return array
+     * @param bool $typecast_data Should we typecast exported data
      */
-    public function export(Model $m, $fields = null, $typecast_data = true)
+    public function export(Model $m, array $fields = null, $typecast_data = true): array
     {
         $data = $m->action('select', [$fields])->get();
 
@@ -293,11 +288,8 @@ class Array_ extends Persistence
 
     /**
      * Will set limit defined inside $m onto data.
-     *
-     * @param Model         $m
-     * @param ArrayIterator $action
      */
-    protected function setLimitOrder($m, $action)
+    protected function setLimitOrder(Model $m, \atk4\data\Action\Iterator &$action)
     {
         // first order by
         if ($m->order) {

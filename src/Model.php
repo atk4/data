@@ -465,7 +465,7 @@ class Model implements \IteratorAggregate
      *
      * @return array [field => err_spec]
      */
-    public function validate($intent = null)
+    public function validate($intent = null): array
     {
         $errors = [];
         foreach ($this->hook(self::HOOK_VALIDATE, [$intent]) as $handler_error) {
@@ -652,7 +652,7 @@ class Model implements \IteratorAggregate
      *
      * @return Field[]
      */
-    public function getFields($filter = null)
+    public function getFields($filter = null): array
     {
         if ($filter === null) {
             return $this->fields;
@@ -872,10 +872,8 @@ class Model implements \IteratorAggregate
 
     /**
      * Returns array of model record titles [id => title].
-     *
-     * @return array
      */
-    public function getTitles()
+    public function getTitles(): array
     {
         $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
 
@@ -1235,11 +1233,9 @@ class Model implements \IteratorAggregate
      * Use this instead of save() if you want to squeeze a
      * little more performance out.
      *
-     * @param array $data
-     *
      * @return $this
      */
-    public function saveAndUnload($data = [])
+    public function saveAndUnload(array $data = [])
     {
         $ras = $this->reload_after_save;
         $this->reload_after_save = false;
@@ -1538,8 +1534,6 @@ class Model implements \IteratorAggregate
     /**
      * Save record.
      *
-     * @param array $data
-     *
      * @return $this
      */
     public $_dirty_after_reload = [];
@@ -1668,8 +1662,7 @@ class Model implements \IteratorAggregate
      * This is a temporary method to avoid code duplication, but insert / import should
      * be implemented differently.
      *
-     * @param Model $m   Model where to insert
-     * @param array $row Data row to insert
+     * @param Model $m Model where to insert
      */
     protected function _rawInsert(self $m, array $row)
     {
@@ -1749,7 +1742,7 @@ class Model implements \IteratorAggregate
      * @param string     $key_field     Optional name of field which value we will use as array key
      * @param bool       $typecast_data Should we typecast exported data
      */
-    public function export($fields = null, $key_field = null, $typecast_data = true): array
+    public function export(array $fields = null, $key_field = null, $typecast_data = true): array
     {
         if (!$this->persistence->hasMethod('export')) {
             throw new Exception('Persistence does not support export()');
@@ -1765,7 +1758,7 @@ class Model implements \IteratorAggregate
         $key_field_added = false;
 
         // prepare array with field names
-        if (!is_array($fields)) {
+        if ($fields === null) {
             $fields = [];
 
             if ($this->only_fields) {
@@ -1827,7 +1820,7 @@ class Model implements \IteratorAggregate
      *
      * @return mixed
      */
-    public function getIterator()
+    public function getIterator(): iterable
     {
         foreach ($this->rawIterator() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
@@ -1870,10 +1863,8 @@ class Model implements \IteratorAggregate
 
     /**
      * Returns iterator.
-     *
-     * @return \Iterator
      */
-    public function rawIterator()
+    public function rawIterator(): iterable
     {
         return $this->persistence->prepareIterator($this);
     }

@@ -161,20 +161,16 @@ class Iterator
 
     /**
      * Return all data inside array.
-     *
-     * @return array
      */
-    public function get()
+    public function get(): array
     {
         return iterator_to_array($this->generator, true);
     }
 
     /**
      * Return one row of data.
-     *
-     * @return array
      */
-    public function getRow()
+    public function getRow(): array
     {
         $row = $this->generator->current();
         $this->generator->next();

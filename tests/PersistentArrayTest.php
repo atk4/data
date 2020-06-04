@@ -431,12 +431,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     /**
      * Returns exported data, but will use get() instead of export().
-     *
-     * @param array $fields
-     *
-     * @return array
      */
-    protected function _getRows(Model $m, $fields = [])
+    protected function _getRows(Model $m, array $fields = []): array
     {
         $d = [];
         foreach ($m as $junk) {

@@ -701,10 +701,8 @@ class Sql extends Persistence
      * Tries to load data record, but will not fail if record can't be loaded.
      *
      * @param mixed $id
-     *
-     * @return array
      */
-    public function tryLoad(Model $m, $id)
+    public function tryLoad(Model $m, $id): ?array
     {
         if (!$m->id_field) {
             throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
@@ -727,7 +725,7 @@ class Sql extends Persistence
         }
 
         if (!$data) {
-            return;
+            return null;
         }
 
         if (!isset($data[$m->id_field]) || $data[$m->id_field] === null) {
@@ -747,10 +745,8 @@ class Sql extends Persistence
      * Loads a record from model and returns a associative array.
      *
      * @param mixed $id
-     *
-     * @return array
      */
-    public function load(Model $m, $id)
+    public function load(Model $m, $id): array
     {
         $data = $this->tryLoad($m, $id);
 
@@ -766,10 +762,8 @@ class Sql extends Persistence
 
     /**
      * Tries to load any one record.
-     *
-     * @return array
      */
-    public function tryLoadAny(Model $m)
+    public function tryLoadAny(Model $m): ?array
     {
         $load = $m->action('select');
         $load->limit(1);
@@ -786,7 +780,7 @@ class Sql extends Persistence
         }
 
         if (!$data) {
-            return;
+            return null;
         }
 
         if ($m->id_field) {
@@ -806,10 +800,8 @@ class Sql extends Persistence
 
     /**
      * Loads any one record.
-     *
-     * @return array
      */
-    public function loadAny(Model $m)
+    public function loadAny(Model $m): array
     {
         $data = $this->tryLoadAny($m);
 
@@ -859,12 +851,9 @@ class Sql extends Persistence
     /**
      * Export all DataSet.
      *
-     * @param array|null $fields
-     * @param bool       $typecast_data Should we typecast exported data
-     *
-     * @return array
+     * @param bool $typecast_data Should we typecast exported data
      */
-    public function export(Model $m, $fields = null, $typecast_data = true)
+    public function export(Model $m, array $fields = null, $typecast_data = true): array
     {
         $data = $m->action('select', [$fields])->get();
 
@@ -882,7 +871,7 @@ class Sql extends Persistence
      *
      * @return \PDOStatement
      */
-    public function prepareIterator(Model $m)
+    public function prepareIterator(Model $m): iterable
     {
         try {
             $export = $m->action('select');

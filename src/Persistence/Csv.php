@@ -133,15 +133,15 @@ class Csv extends Persistence
 
     /**
      * Returns one line of CSV file as array.
-     *
-     * @return array
      */
-    public function getLine()
+    public function getLine(): ?array
     {
         $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape_char);
-        if ($data) {
-            ++$this->line;
+        if ($data === false || $data === null) {
+            return null;
         }
+
+        ++$this->line;
 
         return $data;
     }
@@ -211,12 +211,8 @@ class Csv extends Persistence
 
     /**
      * Typecasting when load data row.
-     *
-     * @param array $row
-     *
-     * @return array
      */
-    public function typecastLoadRow(Model $m, $row)
+    public function typecastLoadRow(Model $m, array $row): array
     {
         $id = null;
         if (isset($row[$m->id_field])) {
@@ -247,10 +243,8 @@ class Csv extends Persistence
     /**
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
-     *
-     * @return array|null
      */
-    public function tryLoadAny(Model $m)
+    public function tryLoadAny(Model $m): ?array
     {
         if (!$this->mode) {
             $this->mode = 'r';
@@ -264,7 +258,7 @@ class Csv extends Persistence
 
         $data = $this->getLine();
         if (!$data) {
-            return;
+            return null;
         }
 
         $data = $this->typecastLoadRow($m, $data);
@@ -275,10 +269,8 @@ class Csv extends Persistence
 
     /**
      * Prepare iterator.
-     *
-     * @return array
      */
-    public function prepareIterator(Model $m)
+    public function prepareIterator(Model $m): iterable
     {
         if (!$this->mode) {
             $this->mode = 'r';
@@ -304,10 +296,8 @@ class Csv extends Persistence
 
     /**
      * Loads any one record.
-     *
-     * @return array
      */
-    public function loadAny(Model $m)
+    public function loadAny(Model $m): array
     {
         $data = $this->tryLoadAny($m);
 
@@ -402,17 +392,13 @@ class Csv extends Persistence
 
     /**
      * Export all DataSet.
-     *
-     * @param array|null $fields
-     *
-     * @return array
      */
-    public function export(Model $m, $fields = null)
+    public function export(Model $m, array $fields = null): array
     {
         $data = [];
 
         foreach ($m as $junk) {
-            $data[] = $fields ? array_intersect_key($m->get(), array_flip($fields)) : $m->get();
+            $data[] = $fields !== null ? array_intersect_key($m->get(), array_flip($fields)) : $m->get();
         }
 
         // need to close file otherwise file pointer is at the end of file
