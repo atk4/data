@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -463,9 +464,6 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertNotNull($m->get('ts'));
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testBadTimestamp()
     {
         $sql_time = '20blah16-10-25 11:44:08';
@@ -481,6 +479,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
+        $this->expectException(Exception::class);
         $m->loadAny();
     }
 

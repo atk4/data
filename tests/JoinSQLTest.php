@@ -41,9 +41,6 @@ class JoinSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testDirection2()
     {
         $db = new Persistence\SQL($this->db->connection);

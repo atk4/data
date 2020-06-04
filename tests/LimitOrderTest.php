@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
@@ -194,8 +195,6 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
     /**
      * Unsupported order parameter.
-     *
-     * @expectedException \atk4\data\Exception
      */
     public function testExceptionUnsupportedOrderParam()
     {
@@ -207,6 +206,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
         $i = (new Model($this->db, 'invoice'))->addFields(['net']);
         $i->setOrder(new \DateTime());
+        $this->expectException(Exception::class);
         $i->export(); // executes query and throws exception because of DateTime object
     }
 

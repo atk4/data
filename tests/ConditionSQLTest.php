@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
@@ -324,9 +325,6 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('Sue', $m->get('name'));
     }
 
-    /**
-     * @expectedException        \Exception
-     */
     public function testDateConditionFailure()
     {
         $a = [
@@ -340,6 +338,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
+        $this->expectException(Exception::class);
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 

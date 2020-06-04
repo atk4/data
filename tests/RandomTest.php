@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -341,14 +342,12 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m->delete();
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testIssue220()
     {
         $db = new Persistence\SQL($this->db->connection);
         $m = new Model_Item($db);
 
+        $this->expectException(Exception::class);
         $m->hasOne('foo', Model_Item::class)
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }

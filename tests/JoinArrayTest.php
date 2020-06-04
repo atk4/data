@@ -3,6 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\core\AtkPhpunit;
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -43,9 +44,6 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testDirection2()
     {
         $a = ['user' => [], 'contact' => []];
@@ -348,9 +346,6 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         );
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testLoadMissing()
     {
         $a = [
@@ -368,6 +363,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u->addField('name');
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
+        $this->expectException(Exception::class);
         $m_u->load(2);
     }
 

@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
@@ -223,13 +224,12 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
     /*
      * Model should be loaded before traversing to containsOne relation.
-     *
-     * @expectedException Exception
      */
     /* Imants: it looks that this is not actually required - disabling
     public function testEx1()
     {
         $i = new Invoice1($this->db);
+        $this->expectException(Exception::class);
         $i->ref('addr');
     }
     */
