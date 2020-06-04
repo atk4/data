@@ -48,7 +48,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
         // pass parameters as CSV string
         $i = clone $ii;
-        $i->setOrder('total_net desc, total_gross desc');
+        $i->setOrder(['total_net' => 'desc', 'total_gross' => 'desc']);
         $i->onlyFields(['total_net', 'total_gross']);
         $this->assertEquals([
             ['total_net' => 15, 'total_gross' => 19],
@@ -57,7 +57,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         ], $i->export());
 
         $i = clone $ii;
-        $i->setOrder('total_net desc, total_gross');
+        $i->setOrder(['total_net' => 'desc', 'total_gross']);
         $i->onlyFields(['total_net', 'total_gross']);
         $this->assertEquals([
             ['total_net' => 15, 'total_gross' => 19],
@@ -66,7 +66,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         ], $i->export());
 
         $i = clone $ii;
-        $i->setOrder('total_net desc, total_gross');
+        $i->setOrder(['total_net' => 'desc', 'total_gross']);
         $i->onlyFields(['total_net', 'total_vat']);
         $this->assertEquals([
             ['total_net' => 15, 'total_vat' => 4],
@@ -75,7 +75,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         ], $i->export());
 
         $i = clone $ii;
-        $i->setOrder('total_gross desc, total_net');
+        $i->setOrder(['total_gross' => 'desc', 'total_net']);
         $i->onlyFields(['total_net', 'total_vat']);
         $this->assertEquals([
             ['total_net' => 15, 'total_vat' => 4],
@@ -109,7 +109,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
         // pass parameters as array elements [field=>order]
         $i = clone $ii;
-        $i->setOrder(['net' => true, 'vat' => false]);
+        $i->setOrder(['net' => 'desc', 'vat' => 'asc']);
         $i->onlyFields(['net', 'vat']);
         $this->assertEquals([
             ['net' => 15, 'vat' => 4],

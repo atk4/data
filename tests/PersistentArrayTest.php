@@ -482,7 +482,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('f1');
         $m->addField('f2');
         $m->addField('f3');
-        $m->setOrder('f1', true);
+        $m->setOrder('f1', 'desc');
         $d = $this->_getRows($m, ['f1']);
         $this->assertSame([
             ['f1' => 'E'],
@@ -501,8 +501,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('f2');
         $m->addField('f3');
 
-        $m->setOrder('f1', true);
-        $m->setOrder('f2', true);
+        $m->setOrder('f1', 'desc');
+        $m->setOrder('f2', 'desc');
         $d = $this->_getRows($m, ['f1', 'f2', 'id']);
         $this->assertEquals([
             ['f1' => 'E', 'f2' => 'A', 'id' => 5],
