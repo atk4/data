@@ -11,8 +11,6 @@ class ValidationException extends Exception
     public $errors = [];
 
     /**
-     * Constructor.
-     *
      * @param array $errors Array of errors
      * @param mixed $intent
      *
@@ -23,6 +21,8 @@ class ValidationException extends Exception
         if (count($errors) === 0) {
             throw new Exception('Incorrect use of ValidationException, at least one error must be given');
         }
+        $error = reset($errors);
+        $field = key($errors);
 
         $this->errors = $errors;
 

@@ -281,12 +281,8 @@ class Model implements \IteratorAggregate
     public $id_field = 'id';
 
     /**
-     * Title field has a special meaning in various situations and framework
-     * provides various shortcuts for this field. Although it's not important
-     * to set this property to an existing fields, it would enable several
-     * shortcuts for you such as::.
-     *
-     *    $model->import(['Bananas','Oranges']); // 2 records imported
+     * Title field is used typically by UI components for a simple human
+     * readable row title/description.
      *
      * @var string
      */
@@ -495,7 +491,7 @@ class Model implements \IteratorAggregate
      *
      * @throws \atk4\core\Exception
      *
-     * @return array ['field'=> err_spec]
+     * @return array [field => err_spec]
      */
     public function validate($intent = null)
     {
@@ -747,10 +743,11 @@ class Model implements \IteratorAggregate
      */
     public function getFields($filter = null)
     {
-        if (!$filter) {
+        if ($filter === null) {
             return $this->fields;
+        } elseif (is_string($filter)) {
+            $filter = [$filter];
         }
-        $filter = is_string($filter) ? explode(',', $filter) : $filter;
 
         return array_filter($this->fields, function (Field $field, $name) use ($filter) {
             // do not return fields outside of "only_fields" scope
@@ -786,25 +783,11 @@ class Model implements \IteratorAggregate
     public function set($field, $value = null)
     {
         if (func_num_args() === 1) {
-            if (is_array($field)) {
-                foreach ($field as $key => $value) {
-                    if ($key === '0' || $key === 0) {
-                        $this->set($value);
-                    } else {
-                        $this->set($key, $value);
-                    }
-                }
-
-                return $this;
-            } elseif ($field instanceof self) {
-                $this->data = $field->data;
-                //$this->id = $field->id;
-
-                return $this;
+            foreach ($field as $key => $value) {
+                $this->set($key, $value);
             }
 
-            $value = $field;
-            $field = $this->title_field;
+            return $this;
         }
 
         $field = $this->normalizeFieldName($field);
@@ -1527,7 +1510,7 @@ class Model implements \IteratorAggregate
      * If you wish to fully copy the data from one
      * model to another you should use:
      *
-     * $m->withPersistence($p2, false)->set($m)->save();
+     * $m->withPersistence($p2, false)->set($m->get())->save();
      *
      * See https://github.com/atk4/data/issues/111 for
      * use-case examples.
@@ -1898,23 +1881,10 @@ class Model implements \IteratorAggregate
         $m->reload_after_save = false;
         $m->unload();
 
-        if (!is_array($row)) {
-            $row = [$m->title_field => $row];
-        }
-
         // Find any row values that do not correspond to fields, and they may correspond to
         // references instead
         $refs = [];
         foreach ($row as $key => $value) {
-            // no field exists
-            if ($field = $this->hasField($key)) {
-                // In certain cases, there may be exceptions when providing field values
-                if ($field instanceof Field_SQL_Expression && $field->concat && is_string($value) && $field->aggregate_relation) {
-                    $refs[$field->aggregate_relation->link] = explode($field->concat, $value);
-                    unset($row[$key]);
-                }
-            }
-
             // and we only support array values
             if (!is_array($value)) {
                 continue;
@@ -2051,16 +2021,16 @@ class Model implements \IteratorAggregate
         $data = $this->persistence->export($this, $fields, $typecast_data);
 
         // prepare resulting array
-        $return = [];
+        $res = [];
         foreach ($data as $row) {
             $key = $row[$key_field];
             if ($key_field_added) {
                 unset($row[$key_field]);
             }
-            $return[$key] = $row;
+            $res[$key] = $row;
         }
 
-        return $return;
+        return $res;
     }
 
     /**
