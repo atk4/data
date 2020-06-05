@@ -138,7 +138,7 @@ You may actually drop validation exception inside save, insert or update hooks::
 
     $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
         if ($m->get('name') === 'Yagi') {
-            throw new \atk4\data\ValidationException(['name'=>"We don't serve like you"]);
+            throw new \atk4\data\ValidationException('We don't serve like you');
         }
     });
 
@@ -195,13 +195,11 @@ effective, you can implement this through a hook::
 
     $m->onHook(Persistence\SQL::HOOK_AFTER_UPDATE_QUERY, function($m, $update, $st) {
         if (!$st->rowCount()) {
-            throw new \atk4\core\Exception([
-                'Update didn\'t affect any records',
-                'query'      => $update->getDebugQuery(false),
-                'statement'  => $st,
-                'model'      => $m,
-                'conditions' => $m->conditions,
-            ]);
+            throw (new \atk4\core\Exception('Update didn\'t affect any records'))
+                ->addMoreInfo('query', $update->getDebugQuery(false))
+                ->addMoreInfo('statement', $st)
+                ->addMoreInfo('model', $m)
+                ->addMoreInfo('conditions', $m->conditions);
         }
     });
 

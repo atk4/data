@@ -1208,11 +1208,9 @@ class Model implements \IteratorAggregate
                 if (is_string($field)) {
                     $f = $this->hasField($field);
                     if (!$f) {
-                        throw new Exception([
-                            'Field does not exist',
-                            'model' => $this,
-                            'field' => $field,
-                        ]);
+                        throw (new Exception('Field does not exist'))
+                            ->addMoreInfo('model', $this)
+                            ->addMoreInfo('field', $field);
                     }
                 } elseif ($field instanceof Field) {
                     $f = $field;
