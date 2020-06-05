@@ -99,9 +99,7 @@ class Generic
 
         try {
             if ($this->enabled === false || (is_callable($this->enabled) && call_user_func($this->enabled) === false)) {
-                throw new Exception([
-                    'This action is disabled',
-                ]);
+                throw new Exception('This action is disabled');
             }
 
             // Verify that model fields wouldn't be too dirty
@@ -109,37 +107,28 @@ class Generic
                 $too_dirty = array_diff(array_keys($this->owner->dirty), $this->fields);
 
                 if ($too_dirty) {
-                    throw new Exception([
-                        'Calling action on a Model with dirty fields that are not allowed by this action.',
-
-                        'too_dirty' => $too_dirty,
-                        'dirty' => array_keys($this->owner->dirty),
-                        'permitted' => $this->fields,
-                    ]);
+                    throw (new Exception('Calling action on a Model with dirty fields that are not allowed by this action.'))
+                        ->addMoreInfo('too_dirty', $too_dirty)
+                        ->addMoreInfo('dirty', array_keys($this->owner->dirty))
+                        ->addMoreInfo('permitted', $this->fields);
                 }
             } elseif (!is_bool($this->fields)) {
-                throw new Exception([
-                    'Argument `fields` for the action must be either array or boolean.',
-                    'fields' => $this->fields,
-                ]);
+                throw (new Exception('Argument `fields` for the action must be either array or boolean.'))
+                    ->addMoreInfo('fields', $this->fields);
             }
 
             // Verify some scope cases
             switch ($this->scope) {
                 case self::NO_RECORDS:
                     if ($this->owner->loaded()) {
-                        throw new Exception([
-                            'This action scope prevents action from being executed on existing records.',
-                            'id' => $this->owner->id,
-                        ]);
+                        throw (new Exception('This action scope prevents action from being executed on existing records.'))
+                            ->addMoreInfo('id', $this->owner->id);
                     }
 
                     break;
                 case self::SINGLE_RECORD:
                     if (!$this->owner->loaded()) {
-                        throw new Exception([
-                            'This action scope requires you to load existing record first.',
-                        ]);
+                        throw new Exception('This action scope requires you to load existing record first.');
                     }
 
                     break;
@@ -182,7 +171,7 @@ class Generic
     public function preview(...$args)
     {
         if ($this->preview === null) {
-            throw new Exception(['You must specify preview callback explicitly']);
+            throw new Exception('You must specify preview callback explicitly');
         } elseif (is_string($this->preview)) {
             $cb = [$this->owner, $this->preview];
         } else {

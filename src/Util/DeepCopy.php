@@ -305,15 +305,13 @@ class DeepCopy
         } catch (\atk4\core\Exception $e) {
             $this->debug('noticed a problem');
 
-            throw new DeepCopyException([
-                'Problem cloning model',
-                'source' => $source,
-                'source_info' => $source->__debugInfo(),
-                'source_data' => $source->get(),
-                'destination' => $destination,
-                'destination_info' => $destination->__debugInfo(),
-                'depth' => $e->getParams()['field'] ?? '?',
-            ], 0, $e);
+            throw (new DeepCopyException('Problem cloning model', 0, $e))
+                ->addMoreInfo('source', $source)
+                ->addMoreInfo('source_info', $source->__debugInfo())
+                ->addMoreInfo('source_data', $source->get())
+                ->addMoreInfo('destination', $destination)
+                ->addMoreInfo('destination_info', $destination->__debugInfo())
+                ->addMoreInfo('depth', $e->getParams()['field'] ?? '?');
         }
     }
 }

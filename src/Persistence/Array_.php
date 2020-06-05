@@ -81,17 +81,13 @@ class Array_ extends Persistence
     public function load(Model $m, $id, $table = null)
     {
         if (isset($m->table) && !isset($this->data[$m->table])) {
-            throw new Exception([
-                'Table was not found in the array data source',
-                'table' => $m->table,
-            ]);
+            throw (new Exception('Table was not found in the array data source'))
+                ->addMoreInfo('table', $m->table);
         }
 
         if (!isset($this->data[$table ?: $m->table][$id])) {
-            throw new Exception([
-                'Record with specified ID was not found',
-                'id' => $id,
-            ], 404);
+            throw (new Exception('Record with specified ID was not found', 404))
+                ->addMoreInfo('id', $id);
         }
 
         return $this->tryLoad($m, $id, $table);
@@ -240,10 +236,8 @@ class Array_ extends Persistence
             case 'string':
                 return uniqid();
             default:
-                throw new Exception([
-                    'Unsupported id field type. Array supports type=integer or type=string only',
-                    'type' => $type,
-                ]);
+                throw (new Exception('Unsupported id field type. Array supports type=integer or type=string only'))
+                    ->addMoreInfo('type', $type);
         }
     }
 
@@ -344,11 +338,9 @@ class Array_ extends Persistence
             // condition must have 3 params at this point
             if (count($cond) !== 3) {
                 // condition can have up to three params
-                throw new Exception([
-                    'Persistence\Array_ driver condition unsupported format',
-                    'reason' => 'condition can have two to three params',
-                    'condition' => $cond,
-                ]);
+                throw (new Exception('Persistence\Array_ driver condition unsupported format'))
+                    ->addMoreInfo('reason', 'condition can have two to three params')
+                    ->addMoreInfo('condition', $cond);
             }
 
             // extract
@@ -358,11 +350,9 @@ class Array_ extends Persistence
 
             // check if the method is supported by the iterator
             if (!method_exists($iterator, $method)) {
-                throw new Exception([
-                    'Persistence\Array_ driver condition unsupported method',
-                    'reason' => "method {$method} not implemented for Action\\Iterator",
-                    'condition' => $cond,
-                ]);
+                throw (new Exception('Persistence\Array_ driver condition unsupported method'))
+                    ->addMoreInfo('reason', "method {$method} not implemented for Action\\Iterator")
+                    ->addMoreInfo('condition', $cond);
             }
 
             // get the model field
@@ -371,11 +361,9 @@ class Array_ extends Persistence
             }
 
             if (!is_a($field, Field::class)) {
-                throw new Exception([
-                    'Persistence\Array_ driver condition unsupported format',
-                    'reason' => 'Unsupported object instance ' . get_class($field),
-                    'condition' => $cond,
-                ]);
+                throw (new Exception('Persistence\Array_ driver condition unsupported format'))
+                    ->addMoreInfo('reason', 'Unsupported object instance ' . get_class($field))
+                    ->addMoreInfo('condition', $cond);
             }
 
             // get the field name
@@ -399,10 +387,8 @@ class Array_ extends Persistence
     public function action($m, $type, $args = [])
     {
         if (!is_array($args)) {
-            throw new Exception([
-                '$args must be an array',
-                'args' => $args,
-            ]);
+            throw (new Exception('$args must be an array'))
+                ->addMoreInfo('args', $args);
         }
 
         switch ($type) {
@@ -420,10 +406,8 @@ class Array_ extends Persistence
                 return $action->count();
             case 'field':
                 if (!isset($args[0])) {
-                    throw new Exception([
-                        'This action requires one argument with field name',
-                        'action' => $type,
-                    ]);
+                    throw (new Exception('This action requires one argument with field name'))
+                        ->addMoreInfo('action', $type);
                 }
 
                 $field = is_string($args[0]) ? $args[0] : $args[0][0];
@@ -450,10 +434,8 @@ class Array_ extends Persistence
             */
 
             default:
-                throw new Exception([
-                    'Unsupported action mode',
-                    'type' => $type,
-                ]);
+                throw (new Exception('Unsupported action mode'))
+                    ->addMoreInfo('type', $type);
         }
     }
 }

@@ -88,10 +88,8 @@ class SQL extends Persistence
         }
 
         if (is_object($connection)) {
-            throw new Exception([
-                'You can only use Persistance_SQL with Connection class from atk4\dsql',
-                'connection' => $connection,
-            ]);
+            throw (new Exception('You can only use Persistance_SQL with Connection class from atk4\dsql'))
+                ->addMoreInfo('connection', $connection);
         }
 
         // attempt to connect.
@@ -153,10 +151,8 @@ class SQL extends Persistence
         $m = parent::add($m, $defaults);
 
         if (!isset($m->table) || (!is_string($m->table) && $m->table !== false)) {
-            throw new Exception([
-                'Property $table must be specified for a model',
-                'model' => $m,
-            ]);
+            throw (new Exception('Property $table must be specified for a model'))
+                ->addMoreInfo('model', $m);
         }
 
         // When we work without table, we can't have any IDs
@@ -367,7 +363,9 @@ class SQL extends Persistence
                 } elseif (is_string($o[0])) {
                     $q->order($m->getField($o[0]), $o[1]);
                 } else {
-                    throw new Exception(['Unsupported order parameter', 'model' => $m, 'field' => $o[0]]);
+                    throw (new Exception('Unsupported order parameter'))
+                        ->addMoreInfo('model', $m)
+                        ->addMoreInfo('field', $o[0]);
                 }
             }
         }
@@ -575,7 +573,10 @@ class SQL extends Persistence
                 }
 
                 if ($v === false) {
-                    throw new Exception(['Incorrectly formatted date/time', 'format' => $format, 'value' => $value, 'field' => $f]);
+                    throw (new Exception('Incorrectly formatted date/time'))
+                        ->addMoreInfo('format', $format)
+                        ->addMoreInfo('value', $value)
+                        ->addMoreInfo('field', $f);
                 }
 
                 // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
@@ -612,10 +613,8 @@ class SQL extends Persistence
     public function action(Model $m, $type, $args = [])
     {
         if (!is_array($args)) {
-            throw new Exception([
-                '$args must be an array',
-                'args' => $args,
-            ]);
+            throw (new Exception('$args must be an array'))
+                ->addMoreInfo('args', $args);
         }
 
         $q = $this->initQuery($m);
@@ -650,10 +649,8 @@ class SQL extends Persistence
                 return $q;
             case 'field':
                 if (!isset($args[0])) {
-                    throw new Exception([
-                        'This action requires one argument with field name',
-                        'action' => $type,
-                    ]);
+                    throw (new Exception('This action requires one argument with field name'))
+                        ->addMoreInfo('action', $type);
                 }
 
                 $field = is_string($args[0]) ? $m->getField($args[0]) : $args[0];
@@ -672,10 +669,8 @@ class SQL extends Persistence
             case 'fx':
             case 'fx0':
                 if (!isset($args[0], $args[1])) {
-                    throw new Exception([
-                        'fx action needs 2 arguments, eg: ["sum", "amount"]',
-                        'action' => $type,
-                    ]);
+                    throw (new Exception('fx action needs 2 arguments, eg: ["sum", "amount"]'))
+                        ->addMoreInfo('action', $type);
                 }
 
                 $fx = $args[0];
@@ -699,10 +694,8 @@ class SQL extends Persistence
 
                 return $q;
             default:
-                throw new Exception([
-                    'Unsupported action mode',
-                    'type' => $type,
-                ]);
+                throw (new Exception('Unsupported action mode'))
+                    ->addMoreInfo('type', $type);
         }
 
         $this->initQueryConditions($m, $q);
@@ -722,7 +715,8 @@ class SQL extends Persistence
     public function tryLoad(Model $m, $id)
     {
         if (!$m->id_field) {
-            throw new Exception(['Unable to load field by "id" when Model->id_field is not defined.', 'id' => $id]);
+            throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
+                ->addMoreInfo('id', $id);
         }
 
         $load = $m->action('select');
@@ -733,13 +727,11 @@ class SQL extends Persistence
         try {
             $data = $this->typecastLoadRow($m, $load->getRow());
         } catch (\PDOException $e) {
-            throw new Exception([
-                'Unable to load due to query error',
-                'query' => $load->getDebugQuery(false),
-                'message' => $e->getMessage(),
-                'model' => $m,
-                'conditions' => $m->conditions,
-            ], 0, $e);
+            throw (new Exception('Unable to load due to query error', 0, $e))
+                ->addMoreInfo('query', $load->getDebugQuery(false))
+                ->addMoreInfo('message', $e->getMessage())
+                ->addMoreInfo('model', $m)
+                ->addMoreInfo('conditions', $m->conditions);
         }
 
         if (!$data) {
@@ -747,13 +739,11 @@ class SQL extends Persistence
         }
 
         if (!isset($data[$m->id_field]) || $data[$m->id_field] === null) {
-            throw new Exception([
-                'Model uses "id_field" but it wasn\'t available in the database',
-                'model' => $m,
-                'id_field' => $m->id_field,
-                'id' => $id,
-                'data' => $data,
-            ]);
+            throw (new Exception('Model uses "id_field" but it wasn\'t available in the database'))
+                ->addMoreInfo('model', $m)
+                ->addMoreInfo('id_field', $m->id_field)
+                ->addMoreInfo('id', $id)
+                ->addMoreInfo('data', $data);
         }
 
         $m->id = $data[$m->id_field];
@@ -773,12 +763,10 @@ class SQL extends Persistence
         $data = $this->tryLoad($m, $id);
 
         if (!$data) {
-            throw new Exception([
-                'Record was not found',
-                'model' => $m,
-                'id' => $id,
-                'conditions' => $m->conditions,
-            ], 404);
+            throw (new Exception('Record was not found', 404))
+                ->addMoreInfo('model', $m)
+                ->addMoreInfo('id', $id)
+                ->addMoreInfo('conditions', $m->conditions);
         }
 
         return $data;
@@ -798,13 +786,11 @@ class SQL extends Persistence
         try {
             $data = $this->typecastLoadRow($m, $load->getRow());
         } catch (\PDOException $e) {
-            throw new Exception([
-                'Unable to load due to query error',
-                'query' => $load->getDebugQuery(false),
-                'message' => $e->getMessage(),
-                'model' => $m,
-                'conditions' => $m->conditions,
-            ], 0, $e);
+            throw (new Exception('Unable to load due to query error', 0, $e))
+                ->addMoreInfo('query', $load->getDebugQuery(false))
+                ->addMoreInfo('message', $e->getMessage())
+                ->addMoreInfo('model', $m)
+                ->addMoreInfo('conditions', $m->conditions);
         }
 
         if (!$data) {
@@ -816,12 +802,10 @@ class SQL extends Persistence
             if (isset($data[$m->id_field])) {
                 $m->id = $data[$m->id_field];
             } else {
-                throw new Exception([
-                    'Model uses "id_field" but it was not available in the database',
-                    'model' => $m,
-                    'id_field' => $m->id_field,
-                    'data' => $data,
-                ]);
+                throw (new Exception('Model uses "id_field" but it was not available in the database'))
+                    ->addMoreInfo('model', $m)
+                    ->addMoreInfo('id_field', $m->id_field)
+                    ->addMoreInfo('data', $data);
             }
         }
 
@@ -838,11 +822,9 @@ class SQL extends Persistence
         $data = $this->tryLoadAny($m);
 
         if (!$data) {
-            throw new Exception([
-                'No matching records were found',
-                'model' => $m,
-                'conditions' => $m->conditions,
-            ], 404);
+            throw (new Exception('No matching records were found', 404))
+                ->addMoreInfo('model', $m)
+                ->addMoreInfo('conditions', $m->conditions);
         }
 
         return $data;
@@ -870,13 +852,11 @@ class SQL extends Persistence
             $m->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
             $st = $insert->execute();
         } catch (\PDOException $e) {
-            throw new Exception([
-                'Unable to execute insert query',
-                'query' => $insert->getDebugQuery(false),
-                'message' => $e->getMessage(),
-                'model' => $m,
-                'conditions' => $m->conditions,
-            ], 0, $e);
+            throw (new Exception('Unable to execute insert query', 0, $e))
+                ->addMoreInfo('query', $insert->getDebugQuery(false))
+                ->addMoreInfo('message', $e->getMessage())
+                ->addMoreInfo('model', $m)
+                ->addMoreInfo('conditions', $m->conditions);
         }
 
         $m->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
@@ -917,13 +897,11 @@ class SQL extends Persistence
 
             return $export->execute();
         } catch (\PDOException $e) {
-            throw new Exception([
-                'Unable to execute iteration query',
-                'query' => $export->getDebugQuery(false),
-                'message' => $e->getMessage(),
-                'model' => $m,
-                'conditions' => $m->conditions,
-            ], 0, $e);
+            throw (new Exception('Unable to execute iteration query', 0, $e))
+                ->addMoreInfo('query', $export->getDebugQuery(false))
+                ->addMoreInfo('message', $e->getMessage())
+                ->addMoreInfo('model', $m)
+                ->addMoreInfo('conditions', $m->conditions);
         }
     }
 
@@ -936,7 +914,7 @@ class SQL extends Persistence
     public function update(Model $m, $id, $data)
     {
         if (!$m->id_field) {
-            throw new Exception(['id_field of a model is not set. Unable to update record.']);
+            throw new Exception('id_field of a model is not set. Unable to update record.');
         }
 
         $update = $this->initQuery($m);
@@ -956,13 +934,11 @@ class SQL extends Persistence
                 $st = $update->execute();
             }
         } catch (\PDOException $e) {
-            throw new Exception([
-                'Unable to update due to query error',
-                'query' => $update->getDebugQuery(false),
-                'message' => $e->getMessage(),
-                'model' => $m,
-                'conditions' => $m->conditions,
-            ], 0, $e);
+            throw (new Exception('Unable to update due to query error', 0, $e))
+                ->addMoreInfo('query', $update->getDebugQuery(false))
+                ->addMoreInfo('message', $e->getMessage())
+                ->addMoreInfo('model', $m)
+                ->addMoreInfo('conditions', $m->conditions);
         }
 
         if ($m->id_field && isset($data[$m->id_field]) && $m->dirty[$m->id_field]) {
@@ -989,7 +965,7 @@ class SQL extends Persistence
     public function delete(Model $m, $id)
     {
         if (!$m->id_field) {
-            throw new Exception(['id_field of a model is not set. Unable to delete record.']);
+            throw new Exception('id_field of a model is not set. Unable to delete record.');
         }
 
         $delete = $this->initQuery($m);
@@ -1000,13 +976,11 @@ class SQL extends Persistence
         try {
             $delete->execute();
         } catch (\PDOException $e) {
-            throw new Exception([
-                'Unable to delete due to query error',
-                'query' => $delete->getDebugQuery(false),
-                'message' => $e->getMessage(),
-                'model' => $m,
-                'conditions' => $m->conditions,
-            ], 0, $e);
+            throw (new Exception('Unable to delete due to query error', 0, $e))
+                ->addMoreInfo('query', $delete->getDebugQuery(false))
+                ->addMoreInfo('message', $e->getMessage())
+                ->addMoreInfo('model', $m)
+                ->addMoreInfo('conditions', $m->conditions);
         }
     }
 
