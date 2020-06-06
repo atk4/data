@@ -29,7 +29,7 @@ class STAccount extends Model
     public static function open($persistence, $name, $amount = 0)
     {
         $m = new self($persistence);
-        $m->save($name);
+        $m->save(['name' => $name]);
 
         if ($amount) {
             $m->ref('Transactions:OB')->save(['amount' => $amount]);

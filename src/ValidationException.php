@@ -11,8 +11,6 @@ class ValidationException extends Exception
     public $errors = [];
 
     /**
-     * Constructor.
-     *
      * @param array $errors Array of errors
      * @param mixed $intent
      *

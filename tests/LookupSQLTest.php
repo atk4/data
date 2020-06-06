@@ -175,23 +175,23 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         $results = [];
 
         // should be OK, will set country name, rest of fields will be null
-        $c->saveAndUnload('Canada');
+        $c->saveAndUnload(['name' => 'Canada']);
 
         // adds another country, but with more fields
-        $c->saveAndUnload(['Latvia', 'code' => 'LV', 'is_eu' => true]);
+        $c->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
 
         // setting field prior will affect save()
         $c->set('is_eu', true);
-        $c->save(['Estonia', 'code' => 'ES']);
+        $c->save(['name' => 'Estonia', 'code' => 'ES']);
 
         // is_eu will NOT BLEED into this record, because insert() does not make use of current model values.
-        $c->insert(['Korea', 'code' => 'KR']);
+        $c->insert(['name' => 'Korea', 'code' => 'KR']);
 
         // is_eu will NOT BLEED into Japan or Russia, because import() treats all records individually
         $c->import([
-            ['Japan', 'code' => 'JP'],
-            ['Lithuania', 'code' => 'LT', 'is_eu' => true],
-            ['Russia', 'code' => 'RU'],
+            ['name' => 'Japan', 'code' => 'JP'],
+            ['name' => 'Lithuania', 'code' => 'LT', 'is_eu' => true],
+            ['name' => 'Russia', 'code' => 'RU'],
         ]);
 
         $this->assertSame([
@@ -247,10 +247,10 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         $c = new LCountry($this->db);
 
         // Specifying hasMany here will perform input
-        $c->insert(['name' => 'Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
+        $c->insert(['name' => 'Canada', 'Users' => [['name' => 'Alain'], ['name' => 'Duncan', 'is_vip' => true]]]);
 
         // Both lines will work quite similar
-        $c->insert(['Latvia', 'user_names' => 'imants,juris']);
+        $c->insert(['name' => 'Latvia', 'Users' => [['name' => 'imants'], ['name' => 'juris']]]);
 
         //$this->varexport($this->getDB(['country','user']));
         $this->assertSame([
@@ -303,11 +303,11 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
 
         // Specifying hasMany here will perform input
         $c->import([
-            ['Canada', 'code' => 'CA'],
-            ['Latvia', 'code' => 'LV'],
-            ['Japan', 'code' => 'JP'],
-            ['Lithuania', 'code' => 'LT', 'is_eu' => true],
-            ['Russia', 'code' => 'RU'],
+            ['name' => 'Canada', 'code' => 'CA'],
+            ['name' => 'Latvia', 'code' => 'LV'],
+            ['name' => 'Japan', 'code' => 'JP'],
+            ['name' => 'Lithuania', 'code' => 'LT', 'is_eu' => true],
+            ['name' => 'Russia', 'code' => 'RU'],
         ]);
 
         $u = new LUser($this->db);
@@ -315,7 +315,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         $u->import([
             ['name' => 'Alain', 'country_code' => 'CA'],
             ['name' => 'Imants', 'country_code' => 'LV'],
-            //[ 'name'       => 'Romans', 'country_code'=>'UK'],  // does not exist
+            //'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
         ]);
     }
 

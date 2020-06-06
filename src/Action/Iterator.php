@@ -187,6 +187,6 @@ class Iterator
     {
         $data = $this->getRow();
 
-        return array_shift($data);
+        return reset($data);
     }
 }

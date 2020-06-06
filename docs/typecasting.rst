@@ -194,7 +194,7 @@ specifying our callbacks for converting::
     }
 
     $money_decode = function($x) {
-        list($amount, $currency) = explode(' ', $x);
+        list($amount, $currency) = explode(' ', $x, 2);
         return new MyMoney($amount, $currency);
     }
 

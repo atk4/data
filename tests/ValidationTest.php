@@ -66,7 +66,7 @@ class ValidationTests extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException        \atk4\data\ValidationException
+     * @expectedException \atk4\data\ValidationException
      * @expectedExceptionMessage Snakes
      */
     public function testValidate2()
@@ -76,7 +76,7 @@ class ValidationTests extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException        \atk4\data\ValidationException
+     * @expectedException \atk4\data\ValidationException
      * @expectedExceptionMessage Multiple
      */
     public function testValidate3()

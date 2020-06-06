@@ -65,7 +65,7 @@ class Email extends Field
             }
 
             // should actually run only domain trough idn_to_ascii(), but for validation purpose this way it's fine too
-            $p = explode('@', $email);
+            $p = explode('@', $email, 2);
             $user = $p[0] ?? null;
             $domain = $p[1] ?? null;
             if (!filter_var($user . '@' . $this->idn_to_ascii($domain), FILTER_VALIDATE_EMAIL)) {
