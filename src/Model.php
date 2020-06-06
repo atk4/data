@@ -1885,15 +1885,6 @@ class Model implements \IteratorAggregate
         // references instead
         $refs = [];
         foreach ($row as $key => $value) {
-            // no field exists
-            if ($field = $this->hasField($key)) {
-                // In certain cases, there may be exceptions when providing field values
-                if ($field instanceof Field_SQL_Expression && $field->concat && is_string($value) && $field->aggregate_relation) {
-                    $refs[$field->aggregate_relation->link] = explode($field->concat, $value);
-                    unset($row[$key]);
-                }
-            }
-
             // and we only support array values
             if (!is_array($value)) {
                 continue;
