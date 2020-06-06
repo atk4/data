@@ -775,8 +775,8 @@ class Model implements \IteratorAggregate
     /**
      * Set field value.
      *
-     * @param string|array|Model $field
-     * @param mixed              $value
+     * @param string|array $field
+     * @param mixed        $value
      *
      * @return $this
      */
