@@ -467,10 +467,8 @@ you can significantly affect the query building of an SQL model::
                 ]);
             }
 
-            throw new \atk4\core\Exception([
-                'You may only perform "select" or "count" action on this model',
-                'action' => $mode
-            ]);
+            throw (new \atk4\core\Exception('You may only perform "select" or "count" action on this model'))
+                ->addMoreInfo('action', $mode);
         }
     }
 

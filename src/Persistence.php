@@ -64,10 +64,8 @@ class Persistence
 
                 return $db;
             default:
-                throw new Exception([
-                    'Unable to determine persistence driver type from DSN',
-                    'dsn' => $dsn['dsn'],
-                ]);
+                throw (new Exception('Unable to determine persistence driver type from DSN'))
+                    ->addMoreInfo('dsn', $dsn['dsn']);
         }
     }
 
@@ -97,9 +95,7 @@ class Persistence
                 return $m;
             }
 
-            throw new Exception([
-                'Model is already related to another persistence',
-            ]);
+            throw new Exception('Model is already related to another persistence');
         }
 
         $m->persistence = $this;
@@ -293,7 +289,8 @@ class Persistence
             // run persistence-specific typecasting of field value
             return $this->_typecastSaveField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to typecast field value on save', 'field' => $f->name], 0, $e);
+            throw (new Exception('Unable to typecast field value on save', 0, $e))
+                ->addMoreInfo('field', $f->name);
         }
     }
 
@@ -327,7 +324,8 @@ class Persistence
             // run persistence-specific typecasting of field value
             return $this->_typecastLoadField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to typecast field value on load', 'field' => $f->name], 0, $e);
+            throw (new Exception('Unable to typecast field value on load', 0, $e))
+                ->addMoreInfo('field', $f->name);
         }
     }
 
@@ -376,7 +374,8 @@ class Persistence
             // run persistence-specific serialization of field value
             return $this->_serializeSaveField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to serialize field value on save', 'field' => $f->name], 0, $e);
+            throw (new Exception('Unable to serialize field value on save', 0, $e))
+                ->addMoreInfo('field', $f->name);
         }
     }
 
@@ -399,7 +398,8 @@ class Persistence
             // run persistence-specific un-serialization of field value
             return $this->_serializeLoadField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to serialize field value on load', 'field' => $f->name], 0, $e);
+            throw (new Exception('Unable to serialize field value on load', 0, $e))
+                ->addMoreInfo('field', $f->name);
         }
     }
 
@@ -419,11 +419,9 @@ class Persistence
             return $this->jsonEncode($f, $value);
         case 'base64':
             if (!is_string($value)) {
-                throw new Exception([
-                    'Field value can not be base64 encoded because it is not of string type',
-                    'field' => $f,
-                    'value' => $value,
-                ]);
+                throw (new Exception('Field value can not be base64 encoded because it is not of string type'))
+                    ->addMoreInfo('field', $f)
+                    ->addMoreInfo('value', $value);
             }
 
             return base64_encode($value);
@@ -466,11 +464,9 @@ class Persistence
 
         $res = json_decode($value, $assoc, 512, JSON_THROW_ON_ERROR);
         if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception([
-                'There was error while decoding JSON',
-                'code' => json_last_error(),
-                'error' => json_last_error_msg(),
-            ]);
+            throw (new Exception('There was error while decoding JSON'))
+                ->addMoreInfo('code', json_last_error())
+                ->addMoreInfo('error', json_last_error_msg());
         }
 
         return $res;
@@ -492,11 +488,9 @@ class Persistence
 
         $res = json_encode($value, JSON_THROW_ON_ERROR, 512);
         if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception([
-                'There was error while encoding JSON',
-                'code' => json_last_error(),
-                'error' => json_last_error_msg(),
-            ]);
+            throw (new Exception('There was error while encoding JSON'))
+                ->addMoreInfo('code', json_last_error())
+                ->addMoreInfo('error', json_last_error_msg());
         }
 
         return $res;

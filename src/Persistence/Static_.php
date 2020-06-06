@@ -37,7 +37,8 @@ class Static_ extends Array_
     public function __construct($data = null)
     {
         if (!is_array($data)) {
-            throw new Exception(['Static data should be array of strings or array of hashes', 'data' => $data]);
+            throw (new Exception('Static data should be array of strings or array of hashes'))
+                ->addMoreInfo('data', $data);
         }
 
         // chomp off first row, we will use it to deduct fields

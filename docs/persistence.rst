@@ -506,11 +506,9 @@ Start by creating a beforeSave handler for Order::
                     ->tryLoadBy('ref', $m->get('ref'))                // with same ref
                     ->loaded()
             ) {
-                throw new Exception([
-                    'Order with ref already exists for this client',
-                    'client' => $this->get('client_id'),
-                    'ref'    => $this->get('ref')
-                ]);
+                throw (new Exception('Order with ref already exists for this client'))
+                    ->addMoreInfo('client', $this->get('client_id'))
+                    ->addMoreInfo('ref', $this->get('ref'))
             }
         }
     });

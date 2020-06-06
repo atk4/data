@@ -85,7 +85,8 @@ class ContainsOne extends Reference
         // model should be loaded
         /* Imants: it looks that this is not actually required - disabling
         if (!$m->loaded()) {
-            throw new Exception(['Model should be loaded!', 'model' => get_class($m)]);
+            throw (new Exception('Model should be loaded!'))
+                ->addMoreInfo('model', get_class($m));
         }
         */
 

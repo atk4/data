@@ -28,10 +28,8 @@ class HasOne_SQL extends HasOne
         if (is_array($field)) {
             $defaults = $field;
             if (!isset($defaults[0])) {
-                throw new Exception([
-                    'Field name must be specified',
-                    'field' => $field,
-                ]);
+                throw (new Exception('Field name must be specified'))
+                    ->addMoreInfo('field', $field);
             }
             $field = $defaults[0];
             unset($defaults[0]);
@@ -102,11 +100,9 @@ class HasOne_SQL extends HasOne
             if (is_array($alias)) {
                 $d = array_merge($defaults, $alias);
                 if (!isset($alias[0])) {
-                    throw new Exception([
-                        'Incorrect definition for addFields. Field name must be specified',
-                        'field' => $field,
-                        'alias' => $alias,
-                    ]);
+                    throw (new Exception('Incorrect definition for addFields. Field name must be specified'))
+                        ->addMoreInfo('field', $field)
+                        ->addMoreInfo('alias', $alias);
                 }
                 $alias = $alias[0];
             } else {
@@ -198,10 +194,8 @@ class HasOne_SQL extends HasOne
     public function addTitle($defaults = []): Field_SQL_Expression
     {
         if (!is_array($defaults)) {
-            throw new Exception([
-                'Argument to addTitle should be an array',
-                'arg' => $defaults,
-            ]);
+            throw (new Exception('Argument to addTitle should be an array'))
+                ->addMoreInfo('arg', $defaults);
         }
 
         $field = isset($defaults['field'])
@@ -209,10 +203,8 @@ class HasOne_SQL extends HasOne
                     : preg_replace('/_' . ($this->owner->id_field ?: 'id') . '$/i', '', $this->link);
 
         if ($this->owner->hasField($field)) {
-            throw new Exception([
-                'Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])',
-                'field' => $field,
-            ]);
+            throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))
+                ->addMoreInfo('field', $field);
         }
 
         /** @var Field_SQL_Expression $ex */

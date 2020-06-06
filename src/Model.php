@@ -515,7 +515,7 @@ class Model implements \IteratorAggregate
     public function add(object $obj, array $defaults = []): object
     {
         if ($obj instanceof Field) {
-            throw new Exception(['You should always use addField() for adding fields, not add()']);
+            throw new Exception('You should always use addField() for adding fields, not add()');
         }
 
         return $this->_add($obj, $defaults);
@@ -695,28 +695,22 @@ class Model implements \IteratorAggregate
         }
 
         if (!is_string($field) || $field === '' || is_numeric($field[0])) {
-            throw new Exception([
-                'Incorrect specification of field name',
-                'arg' => $field,
-            ]);
+            throw (new Exception('Incorrect specification of field name'))
+                ->addMoreInfo('arg', $field);
         }
 
         if ($this->only_fields) {
             if (!in_array($field, $this->only_fields, true) && !$this->getField($field)->system) {
-                throw new Exception([
-                    'Attempt to use field outside of those set by onlyFields',
-                    'field' => $field,
-                    'only_fields' => $this->only_fields,
-                ]);
+                throw (new Exception('Attempt to use field outside of those set by onlyFields'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('only_fields', $this->only_fields);
             }
         }
 
         if ($this->strict_field_check && !$this->hasField($field)) {
-            throw new Exception([
-                'Field is not defined inside a Model',
-                'field' => $field,
-                'model' => $this,
-            ]);
+            throw (new Exception('Field is not defined inside a Model'))
+                ->addMoreInfo('field', $field)
+                ->addMoreInfo('model', $this);
         }
 
         return $field;
@@ -772,7 +766,8 @@ class Model implements \IteratorAggregate
                 ) {
                     return true;
                 } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'], true)) {
-                    throw new Exception(['Filter is not supported', 'filter' => $f]);
+                    throw (new Exception('Filter is not supported'))
+                        ->addMoreInfo('filter', $f);
                 }
             }
 
@@ -843,11 +838,9 @@ class Model implements \IteratorAggregate
         if ($f) {
             // perform bunch of standard validation here. This can be re-factored in the future.
             if ($f->read_only) {
-                throw new Exception([
-                    'Attempting to change read-only field',
-                    'field' => $field,
-                    'model' => $this,
-                ]);
+                throw (new Exception('Attempting to change read-only field'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('model', $this);
             }
 
             // enum property support
@@ -856,13 +849,11 @@ class Model implements \IteratorAggregate
                     $value = null;
                 }
                 if ($value !== null && !in_array($value, $f->enum, true)) {
-                    throw new Exception([
-                        'This is not one of the allowed values for the field',
-                        'field' => $field,
-                        'model' => $this,
-                        'value' => $value,
-                        'enum' => $f->enum,
-                    ]);
+                    throw (new Exception('This is not one of the allowed values for the field'))
+                        ->addMoreInfo('field', $field)
+                        ->addMoreInfo('model', $this)
+                        ->addMoreInfo('value', $value)
+                        ->addMoreInfo('enum', $f->enum);
                 }
             }
 
@@ -873,21 +864,17 @@ class Model implements \IteratorAggregate
                 } elseif ($value === null) {
                     // all is good
                 } elseif (!is_string($value) && !is_int($value)) {
-                    throw new Exception([
-                        'Field can be only one of pre-defined value, so only "string" and "int" keys are supported',
-                        'field' => $field,
-                        'model' => $this,
-                        'value' => $value,
-                        'values' => $f->values,
-                    ]);
+                    throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
+                        ->addMoreInfo('field', $field)
+                        ->addMoreInfo('model', $this)
+                        ->addMoreInfo('value', $value)
+                        ->addMoreInfo('values', $f->values);
                 } elseif (!array_key_exists($value, $f->values)) {
-                    throw new Exception([
-                        'This is not one of the allowed values for the field',
-                        'field' => $field,
-                        'model' => $this,
-                        'value' => $value,
-                        'values' => $f->values,
-                    ]);
+                    throw (new Exception('This is not one of the allowed values for the field'))
+                        ->addMoreInfo('field', $field)
+                        ->addMoreInfo('model', $this)
+                        ->addMoreInfo('value', $value)
+                        ->addMoreInfo('values', $f->values);
                 }
             }
         }
@@ -1208,11 +1195,9 @@ class Model implements \IteratorAggregate
                 if (is_string($field)) {
                     $f = $this->hasField($field);
                     if (!$f) {
-                        throw new Exception([
-                            'Field does not exist',
-                            'model' => $this,
-                            'field' => $field,
-                        ]);
+                        throw (new Exception('Field does not exist'))
+                            ->addMoreInfo('model', $this)
+                            ->addMoreInfo('field', $field);
                     }
                 } elseif ($field instanceof Field) {
                     $f = $field;
@@ -1264,7 +1249,8 @@ class Model implements \IteratorAggregate
     public function addWith(self $model, string $alias, array $mapping = [], bool $recursive = false)
     {
         if (isset($this->with[$alias])) {
-            throw new Exception(['With cursor already set with this alias', 'alias' => $alias]);
+            throw (new Exception('With cursor already set with this alias'))
+                ->addMoreInfo('alias', $alias);
         }
 
         $this->with[$alias] = [
@@ -1294,11 +1280,9 @@ class Model implements \IteratorAggregate
         // fields passed as array
         if (is_array($field)) {
             if ($desc !== null) {
-                throw new Exception([
-                    'If first argument is array, second argument must not be used',
-                    'arg1' => $field,
-                    'arg2' => $desc,
-                ]);
+                throw (new Exception('If first argument is array, second argument must not be used'))
+                    ->addMoreInfo('arg1', $field)
+                    ->addMoreInfo('arg2', $desc);
             }
 
             foreach (array_reverse($field) as $key => $o) {
@@ -1393,7 +1377,7 @@ class Model implements \IteratorAggregate
         }
 
         if (!$from_persistence) {
-            throw new Exception(['Model is not associated with any database']);
+            throw new Exception('Model is not associated with any database');
         }
 
         if ($this->loaded()) {
@@ -1557,10 +1541,8 @@ class Model implements \IteratorAggregate
     public function withPersistence($persistence, $id = null, string $class = null)
     {
         if (!$persistence instanceof Persistence) {
-            throw new Exception([
-                'Please supply valid persistence',
-                'arg' => $persistence,
-            ]);
+            throw (new Exception('Please supply valid persistence'))
+                ->addMoreInfo('arg', $persistence);
         }
 
         if (!$class) {
@@ -1596,7 +1578,7 @@ class Model implements \IteratorAggregate
     public function tryLoad($id)
     {
         if (!$this->persistence) {
-            throw new Exception(['Model is not associated with any database']);
+            throw new Exception('Model is not associated with any database');
         }
 
         if (!$this->persistence->hasMethod('tryLoad')) {
@@ -1632,7 +1614,7 @@ class Model implements \IteratorAggregate
     public function loadAny()
     {
         if (!$this->persistence) {
-            throw new Exception(['Model is not associated with any database']);
+            throw new Exception('Model is not associated with any database');
         }
 
         if (!$this->persistence->hasMethod('loadAny')) {
@@ -1671,7 +1653,7 @@ class Model implements \IteratorAggregate
     public function tryLoadAny()
     {
         if (!$this->persistence) {
-            throw new Exception(['Model is not associated with any database']);
+            throw new Exception('Model is not associated with any database');
         }
 
         if (!$this->persistence->hasMethod('tryLoadAny')) {
@@ -1797,11 +1779,11 @@ class Model implements \IteratorAggregate
         }
 
         if (!$to_persistence) {
-            throw new Exception(['Model is not associated with any database']);
+            throw new Exception('Model is not associated with any database');
         }
 
         if ($this->read_only) {
-            throw new Exception(['Model is read-only and cannot be saved']);
+            throw new Exception('Model is read-only and cannot be saved');
         }
 
         if ($data) {
@@ -2172,7 +2154,7 @@ class Model implements \IteratorAggregate
     public function delete($id = null)
     {
         if ($this->read_only) {
-            throw new Exception(['Model is read-only and cannot be deleted']);
+            throw new Exception('Model is read-only and cannot be deleted');
         }
 
         if ($id == $this->id) {
@@ -2196,7 +2178,7 @@ class Model implements \IteratorAggregate
                 return $this;
             }
 
-            throw new Exception(['No active record is set, unable to delete.']);
+            throw new Exception('No active record is set, unable to delete.');
         });
     }
 
@@ -2241,7 +2223,7 @@ class Model implements \IteratorAggregate
     public function action($mode, $args = [])
     {
         if (!$this->persistence) {
-            throw new Exception(['action() requires model to be associated with db']);
+            throw new Exception('action() requires model to be associated with db');
         }
 
         if (!$this->persistence->hasMethod('action')) {
@@ -2336,12 +2318,10 @@ class Model implements \IteratorAggregate
 
         // if reference with such name already exists, then throw exception
         if ($this->hasElement($name = $obj->getDesiredName())) {
-            throw new Exception([
-                'Reference with such name already exists',
-                'name' => $name,
-                'link' => $link,
-                'defaults' => $defaults,
-            ]);
+            throw (new Exception('Reference with such name already exists'))
+                ->addMoreInfo('name', $name)
+                ->addMoreInfo('link', $link)
+                ->addMoreInfo('defaults', $defaults);
         }
 
         return $this->add($obj);
