@@ -101,8 +101,7 @@ class ValidationTests extends AtkPhpunit\TestCase
     }
 
     /**
-     * @expectedException        \Exception
-     * @expectedExceptionMessage Incorrect use of ValidationException, argument should be an array
+     * Incorrect use of ValidationException, argument should be an array.
      */
     public function testValidate5()
     {
@@ -111,6 +110,7 @@ class ValidationTests extends AtkPhpunit\TestCase
         $m = new BadValidationModel($p);
 
         $m->set('name', 'john');
+        $this->expectException(\TypeError::class);
         $m->save();
     }
 
