@@ -1873,10 +1873,10 @@ class Model implements \IteratorAggregate
      * This is a temporary method to avoid code duplication, but insert / import should
      * be implemented differently.
      *
-     * @param Model        $m   Model where to insert
-     * @param array|string $row Data row to insert or title field value
+     * @param Model $m   Model where to insert
+     * @param array $row Data row to insert
      */
-    protected function _rawInsert($m, $row)
+    protected function _rawInsert(Model $m, array $row)
     {
         $m->reload_after_save = false;
         $m->unload();
