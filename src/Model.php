@@ -1919,11 +1919,9 @@ class Model implements \IteratorAggregate
      *
      * Will be further optimized in the future.
      *
-     * @param array|Model $row
-     *
      * @return mixed
      */
-    public function insert($row)
+    public function insert(array $row)
     {
         $m = clone $this;
         $this->_rawInsert($m, $row);
@@ -1937,11 +1935,9 @@ class Model implements \IteratorAggregate
      *
      * Will be further optimized in the future.
      *
-     * @param array|Model $row
-     *
      * @return $this
      */
-    public function import($rows)
+    public function import(array $rows)
     {
         $m = clone $this;
         foreach ($rows as $row) {
@@ -1957,10 +1953,8 @@ class Model implements \IteratorAggregate
      * @param array|null $fields        Names of fields to export
      * @param string     $key_field     Optional name of field which value we will use as array key
      * @param bool       $typecast_data Should we typecast exported data
-     *
-     * @return array
      */
-    public function export($fields = null, $key_field = null, $typecast_data = true)
+    public function export($fields = null, $key_field = null, $typecast_data = true): array
     {
         if (!$this->persistence->hasMethod('export')) {
             throw new Exception('Persistence does not support export()');
