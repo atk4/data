@@ -1876,7 +1876,7 @@ class Model implements \IteratorAggregate
      * @param Model $m   Model where to insert
      * @param array $row Data row to insert
      */
-    protected function _rawInsert(Model $m, array $row)
+    protected function _rawInsert(self $m, array $row)
     {
         $m->reload_after_save = false;
         $m->unload();
