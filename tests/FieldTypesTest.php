@@ -4,6 +4,7 @@ namespace atk4\data\tests;
 
 use atk4\data\Field;
 use atk4\data\Model;
+use atk4\data\ValidationException;
 use atk4\data\Persistence\Static_ as Persistence_Static;
 
 /**
@@ -34,6 +35,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         // padding removed
         $this->assertSame('foo@example.com', $m->get('email'));
 
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('format is invalid');
         $m->set('email', 'qq');
     }
@@ -47,6 +49,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->set('emails', 'bar@exampe.com ,foo@example.com');
         $this->assertSame('bar@exampe.com, foo@example.com', $m->get('emails'));
 
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('a single email');
         $m->set('email', 'bar@exampe.com ,foo@example.com');
     }
@@ -58,6 +61,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
 
         $m->set('email', ' foo@gmail.com');
 
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('does not exist');
         $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
@@ -74,6 +78,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans3 <me3@gmail.com>');
         $m->set('email_idn', 'test@日本レジストリサービス.jp');
 
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('format is invalid');
         $m->set('email', 'Romans <me@gmail.com>');
     }
