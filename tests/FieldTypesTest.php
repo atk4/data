@@ -61,8 +61,8 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
 
         $m->set('email', ' foo@gmail.com');
 
-        //$this->expectException(ValidationException::class);
-        //$this->expectExceptionMessage('does not exist');
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('does not exist');
         $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
 

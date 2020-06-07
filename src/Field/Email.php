@@ -73,7 +73,7 @@ class Email extends Field
             }
 
             if ($this->dns_check) {
-                if (!$this->isDNSValid($domain)) {
+                if (!$domain || !$this->isDNSValid($domain)) {
                     throw new ValidationException([$this->name => 'Email domain does not exist']);
                 }
             }
