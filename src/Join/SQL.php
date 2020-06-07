@@ -30,7 +30,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
      */
     public function getDesiredName()
     {
-        return '_'.($this->foreign_alias ?: $this->foreign_table[0]);
+        return '_' . ($this->foreign_alias ?: $this->foreign_table[0]);
     }
 
     /**
@@ -72,7 +72,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
 
         // Our short name will be unique
         if (!$this->foreign_alias) {
-            $this->foreign_alias = ($this->owner->table_alias ?: '').$this->short_name;
+            $this->foreign_alias = ($this->owner->table_alias ?: '') . $this->short_name;
         }
 
         $this->owner->onHook('initSelectQuery', $this);

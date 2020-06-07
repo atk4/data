@@ -151,7 +151,7 @@ class Join
      */
     public function getDesiredName()
     {
-        return '#join_'.$this->foreign_table;
+        return '#join_' . $this->foreign_table;
     }
 
     /**
@@ -179,7 +179,7 @@ class Join
                      */
                     throw new Exception([
                         'You are trying to link tables on non-id fields. This is not implemented yet',
-                        'condition' => $this->owner->table.'.'.$this->master_field.' = '.$this->foreign_table,
+                        'condition' => $this->owner->table . '.' . $this->master_field . ' = ' . $this->foreign_table,
                     ]);
                     /*
                     }
@@ -198,7 +198,7 @@ class Join
             $this->reverse = false;
             $id_field = $this->owner->id_field ?: 'id';
             if (!$this->master_field) {
-                $this->master_field = $this->foreign_table.'_'.$id_field;
+                $this->master_field = $this->foreign_table . '_' . $id_field;
             }
 
             if (!$this->foreign_field) {
@@ -228,7 +228,7 @@ class Join
         }
         $seed['join'] = $this;
 
-        return $this->owner->addField($this->prefix.$name, $seed);
+        return $this->owner->addField($this->prefix . $name, $seed);
     }
 
     /**
@@ -337,7 +337,7 @@ class Join
     public function hasOne($link, $defaults = [])
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model_'.$link];
+            $defaults = ['model' => $defaults ?: 'Model_' . $link];
         }
 
         $defaults['join'] = $this;
@@ -356,12 +356,12 @@ class Join
     public function hasMany($link, $defaults = [])
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model_'.$link];
+            $defaults = ['model' => $defaults ?: 'Model_' . $link];
         }
 
         $defaults = array_merge([
             'our_field'   => $this->id_field,
-            'their_field' => $this->owner->table.'_'.$this->id_field,
+            'their_field' => $this->owner->table . '_' . $this->id_field,
         ], $defaults);
 
         return $this->owner->hasMany($link, $defaults);
