@@ -73,9 +73,7 @@ class Email extends Field
             }
 
             if ($this->dns_check) {
-                var_dump($domain);
-                var_dump($this->idn_to_ascii($domain));
-                var_dump(checkdnsrr($this->idn_to_ascii($domain), 'MX'));
+                var_dump($this->idn_to_ascii($domain).' = '.( checkdnsrr($this->idn_to_ascii($domain), 'MX') ? 'VALID' : 'INVALID'));
                 if (!checkdnsrr($this->idn_to_ascii($domain), 'MX')) {
                     throw new ValidationException([$this->name => 'Email domain does not exist']);
                 }
