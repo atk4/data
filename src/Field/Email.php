@@ -103,7 +103,7 @@ class Email extends Field
             return false;
         }
 
-        $records = dns_get_record($normalizedDomain, ($isMX ? DNS_MX : DNS_A)) ?: [];
+        $records = dns_get_record($normalizedDomain, ($isMX ? DNS_MX : DNS_A));
 
         return $records !== false && count($records) > 0;
     }
