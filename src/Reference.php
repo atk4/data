@@ -99,7 +99,7 @@ class Reference
      */
     public function getDesiredName()
     {
-        return '#ref_'.$this->link;
+        return '#ref_' . $this->link;
     }
 
     /**
@@ -118,10 +118,10 @@ class Reference
         if (!isset($defaults['table_alias'])) {
             if (!$this->table_alias) {
                 $this->table_alias = $this->link;
-                $this->table_alias = preg_replace('/_'.($this->owner->id_field ?: 'id').'/', '', $this->table_alias);
+                $this->table_alias = preg_replace('/_' . ($this->owner->id_field ?: 'id') . '/', '', $this->table_alias);
                 $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
                 if (isset($this->owner->table_alias)) {
-                    $this->table_alias = $this->owner->table_alias.'_'.$this->table_alias;
+                    $this->table_alias = $this->owner->table_alias . '_' . $this->table_alias;
                 }
             }
             $defaults['table_alias'] = $this->table_alias;

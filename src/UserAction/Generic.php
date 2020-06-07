@@ -191,7 +191,7 @@ class Generic
      */
     public function getDescription()
     {
-        return $this->description ?? ('Will execute '.$this->caption);
+        return $this->description ?? ('Will execute ' . $this->caption);
     }
 
     /**
@@ -208,7 +208,7 @@ class Generic
         }
 
         if ($confirmation === true) {
-            $confirmation = 'Are you sure you wish to '.$this->caption.' '.$this->owner->getTitle().'?';
+            $confirmation = 'Are you sure you wish to ' . $this->caption . ' ' . $this->owner->getTitle() . '?';
         }
 
         return $confirmation;
