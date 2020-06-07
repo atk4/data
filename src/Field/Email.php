@@ -68,13 +68,12 @@ class Email extends Field
             $p = explode('@', $email, 2);
             $user = $p[0] ?? null;
             $domain = $p[1] ?? null;
-            if (!filter_var($user . '@' . $this->idn_to_ascii($domain), FILTER_VALIDATE_EMAIL)) {
+            if (!filter_var($user . '@' . $this->idnToAscii($domain), FILTER_VALIDATE_EMAIL)) {
                 throw new ValidationException([$this->name => 'Email format is invalid']);
             }
 
             if ($this->dns_check) {
-                var_dump($this->idn_to_ascii($domain) . ' = ' . (checkdnsrr($this->idn_to_ascii($domain), 'MX') ? 'VALID' : 'INVALID'));
-                if (!checkdnsrr($this->idn_to_ascii($domain), 'MX')) {
+                if (!$this->isDNSValid($domain)) {
                     throw new ValidationException([$this->name => 'Email domain does not exist']);
                 }
             }
@@ -86,13 +85,30 @@ class Email extends Field
     }
 
     /**
-     * Return translated address.
-     *
-     * @param string $domain
-     *
-     * @return string
+     * Validate DNS
      */
-    protected function idn_to_ascii($domain)
+    protected function isDNSValid(string $domain): bool
+    {
+        return $this->hasDNSRecord($domain, true) || $this->hasDNSRecord($domain, false);
+    }
+
+    private function hasDNSRecord(string $domain, bool $isMX): bool
+    {
+        $normalizedDomain = $domain . '.';
+        if (!checkdnsrr($normalizedDomain, ($isMX ? 'MX' : 'A'))) {
+            return false;
+        }
+
+        // dns_get_record can also return false
+        $records = dns_get_record($normalizedDomain, ($isMX ? DNS_MX : DNS_A)) ?: [];
+
+        return !empty($records);
+    }
+
+    /**
+     * Return translated address.
+     */
+    protected function idnToAscii(string $domain): string
     {
         return idn_to_ascii($domain, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
     }
