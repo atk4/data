@@ -3,6 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\core\AtkPhpunit;
+use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence;
@@ -46,12 +47,10 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertSame(['name' => 5, 'surname' => 'Bilbo'], $m->get());
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testNoFieldException()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->set(['name' => 5]);
     }
 
@@ -190,9 +189,6 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     }
      */
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testException1()
     {
         $m = new Model();
@@ -200,6 +196,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->addField('surname');
         $m->onlyFields(['surname']);
 
+        $this->expectException(Exception::class);
         $m->set('name', 5);
     }
 
@@ -213,6 +210,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->allFields();
 
         $m->set('name', 5);
+        $this->assertSame(5, $m->get('name'));
     }
 
     /**
@@ -223,73 +221,66 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m = new Model();
         $m->addField('name');
         $m->set('name', 'foo');
-        $this->assertSame($m->get('name'), 'foo');
+        $this->assertSame('foo', $m->get('name'));
 
         $m->set(['name' => 'baz']);
-        $this->assertSame($m->get('name'), 'baz');
+        $this->assertSame('baz', $m->get('name'));
     }
 
     /**
-     * @expectedException \atk4\data\Exception
-     *
-     * fields can't be numeric
+     * Fields can't be numeric.
      */
     public function testException2()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->set(0, 'foo');
     }
 
     /**
-     * @expectedException \atk4\data\Exception
-     *
-     * fields can't be numeric
+     * Fields can't be numeric.
      */
     public function testException2a()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->set('3', 'foo');
     }
 
     /**
-     * @expectedException \atk4\data\Exception
-     *
-     * fields can't be numeric
+     * Fields can't be numeric.
      */
     public function testException2b()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->set('3b', 'foo');
     }
 
     /**
-     * @expectedException \atk4\data\Exception
-     *
-     * fields can't be numeric
+     * Fields can't be numeric.
      */
     public function testException2c()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->set('', 'foo');
     }
 
     /**
-     * @expectedException \atk4\data\Exception
-     *
-     * fields can't be numeric
+     * Fields can't be numeric.
      */
     public function testException2d()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->set(['foo', 'bar']);
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testException3()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->set(4, 5);
     }
 

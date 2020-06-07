@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -47,9 +48,6 @@ class SerializeTest extends \atk4\schema\PhpunitTestCase
         );
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testSerializeErrorJSON()
     {
         $db = new Persistence\SQL($this->db->connection);
@@ -57,12 +55,10 @@ class SerializeTest extends \atk4\schema\PhpunitTestCase
 
         $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
 
+        $this->expectException(Exception::class);
         $db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testSerializeErrorJSON2()
     {
         $db = new Persistence\SQL($this->db->connection);
@@ -74,12 +70,11 @@ class SerializeTest extends \atk4\schema\PhpunitTestCase
         $a = [];
         $a[] = &$a;
 
+        $this->expectException(Exception::class);
         $db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $a]]);
     }
 
     /*
-     * @expectedException Exception
-     *
      * THIS IS NOT POSSIBLE BECAUSE unserialize() produces error
      * and not exception
      */
@@ -91,6 +86,7 @@ class SerializeTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, 'job');
 
         $f = $m->addField('data', ['serialize' => 'serialize']);
+        $this->expectException(Exception::class);
         $this->assertEquals(
             ['data' => ['foo' => 'bar']]
             , $db->typecastLoadRow($m,

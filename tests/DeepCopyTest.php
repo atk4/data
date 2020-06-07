@@ -4,6 +4,7 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Util\DeepCopy;
+use atk4\data\Util\DeepCopyException;
 
 class DCClient extends Model
 {
@@ -255,9 +256,6 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(5, $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
     }
 
-    /**
-     * @expectedException \atk4\data\Util\DeepCopyException
-     */
     public function testError()
     {
         $client = new DCClient($this->db);
@@ -284,6 +282,8 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 
         $dc = new DeepCopy();
 
+        $this->expectException(DeepCopyException::class);
+
         try {
             $invoice = $dc
                 ->from($quote)
@@ -291,16 +291,13 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
                 ->to($invoice)
                 ->with(['Lines', 'Lines2'])
                 ->copy();
-        } catch (\atk4\data\Util\DeepCopyException $e) {
+        } catch (DeepCopyException $e) {
             $this->assertSame('no ref', $e->getPrevious()->getMessage());
 
             throw $e;
         }
     }
 
-    /**
-     * @expectedException \atk4\data\Util\DeepCopyException
-     */
     public function testDeepError()
     {
         $client = new DCClient($this->db);
@@ -325,6 +322,8 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(90.00, $quote->get('total'));
 
         $dc = new DeepCopy();
+
+        $this->expectException(DeepCopyException::class);
 
         try {
             $invoice = $dc

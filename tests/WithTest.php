@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -49,14 +50,13 @@ class WithTest extends \atk4\schema\PhpunitTestCase
 
     /**
      * Alias should be unique.
-     *
-     * @expectedException \atk4\data\Exception
      */
     public function testUniqueAliasException()
     {
         $m1 = new Model();
         $m2 = new Model();
         $m1->addWith($m2, 't');
+        $this->expectException(Exception::class);
         $m1->addWith($m2, 't');
     }
 }

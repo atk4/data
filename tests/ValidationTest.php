@@ -5,6 +5,7 @@ namespace atk4\data\tests;
 use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use atk4\data\ValidationException;
 
 class MyValidationModel extends Model
 {
@@ -63,26 +64,23 @@ class ValidationTests extends AtkPhpunit\TestCase
         $this->m->set('name', 'john');
         $this->m->set('domain', 'gmail.com');
         $this->m->save();
+        $this->assertTrue(true); // no exception
     }
 
-    /**
-     * @expectedException \atk4\data\ValidationException
-     * @expectedExceptionMessage Snakes
-     */
     public function testValidate2()
     {
         $this->m->set('name', 'Python');
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Snakes');
         $this->m->save();
     }
 
-    /**
-     * @expectedException \atk4\data\ValidationException
-     * @expectedExceptionMessage Multiple
-     */
     public function testValidate3()
     {
         $this->m->set('name', 'Python');
         $this->m->set('domain', 'example.com');
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Multiple');
         $this->m->save();
     }
 
@@ -100,17 +98,14 @@ class ValidationTests extends AtkPhpunit\TestCase
         }
     }
 
-    /**
-     * Incorrect use of ValidationException, argument should be an array.
-     */
     public function testValidate5()
     {
         $a = [];
         $p = new Persistence\Array_($a);
         $m = new BadValidationModel($p);
 
-        $m->set('name', 'john');
         $this->expectException(\TypeError::class);
+        $m->set('name', 'john');
         $m->save();
     }
 

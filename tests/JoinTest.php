@@ -25,16 +25,16 @@ class JoinTest extends AtkPhpunit\TestCase
         $m->set('contact_phone', '+123');
         $m->save();
 
-        /*
         $this->assertEquals([
-            'user'=>[
-                1=>['name'=>'John','contact_id'=>1]
-            ],'contact'=>[
-                1=>['contact_phone'=>'+123'
-            ]]], $a);
-        )*/
+            'user' => [
+                1 => ['name' => 'John', 'contact_id' => 1, 'id' => 1],
+            ], 'contact' => [
+                1 => ['contact_phone' => '+123', 'id' => 1],
+            ],
+        ], $a);
     }
 
+    /*
     public function testReverseJoin()
     {
         $a = [];
@@ -58,4 +58,5 @@ class JoinTest extends AtkPhpunit\TestCase
         //$m->join('foo.bar', ['master_field'=>'baz']);
         // foreign_table = 'foo.bar'
     }
+    */
 }

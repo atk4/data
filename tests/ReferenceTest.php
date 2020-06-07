@@ -3,6 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\core\AtkPhpunit;
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -68,9 +69,6 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $this->assertSame('order', $o->table);
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testRefName1()
     {
         $user = new Model(['table' => 'user']);
@@ -78,24 +76,20 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $order->addField('user_id');
 
         $user->hasMany('Orders', $order);
+        $this->expectException(Exception::class);
         $user->hasMany('Orders', $order);
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testRefName2()
     {
         $order = new Model(['table' => 'order']);
         $user = new Model(['table' => 'user']);
 
         $user->hasOne('user_id', $user);
+        $this->expectException(Exception::class);
         $user->hasOne('user_id', $user);
     }
 
-    /**
-     * @expectedException \atk4\data\Exception
-     */
     public function testRefName3()
     {
         $db = new Persistence();
@@ -103,6 +97,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $order->addRef('archive', function ($m) {
             return $m->newInstance(null, ['table' => $m->table . '_archive']);
         });
+        $this->expectException(Exception::class);
         $order->addRef('archive', function ($m) {
             return $m->newInstance(null, ['table' => $m->table . '_archive']);
         });

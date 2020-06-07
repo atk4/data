@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -12,79 +13,72 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
 {
     /**
      * If first argument is array, then second argument should not be used.
-     *
-     * @expectedException \atk4\data\Exception
      */
     public function testException1()
     {
         $m = new Model();
         $m->addFields(['name', 'salary']);
+        $this->expectException(Exception::class);
         $m->setOrder(['name', 'salary'], 'desc');
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
-     *
-     * @expectedException \atk4\data\Exception
      */
     public function testException2()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->tryLoad(1);
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
-     *
-     * @expectedException \atk4\data\Exception
      */
     public function testException3()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->tryLoadAny();
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
-     *
-     * @expectedException \atk4\data\Exception
      */
     public function testException4()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->load(1);
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
-     *
-     * @expectedException \atk4\data\Exception
      */
     public function testException5()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->loadAny();
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
-     *
-     * @expectedException \atk4\data\Exception
      */
     public function testException6()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->save();
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
-     *
-     * @expectedException \atk4\data\Exception
      */
     public function testException7()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->action('insert');
     }
 

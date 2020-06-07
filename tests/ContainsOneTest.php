@@ -2,6 +2,7 @@
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
@@ -178,12 +179,12 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // so far so good. now let's try to delete door_code
         $i->ref('addr')->ref('door_code')->delete();
-        $this->assertNull(null, $i->ref('addr')->get('door_code'));
+        $this->assertNull($i->ref('addr')->get('door_code'));
         $this->assertFalse($i->ref('addr')->ref('door_code')->loaded());
 
         // and now delete address
         $i->ref('addr')->delete();
-        $this->assertNull(null, $i->get('addr'));
+        $this->assertNull($i->get('addr'));
         $this->assertFalse($i->ref('addr')->loaded());
 
         //var_dump($i->export(), $i->export(null,null,false));
@@ -223,13 +224,13 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
     /*
      * Model should be loaded before traversing to containsOne relation.
-     *
-     * @expectedException Exception
+     * Imants: it looks that this is not actually required - disabling.
      */
-    /* Imants: it looks that this is not actually required - disabling
+    /*
     public function testEx1()
     {
         $i = new Invoice1($this->db);
+        $this->expectException(Exception::class);
         $i->ref('addr');
     }
     */

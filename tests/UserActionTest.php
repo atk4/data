@@ -200,6 +200,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         };
 
         $client->getAction('send_reminder')->execute();
+        $this->assertTrue(true); // no exception
     }
 
     public function testFields()

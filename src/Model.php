@@ -1193,7 +1193,13 @@ class Model implements \IteratorAggregate
             */
         }
 
-        $f = is_string($field) ? $this->getField($field) : ($field instanceof Field ? $field : false);
+        if (is_string($field) && !$f = $this->hasField($field)) {
+            throw (new Exception('Field is not defined in model'))
+                ->addMoreInfo('model', $this)
+                ->addMoreInfo('field', $field);
+        }
+
+        $f = isset($f) ? $f : ($field instanceof Field ? $field : false);
         if ($f) {
             if ($operator === '=' || func_num_args() === 2) {
                 $v = ($operator === '=' ? $value : $operator);
