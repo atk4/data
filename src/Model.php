@@ -67,14 +67,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     public const HOOK_AFTER_SAVE = 'afterSave';
 
     /** @const string Executed when execution of self::atomic() failed. */
-    public const HOOK_ROLLBACK = self::class . '@rollback';
+    public const HOOK_ROLLBACK = 'rollback';
 
     /** @const string Executed for every field set using self::set() method. */
-    public const HOOK_NORMALIZE = self::class . '@normalize';
+    public const HOOK_NORMALIZE = 'normalize';
     /** @const string Executed when self::validate() method is called. */
-    public const HOOK_VALIDATE = self::class . '@validate';
+    public const HOOK_VALIDATE = 'validate';
     /** @const string Executed when self::onlyFields() method is called. */
-    public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
+    public const HOOK_ONLY_FIELDS = 'onlyFields';
 
 
     // {{{ Properties of the class
