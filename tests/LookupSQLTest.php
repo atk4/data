@@ -304,7 +304,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         // Specifying hasMany here will perform input
         $c->import([
             ['name' => 'Canada', 'code' => 'CA'],
-            ['name' => 'Latvia', 'code' => 'LV'],
+            ['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true],
             ['name' => 'Japan', 'code' => 'JP'],
             ['name' => 'Lithuania', 'code' => 'LT', 'is_eu' => true],
             ['name' => 'Russia', 'code' => 'RU'],
@@ -317,6 +317,56 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
             ['name' => 'Imants', 'country_code' => 'LV'],
             //'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
         ]);
+
+        //$this->varexport($this->getDB(['country','user']));
+        $this->assertSame([
+            'country' => [
+                1 => [
+                    'id' => '1',
+                    'name' => 'Canada',
+                    'code' => 'CA',
+                    'is_eu' => '0',
+                ],
+                2 => [
+                    'id' => '2',
+                    'name' => 'Latvia',
+                    'code' => 'LV',
+                    'is_eu' => '1',
+                ],
+                3 => [
+                    'id' => '3',
+                    'name' => 'Japan',
+                    'code' => 'JP',
+                    'is_eu' => '0',
+                ],
+                4 => [
+                    'id' => '4',
+                    'name' => 'Lithuania',
+                    'code' => 'LT',
+                    'is_eu' => '1',
+                ],
+                5 => [
+                    'id' => '5',
+                    'name' => 'Russia',
+                    'code' => 'RU',
+                    'is_eu' => '0',
+                ],
+            ],
+            'user' => [
+                1 => [
+                    'id' => '1',
+                    'name' => 'Alain',
+                    'is_vip' => '0',
+                    'country_id' => '1',
+                ],
+                2 => [
+                    'id' => '2',
+                    'name' => 'Imants',
+                    'is_vip' => '0',
+                    'country_id' => '2',
+                ],
+            ],
+        ], $this->getDB(['country', 'user']));
     }
 
     /*

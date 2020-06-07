@@ -16,7 +16,8 @@ class ConditionTest extends AtkPhpunit\TestCase
         // not existing field in condition
         $m = new Model();
         $m->addField('name');
-        $this->expectException(Exception::class);
+
+        $this->expectException(\atk4\core\Exception::class);
         $m->addCondition('last_name', 'Smith');
     }
 

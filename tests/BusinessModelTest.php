@@ -210,6 +210,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->allFields();
 
         $m->set('name', 5);
+        $this->assertSame(5, $m->get('name'));
     }
 
     /**
@@ -220,10 +221,10 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m = new Model();
         $m->addField('name');
         $m->set('name', 'foo');
-        $this->assertSame($m->get('name'), 'foo');
+        $this->assertSame('foo', $m->get('name'));
 
         $m->set(['name' => 'baz']);
-        $this->assertSame($m->get('name'), 'baz');
+        $this->assertSame('baz', $m->get('name'));
     }
 
     /**

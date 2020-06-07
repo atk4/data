@@ -2,7 +2,7 @@
 
 namespace atk4\data\tests;
 
-use atk4\core\Exception;
+use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence;
@@ -57,27 +57,28 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['mandatory' => true]);
         $m->set('foo', 'abc');
-        $m->set('foo', null);
         $m->set('foo', '');
-        $m->_unset('foo');
+
+        $this->expectException(ValidationException::class);
+        $m->set('foo', null);
     }
 
     public function testRequired1()
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
+
+        $this->expectException(ValidationException::class);
         $m->set('foo', '');
-        $this->expectException(Exception::class);
-        $m->_unset('foo');
     }
 
     public function testRequired1_1()
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
+
+        $this->expectException(ValidationException::class);
         $m->set('foo', null);
-        $this->expectException(Exception::class);
-        $m->_unset('foo');
     }
 
     public function testMandatory2()
@@ -192,14 +193,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
         $m->set('foo', 'abc');
-    }
-
-    public function testReadOnly3()
-    {
-        $m = new Model();
-        $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
-        $m->data['foo'] = 'xx';
-        $m->set('foo', 'xx');
+        $this->assertSame('abc', $m->get('foo'));
     }
 
     public function testEnum1()
@@ -286,6 +280,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['values' => ['1a' => 'bar']]);
         $m->set('foo', '1a');
+        $this->assertSame('1a', $m->get('foo'));
     }
 
     public function testPersist()
@@ -406,6 +401,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m = new Model(['strict_field_check' => false]);
         $m->addField('foo');
         $m->set('baz', 'bar');
+        $this->assertSame('bar', $m->get('baz'));
     }
 
     public function testActual()

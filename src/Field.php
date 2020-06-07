@@ -248,7 +248,7 @@ class Field implements Expressionable
             }
 
             if ($value === null) {
-                if ($this->required) {
+                if ($this->required || $this->mandatory) {
                     throw new ValidationException([$this->name => 'Must not be null']);
                 }
 

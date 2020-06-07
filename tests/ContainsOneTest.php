@@ -179,12 +179,12 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // so far so good. now let's try to delete door_code
         $i->ref('addr')->ref('door_code')->delete();
-        $this->assertNull(null, $i->ref('addr')->get('door_code'));
+        $this->assertNull($i->ref('addr')->get('door_code'));
         $this->assertFalse($i->ref('addr')->ref('door_code')->loaded());
 
         // and now delete address
         $i->ref('addr')->delete();
-        $this->assertNull(null, $i->get('addr'));
+        $this->assertNull($i->get('addr'));
         $this->assertFalse($i->ref('addr')->loaded());
 
         //var_dump($i->export(), $i->export(null,null,false));

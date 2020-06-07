@@ -68,7 +68,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $nullCount = 0;
         foreach ($m as $user) {
             $this->assertNull($user->get('gender'));
-            $this->assertContains('Null', $user->get('name'));
+            $this->assertStringContainsString('Null', $user->get('name'));
 
             ++$nullCount;
         }
@@ -338,7 +338,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $this->expectException(Exception::class);
+        $this->expectException(\atk4\dsql\Exception::class);
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 

@@ -350,15 +350,6 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 
-    public function testIssue163()
-    {
-        $db = new Persistence\SQL($this->db->connection);
-        $m = new Model_Item($db);
-
-        $m->hasOne('Person', \atk4\data\tests\Model\Person::class);
-        $person = $m->ref('Person');
-    }
-
     public function testNonSQLFieldClass()
     {
         $db = new Persistence\SQL($this->db->connection);

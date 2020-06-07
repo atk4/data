@@ -51,12 +51,12 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertNull($oo->get('amount'));
 
         $oo = $u->unload()->addCondition('id', '>', '1')->ref('Orders');
-        if ($this->driverType === 'sqlite') {
-            $this->assertSame(
-                'select "id","amount","user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)',
-                $oo->action('select')->render()
-            );
-        }
+
+        $e = $this->getEscapeChar();
+        $this->assertSame(
+            str_replace('"', $e, 'select "id","amount","user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)'),
+            $oo->action('select')->render()
+        );
     }
 
     /**
@@ -69,12 +69,11 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         $u->hasMany('Orders', $o);
 
-        if ($this->driverType === 'sqlite') {
-            $this->assertSame(
-                'select "id","amount","user_id" from "order" where "user_id" = "user"."id"',
-                $u->refLink('Orders')->action('select')->render()
-            );
-        }
+        $e = $this->getEscapeChar();
+        $this->assertSame(
+            str_replace('"', $e, 'select "id","amount","user_id" from "order" where "user_id" = "user"."id"'),
+            $u->refLink('Orders')->action('select')->render()
+        );
     }
 
     public function testBasic2()
@@ -112,12 +111,11 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         $u->hasMany('cur', [$c, 'our_field' => 'currency_code', 'their_field' => 'code']);
 
-        if ($this->driverType === 'sqlite') {
-            $this->assertSame(
-                'select "id","code","name" from "currency" where "code" = "user"."currency_code"',
-                $u->refLink('cur')->action('select')->render()
-            );
-        }
+        $e = $this->getEscapeChar();
+        $this->assertSame(
+            str_replace('"', $e, 'select "id","code","name" from "currency" where "code" = "user"."currency_code"'),
+            $u->refLink('cur')->action('select')->render()
+        );
     }
 
     /**
@@ -154,12 +152,11 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $o->addCondition('amount', '>', 6);
         $o->addCondition('amount', '<', 9);
 
-        if ($this->driverType === 'sqlite') {
-            $this->assertSame(
-                'select "id","name" from "user" where "id" in (select "user_id" from "order" where "amount" > :a and "amount" < :b)',
-                $o->ref('user_id')->action('select')->render()
-            );
-        }
+        $e = $this->getEscapeChar();
+        $this->assertSame(
+            str_replace('"', $e, 'select "id","name" from "user" where "id" in (select "user_id" from "order" where "amount" > :a and "amount" < :b)'),
+            $o->ref('user_id')->action('select')->render()
+        );
     }
 
     /**
@@ -228,12 +225,11 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
 
-        if ($this->driverType === 'sqlite') {
-            $this->assertSame(
-                'select "invoice"."id","invoice"."ref_no",(select sum("total_net") from "invoice_line" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
-                $i->action('select')->render()
-            );
-        }
+        $e = $this->getEscapeChar();
+        $this->assertSame(
+            str_replace('"', $e, 'select "invoice"."id","invoice"."ref_no",(select sum("total_net") from "invoice_line" where "invoice_id" = "invoice"."id") "total_net" from "invoice"'),
+            $i->action('select')->render()
+        );
     }
 
     public function testAggregateHasMany()

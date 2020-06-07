@@ -44,15 +44,14 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
-    public function testDirection2()
+    public function testJoinException()
     {
         $a = ['user' => [], 'contact' => []];
         $db = new Persistence\Array_($a);
         $m = new Model($db, 'user');
-        $j = $m->join('contact4.foo_id', 'test_id');
-        $this->assertTrue($this->getProtected($j, 'reverse'));
-        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
+
+        $this->expectException(Exception::class);
+        $j = $m->join('contact.foo_id', 'test_id');
     }
 
     public function testJoinSaving1()
@@ -367,6 +366,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u->load(2);
     }
 
+    /*
     public function testReverseJoin()
     {
         $a = [];
@@ -390,4 +390,5 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         //$m->join('foo.bar', ['master_field'=>'baz']);
         // foreign_table = 'foo.bar'
     }
+    */
 }

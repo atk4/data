@@ -258,7 +258,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                     'float' => '8.202343',
                     'rot13' => 'uryyb jbeyq',
                 ],
-            ], ];
+            ],
+        ];
         $this->setDB($a);
         $db = new Persistence\SQL($this->db->connection);
 
@@ -305,11 +306,12 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                     'b1' => 'Y',
                     'b2' => 'N',
                     'integer' => '2940',
-                    'money' => '8.20',
+                    'money' => '8.2', // here it will loose last zero and that's as expected
                     'float' => '8.202343',
                     'rot13' => 'uryyb jbeyq', // str_rot13(hello world)
                 ],
-            ], ];
+            ],
+        ];
         $this->assertEquals($a, $this->getDB());
     }
 
@@ -380,19 +382,25 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 [
                     'date' => '2013-02-20',
                 ],
-            ], ];
+            ],
+        ];
         $this->setDB($a);
         $db = new Persistence\SQL($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+
         $m->loadAny();
+        $this->assertTrue($m->loaded());
         $d = $m->get('date');
         $m->unload();
 
-        $m->loadBy('date', $d)->unload();
+        $m->loadBy('date', $d);
+        $this->assertTrue($m->loaded());
+        $m->unload();
 
         $m->addCondition('date', $d)->loadAny();
+        $this->assertTrue($m->loaded());
     }
 
     public function testTypecastBoolean()

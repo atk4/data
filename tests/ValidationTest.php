@@ -64,6 +64,7 @@ class ValidationTests extends AtkPhpunit\TestCase
         $this->m->set('name', 'john');
         $this->m->set('domain', 'gmail.com');
         $this->m->save();
+        $this->assertTrue(true); // no exception
     }
 
     public function testValidate2()
@@ -103,9 +104,8 @@ class ValidationTests extends AtkPhpunit\TestCase
         $p = new Persistence\Array_($a);
         $m = new BadValidationModel($p);
 
+        $this->expectException(\TypeError::class);
         $m->set('name', 'john');
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Incorrect use of ValidationException, argument should be an array');
         $m->save();
     }
 
