@@ -18,6 +18,19 @@ use atk4\dsql\Query;
  */
 class SQL extends Persistence
 {
+    /** @const string */
+    public const HOOK_INIT_SELECT_QUERY = 'initSelectQuery';
+    /** @const string */
+    public const HOOK_BEFORE_INSERT_QUERY = 'beforeInsertQuery';
+    /** @const string */
+    public const HOOK_AFTER_INSERT_QUERY = 'afterInsertQuery';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE_QUERY = 'beforeUpdateQuery';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE_QUERY = 'afterUpdateQuery';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE_QUERY = 'beforeDeleteQuery';
+
     /**
      * Connection object.
      *

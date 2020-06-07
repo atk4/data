@@ -39,6 +39,44 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use CollectionTrait;
     use ReadableCaptionTrait;
 
+    /** @const string */
+    public const HOOK_BEFORE_LOAD = 'beforeLoad';
+    /** @const string */
+    public const HOOK_AFTER_LOAD = 'afterLoad';
+    /** @const string */
+    public const HOOK_BEFORE_UNLOAD = 'beforeUnload';
+    /** @const string */
+    public const HOOK_AFTER_UNLOAD = 'afterUnload';
+
+    /** @const string */
+    public const HOOK_BEFORE_INSERT = 'beforeInsert';
+    /** @const string */
+    public const HOOK_AFTER_INSERT = 'afterInsert';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE = 'beforeUpdate';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE = 'afterUpdate';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE = 'beforeDelete';
+    /** @const string */
+    public const HOOK_AFTER_DELETE = 'afterDelete';
+
+    /** @const string */
+    public const HOOK_BEFORE_SAVE = 'beforeSave';
+    /** @const string */
+    public const HOOK_AFTER_SAVE = 'afterSave';
+
+    /** @const string Executed when execution of self::atomic() failed. */
+    public const HOOK_ROLLBACK = self::class . '@rollback';
+
+    /** @const string Executed for every field set using self::set() method. */
+    public const HOOK_NORMALIZE = self::class . '@normalize';
+    /** @const string Executed when self::validate() method is called. */
+    public const HOOK_VALIDATE = self::class . '@validate';
+    /** @const string Executed when self::onlyFields() method is called. */
+    public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
+
+
     // {{{ Properties of the class
 
     /**
