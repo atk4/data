@@ -94,6 +94,7 @@ class Email extends Field
 
     private function hasDNSRecord(string $domain, bool $isMX): bool
     {
+var_dump($domain,$isMX);
         $normalizedDomain = $domain . '.';
         if (!checkdnsrr($normalizedDomain, ($isMX ? 'MX' : 'A'))) {
             return false;
@@ -101,6 +102,7 @@ class Email extends Field
 
         // dns_get_record can also return false
         $records = dns_get_record($normalizedDomain, ($isMX ? DNS_MX : DNS_A)) ?: [];
+var_dump($records);
 
         return !empty($records);
     }
