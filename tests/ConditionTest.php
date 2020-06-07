@@ -3,6 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\core\AtkPhpunit;
+use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
@@ -16,7 +17,7 @@ class ConditionTest extends AtkPhpunit\TestCase
         $m = new Model();
         $m->addField('name');
 
-        $this->expectException(\atk4\core\Exception::class);
+        $this->expectException(Exception::class);
         $m->addCondition('last_name', 'Smith');
     }
 
