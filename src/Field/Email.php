@@ -89,7 +89,7 @@ class Email extends Field
     }
 
     /**
-     * Validate DNS
+     * Validate DNS.
      */
     protected function isDNSValid(string $domain): bool
     {
