@@ -68,13 +68,17 @@ class Email extends Field
             $p = explode('@', $email, 2);
             $user = $p[0] ?? null;
             $domain = $p[1] ?? null;
+            if (!$domain) {
+                throw new ValidationException([$this->name => 'Email address does not have domain']);
+            }
+
             if (!filter_var($user . '@' . $this->idnToAscii($domain), FILTER_VALIDATE_EMAIL)) {
-                throw new ValidationException([$this->name => 'Email format is invalid']);
+                throw new ValidationException([$this->name => 'Email address format is invalid']);
             }
 
             if ($this->dns_check) {
-                if (!$domain || !$this->isDNSValid($domain)) {
-                    throw new ValidationException([$this->name => 'Email domain does not exist']);
+                if (!$this->isDNSValid($domain)) {
+                    throw new ValidationException([$this->name => 'Email address domain does not exist']);
                 }
             }
 
@@ -94,7 +98,6 @@ class Email extends Field
 
     private function hasDNSRecord(string $domain, bool $isMX): bool
     {
-        var_dump($domain, $isMX);
         $normalizedDomain = $domain . '.';
         if (!checkdnsrr($normalizedDomain, ($isMX ? 'MX' : 'A'))) {
             return false;
@@ -102,7 +105,6 @@ class Email extends Field
 
         // dns_get_record can also return false
         $records = dns_get_record($normalizedDomain, ($isMX ? DNS_MX : DNS_A)) ?: [];
-        var_dump($records);
 
         return !empty($records);
     }
