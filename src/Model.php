@@ -1192,7 +1192,7 @@ class Model implements \IteratorAggregate
             return $this;
             */
         }
-        
+
         if (is_string($field) && !$f = $this->hasField($field)) {
             throw (new Exception('Field is not defined in model'))
                 ->addMoreInfo('model', $this)
