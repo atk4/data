@@ -219,11 +219,8 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     {
         $m = new Model();
         $m->addField('name');
-        $m->set('foo');
+        $m->set('name', 'foo');
         $this->assertSame($m->get('name'), 'foo');
-
-        $m->set(['bar']);
-        $this->assertSame($m->get('name'), 'bar');
 
         $m->set(['name' => 'baz']);
         $this->assertSame($m->get('name'), 'baz');

@@ -151,13 +151,13 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
     public function testBasic()
     {
         $client = new DCClient($this->db);
-        $client_id = $client->insert('John');
+        $client_id = $client->insert(['name' => 'John']);
 
         $quote = new DCQuote($this->db);
 
         $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
-            ['tools', 'qty' => 5, 'price' => 10],
-            ['work', 'qty' => 1, 'price' => 40],
+            ['name' => 'tools', 'qty' => 5, 'price' => 10],
+            ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
         $quote->loadAny();
 
@@ -259,14 +259,14 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
     public function testError()
     {
         $client = new DCClient($this->db);
-        $client_id = $client->insert('John');
+        $client_id = $client->insert(['name' => 'John']);
 
         $quote = new DCQuote($this->db);
         $quote->hasMany('Lines2', [new DCQuoteLine(), 'their_field' => 'parent_id']);
 
         $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
-            ['tools', 'qty' => 5, 'price' => 10],
-            ['work', 'qty' => 1, 'price' => 40],
+            ['name' => 'tools', 'qty' => 5, 'price' => 10],
+            ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
         $quote->loadAny();
 
@@ -301,13 +301,13 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
     public function testDeepError()
     {
         $client = new DCClient($this->db);
-        $client_id = $client->insert('John');
+        $client_id = $client->insert(['name' => 'John']);
 
         $quote = new DCQuote($this->db);
 
         $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
-            ['tools', 'qty' => 5, 'price' => 10],
-            ['work', 'qty' => 1, 'price' => 40],
+            ['name' => 'tools', 'qty' => 5, 'price' => 10],
+            ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
         $quote->loadAny();
 

@@ -377,7 +377,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('John', $m->get('name'));
         $this->assertSame('Programmer', $m->get('category'));
 
-        $m->insert(['Peter', 'category' => 'Sales']);
+        $m->insert(['name' => 'Peter', 'category' => 'Sales']);
 
         $a = [
             'user' => [
@@ -793,7 +793,6 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame(['editable', 'editable_system', 'visible'], array_keys($model->getFields('editable')));
         $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
         $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
-        $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible,editable')));
 
         $model->onlyFields(['system', 'visible', 'not_editable']);
 

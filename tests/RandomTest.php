@@ -96,9 +96,9 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, 'user');
         $m->addFields(['name', ['salary', 'default' => 10]]);
 
-        $m->import(['Peter', ['Steve', 'salary' => 30]]);
-        $m->insert('Sue');
-        $m->insert(['John', 'salary' => 40]);
+        $m->import([['name' => 'Peter'], ['name' => 'Steve', 'salary' => 30]]);
+        $m->insert(['name' => 'Sue']);
+        $m->insert(['name' => 'John', 'salary' => 40]);
 
         $this->assertEquals([
             'user' => [
@@ -275,13 +275,11 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
-                throw new \atk4\core\Exception([
-                    'Update didn\'t affect any records',
-                    'query' => $update->getDebugQuery(false),
-                    'statement' => $st,
-                    'model' => $m,
-                    'conditions' => $m->conditions,
-                ]);
+                throw (new \atk4\core\Exception('Update didn\'t affect any records'))
+                    ->addMoreInfo('query', $update->getDebugQuery(false))
+                    ->addMoreInfo('statement', $st)
+                    ->addMoreInfo('model', $m)
+                    ->addMoreInfo('conditions', $m->conditions);
             }
         });
 
@@ -334,7 +332,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             $m->breakHook(false);
         });
 
-        $m->set('john');
+        $m->set('name', 'john');
         $m->save();
 
         $this->assertSame('rec #3', $m->load(3)->get('name'));

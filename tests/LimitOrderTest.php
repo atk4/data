@@ -47,7 +47,6 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
         $ii->getField($ii->id_field)->system = false;
 
-        // pass parameters as CSV string
         $i = clone $ii;
         $i->setOrder('total_net desc, total_gross desc');
         $i->onlyFields(['total_net', 'total_gross']);

@@ -216,7 +216,8 @@ class Field implements Expressionable
     public function __construct($defaults = [])
     {
         if (!is_array($defaults)) {
-            throw new Exception(['Field requires array for defaults', 'arg' => $defaults]);
+            throw (new Exception('Field requires array for defaults'))
+                ->addMoreInfo('arg', $defaults);
         }
         foreach ($defaults as $key => $val) {
             if (is_array($val)) {
@@ -335,7 +336,8 @@ class Field implements Expressionable
 
                 break;
             case 'boolean':
-                throw new Exception(['Use Field\Boolean for type=boolean', 'this' => $this]);
+                throw (new Exception('Use Field\Boolean for type=boolean'))
+                    ->addMoreInfo('this', $this);
             case 'date':
             case 'datetime':
             case 'time':
@@ -392,10 +394,8 @@ class Field implements Expressionable
             case 'int':
             case 'str':
             case 'bool':
-                throw new Exception([
-                    'Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.',
-                    'type' => $f->type,
-                ]);
+                throw (new Exception('Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.'))
+                    ->addMoreInfo('type', $f->type);
 
                 break;
             }
@@ -422,7 +422,8 @@ class Field implements Expressionable
                 case null: // loose comparison, but is OK here
                     return $v;
                 case 'boolean':
-                    throw new Exception(['Use Field\Boolean for type=boolean', 'this' => $this]);
+                    throw (new Exception('Use Field\Boolean for type=boolean'))
+                        ->addMoreInfo('this', $this);
                 case 'date':
                 case 'datetime':
                 case 'time':
@@ -555,10 +556,8 @@ class Field implements Expressionable
     public function getDSQLExpression($expression)
     {
         if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence\SQL) {
-            throw new Exception([
-                'Field must have SQL persistence if it is used as part of expression',
-                'persistence' => $this->owner->persistence ?? null,
-            ]);
+            throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
+                ->addMoreInfo('persistence', $this->owner->persistence ?? null);
         }
 
         return $this->owner->persistence->getFieldSQLExpression($this, $expression);

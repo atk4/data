@@ -173,10 +173,8 @@ class Join
                         && !$this->owner->hasField($this->master_field
                     )) {
                      */
-                    throw new Exception([
-                        'You are trying to link tables on non-id fields. This is not implemented yet',
-                        'condition' => $this->owner->table . '.' . $this->master_field . ' = ' . $this->foreign_table,
-                    ]);
+                    throw (new Exception('You are trying to link tables on non-id fields. This is not implemented yet'))
+                        ->addMoreInfo('condition', $this->owner->table . '.' . $this->master_field . ' = ' . $this->foreign_table);
                     /*
                     }
                     $this->reverse = 'link';

@@ -52,11 +52,9 @@ class Array_ extends Join
         try {
             $data = $model->persistence->load($model, $this->id, $this->foreign_table);
         } catch (Exception $e) {
-            throw new Exception([
-                'Unable to load joined record',
-                'table' => $this->foreign_table,
-                'id' => $this->id,
-            ], $e->getCode(), $e);
+            throw (new Exception('Unable to load joined record', $e->getCode(), $e))
+                ->addMoreInfo('table', $this->foreign_table)
+                ->addMoreInfo('id', $this->id);
         }
         $model->data = array_merge($data, $model->data);
     }

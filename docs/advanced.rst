@@ -240,7 +240,7 @@ Start by creating a class::
 
         function softDelete($m) {
             if (!$m->loaded()) {
-                throw new \atk4\core\Exception(['Model must be loaded before soft-deleting', 'model'=>$m]);
+                throw (new \atk4\core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
 
             $id = $m->id;
@@ -259,7 +259,7 @@ Start by creating a class::
 
         function restore($m) {
             if (!$m->loaded()) {
-                throw new \atk4\core\Exception(['Model must be loaded before restoring', 'model'=>$m]);
+                throw (new \atk4\core\Exception(['Model must be loaded before restoring'))->addMoreInfo('model', $m);
             }
 
             $id = $m->id;
@@ -349,7 +349,7 @@ before and just slightly modifying it::
 
         function softDelete($m) {
             if (!$m->loaded()) {
-                throw new \atk4\core\Exception(['Model must be loaded before soft-deleting', 'model'=>$m]);
+                throw (new \atk4\core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
 
             $id = $m->id;
@@ -366,7 +366,7 @@ before and just slightly modifying it::
 
         function restore($m) {
             if (!$m->loaded()) {
-                throw new \atk4\core\Exception(['Model must be loaded before restoring', 'model'=>$m]);
+                throw (new \atk4\core\Exception('Model must be loaded before restoring'))->addMoreInfo('model', $m);
             }
 
             $id = $m->id;
@@ -437,7 +437,9 @@ inside your model are unique::
                     $mm->tryLoadBy($field, $m->get($field));
 
                     if ($mm->loaded()) {
-                        throw new \atk4\core\Exception(['Duplicate record exists', 'field'=>$field, 'value'=>$m->get($field)]);
+                        throw (new \atk4\core\Exception('Duplicate record exists'))
+                            ->addMoreInfo('field', $field)
+                            ->addMoreInfo('value', $m->get($field));
                     }
                 }
             }

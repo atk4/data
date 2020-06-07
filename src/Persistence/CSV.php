@@ -117,7 +117,9 @@ class CSV extends Persistence
         if (!$this->handle) {
             $this->handle = fopen($this->file, $mode);
             if ($this->handle === false) {
-                throw new Exception(['Can not open CSV file.', 'file' => $this->file, 'mode' => $mode]);
+                throw (new Exception('Can not open CSV file.'))
+                    ->addMoreInfo('file', $this->file)
+                    ->addMoreInfo('mode', $mode);
             }
         }
     }
@@ -157,7 +159,7 @@ class CSV extends Persistence
     {
         $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escape_char);
         if ($ok === false) {
-            throw new Exception(['Can not write to CSV file.']);
+            throw new Exception('Can not write to CSV file.');
         }
     }
 
@@ -257,7 +259,7 @@ class CSV extends Persistence
         if (!$this->mode) {
             $this->mode = 'r';
         } elseif ($this->mode === 'w') {
-            throw new Exception(['Currently writing records, so loading is not possible.']);
+            throw new Exception('Currently writing records, so loading is not possible.');
         }
 
         if (!$this->handle) {
@@ -285,7 +287,7 @@ class CSV extends Persistence
         if (!$this->mode) {
             $this->mode = 'r';
         } elseif ($this->mode === 'w') {
-            throw new Exception(['Currently writing records, so loading is not possible.']);
+            throw new Exception('Currently writing records, so loading is not possible.');
         }
 
         if (!$this->handle) {
@@ -314,10 +316,8 @@ class CSV extends Persistence
         $data = $this->tryLoadAny($m);
 
         if (!$data) {
-            throw new Exception([
-                'No more records',
-                'model' => $m,
-            ], 404);
+            throw (new Exception('No more records', 404))
+                ->addMoreInfo('model', $m);
         }
 
         return $data;
@@ -336,7 +336,7 @@ class CSV extends Persistence
         if (!$this->mode) {
             $this->mode = 'w';
         } elseif ($this->mode === 'r') {
-            throw new Exception(['Currently reading records, so writing is not possible.']);
+            throw new Exception('Currently reading records, so writing is not possible.');
         }
 
         if (!$this->handle) {
@@ -361,7 +361,7 @@ class CSV extends Persistence
      */
     public function update(Model $m, $id, $data, $table = null)
     {
-        throw new Exception(['Updating records is not supported in CSV persistence.']);
+        throw new Exception('Updating records is not supported in CSV persistence.');
     }
 
     /**
@@ -372,7 +372,7 @@ class CSV extends Persistence
      */
     public function delete(Model $m, $id, $table = null)
     {
-        throw new Exception(['Deleting records is not supported in CSV persistence.']);
+        throw new Exception('Deleting records is not supported in CSV persistence.');
     }
 
     /**
@@ -399,10 +399,8 @@ class CSV extends Persistence
             case 'string':
                 return uniqid();
             default:
-                throw new Exception([
-                    'Unsupported id field type. Array supports type=integer or type=string only',
-                    'type' => $type,
-                ]);
+                throw (new Exception('Unsupported id field type. Array supports type=integer or type=string only'))
+                    ->addMoreInfo('type', $type);
         }
     }
 

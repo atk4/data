@@ -52,8 +52,8 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
      */
     public function testTransfer()
     {
-        $aib = (new Account($this->db))->save('AIB');
-        $boi = (new Account($this->db))->save('BOI');
+        $aib = (new Account($this->db))->save(['name' => 'AIB']);
+        $boi = (new Account($this->db))->save(['name' => 'BOI']);
 
         $t = $aib->transfer($boi, 100); // create transfer between accounts
 
@@ -77,12 +77,12 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
         // create accounts and payments
         $a = new Account($this->db);
 
-        $a->save('AIB');
+        $a->save(['name' => 'AIB']);
         $a->ref('Payment')->save(['amount' => 10]);
         $a->ref('Payment')->save(['amount' => 20]);
         $a->unload();
 
-        $a->save('BOI');
+        $a->save(['name' => 'BOI']);
         $a->ref('Payment')->save(['amount' => 30]);
         $a->unload();
 
