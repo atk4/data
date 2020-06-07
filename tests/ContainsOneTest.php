@@ -222,10 +222,11 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals($row, $a->get());
     }
 
-    /*
+    /**
      * Model should be loaded before traversing to containsOne relation.
+     * Imants: it looks that this is not actually required - disabling.
      */
-    /* Imants: it looks that this is not actually required - disabling
+    /*
     public function testEx1()
     {
         $i = new Invoice1($this->db);

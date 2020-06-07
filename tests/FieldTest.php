@@ -72,7 +72,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->set('foo', '');
     }
 
-    public function testRequired1_1()
+    public function testRequired11()
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);

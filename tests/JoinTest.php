@@ -28,7 +28,7 @@ class JoinTest extends AtkPhpunit\TestCase
         $this->assertEquals([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1, 'id' => 1],
-            ],'contact' => [
+            ], 'contact' => [
                 1 => ['contact_phone' => '+123', 'id' => 1],
             ],
         ], $a);
