@@ -58,8 +58,6 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
 
         $m->set('email', ' foo@gmail.com');
 
-        $this->markTestIncomplete(); // @TODO, test below is failing, to be solved later
-
         $this->expectExceptionMessage('does not exist');
         $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
