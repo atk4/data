@@ -161,8 +161,9 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
     public function testException1()
     {
-        $this->expectExceptionMessage('not found');
         $client = new ACClient($this->pers);
+
+        $this->expectExceptionMessage('NOT in the collection');
         $client->getAction('non_existant_action');
     }
 
