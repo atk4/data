@@ -383,7 +383,7 @@ class SQL extends Persistence
     {
         $scope = $scope ?? $model->scope();
 
-        if (!$scope || $scope->isEmpty()) {
+        if (!$scope || !$scope->isActive()) {
             return $query;
         }
 
