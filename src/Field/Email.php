@@ -69,7 +69,7 @@ class Email extends Field
             }
 
             [$user, $domain] = explode('@', $email, 2);
-            $domain = idn_to_ascii($domain); // always convert domain to ASCII
+            $domain = idn_to_ascii($domain, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46); // always convert domain to ASCII
 
             if (!filter_var($user . '@' . $domain, FILTER_VALIDATE_EMAIL)) {
                 throw new ValidationException([$this->name => 'Email address format is invalid']);
