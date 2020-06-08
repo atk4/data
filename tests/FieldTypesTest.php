@@ -24,15 +24,18 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         ]);
     }
 
-    public function testEmail1()
+    public function testEmailBasic()
     {
         $m = new Model($this->pers);
         $m->addField('email', Field\Email::class);
 
-        $m->set('email', ' foo@example.com');
+        $m->set('email', 'foo@example.com');
         $m->save();
+        $this->assertSame('foo@example.com', $m->get('email'));
 
         // padding removed
+        $m->set('email', " \t " . 'foo@example.com ' . " \n ");
+        $m->save();
         $this->assertSame('foo@example.com', $m->get('email'));
 
         $this->expectException(ValidationException::class);
@@ -40,21 +43,21 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->set('email', 'qq');
     }
 
-    public function testEmail2()
+    public function testEmailMultiple()
     {
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class]);
         $m->addField('emails', [Field\Email::class, 'allow_multiple' => true]);
 
-        $m->set('emails', 'bar@exampe.com ,foo@example.com');
+        $m->set('emails', 'bar@exampe.com, foo@example.com');
         $this->assertSame('bar@exampe.com, foo@example.com', $m->get('emails'));
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('a single email');
-        $m->set('email', 'bar@exampe.com ,foo@example.com');
+        $m->set('email', 'bar@exampe.com, foo@example.com');
     }
 
-    public function testEmail3()
+    public function testEmailValidateDns()
     {
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class, 'dns_check' => true]);
@@ -66,7 +69,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
 
-    public function testEmail4()
+    public function testEmailWithName()
     {
         $m = new Model($this->pers);
         $m->addField('email_name', [Field\Email::class, 'include_names' => true]);
@@ -76,7 +79,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
 
         $m->set('email_name', 'Romans <me@gmail.com>');
         $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans3 <me3@gmail.com>');
-        //$m->set('email_idn', 'test@日本レジストリサービス.jp'); // no more validates
+        $m->set('email_idn', 'test@日本レジストリサービス.jp');
 
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('format is invalid');
