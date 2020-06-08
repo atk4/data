@@ -1729,7 +1729,7 @@ class Model implements \IteratorAggregate
     public function checkPersistence(string $method = null)
     {
         if (!$this->persistence) {
-            throw new Exception(['Model is not associated with any persistence']);
+            throw new Exception('Model is not associated with any persistence');
         }
 
         if ($method && !$this->persistence->hasMethod($method)) {

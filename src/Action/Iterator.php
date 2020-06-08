@@ -84,10 +84,8 @@ class Iterator
 
             break;
             default:
-                throw new Exception([
-                    'Persistence\Array_ driver action unsupported format',
-                    'action' => $fx,
-                ]);
+                throw (new Exception('Persistence\Array_ driver action unsupported format'))
+                    ->addMoreInfo('action', $fx);
         }
 
         $this->generator = new \ArrayIterator([[$result]]);
@@ -120,11 +118,9 @@ class Iterator
             }
 
             if (!is_a($field, Field::class)) {
-                throw new Exception([
-                    'Persistence\Array_ driver condition unsupported format',
-                    'reason' => 'Unsupported object instance ' . get_class($field),
-                    'condition' => $scope,
-                ]);
+                throw (new Exception('Persistence\Array_ driver condition unsupported format'))
+                    ->addMoreInfo('reason', 'Unsupported object instance ' . get_class($field))
+                    ->addMoreInfo('condition', $scope);
             }
 
             if (isset($row[$field->short_name])) {
@@ -207,10 +203,8 @@ class Iterator
 
             break;
             default:
-                throw new Exception([
-                    'Unsupported operator',
-                    'operator' => $operator,
-                ]);
+                throw (new Exception('Unsupported operator'))
+                    ->addMoreInfo('operator', $operator);
         }
 
         return $result;

@@ -154,7 +154,7 @@ class Scope extends AbstractScope
         }
 
         if (!$model = $this->model) {
-            throw new Exception(['Model must be set using setModel to validate']);
+            throw new Exception('Model must be set using setModel to validate');
         }
 
         $values = is_numeric($id = $values) ? $model->load($id)->get() : $values;

@@ -175,7 +175,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ],
         ], $a);
 
-        $this->assertEquals(3, $m->lastInsertID());
         $this->assertEquals(3, $p->lastInsertID());
     }
 
@@ -768,19 +767,17 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->action('foo');
     }
 
-        $this->expectException(Exception::class);
-     */
     public function testUnsupportedAggregate()
     {
         $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
+
+        $this->expectException(Exception::class);
         $m->action('fx', ['UNSUPPORTED', 'name']);
     }
 
-    /**
-     * @expectedException \Exception
     public function testUnsupportedCondition1()
     {
         $a = [1 => ['name' => 'John']];
@@ -792,10 +789,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->export();
     }
 
-        $this->expectException(Exception::class);
-        $this->expectException(Exception::class);
-     * unsupported format - param[0] not Field::class.
-     */
     public function testUnsupportedCondition2()
     {
         $a = [1 => ['name' => 'John']];

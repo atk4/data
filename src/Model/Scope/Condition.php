@@ -2,8 +2,8 @@
 
 namespace atk4\data\Model\Scope;
 
-use atk4\core\Exception;
 use atk4\core\ReadableCaptionTrait;
+use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence\Array_;
@@ -234,7 +234,7 @@ class Condition extends AbstractScope
         }
 
         if (!$model = $this->model) {
-            throw new Exception(['Model must be set using setModel to validate']);
+            throw new Exception('Model must be set using setModel to validate');
         }
 
         $data = [1 => $values];
@@ -251,7 +251,7 @@ class Condition extends AbstractScope
         if ($this->operator && isset(self::$opposites[$this->operator])) {
             $this->operator = self::$opposites[$this->operator];
         } else {
-            throw new Exception(['Negation of condition is not supported for ' . ($this->operator ?: 'no') . ' operator']);
+            throw new Exception('Negation of condition is not supported for ' . ($this->operator ?: 'no') . ' operator');
         }
 
         return $this;
@@ -265,7 +265,7 @@ class Condition extends AbstractScope
     public function toWords($asHtml = false)
     {
         if (!$this->model) {
-            throw new Exception(['Model must be set using setModel to convert to words']);
+            throw new Exception('Model must be set using setModel to convert to words');
         }
 
         // make sure clones are used to avoid changes

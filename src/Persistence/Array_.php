@@ -41,7 +41,7 @@ class Array_ extends Persistence
     /**
      * {@inheritdoc}
      */
-    public function add(Model $m, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): Model
     {
         if (isset($defaults[0])) {
             $model->table = $defaults[0];
@@ -89,7 +89,7 @@ class Array_ extends Persistence
     {
         if (isset($model->table) && !isset($this->data[$model->table])) {
             throw (new Exception('Table was not found in the array data source'))
-                ->addMoreInfo('table', $m->table);
+                ->addMoreInfo('table', $model->table);
         }
 
         if (!isset($this->data[$table ?: $model->table][$id])) {
@@ -384,10 +384,8 @@ class Array_ extends Persistence
             case 'fx':
             case 'fx0':
                 if (!isset($args[0], $args[1])) {
-                    throw new Exception([
-                        'fx action needs 2 arguments, eg: ["sum", "amount"]',
-                        'action' => $type,
-                    ]);
+                    throw (new Exception('fx action needs 2 arguments, eg: ["sum", "amount"]'))
+                        ->addMoreInfo('action', $type);
                 }
 
                 $fx = $args[0];

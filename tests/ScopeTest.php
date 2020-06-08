@@ -96,13 +96,13 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         // Specifying hasMany here will perform input
         $this->country->import([
-            ['Canada', 'code' => 'CA'],
-            ['Latvia', 'code' => 'LV'],
-            ['Japan', 'code' => 'JP'],
-            ['Lithuania', 'code' => 'LT', 'is_eu' => true],
-            ['Russia', 'code' => 'RU'],
-            ['France', 'code' => 'FR'],
-            ['Brazil', 'code' => 'BR'],
+            ['name' => 'Canada', 'code' => 'CA'],
+            ['name' => 'Latvia', 'code' => 'LV'],
+            ['name' => 'Japan', 'code' => 'JP'],
+            ['name' => 'Lithuania', 'code' => 'LT', 'is_eu' => true],
+            ['name' => 'Russia', 'code' => 'RU'],
+            ['name' => 'France', 'code' => 'FR'],
+            ['name' => 'Brazil', 'code' => 'BR'],
         ]);
 
         $this->user = new SUser($this->db);
@@ -128,7 +128,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $user->loadAny();
 
-        $this->assertEquals('Smith', $user['surname']);
+        $this->assertEquals('Smith', $user->get('surname'));
     }
 
     public function testContitionToWords()
@@ -191,7 +191,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(1, $user->action('count')->getOne());
 
         foreach ($user as $u) {
-            $this->assertEquals('LV', $u['country_code']);
+            $this->assertEquals('LV', $u->get('country_code'));
         }
 
         $country = clone $this->country;
@@ -200,7 +200,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $country->addCondition('Users/!');
 
         foreach ($country as $c) {
-            $this->assertEmpty($c['user_names']);
+            $this->assertEmpty($c->get('user_names'));
         }
 
         $country = clone $this->country;
@@ -209,7 +209,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $country->addCondition('Users/?');
 
         foreach ($country as $c) {
-            $this->assertNotEmpty($c['user_names']);
+            $this->assertNotEmpty($c->get('user_names'));
         }
 
         $country = clone $this->country;
@@ -218,7 +218,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $country->addCondition('Users/#', '>', 1);
 
         foreach ($country as $c) {
-            $this->assertEquals('BR', $c['code']);
+            $this->assertEquals('BR', $c->get('code'));
         }
     }
 
@@ -337,7 +337,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $user->add($scope);
 
         foreach ($user as $u) {
-            $this->assertTrue($u['name'] == 'Alain' && $u['country_code'] == 'FR');
+            $this->assertTrue($u->get('name') == 'Alain' && $u->get('country_code') == 'FR');
         }
     }
 

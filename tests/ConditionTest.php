@@ -3,7 +3,7 @@
 namespace atk4\data\tests;
 
 use atk4\core\AtkPhpunit;
-use atk4\data\Exception;
+use atk4\core\Exception;
 use atk4\data\Model;
 
 /**

@@ -154,7 +154,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
 
         $e = $this->getEscapeChar();
         $this->assertSame(
-            str_replace('"', $e, 'select "id","name" from "user" where "id" in (select "user_id" from "order" where "amount" > :a and "amount" < :b)'),
+            str_replace('"', $e, 'select "id","name" from "user" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))'),
             $o->ref('user_id')->action('select')->render()
         );
     }
