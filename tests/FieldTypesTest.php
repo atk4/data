@@ -5,6 +5,7 @@ namespace atk4\data\tests;
 use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence\Static_ as Persistence_Static;
+use atk4\data\ValidationException;
 
 /**
  * Test various Field.
@@ -23,48 +24,52 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         ]);
     }
 
-    public function testEmail1()
+    public function testEmailBasic()
     {
         $m = new Model($this->pers);
         $m->addField('email', Field\Email::class);
 
-        $m->set('email', ' foo@example.com');
+        $m->set('email', 'foo@example.com');
         $m->save();
-
-        // padding removed
         $this->assertSame('foo@example.com', $m->get('email'));
 
-        $this->expectExceptionMessage('format is invalid');
+        // padding removed
+        $m->set('email', " \t " . 'foo@example.com ' . " \n ");
+        $m->save();
+        $this->assertSame('foo@example.com', $m->get('email'));
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('does not have domain');
         $m->set('email', 'qq');
     }
 
-    public function testEmail2()
+    public function testEmailMultiple()
     {
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class]);
         $m->addField('emails', [Field\Email::class, 'allow_multiple' => true]);
 
-        $m->set('emails', 'bar@exampe.com ,foo@example.com');
+        $m->set('emails', 'bar@exampe.com, foo@example.com');
         $this->assertSame('bar@exampe.com, foo@example.com', $m->get('emails'));
 
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('a single email');
-        $m->set('email', 'bar@exampe.com ,foo@example.com');
+        $m->set('email', 'bar@exampe.com, foo@example.com');
     }
 
-    public function testEmail3()
+    public function testEmailValidateDns()
     {
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class, 'dns_check' => true]);
 
         $m->set('email', ' foo@gmail.com');
 
-        $this->markTestIncomplete(); // @TODO, test below is failing, to be solved later
-
-        $this->expectExceptionMessage('does not exist');
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('domain does not exist');
         $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
 
-    public function testEmail4()
+    public function testEmailWithName()
     {
         $m = new Model($this->pers);
         $m->addField('email_name', [Field\Email::class, 'include_names' => true]);
@@ -73,9 +78,10 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->addField('email', [Field\Email::class]);
 
         $m->set('email_name', 'Romans <me@gmail.com>');
-        $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans3 <me3@gmail.com>');
-        $m->set('email_idn', 'test@日本レジストリサービス.jp');
+        $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans Žlutý Kůň <me3@gmail.com>');
+        $m->set('email_idn', 'test@háčkyčárky.cz'); // official IDN test domain
 
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('format is invalid');
         $m->set('email', 'Romans <me@gmail.com>');
     }

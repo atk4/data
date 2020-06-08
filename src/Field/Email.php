@@ -64,17 +64,20 @@ class Email extends Field
                 $email = preg_replace('/^[^<]*<([^>]*)>/', '\1', $email);
             }
 
-            // should actually run only domain trough idn_to_ascii(), but for validation purpose this way it's fine too
-            $p = explode('@', $email, 2);
-            $user = $p[0] ?? null;
-            $domain = $p[1] ?? null;
-            if (!filter_var($user . '@' . $this->idn_to_ascii($domain), FILTER_VALIDATE_EMAIL)) {
-                throw new ValidationException([$this->name => 'Email format is invalid']);
+            if (strpos($email, '@') === false) {
+                throw new ValidationException([$this->name => 'Email address does not have domain']);
+            }
+
+            [$user, $domain] = explode('@', $email, 2);
+            $domain = idn_to_ascii($domain); // always convert domain to ASCII
+
+            if (!filter_var($user . '@' . $domain, FILTER_VALIDATE_EMAIL)) {
+                throw new ValidationException([$this->name => 'Email address format is invalid']);
             }
 
             if ($this->dns_check) {
-                if (!checkdnsrr($this->idn_to_ascii($domain), 'MX')) {
-                    throw new ValidationException([$this->name => 'Email domain does not exist']);
+                if (!$this->hasAnyDnsRecord($domain)) {
+                    throw new ValidationException([$this->name => 'Email address domain does not exist']);
                 }
             }
 
@@ -84,15 +87,22 @@ class Email extends Field
         return parent::normalize(implode(', ', $emails));
     }
 
-    /**
-     * Return translated address.
-     *
-     * @param string $domain
-     *
-     * @return string
-     */
-    protected function idn_to_ascii($domain)
+    private function hasAnyDnsRecord(string $domain, array $types = ['MX', 'A', 'AAAA', 'CNAME']): bool
     {
-        return idn_to_ascii($domain, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
+        foreach (array_unique(array_map('strtoupper', $types)) as $t) {
+            $dnsConsts = [
+                'MX' => DNS_MX,
+                'A' => DNS_A,
+                'AAAA' => DNS_AAAA,
+                'CNAME' => DNS_CNAME,
+            ];
+
+            $records = dns_get_record($domain . '.', $dnsConsts[$t]);
+            if ($records !== false && count($records) > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
