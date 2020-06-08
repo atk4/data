@@ -72,7 +72,9 @@ class Email extends Field
                 throw new ValidationException([$this->name => 'Email address does not have domain']);
             }
 
-            if (!filter_var($user . '@' . $this->idnToAscii($domain), FILTER_VALIDATE_EMAIL)) {
+            $domain = idn_to_ascii($domain); // always convert domain to ASCII
+
+            if (!filter_var($user . '@' . $domain, FILTER_VALIDATE_EMAIL)) {
                 throw new ValidationException([$this->name => 'Email address format is invalid']);
             }
 
@@ -106,13 +108,5 @@ class Email extends Field
         $records = dns_get_record($normalizedDomain, ($isMX ? DNS_MX : DNS_A));
 
         return $records !== false && count($records) > 0;
-    }
-
-    /**
-     * Return translated address.
-     */
-    protected function idnToAscii(string $domain): string
-    {
-        return idn_to_ascii($domain, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
     }
 }
