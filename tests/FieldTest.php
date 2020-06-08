@@ -59,8 +59,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->set('foo', 'abc');
         $m->set('foo', '');
 
-        // this has to be refactored,see https://github.com/atk4/data/pull/576
-        //$this->expectException(ValidationException::class);
+        /* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576
+        $this->expectException(ValidationException::class);*/
         $m->set('foo', null);
 
         $this->assertTrue(true); // no exceptions
