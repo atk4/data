@@ -229,7 +229,7 @@ Scope is independent object not related to any model. Applying scope to model is
 
 Creates a scope object from array. If scope is passed as first argument uses this as result::
 
-	// below will create 2 conditions and join them with OR
+	// below will create 2 conditions and join them with AND
 	$scope1 = Scope::create([
 		['name', 'like', 'ABC%'],
 		['country', 'US']
@@ -250,7 +250,7 @@ If it is OR then changes it to AND and uses current scope and $scope as two sub-
 
 .. php:method:: or(AbstractScope $scope);
 
-Merge $scope into current scope using AND as junction. If current scope junction is OR simply adds a component.
+Merge $scope into current scope using OR as junction. If current scope junction is OR simply adds a component.
 If it is AND then changes it to OR and uses current scope and $scope as two sub-components
 
 .. php:method:: mergeAnd(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null);
@@ -356,7 +356,7 @@ There are many other ways to set conditions, but you must always check if they
 are supported by the driver that you are using.
 
 Field Matching
--------------
+--------------
 
 Supported by: SQL   (planned for Array, Mongo)
 
@@ -381,7 +381,7 @@ inside [blah] should correspond to field names.
 
 
 SQL Expression Matching
--------------------
+-----------------------
 
 .. php:method:: expr($expression, $arguments = [])
 
