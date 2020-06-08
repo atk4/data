@@ -39,6 +39,12 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use CollectionTrait;
     use ReadableCaptionTrait;
 
+    // array access like is no longer supported by default since 2.1.0,
+    // if you need this type of access (ie. you use your model like model['name']),
+    // then extend Model, add " implements \ArrayAccess" to your extended class
+    // and implemented that interface with this \atk4\data\ModelArrayAccessTrait trait
+    use ModelArrayAccessTrait;
+
     /** @const string */
     public const HOOK_BEFORE_LOAD = 'beforeLoad';
     /** @const string */
@@ -1017,6 +1023,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Does field exist?
+     */
+    public function _isset(string $name): bool
+    {
+        return array_key_exists($this->normalizeFieldName($name), $this->dirty);
+    }
+
+    /**
      * Remove current field value and use default.
      *
      * @param string|array $name
@@ -1032,55 +1046,6 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
 
         return $this;
-    }
-
-    // }}}
-
-    // {{{ ArrayAccess support
-
-    /**
-     * Do field exist?
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function offsetExists($name)
-    {
-        return array_key_exists($this->normalizeFieldName($name), $this->dirty);
-    }
-
-    /**
-     * Returns field value.
-     *
-     * @param string $name
-     *
-     * @return mixed
-     */
-    public function offsetGet($name)
-    {
-        return $this->get($name);
-    }
-
-    /**
-     * Set field value.
-     *
-     * @param string $name
-     * @param mixed  $val
-     */
-    public function offsetSet($name, $val)
-    {
-        $this->set($name, $val);
-    }
-
-    /**
-     * Redo field value.
-     *
-     * @param string $name
-     */
-    public function offsetUnset($name)
-    {
-        $this->_unset($name);
     }
 
     // }}}
