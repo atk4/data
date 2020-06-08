@@ -78,7 +78,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->addField('email', [Field\Email::class]);
 
         $m->set('email_name', 'Romans <me@gmail.com>');
-        $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans3 <me3@gmail.com>');
+        $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans Žlutý Kůň <me3@gmail.com>');
         $m->set('email_idn', 'test@háčkyčárky.cz'); // official IDN test domain
 
         $this->expectException(ValidationException::class);
