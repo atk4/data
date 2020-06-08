@@ -628,15 +628,10 @@ class Model implements \IteratorAggregate
      * Similar to getElement().
      *
      * @throws \atk4\core\Exception
-     *
-     * @return Field
      */
-    public function getField(string $name)
+    public function getField(string $name): Field
     {
-        /** @var Field $field */
-        $field = $this->_getFromCollection($name, 'fields');
-
-        return $field;
+        return $this->_getFromCollection($name, 'fields');
     }
 
     /**
