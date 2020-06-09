@@ -276,7 +276,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = Condition::create('name', 'Alain');
+        $condition1 = Condition::create($user->getField('name'), 'Alain');
         $condition2 = Condition::create('country_code', 'CA');
 
         $scope1 = Scope::mergeAnd($condition1, $condition2);

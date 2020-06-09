@@ -259,7 +259,16 @@ class Condition extends AbstractScope
 
     public function find($key)
     {
-        return ($this->key === $key) ? [$this] : [];
+        $field = $this->key;
+
+        if ($field instanceof Field) {
+            $field = $field->short_name;
+        }
+        elseif (!is_string($field)) {
+            return [];
+        }
+
+        return ($field === $key) ? [$this] : [];
     }
 
     public function toWords($asHtml = false)
