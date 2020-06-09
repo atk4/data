@@ -263,8 +263,7 @@ class Condition extends AbstractScope
 
         if ($field instanceof Field) {
             $field = $field->short_name;
-        }
-        elseif (!is_string($field)) {
+        } elseif (!is_string($field)) {
             return [];
         }
 

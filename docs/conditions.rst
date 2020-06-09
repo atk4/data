@@ -162,7 +162,7 @@ If $value is omitted as argument then $operator is considered as $value and '=' 
 Negates the condition, e.g::
 
 	// results in 'name is not John'
-	Condition::create('name', 'John')->negate(); 
+	$condition = Condition::create('name', 'John')->negate(); 
 
 .. php:method:: setModel(?Model $model = null);
 
@@ -170,7 +170,10 @@ Sets the Model to use when interpreting the condition. When adding condition obj
 
 .. php:method:: on(Model $model);
 
-Sets the model of Condition to a clone of $model to avoid changes to the original object.
+Sets the model of Condition to a clone of $model to avoid changes to the original object.::
+
+   // uses the $contact model to conver the condition to human readable words
+   $condition->on($contact)->toWords();
 
 .. php:method:: toWords($asHtml = false);
 
@@ -197,25 +200,33 @@ Returns array of conditions whose key property matches the $key parameter. Usefu
 
 .. php:class:: Scope
 
-Scope can contain multiple Condition and Scope objects joined by either AND or OR therfore making possible creating Model scopes
-with deep nested conditions, e.g ((Name like 'ABC%' and Country = 'US') or (Name like 'CDE%' and (Country = 'DE' or Surname = 'XYZ')))
+Scope object has a single defined junction (AND or OR) and can contain multiple children of Condition and/or Scope objects referred to as components.
+This makes creating Model scopes with deep nested conditions possible, 
+e.g ((Name like 'ABC%' and Country = 'US') or (Name like 'CDE%' and (Country = 'DE' or Surname = 'XYZ')))
 
 Scope can be created using Scope::create method from array or joining Condition objects::
 
+   // $condition1 will be used as child-component
 	$condition1 = Condition::create('name', 'like', 'ABC%');
+   
+   // $condition1 will be used as child-component
 	$condition2 = Condition::create('country', 'US');
 	
+   // $scope1 is created using AND as junction and $condition1 and $condition2 as components
 	$scope1 = Scope::mergeAnd($condition1, $condition2);
 	
 	$condition3 = Condition::create('country', 'DE');
 	$condition4 = Condition::create('surname', 'XYZ');
 	
+   // $scope2 is created using OR as junction and $condition3 and $condition4 as components
 	$scope2 = Scope::mergeOr($condition3, $condition4);
 
 	$condition5 = Condition::create('name', 'like', 'CDE%');
 	
+   // $scope3 is created using AND as junction and $condition5 and $scope2 as components
 	$scope3 = Scope::mergeAnd($condition5, $scope2);
 
+   // $scope is created using OR as junction and $scope1 and $scope3 as components
 	$scope = Scope::mergeOr($scope1, $scope3);
 	
 	
@@ -224,12 +235,11 @@ Scope is independent object not related to any model. Applying scope to model is
 	$contact->add($scope); // adding scope to model
 	$contact->scope()->and($conditionXYZ); // adding more conditions
 	
-	
 .. php:method::	create($scopeOrArray = null, $junction = Scope::AND);
 
 Creates a scope object from array. If scope is passed as first argument uses this as result::
 
-	// below will create 2 conditions and join them with AND
+	// below will create 2 conditions and join them as scope components with AND junction
 	$scope1 = Scope::create([
 		['name', 'like', 'ABC%'],
 		['country', 'US']
@@ -237,11 +247,12 @@ Creates a scope object from array. If scope is passed as first argument uses thi
 	
 .. php:method:: negate();
 
-Negates the scope using De Morgan's laws, e.g::
+Negate method has behind the full map of conditions so any condition / scope can be negated, e.g negating '>=' results in '<', etc.
+For nested scopes this method is using De Morgan's laws, e.g::
 
 	// using $scope1 defined above
 	// results in "(Name not like 'ABC%') or (Country does not equal 'US')"
-	$scope1->negate(); 
+	$scope1->negate();
 
 .. php:method:: and(AbstractScope $scope);
 
@@ -267,7 +278,12 @@ Merge two scopes using $junction. Returns the resulting scope.
 
 .. php:method:: find($key);
 
-Returns array of conditions whose key property matches the $key parameter. Useful when renaming fields and updating saved scope objects
+Returns array of conditions whose key property matches the $key parameter.
+The scope conditions use field names to identify which field the condition applies to.
+In some cases the scope object can be saved in database, etc. and it needs to be kept up-to-date with migrations on the model
+when field names have been changed. 
+The `AbstractScope::find` method can be used to identify if the scope contains a nested condition on the old field name so that the
+saved scope can be updated accordingly.
 
 .. php:method:: addComponent(AbstractScope $scope);
 
