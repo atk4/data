@@ -712,7 +712,7 @@ class SQL extends Persistence
                 ->addMoreInfo('query', $load->getDebugQuery(false))
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         if (!$data) {
@@ -747,7 +747,7 @@ class SQL extends Persistence
             throw (new Exception('Record was not found', 404))
                 ->addMoreInfo('model', $m)
                 ->addMoreInfo('id', $id)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         return $data;
@@ -771,7 +771,7 @@ class SQL extends Persistence
                 ->addMoreInfo('query', $load->getDebugQuery(false))
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         if (!$data) {
@@ -805,7 +805,7 @@ class SQL extends Persistence
         if (!$data) {
             throw (new Exception('No matching records were found', 404))
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         return $data;
@@ -837,7 +837,7 @@ class SQL extends Persistence
                 ->addMoreInfo('query', $insert->getDebugQuery(false))
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         $m->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
@@ -882,7 +882,7 @@ class SQL extends Persistence
                 ->addMoreInfo('query', $export->getDebugQuery(false))
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
     }
 
@@ -919,7 +919,7 @@ class SQL extends Persistence
                 ->addMoreInfo('query', $update->getDebugQuery(false))
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         if ($m->id_field && isset($data[$m->id_field]) && $m->dirty[$m->id_field]) {
@@ -961,7 +961,7 @@ class SQL extends Persistence
                 ->addMoreInfo('query', $delete->getDebugQuery(false))
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
     }
 

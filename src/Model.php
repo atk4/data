@@ -2500,12 +2500,10 @@ class Model implements \IteratorAggregate
      */
     public function __debugInfo(): array
     {
-        $arr = [
+        return [
             'id' => $this->id,
-            'conditions' => $this->conditions,
+            'scope' => $this->scope()->toWords(),
         ];
-
-        return $arr;
     }
 
     // }}}
