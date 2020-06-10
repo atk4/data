@@ -9,7 +9,7 @@ namespace atk4\data;
  *     use \atk4\data\ModelArrayAccessTrait;
  * }.
  */
-class ModelArrayAccessTrait
+trait ModelArrayAccessTrait
 {
     /**
      * Does field exist?
