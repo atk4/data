@@ -29,11 +29,11 @@
   "require": {
     "php": ">=7.2.0",
     "ext-intl": "*",
-    "atk4/core": "^2.0",
-    "atk4/dsql": "^2.0"
+    "atk4/core": "~2.0.0",
+    "atk4/dsql": "~2.0.0"
   },
   "require-dev": {
-    "atk4/schema": "^2.0",
+    "atk4/schema": "~2.0.0",
     "phpunit/phpunit": "<6",
     "phpunit/dbunit": ">=1.2",
     "phpunit/phpcov": "*",
