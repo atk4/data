@@ -557,7 +557,3 @@ class RandomTest extends \atk4\schema\PHPUnit_SchemaTestCase
 class CustomField extends \atk4\data\Field
 {
 }
-
-class CustomField extends \atk4\data\Field
-{
-}
