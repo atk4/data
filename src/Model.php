@@ -39,10 +39,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
     use CollectionTrait;
     use ReadableCaptionTrait;
 
-    // array access like is no longer supported by default since 2.1.0,
+    // Array access like is no longer supported by default since 2.1.0,
     // if you need this type of access (ie. you use your model like model['name']),
     // then extend Model, add " implements \ArrayAccess" to your extended class
-    // and implemented that interface with this \atk4\data\ModelArrayAccessTrait trait
+    // and implemented that interface with this \atk4\data\ModelArrayAccessTrait trait.
     use ModelArrayAccessTrait;
 
     /** @const string */
