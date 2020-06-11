@@ -87,14 +87,13 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             // If string specified here does not point to an existing model field
             // a new basic field is inserted and marked hidden.
             if (is_string($this->master_field)) {
-                $e = $this->owner->hasField($this->master_field);
-                if (!$e) {
+                if (!$this->owner->hasField($this->master_field)) {
                     if ($this->join) {
-                        $e = $this->join->addField($this->master_field, ['system' => true, 'read_only' => true]);
+                        $f = $this->join->addField($this->master_field, ['system' => true, 'read_only' => true]);
                     } else {
-                        $e = $this->owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
+                        $f = $this->owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
                     }
-                    $this->master_field = $e->short_name;
+                    $this->master_field = $f->short_name;
                 }
             }
 

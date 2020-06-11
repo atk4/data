@@ -158,27 +158,17 @@ class Join
         $this->_init();
 
         // handle foreign table containing a dot
-        if (
-            is_string($this->foreign_table)
-            && strpos($this->foreign_table, '.') !== false
-        ) {
+        if (is_string($this->foreign_table) && strpos($this->foreign_table, '.') !== false) {
             if (!isset($this->reverse)) {
                 $this->reverse = true;
                 if (isset($this->master_field)) {
                     // both master and foreign fields are set
 
                     // master_field exists, no we will use that
-                    /*
-                    if (!is_object($this->master_field)
-                        && !$this->owner->hasField($this->master_field)
-                    ) {
-                     */
+                    // if (!is_object($this->master_field) && !$this->owner->hasField($this->master_field)) {
                     throw (new Exception('You are trying to link tables on non-id fields. This is not implemented yet'))
                         ->addMoreInfo('condition', $this->owner->table . '.' . $this->master_field . ' = ' . $this->foreign_table);
-                    /*
-                    }
-                    $this->reverse = 'link';
-                    */
+                    // } $this->reverse = 'link';
                 }
             }
 
