@@ -1070,17 +1070,11 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Finds a user action with a corresponding name. Returns false if action not found. Similar
-     * to hasElement() but with extra checks to make sure it's certainly an action you are
-     * getting.
+     * Returns true if user action with a corresponding name exists.
      *
      * @param string $name Action name
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return UserAction\Generic|false
      */
-    public function hasAction($name)
+    public function hasAction($name): bool
     {
         return $this->_hasInCollection($name, 'actions');
     }
