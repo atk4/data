@@ -638,15 +638,11 @@ When you modify active record, it keeps the original value in the $dirty array:
 
 .. php:method:: hasField($field)
 
-    Finds a field with a corresponding name. Returns false if field not found. Similar
-    to hasElement() but with extra checks to make sure it's certainly a field you are
-    getting.
+    Returns true if and only if a field with a corresponding name exists.
 
 .. php:method:: getField($field)
 
-    Finds a field with a corresponding name. Throws exception if field not found. Similar
-    to getElement() but with extra checks to make sure it's certainly a field you are
-    getting.
+    Finds a field with a corresponding name. Throws exception if field not found.
 
 
 Full example::

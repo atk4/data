@@ -455,7 +455,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame($o->getField('user_id')->isVisible(), true);
 
         $o->getRef('user_id')->addTitle();
-        $this->assertSame((bool) $o->hasField('user'), true);
+        $this->assertTrue($o->hasField('user'));
         $this->assertSame($o->getField('user')->isVisible(), true);
         $this->assertSame($o->getField('user_id')->isVisible(), false);
 

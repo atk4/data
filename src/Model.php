@@ -614,32 +614,14 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    /**
-     * Finds a field with a corresponding name. Returns false if field not found. Similar
-     * to hasElement() but with extra checks to make sure it's certainly a field you are
-     * getting.
-     *
-     * @return Field|false
-     */
-    public function hasField(string $name)
+    public function hasField(string $name): bool
     {
         return $this->_hasInCollection($name, 'fields');
     }
 
-    /**
-     * Same as hasField, but will throw exception if field not found.
-     * Similar to getElement().
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Field
-     */
-    public function getField(string $name)
+    public function getField(string $name): Field
     {
-        /** @var Field $field */
-        $field = $this->_getFromCollection($name, 'fields');
-
-        return $field;
+        return $this->_getFromCollection($name, 'fields');
     }
 
     /**
@@ -792,7 +774,7 @@ class Model implements \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-        $f = $this->hasField($field);
+        $f = $this->hasField($field) ? $this->getField($field) : false; // @TODO
 
         try {
             if ($f && $this->hook(self::HOOK_NORMALIZE, [$f, $value]) !== false) {
@@ -933,9 +915,7 @@ class Model implements \IteratorAggregate
             return $this->data[$field];
         }
 
-        $f = $this->hasField($field);
-
-        return $f ? $f->default : null;
+        return $this->hasField($field) ? $this->getField($field)->default : null;
     }
 
     /**
@@ -959,9 +939,8 @@ class Model implements \IteratorAggregate
         if (!$this->title_field) {
             return $this->id;
         }
-        $f = $this->hasField($this->title_field);
 
-        return $f ? $f->get() : $this->id;
+        return $this->hasField($this->title_field) ? $this->getField($this->title_field)->get() : $this->id;
     }
 
     /**
@@ -1170,12 +1149,7 @@ class Model implements \IteratorAggregate
 
             foreach ($field as list($field, $operator, $value)) {
                 if (is_string($field)) {
-                    $f = $this->hasField($field);
-                    if (!$f) {
-                        throw (new Exception('Field does not exist'))
-                            ->addMoreInfo('model', $this)
-                            ->addMoreInfo('field', $field);
-                    }
+                    $f = $this->getField($field);
                 } elseif ($field instanceof Field) {
                     $f = $field;
                 }
@@ -1187,14 +1161,13 @@ class Model implements \IteratorAggregate
             */
         }
 
-        if (is_string($field) && !$f = $this->hasField($field)) {
-            throw (new Exception('Field is not defined in model'))
-                ->addMoreInfo('model', $this)
-                ->addMoreInfo('field', $field);
+        if (is_string($field)) {
+            $f = $this->getField($field);
+        } else {
+            $f = $field;
         }
 
-        $f = isset($f) ? $f : ($field instanceof Field ? $field : false);
-        if ($f) {
+        if ($f instanceof Field) {
             if ($operator === '=' || func_num_args() === 2) {
                 $v = ($operator === '=' ? $value : $operator);
 
@@ -1786,8 +1759,12 @@ class Model implements \IteratorAggregate
                 $data = [];
                 $dirty_join = false;
                 foreach ($this->dirty as $name => $junk) {
-                    $field = $this->hasField($name);
-                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                    if (!$this->hasField($name)) {
+                        continue;
+                    }
+
+                    $field = $this->getField($name);
+                    if ($field->read_only || $field->never_persist || $field->never_save) {
                         continue;
                     }
 
@@ -1818,8 +1795,12 @@ class Model implements \IteratorAggregate
             } else {
                 $data = [];
                 foreach ($this->get() as $name => $value) {
-                    $field = $this->hasField($name);
-                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                    if (!$this->hasField($name)) {
+                        continue;
+                    }
+
+                    $field = $this->getField($name);
+                    if ($field->read_only || $field->never_persist || $field->never_save) {
                         continue;
                     }
 

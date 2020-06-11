@@ -240,8 +240,8 @@ class CSV extends Persistence
                 continue;
             }
 
-            if ($f = $m->hasField($key)) {
-                $value = $this->typecastLoadField($f, $value);
+            if ($m->hasField($key)) {
+                $value = $this->typecastLoadField($m->getField($key), $value);
             }
         }
 

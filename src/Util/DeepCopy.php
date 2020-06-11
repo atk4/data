@@ -220,10 +220,7 @@ class DeepCopy
 
                 // Copy fields as they are
                 foreach ($data as $key => $val) {
-                    if (
-                        ($field = $destination->hasField($key)) &&
-                        $field->isEditable()
-                    ) {
+                    if ($destination->hasField($key) && $destination->getField($key)->isEditable()) {
                         $destination->set($key, $val);
                     }
                 }
