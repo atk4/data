@@ -159,8 +159,6 @@ class DeepCopy
     /**
      * Copy records.
      *
-     * @throws DeepCopyException
-     *
      * @return Model Destination model
      */
     public function copy()
@@ -179,8 +177,6 @@ class DeepCopy
      *
      * @param array $exclusions of fields to exclude
      * @param array $transforms callbacks for data transforming
-     *
-     * @throws DeepCopyException
      *
      * @return Model Destination model
      */

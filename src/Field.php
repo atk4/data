@@ -234,8 +234,6 @@ class Field implements Expressionable
      *
      * @param mixed $value
      *
-     * @throws ValidationException
-     *
      * @return mixed
      */
     public function normalize($value)
