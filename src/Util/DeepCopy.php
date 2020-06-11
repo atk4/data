@@ -2,7 +2,6 @@
 
 namespace atk4\data\Util;
 
-use atk4\core\Exception;
 use atk4\data\Model;
 use atk4\data\Reference\HasMany;
 use atk4\data\Reference\HasOne;
@@ -160,9 +159,6 @@ class DeepCopy
     /**
      * Copy records.
      *
-     * @throws DeepCopyException
-     * @throws Exception
-     *
      * @return Model Destination model
      */
     public function copy()
@@ -181,9 +177,6 @@ class DeepCopy
      *
      * @param array $exclusions of fields to exclude
      * @param array $transforms callbacks for data transforming
-     *
-     * @throws DeepCopyException
-     * @throws Exception
      *
      * @return Model Destination model
      */

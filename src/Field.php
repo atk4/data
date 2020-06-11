@@ -210,8 +210,6 @@ class Field implements Expressionable
      * Constructor. You can pass field properties as array.
      *
      * @param array $defaults
-     *
-     * @throws Exception
      */
     public function __construct($defaults = [])
     {
@@ -235,8 +233,6 @@ class Field implements Expressionable
      * you can't set value to '' if type=string and required=true.
      *
      * @param mixed $value
-     *
-     * @throws ValidationException
      *
      * @return mixed
      */

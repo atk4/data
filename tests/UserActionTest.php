@@ -250,10 +250,6 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('Peter', $client->get('name'));
     }
 
-    /**
-     * @throws Exception
-     * @throws \atk4\data\Exception
-     */
     public function testConfirmation()
     {
         $client = new ACClient($this->pers);

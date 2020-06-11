@@ -57,8 +57,6 @@ class Boolean extends \atk4\data\Field
      *
      * @param mixed $value
      *
-     * @throws ValidationException
-     *
      * @return bool
      */
     public function normalize($value)

@@ -19,9 +19,6 @@ class HasOne_SQL extends HasOne
      * Returns Expression in case you want to do something else with it.
      *
      * @param string|Field|array $field or [$field, ..defaults]
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      */
     public function addField($field, string $their_field = null): Field_SQL_Expression
     {
@@ -89,9 +86,6 @@ class HasOne_SQL extends HasOne
      * @param array $fields
      * @param array $defaults
      *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
      * @return $this
      */
     public function addFields($fields = [], $defaults = [])
@@ -124,8 +118,6 @@ class HasOne_SQL extends HasOne
      * Creates model that can be used for generating sub-query actions.
      *
      * @param array $defaults Properties
-     *
-     * @throws \atk4\core\Exception
      */
     public function refLink($defaults = []): Model
     {
@@ -143,9 +135,6 @@ class HasOne_SQL extends HasOne
      * Navigate to referenced model.
      *
      * @param array $defaults Properties
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      */
     public function ref($defaults = []): Model
     {
@@ -187,9 +176,6 @@ class HasOne_SQL extends HasOne
      * This method returns newly created expression field.
      *
      * @param array $defaults Properties
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      */
     public function addTitle($defaults = []): Field_SQL_Expression
     {
@@ -255,9 +241,6 @@ class HasOne_SQL extends HasOne
      * This will add expression 'user' equal to ref('user_id')['name'];
      *
      * @param array $defaults Properties
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      *
      * @return $this
      */

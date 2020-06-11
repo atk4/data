@@ -201,8 +201,6 @@ class Join
      * @param string $name
      * @param array  $seed
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Field
      */
     public function addField($name, $seed = [])
