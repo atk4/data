@@ -2449,13 +2449,11 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Return reference field or false if reference field does not exist.
+     * Returns true if reference field exists.
      *
      * @param string $link
-     *
-     * @return Field|bool
      */
-    public function hasRef($link)
+    public function hasRef($link): bool
     {
         return $this->hasElement('#ref_' . $link);
     }
