@@ -646,25 +646,9 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    /**
-     * Normalize field name.
-     *
-     * @param mixed $field
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return string
-     */
-    private function normalizeFieldName($field)
+    private function checkOnlyFieldsField(string $field)
     {
-        if (is_object($field) && isset($field->_trackableTrait) && $field->owner === $this) {
-            $field = $field->short_name;
-        }
-
-        if (!is_string($field) || $field === '' || is_numeric($field[0])) {
-            throw (new Exception('Incorrect specification of field name'))
-                ->addMoreInfo('arg', $field);
-        }
+        $this->getField($field); // test if field exists
 
         if ($this->only_fields) {
             if (!in_array($field, $this->only_fields, true) && !$this->getField($field)->system) {
@@ -673,10 +657,6 @@ class Model implements \IteratorAggregate
                     ->addMoreInfo('only_fields', $this->only_fields);
             }
         }
-
-        $this->getField($field); // test if field really exists
-
-        return $field;
     }
 
     /**
@@ -693,7 +673,7 @@ class Model implements \IteratorAggregate
         }
 
         foreach ($fields as $field) {
-            $field = $this->normalizeFieldName($field);
+            $this->checkOnlyFieldsField($field);
 
             if (array_key_exists($field, $this->dirty)) {
                 return true;
@@ -757,7 +737,7 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        $field = $this->normalizeFieldName($field);
+        $this->checkOnlyFieldsField($field);
 
         $f = $this->getField($field);
 
@@ -887,7 +867,7 @@ class Model implements \IteratorAggregate
             return $data;
         }
 
-        $field = $this->normalizeFieldName($field);
+        $this->checkOnlyFieldsField($field);
 
         if (array_key_exists($field, $this->data)) {
             return $this->data[$field];
@@ -959,7 +939,9 @@ class Model implements \IteratorAggregate
      */
     public function _isset(string $name): bool
     {
-        return array_key_exists($this->normalizeFieldName($name), $this->dirty);
+        $this->checkOnlyFieldsField($name);
+
+        return array_key_exists($name, $this->dirty);
     }
 
     /**
@@ -971,7 +953,8 @@ class Model implements \IteratorAggregate
      */
     public function _unset($name)
     {
-        $name = $this->normalizeFieldName($name);
+        $this->checkOnlyFieldsField($name);
+
         if (array_key_exists($name, $this->dirty)) {
             $this->data[$name] = $this->dirty[$name];
             unset($this->dirty[$name]);
