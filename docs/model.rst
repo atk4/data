@@ -638,7 +638,7 @@ When you modify active record, it keeps the original value in the $dirty array:
 
 .. php:method:: hasField($field)
 
-    Returns true if and only if a field with a corresponding name exists.
+    Returns true if a field with a corresponding name exists.
 
 .. php:method:: getField($field)
 

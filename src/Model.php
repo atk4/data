@@ -418,9 +418,7 @@ class Model implements \IteratorAggregate
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, [
-                'system' => true,
-            ]);
+            $this->addField($this->id_field, ['system' => true]);
         } else {
             return; // don't declare actions for model without id_field
         }
@@ -596,6 +594,8 @@ class Model implements \IteratorAggregate
      */
     public function removeField(string $name)
     {
+        $this->getField($name); // better exception if field does not exist
+
         $this->_removeFromCollection($name, 'fields');
 
         return $this;
@@ -657,11 +657,7 @@ class Model implements \IteratorAggregate
      */
     private function normalizeFieldName($field)
     {
-        if (
-            is_object($field)
-            && isset($field->_trackableTrait)
-            && $field->owner === $this
-        ) {
+        if (is_object($field) && isset($field->_trackableTrait) && $field->owner === $this) {
             $field = $field->short_name;
         }
 
@@ -833,9 +829,7 @@ class Model implements \IteratorAggregate
         )) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
-            $this->dirty[$field] =
-                array_key_exists($field, $this->data) ?
-                $this->data[$field] : $f->default;
+            $this->dirty[$field] = array_key_exists($field, $this->data) ? $this->data[$field] : $f->default;
         }
         $this->data[$field] = $value;
 
