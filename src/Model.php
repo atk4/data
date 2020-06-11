@@ -315,19 +315,6 @@ class Model implements \IteratorAggregate
     public $only_fields = false;
 
     /**
-     * When set to true, you can only change the fields inside a model,
-     * that was properly declared. This helps you avoid mistake by
-     * accessing or changing the field that does not exist.
-     *
-     * In some situations you want to set field value and then declare
-     * it later, then set $strict_field_check = false, but it's not
-     * recommended.
-     *
-     * @var bool
-     */
-    protected $strict_field_check = true;
-
-    /**
      * When set to true, all the field types will be enforced and
      * normalized when setting.
      *
@@ -685,11 +672,7 @@ class Model implements \IteratorAggregate
             }
         }
 
-        if ($this->strict_field_check && !$this->hasField($field)) {
-            throw (new Exception('Field is not defined inside a Model'))
-                ->addMoreInfo('field', $field)
-                ->addMoreInfo('model', $this);
-        }
+        $this->getField($field); // test if field really exists
 
         return $field;
     }
@@ -774,10 +757,10 @@ class Model implements \IteratorAggregate
 
         $field = $this->normalizeFieldName($field);
 
-        $f = $this->hasField($field) ? $this->getField($field) : false; // @TODO
+        $f = $this->getField($field);
 
         try {
-            if ($f && $this->hook(self::HOOK_NORMALIZE, [$f, $value]) !== false) {
+            if ($this->hook(self::HOOK_NORMALIZE, [$f, $value]) !== false) {
                 $value = $f->normalize($value);
             }
         } catch (Exception $e) {
@@ -788,10 +771,7 @@ class Model implements \IteratorAggregate
             throw $e;
         }
 
-        $default_value = $f ? $f->default : null;
-
-        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] :
-            ((isset($f) && isset($f->default)) ? $f->default : null);
+        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] : $f->default;
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
@@ -800,47 +780,45 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        if ($f) {
-            // perform bunch of standard validation here. This can be re-factored in the future.
-            if ($f->read_only) {
-                throw (new Exception('Attempting to change read-only field'))
+        // perform bunch of standard validation here. This can be re-factored in the future.
+        if ($f->read_only) {
+            throw (new Exception('Attempting to change read-only field'))
+                ->addMoreInfo('field', $field)
+                ->addMoreInfo('model', $this);
+        }
+
+        // enum property support
+        if (isset($f->enum) && $f->enum && $f->type !== 'boolean') {
+            if ($value === '') {
+                $value = null;
+            }
+            if ($value !== null && !in_array($value, $f->enum, true)) {
+                throw (new Exception('This is not one of the allowed values for the field'))
                     ->addMoreInfo('field', $field)
-                    ->addMoreInfo('model', $this);
+                    ->addMoreInfo('model', $this)
+                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('enum', $f->enum);
             }
+        }
 
-            // enum property support
-            if (isset($f->enum) && $f->enum && $f->type !== 'boolean') {
-                if ($value === '') {
-                    $value = null;
-                }
-                if ($value !== null && !in_array($value, $f->enum, true)) {
-                    throw (new Exception('This is not one of the allowed values for the field'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('model', $this)
-                        ->addMoreInfo('value', $value)
-                        ->addMoreInfo('enum', $f->enum);
-                }
-            }
-
-            // values property support
-            if ($f->values) {
-                if ($value === '') {
-                    $value = null;
-                } elseif ($value === null) {
-                    // all is good
-                } elseif (!is_string($value) && !is_int($value)) {
-                    throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('model', $this)
-                        ->addMoreInfo('value', $value)
-                        ->addMoreInfo('values', $f->values);
-                } elseif (!array_key_exists($value, $f->values)) {
-                    throw (new Exception('This is not one of the allowed values for the field'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('model', $this)
-                        ->addMoreInfo('value', $value)
-                        ->addMoreInfo('values', $f->values);
-                }
+        // values property support
+        if ($f->values) {
+            if ($value === '') {
+                $value = null;
+            } elseif ($value === null) {
+                // all is good
+            } elseif (!is_string($value) && !is_int($value)) {
+                throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('model', $this)
+                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('values', $f->values);
+            } elseif (!array_key_exists($value, $f->values)) {
+                throw (new Exception('This is not one of the allowed values for the field'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('model', $this)
+                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('values', $f->values);
             }
         }
 
@@ -851,7 +829,7 @@ class Model implements \IteratorAggregate
         } elseif (!array_key_exists($field, $this->dirty)) {
             $this->dirty[$field] =
                 array_key_exists($field, $this->data) ?
-                $this->data[$field] : $default_value;
+                $this->data[$field] : $f->default;
         }
         $this->data[$field] = $value;
 
@@ -915,7 +893,7 @@ class Model implements \IteratorAggregate
             return $this->data[$field];
         }
 
-        return $this->hasField($field) ? $this->getField($field)->default : null;
+        return $this->getField($field)->default;
     }
 
     /**
