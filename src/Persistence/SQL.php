@@ -165,8 +165,8 @@ class SQL extends Persistence
         }
 
         // Sequence support
-        if ($m->sequence && $id_field = $m->hasField($m->id_field)) {
-            $id_field->default = $this->dsql()->mode('seq_nextval')->sequence($m->sequence);
+        if ($m->sequence && $m->hasField($m->id_field)) {
+            $m->getField($m->id_field)->default = $this->dsql()->mode('seq_nextval')->sequence($m->sequence);
         }
 
         return $m;

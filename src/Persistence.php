@@ -160,19 +160,19 @@ class Persistence
 
         $result = [];
         foreach ($row as $key => $value) {
-            // Look up field object
-            $f = $m->hasField($key);
-
-            // Figure out the name of the destination field
-            $field = $f && isset($f->actual) && $f->actual ? $f->actual : $key;
-
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
-            if (!$f) {
-                $result[$field] = $value;
+            if (!$m->hasField($key)) {
+                $result[$key] = $value;
 
                 continue;
             }
+
+            // Look up field object
+            $f = $m->getField($key);
+
+            // Figure out the name of the destination field
+            $field = isset($f->actual) && $f->actual ? $f->actual : $key;
 
             // check null values for mandatory fields
             if ($value === null && $f->mandatory) {
@@ -227,16 +227,16 @@ class Persistence
 
         $result = [];
         foreach ($row as $key => &$value) {
-            // Look up field object
-            $f = $m->hasField($key);
-
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
-            if (!$f) {
+            if (!$m->hasField($key)) {
                 $result[$key] = $value;
 
                 continue;
             }
+
+            // Look up field object
+            $f = $m->getField($key);
 
             // ignore null values
             if ($value === null) {

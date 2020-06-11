@@ -98,8 +98,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('backs up all clients', $res);
 
         // non-existing action
-        $act3 = $client->hasAction('foo');
-        $this->assertFalse($act3);
+        $this->assertFalse($client->hasAction('foo'));
     }
 
     public function testPreview()

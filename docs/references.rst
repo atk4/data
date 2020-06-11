@@ -484,7 +484,9 @@ model and you can do fancy things with it.
 You can also use :php:meth:`Model::hasRef()` to check if particular reference
 exists in model::
 
-    $ref = $model->hasRef('owner_id');
+    if ($model->hasRef('owner_id')) {
+        $ref = $model->getRef('owner_id');
+    }
 
 Deep traversal
 ==============

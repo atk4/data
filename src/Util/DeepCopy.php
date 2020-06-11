@@ -213,10 +213,7 @@ class DeepCopy
 
                 // Copy fields as they are
                 foreach ($data as $key => $val) {
-                    if (
-                        ($field = $destination->hasField($key)) &&
-                        $field->isEditable()
-                    ) {
+                    if ($destination->hasField($key) && $destination->getField($key)->isEditable()) {
                         $destination->set($key, $val);
                     }
                 }
@@ -227,7 +224,7 @@ class DeepCopy
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
                 $this->debug("Considering {$ref_key}");
 
-                if (($ref = $source->hasRef($ref_key)) && $ref instanceof HasOne) {
+                if ($source->hasRef($ref_key) && ($ref = $source->getRef($ref_key)) instanceof HasOne) {
                     $this->debug("Proceeding with {$ref_key}");
 
                     // load destination model through $source
@@ -278,7 +275,7 @@ class DeepCopy
             // Next look for hasMany relationships and copy those too
 
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
-                if (($ref = $source->hasRef($ref_key)) && $ref instanceof HasMany) {
+                if ($source->hasRef($ref_key) && ($ref = $source->getRef($ref_key)) instanceof HasMany) {
                     // No mapping, will always copy
                     foreach ($source->ref($ref_key) as $ref_model) {
                         $this->_copy(

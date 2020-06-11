@@ -391,20 +391,12 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals($a, $this->getDB());
     }
 
-    public function testStrictException1()
+    public function testNonExisitngField()
     {
         $m = new Model();
         $m->addField('foo');
         $this->expectException(Exception::class);
         $m->set('baz', 'bar');
-    }
-
-    public function testStrict1()
-    {
-        $m = new Model(['strict_field_check' => false]);
-        $m->addField('foo');
-        $m->set('baz', 'bar');
-        $this->assertSame('bar', $m->get('baz'));
     }
 
     public function testActual()
