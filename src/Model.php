@@ -387,8 +387,6 @@ class Model implements \IteratorAggregate
      *
      * @param Persistence|array $persistence
      * @param string|array      $defaults
-     *
-     * @throws Exception
      */
     public function __construct($persistence = null, $defaults = [])
     {
@@ -489,8 +487,6 @@ class Model implements \IteratorAggregate
      *
      * @param string $intent by default only 'save' is used (from beforeSave) but you can use other intents yourself
      *
-     * @throws \atk4\core\Exception
-     *
      * @return array [field => err_spec]
      */
     public function validate($intent = null)
@@ -523,8 +519,6 @@ class Model implements \IteratorAggregate
      * @param string       $name
      * @param array|object $seed
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Field
      */
     public function addField($name, $seed = [])
@@ -542,8 +536,6 @@ class Model implements \IteratorAggregate
      * Given a field seed, return a field object.
      *
      * @param array $seed
-     *
-     * @throws \atk4\core\Exception
      *
      * @return Field
      */
@@ -569,8 +561,6 @@ class Model implements \IteratorAggregate
      * Adds multiple fields into model.
      *
      * @param array $defaults
-     *
-     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -603,8 +593,6 @@ class Model implements \IteratorAggregate
     /**
      * Remove field that was added previously.
      *
-     * @throws \atk4\core\Exception
-     *
      * @return $this
      */
     public function removeField(string $name)
@@ -630,8 +618,6 @@ class Model implements \IteratorAggregate
      * Same as hasField, but will throw exception if field not found.
      * Similar to getElement().
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Field
      */
     public function getField(string $name)
@@ -646,8 +632,6 @@ class Model implements \IteratorAggregate
      * Sets which fields we will select.
      *
      * @param array $fields
-     *
-     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -675,8 +659,6 @@ class Model implements \IteratorAggregate
      * Normalize field name.
      *
      * @param mixed $field
-     *
-     * @throws \atk4\core\Exception
      *
      * @return string
      */
@@ -1033,8 +1015,6 @@ class Model implements \IteratorAggregate
      *
      * @param string         $name     Action name
      * @param array|callable $defaults
-     *
-     * @throws \atk4\core\Exception
      */
     public function addAction($name, $defaults = []): UserAction\Generic
     {
@@ -1059,8 +1039,6 @@ class Model implements \IteratorAggregate
      * It will also skip system actions (where system === true).
      *
      * @param int $scope e.g. UserAction::ALL_RECORDS
-     *
-     * @throws \atk4\core\Exception
      */
     public function getActions($scope = null): array
     {
@@ -1076,8 +1054,6 @@ class Model implements \IteratorAggregate
      *
      * @param string $name Action name
      *
-     * @throws \atk4\core\Exception
-     *
      * @return UserAction\Generic|false
      */
     public function hasAction($name)
@@ -1089,9 +1065,6 @@ class Model implements \IteratorAggregate
      * Returns one action object of this model. If action not defined, then throws exception.
      *
      * @param string $name Action name
-     *
-     * @throws \atk4\core\Exception
-     * @throws Exception
      */
     public function getAction($name): UserAction\Generic
     {
@@ -1102,9 +1075,6 @@ class Model implements \IteratorAggregate
      * Execute specified action with specified arguments.
      *
      * @param string $name Action name
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      */
     public function executeAction($name, ...$args)
     {
@@ -1115,9 +1085,6 @@ class Model implements \IteratorAggregate
      * Remove specified action(s).
      *
      * @param string|array $name
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -1680,8 +1647,6 @@ class Model implements \IteratorAggregate
      * @param mixed $field_name
      * @param mixed $value
      *
-     * @throws \atk4\core\Exception
-     *
      * @return $this
      */
     public function loadBy(string $field_name, $value)
@@ -1718,8 +1683,6 @@ class Model implements \IteratorAggregate
      * Will not throw exception if record doesn't exist.
      *
      * @param mixed $value
-     *
-     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -2036,8 +1999,6 @@ class Model implements \IteratorAggregate
     /**
      * Returns iterator (yield values).
      *
-     * @throws \atk4\core\Exception
-     *
      * @return mixed
      */
     public function getIterator()
@@ -2117,8 +2078,6 @@ class Model implements \IteratorAggregate
      *
      * @param mixed $id
      *
-     * @throws Exception
-     *
      * @return $this
      */
     public function delete($id = null)
@@ -2186,8 +2145,6 @@ class Model implements \IteratorAggregate
      * @param string $mode
      * @param array  $args
      *
-     * @throws Exception
-     *
      * @return Query
      */
     public function action($mode, $args = [])
@@ -2217,8 +2174,6 @@ class Model implements \IteratorAggregate
      * @param string $foreign_table
      * @param array  $defaults
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Join
      */
     public function join($foreign_table, $defaults = [])
@@ -2245,8 +2200,6 @@ class Model implements \IteratorAggregate
      * @param string $foreign_table
      * @param array  $defaults
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Join
      */
     public function leftJoin($foreign_table, $defaults = [])
@@ -2269,9 +2222,6 @@ class Model implements \IteratorAggregate
      * @param string         $c        Class name
      * @param string         $link     Link
      * @param array|callable $defaults Properties which we will pass to Reference object constructor
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      */
     protected function _hasReference($c, $link, $defaults = []): Reference
     {
@@ -2303,9 +2253,6 @@ class Model implements \IteratorAggregate
      *
      * @param string         $link     Link
      * @param array|callable $callback Callback
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      */
     public function addRef($link, $callback): Reference
     {
@@ -2317,9 +2264,6 @@ class Model implements \IteratorAggregate
      *
      * @param string $link
      * @param array  $defaults
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      *
      * @return Reference\HasOne
      */
@@ -2334,9 +2278,6 @@ class Model implements \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
      * @return Reference\HasMany
      */
     public function hasMany($link, $defaults = []): Reference
@@ -2349,9 +2290,6 @@ class Model implements \IteratorAggregate
      *
      * @param string $link
      * @param array  $defaults
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      *
      * @return Reference\ContainsOne
      */
@@ -2366,9 +2304,6 @@ class Model implements \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
      * @return Reference\ContainsMany
      */
     public function containsMany($link, $defaults = []): Reference
@@ -2381,8 +2316,6 @@ class Model implements \IteratorAggregate
      *
      * @param string $link
      * @param array  $defaults
-     *
-     * @throws \atk4\core\Exception
      *
      * @return Model
      */
@@ -2397,8 +2330,6 @@ class Model implements \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Model
      */
     public function refModel($link, $defaults = []): self
@@ -2412,8 +2343,6 @@ class Model implements \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Model
      */
     public function refLink($link, $defaults = []): self
@@ -2425,8 +2354,6 @@ class Model implements \IteratorAggregate
      * Return reference field.
      *
      * @param string $link
-     *
-     * @throws \atk4\core\Exception
      */
     public function getRef($link): Reference
     {
@@ -2470,8 +2397,6 @@ class Model implements \IteratorAggregate
      * @param string                $name
      * @param string|array|callable $expression
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Field\Callback
      */
     public function addExpression($name, $expression)
@@ -2497,8 +2422,6 @@ class Model implements \IteratorAggregate
      *
      * @param string                $name
      * @param string|array|callable $expression
-     *
-     * @throws \atk4\core\Exception
      *
      * @return Field\Callback
      */

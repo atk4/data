@@ -103,8 +103,6 @@ class Reference
      * necessary conditions.
      *
      * @param array $defaults Properties
-     *
-     * @throws \atk4\core\Exception
      */
     public function getModel($defaults = []): Model
     {
@@ -158,9 +156,6 @@ class Reference
      *
      * @param Model $model
      * @param array $defaults
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      */
     protected function addToPersistence($model, $defaults = []): Model
     {
@@ -202,8 +197,6 @@ class Reference
      * relationship types may override this to imply conditions.
      *
      * @param array $defaults Properties
-     *
-     * @throws \atk4\core\Exception
      */
     public function ref($defaults = []): Model
     {
@@ -216,8 +209,6 @@ class Reference
      * or scope.
      *
      * @param array $defaults Properties
-     *
-     * @throws \atk4\core\Exception
      */
     public function refModel($defaults = []): Model
     {

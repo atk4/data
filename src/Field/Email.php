@@ -43,8 +43,6 @@ class Email extends Field
      *
      * @param mixed $value
      *
-     * @throws ValidationException
-     *
      * @return mixed
      */
     public function normalize($value)

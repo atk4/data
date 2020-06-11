@@ -31,9 +31,6 @@ class Persistence
      * @param string $password
      * @param array  $args
      *
-     * @throws Exception
-     * @throws \atk4\dsql\Exception
-     *
      * @return Persistence
      */
     public static function connect($dsn, $user = null, $password = null, $args = [])

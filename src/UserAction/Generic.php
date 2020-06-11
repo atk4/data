@@ -89,8 +89,6 @@ class Generic
      *
      * @param mixed ...$args
      *
-     * @throws Exception
-     *
      * @return mixed
      */
     public function execute(...$args)
@@ -163,8 +161,6 @@ class Generic
      * Identical to Execute but display a preview of what will happen.
      *
      * @param mixed ...$args
-     *
-     * @throws Exception
      *
      * @return mixed
      */

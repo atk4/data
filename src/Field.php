@@ -210,8 +210,6 @@ class Field implements Expressionable
      * Constructor. You can pass field properties as array.
      *
      * @param array $defaults
-     *
-     * @throws Exception
      */
     public function __construct($defaults = [])
     {
