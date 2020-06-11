@@ -608,7 +608,13 @@ class Model implements \IteratorAggregate
 
     public function getField(string $name): Field
     {
-        return $this->_getFromCollection($name, 'fields');
+        try {
+            return $this->_getFromCollection($name, 'fields');
+        } catch (\atk4\core\Exception $e) {
+            throw (new Exception('Field is not defined in model', 0, $e))
+                ->addMoreInfo('model', $this)
+                ->addMoreInfo('field', $name);
+        }
     }
 
     /**
