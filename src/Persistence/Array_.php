@@ -75,10 +75,8 @@ class Array_ extends Persistence
      *
      * @param mixed  $id
      * @param string $table
-     *
-     * @return array|false
      */
-    public function load(Model $m, $id, $table = null)
+    public function load(Model $m, $id, $table = null): array
     {
         if (isset($m->table) && !isset($this->data[$m->table])) {
             throw (new Exception('Table was not found in the array data source'))
@@ -99,17 +97,15 @@ class Array_ extends Persistence
      *
      * @param mixed  $id
      * @param string $table
-     *
-     * @return array|false
      */
-    public function tryLoad(Model $m, $id, $table = null)
+    public function tryLoad(Model $m, $id, $table = null): ?array
     {
         if (!isset($table)) {
             $table = $m->table;
         }
 
         if (!isset($this->data[$table][$id])) {
-            return false; // no record with such id in table
+            return null; // no record with such id in table
         }
 
         return $this->typecastLoadRow($m, $this->data[$table][$id]);
@@ -120,17 +116,15 @@ class Array_ extends Persistence
      * Doesn't throw exception if model can't be loaded or there are no data records.
      *
      * @param mixed $table
-     *
-     * @return array|false
      */
-    public function tryLoadAny(Model $m, $table = null)
+    public function tryLoadAny(Model $m, $table = null): ?array
     {
         if (!isset($table)) {
             $table = $m->table;
         }
 
         if (!$this->data[$table]) {
-            return false; // no records at all in table
+            return null; // no records at all in table
         }
 
         reset($this->data[$table]);
