@@ -142,7 +142,10 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        unset($a['contact'][2]);
+        $m_c = new Model($db, 'contact');
+        $m_c->load(2);
+        $m_c->delete();
+
         $m_u->unload();
         $m_u->set('name', 'Sue');
         $m_u->set('contact_phone', '+444');

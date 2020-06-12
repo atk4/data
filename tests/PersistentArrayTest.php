@@ -575,7 +575,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $this->assertSame(4, $m->action('count')->getOne());
-        $this->assertSame($a, $this->getInternalPersistenceData($p));
+        $this->assertSame(['data' => $a], $this->getInternalPersistenceData($p));
 
         $m->addCondition('name', 'Sarah');
         $this->assertSame(3, $m->action('count')->getOne());
