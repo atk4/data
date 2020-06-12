@@ -226,7 +226,7 @@ class Persistence
         }
 
         $result = [];
-        foreach ($row as $key => &$value) {
+        foreach ($row as $key => $value) {
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
             if (!$m->hasField($key)) {

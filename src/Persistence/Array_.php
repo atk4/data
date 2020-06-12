@@ -14,12 +14,8 @@ use atk4\data\Persistence;
  */
 class Array_ extends Persistence
 {
-    /**
-     * Array of data.
-     *
-     * @var array
-     */
-    public $data;
+    /** @var array */
+    private $data;
 
     /**
      * Constructor. Can pass array of data in parameters.
@@ -29,6 +25,17 @@ class Array_ extends Persistence
     public function __construct(&$data)
     {
         $this->data = &$data;
+    }
+
+    /**
+     * @deprecated TODO temporary for these:
+     *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsOne.php#L119
+     *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsMany.php#L66
+     *             remove once fixed/no longer needed
+     */
+    public function getRawDataByTable(string $table): array
+    {
+        return $this->data[$table];
     }
 
     /**
@@ -293,7 +300,7 @@ class Array_ extends Persistence
      * @param Model         $m
      * @param ArrayIterator $action
      */
-    protected function setLimitOrder($m, &$action)
+    protected function setLimitOrder($m, $action)
     {
         // first order by
         if ($m->order) {
