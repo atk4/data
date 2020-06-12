@@ -366,8 +366,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     /*
     public function testReverseJoin()
     {
-        $a = [];
-        $db = new Persistence\Array_($a);
+        $db = new Persistence\Array_();
         $m = new Model($db);
         $m->addField('name');
     }
@@ -378,8 +377,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
     public function testTrickyCases()
     {
-        $a = [];
-        $db = new Persistence\Array_($a);
+        $db = new Persistence\Array_();
         $m = new Model($db);
 
         // tricky cases to testt

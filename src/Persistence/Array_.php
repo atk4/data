@@ -17,14 +17,9 @@ class Array_ extends Persistence
     /** @var array */
     private $data;
 
-    /**
-     * Constructor. Can pass array of data in parameters.
-     *
-     * @param array &$data
-     */
-    public function __construct(&$data)
+    public function __construct(array $data = [])
     {
-        $this->data = &$data;
+        $this->data = $data;
     }
 
     /**
