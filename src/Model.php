@@ -368,7 +368,7 @@ class Model implements \IteratorAggregate
      */
     public function __construct($persistence = null, $defaults = [])
     {
-        if ((is_string($persistence) || is_array($persistence)) && func_num_args() === 1) {
+        if (is_string($persistence) || is_array($persistence)) {
             $defaults = $persistence;
             $persistence = null;
         }
@@ -494,11 +494,12 @@ class Model implements \IteratorAggregate
     /**
      * Adds new field into model.
      *
+     * @param string       $name
      * @param array|object $seed
      *
      * @return Field
      */
-    public function addField(string $name, $seed = [])
+    public function addField($name, $seed = [])
     {
         if (is_object($seed)) {
             $field = $seed;
@@ -600,9 +601,11 @@ class Model implements \IteratorAggregate
     /**
      * Sets which fields we will select.
      *
+     * @param array $fields
+     *
      * @return $this
      */
-    public function onlyFields(array $fields = [])
+    public function onlyFields($fields = [])
     {
         $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
         $this->only_fields = $fields;
@@ -636,14 +639,22 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Will return true if any the specified field is dirty.
+     * Will return true if any of the specified fields are dirty.
+     *
+     * @param string|array $field
      */
-    public function isDirty(string $field): bool
+    public function isDirty($fields = []): bool
     {
-        $this->checkOnlyFieldsField($field);
+        if (!is_array($fields)) {
+            $fields = [$fields];
+        }
 
-        if (array_key_exists($field, $this->dirty)) {
-            return true;
+        foreach ($fields as $field) {
+            $this->checkOnlyFieldsField($field);
+
+            if (array_key_exists($field, $this->dirty)) {
+                return true;
+            }
         }
 
         return false;
@@ -652,7 +663,7 @@ class Model implements \IteratorAggregate
     /**
      * @param string|array|null $filter
      *
-     * @return Field[]
+     * @return array
      */
     public function getFields($filter = null)
     {
@@ -688,12 +699,21 @@ class Model implements \IteratorAggregate
     /**
      * Set field value.
      *
-     * @param mixed $value
+     * @param string|array $field
+     * @param mixed        $value
      *
      * @return $this
      */
-    public function set(string $field, $value)
+    public function set($field, $value = null)
     {
+        if (func_num_args() === 1) {
+            foreach ($field as $key => $value) {
+                $this->set($key, $value);
+            }
+
+            return $this;
+        }
+
         $this->checkOnlyFieldsField($field);
 
         $f = $this->getField($field);
@@ -776,9 +796,11 @@ class Model implements \IteratorAggregate
     /**
      * Unset field value even if null value is not allowed.
      *
+     * @param string|array|Model $field
+     *
      * @return $this
      */
-    public function setNull(string $field)
+    public function setNull($field)
     {
         // set temporary hook to disable any normalization (null validation)
         $hookIndex = $this->onHook(self::HOOK_NORMALIZE, function () {
@@ -798,9 +820,11 @@ class Model implements \IteratorAggregate
      * Returns field value.
      * If no field is passed, then returns array of all field values.
      *
+     * @param mixed $field
+     *
      * @return mixed
      */
-    public function get(string $field = null)
+    public function get($field = null)
     {
         if ($field === null) {
             // Collect list of eligible fields
@@ -897,9 +921,11 @@ class Model implements \IteratorAggregate
     /**
      * Remove current field value and use default.
      *
+     * @param string|array $name
+     *
      * @return $this
      */
-    public function _unset(string $name)
+    public function _unset($name)
     {
         $this->checkOnlyFieldsField($name);
 
@@ -1530,7 +1556,7 @@ class Model implements \IteratorAggregate
      */
     public $_dirty_after_reload = [];
 
-    public function save(array $data = [], Persistence $to_persistence = null)
+    public function save($data = [], Persistence $to_persistence = null)
     {
         if (!$to_persistence) {
             $to_persistence = $this->persistence;
@@ -1544,8 +1570,8 @@ class Model implements \IteratorAggregate
             throw new Exception('Model is read-only and cannot be saved');
         }
 
-        foreach ($data as $k => $v) {
-            $this->set($k, $v);
+        if ($data) {
+            $this->set($data);
         }
 
         return $this->atomic(function () use ($to_persistence) {
@@ -2206,11 +2232,12 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
+     * @param string                $name
      * @param string|array|callable $expression
      *
      * @return Field\Callback
      */
-    public function addExpression(string $name, $expression)
+    public function addExpression($name, $expression)
     {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];
@@ -2231,11 +2258,12 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
+     * @param string                $name
      * @param string|array|callable $expression
      *
      * @return Field\Callback
      */
-    public function addCalculatedField(string $name, $expression)
+    public function addCalculatedField($name, $expression)
     {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];

@@ -129,7 +129,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $a = [
             'types' => [
-                1 => $row = [
+                1 => $v = [
                     'id' => 1,
                     'string' => '',
                     'notype' => '',
@@ -178,10 +178,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertNull($m->get('array'));
         $this->assertNull($m->get('object'));
 
-        unset($row['id']);
-        foreach ($row as $k => $v) {
-            $m->set($k, $v);
-        }
+        unset($v['id']);
+        $m->set($v);
 
         $this->assertSame('', $m->get('string'));
         $this->assertSame('', $m->get('notype'));
@@ -227,7 +225,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $a = [
             'test' => [
-                1 => $row = ['id' => '1', 'a' => 1, 'b' => '', 'c' => null],
+                1 => $v = ['id' => '1', 'a' => 1, 'b' => '', 'c' => null],
             ],
         ];
         $this->setDb($a);
@@ -238,13 +236,11 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->addField('b');
         $m->addField('c');
 
-        unset($row['id']);
-        foreach ($row as $k => $v) {
-            $m->set($k, $v);
-        }
+        unset($v['id']);
+        $m->set($v);
         $m->save();
 
-        $a['test'][2] = array_merge(['id' => '2'], $row);
+        $a['test'][2] = array_merge(['id' => '2'], $v);
 
         $this->assertEquals($a, $this->getDb());
     }

@@ -142,10 +142,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $row = ['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01 UTC'), 'tags' => ['foo', 'bar'], 'door_code' => null];
-        foreach ($row as $k => $v) {
-            $a->set($k, $v);
-        }
+        $a->set($row = ['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01 UTC'), 'tags' => ['foo', 'bar'], 'door_code' => null]);
         $a->save();
 
         // now reload invoice and see if it is saved
@@ -159,10 +156,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // now add nested containsOne - DoorCode
         $c = $i->ref('addr')->ref('door_code');
-        $row = ['code' => 'ABC', 'valid_till' => new \DateTime('2019-07-01 UTC')];
-        foreach ($row as $k => $v) {
-            $c->set($k, $v);
-        }
+        $c->set($row = ['code' => 'ABC', 'valid_till' => new \DateTime('2019-07-01 UTC')]);
         $c->save();
         $this->assertEquals($row, $i->ref('addr')->ref('door_code')->get());
 
@@ -208,10 +202,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // with address
         $a = $i->ref('addr');
-        $row = ['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01'), 'tags' => [], 'door_code' => null];
-        foreach ($row as $k => $v) {
-            $a->set($k, $v);
-        }
+        $a->set($row = ['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01'), 'tags' => [], 'door_code' => null]);
         $a->save();
 
         // now let's add one more field in address model and save

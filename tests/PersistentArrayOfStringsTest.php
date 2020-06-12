@@ -37,7 +37,7 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
         $m->addField('array', ['type' => 'array']);
         $m->addField('object', ['type' => 'object']);
 
-        foreach ([
+        $m->set([
             'string' => "Two\r\nLines  ",
             'text' => "Two\r\nLines  ",
             'integer' => 123,
@@ -50,9 +50,7 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
             'time' => new \DateTime('2019-01-20T12:23:34+00:00'),
             'array' => ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
             'object' => (object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
-        ] as $k => $v) {
-            $m->set($k, $v);
-        }
+        ]);
         $m->saveAndUnload();
 
         // no typecasting option set in export()

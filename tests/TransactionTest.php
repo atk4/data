@@ -129,8 +129,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         });
 
         // this will fail because field foo is not in DB and call onRollback hook
-        $m->set('name', 'Jane');
-        $m->set('foo', 'bar');
+        $m->set(['name' => 'Jane', 'foo' => 'bar']);
         $m->save();
 
         $this->assertTrue($hook_called);
