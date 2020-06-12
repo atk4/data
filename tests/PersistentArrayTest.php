@@ -145,7 +145,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($p));
 
         $m->unload();
-        $m->set(['name' => 'Foo', 'surname' => 'Bar']);
+        $m->set('name', 'Foo');
+        $m->set('surname', 'Bar');
         $m->save();
 
         $this->assertEquals([
