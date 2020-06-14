@@ -14,6 +14,11 @@ use atk4\data\tests\Model\Male as Male;
  */
 class PersistentArrayTest extends AtkPhpunit\TestCase
 {
+    private function getInternalPersistenceData(Persistence\Array_ $db): array
+    {
+        return $this->getProtected($db, 'data');
+    }
+
     /**
      * Test constructor.
      */
@@ -54,7 +59,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testSaveAs()
     {
-        //$this->markTestSkipped('TODO: see #146');
         $a = [
             'person' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
@@ -74,7 +78,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
                 3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F', 'id' => 3],
             ],
-        ], $a);
+        ], $this->getInternalPersistenceData($p));
     }
 
     public function testSaveAndUnload()
@@ -104,7 +108,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
-        ], $a);
+        ], $this->getInternalPersistenceData($p));
     }
 
     public function testUpdateArray()
@@ -136,7 +140,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 1 => ['name' => 'Peter', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'QQ'],
             ],
-        ], $a);
+        ], $this->getInternalPersistenceData($p));
 
         $m->unload();
         $m->set(['name' => 'Foo', 'surname' => 'Bar']);
@@ -148,7 +152,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'QQ'],
                 3 => ['name' => 'Foo', 'surname' => 'Bar', 'id' => 3],
             ],
-        ], $a);
+        ], $this->getInternalPersistenceData($p));
     }
 
     public function testInsert()
@@ -173,7 +177,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
                 3 => ['name' => 'Foo', 'surname' => 'Bar', 'id' => 3],
             ],
-        ], $a);
+        ], $this->getInternalPersistenceData($p));
     }
 
     public function testIterator()
@@ -571,7 +575,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $this->assertSame(4, $m->action('count')->getOne());
-        $this->assertSame($a['data'], $m->export());
+        $this->assertSame(['data' => $a], $this->getInternalPersistenceData($p));
 
         $m->addCondition('name', 'Sarah');
         $this->assertSame(3, $m->action('count')->getOne());

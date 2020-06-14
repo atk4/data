@@ -105,8 +105,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
 
     public function testCustomRef()
     {
-        $a = [];
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_();
 
         $m = new Model($p, ['table' => 'user']);
         $m->addRef('archive', function ($m) {

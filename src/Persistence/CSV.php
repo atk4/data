@@ -84,13 +84,7 @@ class CSV extends Persistence
      */
     public $header = [];
 
-    /**
-     * Constructor. Can pass array of data in parameters.
-     *
-     * @param array &$data
-     * @param array $defaults
-     */
-    public function __construct($file, $defaults = [])
+    public function __construct(string $file, array $defaults = [])
     {
         $this->file = $file;
         $this->setDefaults($defaults);
@@ -235,13 +229,13 @@ class CSV extends Persistence
             $row[$m->id_field] = $id;
         }
 
-        foreach ($row as $key => &$value) {
+        foreach ($row as $key => $value) {
             if ($value === null) {
                 continue;
             }
 
             if ($m->hasField($key)) {
-                $value = $this->typecastLoadField($m->getField($key), $value);
+                $row[$key] = $this->typecastLoadField($m->getField($key), $value);
             }
         }
 

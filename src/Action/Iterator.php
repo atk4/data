@@ -117,7 +117,7 @@ class Iterator
         $args[] = &$data;
 
         // call sorting
-        call_user_func_array('array_multisort', $args);
+        array_multisort(...$args);
 
         // put data back in generator
         $this->generator = new \ArrayIterator(array_pop($args));
