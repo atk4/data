@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'Field requires array for defaults' => 'Il campo richiede un array per i valori predefiniti',
     'Field value can not be base64 encoded because it is not of string type' => 'Il valore del campo non può essere codificato in base64 perché non è di tipo stringa ({{field}})',
