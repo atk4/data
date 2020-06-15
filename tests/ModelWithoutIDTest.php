@@ -28,7 +28,7 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         $db = new Persistence\SQL($this->db->connection);
-        $this->m = new Model($db, ['user', 'id_field' => false]);
+        $this->m = new Model($db, ['user', 'id_field' => null]);
 
         $this->m->addFields(['name', 'gender']);
     }

@@ -442,7 +442,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $this->setDB($a);
 
         // model without id field
-        $m1 = new Model($this->db, ['table' => 'user', 'id_field' => false]);
+        $m1 = new Model($this->db, ['table' => 'user', 'id_field' => null]);
         $m1->addField('code');
         $m1->addField('name');
 

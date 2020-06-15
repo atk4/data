@@ -60,7 +60,7 @@ class ContainsMany extends ContainsOne
         // will not use ID field (no, sorry, will have to use it)
         $m = $this->getModel(array_merge($defaults, [
             'contained_in_root_model' => $this->owner->contained_in_root_model ?: $this->owner,
-            //'id_field'              => false,
+            //'id_field' => null,
             'table' => $this->table_alias,
         ]));
 
