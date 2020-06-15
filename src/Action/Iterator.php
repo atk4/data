@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Action;
 
 use Guzzle\Iterator\FilterIterator;
@@ -66,28 +68,30 @@ class Iterator
                 return false;
             }
 
+            $fieldValStr = (string) $row[$field];
+
             $value = trim($value);
             $clean_value = trim($value, '%');
             // the row field exists check the position of the "%"(s)
             switch ($value) {
                 // case "%str%"
                 case substr($value, -1, 1) === '%' && substr($value, 0, 1) === '%':
-                    return strpos($row[$field], $clean_value) !== false;
+                    return strpos($fieldValStr, $clean_value) !== false;
 
                     break;
                 // case "str%"
                 case substr($value, -1, 1) === '%':
-                    return substr($row[$field], 0, strlen($clean_value)) === $clean_value;
+                    return substr($fieldValStr, 0, strlen($clean_value)) === $clean_value;
 
                     break;
                 // case "%str"
                 case substr($value, 0, 1) === '%':
-                    return substr($row[$field], -strlen($clean_value)) === $clean_value;
+                    return substr($fieldValStr, -strlen($clean_value)) === $clean_value;
 
                     break;
                 // full match
                 default:
-                    return $row[$field] == $clean_value;
+                    return $fieldValStr == $clean_value;
             }
 
             return false;
