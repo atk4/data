@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
@@ -51,7 +49,7 @@ class Array_ extends Persistence
 
         $m = parent::add($m, $defaults);
 
-        if ($m->id_field !== null && $m->hasField($m->id_field)) {
+        if ($m->hasField($m->id_field)) {
             $f = $m->getField($m->id_field);
             if (!$f->type) {
                 $f->type = 'integer';
