@@ -188,7 +188,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     public function testException2()
     {
         $m = new Model();
-        $this->expectException(Exception::class);
+        $this->expectException(\Error::class);
         $m->set(0, 'foo');
     }
 
@@ -228,14 +228,14 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     public function testException2d()
     {
         $m = new Model();
-        $this->expectException(Exception::class);
+        $this->expectException(\Error::class);
         $m->set(['foo', 'bar']);
     }
 
     public function testException3()
     {
         $m = new Model();
-        $this->expectException(Exception::class);
+        $this->expectException(\Error::class);
         $m->set(4, 5);
     }
 
