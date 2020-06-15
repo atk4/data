@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
@@ -415,8 +417,6 @@ class Field implements Expressionable
 
         try {
             switch ($this->type) {
-                case null: // loose comparison, but is OK here
-                    return $v;
                 case 'boolean':
                     throw (new Exception('Use Field\Boolean for type=boolean'))
                         ->addMoreInfo('this', $this);
