@@ -31,8 +31,6 @@ class Array_ extends Persistence
      */
     protected $lastInsertIds = [];
 
-    /**
-     */
     public function getRawDataByTable(string $table): array
     {
         return $this->data[$table];

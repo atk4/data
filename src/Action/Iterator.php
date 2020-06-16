@@ -55,8 +55,6 @@ class Iterator
      * @param string $field
      * @param bool   $coalesce
      *
-     * @throws Exception
-     *
      * @return \atk4\data\Action\Iterator
      */
     public function aggregate($fx, $field, $coalesce = false)
@@ -97,8 +95,6 @@ class Iterator
 
     /**
      * Checks if $row matches $scope.
-     *
-     * @throws Exception
      *
      * @return bool
      */
@@ -152,7 +148,7 @@ class Iterator
 
     protected function where($v1, $operator, $v2)
     {
-        switch (strtoupper(strval($operator))) {
+        switch (strtoupper((string) $operator)) {
             case '=':
                 $result = is_array($v2) ? $this->where($v1, 'IN', $v2) : $v1 == $v2;
 
@@ -181,7 +177,7 @@ class Iterator
             case 'LIKE':
                 $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
 
-                $result = preg_match('/^' . $pattern . '$/', strval($v1));
+                $result = preg_match('/^' . $pattern . '$/', (string) $v1);
 
             break;
             case 'NOT LIKE':

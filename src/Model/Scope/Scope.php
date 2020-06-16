@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Model\Scope;
 
 use atk4\data\Exception;

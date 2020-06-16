@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Model\Scope;
 
 use atk4\core\ReadableCaptionTrait;
@@ -203,7 +205,7 @@ class Condition extends AbstractScope
 
             // @todo: value is array
             // convert the value using the typecasting of persistence
-            if ($field instanceof Field && $model->persistence && !in_array(strtoupper($operator), self::$skipValueTypecast, true)) {
+            if ($field instanceof Field && $model->persistence && !in_array(strtoupper((string) $operator), self::$skipValueTypecast, true)) {
                 $value = $model->persistence->typecastSaveField($field, $value);
             }
 
@@ -340,7 +342,7 @@ class Condition extends AbstractScope
 
     protected function operatorToWords($asHtml = false)
     {
-        return $this->operator ? (self::$dictionary[strtoupper($this->operator)] ?? 'is equal to') : '';
+        return $this->operator ? (self::$dictionary[strtoupper((string) $this->operator)] ?? 'is equal to') : '';
     }
 
     protected function valueToWords($value, $asHtml = false)

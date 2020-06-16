@@ -1628,8 +1628,6 @@ class Model implements \IteratorAggregate
      * Check if model has persistence with specified method.
      *
      * @param string $method
-     *
-     * @throws Exception
      */
     public function checkPersistence(string $method = null)
     {
