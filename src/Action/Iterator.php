@@ -134,13 +134,13 @@ class Iterator
                 $matches[] = $subMatch = (bool) $this->match($row, $component);
 
                 // do not check all conditions if any match required
-                if ($scope->any() && $subMatch) {
+                if ($scope->isOr() && $subMatch) {
                     break;
                 }
             }
 
             // any matches && all matches the same (if all required)
-            $match = array_filter($matches) && ($scope->all() ? count(array_unique($matches)) === 1 : true);
+            $match = array_filter($matches) && ($scope->isAnd() ? count(array_unique($matches)) === 1 : true);
         }
 
         return $match;

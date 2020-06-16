@@ -394,7 +394,7 @@ class SQL extends Persistence
 
         // nested conditions
         if ($scope instanceof Scope) {
-            $expression = $scope->any() ? $query->orExpr() : $query->andExpr();
+            $expression = $scope->isOr() ? $query->orExpr() : $query->andExpr();
 
             foreach ($scope->getActiveComponents() as $component) {
                 $expression = $this->initQueryConditions($model, $expression, $component);

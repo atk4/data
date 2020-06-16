@@ -103,7 +103,7 @@ class Scope extends AbstractScope
     /**
      * Checks if junction is OR.
      */
-    public function any(): bool
+    public function isOr(): bool
     {
         return $this->junction === self::OR;
     }
@@ -111,7 +111,7 @@ class Scope extends AbstractScope
     /**
      * Checks if junction is AND.
      */
-    public function all(): bool
+    public function isAnd(): bool
     {
         return $this->junction === self::AND;
     }
