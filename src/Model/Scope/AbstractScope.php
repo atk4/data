@@ -80,23 +80,17 @@ abstract class AbstractScope
      * Validate the values against the $this->model with applied this scope
      * Returns array of conditions not met.
      *
-     * @param array $values
-     *
      * @return Condition[] array of conditions the values did not validate against, empty array if valid
      */
     abstract public function validate(array $values): array;
 
     /**
      * Return if scope has any conditions.
-     *
-     * @return bool
      */
     abstract public function isEmpty(): bool;
 
     /**
      * Convert the scope to human readable words when applied on $model.
-     *
-     * @param bool $asHtml
      *
      * @return bool
      */
@@ -139,8 +133,6 @@ abstract class AbstractScope
 
     /**
      * Returns is scope should be applied to the model.
-     *
-     * @return bool
      */
     public function isActive(): bool
     {
@@ -149,8 +141,6 @@ abstract class AbstractScope
 
     /**
      * Returns if scope contains several conditions.
-     *
-     * @return bool
      */
     public function isCompound(): bool
     {

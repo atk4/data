@@ -102,8 +102,6 @@ class Scope extends AbstractScope
 
     /**
      * Checks if junction is OR.
-     *
-     * @return bool
      */
     public function any(): bool
     {
@@ -112,8 +110,6 @@ class Scope extends AbstractScope
 
     /**
      * Checks if junction is AND.
-     *
-     * @return bool
      */
     public function all(): bool
     {

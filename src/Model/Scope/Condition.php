@@ -73,7 +73,6 @@ class Condition extends AbstractScope
      * - value : string|Callable - the actual value to be used when applying the scope
      * If value is Callable the it is called with $model, $scope as arguments.
      *
-     * @param string          $key
      * @param string|callable $options
      */
     final public static function registerPlaceholder(string $key, $options)
