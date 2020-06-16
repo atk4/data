@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Reference;
 
 use atk4\data\Exception;
@@ -48,8 +50,6 @@ class HasMany extends Reference
      * Returns referenced model with condition set.
      *
      * @param array $defaults Properties
-     *
-     * @throws Exception
      */
     public function ref($defaults = []): Model
     {
@@ -64,8 +64,6 @@ class HasMany extends Reference
      * Creates model that can be used for generating sub-query actions.
      *
      * @param array $defaults Properties
-     *
-     * @throws Exception
      */
     public function refLink($defaults = []): Model
     {
@@ -82,8 +80,6 @@ class HasMany extends Reference
      *
      * @param string $n        Field name
      * @param array  $defaults Properties
-     *
-     * @throws Exception
      */
     public function addField($n, $defaults = []): Field
     {
@@ -143,8 +139,6 @@ class HasMany extends Reference
      * @see addField()
      *
      * @param array $fields Array of fields
-     *
-     * @throws Exception
      *
      * @return $this
      */

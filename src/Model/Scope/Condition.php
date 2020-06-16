@@ -324,7 +324,7 @@ class Condition extends AbstractScope
                 }
             }
 
-            $field = $model->hasField($field);
+            $field = $model->hasField($field) ? $model->getField($field) : null;
         }
 
         if ($field instanceof Field) {
@@ -387,7 +387,7 @@ class Condition extends AbstractScope
                 }
             }
 
-            $field = $model->hasField($field);
+            $field = $model->hasField($field) ? $model->getField($field) : null;
         }
 
         // use the referenced model title if such exists

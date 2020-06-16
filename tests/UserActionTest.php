@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
 use atk4\core\Exception;
@@ -98,8 +100,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('backs up all clients', $res);
 
         // non-existing action
-        $act3 = $client->hasAction('foo');
-        $this->assertFalse($act3);
+        $this->assertFalse($client->hasAction('foo'));
     }
 
     public function testPreview()
@@ -161,9 +162,8 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
     public function testException1()
     {
+        $this->expectException(\atk4\core\Exception::class);
         $client = new ACClient($this->pers);
-
-        $this->expectExceptionMessage('NOT in the collection');
         $client->getAction('non_existant_action');
     }
 
@@ -252,10 +252,6 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('Peter', $client->get('name'));
     }
 
-    /**
-     * @throws Exception
-     * @throws \atk4\data\Exception
-     */
     public function testConfirmation()
     {
         $client = new ACClient($this->pers);

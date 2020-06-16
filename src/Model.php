@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data;
 
 use atk4\core\AppScopeTrait;
@@ -318,19 +320,6 @@ class Model implements \IteratorAggregate
     public $only_fields = false;
 
     /**
-     * When set to true, you can only change the fields inside a model,
-     * that was properly declared. This helps you avoid mistake by
-     * accessing or changing the field that does not exist.
-     *
-     * In some situations you want to set field value and then declare
-     * it later, then set $strict_field_check = false, but it's not
-     * recommended.
-     *
-     * @var bool
-     */
-    protected $strict_field_check = true;
-
-    /**
      * When set to true, all the field types will be enforced and
      * normalized when setting.
      *
@@ -390,8 +379,6 @@ class Model implements \IteratorAggregate
      *
      * @param Persistence|array $persistence
      * @param string|array      $defaults
-     *
-     * @throws Exception
      */
     public function __construct($persistence = null, $defaults = [])
     {
@@ -437,9 +424,7 @@ class Model implements \IteratorAggregate
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, [
-                'system' => true,
-            ]);
+            $this->addField($this->id_field, ['system' => true]);
         } else {
             return; // don't declare actions for model without id_field
         }
@@ -495,8 +480,6 @@ class Model implements \IteratorAggregate
      *
      * @param string $intent by default only 'save' is used (from beforeSave) but you can use other intents yourself
      *
-     * @throws \atk4\core\Exception
-     *
      * @return array [field => err_spec]
      */
     public function validate($intent = null)
@@ -529,8 +512,6 @@ class Model implements \IteratorAggregate
      * @param string       $name
      * @param array|object $seed
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Field
      */
     public function addField($name, $seed = [])
@@ -548,8 +529,6 @@ class Model implements \IteratorAggregate
      * Given a field seed, return a field object.
      *
      * @param array $seed
-     *
-     * @throws \atk4\core\Exception
      *
      * @return Field
      */
@@ -575,8 +554,6 @@ class Model implements \IteratorAggregate
      * Adds multiple fields into model.
      *
      * @param array $defaults
-     *
-     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -609,51 +586,37 @@ class Model implements \IteratorAggregate
     /**
      * Remove field that was added previously.
      *
-     * @throws \atk4\core\Exception
-     *
      * @return $this
      */
     public function removeField(string $name)
     {
+        $this->getField($name); // better exception if field does not exist
+
         $this->_removeFromCollection($name, 'fields');
 
         return $this;
     }
 
-    /**
-     * Finds a field with a corresponding name. Returns false if field not found. Similar
-     * to hasElement() but with extra checks to make sure it's certainly a field you are
-     * getting.
-     *
-     * @return Field|false
-     */
-    public function hasField(string $name)
+    public function hasField(string $name): bool
     {
         return $this->_hasInCollection($name, 'fields');
     }
 
-    /**
-     * Same as hasField, but will throw exception if field not found.
-     * Similar to getElement().
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Field
-     */
-    public function getField(string $name)
+    public function getField(string $name): Field
     {
-        /** @var Field $field */
-        $field = $this->_getFromCollection($name, 'fields');
-
-        return $field;
+        try {
+            return $this->_getFromCollection($name, 'fields');
+        } catch (\atk4\core\Exception $e) {
+            throw (new Exception('Field is not defined in model', 0, $e))
+                ->addMoreInfo('model', $this)
+                ->addMoreInfo('field', $name);
+        }
     }
 
     /**
      * Sets which fields we will select.
      *
      * @param array $fields
-     *
-     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -677,29 +640,9 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    /**
-     * Normalize field name.
-     *
-     * @param mixed $field
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return string
-     */
-    private function normalizeFieldName($field)
+    private function checkOnlyFieldsField(string $field)
     {
-        if (
-            is_object($field)
-            && isset($field->_trackableTrait)
-            && $field->owner === $this
-        ) {
-            $field = $field->short_name;
-        }
-
-        if (!is_string($field) || $field === '' || is_numeric($field[0])) {
-            throw (new Exception('Incorrect specification of field name'))
-                ->addMoreInfo('arg', $field);
-        }
+        $this->getField($field); // test if field exists
 
         if ($this->only_fields) {
             if (!in_array($field, $this->only_fields, true) && !$this->getField($field)->system) {
@@ -708,14 +651,6 @@ class Model implements \IteratorAggregate
                     ->addMoreInfo('only_fields', $this->only_fields);
             }
         }
-
-        if ($this->strict_field_check && !$this->hasField($field)) {
-            throw (new Exception('Field is not defined inside a Model'))
-                ->addMoreInfo('field', $field)
-                ->addMoreInfo('model', $this);
-        }
-
-        return $field;
     }
 
     /**
@@ -732,7 +667,7 @@ class Model implements \IteratorAggregate
         }
 
         foreach ($fields as $field) {
-            $field = $this->normalizeFieldName($field);
+            $this->checkOnlyFieldsField($field);
 
             if (array_key_exists($field, $this->dirty)) {
                 return true;
@@ -796,12 +731,12 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        $field = $this->normalizeFieldName($field);
+        $this->checkOnlyFieldsField($field);
 
-        $f = $this->hasField($field);
+        $f = $this->getField($field);
 
         try {
-            if ($f && $this->hook(self::HOOK_NORMALIZE, [$f, $value]) !== false) {
+            if ($this->hook(self::HOOK_NORMALIZE, [$f, $value]) !== false) {
                 $value = $f->normalize($value);
             }
         } catch (Exception $e) {
@@ -812,10 +747,7 @@ class Model implements \IteratorAggregate
             throw $e;
         }
 
-        $default_value = $f ? $f->default : null;
-
-        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] :
-            ((isset($f) && isset($f->default)) ? $f->default : null);
+        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] : $f->default;
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
@@ -824,47 +756,45 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        if ($f) {
-            // perform bunch of standard validation here. This can be re-factored in the future.
-            if ($f->read_only) {
-                throw (new Exception('Attempting to change read-only field'))
+        // perform bunch of standard validation here. This can be re-factored in the future.
+        if ($f->read_only) {
+            throw (new Exception('Attempting to change read-only field'))
+                ->addMoreInfo('field', $field)
+                ->addMoreInfo('model', $this);
+        }
+
+        // enum property support
+        if (isset($f->enum) && $f->enum && $f->type !== 'boolean') {
+            if ($value === '') {
+                $value = null;
+            }
+            if ($value !== null && !in_array($value, $f->enum, true)) {
+                throw (new Exception('This is not one of the allowed values for the field'))
                     ->addMoreInfo('field', $field)
-                    ->addMoreInfo('model', $this);
+                    ->addMoreInfo('model', $this)
+                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('enum', $f->enum);
             }
+        }
 
-            // enum property support
-            if (isset($f->enum) && $f->enum && $f->type !== 'boolean') {
-                if ($value === '') {
-                    $value = null;
-                }
-                if ($value !== null && !in_array($value, $f->enum, true)) {
-                    throw (new Exception('This is not one of the allowed values for the field'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('model', $this)
-                        ->addMoreInfo('value', $value)
-                        ->addMoreInfo('enum', $f->enum);
-                }
-            }
-
-            // values property support
-            if ($f->values) {
-                if ($value === '') {
-                    $value = null;
-                } elseif ($value === null) {
-                    // all is good
-                } elseif (!is_string($value) && !is_int($value)) {
-                    throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('model', $this)
-                        ->addMoreInfo('value', $value)
-                        ->addMoreInfo('values', $f->values);
-                } elseif (!array_key_exists($value, $f->values)) {
-                    throw (new Exception('This is not one of the allowed values for the field'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('model', $this)
-                        ->addMoreInfo('value', $value)
-                        ->addMoreInfo('values', $f->values);
-                }
+        // values property support
+        if ($f->values) {
+            if ($value === '') {
+                $value = null;
+            } elseif ($value === null) {
+                // all is good
+            } elseif (!is_string($value) && !is_int($value)) {
+                throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('model', $this)
+                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('values', $f->values);
+            } elseif (!array_key_exists($value, $f->values)) {
+                throw (new Exception('This is not one of the allowed values for the field'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('model', $this)
+                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('values', $f->values);
             }
         }
 
@@ -873,9 +803,7 @@ class Model implements \IteratorAggregate
         )) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
-            $this->dirty[$field] =
-                array_key_exists($field, $this->data) ?
-                $this->data[$field] : $default_value;
+            $this->dirty[$field] = array_key_exists($field, $this->data) ? $this->data[$field] : $f->default;
         }
         $this->data[$field] = $value;
 
@@ -933,15 +861,13 @@ class Model implements \IteratorAggregate
             return $data;
         }
 
-        $field = $this->normalizeFieldName($field);
+        $this->checkOnlyFieldsField($field);
 
         if (array_key_exists($field, $this->data)) {
             return $this->data[$field];
         }
 
-        $f = $this->hasField($field);
-
-        return $f ? $f->default : null;
+        return $this->getField($field)->default;
     }
 
     /**
@@ -965,9 +891,8 @@ class Model implements \IteratorAggregate
         if (!$this->title_field) {
             return $this->id;
         }
-        $f = $this->hasField($this->title_field);
 
-        return $f ? $f->get() : $this->id;
+        return $this->hasField($this->title_field) ? $this->getField($this->title_field)->get() : $this->id;
     }
 
     /**
@@ -1008,7 +933,9 @@ class Model implements \IteratorAggregate
      */
     public function _isset(string $name): bool
     {
-        return array_key_exists($this->normalizeFieldName($name), $this->dirty);
+        $this->checkOnlyFieldsField($name);
+
+        return array_key_exists($name, $this->dirty);
     }
 
     /**
@@ -1020,7 +947,8 @@ class Model implements \IteratorAggregate
      */
     public function _unset($name)
     {
-        $name = $this->normalizeFieldName($name);
+        $this->checkOnlyFieldsField($name);
+
         if (array_key_exists($name, $this->dirty)) {
             $this->data[$name] = $this->dirty[$name];
             unset($this->dirty[$name]);
@@ -1039,8 +967,6 @@ class Model implements \IteratorAggregate
      *
      * @param string         $name     Action name
      * @param array|callable $defaults
-     *
-     * @throws \atk4\core\Exception
      */
     public function addAction($name, $defaults = []): UserAction\Generic
     {
@@ -1065,8 +991,6 @@ class Model implements \IteratorAggregate
      * It will also skip system actions (where system === true).
      *
      * @param int $scope e.g. UserAction::ALL_RECORDS
-     *
-     * @throws \atk4\core\Exception
      */
     public function getActions($scope = null): array
     {
@@ -1076,17 +1000,11 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Finds a user action with a corresponding name. Returns false if action not found. Similar
-     * to hasElement() but with extra checks to make sure it's certainly an action you are
-     * getting.
+     * Returns true if user action with a corresponding name exists.
      *
      * @param string $name Action name
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return UserAction\Generic|false
      */
-    public function hasAction($name)
+    public function hasAction($name): bool
     {
         return $this->_hasInCollection($name, 'actions');
     }
@@ -1095,9 +1013,6 @@ class Model implements \IteratorAggregate
      * Returns one action object of this model. If action not defined, then throws exception.
      *
      * @param string $name Action name
-     *
-     * @throws \atk4\core\Exception
-     * @throws Exception
      */
     public function getAction($name): UserAction\Generic
     {
@@ -1108,9 +1023,6 @@ class Model implements \IteratorAggregate
      * Execute specified action with specified arguments.
      *
      * @param string $name Action name
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      */
     public function executeAction($name, ...$args)
     {
@@ -1121,9 +1033,6 @@ class Model implements \IteratorAggregate
      * Remove specified action(s).
      *
      * @param string|array $name
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -1643,8 +1552,6 @@ class Model implements \IteratorAggregate
      * @param mixed $field_name
      * @param mixed $value
      *
-     * @throws \atk4\core\Exception
-     *
      * @return $this
      */
     public function loadBy(string $field_name, $value)
@@ -1683,8 +1590,6 @@ class Model implements \IteratorAggregate
      * Will not throw exception if record doesn't exist.
      *
      * @param mixed $value
-     *
-     * @throws \atk4\core\Exception
      *
      * @return $this
      */
@@ -1777,8 +1682,12 @@ class Model implements \IteratorAggregate
                 $data = [];
                 $dirty_join = false;
                 foreach ($this->dirty as $name => $junk) {
-                    $field = $this->hasField($name);
-                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                    if (!$this->hasField($name)) {
+                        continue;
+                    }
+
+                    $field = $this->getField($name);
+                    if ($field->read_only || $field->never_persist || $field->never_save) {
                         continue;
                     }
 
@@ -1809,8 +1718,12 @@ class Model implements \IteratorAggregate
             } else {
                 $data = [];
                 foreach ($this->get() as $name => $value) {
-                    $field = $this->hasField($name);
-                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                    if (!$this->hasField($name)) {
+                        continue;
+                    }
+
+                    $field = $this->getField($name);
+                    if ($field->read_only || $field->never_persist || $field->never_save) {
                         continue;
                     }
 
@@ -2019,8 +1932,6 @@ class Model implements \IteratorAggregate
     /**
      * Returns iterator (yield values).
      *
-     * @throws \atk4\core\Exception
-     *
      * @return mixed
      */
     public function getIterator()
@@ -2100,8 +2011,6 @@ class Model implements \IteratorAggregate
      *
      * @param mixed $id
      *
-     * @throws Exception
-     *
      * @return $this
      */
     public function delete($id = null)
@@ -2169,8 +2078,6 @@ class Model implements \IteratorAggregate
      * @param string $mode
      * @param array  $args
      *
-     * @throws Exception
-     *
      * @return Query
      */
     public function action($mode, $args = [])
@@ -2193,8 +2100,6 @@ class Model implements \IteratorAggregate
      *
      * @param string $foreign_table
      * @param array  $defaults
-     *
-     * @throws \atk4\core\Exception
      *
      * @return Join
      */
@@ -2222,8 +2127,6 @@ class Model implements \IteratorAggregate
      * @param string $foreign_table
      * @param array  $defaults
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Join
      */
     public function leftJoin($foreign_table, $defaults = [])
@@ -2246,9 +2149,6 @@ class Model implements \IteratorAggregate
      * @param string         $c        Class name
      * @param string         $link     Link
      * @param array|callable $defaults Properties which we will pass to Reference object constructor
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      */
     protected function _hasReference($c, $link, $defaults = []): Reference
     {
@@ -2280,9 +2180,6 @@ class Model implements \IteratorAggregate
      *
      * @param string         $link     Link
      * @param array|callable $callback Callback
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      */
     public function addRef($link, $callback): Reference
     {
@@ -2294,9 +2191,6 @@ class Model implements \IteratorAggregate
      *
      * @param string $link
      * @param array  $defaults
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      *
      * @return Reference\HasOne
      */
@@ -2311,9 +2205,6 @@ class Model implements \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
      * @return Reference\HasMany
      */
     public function hasMany($link, $defaults = []): Reference
@@ -2326,9 +2217,6 @@ class Model implements \IteratorAggregate
      *
      * @param string $link
      * @param array  $defaults
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
      *
      * @return Reference\ContainsOne
      */
@@ -2343,9 +2231,6 @@ class Model implements \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
      * @return Reference\ContainsMany
      */
     public function containsMany($link, $defaults = []): Reference
@@ -2358,8 +2243,6 @@ class Model implements \IteratorAggregate
      *
      * @param string $link
      * @param array  $defaults
-     *
-     * @throws \atk4\core\Exception
      *
      * @return Model
      */
@@ -2374,8 +2257,6 @@ class Model implements \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Model
      */
     public function refModel($link, $defaults = []): self
@@ -2389,8 +2270,6 @@ class Model implements \IteratorAggregate
      * @param string $link
      * @param array  $defaults
      *
-     * @throws \atk4\core\Exception
-     *
      * @return Model
      */
     public function refLink($link, $defaults = []): self
@@ -2402,8 +2281,6 @@ class Model implements \IteratorAggregate
      * Return reference field.
      *
      * @param string $link
-     *
-     * @throws \atk4\core\Exception
      */
     public function getRef($link): Reference
     {
@@ -2426,13 +2303,11 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Return reference field or false if reference field does not exist.
+     * Returns true if reference field exists.
      *
      * @param string $link
-     *
-     * @return Field|bool
      */
-    public function hasRef($link)
+    public function hasRef($link): bool
     {
         return $this->hasElement('#ref_' . $link);
     }
@@ -2446,8 +2321,6 @@ class Model implements \IteratorAggregate
      *
      * @param string                $name
      * @param string|array|callable $expression
-     *
-     * @throws \atk4\core\Exception
      *
      * @return Field\Callback
      */
@@ -2474,8 +2347,6 @@ class Model implements \IteratorAggregate
      *
      * @param string                $name
      * @param string|array|callable $expression
-     *
-     * @throws \atk4\core\Exception
      *
      * @return Field\Callback
      */

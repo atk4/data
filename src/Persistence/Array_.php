@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
@@ -13,12 +15,13 @@ use atk4\data\Persistence;
  */
 class Array_ extends Persistence
 {
-    /**
-     * Array of data.
-     *
-     * @var array
-     */
-    public $data;
+    /** @var array */
+    private $data;
+
+    public function __construct(array $data = [])
+    {
+        $this->data = $data;
+    }
 
     /**
      * Array of last inserted ids per table.
@@ -29,13 +32,10 @@ class Array_ extends Persistence
     protected $lastInsertIds = [];
 
     /**
-     * Constructor. Can pass array of data in parameters.
-     *
-     * @param array &$data
      */
-    public function __construct(&$data)
+    public function getRawDataByTable(string $table): array
     {
-        $this->data = &$data;
+        return $this->data[$table];
     }
 
     /**
@@ -54,7 +54,8 @@ class Array_ extends Persistence
 
         $model = parent::add($model, $defaults);
 
-        if ($f = $model->hasField($model->id_field)) {
+        if ($model->id_field && $model->hasField($model->id_field)) {
+            $f = $model->getField($model->id_field);
             if (!$f->type) {
                 $f->type = 'integer';
             }
@@ -82,10 +83,8 @@ class Array_ extends Persistence
      *
      * @param mixed  $id
      * @param string $table
-     *
-     * @return array|false
      */
-    public function load(Model $model, $id, $table = null)
+    public function load(Model $model, $id, $table = null): array
     {
         if (isset($model->table) && !isset($this->data[$model->table])) {
             throw (new Exception('Table was not found in the array data source'))
@@ -106,15 +105,13 @@ class Array_ extends Persistence
      *
      * @param mixed  $id
      * @param string $table
-     *
-     * @return array|false
      */
-    public function tryLoad(Model $model, $id, $table = null)
+    public function tryLoad(Model $model, $id, $table = null): ?array
     {
         $table = $table ?? $model->table;
 
         if (!isset($this->data[$table][$id])) {
-            return false; // no record with such id in table
+            return null; // no record with such id in table
         }
 
         return $this->typecastLoadRow($model, $this->data[$table][$id]);
@@ -125,15 +122,13 @@ class Array_ extends Persistence
      * Doesn't throw exception if model can't be loaded or there are no data records.
      *
      * @param mixed $table
-     *
-     * @return array|false
      */
-    public function tryLoadAny(Model $model, $table = null)
+    public function tryLoadAny(Model $model, $table = null): ?array
     {
         $table = $table ?? $model->table;
 
         if (!$this->data[$table]) {
-            return false; // no records at all in table
+            return null; // no records at all in table
         }
 
         reset($this->data[$table]);
@@ -307,7 +302,7 @@ class Array_ extends Persistence
      *
      * @param \ArrayIterator $action
      */
-    protected function setLimitOrder(Model $model, &$action)
+    protected function setLimitOrder(Model $model, $action)
     {
         // first order by
         if ($model->order) {

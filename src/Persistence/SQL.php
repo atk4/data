@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
@@ -168,8 +170,8 @@ class SQL extends Persistence
         }
 
         // Sequence support
-        if ($m->sequence && $id_field = $m->hasField($m->id_field)) {
-            $id_field->default = $this->dsql()->mode('seq_nextval')->sequence($m->sequence);
+        if ($m->sequence && $m->hasField($m->id_field)) {
+            $m->getField($m->id_field)->default = $this->dsql()->mode('seq_nextval')->sequence($m->sequence);
         }
 
         return $m;
@@ -348,12 +350,7 @@ class SQL extends Persistence
         // set limit
         if ($m->limit && ($m->limit[0] || $m->limit[1])) {
             if ($m->limit[0] === null) {
-                // This is max number which is allowed in MySQL server.
-                // But be aware, that PDO will downgrade this number even lower probably because
-                // in LIMIT it expects numeric value and converts string (we set float values as PDO_PARAM_STR)
-                // back to PDO_PARAM_INT which is goes back to max int value specific server can have.
-                // On my Win10,64-bit it is 2147483647, on Travis server 9223372036854775807 etc.
-                $m->limit[0] = '18446744073709551615';
+                $m->limit[0] = PHP_INT_MAX;
             }
             $q->limit($m->limit[0], $m->limit[1]);
         }

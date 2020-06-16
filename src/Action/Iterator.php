@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Action;
 
 use atk4\data\Exception;
@@ -150,7 +152,7 @@ class Iterator
 
     protected function where($v1, $operator, $v2)
     {
-        switch (strtoupper($operator)) {
+        switch (strtoupper(strval($operator))) {
             case '=':
                 $result = is_array($v2) ? $this->where($v1, 'IN', $v2) : $v1 == $v2;
 
@@ -179,7 +181,7 @@ class Iterator
             case 'LIKE':
                 $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
 
-                $result = preg_match('/^' . $pattern . '$/', $v1);
+                $result = preg_match('/^' . $pattern . '$/', strval($v1));
 
             break;
             case 'NOT LIKE':
@@ -230,7 +232,7 @@ class Iterator
         $args[] = &$data;
 
         // call sorting
-        call_user_func_array('array_multisort', $args);
+        array_multisort(...$args);
 
         // put data back in generator
         $this->generator = new \ArrayIterator(array_pop($args));

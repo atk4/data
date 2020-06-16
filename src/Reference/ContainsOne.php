@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Reference;
 
 use atk4\data\Exception;
@@ -118,7 +120,7 @@ class ContainsOne extends Reference
         // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $m->onHook($spot, function ($model) {
-                $row = $model->persistence->data[$this->table_alias];
+                $row = $model->persistence->getRawDataByTable($this->table_alias);
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
                 $this->owner->save([$this->our_field => $row]);
             });

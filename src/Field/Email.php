@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Field;
 
 use atk4\data\Field;
@@ -42,8 +44,6 @@ class Email extends Field
      * Perform normalization.
      *
      * @param mixed $value
-     *
-     * @throws ValidationException
      *
      * @return mixed
      */

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
 use atk4\core\AtkPhpunit;
@@ -54,8 +56,7 @@ class ValidationTests extends AtkPhpunit\TestCase
     {
         parent::setUp();
 
-        $a = [];
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_();
         $this->m = new MyValidationModel($p);
     }
 
@@ -100,8 +101,7 @@ class ValidationTests extends AtkPhpunit\TestCase
 
     public function testValidate5()
     {
-        $a = [];
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_();
         $m = new BadValidationModel($p);
 
         $this->expectException(\TypeError::class);

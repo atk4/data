@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
 use atk4\core\AtkPhpunit;
@@ -105,8 +107,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
 
     public function testCustomRef()
     {
-        $a = [];
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_();
 
         $m = new Model($p, ['table' => 'user']);
         $m->addRef('archive', function ($m) {

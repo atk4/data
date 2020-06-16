@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
 use atk4\core\AtkPhpunit;
@@ -52,53 +54,6 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m = new Model();
         $this->expectException(Exception::class);
         $m->set(['name' => 5]);
-    }
-
-    public function testNull()
-    {
-        $m = new Model(['strict_field_check' => false]);
-        $m->set(['name' => 5]);
-        $m->set('name', null);
-        $this->assertSame(['name' => null], $m->data);
-    }
-
-    public function testFieldAccess2()
-    {
-        $m = new Model(['strict_field_check' => false]);
-        $this->assertFalse($m->_isset('name'));
-        $m->set(['name' => 5]);
-        $this->assertTrue($m->_isset('name'));
-        $this->assertSame(5, $m->get('name'));
-
-        $m->set('name', null);
-        $this->assertFalse($m->_isset('name'));
-
-        $m = new Model();
-        $n = $m->addField('name');
-        $m->set($n, 5);
-        $m->set($n, 5);
-        $this->assertSame(5, $m->get('name'));
-    }
-
-    public function testGet()
-    {
-        $m = new Model(['strict_field_check' => false]);
-        $m->addField('name');
-        $m->addField('surname');
-
-        $m->set(['name' => 'john', 'surname' => 'peter', 'foo' => 'bar']);
-        $this->assertSame(['name' => 'john', 'surname' => 'peter'], $m->get());
-        $this->assertSame(['name' => null, 'surname' => null, 'foo' => null], $m->dirty);
-
-        // we can define fields later if strict_field_check=false
-        $m->addField('foo');
-        $this->assertSame(['name' => 'john', 'surname' => 'peter', 'foo' => 'bar'], $m->get());
-        $this->assertSame(['name' => null, 'surname' => null, 'foo' => null], $m->dirty);
-
-        // test with onlyFields
-        $m->onlyFields(['surname']);
-        $this->assertSame(['surname' => 'peter'], $m->get());
-        $this->assertSame(['name' => null, 'surname' => null, 'foo' => null], $m->dirty);
     }
 
     public function testDirty()
@@ -233,7 +188,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     public function testException2()
     {
         $m = new Model();
-        $this->expectException(Exception::class);
+        $this->expectException(\Error::class);
         $m->set(0, 'foo');
     }
 
@@ -273,14 +228,14 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     public function testException2d()
     {
         $m = new Model();
-        $this->expectException(Exception::class);
+        $this->expectException(\Error::class);
         $m->set(['foo', 'bar']);
     }
 
     public function testException3()
     {
         $m = new Model();
-        $this->expectException(Exception::class);
+        $this->expectException(\Error::class);
         $m->set(4, 5);
     }
 

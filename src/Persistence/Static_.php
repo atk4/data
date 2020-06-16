@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
@@ -47,10 +49,11 @@ class Static_ extends Array_
         $this->onHook(self::HOOK_AFTER_ADD, \Closure::fromCallable([$this, 'afterAdd']));
 
         if (!is_array($row1)) {
-            // We are dealing with array of strings. Convert it into array of hashes
-            array_walk($data, function (&$str, $key) {
-                $str = ['id' => $key, 'name' => $str];
-            });
+            // convert array of strings into array of hashes
+            foreach ($data as $k => $str) {
+                $data[$k] = ['id' => $k, 'name' => $str];
+            }
+            unset($str);
 
             $this->titleForModel = 'name';
             $this->fieldsForModel = ['name' => []];

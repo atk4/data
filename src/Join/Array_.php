@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Join;
 
 use atk4\data\Exception;
@@ -71,9 +73,7 @@ class Array_ extends Join
             return;
         }
 
-        if ($model->hasField($this->master_field)
-            && $model->get($this->master_field)
-        ) {
+        if ($model->hasField($this->master_field) && $model->get($this->master_field)) {
             // The value for the master_field is set,
             // we are going to use existing record.
             return;
@@ -106,11 +106,9 @@ class Array_ extends Join
             return;
         }
 
-        $this->save_buffer[$this->foreign_field] =
-            isset($this->join) ? $this->join->id : $id;
+        $this->save_buffer[$this->foreign_field] = isset($this->join) ? $this->join->id : $id;
 
-        $persistence = $this->persistence ?:
-            $this->owner->persistence;
+        $persistence = $this->persistence ?: $this->owner->persistence;
 
         $this->id = $persistence->insert(
             $model,
@@ -131,8 +129,7 @@ class Array_ extends Join
             return;
         }
 
-        $persistence = $this->persistence ?:
-            $this->owner->persistence;
+        $persistence = $this->persistence ?: $this->owner->persistence;
 
         $this->id = $persistence->update(
             $model,
@@ -154,8 +151,7 @@ class Array_ extends Join
             return;
         }
 
-        $persistence = $this->persistence ?:
-            $this->owner->persistence;
+        $persistence = $this->persistence ?: $this->owner->persistence;
 
         $persistence->delete(
             $model,

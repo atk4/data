@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Field;
 
 use atk4\core\InitializerTrait;
@@ -56,8 +58,6 @@ class Boolean extends \atk4\data\Field
      * Normalize value to boolean value.
      *
      * @param mixed $value
-     *
-     * @throws ValidationException
      *
      * @return bool
      */

@@ -12,17 +12,10 @@ Agile Data is a framework for defining your "business layer" which is separate f
 - Agile Data is high-performance, capable of abstracting aggregation logic and shifting it into a capable database persistence (such as SQL) through advanced expressions.
 - Agile Data is extensible - field types, persistence types, relations and action types can be extended.
 
-[![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=latest)](http://agile-data.readthedocs.io/en/latest/?badge=latest)
-[![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
 ![Build](https://github.com/atk4/data/workflows/Unit%20Testing/badge.svg)
-[![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
-[![StyleCI](https://styleci.io/repos/56442737/shield)](https://styleci.io/repos/56442737)
 [![CodeCov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
-[![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
-[![Issue Count](https://codeclimate.com/github/atk4/data/badges/issue_count.svg)](https://codeclimate.com/github/atk4/data)
-[![GitHub release](https://img.shields.io/github/release/atk4/data.svg?maxAge=2592000)](CHANGELOG.md)
-
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
+[![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 
 Quick-Links: [Documentation](http://agile-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
 
@@ -626,29 +619,8 @@ Please consider our other MIT-licensed project - [Agile UI](http://www.agiletool
 
 ![image](https://github.com/atk4/ui/raw/develop/docs/images/grid.png)
 
-## Current Status
-
-Agile Data is **Stable since Jul 2016**. For more recent updates see [Changelog](https://github.com/atk4/data/blob/develop/CHANGELOG.md).
-
 ## Community and Support
 
-[![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4)
+[![Gitter](https://img.shields.io/gitter/room/atk4/data.svg)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg)](http://stackoverflow.com/questions/ask?tags=atk4)
 [![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
-
-
-### Timeline to the first release
-
-* 20 Jul 2016: Release of 1.0 with a new QuickStart guide
-* 15 Jul 2016: Rewrote README preparing for our first BETA release
-* 05 Jul 2016: Released 0.5 Expressions, Conditions, Relations
-* 28 Jun 2016: Released 0.4 join support for SQL and Array
-* 24 Jun 2016: Released 0.3 with general improvements
-* 17 Jun 2016: Finally shipping 0.2: With good starting support of SQL and Array
-* 29 May 2016: Finished implementation of core logic for Business Model
-* 11 May 2016: Released 0.1: Implemented code climate, test coverage and CI
-* 06 May 2016: Revamped the concept, updated video and made it simpler
-* 22 Apr 2016: Finalized concept, created presentation slides.
-* 17 Apr 2016: Started working on concept draft (in wiki)
-* 14 Apr 2016: [Posted my concept on Reddit](https://www.reddit.com/r/PHP/comments/4f2epw/reinventing_the_faulty_orm_concept_subqueries/)
-* Early 2016: Extensive research

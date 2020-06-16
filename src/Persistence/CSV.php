@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
@@ -84,13 +86,7 @@ class CSV extends Persistence
      */
     public $header = [];
 
-    /**
-     * Constructor. Can pass array of data in parameters.
-     *
-     * @param array &$data
-     * @param array $defaults
-     */
-    public function __construct($file, $defaults = [])
+    public function __construct(string $file, array $defaults = [])
     {
         $this->file = $file;
         $this->setDefaults($defaults);
@@ -235,13 +231,13 @@ class CSV extends Persistence
             $row[$m->id_field] = $id;
         }
 
-        foreach ($row as $key => &$value) {
+        foreach ($row as $key => $value) {
             if ($value === null) {
                 continue;
             }
 
-            if ($f = $m->hasField($key)) {
-                $value = $this->typecastLoadField($f, $value);
+            if ($m->hasField($key)) {
+                $row[$key] = $this->typecastLoadField($m->getField($key), $value);
             }
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data;
 
 use atk4\core\DIContainerTrait;
@@ -210,8 +212,6 @@ class Field implements Expressionable
      * Constructor. You can pass field properties as array.
      *
      * @param array $defaults
-     *
-     * @throws Exception
      */
     public function __construct($defaults = [])
     {
@@ -235,8 +235,6 @@ class Field implements Expressionable
      * you can't set value to '' if type=string and required=true.
      *
      * @param mixed $value
-     *
-     * @throws ValidationException
      *
      * @return mixed
      */
@@ -419,8 +417,6 @@ class Field implements Expressionable
 
         try {
             switch ($this->type) {
-                case null: // loose comparison, but is OK here
-                    return $v;
                 case 'boolean':
                     throw (new Exception('Use Field\Boolean for type=boolean'))
                         ->addMoreInfo('this', $this);

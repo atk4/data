@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Reference;
 
 use atk4\data\Exception;
@@ -65,7 +67,7 @@ class ContainsMany extends ContainsOne
         // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $m->onHook($spot, function ($model) {
-                $rows = $model->persistence->data[$this->table_alias];
+                $rows = $model->persistence->getRawDataByTable($this->table_alias);
                 $this->owner->save([$this->our_field => $rows ?: null]);
             });
         }
