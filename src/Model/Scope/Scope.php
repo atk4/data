@@ -40,9 +40,9 @@ class Scope extends AbstractScope
     /**
      * Get array of all components.
      *
-     * @return array
+     * @return AbstractScope[]
      */
-    public function getAllComponents()
+    public function getAllComponents(): array
     {
         return $this->components;
     }
@@ -50,9 +50,9 @@ class Scope extends AbstractScope
     /**
      * Get array of only active components.
      *
-     * @return array
+     * @return AbstractScope[]
      */
-    public function getActiveComponents()
+    public function getActiveComponents(): array
     {
         return array_filter($this->components, function (AbstractScope $scope) {
             return $scope->isActive();
@@ -82,16 +82,19 @@ class Scope extends AbstractScope
         return $this;
     }
 
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return empty($this->getActiveComponents());
     }
 
-    public function isCompound()
+    public function isCompound(): bool
     {
         return count($this->getActiveComponents()) > 1;
     }
 
+    /**
+     * @return self::AND|self::OR
+     */
     public function getJunction()
     {
         return $this->junction;
@@ -102,7 +105,7 @@ class Scope extends AbstractScope
      *
      * @return bool
      */
-    public function any()
+    public function any(): bool
     {
         return $this->junction === self::OR;
     }
@@ -112,7 +115,7 @@ class Scope extends AbstractScope
      *
      * @return bool
      */
-    public function all()
+    public function all(): bool
     {
         return $this->junction === self::AND;
     }
@@ -149,7 +152,7 @@ class Scope extends AbstractScope
         return $component->peel();
     }
 
-    public function validate($values)
+    public function validate(array $values): array
     {
         if (!$this->isActive()) {
             return [];
@@ -185,7 +188,7 @@ class Scope extends AbstractScope
         return $this;
     }
 
-    public function toWords($asHtml = false)
+    public function toWords(bool $asHtml = false): string
     {
         if (!$this->isActive()) {
             return '';
@@ -261,7 +264,7 @@ class Scope extends AbstractScope
         }
     }
 
-    public function find($key)
+    public function find($key): array
     {
         $ret = [];
         foreach ($this->components as $cc) {

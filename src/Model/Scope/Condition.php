@@ -76,7 +76,7 @@ class Condition extends AbstractScope
      * @param string          $key
      * @param string|callable $options
      */
-    final public static function registerPlaceholder($key, $options)
+    final public static function registerPlaceholder(string $key, $options)
     {
         self::$placeholders[$key] = is_array($options) ? $options : [
             'label' => $key,
@@ -148,7 +148,7 @@ class Condition extends AbstractScope
         return $this;
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         // make sure clones are used to avoid changes
         $condition = clone $this;
@@ -224,12 +224,12 @@ class Condition extends AbstractScope
         return [$field, $operator, $value];
     }
 
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return array_filter([$this->key, $this->operator, $this->value]) ? false : true;
     }
 
-    public function validate($values)
+    public function validate(array $values): array
     {
         if (!$this->isActive()) {
             return [];
@@ -245,7 +245,7 @@ class Condition extends AbstractScope
 
         $model->add($this);
 
-        return $model->export() ? [] : [$this];
+        return count($model->export()) !== 0 ? [] : [$this];
     }
 
     public function negate()
@@ -259,7 +259,7 @@ class Condition extends AbstractScope
         return $this;
     }
 
-    public function find($key)
+    public function find($key): array
     {
         $field = $this->key;
 
@@ -272,7 +272,7 @@ class Condition extends AbstractScope
         return ($field === $key) ? [$this] : [];
     }
 
-    public function toWords($asHtml = false)
+    public function toWords(bool $asHtml = false): string
     {
         if (!$this->model) {
             throw new Exception('Model must be set using setModel to convert to words');
@@ -292,7 +292,7 @@ class Condition extends AbstractScope
         return $asHtml ? $ret : html_entity_decode($ret);
     }
 
-    protected function keyToWords($asHtml = false)
+    protected function keyToWords(bool $asHtml = false): string
     {
         $model = $this->model;
 
@@ -340,12 +340,12 @@ class Condition extends AbstractScope
         return $asHtml ? "<strong>{$string}</strong>" : $string;
     }
 
-    protected function operatorToWords($asHtml = false)
+    protected function operatorToWords(bool $asHtml = false): string
     {
         return $this->operator ? (self::$dictionary[strtoupper((string) $this->operator)] ?? 'is equal to') : '';
     }
 
-    protected function valueToWords($value, $asHtml = false)
+    protected function valueToWords($value, bool $asHtml = false): string
     {
         $model = $this->model;
 
@@ -404,7 +404,7 @@ class Condition extends AbstractScope
         return "'" . (string) $value . "'";
     }
 
-    protected function replaceValue($value, $toWords = false)
+    protected function replaceValue($value, bool $toWords = false)
     {
         if (is_array($values = $value)) {
             foreach ($values as &$value) {
