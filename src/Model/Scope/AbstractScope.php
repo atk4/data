@@ -23,7 +23,7 @@ abstract class AbstractScope
     protected $active = true;
 
     /**
-     * The model this scope belongs to.
+     * The model this scope applies to.
      *
      * @var Model
      */
@@ -97,12 +97,12 @@ abstract class AbstractScope
     abstract public function toWords(bool $asHtml = false): string;
 
     /**
-     * Peels off nested scopes with single contained component.
-     * Useful for convert (((field = value))) to field = value.
+     * Simplifies by peeling off nested scopes with single contained component.
+     * Useful for converting (((field = value))) to field = value.
      *
      * @return AbstractScope
      */
-    public function peel()
+    public function simplify()
     {
         return $this;
     }

@@ -135,7 +135,7 @@ class Scope extends AbstractScope
         }
     }
 
-    public function peel()
+    public function simplify()
     {
         $activeComponents = $this->getActiveComponents();
 
@@ -143,9 +143,12 @@ class Scope extends AbstractScope
             return $this;
         }
 
+        /**
+         * @var AbstractScope $component
+         */
         $component = reset($activeComponents);
 
-        return $component->peel();
+        return $component->simplify();
     }
 
     public function validate(array $values): array

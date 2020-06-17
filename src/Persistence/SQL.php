@@ -385,7 +385,7 @@ class SQL extends Persistence
         }
 
         // peel off the single nested scopes to convert (((field = value))) to field = value
-        $scope = $scope->peel();
+        $scope = $scope->simplify();
 
         // simple condition
         if ($scope instanceof Condition) {
