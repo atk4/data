@@ -278,7 +278,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
             if (!$st->rowCount()) {
                 throw (new \atk4\core\Exception('Update didn\'t affect any records'))
-                    ->addMoreInfo('query', $update->getDebugQuery(false))
+                    ->addMoreInfo('query', $update->getDebugQuery())
                     ->addMoreInfo('statement', $st)
                     ->addMoreInfo('model', $m)
                     ->addMoreInfo('conditions', $m->conditions);
