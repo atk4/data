@@ -61,7 +61,6 @@ return PhpCsFixer\Config::create()
         ],
 
         // @TODO fix later
-        'strict_comparison' => false,
         'php_unit_strict' => false,
     ])
     ->setFinder($finder)
