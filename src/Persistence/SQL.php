@@ -725,7 +725,7 @@ class SQL extends Persistence
             $data = $this->typecastLoadRow($m, $load->getRow());
         } catch (\PDOException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
-                ->addMoreInfo('query', $load->getDebugQuery(false))
+                ->addMoreInfo('query', $load->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
                 ->addMoreInfo('conditions', $m->conditions);
@@ -784,7 +784,7 @@ class SQL extends Persistence
             $data = $this->typecastLoadRow($m, $load->getRow());
         } catch (\PDOException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
-                ->addMoreInfo('query', $load->getDebugQuery(false))
+                ->addMoreInfo('query', $load->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
                 ->addMoreInfo('conditions', $m->conditions);
@@ -850,7 +850,7 @@ class SQL extends Persistence
             $st = $insert->execute();
         } catch (\PDOException $e) {
             throw (new Exception('Unable to execute insert query', 0, $e))
-                ->addMoreInfo('query', $insert->getDebugQuery(false))
+                ->addMoreInfo('query', $insert->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
                 ->addMoreInfo('conditions', $m->conditions);
@@ -895,7 +895,7 @@ class SQL extends Persistence
             return $export->execute();
         } catch (\PDOException $e) {
             throw (new Exception('Unable to execute iteration query', 0, $e))
-                ->addMoreInfo('query', $export->getDebugQuery(false))
+                ->addMoreInfo('query', $export->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
                 ->addMoreInfo('conditions', $m->conditions);
@@ -932,7 +932,7 @@ class SQL extends Persistence
             }
         } catch (\PDOException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
-                ->addMoreInfo('query', $update->getDebugQuery(false))
+                ->addMoreInfo('query', $update->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
                 ->addMoreInfo('conditions', $m->conditions);
@@ -974,7 +974,7 @@ class SQL extends Persistence
             $delete->execute();
         } catch (\PDOException $e) {
             throw (new Exception('Unable to delete due to query error', 0, $e))
-                ->addMoreInfo('query', $delete->getDebugQuery(false))
+                ->addMoreInfo('query', $delete->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
                 ->addMoreInfo('conditions', $m->conditions);
