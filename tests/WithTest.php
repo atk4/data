@@ -44,9 +44,9 @@ class WithTest extends \atk4\schema\PhpunitTestCase
         $j_invoice->addField('invoiced');   // add field from joined cursor
 
         // tests
-        $q = 'with "i" ("user_id","invoiced") as (select "user_id","net" from "invoice" where "net" > 100) select "user"."id","user"."name","user"."salary","_i"."invoiced" from "user" inner join "i" as "_i" on "_i"."user_id" = "user"."id"';
+        $q = 'with "i" ("user_id","invoiced") as (select "user_id","net" from "invoice" where "net" > :a) select "user"."id","user"."name","user"."salary","_i"."invoiced" from "user" inner join "i" as "_i" on "_i"."user_id" = "user"."id"';
         $q = str_replace('"', $this->getEscapeChar(), $q);
-        $this->assertSame(preg_replace('~\s+~', '', $q), preg_replace('~\s+~', '', $m->action('select')->getDebugQuery()));
+        $this->assertSame($q, $m->action('select')->render());
         $this->assertSame(2, count($m->export()));
     }
 
