@@ -7,7 +7,6 @@ namespace atk4\data\tests;
 use atk4\core\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence\Static_ as Persistence_Static;
-use atk4\data\UserAction;
 
 /**
  * Sample trait designed to extend model.
@@ -44,7 +43,7 @@ class ACClient extends Model
         $this->addAction('send_reminder');
 
         // this action will be system action, so it will not be invokable from UI
-        $this->addAction('backup_clients', ['scope' => UserAction\Generic::ALL_RECORDS, 'system' => true]);
+        $this->addAction('backup_clients', ['scope' => Model\Action::SCOPE_ALL, 'system' => true]);
     }
 }
 
@@ -71,13 +70,13 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
         $actions = $client->getActions();
         $this->assertSame(4, count($actions)); // don't return system actions here, but include add/edit/delete
-        $this->assertSame(0, count($client->getActions(UserAction\Generic::ALL_RECORDS))); // don't return system actions here
+        $this->assertSame(0, count($client->getActions(Model\Action::SCOPE_ALL))); // don't return system actions here
 
         $act1 = $actions['send_reminder'];
 
         // action takes no arguments. If it would, we should be able to find info about those
         $this->assertSame([], $act1->args);
-        $this->assertSame(UserAction\Generic::SINGLE_RECORD, $act1->scope);
+        $this->assertSame(Model\Action::SINGLE_RECORD, $act1->scope);
 
         // load record, before executing, because scope is single record
         $client->load(1);
@@ -94,7 +93,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
         // action takes no arguments. If it would, we should be able to find info about those
         $this->assertSame([], $act2->args);
-        $this->assertSame(UserAction\Generic::ALL_RECORDS, $act2->scope);
+        $this->assertSame(Model\Action::SCOPE_ALL, $act2->scope);
 
         $res = $act2->execute();
         $this->assertSame('backs up all clients', $res);
@@ -144,7 +143,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     public function testScope2()
     {
         $client = new ACClient($this->pers);
-        $client->addAction('new_client', ['scope' => UserAction\Generic::NO_RECORDS]);
+        $client->addAction('new_client', ['scope' => Model\Action::SCOPE_NONE]);
         $client->load(1);
 
         $this->expectExceptionMessage('executed on existing record');
@@ -154,7 +153,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     public function testScope3()
     {
         $client = new ACClient($this->pers);
-        $client->addAction('new_client', ['scope' => UserAction\Generic::NO_RECORDS, 'atomic' => false]);
+        $client->addAction('new_client', ['scope' => Model\Action::SCOPE_NONE, 'atomic' => false]);
 
         $this->expectExceptionMessage('not defined');
         $client->executeAction('new_client');

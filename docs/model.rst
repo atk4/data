@@ -372,7 +372,7 @@ passwords to be generated and sent to the users::
 
    CRUD::addTo($app)->setModel(new User($app->db));
 
-Read more about :php:class:`UserAction`
+Read more about :php:class:`Action`
 
 Hooks
 -----
