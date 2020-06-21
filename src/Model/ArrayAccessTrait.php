@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\data;
+namespace atk4\data\Model;
 
 /**
  * Trait to add array like support to Model, example usage:
@@ -11,7 +11,7 @@ namespace atk4\data;
  *     use \atk4\data\ModelArrayAccessTrait;
  * }.
  */
-trait ModelArrayAccessTrait
+trait ArrayAccessTrait
 {
     /**
      * Does field exist?
