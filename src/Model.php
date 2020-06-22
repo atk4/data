@@ -35,7 +35,7 @@ class Model implements \IteratorAggregate
     use AppScopeTrait;
     use CollectionTrait;
     use ReadableCaptionTrait;
-    use Model\Concerns\HasActions;
+    use Model\HasActionsTrait;
 
     /** @const string */
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';

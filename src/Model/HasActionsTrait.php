@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Model\Concerns;
+namespace atk4\data\Model;
 
 use atk4\data\Model;
 
-trait HasActions
+trait HasActionsTrait
 {
     /**
      * Default class for addAction().
