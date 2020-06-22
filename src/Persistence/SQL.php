@@ -1017,9 +1017,9 @@ class SQL extends Persistence
     {
         $seq = $m->sequence ?: null;
 
-        // PostGRE SQL PDO always requires sequence name in lastInsertID method as parameter
+        // PostgreSQL PDO always requires sequence name in lastInsertID method as parameter
         // So let's use its default one if no specific is set
-        if ($this->connection instanceof \atk4\dsql\Connection_PgSQL && $seq === null) {
+        if ($this->connection instanceof \atk4\dsql\PostgreSQL\Connection && $seq === null) {
             $seq = $m->table . '_' . $m->id_field . '_seq';
         }
 
