@@ -11,15 +11,15 @@ use atk4\core\TrackableTrait;
 use atk4\data\Model;
 
 /**
- * Implements generic user action. Assigned to a model it can be invoked by a user. Model\Action class contains a
+ * Implements generic user action. Assigned to a model it can be invoked by a user. Model\UserAction class contains a
  * meta information about the action (arguments, permissions, scope, etc) that will help UI/API or add-ons to display
  * action trigger (button) correctly in an automated way.
  *
- * Action must NOT rely on any specific UI implementation.
+ * UserAction must NOT rely on any specific UI implementation.
  *
  * @property Model $owner
  */
-class Action
+class UserAction
 {
     use DIContainerTrait;
     use TrackableTrait;

@@ -347,7 +347,7 @@ a user invokable actions::
          $this->addField('email');
          $this->addField('password', ['type'=>'password']);
 
-         $this->addAction('send_new_password');
+         $this->addUserAction('send_new_password');
 
       }
 
@@ -366,13 +366,13 @@ With a method alone, you can generate and send passwords::
    $user->load(3);
    $user->send_new_password();
 
-but using `$this->addAction()` exposes that method to the ATK UI wigets,
+but using `$this->addUserAction()` exposes that method to the ATK UI wigets,
 so if your admin is using `CRUD`, a new button will be available allowing
 passwords to be generated and sent to the users::
 
    CRUD::addTo($app)->setModel(new User($app->db));
 
-Read more about :php:class:`Action`
+Read more about :php:class:`Model\UserAction`
 
 Hooks
 -----
@@ -422,7 +422,7 @@ ATK Data models are really good for structuring hierarchically. Here is example:
 
          $this->addCondition('purchases', '>', 1000);
 
-         $this->addAction('send_gift');
+         $this->addUserAction('send_gift');
       }
 
       function send_gift() {

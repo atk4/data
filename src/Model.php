@@ -35,7 +35,7 @@ class Model implements \IteratorAggregate
     use AppScopeTrait;
     use CollectionTrait;
     use ReadableCaptionTrait;
-    use Model\HasActionsTrait;
+    use Model\HasUserActionsTrait;
 
     /** @const string */
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
@@ -140,11 +140,6 @@ class Model implements \IteratorAggregate
      * @var array Collection containing Field Objects - using key as the field system name
      */
     protected $fields = [];
-
-    /**
-     * @var array Collection of actions - using key as action system name
-     */
-    protected $actions = [];
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -401,7 +396,7 @@ class Model implements \IteratorAggregate
     {
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
-        $this->_cloneCollection('actions');
+        $this->_cloneCollection('userActions');
     }
 
     /**
@@ -422,34 +417,34 @@ class Model implements \IteratorAggregate
         }
 
         // Declare our basic CRUD actions for the model.
-        $this->addAction('add', [
+        $this->addUserAction('add', [
             'fields' => true,
-            'modifier' => Model\Action::MODIFIER_CREATE,
-            'scope' => Model\Action::SCOPE_NONE,
+            'modifier' => Model\UserAction::MODIFIER_CREATE,
+            'scope' => Model\UserAction::SCOPE_NONE,
             'callback' => 'save',
             'description' => 'Add ' . $this->getModelCaption(),
             'ui' => ['icon' => 'plus'],
         ]);
-        $this->addAction('edit', [
+        $this->addUserAction('edit', [
             'fields' => true,
-            'modifier' => Model\Action::MODIFIER_UPDATE,
-            'scope' => Model\Action::SINGLE_RECORD,
+            'modifier' => Model\UserAction::MODIFIER_UPDATE,
+            'scope' => Model\UserAction::SINGLE_RECORD,
             'callback' => 'save',
             'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => 'edit'], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
-        $this->addAction('delete', [
-            'scope' => Model\Action::SINGLE_RECORD,
-            'modifier' => Model\Action::MODIFIER_DELETE,
+        $this->addUserAction('delete', [
+            'scope' => Model\UserAction::SINGLE_RECORD,
+            'modifier' => Model\UserAction::MODIFIER_DELETE,
             'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => 'red trash'], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
             },
         ]);
 
-        $this->addAction('validate', [
+        $this->addUserAction('validate', [
             //'scope'=> any!
             'description' => 'Provided with modified values will validate them but will not save',
-            'modifier' => Model\Action::MODIFIER_READ,
+            'modifier' => Model\UserAction::MODIFIER_READ,
             'fields' => true,
             'system' => true, // don't show by default
             'args' => ['intent' => 'string'],
