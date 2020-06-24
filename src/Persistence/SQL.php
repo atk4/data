@@ -43,35 +43,35 @@ class SQL extends Persistence
      *
      * @var string
      */
-    public $_default_seed_addField = \atk4\data\Field_SQL::class;
+    public $_default_seed_addField = [\atk4\data\Field_SQL::class];
 
     /**
      * Default class when adding hasOne field.
      *
      * @var string
      */
-    public $_default_seed_hasOne = \atk4\data\Reference\HasOne_SQL::class;
+    public $_default_seed_hasOne = [\atk4\data\Reference\HasOne_SQL::class];
 
     /**
      * Default class when adding hasMany field.
      *
      * @var string
      */
-    public $_default_seed_hasMany; // \atk4\data\Reference\HasMany::class;
+    public $_default_seed_hasMany; // [\atk4\data\Reference\HasMany::class];
 
     /**
      * Default class when adding Expression field.
      *
      * @var string
      */
-    public $_default_seed_addExpression = Field_SQL_Expression::class;
+    public $_default_seed_addExpression = [Field_SQL_Expression::class];
 
     /**
      * Default class when adding join.
      *
      * @var string
      */
-    public $_default_seed_join = \atk4\data\Join\SQL::class;
+    public $_default_seed_join = [\atk4\data\Join\SQL::class];
 
     /**
      * Constructor.
