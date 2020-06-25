@@ -1558,10 +1558,12 @@ class Model implements \IteratorAggregate
     {
         // store
         $field = $this->getField($field_name);
+        $scope = $this->scope;
         $system = $field->system;
         $default = $field->default;
-
-        $scope = clone $this->scope;
+      
+        // clone scope to perform the loading
+        $this->scope = clone $scope;
 
         // add condition and load record
         $this->addCondition($field_name, $value);
