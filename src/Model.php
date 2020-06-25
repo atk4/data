@@ -1563,7 +1563,7 @@ class Model implements \IteratorAggregate
         $scope = $this->scope;
         $system = $field->system;
         $default = $field->default;
-      
+
         // clone scope to perform the loading
         $this->scope = clone $scope;
 

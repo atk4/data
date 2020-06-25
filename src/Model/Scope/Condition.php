@@ -331,7 +331,7 @@ class Condition extends AbstractScope
         if ($field instanceof Field) {
             $words[] = $field->getCaption();
         } elseif ($field instanceof Expression) {
-            $words[] = "expression '{$field->getDebugQuery($asHtml)}'";
+            $words[] = "expression '{$field->getDebugQuery()}'";
         }
 
         $string = implode(' ', array_filter($words));
