@@ -32,7 +32,7 @@ class Invoice2 extends Model
         $this->addField('amount', ['type' => 'money']);
 
         // will contain many Lines
-        $this->containsMany('lines', [Line2::class, 'caption' => 'My Invoice Lines']);
+        $this->containsMany('lines', ['model' => [Line2::class], 'caption' => 'My Invoice Lines']);
 
         // total_gross - calculated by php callback not by SQL expression
         $this->addCalculatedField('total_gross', function ($m) {
@@ -65,7 +65,7 @@ class Line2 extends Model
     {
         parent::init();
 
-        $this->hasOne('vat_rate_id', VatRate2::class);
+        $this->hasOne('vat_rate_id', ['model' => [VatRate2::class]]);
 
         $this->addField('price', ['type' => 'money', 'required' => true]);
         $this->addField('qty', ['type' => 'float', 'required' => true]);
@@ -76,7 +76,7 @@ class Line2 extends Model
         });
 
         // each line can have multiple discounts and calculate total of these discounts
-        $this->containsMany('discounts', Discount2::class);
+        $this->containsMany('discounts', ['model' => [Discount2::class]]);
 
         $this->addCalculatedField('discounts_percent', function ($m) {
             $total = 0;

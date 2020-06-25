@@ -31,7 +31,7 @@ class Invoice1 extends Model
         $this->addField('ref_no', ['required' => true]);
 
         // will contain one Address
-        $this->containsOne('addr', Address1::class);
+        $this->containsOne('addr', ['model' => [Address1::class]]);
     }
 }
 
@@ -44,14 +44,14 @@ class Address1 extends Model
     {
         parent::init();
 
-        $this->hasOne('country_id', Country1::class);
+        $this->hasOne('country_id', ['model' => [Country1::class]]);
 
         $this->addField('address');
         $this->addField('built_date', ['type' => 'datetime']);
         $this->addField('tags', ['type' => 'array', 'default' => []]);
 
         // will contain one door code
-        $this->containsOne('door_code', [DoorCode1::class, 'caption' => 'Secret Code']);
+        $this->containsOne('door_code', ['model' => [DoorCode1::class], 'caption' => 'Secret Code']);
     }
 }
 

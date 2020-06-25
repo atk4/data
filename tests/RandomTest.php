@@ -28,7 +28,7 @@ class Model_Item extends \atk4\data\Model
     {
         parent::init();
         $this->addField('name');
-        $this->hasOne('parent_item_id', self::class)
+        $this->hasOne('parent_item_id', ['model' => [self::class]])
             ->addTitle();
     }
 }
@@ -278,7 +278,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
             if (!$st->rowCount()) {
                 throw (new \atk4\core\Exception('Update didn\'t affect any records'))
-                    ->addMoreInfo('query', $update->getDebugQuery(false))
+                    ->addMoreInfo('query', $update->getDebugQuery())
                     ->addMoreInfo('statement', $st)
                     ->addMoreInfo('model', $m)
                     ->addMoreInfo('conditions', $m->conditions);
@@ -348,7 +348,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m = new Model_Item($db);
 
         $this->expectException(Exception::class);
-        $m->hasOne('foo', Model_Item::class)
+        $m->hasOne('foo', ['model' => [Model_Item::class]])
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 

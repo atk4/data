@@ -47,7 +47,7 @@ class Array_ extends Persistence
         }
 
         $defaults = array_merge([
-            '_default_seed_join' => \atk4\data\Join\Array_::class,
+            '_default_seed_join' => [\atk4\data\Join\Array_::class],
         ], $defaults);
 
         $model = parent::add($model, $defaults);
