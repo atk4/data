@@ -84,63 +84,63 @@ class Model implements \IteratorAggregate
      *
      * @var string|array
      */
-    public $_default_seed_addField = Field::class;
+    public $_default_seed_addField = [Field::class];
 
     /**
      * The class used by addField() method.
      *
      * @var string|array
      */
-    public $_default_seed_addExpression = Field\Callback::class;
+    public $_default_seed_addExpression = [Field\Callback::class];
 
     /**
      * The class used by addRef() method.
      *
      * @var string|array
      */
-    public $_default_seed_addRef = Reference::class;
+    public $_default_seed_addRef = [Reference::class];
 
     /**
      * The class used by hasOne() method.
      *
      * @var string|array
      */
-    public $_default_seed_hasOne = Reference\HasOne::class;
+    public $_default_seed_hasOne = [Reference\HasOne::class];
 
     /**
      * The class used by hasMany() method.
      *
      * @var string|array
      */
-    public $_default_seed_hasMany = Reference\HasMany::class;
+    public $_default_seed_hasMany = [Reference\HasMany::class];
 
     /**
      * The class used by containsOne() method.
      *
      * @var string|array
      */
-    public $_default_seed_containsOne = Reference\ContainsOne::class;
+    public $_default_seed_containsOne = [Reference\ContainsOne::class];
 
     /**
      * The class used by containsMany() method.
      *
      * @var string
      */
-    public $_default_seed_containsMany = Reference\ContainsMany::class;
+    public $_default_seed_containsMany = [Reference\ContainsMany::class];
 
     /**
      * The class used by join() method.
      *
      * @var string|array
      */
-    public $_default_seed_join = Join::class;
+    public $_default_seed_join = [Join::class];
 
     /**
      * Default class for addAction().
      *
      * @var string|array
      */
-    public $_default_seed_action = UserAction\Generic::class;
+    public $_default_seed_action = [UserAction\Generic::class];
 
     /**
      * @var array Collection containing Field Objects - using key as the field system name
@@ -441,12 +441,12 @@ class Model implements \IteratorAggregate
             'modifier' => UserAction\Generic::MODIFIER_UPDATE,
             'scope' => UserAction\Generic::SINGLE_RECORD,
             'callback' => 'save',
-            'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => 'edit'], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
+            'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => ['edit']], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
         $this->addAction('delete', [
             'scope' => UserAction\Generic::SINGLE_RECORD,
             'modifier' => UserAction\Generic::MODIFIER_DELETE,
-            'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => 'red trash'], 'confirm' => 'Are you sure?'],
+            'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => ['red trash']], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
             },
@@ -1399,7 +1399,7 @@ class Model implements \IteratorAggregate
      */
     public function newInstance(string $class = null, array $options = [])
     {
-        $model = $this->factory($class ?? static::class, $options);
+        $model = $this->factory([$class ?? static::class], $options);
 
         if ($this->persistence) {
             return $this->persistence->add($model);

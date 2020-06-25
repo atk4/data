@@ -137,7 +137,7 @@ class Reference
 
         // last effort - try to add model
         if (is_array($this->model)) {
-            $model = $this->model[0];
+            $model = [$this->model[0]];
             $md = $this->model;
             unset($md[0]);
 
