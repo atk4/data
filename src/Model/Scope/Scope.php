@@ -208,18 +208,14 @@ class Scope extends AbstractScope
     /**
      * Create a scope from array of scopes or arrays.
      *
-     * @param mixed  $scopeOrArray
+     * @param string|array  $scopes
      * @param string $junction
      *
      * @return static
      */
-    public static function create($scopeOrArray = null, $junction = self::AND)
+    public static function create($scopes = null, $junction = self::AND)
     {
-        if ($scopeOrArray instanceof AbstractScope) {
-            return $scopeOrArray;
-        }
-
-        return new static ($scopeOrArray, $junction);
+        return new static ($scopes, $junction);
     }
 
     public function __construct($scopes = null, $junction = self::AND)

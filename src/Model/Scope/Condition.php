@@ -95,10 +95,6 @@ class Condition extends AbstractScope
      */
     public static function create($key, $operator = null, $value = null)
     {
-        if ($key instanceof AbstractScope) {
-            return $key;
-        }
-
         $args = is_array($key) ? $key : func_get_args();
 
         return new static (...$args);
