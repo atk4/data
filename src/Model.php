@@ -206,6 +206,7 @@ class Model implements \IteratorAggregate
      */
     public $conditions = [];
 
+    /** @var Scope */
     protected $scope;
 
     /**
