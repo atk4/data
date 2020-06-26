@@ -95,7 +95,7 @@ class Scope extends AbstractScope
     /**
      * @return self::AND|self::OR
      */
-    public function getJunction()
+    public function getJunction(): string
     {
         return $this->junction;
     }
