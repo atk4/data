@@ -1557,35 +1557,27 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function loadBy(string $field_name, $value)
+    public function loadBy(string $fieldName, $value)
     {
-        // store
-        $field = $this->getField($field_name);
-        $scope = $this->scope;
-        $system = $field->system;
-        $default = $field->default;
+        $field = $this->getField($fieldName);
 
-        // clone scope to perform the loading
-        $this->scope = clone $scope;
-
-        // add condition and load record
-        $this->addCondition($field_name, $value);
+        // backup
+        $scopeBak = $this->scope;
+        $systemBak = $field->system;
+        $defaultBak = $field->default;
 
         try {
+            // add condition to cloned scope and try to load record
+            $this->scope = clone $this->scope;
+            $this->addCondition($field, $value);
+
             $this->loadAny();
-        } catch (\Exception $e) {
+        } finally {
             // restore
-            $this->scope = $scope;
-            $field->system = $system;
-            $field->default = $default;
-
-            throw $e;
+            $this->scope = $scopeBak;
+            $field->system = $systemBak;
+            $field->default = $defaultBak;
         }
-
-        // restore
-        $this->scope = $scope;
-        $field->system = $system;
-        $field->default = $default;
 
         return $this;
     }
