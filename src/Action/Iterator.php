@@ -122,7 +122,7 @@ class Iterator
             }
 
             if (isset($row[$field->short_name])) {
-                $match = $this->evaluate($row[$field->short_name], $operator, $value);
+                $match = $this->evaluateIf($row[$field->short_name], $operator, $value);
             }
         }
 
@@ -146,11 +146,11 @@ class Iterator
         return $match;
     }
 
-    protected function evaluate($v1, $operator, $v2): bool
+    protected function evaluateIf($v1, $operator, $v2): bool
     {
         switch (strtoupper((string) $operator)) {
             case '=':
-                $result = is_array($v2) ? $this->evaluate($v1, 'IN', $v2) : $v1 == $v2;
+                $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 == $v2;
 
             break;
             case '>':
@@ -171,7 +171,7 @@ class Iterator
             break;
             case '!=':
             case '<>':
-                $result = !$this->evaluate($v1, '=', $v2);
+                $result = !$this->evaluateIf($v1, '=', $v2);
 
             break;
             case 'LIKE':
@@ -181,15 +181,15 @@ class Iterator
 
             break;
             case 'NOT LIKE':
-                $result = !$this->evaluate($v1, 'LIKE', $v2);
+                $result = !$this->evaluateIf($v1, 'LIKE', $v2);
 
             break;
             case 'IN':
-                $result = is_array($v2) ? in_array($v1, $v2, true) : $this->evaluate($v1, '=', $v2);
+                $result = is_array($v2) ? in_array($v1, $v2, true) : $this->evaluateIf($v1, '=', $v2);
 
             break;
             case 'NOT IN':
-                $result = !$this->evaluate($v1, 'IN', $v2);
+                $result = !$this->evaluateIf($v1, 'IN', $v2);
 
             break;
             case 'REGEXP':
@@ -197,7 +197,7 @@ class Iterator
 
             break;
             case 'NOT REGEXP':
-                $result = !$this->evaluate($v1, 'REGEXP', $v2);
+                $result = !$this->evaluateIf($v1, 'REGEXP', $v2);
 
             break;
             default:
