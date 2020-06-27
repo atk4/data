@@ -441,12 +441,12 @@ class Model implements \IteratorAggregate
             'modifier' => UserAction\Generic::MODIFIER_UPDATE,
             'scope' => UserAction\Generic::SINGLE_RECORD,
             'callback' => 'save',
-            'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => ['edit']], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
+            'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'edit']], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
         $this->addAction('delete', [
             'scope' => UserAction\Generic::SINGLE_RECORD,
             'modifier' => UserAction\Generic::MODIFIER_DELETE,
-            'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => ['red trash']], 'confirm' => 'Are you sure?'],
+            'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'red trash']], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
             },
