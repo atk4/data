@@ -68,15 +68,15 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     {
         $client = new ACClient($this->pers);
 
-        $actions = $client->getActions();
+        $actions = $client->getUserActions();
         $this->assertSame(4, count($actions)); // don't return system actions here, but include add/edit/delete
-        $this->assertSame(0, count($client->getActions(Model\Action::SCOPE_ALL))); // don't return system actions here
+        $this->assertSame(0, count($client->getUserActions(Model\Action::SCOPE_ALL))); // don't return system actions here
 
         $act1 = $actions['send_reminder'];
 
         // action takes no arguments. If it would, we should be able to find info about those
         $this->assertSame([], $act1->args);
-        $this->assertSame(Model\Action::SINGLE_RECORD, $act1->scope);
+        $this->assertSame(Model\Action::SCOPE_SINGLE, $act1->scope);
 
         // load record, before executing, because scope is single record
         $client->load(1);
@@ -89,7 +89,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $client->unload();
 
         // test system action
-        $act2 = $client->getAction('backup_clients');
+        $act2 = $client->getUserAction('backup_clients');
 
         // action takes no arguments. If it would, we should be able to find info about those
         $this->assertSame([], $act2->args);
@@ -110,27 +110,27 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         });
 
         $client->load(1);
-        $this->assertSame('John', $client->getAction('say_name')->execute());
+        $this->assertSame('John', $client->getUserAction('say_name')->execute());
 
-        $client->getAction('say_name')->preview = function ($m, $arg) {
+        $client->getUserAction('say_name')->preview = function ($m, $arg) {
             return ($m instanceof ACClient) ? 'will say ' . $m->get('name') : 'will fail';
         };
-        $this->assertSame('will say John', $client->getAction('say_name')->preview('x'));
+        $this->assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
 
         $client->addAction('also_backup', ['callback' => 'backup_clients']);
-        $this->assertSame('backs up all clients', $client->getAction('also_backup')->execute());
+        $this->assertSame('backs up all clients', $client->getUserAction('also_backup')->execute());
 
-        $client->getAction('also_backup')->preview = 'backup_clients';
-        $this->assertSame('backs up all clients', $client->getAction('also_backup')->preview());
+        $client->getUserAction('also_backup')->preview = 'backup_clients';
+        $this->assertSame('backs up all clients', $client->getUserAction('also_backup')->preview());
 
-        $this->assertSame('Will execute Also Backup', $client->getAction('also_backup')->getDescription());
+        $this->assertSame('Will execute Also Backup', $client->getUserAction('also_backup')->getDescription());
     }
 
     public function testPreviewFail()
     {
         $this->expectExceptionMessage('specify preview callback');
         $client = new ACClient($this->pers);
-        $client->getAction('backup_clients')->preview();
+        $client->getUserAction('backup_clients')->preview();
     }
 
     public function testScope1()
@@ -163,7 +163,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
     {
         $this->expectException(\atk4\core\Exception::class);
         $client = new ACClient($this->pers);
-        $client->getAction('non_existant_action');
+        $client->getUserAction('non_existant_action');
     }
 
     public function testDisabled1()
@@ -171,10 +171,10 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $client = new ACClient($this->pers);
         $client->load(1);
 
-        $client->getAction('send_reminder')->enabled = false;
+        $client->getUserAction('send_reminder')->enabled = false;
 
         $this->expectExceptionMessage('disabled');
-        $client->getAction('send_reminder')->execute();
+        $client->getUserAction('send_reminder')->execute();
     }
 
     public function testDisabled2()
@@ -182,12 +182,12 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $client = new ACClient($this->pers);
         $client->load(1);
 
-        $client->getAction('send_reminder')->enabled = function () {
+        $client->getUserAction('send_reminder')->enabled = function () {
             return false;
         };
 
         $this->expectExceptionMessage('disabled');
-        $client->getAction('send_reminder')->execute();
+        $client->getUserAction('send_reminder')->execute();
     }
 
     public function testDisabled3()
@@ -195,11 +195,11 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $client = new ACClient($this->pers);
         $client->load(1);
 
-        $client->getAction('send_reminder')->enabled = function () {
+        $client->getUserAction('send_reminder')->enabled = function () {
             return true;
         };
 
-        $client->getAction('send_reminder')->execute();
+        $client->getUserAction('send_reminder')->execute();
         $this->assertTrue(true); // no exception
     }
 

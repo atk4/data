@@ -428,12 +428,12 @@ class Model implements \IteratorAggregate
         $this->addUserAction('edit', [
             'fields' => true,
             'modifier' => Model\UserAction::MODIFIER_UPDATE,
-            'scope' => Model\UserAction::SINGLE_RECORD,
+            'scope' => Model\UserAction::SCOPE_SINGLE,
             'callback' => 'save',
             'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => 'edit'], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
         $this->addUserAction('delete', [
-            'scope' => Model\UserAction::SINGLE_RECORD,
+            'scope' => Model\UserAction::SCOPE_SINGLE,
             'modifier' => Model\UserAction::MODIFIER_DELETE,
             'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => 'red trash'], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
