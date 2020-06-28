@@ -103,7 +103,7 @@ trait HasUserActionsTrait
 
         return $this;
     }
-        
+
     /**
      * @deprecated use addUserAction instead
      */
@@ -111,7 +111,7 @@ trait HasUserActionsTrait
     {
         return $this->addUserAction(...func_get_args());
     }
-    
+
     /**
      * @deprecated use getUserActions instead
      */
@@ -119,7 +119,7 @@ trait HasUserActionsTrait
     {
         return $this->getUserActions(...func_get_args());
     }
-    
+
     /**
      * @deprecated use hasUserAction instead
      */
@@ -127,7 +127,7 @@ trait HasUserActionsTrait
     {
         return $this->hasUserAction(...func_get_args());
     }
-    
+
     /**
      * @deprecated use hasUserAction instead
      */
@@ -135,7 +135,7 @@ trait HasUserActionsTrait
     {
         return $this->getUserAction(...func_get_args());
     }
-    
+
     /**
      * @deprecated use executeUserAction instead
      */
@@ -143,7 +143,7 @@ trait HasUserActionsTrait
     {
         $this->executeUserAction(...func_get_args());
     }
-    
+
     /**
      * @deprecated use removeUserAction instead
      */
