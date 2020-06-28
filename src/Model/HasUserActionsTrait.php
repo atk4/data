@@ -13,7 +13,7 @@ trait HasUserActionsTrait
      *
      * @var string|array
      */
-    public $_default_seed_action = Model\UserAction::class;
+    public $_default_seed_action = [Model\UserAction::class];
 
     /**
      * @var array Collection of user actions - using key as action system name
