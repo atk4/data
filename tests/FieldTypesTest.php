@@ -29,7 +29,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
     public function testEmailBasic()
     {
         $m = new Model($this->pers);
-        $m->addField('email', Field\Email::class);
+        $m->addField('email', [Field\Email::class]);
 
         $m->set('email', 'foo@example.com');
         $m->save();

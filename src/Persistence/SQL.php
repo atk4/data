@@ -43,35 +43,35 @@ class SQL extends Persistence
      *
      * @var string
      */
-    public $_default_seed_addField = \atk4\data\Field_SQL::class;
+    public $_default_seed_addField = [\atk4\data\Field_SQL::class];
 
     /**
      * Default class when adding hasOne field.
      *
      * @var string
      */
-    public $_default_seed_hasOne = \atk4\data\Reference\HasOne_SQL::class;
+    public $_default_seed_hasOne = [\atk4\data\Reference\HasOne_SQL::class];
 
     /**
      * Default class when adding hasMany field.
      *
      * @var string
      */
-    public $_default_seed_hasMany; // \atk4\data\Reference\HasMany::class;
+    public $_default_seed_hasMany; // [\atk4\data\Reference\HasMany::class];
 
     /**
      * Default class when adding Expression field.
      *
      * @var string
      */
-    public $_default_seed_addExpression = Field_SQL_Expression::class;
+    public $_default_seed_addExpression = [Field_SQL_Expression::class];
 
     /**
      * Default class when adding join.
      *
      * @var string
      */
-    public $_default_seed_join = \atk4\data\Join\SQL::class;
+    public $_default_seed_join = [\atk4\data\Join\SQL::class];
 
     /**
      * Constructor.
@@ -1017,9 +1017,9 @@ class SQL extends Persistence
     {
         $seq = $m->sequence ?: null;
 
-        // PostGRE SQL PDO always requires sequence name in lastInsertID method as parameter
+        // PostgreSQL PDO always requires sequence name in lastInsertID method as parameter
         // So let's use its default one if no specific is set
-        if ($this->connection instanceof \atk4\dsql\Connection_PgSQL && $seq === null) {
+        if ($this->connection instanceof \atk4\dsql\Postgresql\Connection && $seq === null) {
             $seq = $m->table . '_' . $m->id_field . '_seq';
         }
 
