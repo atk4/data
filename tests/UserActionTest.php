@@ -146,7 +146,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS]);
         $client->load(1);
 
-        $this->expectExceptionMessage('executed on existing record');
+        $this->expectExceptionMessage('can be executed on non-existing record');
         $client->executeUserAction('new_client');
     }
 

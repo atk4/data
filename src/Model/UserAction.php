@@ -12,7 +12,7 @@ use atk4\data\Model;
 
 /**
  * Implements generic user action. Assigned to a model it can be invoked by a user. Model\UserAction class contains a
- * meta information about the action (arguments, permissions, scope, etc) that will help UI/API or add-ons to display
+ * meta information about the action (arguments, permissions, appliesTo records, etc) that will help UI/API or add-ons to display
  * action trigger (button) correctly in an automated way.
  *
  * UserAction must NOT rely on any specific UI implementation.
@@ -27,7 +27,7 @@ class UserAction
         init as init_;
     }
 
-    /** Defining scope of the action */
+    /** Defining records scope of the action */
     const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
     const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. archive
     const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
@@ -132,18 +132,18 @@ class UserAction
                     ->addMoreInfo('fields', $this->fields);
             }
 
-            // Verify some scope cases
+            // Verify some records scope cases
             switch ($this->appliesTo) {
                 case self::APPLIES_TO_NO_RECORDS:
                     if ($this->owner->loaded()) {
-                        throw (new Exception('This action scope prevents action from being executed on existing records.'))
+                        throw (new Exception('This user action can be executed on non-existing record only.'))
                             ->addMoreInfo('id', $this->owner->id);
                     }
 
                     break;
                 case self::APPLIES_TO_SINGLE_RECORD:
                     if (!$this->owner->loaded()) {
-                        throw new Exception('This action scope requires you to load existing record first.');
+                        throw new Exception('This user action requires you to load existing record first.');
                     }
 
                     break;
