@@ -35,6 +35,7 @@ class Model implements \IteratorAggregate
     use AppScopeTrait;
     use CollectionTrait;
     use ReadableCaptionTrait;
+    use Model\HasUserActionsTrait;
 
     /** @const string */
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
@@ -136,21 +137,9 @@ class Model implements \IteratorAggregate
     public $_default_seed_join = [Join::class];
 
     /**
-     * Default class for addAction().
-     *
-     * @var string|array
-     */
-    public $_default_seed_action = [UserAction\Generic::class];
-
-    /**
      * @var array Collection containing Field Objects - using key as the field system name
      */
     protected $fields = [];
-
-    /**
-     * @var array Collection of actions - using key as action system name
-     */
-    protected $actions = [];
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -407,7 +396,7 @@ class Model implements \IteratorAggregate
     {
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
-        $this->_cloneCollection('actions');
+        $this->_cloneCollection('userActions');
     }
 
     /**
@@ -428,34 +417,36 @@ class Model implements \IteratorAggregate
         }
 
         // Declare our basic CRUD actions for the model.
-        $this->addAction('add', [
+        $this->addUserAction('add', [
             'fields' => true,
-            'modifier' => UserAction\Generic::MODIFIER_CREATE,
-            'scope' => UserAction\Generic::NO_RECORDS,
+            'modifier' => Model\UserAction::MODIFIER_CREATE,
+            'appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS,
             'callback' => 'save',
             'description' => 'Add ' . $this->getModelCaption(),
             'ui' => ['icon' => 'plus'],
         ]);
-        $this->addAction('edit', [
+
+        $this->addUserAction('edit', [
             'fields' => true,
-            'modifier' => UserAction\Generic::MODIFIER_UPDATE,
-            'scope' => UserAction\Generic::SINGLE_RECORD,
+            'modifier' => Model\UserAction::MODIFIER_UPDATE,
+            'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
             'callback' => 'save',
             'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'edit']], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
-        $this->addAction('delete', [
-            'scope' => UserAction\Generic::SINGLE_RECORD,
-            'modifier' => UserAction\Generic::MODIFIER_DELETE,
+
+        $this->addUserAction('delete', [
+            'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
+            'modifier' => Model\UserAction::MODIFIER_DELETE,
             'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'red trash']], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
             },
         ]);
 
-        $this->addAction('validate', [
-            //'scope'=> any!
+        $this->addUserAction('validate', [
+            //'appliesTo'=> any!
             'description' => 'Provided with modified values will validate them but will not save',
-            'modifier' => UserAction\Generic::MODIFIER_READ,
+            'modifier' => Model\UserAction::MODIFIER_READ,
             'fields' => true,
             'system' => true, // don't show by default
             'args' => ['intent' => 'string'],
@@ -948,94 +939,6 @@ class Model implements \IteratorAggregate
         if (array_key_exists($name, $this->dirty)) {
             $this->data[$name] = $this->dirty[$name];
             unset($this->dirty[$name]);
-        }
-
-        return $this;
-    }
-
-    // }}}
-
-    // {{{ UserAction support
-
-    /**
-     * Register new user action for this model. By default UI will allow users to trigger actions
-     * from UI.
-     *
-     * @param string         $name     Action name
-     * @param array|callable $defaults
-     */
-    public function addAction($name, $defaults = []): UserAction\Generic
-    {
-        if (is_callable($defaults)) {
-            $defaults = ['callback' => $defaults];
-        }
-
-        if (!isset($defaults['caption'])) {
-            $defaults['caption'] = $this->readableCaption($name);
-        }
-
-        /** @var UserAction\Generic $action */
-        $action = $this->factory($this->_default_seed_action, $defaults);
-
-        $this->_addIntoCollection($name, $action, 'actions');
-
-        return $action;
-    }
-
-    /**
-     * Returns list of actions for this model. Can filter actions by scope.
-     * It will also skip system actions (where system === true).
-     *
-     * @param int $scope e.g. UserAction::ALL_RECORDS
-     */
-    public function getActions($scope = null): array
-    {
-        return array_filter($this->actions, function ($action) use ($scope) {
-            return !$action->system && ($scope === null || $action->scope === $scope);
-        });
-    }
-
-    /**
-     * Returns true if user action with a corresponding name exists.
-     *
-     * @param string $name Action name
-     */
-    public function hasAction($name): bool
-    {
-        return $this->_hasInCollection($name, 'actions');
-    }
-
-    /**
-     * Returns one action object of this model. If action not defined, then throws exception.
-     *
-     * @param string $name Action name
-     */
-    public function getAction($name): UserAction\Generic
-    {
-        return $this->_getFromCollection($name, 'actions');
-    }
-
-    /**
-     * Execute specified action with specified arguments.
-     *
-     * @param string $name Action name
-     */
-    public function executeAction($name, ...$args)
-    {
-        $this->getAction($name)->execute(...$args);
-    }
-
-    /**
-     * Remove specified action(s).
-     *
-     * @param string|array $name
-     *
-     * @return $this
-     */
-    public function removeAction($name)
-    {
-        foreach ((array) $name as $action) {
-            $this->_removeFromCollection($action, 'actions');
         }
 
         return $this;
@@ -1991,7 +1894,7 @@ class Model implements \IteratorAggregate
     /**
      * Returns iterator.
      *
-     * @return Iterator
+     * @return \Iterator
      */
     public function rawIterator()
     {
