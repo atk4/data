@@ -383,7 +383,7 @@ class Model implements \IteratorAggregate
      */
     public function __construct($persistence = null, $defaults = [])
     {
-        $this->scope = Model\Scope\Scope::create();
+        $this->scope = new Model\Scope\Scope();
 
         if (is_string($persistence) || is_array($persistence)) {
             $defaults = $persistence;
@@ -1094,7 +1094,7 @@ class Model implements \IteratorAggregate
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        $this->scope()->and(Scope::create([func_get_args()]));
+        $this->scope()->and(new Scope([func_get_args()]));
 
         return $this;
     }

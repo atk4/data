@@ -83,26 +83,15 @@ class Condition extends AbstractScope
         ];
     }
 
-    /**
-     * Create Condition based on provided arguments
-     * Arguments can also be passed to the $key as array.
-     *
-     * @param mixed $key
-     * @param mixed $operator
-     * @param mixed $value
-     *
-     * @return static
-     */
-    public static function create($key, $operator = null, $value = null)
+    public function __construct($key, $operator = null, $value = null)
     {
         $args = is_array($key) ? $key : func_get_args();
 
-        return new static (...$args);
-    }
+        $key = $args[0];
+        $operator = $args[1] ?? null;
+        $value = $args[2] ?? null;
 
-    public function __construct($key, $operator = null, $value = null)
-    {
-        if (func_num_args() == 2) {
+        if (count($args) == 2) {
             $value = $operator;
             $operator = '=';
         }

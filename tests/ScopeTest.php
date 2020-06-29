@@ -90,7 +90,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition = Condition::create('name', 'John');
+        $condition = new Condition('name', 'John');
 
         $user->add($condition);
 
@@ -103,37 +103,37 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition = Condition::create(new Expression('false'));
+        $condition = new Condition(new Expression('false'));
 
         $this->assertEquals('expression \'false\'', $condition->on($user)->toWords());
 
-        $condition = Condition::create('country_id/code', 'US');
+        $condition = new Condition('country_id/code', 'US');
 
         $this->assertEquals('User that has reference Country Id where Code is equal to \'US\'', $condition->on($user)->toWords());
 
-        $condition = Condition::create('country_id', 2);
+        $condition = new Condition('country_id', 2);
 
         $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->on($user)->toWords());
 
         if ($this->driverType == 'sqlite') {
-            $condition = Condition::create('name', $user->expr('[surname]'));
+            $condition = new Condition('name', $user->expr('[surname]'));
 
             $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->on($user)->toWords());
         }
 
-        $condition = Condition::create('country_id', null);
+        $condition = new Condition('country_id', null);
 
         $this->assertEquals('Country Id is equal to empty', $condition->on($user)->toWords());
 
-        $condition = Condition::create('name', '>', 'Test');
+        $condition = new Condition('name', '>', 'Test');
 
         $this->assertEquals('Name is greater than \'Test\'', $condition->on($user)->toWords());
 
-        $condition = Condition::create('country_id', 2)->negate();
+        $condition = (new Condition('country_id', 2))->negate();
 
         $this->assertEquals('Country Id is not equal to \'Latvia\'', $condition->on($user)->toWords());
 
-        $condition = Condition::create($user->getField('surname'), $user->getField('name'));
+        $condition = new Condition($user->getField('surname'), $user->getField('name'));
 
         $this->assertEquals('Surname is equal to User Name', $condition->on($user)->toWords());
 
@@ -199,7 +199,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
             'value' => 1,
         ]);
 
-        $condition = Condition::create('country_id', '__PERSPECTIVE__');
+        $condition = new Condition('country_id', '__PERSPECTIVE__');
 
         $this->assertEquals('Country Id is equal to \'User Perspective\'', $condition->on($user)->toWords());
 
@@ -216,7 +216,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
             },
         ]);
 
-        $condition = Condition::create('id', '__PERSPECTIVE__');
+        $condition = new Condition('id', '__PERSPECTIVE__');
 
         $this->assertEmpty($condition->on($user)->toArray());
     }
@@ -225,11 +225,11 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = Condition::create('name', 'John');
-        $condition2 = Condition::create('country_code', 'CA');
+        $condition1 = new Condition('name', 'John');
+        $condition2 = new Condition('country_code', 'CA');
 
-        $condition3 = Condition::create('surname', 'Doe');
-        $condition4 = Condition::create('country_code', 'LV');
+        $condition3 = new Condition('surname', 'Doe');
+        $condition4 = new Condition('country_code', 'LV');
 
         $scope1 = Scope::mergeAnd($condition1, $condition2);
         $scope2 = Scope::mergeAnd($condition3, $condition4);
@@ -246,7 +246,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals($scope->on($user)->toWords(), $user->scope()->toWords());
 
-        $condition5 = Condition::create('country_code', 'BR');
+        $condition5 = new Condition('country_code', 'BR');
 
         $scope = Scope::mergeOr($scope, $condition5);
 
@@ -263,11 +263,11 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = Condition::create('name', 'Alain');
-        $condition2 = Condition::create('country_code', 'CA');
+        $condition1 = new Condition('name', 'Alain');
+        $condition2 = new Condition('country_code', 'CA');
 
         $scope1 = Scope::mergeAnd($condition1, $condition2);
-        $condition3 = Condition::create('surname', 'Prost')->negate();
+        $condition3 = (new Condition('surname', 'Prost'))->negate();
 
         $scope = Scope::mergeAnd($scope1, $condition3);
 
@@ -278,11 +278,11 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = Condition::create($user->getField('name'), 'Alain');
-        $condition2 = Condition::create('country_code', 'CA');
+        $condition1 = new Condition($user->getField('name'), 'Alain');
+        $condition2 = new Condition('country_code', 'CA');
 
         $scope1 = Scope::mergeAnd($condition1, $condition2);
-        $condition3 = Condition::create('surname', 'Prost')->negate();
+        $condition3 = (new Condition('surname', 'Prost'))->negate();
 
         $scope = Scope::mergeAnd($scope1, $condition3);
 
@@ -297,8 +297,8 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = Condition::create('name', '!=', 'Alain');
-        $condition2 = Condition::create('country_code', '!=', 'FR');
+        $condition1 = new Condition('name', '!=', 'Alain');
+        $condition2 = new Condition('country_code', '!=', 'FR');
 
         $scope = Scope::mergeOr($condition1, $condition2)->negate();
 
@@ -313,12 +313,12 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = Condition::create('name', 'Alain');
-        $condition2 = Condition::create('country_code', 'FR');
+        $condition1 = new Condition('name', 'Alain');
+        $condition2 = new Condition('country_code', 'FR');
 
         $scope = Scope::mergeAnd($condition1, $condition2);
 
-        $scope->or(Condition::create('name', 'John'));
+        $scope->or(new Condition('name', 'John'));
 
         $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'FR\') or Name is equal to \'John\'', $scope->on($user)->toWords());
     }
@@ -327,12 +327,12 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = Condition::create('name', 'Alain');
-        $condition2 = Condition::create('country_code', 'FR');
+        $condition1 = new Condition('name', 'Alain');
+        $condition2 = new Condition('country_code', 'FR');
 
         $scope = Scope::mergeOr($condition1, $condition2);
 
-        $scope->and(Condition::create('name', 'John'));
+        $scope->and(new Condition('name', 'John'));
 
         $this->assertEquals('(Name is equal to \'Alain\' or Code is equal to \'FR\') and Name is equal to \'John\'', $scope->on($user)->toWords());
     }
@@ -341,8 +341,8 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = Condition::create('name', 'Alain');
-        $condition2 = Condition::create('country_code', 'FR');
+        $condition1 = new Condition('name', 'Alain');
+        $condition2 = new Condition('country_code', 'FR');
 
         $scope = Scope::merge($condition1, $condition2);
 
@@ -353,8 +353,8 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = Condition::create('name', 'Alain');
-        $condition2 = Condition::create('country_code', 'FR');
+        $condition1 = new Condition('name', 'Alain');
+        $condition2 = new Condition('country_code', 'FR');
 
         $scope = Scope::merge($condition1, $condition2);
 
@@ -367,8 +367,8 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = Condition::create('name', 'Alain');
-        $condition2 = Condition::create('country_code', 'FR');
+        $condition1 = new Condition('name', 'Alain');
+        $condition2 = new Condition('country_code', 'FR');
 
         $scope = Scope::merge($condition1, $condition2);
 
@@ -384,8 +384,8 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertTrue($scope->isActive());
 
-        $condition1 = Condition::create('name', 'Alain')->deactivate();
-        $condition2 = Condition::create('country_code', 'FR')->deactivate();
+        $condition1 = (new Condition('name', 'Alain'))->deactivate();
+        $condition2 = (new Condition('country_code', 'FR'))->deactivate();
 
         $scope = Scope::merge($condition1, $condition2);
 
@@ -398,8 +398,8 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 //     {
 //         $user = clone $this->user;
 
-//         $condition1 = Condition::create('name', 'James');
-//         $condition2 = Condition::create('surname', 'Smith');
+//         $condition1 = new Condition('name', 'James');
+//         $condition2 = new Condition('surname', 'Smith');
 
 //         $scope = Scope::mergeAnd($condition1, $condition2);
 

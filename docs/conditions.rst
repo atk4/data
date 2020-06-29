@@ -162,7 +162,7 @@ If $value is omitted as argument then $operator is considered as $value and '=' 
 Negates the condition, e.g::
 
 	// results in 'name is not John'
-	$condition = Condition::create('name', 'John')->negate(); 
+	$condition = (new Condition('name', 'John'))->negate(); 
 
 .. php:method:: setModel(?Model $model = null);
 
@@ -181,13 +181,13 @@ Converts the condition object to human readable words. Model must be set first. 
 as it clones the model object first::
 
 	// results in 'Contact where Name is John'
-	Condition::create('name', 'John')->on($contactModel)->toWords(); 
+	(new Condition('name', 'John'))->on($contactModel)->toWords(); 
 
 .. php:method:: validate($values);
 
 Validates $values array if matching the condition when applied on $model. Returns array of conditions that are not met or empty if $values fit ::
 
-	$condition = Condition::create('name', 'John');
+	$condition = new Condition('name', 'John');
 	
 	// as condition is that only contacts named John are valid
 	// $result will return array($condition) as $condition is not met
@@ -207,21 +207,21 @@ e.g ((Name like 'ABC%' and Country = 'US') or (Name like 'CDE%' and (Country = '
 Scope can be created using Scope::create method from array or joining Condition objects::
 
    // $condition1 will be used as child-component
-	$condition1 = Condition::create('name', 'like', 'ABC%');
+	$condition1 = new Condition('name', 'like', 'ABC%');
    
    // $condition1 will be used as child-component
-	$condition2 = Condition::create('country', 'US');
+	$condition2 = new Condition('country', 'US');
 	
    // $scope1 is created using AND as junction and $condition1 and $condition2 as components
 	$scope1 = Scope::mergeAnd($condition1, $condition2);
 	
-	$condition3 = Condition::create('country', 'DE');
-	$condition4 = Condition::create('surname', 'XYZ');
+	$condition3 = new Condition('country', 'DE');
+	$condition4 = new Condition('surname', 'XYZ');
 	
    // $scope2 is created using OR as junction and $condition3 and $condition4 as components
 	$scope2 = Scope::mergeOr($condition3, $condition4);
 
-	$condition5 = Condition::create('name', 'like', 'CDE%');
+	$condition5 = new Condition('name', 'like', 'CDE%');
 	
    // $scope3 is created using AND as junction and $condition5 and $scope2 as components
 	$scope3 = Scope::mergeAnd($condition5, $scope2);
@@ -362,7 +362,7 @@ E.g when defining access to record using scope we may want to define thatuser ha
     
     // Then we can use the placeholder in conditions
     // This will limit the records to those created by the user
-    $condition = Condition::create('created_by', '__USER__');
+    $condition = new Condition('created_by', '__USER__');
 	
 
 Vendor-dependent logic

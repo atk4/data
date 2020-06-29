@@ -208,16 +208,11 @@ class Scope extends AbstractScope
     /**
      * Create a scope from array of scopes or arrays.
      *
-     * @param string|array  $scopes
-     * @param string $junction
+     * @param string|array $scopes
+     * @param string       $junction
      *
      * @return static
      */
-    public static function create($scopes = null, $junction = self::AND)
-    {
-        return new static ($scopes, $junction);
-    }
-
     public function __construct($scopes = null, $junction = self::AND)
     {
         // use one of JUNCTIONS values, otherwise $junction is truish means OR, falsish means AND
@@ -225,12 +220,12 @@ class Scope extends AbstractScope
 
         // handle it with Condition if it is a string
         if (is_string($scopes)) {
-            $scopes = Condition::create($scopes);
+            $scopes = new Condition($scopes);
         }
 
         // true means no conditions, false means no access to any records at all
         if (is_bool($scopes)) {
-            $scopes = $scopes ? [] : Condition::create(false);
+            $scopes = $scopes ? [] : new Condition(false);
         }
 
         if (!$scopes) {
@@ -240,14 +235,14 @@ class Scope extends AbstractScope
         $scopes = (array) $scopes;
 
         foreach ($scopes as $scope) {
-            $scope = is_string($scope) ? Condition::create($scope) : $scope;
+            $scope = is_string($scope) ? new Condition($scope) : $scope;
 
             if (is_array($scope)) {
                 // array of OR sub-scopes
                 if (count($scope) === 1 && isset($scope[0]) && is_array($scope[0])) {
-                    $scope = self::create($scope[0], self::OR);
+                    $scope = new static($scope[0], self::OR);
                 } else {
-                    $scope = Condition::create(...$scope);
+                    $scope = new Condition(...$scope);
                 }
             }
 
@@ -322,7 +317,7 @@ class Scope extends AbstractScope
      */
     public static function mergeAnd(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null)
     {
-        return self::create(func_get_args(), self::AND);
+        return new static(func_get_args(), self::AND);
     }
 
     /**
@@ -334,7 +329,7 @@ class Scope extends AbstractScope
      */
     public static function mergeOr(AbstractScope $scopeA, AbstractScope $scopeB, $_ = null)
     {
-        return self::create(func_get_args(), self::OR);
+        return new static(func_get_args(), self::OR);
     }
 
     /**
@@ -346,6 +341,6 @@ class Scope extends AbstractScope
      */
     public static function merge(AbstractScope $scopeA, AbstractScope $scopeB, $junction = self::AND)
     {
-        return self::create([$scopeA, $scopeB], $junction);
+        return new static([$scopeA, $scopeB], $junction);
     }
 }
