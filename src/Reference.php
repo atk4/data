@@ -46,7 +46,7 @@ class Reference
      * then used inside getModel() to fully populate and associate with
      * persistence.
      *
-     * @var Model|null
+     * @var Model|string|array
      */
     public $model;
 
@@ -142,6 +142,8 @@ class Reference
             unset($md[0]);
 
             $defaults = array_merge($md, $defaults);
+        } elseif (is_string($this->model)) {
+            $model = [$this->model];
         } else {
             $model = $this->model;
         }
