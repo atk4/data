@@ -43,7 +43,7 @@ class ACClient extends Model
         $this->addUserAction('send_reminder');
 
         // this action will be system action, so it will not be invokable from UI
-        $this->addUserAction('backup_clients', ['scope' => Model\UserAction::APPLIES_TO_ALL_RECORDS, 'system' => true]);
+        $this->addUserAction('backup_clients', ['appliesTo' => Model\UserAction::APPLIES_TO_ALL_RECORDS, 'system' => true]);
     }
 }
 
@@ -76,7 +76,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
         // action takes no arguments. If it would, we should be able to find info about those
         $this->assertSame([], $act1->args);
-        $this->assertSame(Model\UserAction::APPLIES_TO_SINGLE_RECORD, $act1->scope);
+        $this->assertSame(Model\UserAction::APPLIES_TO_SINGLE_RECORD, $act1->appliesTo);
 
         // load record, before executing, because scope is single record
         $client->load(1);
@@ -93,7 +93,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
         // action takes no arguments. If it would, we should be able to find info about those
         $this->assertSame([], $act2->args);
-        $this->assertSame(Model\UserAction::APPLIES_TO_ALL_RECORDS, $act2->scope);
+        $this->assertSame(Model\UserAction::APPLIES_TO_ALL_RECORDS, $act2->appliesTo);
 
         $res = $act2->execute();
         $this->assertSame('backs up all clients', $res);
@@ -133,27 +133,27 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $client->getUserAction('backup_clients')->preview();
     }
 
-    public function testScope1()
+    public function testAppliesTo1()
     {
         $client = new ACClient($this->pers);
         $this->expectExceptionMessage('load existing record');
         $client->executeUserAction('send_reminder');
     }
 
-    public function testScope2()
+    public function testAppliesTo2()
     {
         $client = new ACClient($this->pers);
-        $client->addUserAction('new_client', ['scope' => Model\UserAction::APPLIES_TO_NO_RECORDS]);
+        $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS]);
         $client->load(1);
 
         $this->expectExceptionMessage('executed on existing record');
         $client->executeUserAction('new_client');
     }
 
-    public function testScope3()
+    public function testAppliesTo3()
     {
         $client = new ACClient($this->pers);
-        $client->addUserAction('new_client', ['scope' => Model\UserAction::APPLIES_TO_NO_RECORDS, 'atomic' => false]);
+        $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS, 'atomic' => false]);
 
         $this->expectExceptionMessage('not defined');
         $client->executeUserAction('new_client');

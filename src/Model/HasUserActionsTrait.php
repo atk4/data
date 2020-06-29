@@ -46,15 +46,15 @@ trait HasUserActionsTrait
     }
 
     /**
-     * Returns list of actions for this model. Can filter actions by scope.
+     * Returns list of actions for this model. Can filter actions by records they apply to.
      * It will also skip system user actions (where system === true).
      *
-     * @param int $scope e.g. Model\UserAction::APPLIES_TO_ALL_RECORDS
+     * @param string $appliesTo e.g. Model\UserAction::APPLIES_TO_ALL_RECORDS
      */
-    public function getUserActions($scope = null): array
+    public function getUserActions($appliesTo = null): array
     {
-        return array_filter($this->userActions, function ($action) use ($scope) {
-            return !$action->system && ($scope === null || $action->scope === $scope);
+        return array_filter($this->userActions, function ($action) use ($appliesTo) {
+            return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
         });
     }
 

@@ -39,8 +39,11 @@ class UserAction
     const MULTIPLE_RECORDS = self::APPLIES_TO_MULTIPLE_RECORDS;
     const ALL_RECORDS = self::APPLIES_TO_ALL_RECORDS;
 
+    /** @deprecated use appliesTo instead - will be removed in dec-2020 */
+    public $scope;
+
     /** @var string by default - action is for a single-record */
-    public $scope = self::APPLIES_TO_SINGLE_RECORD;
+    public $appliesTo = self::APPLIES_TO_SINGLE_RECORD;
 
     /** Defining action modifier */
     public const MODIFIER_CREATE = 'create'; // create new record(s).
@@ -90,6 +93,12 @@ class UserAction
     public function init(): void
     {
         $this->init_();
+
+        if ($this->scope) {
+            'trigger_error'('Property UserAction::$scope is deprecated. Use Model::$appliesTo instead', E_USER_DEPRECATED);
+
+            $this->scope = $this->appliesTo;
+        }
     }
 
     /**
@@ -124,7 +133,7 @@ class UserAction
             }
 
             // Verify some scope cases
-            switch ($this->scope) {
+            switch ($this->appliesTo) {
                 case self::APPLIES_TO_NO_RECORDS:
                     if ($this->owner->loaded()) {
                         throw (new Exception('This action scope prevents action from being executed on existing records.'))
