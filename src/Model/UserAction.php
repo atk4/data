@@ -97,7 +97,7 @@ class UserAction
         if ($this->scope) {
             'trigger_error'('Property UserAction::$scope is deprecated. Use Model::$appliesTo instead', E_USER_DEPRECATED);
 
-            $this->scope = $this->appliesTo;
+            $this->appliesTo = $this->scope;
         }
     }
 
