@@ -420,7 +420,7 @@ class Model implements \IteratorAggregate
         $this->addUserAction('add', [
             'fields' => true,
             'modifier' => Model\UserAction::MODIFIER_CREATE,
-            'scope' => Model\UserAction::SCOPE_NONE,
+            'scope' => Model\UserAction::APPLIES_TO_NO_RECORDS,
             'callback' => 'save',
             'description' => 'Add ' . $this->getModelCaption(),
             'ui' => ['icon' => 'plus'],
@@ -429,13 +429,13 @@ class Model implements \IteratorAggregate
         $this->addUserAction('edit', [
             'fields' => true,
             'modifier' => Model\UserAction::MODIFIER_UPDATE,
-            'scope' => Model\UserAction::SCOPE_SINGLE,
+            'scope' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
             'callback' => 'save',
             'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'edit']], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
 
         $this->addUserAction('delete', [
-            'scope' => Model\UserAction::SCOPE_SINGLE,
+            'scope' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
             'modifier' => Model\UserAction::MODIFIER_DELETE,
             'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'red trash']], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {

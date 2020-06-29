@@ -28,19 +28,19 @@ class UserAction
     }
 
     /** Defining scope of the action */
-    const SCOPE_NONE = 'none'; // e.g. add
-    const SCOPE_SINGLE = 'single'; // e.g. archive
-    const SCOPE_MULTIPLE = 'multiple'; // e.g. delete
-    const SCOPE_ALL = 'all'; // e.g. truncate
+    const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
+    const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. archive
+    const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
+    const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
 
     // deprecated constants - will be removed in dec-2020
-    const NO_RECORDS = self::SCOPE_NONE;
-    const SINGLE_RECORD = self::SCOPE_SINGLE;
-    const MULTIPLE_RECORDS = self::SCOPE_MULTIPLE;
-    const ALL_RECORDS = self::SCOPE_ALL;
+    const NO_RECORDS = self::APPLIES_TO_NO_RECORDS;
+    const SINGLE_RECORD = self::APPLIES_TO_SINGLE_RECORD;
+    const MULTIPLE_RECORDS = self::APPLIES_TO_MULTIPLE_RECORDS;
+    const ALL_RECORDS = self::APPLIES_TO_ALL_RECORDS;
 
     /** @var string by default - action is for a single-record */
-    public $scope = self::SCOPE_SINGLE;
+    public $scope = self::APPLIES_TO_SINGLE_RECORD;
 
     /** Defining action modifier */
     public const MODIFIER_CREATE = 'create'; // create new record(s).
@@ -81,7 +81,7 @@ class UserAction
     /** @var array Argument definition. */
     public $args = [];
 
-    /** @var array|bool Specify which fields may be dirty when invoking action. SCOPE_NONE|SCOPE_SINGLE scopes for adding/modifying */
+    /** @var array|bool Specify which fields may be dirty when invoking action. APPLIES_TO_NO_RECORDS|APPLIES_TO_SINGLE_RECORD scopes for adding/modifying */
     public $fields = [];
 
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
@@ -125,14 +125,14 @@ class UserAction
 
             // Verify some scope cases
             switch ($this->scope) {
-                case self::SCOPE_NONE:
+                case self::APPLIES_TO_NO_RECORDS:
                     if ($this->owner->loaded()) {
                         throw (new Exception('This action scope prevents action from being executed on existing records.'))
                             ->addMoreInfo('id', $this->owner->id);
                     }
 
                     break;
-                case self::SCOPE_SINGLE:
+                case self::APPLIES_TO_SINGLE_RECORD:
                     if (!$this->owner->loaded()) {
                         throw new Exception('This action scope requires you to load existing record first.');
                     }

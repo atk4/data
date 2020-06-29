@@ -49,7 +49,7 @@ trait HasUserActionsTrait
      * Returns list of actions for this model. Can filter actions by scope.
      * It will also skip system user actions (where system === true).
      *
-     * @param int $scope e.g. Model\UserAction::SCOPE_ALL
+     * @param int $scope e.g. Model\UserAction::APPLIES_TO_ALL_RECORDS
      */
     public function getUserActions($scope = null): array
     {
