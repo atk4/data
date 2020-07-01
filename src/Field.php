@@ -266,8 +266,12 @@ class Field implements Expressionable
             }
 
             // validate scalar values
-            if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float'], true) && !is_scalar($value)) {
-                throw new ValidationException([$this->name => 'Must use scalar value']);
+            if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float'], true)) {
+                if (!is_scalar($value)) {
+                    throw new ValidationException([$this->name => 'Must use scalar value']);
+                }
+
+                $value = (string) $value;
             }
 
             // normalize
