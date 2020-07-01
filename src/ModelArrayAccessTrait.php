@@ -17,10 +17,8 @@ trait ModelArrayAccessTrait
      * Does field exist?
      *
      * @param string $name
-     *
-     * @return bool
      */
-    public function offsetExists($name)
+    public function offsetExists($name): bool
     {
         return $this->_isset($name);
     }
@@ -43,7 +41,7 @@ trait ModelArrayAccessTrait
      * @param string $name
      * @param mixed  $val
      */
-    public function offsetSet($name, $val)
+    public function offsetSet($name, $val): void
     {
         $this->set($name, $val);
     }
@@ -53,7 +51,7 @@ trait ModelArrayAccessTrait
      *
      * @param string $name
      */
-    public function offsetUnset($name)
+    public function offsetUnset($name): void
     {
         $this->_unset($name);
     }

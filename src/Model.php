@@ -642,10 +642,8 @@ class Model implements \IteratorAggregate
      * Will return true if any of the specified fields are dirty.
      *
      * @param string|array $field
-     *
-     * @return bool
      */
-    public function isDirty($fields = [])
+    public function isDirty($fields = []): bool
     {
         if (!is_array($fields)) {
             $fields = [$fields];
@@ -897,20 +895,15 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * You can compare new value of the field with existing one without
-     * retrieving. In the trivial case it's same as ($value == $model->get($name))
-     * but this method can be used for:.
-     *
+     * Compare new value of the field with existing one without retrieving.
+     * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
      *  - comparing values that can't be received - passwords, encrypted data
      *  - comparing images
      *  - if get() is expensive (e.g. retrieve object)
      *
-     * @param string $name
      * @param mixed  $value
-     *
-     * @return bool true if $value matches saved one
      */
-    public function compare($name, $value)
+    public function compare(string $name, $value): bool
     {
         return $this->getField($name)->compare($value);
     }
@@ -1136,10 +1129,8 @@ class Model implements \IteratorAggregate
 
     /**
      * Is model loaded?
-     *
-     * @return bool
      */
-    public function loaded()
+    public function loaded(): bool
     {
         return $this->id !== null;
     }

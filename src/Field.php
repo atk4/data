@@ -489,8 +489,7 @@ class Field implements Expressionable
     }
 
     /**
-     * This method can be extended. See Model::compare for
-     * use examples.
+     * This method can be extended. See Model::compare for use examples.
      *
      * @param mixed $value
      */
