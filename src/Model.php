@@ -899,9 +899,9 @@ class Model implements \IteratorAggregate
      * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
      *  - comparing values that can't be received - passwords, encrypted data
      *  - comparing images
-     *  - if get() is expensive (e.g. retrieve object)
+     *  - if get() is expensive (e.g. retrieve object).
      *
-     * @param mixed  $value
+     * @param mixed $value
      */
     public function compare(string $name, $value): bool
     {
