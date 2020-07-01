@@ -331,7 +331,7 @@ class Field implements Expressionable
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
                 }
-                $value = round($value, 4);
+                $value = round((float) $value, 4);
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be a zero']);
                 }
