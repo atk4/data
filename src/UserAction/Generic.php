@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace atk4\data\UserAction;
 
 if (!class_exists(\SebastianBergmann\CodeCoverage\CodeCoverage::class, false)) {
-    'trigger_error'('Use atk4\data\Model\UserAction instead', E_USER_DEPRECATED);
+    'trigger_error'('Class atk4\data\UserAction\Generic is deprecated. Use atk4\data\Model\UserAction instead', E_USER_DEPRECATED);
 }
 
 /**
