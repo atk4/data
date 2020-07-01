@@ -449,19 +449,16 @@ class Persistence
     /**
      * JSON decoding with proper error treatment.
      *
-     * @param string $value
-     * @param bool   $assoc
-     *
      * @return mixed
      */
-    public function jsonDecode(Field $f, $value, $assoc = true)
+    public function jsonDecode(Field $f, string $json, bool $assoc = true)
     {
         // constant supported only starting PHP 7.3
         if (!defined('JSON_THROW_ON_ERROR')) {
             define('JSON_THROW_ON_ERROR', 0);
         }
 
-        $res = json_decode($value, $assoc, 512, JSON_THROW_ON_ERROR);
+        $res = json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
         if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
             throw (new Exception('There was error while decoding JSON'))
                 ->addMoreInfo('code', json_last_error())
