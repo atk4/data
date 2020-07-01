@@ -520,7 +520,7 @@ class SQL extends Persistence
 
             break;
         case 'money':
-            $v = round($v, 4);
+            $v = round((float) $v, 4);
 
             break;
         case 'boolean':

@@ -266,8 +266,12 @@ class Field implements Expressionable
             }
 
             // validate scalar values
-            if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float'], true) && !is_scalar($value)) {
-                throw new ValidationException([$this->name => 'Must use scalar value']);
+            if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float'], true)) {
+                if (!is_scalar($value)) {
+                    throw new ValidationException([$this->name => 'Must use scalar value']);
+                }
+
+                $value = (string) $value;
             }
 
             // normalize
@@ -327,7 +331,7 @@ class Field implements Expressionable
                 if (!is_numeric($value)) {
                     throw new ValidationException([$this->name => 'Must be numeric']);
                 }
-                $value = round($value, 4);
+                $value = round((float) $value, 4);
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be a zero']);
                 }
