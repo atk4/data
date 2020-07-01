@@ -85,13 +85,7 @@ class Condition extends AbstractScope
 
     public function __construct($key, $operator = null, $value = null)
     {
-        $args = is_array($key) ? $key : func_get_args();
-
-        $key = $args[0];
-        $operator = $args[1] ?? null;
-        $value = $args[2] ?? null;
-
-        if (count($args) == 2) {
+        if (func_num_args() == 2) {
             $value = $operator;
             $operator = '=';
         }
