@@ -213,13 +213,8 @@ class SQL extends Persistence
 
     /**
      * Creates new Query object with current_timestamp(precision) expression.
-     *
-     * @param Model $m
-     * @param int   $precision
-     *
-     * @return Query
      */
-    public function exprNow($precision = null)
+    public function exprNow(int $precision = null): Expression
     {
         return $this->connection->dsql()->exprNow($precision);
     }
