@@ -250,6 +250,9 @@ class Model implements \IteratorAggregate
      */
     // mapped to $this->_recordProps['id'] public $id;
 
+    /** @var Record|null Null if and only if not loaded */
+    private $_record;
+
     /**
      * Setting model as read_only will protect you from accidentally
      * updating the model. This property is intended for UI and other code
@@ -394,6 +397,10 @@ class Model implements \IteratorAggregate
      */
     public function __clone()
     {
+        if ($this->_record !== null) {
+            $this->_record = clone $this->_record;
+        }
+
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
         $this->_cloneCollection('userActions');
@@ -625,7 +632,7 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    private function checkOnlyFieldsField(string $field)
+    protected function checkOnlyFieldsField(string $field)
     {
         $this->getField($field); // test if field exists
 
@@ -636,6 +643,11 @@ class Model implements \IteratorAggregate
                     ->addMoreInfo('only_fields', $this->only_fields);
             }
         }
+    }
+
+    protected function getRecord(): Record
+    {
+        $this->_record;
     }
 
     /**
@@ -1156,7 +1168,7 @@ class Model implements \IteratorAggregate
      *
      * @param mixed $id
      *
-     * @return $this
+     * @return static|Record Record type in reality, but union type to support Model autohinting/refactoring
      */
     public function load($id, Persistence $from_persistence = null)
     {
@@ -2277,7 +2289,7 @@ class Model implements \IteratorAggregate
 
     // }}}
 
-    // {{{ Record related methods
+    // {{{ Record magic related methods
 
     /** array Values for record related magic properties */
     private $_recordProps = [
@@ -2292,18 +2304,24 @@ class Model implements \IteratorAggregate
             return true;
         }
 
-        return isset($this->{$name}); // default behaviour
+        return isset($this->{$name});
     }
 
+    /**
+     * @return mixed
+     */
     public function &__get(string $name)
     {
         if (array_key_exists($name, $this->_recordProps)) {
             return $this->_recordProps[$name];
         }
 
-        return $this->{$name}; // default behaviour
+        return $this->{$name};
     }
 
+    /**
+     * @param mixed $value
+     */
     public function __set(string $name, $value): void
     {
         if (array_key_exists($name, $this->_recordProps)) {
@@ -2312,7 +2330,7 @@ class Model implements \IteratorAggregate
             return;
         }
 
-        $this->{$name} = $value; // default behaviour
+        $this->{$name} = $value;
     }
 
     public function __unset(string $name): void
@@ -2321,7 +2339,25 @@ class Model implements \IteratorAggregate
             throw new Exception('Record related magic properties are not allowed to be unset');
         }
 
-        unset($this->{$name}); // default behaviour
+        unset($this->{$name});
+    }
+
+    /**
+     * @param mixed $id
+     */
+    private function createRecord($id = null): Record
+    {
+        return new Record($this, ...(/*func_num_args() === 1 ? [] : */[$id]));
+    }
+
+    /**
+     * @return static
+     */
+    public static function fromRecord(Record $record)
+    {
+        return static::assertInstanceOf(\Closure::bind(static function () use ($record) {
+            return $record->_model;
+        }, null, Record::class)());
     }
 
     // }}}
