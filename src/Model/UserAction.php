@@ -113,53 +113,19 @@ class UserAction
         // todo - ACL tests must allow
 
         try {
-            if ($this->enabled === false || (is_callable($this->enabled) && call_user_func($this->enabled) === false)) {
-                throw new Exception('This action is disabled');
-            }
-
-            // Verify that model fields wouldn't be too dirty
-            if (is_array($this->fields)) {
-                $too_dirty = array_diff(array_keys($this->owner->dirty), $this->fields);
-
-                if ($too_dirty) {
-                    throw (new Exception('Calling action on a Model with dirty fields that are not allowed by this action.'))
-                        ->addMoreInfo('too_dirty', $too_dirty)
-                        ->addMoreInfo('dirty', array_keys($this->owner->dirty))
-                        ->addMoreInfo('permitted', $this->fields);
-                }
-            } elseif (!is_bool($this->fields)) {
-                throw (new Exception('Argument `fields` for the action must be either array or boolean.'))
-                    ->addMoreInfo('fields', $this->fields);
-            }
-
-            // Verify some records scope cases
-            switch ($this->appliesTo) {
-                case self::APPLIES_TO_NO_RECORDS:
-                    if ($this->owner->loaded()) {
-                        throw (new Exception('This user action can be executed on non-existing record only.'))
-                            ->addMoreInfo('id', $this->owner->id);
-                    }
-
-                    break;
-                case self::APPLIES_TO_SINGLE_RECORD:
-                    if (!$this->owner->loaded()) {
-                        throw new Exception('This user action requires you to load existing record first.');
-                    }
-
-                    break;
-            }
+            $this->validateBeforeExecute();
 
             $run = function () use ($args) {
                 if ($this->callback === null) {
-                    $cb = [$this->owner, $this->short_name];
+                    $fx = [$this->owner, $this->short_name];
                 } elseif (is_string($this->callback)) {
-                    $cb = [$this->owner, $this->callback];
+                    $fx = [$this->owner, $this->callback];
                 } else {
                     array_unshift($args, $this->owner);
-                    $cb = $this->callback;
+                    $fx = $this->callback;
                 }
 
-                return call_user_func_array($cb, $args);
+                return call_user_func_array($fx, $args);
             };
 
             if ($this->atomic) {
@@ -171,6 +137,45 @@ class UserAction
             $e->addMoreInfo('action', $this);
 
             throw $e;
+        }
+    }
+
+    protected function validateBeforeExecute()
+    {
+        if ($this->enabled === false || (is_callable($this->enabled) && call_user_func($this->enabled) === false)) {
+            throw new Exception('This action is disabled');
+        }
+
+        // Verify that model fields wouldn't be too dirty
+        if (is_array($this->fields)) {
+            $tooDirty = array_diff(array_keys($this->owner->dirty), $this->fields);
+
+            if ($tooDirty) {
+                throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action.'))
+                    ->addMoreInfo('too_dirty', $tooDirty)
+                    ->addMoreInfo('dirty', array_keys($this->owner->dirty))
+                    ->addMoreInfo('permitted', $this->fields);
+            }
+        } elseif (!is_bool($this->fields)) {
+            throw (new Exception('Argument `fields` for the user action must be either array or boolean.'))
+                ->addMoreInfo('fields', $this->fields);
+        }
+
+        // Verify some records scope cases
+        switch ($this->appliesTo) {
+            case self::APPLIES_TO_NO_RECORDS:
+                if ($this->owner->loaded()) {
+                    throw (new Exception('This user action can be executed on non-existing record only.'))
+                        ->addMoreInfo('id', $this->owner->id);
+                }
+
+                break;
+            case self::APPLIES_TO_SINGLE_RECORD:
+                if (!$this->owner->loaded()) {
+                    throw new Exception('This user action requires you to load existing record first.');
+                }
+
+                break;
         }
     }
 
