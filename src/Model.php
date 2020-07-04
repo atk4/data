@@ -224,7 +224,7 @@ class Model implements \IteratorAggregate
      *
      * @var array
      */
-    public $data = [];
+    // mapped to $this->_recordProps['data'] public $data = [];
 
     /**
      * After loading an active record from DataSet it will be stored in
@@ -240,7 +240,15 @@ class Model implements \IteratorAggregate
      *
      * @var array
      */
-    public $dirty = [];
+    // mapped to $this->_recordProps['dirty'] public $dirty = [];
+
+    /**
+     * Contains ID of the current record. If the value is null then the record
+     * is considered to be new.
+     *
+     * @var mixed
+     */
+    // mapped to $this->_recordProps['id'] public $id;
 
     /**
      * Setting model as read_only will protect you from accidentally
@@ -253,14 +261,6 @@ class Model implements \IteratorAggregate
      * @var bool
      */
     public $read_only = false;
-
-    /**
-     * Contains ID of the current record. If the value is null then the record
-     * is considered to be new.
-     *
-     * @var mixed
-     */
-    public $id;
 
     /**
      * While in most cases your id field will be called 'id', sometimes
@@ -2273,6 +2273,55 @@ class Model implements \IteratorAggregate
         }
 
         return $this->addField($name, new Field\Callback($expression));
+    }
+
+    // }}}
+
+    // {{{ Record related methods
+
+    /** array Values for record related magic properties */
+    private $_recordProps = [
+        'data' => [],
+        'dirty' => [],
+        'id' => null,
+    ];
+
+    public function __isset(string $name): bool
+    {
+        if (array_key_exists($name, $this->_recordProps)) {
+            return true;
+        }
+
+        return isset($this->{$name}); // default behaviour
+    }
+
+    public function &__get(string $name)
+    {
+        if (array_key_exists($name, $this->_recordProps)) {
+            return $this->_recordProps[$name];
+        }
+
+        return $this->{$name}; // default behaviour
+    }
+
+    public function __set(string $name, $value): void
+    {
+        if (array_key_exists($name, $this->_recordProps)) {
+            $this->_recordProps[$name] = $value;
+
+            return;
+        }
+
+        $this->{$name} = $value; // default behaviour
+    }
+
+    public function __unset(string $name): void
+    {
+        if (array_key_exists($name, $this->_recordProps)) {
+            throw new Exception('Record related magic properties are not allowed to be unset');
+        }
+
+        unset($this->{$name}); // default behaviour
     }
 
     // }}}
