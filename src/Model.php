@@ -1200,7 +1200,10 @@ class Model implements \IteratorAggregate
             return $ret;
         }
 
-        return $this;
+        $this->_record = $this->createRecord();
+        $this->_record->id = $this->id;
+
+        return $this->_record;
     }
 
     /**
@@ -1213,7 +1216,7 @@ class Model implements \IteratorAggregate
         $id = $this->id;
         $this->unload();
 
-        return $this->load($id);
+        return $this->load($id)->_model;
     }
 
     /**

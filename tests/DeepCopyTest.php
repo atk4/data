@@ -220,7 +220,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 
         $dc = new DeepCopy();
         $client3 = $dc
-            ->from((new DcClient($this->db))->load(1))
+            ->from((new DcClient($this->db))->load(1)->_model)
             ->to(new DcClient())
             ->with([
                 // Invoices are copied, but unless we also copy lines, totals won't be there!
