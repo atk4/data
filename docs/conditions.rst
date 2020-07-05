@@ -235,7 +235,7 @@ Scope is independent object not related to any model. Applying scope to model is
 	$contact->add($scope); // adding scope to model
 	$contact->scope()->and($conditionXYZ); // adding more conditions
 	
-.. php:method::	create($scopeOrArray = null, $junction = Scope::AND);
+.. php:method:: __construct($scopeOrArray = null, $junction = Scope::AND);
 
 Creates a scope object from array. If scope is passed as first argument uses this as result::
 
