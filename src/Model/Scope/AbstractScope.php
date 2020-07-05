@@ -23,6 +23,20 @@ abstract class AbstractScope
     protected $active = true;
 
     /**
+     * Contains the object specific placeholder registry in $key => $options format.
+     *
+     * @var array
+     */
+    protected $placeholders = [];
+
+    /**
+     * Contains the global placeholder registry in $key => $options format.
+     *
+     * @var array
+     */
+    protected static $globalPlaceholders = [];
+
+    /**
      * The model this scope applies to.
      *
      * @var Model
@@ -145,6 +159,56 @@ abstract class AbstractScope
     public function isCompound(): bool
     {
         return false;
+    }
+
+    /**
+     * Register object specific placeholoder for a value to be replaced
+     * The $options array may contain
+     * - label : string - the label to use when converting toWords
+     * - value : string|Callable - the actual value to be used when applying the scope
+     * If value is Callable the it is called with $model, $scope as arguments.
+     *
+     * @param string|callable $options
+     */
+    public function registerPlaceholder(string $key, $options)
+    {
+        $this->placeholders[$key] = is_array($options) ? $options : [
+            'label' => is_string($options) ? $options : $key,
+            'value' => $options,
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Register several placeholders from an array.
+     *
+     * @see AbstractScope::registerPlaceholder
+     */
+    final public function registerPlaceholders(array $placeholders)
+    {
+        foreach ($placeholders as $key => $options) {
+            $this->registerPlaceholder($key, $options);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Register global placeholoder for a value to be replaced
+     * The $options array may contain
+     * - label : string - the label to use when converting toWords
+     * - value : string|Callable - the actual value to be used when applying the scope
+     * If value is Callable the it is called with $model, $scope as arguments.
+     *
+     * @param string|callable $options
+     */
+    final public static function registerGlobalPlaceholder(string $key, $options)
+    {
+        self::$globalPlaceholders[$key] = is_array($options) ? $options : [
+            'label' => is_string($options) ? $options : $key,
+            'value' => $options,
+        ];
     }
 
     public static function __set_state($array)

@@ -77,7 +77,7 @@ class Scope extends AbstractScope
      */
     public function addComponent(AbstractScope $scope)
     {
-        $this->components[] = $scope->setModel($this->model);
+        $this->components[] = $scope->setModel($this->model)->registerPlaceholders($this->placeholders);
 
         return $this;
     }
@@ -306,6 +306,22 @@ class Scope extends AbstractScope
         $this->components = [$self, $scope];
 
         return $this->setModel($this->model);
+    }
+
+    /**
+     * Override parent method to register placeholder also with all components.
+     *
+     * {@inheritdoc}
+     *
+     * @see \atk4\data\Model\Scope\AbstractScope::registerPlaceholder()
+     */
+    public function registerPlaceholder(string $key, $options)
+    {
+        foreach ($this->components as $component) {
+            $component->registerPlaceholder($key, $options);
+        }
+
+        return parent::registerPlaceholder($key, $options);
     }
 
     /**

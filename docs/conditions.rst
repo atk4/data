@@ -204,7 +204,7 @@ Scope object has a single defined junction (AND or OR) and can contain multiple 
 This makes creating Model scopes with deep nested conditions possible, 
 e.g ((Name like 'ABC%' and Country = 'US') or (Name like 'CDE%' and (Country = 'DE' or Surname = 'XYZ')))
 
-Scope can be created using Scope::create method from array or joining Condition objects::
+Scope can be created using new Scope() statement from an array or joining Condition objects::
 
    // $condition1 will be used as child-component
 	$condition1 = new Condition('name', 'like', 'ABC%');
@@ -240,7 +240,7 @@ Scope is independent object not related to any model. Applying scope to model is
 Creates a scope object from array. If scope is passed as first argument uses this as result::
 
 	// below will create 2 conditions and join them as scope components with AND junction
-	$scope1 = Scope::create([
+	$scope1 = new Scope([
 		['name', 'like', 'ABC%'],
 		['country', 'US']
 	]);
@@ -345,15 +345,15 @@ Although it is similar in functionality to checking ('company/tickets/#', '>', 0
 	// Contact whose company doesn't have any tickets
 	$contact->addCondition('company/tickets/!');
 
-Condition Value Placeholder
----------------------------
+Global and Scope-specific Value Placeholders
+--------------------------------------------
 
-Condition class enables defining placeholder for a condition value. This functionlity can be useful by defining a single scope object
-which can be applied with different conditions depending on environment factors (like current user, etc)
+Condition class enables defining application global placeholder for a condition value. This functionlity can be useful by defining a single scope object
+which can be applied with different conditions depending on application global environment factors (like current user, etc)
 E.g when defining access to record using scope we may want to define thatuser has access to the record if he/she created it::
 
 	// First we register the placeholder using an anonymous function as value
-	Condition::registerPlaceholder('__USER__', [
+	Condition::registerGlobalPlaceholder('__USER__', [
     	'label' => 'User', // the value that will be used by toWords method
     	'value' => function(Condition $condition) {
     		return $this->app->user; // the current user logged into the system
@@ -363,7 +363,25 @@ E.g when defining access to record using scope we may want to define thatuser ha
     // Then we can use the placeholder in conditions
     // This will limit the records to those created by the user
     $condition = new Condition('created_by', '__USER__');
-	
+    
+Condition or Scope objects also allow for registering specific placeholders for the object instance only which do not affect the global placeolder registry.
+This functionality is useful when having a predefined scopes in a part of the app which depend on local parameters::
+
+    // First we create the scope object using placeholders as values in the conditions
+    $scope = new Scope([
+      ['name', '::report_creator_name::'],
+      ['country', '::report_creator_country::']
+    ]);
+    
+    // Then before using the scope we need to register the placeholders with it
+    $scope->registerPlaceholders([
+      '::report_creator_name::' => 'John',
+      '::report_creator_country::' => 'US'
+    ]);
+    
+When the scope is then used the placeholders will automatically be replaced with their values. Using prefix/suffix (like "::" or "__")
+to denote a placeholder key is not compulsory but it is a good practice in order to distinguish a placeholder from an actual condition value.
+The scope object passes down the list of placeholders to all of its components.
 
 Vendor-dependent logic
 ======================

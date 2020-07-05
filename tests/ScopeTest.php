@@ -194,7 +194,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        Condition::registerPlaceholder('__PERSPECTIVE__', [
+        Condition::registerGlobalPlaceholder('__PERSPECTIVE__', [
             'label' => 'User Perspective',
             'value' => 1,
         ]);
@@ -207,7 +207,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals(1, $user->loadAny()->id);
 
-        Condition::registerPlaceholder('__PERSPECTIVE__', [
+        Condition::registerGlobalPlaceholder('__PERSPECTIVE__', [
             'label' => 'User Perspective',
             'value' => function (Condition $condition) {
                 $condition->deactivate();
@@ -270,6 +270,26 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition3 = (new Condition('surname', 'Prost'))->negate();
 
         $scope = Scope::mergeAnd($scope1, $condition3);
+
+        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->on($user)->toWords());
+    }
+
+    public function testScopePlaceholders()
+    {
+        $user = clone $this->user;
+
+        $condition1 = new Condition('name', '::user_name::');
+        $condition2 = new Condition('country_code', '::user_country::');
+
+        $scope1 = Scope::mergeAnd($condition1, $condition2);
+        $condition3 = (new Condition('surname', 'Prost'))->negate();
+
+        $scope = Scope::mergeAnd($scope1, $condition3);
+
+        $scope->registerPlaceholders([
+            '::user_name::' => 'Alain',
+            '::user_country::' => 'CA',
+        ]);
 
         $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->on($user)->toWords());
     }

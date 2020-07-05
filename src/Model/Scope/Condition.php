@@ -59,30 +59,6 @@ class Condition extends AbstractScope
         'NOT REGEXP',
     ];
 
-    /**
-     * Contains the placeholder registry in $key => $options format.
-     *
-     * @var array
-     */
-    protected static $placeholders = [];
-
-    /**
-     * Register placeholoder for a value to be replaced
-     * The $options array may contain
-     * - label : string - the label to use when converting toWords
-     * - value : string|Callable - the actual value to be used when applying the scope
-     * If value is Callable the it is called with $model, $scope as arguments.
-     *
-     * @param string|callable $options
-     */
-    final public static function registerPlaceholder(string $key, $options)
-    {
-        self::$placeholders[$key] = is_array($options) ? $options : [
-            'label' => $key,
-            'value' => $options,
-        ];
-    }
-
     public function __construct($key, $operator = null, $value = null)
     {
         if (func_num_args() == 2) {
@@ -393,7 +369,8 @@ class Condition extends AbstractScope
         }
 
         if (is_scalar($value)) {
-            if ($placeholder = self::$placeholders[$value] ?? null) {
+            // replace using object specific placeholder or using global placeholder
+            if ($placeholder = $this->placeholders[$value] ?? self::$globalPlaceholders[$value] ?? null) {
                 $value = $toWords ? $placeholder['label'] : $placeholder['value'];
 
                 if (is_callable($fx = $value)) {
