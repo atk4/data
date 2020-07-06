@@ -38,13 +38,13 @@
     "sort-packages": true
   },
   "require": {
-    "php": ">=7.2.0",
+    "php": ">=7.3.0",
     "ext-intl": "*",
     "atk4/core": "dev-develop",
     "atk4/dsql": "dev-develop"
   },
   "require-release": {
-    "php": ">=7.2.0",
+    "php": ">=7.3.0",
     "ext-intl": "*",
     "atk4/core": "^2.0",
     "atk4/dsql": "^2.0"
@@ -53,13 +53,13 @@
     "atk4/schema": "dev-develop",
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/phpcov": "*",
-    "phpunit/phpunit": ">=8.0"
+    "phpunit/phpunit": ">=9.0"
   },
   "require-dev-release": {
     "atk4/schema": "^2.0",
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/phpcov": "*",
-    "phpunit/phpunit": ">=8.0"
+    "phpunit/phpunit": ">=9.0"
   },
   "replace": {
     "atk4/data": "self.version"
