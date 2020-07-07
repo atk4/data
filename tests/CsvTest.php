@@ -12,7 +12,7 @@ use atk4\data\tests\Model\Person as Person;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class CSVTest extends AtkPhpunit\TestCase
+class CsvTest extends AtkPhpunit\TestCase
 {
     protected $file;
     protected $file2;
@@ -43,7 +43,7 @@ class CSVTest extends AtkPhpunit\TestCase
         }
     }
 
-    protected function setDB($data): void
+    protected function setDb($data): void
     {
         $f = fopen($this->file, 'w');
         fputcsv($f, array_keys(reset($data)));
@@ -53,7 +53,7 @@ class CSVTest extends AtkPhpunit\TestCase
         fclose($f);
     }
 
-    protected function getDB(): array
+    protected function getDb(): array
     {
         $f = fopen($this->file, 'r');
         $keys = fgetcsv($f);
@@ -76,8 +76,8 @@ class CSVTest extends AtkPhpunit\TestCase
             ['name' => 'Sarah', 'surname' => 'Jones'],
         ];
 
-        $this->setDB($data);
-        $data2 = $this->getDB();
+        $this->setDb($data);
+        $data2 = $this->getDb();
         $this->assertSame($data, $data2);
     }
 
@@ -88,9 +88,9 @@ class CSVTest extends AtkPhpunit\TestCase
             ['name' => 'Sarah', 'surname' => 'Jones'],
         ];
 
-        $this->setDB($data);
+        $this->setDb($data);
 
-        $p = new Persistence\CSV($this->file);
+        $p = new Persistence\Csv($this->file);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -107,9 +107,9 @@ class CSVTest extends AtkPhpunit\TestCase
             ['name' => 'Sarah', 'surname' => 'Jones'],
         ];
 
-        $this->setDB($data);
+        $this->setDb($data);
 
-        $p = new Persistence\CSV($this->file);
+        $p = new Persistence\Csv($this->file);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -130,10 +130,10 @@ class CSVTest extends AtkPhpunit\TestCase
             ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
         ];
 
-        $this->setDB($data);
+        $this->setDb($data);
 
-        $p = new Persistence\CSV($this->file);
-        $p2 = new Persistence\CSV($this->file2);
+        $p = new Persistence\Csv($this->file);
+        $p2 = new Persistence\Csv($this->file2);
 
         $m = new Person($p);
 
@@ -158,9 +158,9 @@ class CSVTest extends AtkPhpunit\TestCase
             ['name' => 'John', 'surname' => 'Smith'],
             ['name' => 'Sarah', 'surname' => 'Jones'],
         ];
-        $this->setDB($data);
+        $this->setDb($data);
 
-        $p = new Persistence\CSV($this->file);
+        $p = new Persistence\Csv($this->file);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');

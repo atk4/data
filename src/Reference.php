@@ -19,7 +19,7 @@ class Reference
         init as _init;
     }
     use \atk4\core\TrackableTrait;
-    use \atk4\core\DIContainerTrait;
+    use \atk4\core\DiContainerTrait;
     use \atk4\core\FactoryTrait;
 
     /**

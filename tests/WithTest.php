@@ -24,8 +24,8 @@ class WithTest extends \atk4\schema\PhpunitTestCase
                 2 => ['id' => 2, 'net' => 200, 'user_id' => 20],
                 3 => ['id' => 3, 'net' => 100, 'user_id' => 20],
             ], ];
-        $this->setDB($a);
-        $db = new Persistence\SQL($this->db->connection);
+        $this->setDb($a);
+        $db = new Persistence\Sql($this->db->connection);
 
         // setup models
         $m_user = new Model($db, 'user');

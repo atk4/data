@@ -6,7 +6,7 @@ Agile Data is a framework for defining your "business layer" which is separate f
 
 - Agile Data uses PHP to define your Business Objects, their properties and actions.
 - Agile Data works with SQL, NoSQL or external API sources.
-- Agile Data plugs into generic UI components (CRUD, Card, Table, Form, etc) with a minimum code.
+- Agile Data plugs into generic UI components (Crud, Card, Table, Form, etc) with a minimum code.
 - Agile Data supports "user actions". UI layer uses "action executor" to read ACL-controlled metadata.
 - Agile Data is developer-friendly and easy to learn
 - Agile Data is high-performance, capable of abstracting aggregation logic and shifting it into a capable database persistence (such as SQL) through advanced expressions.
@@ -42,7 +42,7 @@ In other ORM the similar implementation would be either [slow, clumsy, limited o
 Agile Toolkit is a low-code framework. Once you have defined your business object, it can be associated with a UI widget:
 
 ``` php
-$app->add(new CRUD())->setModel(new Client($db), ['name', 'surname'], ['edit', 'archive']);
+$app->add(new Crud())->setModel(new Client($db), ['name', 'surname'], ['edit', 'archive']);
 ```
 
 or with an API end-point:
@@ -65,7 +65,7 @@ Designed for medium to large PHP applications and frameworks, ATK Data is a clea
 -   Execute more on the server. Agile Data converts query logic into server-specific language (e.g. SQL) then delivers you the exact data rows / columns which you need from a single statement, no matter how complex.
 -   Data architecture transparency. As your database structure change, your application code does not need to be refactored. Replace fields with expressions, denormalize/normalize data, join and merge tables. Only update your application in a single place.
 -   Extensions. "[Audit](https://github.com/atk4/audit)" - transparently record all edits, updates and deletes with "Undo" support. "[Reports](https://github.com/atk4/report)" - add conditions, group results, union results then group them again, join add limit for a great report design.
--   [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [CRUD](http://ui.agiletoolkit.org/demos/crud.php), [Grid](http://ui.agiletoolkit.org/demos/grid.php), [Form](http://ui.agiletoolkit.org/demos/form3.php) as well as add-ons like [Charts](https://github.com/atk4/chart)  can be added to your PHP app with 3-lines of code.
+-   [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [Crud](http://ui.agiletoolkit.org/demos/crud.php), [Grid](http://ui.agiletoolkit.org/demos/grid.php), [Form](http://ui.agiletoolkit.org/demos/form3.php) as well as add-ons like [Charts](https://github.com/atk4/chart)  can be added to your PHP app with 3-lines of code.
 -   RestAPI server for Agile Data is currently under development.
 -   Agile Data and all extensions mentioned above are licensed under MIT and are free to use.
 
@@ -92,9 +92,9 @@ Most of the ORM (including the one you are probably using now) suffer from one f
 
 As a result the UI layer cannot simply discover how your Invoice relate to the Client. This makes YOU write a lot of glue code - performing query and feeding data into the UI layer.
 
->    *With most ORMs you cannot design an generic CRUD or Form which would work with ANY model. As a result server-side rendering becoming more extinct in the face of Client-side frameworks.*
+>    *With most ORMs you cannot design an generic Crud or Form which would work with ANY model. As a result server-side rendering becoming more extinct in the face of Client-side frameworks.*
 
-Agile Data addresses this balance. For the presentation logic you can use tools such as [Agile UI](https://github.com/atk4/ui), that consists of generic CRUD, Form implementations or other modules which accept the Model protocol of Agile Data:
+Agile Data addresses this balance. For the presentation logic you can use tools such as [Agile UI](https://github.com/atk4/ui), that consists of generic Crud, Form implementations or other modules which accept the Model protocol of Agile Data:
 
 ``` php
 $presentation->setModel($business_model);
@@ -378,7 +378,7 @@ Each persistence implements actions differently. SQL is probably the most full-f
 
 ### Introducing Expressions
 
-Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `Field_SQL_Expression` and `Field_Expression` can define field through custom SQL or PHP code:
+Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `FieldSqlExpression` and `Field_Expression` can define field through custom SQL or PHP code:
 
 ![GitHub release](docs/images/expression.gif)
 
@@ -459,7 +459,7 @@ add higher level features on our solid foundation.
 
 If you pass a `$model` object inside any method, add-on or extension, it's possible for them to discover not only the data, but also field types and various meta-information, references to other models, supported actions and many more.
 
-With that, creating a Dynamic Form UI object that automatically includes DropDown with list of allowed values is possible.
+With that, creating a Dynamic Form UI object that automatically includes Dropdown with list of allowed values is possible.
 
 In fact - we have already stared work on [Agile UI](http://github.com/atk4/ui) project!
 
@@ -613,7 +613,7 @@ Agile Data relies on [DSQL - Query Builder](https://github.com/atk4/dsql) for SQ
 
 ## UI for Agile Data
 
-In a universe with hundreds of [different PHP CRUD implementations](https://codecanyon.net/category/php-scripts?utf8=✓&term=crud&as=0&referrer=search&view=list), we thought you might like to have an open-source Grid/CRUD/Forms/Other UI library that is specifically designed for Agile Data.
+In a universe with hundreds of [different PHP Crud implementations](https://codecanyon.net/category/php-scripts?utf8=✓&term=crud&as=0&referrer=search&view=list), we thought you might like to have an open-source Grid/Crud/Forms/Other UI library that is specifically designed for Agile Data.
 
 Please consider our other MIT-licensed project - [Agile UI](http://www.agiletoolkit.org/ui) to build something like this:
 

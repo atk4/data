@@ -10,11 +10,11 @@ use atk4\data\Persistence;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
+class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 {
     public function testNakedExpression()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, false);
         $m->addExpression('x', '2+3');
         $m->tryLoadAny();
@@ -28,9 +28,9 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 10, 'total_vat' => 1.23],
                 ['total_net' => 20, 'total_vat' => 2.46],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
@@ -69,9 +69,9 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 10, 'total_vat' => 1.23],
                 ['total_net' => 20, 'total_vat' => 2.46],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', function ($i, $q) {
             return '[total_net]+[total_vat]';
@@ -100,9 +100,9 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 10, 'total_vat' => 1.23],
                 ['total_net' => 20, 'total_vat' => 2.46],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('sum_net', $i->action('fx', ['sum', 'total_net']));
 
@@ -133,9 +133,9 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'cached_name' => 'John Smith'],
                 2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'cached_name' => 'ERROR'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'user');
         $m->addFields(['name', 'surname', 'cached_name']);
 
@@ -171,9 +171,9 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
             'math' => [
                 ['a' => 2, 'b' => 2],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'math');
         $m->addFields(['a', 'b']);
 
@@ -187,7 +187,7 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals(9, $m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
 
-        $this->setDB($a);
+        $this->setDb($a);
         $m = new Model($db, ['math', 'reload_after_save' => false]);
         $m->addFields(['a', 'b']);
 
@@ -204,7 +204,7 @@ class ExpressionSQLTest extends \atk4\schema\PhpunitTestCase
 
     public function testExpressionActionAlias()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, false);
         $m->addExpression('x', '2+3');
 

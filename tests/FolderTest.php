@@ -44,9 +44,9 @@ class FolderTest extends \atk4\schema\PhpunitTestCase
                 ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'Agile Toolkit'],
                 ['parent_id' => 4, 'is_deleted' => 1, 'name' => 'test-project'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $f = new Folder($db);
         $f->load(4);
 

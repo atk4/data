@@ -13,7 +13,7 @@ use atk4\data\Model;
  * also that the original model can be re-loaded with a different
  * value without making any condition stick.
  */
-class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
+class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 {
     public function testBasic()
     {
@@ -29,7 +29,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['amount' => '3', 'user_id' => 1],
                 ['amount' => '8', 'user_id' => 3],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
         $o = (new Model($this->db, 'order'))->addFields(['amount', 'user_id']);
@@ -90,7 +90,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['currency' => 'USD', 'name' => 'Dollar'],
                 ['currency' => 'GBP', 'name' => 'Pound'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name', 'currency']);
         $c = (new Model($this->db, 'currency'))->addFields(['currency', 'name']);
@@ -138,7 +138,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['amount' => '3', 'user_id' => 1],
                 ['amount' => '8', 'user_id' => 3],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
         $o = (new Model($this->db, 'order'))->addFields(['amount']);
@@ -178,7 +178,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['amount' => '3', 'user_id' => 1],
                 ['amount' => '8', 'user_id' => 3],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name', ['date', 'type' => 'date']]);
 
@@ -219,7 +219,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
             ], ];
 
-        $this->setDB($a);
+        $this->setDb($a);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['ref_no']);
         $l = (new Model($this->db, 'invoice_line'))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
@@ -250,7 +250,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
             ], ];
 
-        $this->setDB($a);
+        $this->setDb($a);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['ref_no']);
         $l = (new Model($this->db, 'invoice_line'))->addFields([
@@ -313,7 +313,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['name' => 'Pear',   'code' => null,  'list_id' => 3],
             ], ];
 
-        $this->setDB($a);
+        $this->setDb($a);
 
         $l = (new Model($this->db, 'list'))->addFields(['name']);
         $i = (new Model($this->db, 'item'))->addFields(['list_id', 'name', 'code']);
@@ -363,7 +363,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['address' => 'Joe contact'],
             ], ];
 
-        $this->setDB($a);
+        $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
         $c = (new Model($this->db, 'contact'))->addFields(['address']);
@@ -411,7 +411,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['name' => 'John camp', 'player_id' => '1'],
             ],
         ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $p = (new Model($this->db, 'player'))->addFields(['name']);
 
@@ -436,7 +436,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
     }
 
     /**
-     * Few tests to test Reference\HasOne_SQL addTitle() method.
+     * Few tests to test Reference\HasOneSql addTitle() method.
      */
     public function testAddTitle()
     {
@@ -447,7 +447,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
         $o = (new Model($this->db, 'order'))->addFields(['amount']);
@@ -488,7 +488,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
             ], ];
 
         // restore DB
-        $this->setDB($a);
+        $this->setDb($a);
 
         // with default title_field='name'
         $u = (new Model($this->db, 'user'))->addFields(['name', 'last_name']);
@@ -505,7 +505,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
 
         // restore DB
-        $this->setDB($a);
+        $this->setDb($a);
 
         // with custom title_field='last_name'
         $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
@@ -522,7 +522,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
 
         // restore DB
-        $this->setDB($a);
+        $this->setDb($a);
 
         // with custom title_field='last_name' and custom link name
         $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
@@ -539,7 +539,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(2, $o->get('user_id')); // and it's really saved like that
 
         // restore DB
-        $this->setDB($a);
+        $this->setDb($a);
 
         // with custom title_field='last_name' and custom link name
         $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
@@ -577,7 +577,7 @@ class ReferenceSQLTest extends \atk4\schema\PhpunitTestCase
         ];
 
         // restore DB
-        $this->setDB($a);
+        $this->setDb($a);
         $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
 
         // Test : Now the caption is null and is generated from field name

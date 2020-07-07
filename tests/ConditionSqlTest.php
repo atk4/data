@@ -9,7 +9,7 @@ use atk4\data\Model;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
+class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 {
     public function testBasic()
     {
@@ -18,7 +18,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
@@ -43,7 +43,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
         }
 
         $mm = clone $m;
-        $mm->withID(2); // = addCondition(id, 2)
+        $mm->withId(2); // = addCondition(id, 2)
         $mm->tryLoad(1);
         $this->assertNull($mm->get('name'));
         $mm->tryLoad(2);
@@ -59,7 +59,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 3 => ['id' => 3, 'name' => 'Null1', 'gender' => null],
                 4 => ['id' => 4, 'name' => 'Null2', 'gender' => null],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
@@ -84,7 +84,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
@@ -130,7 +130,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
@@ -162,7 +162,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender', 'surname']);
@@ -216,7 +216,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'contact_phone' => '+123 smiths'],
                 2 => ['id' => 2, 'contact_phone' => '+321 sues'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender', 'surname']);
@@ -264,7 +264,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 2 => ['id' => 2, 'name' => 'Johhny'],
                 3 => ['id' => 3, 'name' => 'Mary'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -294,7 +294,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
                 2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -311,7 +311,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
                 2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -333,7 +333,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
                 2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -355,7 +355,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 3 => ['id' => 3, 'name' => 'Joe'],
             ],
         ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
 
@@ -386,7 +386,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 3 => ['id' => 3, 'name' => 'Joe'],
             ],
         ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
 
@@ -413,7 +413,7 @@ class ConditionSQLTest extends \atk4\schema\PhpunitTestCase
                 3 => ['id' => 3, 'name' => 'Joe', 'active' => 1, 'created' => '2019-07-15 09:55:05'],
             ],
         ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $u = new Model($this->db, 'user');
         $u->addField('name', ['type' => 'string']);

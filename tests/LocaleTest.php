@@ -44,7 +44,7 @@ class LocaleTest extends AtkPhpunit\TestCase
             $m->addField('surname');
             $m->load(4);
         } catch (Exception $e) {
-            $this->assertStringContainsString('Запись', json_decode($e->getJSON(), true)['message']);
+            $this->assertStringContainsString('Запись', json_decode($e->getJson(), true)['message']);
 
             return;
         }

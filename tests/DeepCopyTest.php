@@ -8,7 +8,7 @@ use atk4\data\Model;
 use atk4\data\Util\DeepCopy;
 use atk4\data\Util\DeepCopyException;
 
-class DCClient extends Model
+class DcClient extends Model
 {
     public $table = 'client';
 
@@ -18,13 +18,13 @@ class DCClient extends Model
 
         $this->addField('name');
 
-        $this->hasMany('Invoices', new DCInvoice());
-        $this->hasMany('Quotes', new DCQuote());
-        $this->hasMany('Payments', new DCPayment());
+        $this->hasMany('Invoices', new DcInvoice());
+        $this->hasMany('Quotes', new DcQuote());
+        $this->hasMany('Payments', new DcPayment());
     }
 }
 
-class DCInvoice extends Model
+class DcInvoice extends Model
 {
     public $table = 'invoice';
 
@@ -32,12 +32,12 @@ class DCInvoice extends Model
     {
         parent::init();
 
-        $this->hasOne('client_id', new DCClient());
+        $this->hasOne('client_id', new DcClient());
 
-        $this->hasMany('Lines', [new DCInvoiceLine(), 'their_field' => 'parent_id'])
+        $this->hasMany('Lines', [new DcInvoiceLine(), 'their_field' => 'parent_id'])
             ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
-        $this->hasMany('Payments', new DCPayment())
+        $this->hasMany('Payments', new DcPayment())
             ->addField('paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
         $this->addExpression('due', '[total]-[paid]');
@@ -54,16 +54,16 @@ class DCInvoice extends Model
     }
 }
 
-class DCQuote extends Model
+class DcQuote extends Model
 {
     public $table = 'quote';
 
     public function init(): void
     {
         parent::init();
-        $this->hasOne('client_id', new DCClient());
+        $this->hasOne('client_id', new DcClient());
 
-        $this->hasMany('Lines', [new DCQuoteLine(), 'their_field' => 'parent_id'])
+        $this->hasMany('Lines', [new DcQuoteLine(), 'their_field' => 'parent_id'])
             ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
         $this->addField('ref');
@@ -72,14 +72,14 @@ class DCQuote extends Model
     }
 }
 
-class DCInvoiceLine extends Model
+class DcInvoiceLine extends Model
 {
     public $table = 'line';
 
     public function init(): void
     {
         parent::init();
-        $this->hasOne('parent_id', new DCInvoice());
+        $this->hasOne('parent_id', new DcInvoice());
 
         $this->addField('name');
 
@@ -95,7 +95,7 @@ class DCInvoiceLine extends Model
     }
 }
 
-class DCQuoteLine extends Model
+class DcQuoteLine extends Model
 {
     public $table = 'line';
 
@@ -103,7 +103,7 @@ class DCQuoteLine extends Model
     {
         parent::init();
 
-        $this->hasOne('parent_id', new DCQuote());
+        $this->hasOne('parent_id', new DcQuote());
 
         $this->addField('name');
 
@@ -118,16 +118,16 @@ class DCQuoteLine extends Model
     }
 }
 
-class DCPayment extends Model
+class DcPayment extends Model
 {
     public $table = 'payment';
 
     public function init(): void
     {
         parent::init();
-        $this->hasOne('client_id', new DCClient());
+        $this->hasOne('client_id', new DcClient());
 
-        $this->hasOne('invoice_id', new DCInvoice());
+        $this->hasOne('invoice_id', new DcInvoice());
 
         $this->addField('amount', ['type' => 'money']);
     }
@@ -143,19 +143,19 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigrator(new DCClient($this->db))->drop()->create();
-        $this->getMigrator(new DCInvoice($this->db))->drop()->create();
-        $this->getMigrator(new DCQuote($this->db))->drop()->create();
-        $this->getMigrator(new DCInvoiceLine($this->db))->drop()->create();
-        $this->getMigrator(new DCPayment($this->db))->drop()->create();
+        $this->getMigrator(new DcClient($this->db))->drop()->create();
+        $this->getMigrator(new DcInvoice($this->db))->drop()->create();
+        $this->getMigrator(new DcQuote($this->db))->drop()->create();
+        $this->getMigrator(new DcInvoiceLine($this->db))->drop()->create();
+        $this->getMigrator(new DcPayment($this->db))->drop()->create();
     }
 
     public function testBasic()
     {
-        $client = new DCClient($this->db);
+        $client = new DcClient($this->db);
         $client_id = $client->insert(['name' => 'John']);
 
-        $quote = new DCQuote($this->db);
+        $quote = new DcQuote($this->db);
 
         $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
@@ -169,7 +169,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $dc = new DeepCopy();
         $invoice = $dc
             ->from($quote)
-            ->to(new DCInvoice())
+            ->to(new DcInvoice())
             ->with(['Lines'])
             ->copy();
 
@@ -196,7 +196,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $dc = new DeepCopy();
         $invoice_copy = $dc
             ->from($invoice)
-            ->to(new DCInvoice())
+            ->to(new DcInvoice())
             ->with(['Lines', 'client_id', 'Payments' => ['client_id']])
             ->copy();
 
@@ -220,8 +220,8 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 
         $dc = new DeepCopy();
         $client3 = $dc
-            ->from((new DCClient($this->db))->load(1))
-            ->to(new DCClient())
+            ->from((new DcClient($this->db))->load(1))
+            ->to(new DcClient())
             ->with([
                 // Invoices are copied, but unless we also copy lines, totals won't be there!
                 'Invoices' => [
@@ -260,11 +260,11 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 
     public function testError()
     {
-        $client = new DCClient($this->db);
+        $client = new DcClient($this->db);
         $client_id = $client->insert(['name' => 'John']);
 
-        $quote = new DCQuote($this->db);
-        $quote->hasMany('Lines2', [new DCQuoteLine(), 'their_field' => 'parent_id']);
+        $quote = new DcQuote($this->db);
+        $quote->hasMany('Lines2', [new DcQuoteLine(), 'their_field' => 'parent_id']);
 
         $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
@@ -272,7 +272,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         ]]);
         $quote->loadAny();
 
-        $invoice = new DCInvoice();
+        $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m) {
             if (!$m->get('ref')) {
                 throw new \atk4\core\Exception('no ref');
@@ -302,10 +302,10 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 
     public function testDeepError()
     {
-        $client = new DCClient($this->db);
+        $client = new DcClient($this->db);
         $client_id = $client->insert(['name' => 'John']);
 
-        $quote = new DCQuote($this->db);
+        $quote = new DcQuote($this->db);
 
         $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
@@ -313,7 +313,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         ]]);
         $quote->loadAny();
 
-        $invoice = new DCInvoice();
+        $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m) {
             if (!$m->get('ref')) {
                 throw new \atk4\core\Exception('no ref');

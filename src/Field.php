@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
-use atk4\core\DIContainerTrait;
+use atk4\core\DiContainerTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\core\TrackableTrait;
 use atk4\dsql\Expression;
@@ -18,7 +18,7 @@ use atk4\dsql\Expressionable;
 class Field implements Expressionable
 {
     use TrackableTrait;
-    use DIContainerTrait;
+    use DiContainerTrait;
     use ReadableCaptionTrait;
 
     // {{{ Properties
@@ -552,14 +552,14 @@ class Field implements Expressionable
      *
      * @return Expression
      */
-    public function getDSQLExpression($expression)
+    public function getDsqlExpression($expression)
     {
-        if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence\SQL) {
+        if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence\Sql) {
             throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
                 ->addMoreInfo('persistence', $this->owner->persistence ?? null);
         }
 
-        return $this->owner->persistence->getFieldSQLExpression($this, $expression);
+        return $this->owner->persistence->getFieldSqlExpression($this, $expression);
     }
 
     // {{{ Debug Methods

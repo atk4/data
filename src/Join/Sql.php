@@ -9,12 +9,12 @@ use atk4\data\Model;
 use atk4\data\Persistence;
 
 /**
- * Join\SQL class.
+ * Join\Sql class.
  *
- * @property Persistence\SQL $persistence
- * @property SQL             $join
+ * @property Persistence\Sql $persistence
+ * @property Sql             $join
  */
-class SQL extends Join implements \atk4\dsql\Expressionable
+class Sql extends Join implements \atk4\dsql\Expressionable
 {
     /**
      * By default we create ON expression ourselves, but if you want to specify
@@ -39,10 +39,10 @@ class SQL extends Join implements \atk4\dsql\Expressionable
      *
      * @return \atk4\dsql\Expression
      */
-    public function getDSQLExpression($q)
+    public function getDsqlExpression($q)
     {
         /*
-        // If our Model has expr() method (inherited from Persistence\SQL) then use it
+        // If our Model has expr() method (inherited from Persistence\Sql) then use it
         if ($this->owner->hasMethod('expr')) {
             return $this->owner->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
         }
@@ -51,7 +51,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         return $q->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
         */
 
-        // Romans: Join\SQL shouldn't even be called if expr is undefined. I think we should leave it here to produce error.
+        // Romans: Join\Sql shouldn't even be called if expr is undefined. I think we should leave it here to produce error.
         return $this->owner->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
     }
 
@@ -74,7 +74,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
             $this->foreign_alias = ($this->owner->table_alias ?: '') . $this->short_name;
         }
 
-        $this->owner->onHook(Persistence\SQL::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
+        $this->owner->onHook(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
 
         // Add necessary hooks
         if ($this->reverse) {
@@ -201,7 +201,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
         $this->save_buffer = [];
         $insert->set($this->foreign_field, null);
         $insert->insert();
-        $this->id = $this->owner->persistence->lastInsertID($this->owner);
+        $this->id = $this->owner->persistence->lastInsertId($this->owner);
 
         if ($this->join) {
             $this->join->set($this->master_field, $this->id);
@@ -231,7 +231,7 @@ class SQL extends Join implements \atk4\dsql\Expressionable
                 isset($this->join) ? $this->join->id : $id
             );
         $insert->insert();
-        $this->id = $this->owner->persistence->lastInsertID($this->owner);
+        $this->id = $this->owner->persistence->lastInsertId($this->owner);
     }
 
     /**

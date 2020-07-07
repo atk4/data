@@ -6,7 +6,7 @@ namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
 use atk4\data\Field;
-use atk4\data\Field_SQL_Expression;
+use atk4\data\FieldSqlExpression;
 use atk4\data\Model;
 use atk4\data\Persistence;
 use atk4\dsql\Connection;
@@ -14,9 +14,9 @@ use atk4\dsql\Expression;
 use atk4\dsql\Query;
 
 /**
- * Persistence\SQL class.
+ * Persistence\Sql class.
  */
-class SQL extends Persistence
+class Sql extends Persistence
 {
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
@@ -43,14 +43,14 @@ class SQL extends Persistence
      *
      * @var string
      */
-    public $_default_seed_addField = [\atk4\data\Field_SQL::class];
+    public $_default_seed_addField = [\atk4\data\FieldSql::class];
 
     /**
      * Default class when adding hasOne field.
      *
      * @var string
      */
-    public $_default_seed_hasOne = [\atk4\data\Reference\HasOne_SQL::class];
+    public $_default_seed_hasOne = [\atk4\data\Reference\HasOneSql::class];
 
     /**
      * Default class when adding hasMany field.
@@ -64,14 +64,14 @@ class SQL extends Persistence
      *
      * @var string
      */
-    public $_default_seed_addExpression = [Field_SQL_Expression::class];
+    public $_default_seed_addExpression = [FieldSqlExpression::class];
 
     /**
      * Default class when adding join.
      *
      * @var string
      */
-    public $_default_seed_join = [\atk4\data\Join\SQL::class];
+    public $_default_seed_join = [\atk4\data\Join\Sql::class];
 
     /**
      * Constructor.
@@ -649,7 +649,7 @@ class SQL extends Persistence
                 $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
                 if (isset($args['alias'])) {
                     $q->reset('field')->field($field, $args['alias']);
-                } elseif ($field instanceof Field_SQL_Expression) {
+                } elseif ($field instanceof FieldSqlExpression) {
                     $q->reset('field')->field($field, $field->short_name);
                 } else {
                     $q->reset('field')->field($field);
@@ -678,7 +678,7 @@ class SQL extends Persistence
 
                 if (isset($args['alias'])) {
                     $q->reset('field')->field($q->expr($expr, [$field]), $args['alias']);
-                } elseif ($field instanceof Field_SQL_Expression) {
+                } elseif ($field instanceof FieldSqlExpression) {
                     $q->reset('field')->field($q->expr($expr, [$field]), $fx . '_' . $field->short_name);
                 } else {
                     $q->reset('field')->field($q->expr($expr, [$field]));
@@ -853,7 +853,7 @@ class SQL extends Persistence
 
         $m->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
 
-        return $m->persistence->lastInsertID($m);
+        return $m->persistence->lastInsertId($m);
     }
 
     /**
@@ -976,7 +976,7 @@ class SQL extends Persistence
         }
     }
 
-    public function getFieldSQLExpression(Field $field, Expression $expression)
+    public function getFieldSqlExpression(Field $field, Expression $expression)
     {
         if (isset($field->owner->persistence_data['use_table_prefixes'])) {
             $mask = '{{}}.{}';
@@ -994,7 +994,7 @@ class SQL extends Persistence
             ];
         }
 
-        // If our Model has expr() method (inherited from Persistence\SQL) then use it
+        // If our Model has expr() method (inherited from Persistence\Sql) then use it
         if ($field->owner->hasMethod('expr')) {
             $field->owner->expr($mask, $prop);
         }
@@ -1008,16 +1008,16 @@ class SQL extends Persistence
      *
      * @return mixed
      */
-    public function lastInsertID(Model $m)
+    public function lastInsertId(Model $m)
     {
         $seq = $m->sequence ?: null;
 
-        // PostgreSQL PDO always requires sequence name in lastInsertID method as parameter
+        // PostgreSQL PDO always requires sequence name in lastInsertId method as parameter
         // So let's use its default one if no specific is set
         if ($this->connection instanceof \atk4\dsql\Postgresql\Connection && $seq === null) {
             $seq = $m->table . '_' . $m->id_field . '_seq';
         }
 
-        return $this->connection->lastInsertID($seq);
+        return $this->connection->lastInsertId($seq);
     }
 }

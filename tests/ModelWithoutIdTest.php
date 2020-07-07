@@ -13,7 +13,7 @@ use atk4\data\Persistence;
  *
  * Tests cases when model have to work with data that does not have ID field
  */
-class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
+class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
 {
     public $m;
 
@@ -25,9 +25,9 @@ class ModelWithoutIDTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $this->m = new Model($db, ['user', 'id_field' => false]);
 
         $this->m->addFields(['name', 'gender']);

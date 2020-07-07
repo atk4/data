@@ -53,7 +53,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $this->assertSame('world', $m->get('foo'));
     }
 
-    public function testIDArg()
+    public function testIdArg()
     {
         $p = new Persistence\Static_([['id' => 20, 'foo' => 'hello'], ['id' => 21, 'foo' => 'world']]);
         $m = new Model($p);
@@ -63,7 +63,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $this->assertSame('world', $m->get('foo'));
     }
 
-    public function testIDKey()
+    public function testIdKey()
     {
         $p = new Persistence\Static_([20 => ['foo' => 'hello'], 21 => ['foo' => 'world']]);
         $m = new Model($p);

@@ -9,7 +9,7 @@ use atk4\data\Model;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
+class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
 {
     /**
      * Test constructor.
@@ -21,7 +21,7 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -51,7 +51,7 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
             ],
         ];
 
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -85,7 +85,7 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -109,7 +109,7 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -133,7 +133,7 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
-        $this->setDB($a, false); // create empty table
+        $this->setDb($a, false); // create empty table
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -152,7 +152,7 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -189,7 +189,7 @@ class PersistentSQLTest extends \atk4\schema\PhpunitTestCase
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');

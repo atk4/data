@@ -15,18 +15,18 @@ use atk4\data\Persistence;
  * id-specific operations. You can only use a single persistence object with
  * a single file.
  *
- * $p = new Persistence\CSV('file.csv');
+ * $p = new Persistence\Csv('file.csv');
  * $m = new MyModel($p);
  * $data = $m->export();
  *
  * Alternatively you can write into a file. First operation you perform on
  * the persistence will determine the mode.
  *
- * $p = new Persistence\CSV('file.csv');
+ * $p = new Persistence\Csv('file.csv');
  * $m = new MyModel($p);
  * $m->import($data);
  */
-class CSV extends Persistence
+class Csv extends Persistence
 {
     /**
      * Name of the file.
@@ -379,7 +379,7 @@ class CSV extends Persistence
      *
      * @return string
      */
-    public function generateNewID($m, $table = null)
+    public function generateNewId($m, $table = null)
     {
         if (!isset($table)) {
             $table = $m->table;

@@ -92,9 +92,9 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 20],
                 ['total_net' => 15],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
@@ -136,9 +136,9 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 20],
                 ['total_net' => 15],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
@@ -172,7 +172,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
         ], $data);
     }
 
-    public function testBasicID()
+    public function testBasicId()
     {
         $a = [
             'invoice' => [
@@ -180,9 +180,9 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 20],
                 ['total_net' => 15],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
