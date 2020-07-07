@@ -157,7 +157,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($m, $data);
 
-        $id = $this->generateNewID($m, $table);
+        $id = $this->generateNewId($m, $table);
         if ($m->id_field) {
             $data[$m->id_field] = $id;
         }
@@ -215,7 +215,7 @@ class Array_ extends Persistence
      *
      * @return string
      */
-    public function generateNewID($m, $table = null)
+    public function generateNewId($m, $table = null)
     {
         if (!isset($table)) {
             $table = $m->table;

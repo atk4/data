@@ -892,7 +892,7 @@ The default action type can be set when executing action, for example::
 SQL Actions
 -----------
 
-The following actions are currently supported by `Persistence\\SQL`:
+The following actions are currently supported by `Persistence\\Sql`:
 
  - select - produces query that returns DataSet  (array of hashes)
  - delete - produces query for deleting DataSet (no result)
@@ -934,7 +934,7 @@ SQL Actions on Linked Records
 -----------------------------
 
 In conjunction with Model::refLink() you can produce expressions for creating
-sub-selects. The functionality is nicely wrapped inside Field_SQL_Many::addField()::
+sub-selects. The functionality is nicely wrapped inside FieldSql_Many::addField()::
 
     $client->hasMany('Invoice')
         ->addField('total_gross', ['aggregate'=>'sum', 'field'=>'gross']);

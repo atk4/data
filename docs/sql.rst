@@ -5,7 +5,7 @@
 SQL Extensions
 ==============
 
-Databases that support SQL language can use :php:class:`Persistence\SQL`.
+Databases that support SQL language can use :php:class:`Persistence\Sql`.
 This driver will format queries to the database using SQL language.
 
 In addition to normal operations you can extend and customize various queries.
@@ -13,30 +13,30 @@ In addition to normal operations you can extend and customize various queries.
 Default Model Classes
 =====================
 
-When using Persistence\SQL model building will use different classes for fields,
+When using Persistence\Sql model building will use different classes for fields,
 expressions, joins etc:
 
- - addField - :php:class:`Field_SQL` (field can be used as part of DSQL Expression)
- - hasOne - :php:class:`Reference\HasOne_SQL` (allow importing fields)
- - addExpression - :php:class:`Field_SQL_Expression` (define expression through DSQL)
- - join - :php:class:`Join\SQL` (join tables query-time)
+ - addField - :php:class:`FieldSql` (field can be used as part of DSQL Expression)
+ - hasOne - :php:class:`Reference\HasOneSql` (allow importing fields)
+ - addExpression - :php:class:`FieldSqlExpression` (define expression through DSQL)
+ - join - :php:class:`Join\Sql` (join tables query-time)
 
 
 SQL Field
 ---------
 
-.. php:class:: Field_SQL
+.. php:class:: FieldSql
 
 .. php:attr:: actual
 
-    :php:class:`Persistence\SQL` supports field name mapping. Your field could
+    :php:class:`Persistence\Sql` supports field name mapping. Your field could
     have different column name in your schema::
 
         $this->addField('name', ['actual'=>'first_name']);
 
     This will apply to load / save operations as well as query mapping.
 
-.. php:method:: getDSQLExpression
+.. php:method:: getDsqlExpression
 
     SQL Fields can be used inside other SQL expressions::
 
@@ -48,7 +48,7 @@ SQL Field
 SQL Reference
 -------------
 
-.. php:class:: Reference\HasOne_SQL
+.. php:class:: Reference\HasOneSql
 
     Extends :php:class:`Reference\HasOne`
 
@@ -138,9 +138,9 @@ SQL Reference
 Expressions
 -----------
 
-.. php:class:: Field_SQL_Expression
+.. php:class:: FieldSqlExpression
 
-    Extends :php:class:`Field_SQL`
+    Extends :php:class:`FieldSql`
 
 Expression will map into the SQL code, but will perform as read-only field otherwise.
 
@@ -151,7 +151,7 @@ Expression will map into the SQL code, but will perform as read-only field other
         $model->addExpression('age', 'year(now())-[birth_year]');
         // tag [birth_year] will be automatically replaced by respective model field
 
-.. php:method:: getDSQLExpression
+.. php:method:: getDsqlExpression
 
     SQL Expressions can be used inside other SQL expressions::
 
@@ -163,7 +163,7 @@ as default behavior, see :php:attr:`Model::reload_after_save`.
 Transactions
 ============
 
-.. php:class:: Persistence\SQL
+.. php:class:: Persistence\Sql
 
 .. php:method:: atomic
 
@@ -197,7 +197,7 @@ Custom Expressions
 .. php:method:: expr
 
     This method is also injected into the model, that is associated with
-    Persistence\SQL so the most convenient way to use this method is by calling
+    Persistence\Sql so the most convenient way to use this method is by calling
     `$model->expr('foo')`.
 
 This method is quite similar to \atk4\dsql\Query::expr() method explained here:
@@ -216,7 +216,7 @@ field expressions will be automatically substituted. Here is long / short format
 
     $q = $m->expr('[age] + [birth_year']);
 
-This method is automatically used by :php:class:`Field_SQL_Expression`.
+This method is automatically used by :php:class:`FieldSqlExpression`.
 
 
 Actions
@@ -333,7 +333,7 @@ will loose ability to use the same model with non-sql persistences.
 
 Sometimes you can fence the code like this::
 
-    if ($this->persistence instanceof \atk4\data\Persistence\SQL) {
+    if ($this->persistence instanceof \atk4\data\Persistence\Sql) {
         .. sql code ..
     }
 
@@ -433,7 +433,7 @@ as an Action
 
 .. important:: Not all SQL vendors may support this approach.
 
-Method :php:meth:`Persistence\\SQL::action` and :php:meth:`Model::action`
+Method :php:meth:`Persistence\\Sql::action` and :php:meth:`Model::action`
 generates queries for most of model operations.  By re-defining this method,
 you can significantly affect the query building of an SQL model::
 

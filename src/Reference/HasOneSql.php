@@ -6,14 +6,14 @@ namespace atk4\data\Reference;
 
 use atk4\data\Exception;
 use atk4\data\Field;
-use atk4\data\Field_SQL_Expression;
+use atk4\data\FieldSqlExpression;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
 /**
- * Reference\HasOne_SQL class.
+ * Reference\HasOneSql class.
  */
-class HasOne_SQL extends HasOne
+class HasOneSql extends HasOne
 {
     /**
      * Creates expression which sub-selects a field inside related model.
@@ -22,7 +22,7 @@ class HasOne_SQL extends HasOne
      *
      * @param string|Field|array $field or [$field, ..defaults]
      */
-    public function addField($field, string $their_field = null): Field_SQL_Expression
+    public function addField($field, string $their_field = null): FieldSqlExpression
     {
         if (is_array($field)) {
             $defaults = $field;
@@ -43,7 +43,7 @@ class HasOne_SQL extends HasOne
         // if caption is not defined in $defaults -> get it directly from the linked model field $their_field
         $defaults['caption'] = $defaults['caption'] ?? $this->owner->refModel($this->link)->getField($their_field)->getCaption();
 
-        /** @var Field_SQL_Expression $e */
+        /** @var FieldSqlExpression $e */
         $e = $this->owner->addExpression($field, array_merge(
             [
                 function (Model $m) use ($their_field) {
@@ -142,7 +142,7 @@ class HasOne_SQL extends HasOne
     {
         $m = parent::ref($defaults);
 
-        if (!isset($this->owner->persistence) || !($this->owner->persistence instanceof Persistence\SQL)) {
+        if (!isset($this->owner->persistence) || !($this->owner->persistence instanceof Persistence\Sql)) {
             return $m;
         }
 
@@ -179,7 +179,7 @@ class HasOne_SQL extends HasOne
      *
      * @param array $defaults Properties
      */
-    public function addTitle($defaults = []): Field_SQL_Expression
+    public function addTitle($defaults = []): FieldSqlExpression
     {
         if (!is_array($defaults)) {
             throw (new Exception('Argument to addTitle should be an array'))
@@ -195,7 +195,7 @@ class HasOne_SQL extends HasOne
                 ->addMoreInfo('field', $field);
         }
 
-        /** @var Field_SQL_Expression $ex */
+        /** @var FieldSqlExpression $ex */
         $ex = $this->owner->addExpression($field, array_replace_recursive(
             [
                 function (Model $m) {

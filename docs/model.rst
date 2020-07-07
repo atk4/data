@@ -171,7 +171,7 @@ Persistence object. It is commonly used to declare fields, conditions, relations
 
 You may safely rely on `$this->persistence` property to make choices::
 
-   if ($this->persistence instanceof \atk4\data\Persistence\SQL) {
+   if ($this->persistence instanceof \atk4\data\Persistence\Sql) {
 
       // Calculating on SQL server is more efficient!!
       $this->addExpression('total', '[amount] + [vat]');
@@ -367,10 +367,10 @@ With a method alone, you can generate and send passwords::
    $user->send_new_password();
 
 but using `$this->addUserAction()` exposes that method to the ATK UI wigets,
-so if your admin is using `CRUD`, a new button will be available allowing
+so if your admin is using `Crud`, a new button will be available allowing
 passwords to be generated and sent to the users::
 
-   CRUD::addTo($app)->setModel(new User($app->db));
+   Crud::addTo($app)->setModel(new User($app->db));
 
 Read more about :php:class:`Model\UserAction`
 
@@ -416,7 +416,7 @@ Inheritance
 -----------
 ATK Data models are really good for structuring hierarchically. Here is example::
 
-   class VIPUser extends User {
+   class VipUser extends User {
       function init(): void {
          parent::init();
 
@@ -439,7 +439,7 @@ for example, this hook may be placed in the "User" class init()::
 
    $this->onHook(Model::HOOK_AFTER_LOAD, function($m) {
       if ($m->get('purchases') > 1000) {
-         $this->breakHook($this->asModel(VIPUser::class);
+         $this->breakHook($this->asModel(VipUser::class);
       }
    });
 
@@ -501,7 +501,7 @@ to another.
 .. php:method:: asModel($class, $options = [])
 
 Casts current model into another class. The new model class should be compatible
-with $this - you can do `$user->asModel(VIPUser::class)` but converting `$user`
+with $this - you can do `$user->asModel(VipUser::class)` but converting `$user`
 into `Invoice::class` is a bad idea.
 
 Although class is switched, the new model will retain current record data, replace all

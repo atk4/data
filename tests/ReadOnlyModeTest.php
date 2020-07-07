@@ -25,9 +25,9 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $this->m = new Model($db, ['user', 'read_only' => true]);
 
         $this->m->addFields(['name', 'gender']);

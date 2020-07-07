@@ -7,7 +7,7 @@ namespace atk4\data;
 use atk4\core\AppScopeTrait;
 use atk4\core\CollectionTrait;
 use atk4\core\ContainerTrait;
-use atk4\core\DIContainerTrait;
+use atk4\core\DiContainerTrait;
 use atk4\core\DynamicMethodTrait;
 use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
@@ -30,7 +30,7 @@ class Model implements \IteratorAggregate
     use InitializerTrait {
         init as _init;
     }
-    use DIContainerTrait;
+    use DiContainerTrait;
     use FactoryTrait;
     use AppScopeTrait;
     use CollectionTrait;
@@ -416,7 +416,7 @@ class Model implements \IteratorAggregate
             return; // don't declare action for read-only model
         }
 
-        // Declare our basic CRUD actions for the model.
+        // Declare our basic Crud actions for the model.
         $this->addUserAction('add', [
             'fields' => true,
             'modifier' => Model\UserAction::MODIFIER_CREATE,
@@ -1024,7 +1024,7 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function withID($id)
+    public function withId($id)
     {
         return $this->addCondition($this->id_field, $id);
     }

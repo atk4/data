@@ -246,13 +246,13 @@ Joins are implemented like this:
   value of the foreign field will be set to null.
 
 
-.. php:class:: Join\SQL
+.. php:class:: Join\Sql
 
 SQL-specific joins
 ==================
 
 When your model is associated with SQL-capable driver, then instead of using
-`Join` class, the `Join\\SQL` is used instead. This class is designed to improve
+`Join` class, the `Join\\Sql` is used instead. This class is designed to improve
 loading technique, because SQL vendors can query multiple tables simultaneously.
 
 Vendors that cannot do JOINs will have to implement compatibility by pulling

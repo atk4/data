@@ -17,7 +17,7 @@ class Persistence
     use \atk4\core\AppScopeTrait;
     use \atk4\core\DynamicMethodTrait;
     use \atk4\core\NameTrait;
-    use \atk4\core\DIContainerTrait;
+    use \atk4\core\DiContainerTrait;
 
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
@@ -38,7 +38,7 @@ class Persistence
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {
         // Process DSN string
-        $dsn = \atk4\dsql\Connection::normalizeDSN($dsn, $user, $password);
+        $dsn = \atk4\dsql\Connection::normalizeDsn($dsn, $user, $password);
 
         $driverType = strtolower($args['driver']/*BC compatibility*/ ?? $args['driverType'] ?? $dsn['driverType']);
 
@@ -58,7 +58,7 @@ class Persistence
             case 'dumper':
             case 'counter':
             case 'sqlite':
-                $db = new \atk4\data\Persistence\SQL($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
+                $db = new \atk4\data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
                 $db->driverType = $driverType;
 
                 return $db;

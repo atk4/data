@@ -14,14 +14,14 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
 {
     public function testAtomicOperations()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'item' => [
                 ['name' => 'John'],
                 ['name' => 'Sue'],
                 ['name' => 'Smith'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($db, 'item');
         $m->addField('name');
@@ -37,7 +37,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertSame('Sue', $this->getDB()['item'][2]['name']);
+        $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
 
         $m->onHook(Model::HOOK_AFTER_DELETE, function ($m) {
             throw new \Exception('Awful thing happened');
@@ -48,18 +48,18 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         } catch (\Exception $e) {
         }
 
-        $this->assertSame('Sue', $this->getDB()['item'][2]['name']);
+        $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
     }
 
     public function testBeforeSaveHook()
     {
         $self = $this;
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'item' => [
                 ['name' => 'John'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         // test insert
         $m = new Model($db, 'item');
@@ -81,12 +81,12 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
     public function testAfterSaveHook()
     {
         $self = $this;
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'item' => [
                 ['name' => 'John'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         // test insert
         $m = new Model($db, 'item');
@@ -108,12 +108,12 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
     public function testOnRollbackHook()
     {
         $self = $this;
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'item' => [
                 ['name' => 'John'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         // test insert
         $m = new Model($db, 'item');

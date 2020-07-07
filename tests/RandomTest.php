@@ -78,9 +78,9 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],
                 ['dat' => '12/12/12', 'bid' => 8.3, 'ask' => 9.2],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Rate($db);
 
         $this->assertEquals(2, $m->action('count')->getOne());
@@ -92,9 +92,9 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 '_' => ['name' => 'John', 'salary' => 29],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'user');
         $m->addFields(['name', ['salary', 'default' => 10]]);
 
@@ -108,7 +108,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 2 => ['id' => 2, 'name' => 'Steve', 'salary' => 30],
                 3 => ['id' => 3, 'name' => 'Sue', 'salary' => 10],
                 4 => ['id' => 4, 'name' => 'John', 'salary' => 40],
-            ], ], $this->getDB());
+            ], ], $this->getDb());
     }
 
     public function testAddFields()
@@ -121,9 +121,9 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 1 => ['name' => 'John', 'login' => 'john@example.com'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'user');
         $m->addFields(['name', 'login'], ['default' => 'unknown']);
 
@@ -135,7 +135,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'login' => 'john@example.com'],
                 2 => ['id' => 2, 'name' => 'Peter', 'login' => 'unknown'],
                 3 => ['id' => 3, 'name' => 'unknown', 'login' => 'unknown'],
-            ], ], $this->getDB());
+            ], ], $this->getDb());
     }
 
     public function testAddFields2()
@@ -148,9 +148,9 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 1 => ['name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'user');
         $m->addFields(['name'], ['default' => 'anonymous']);
         $m->addFields([
@@ -180,14 +180,14 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => '1'],
                 2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => '1'],
                 3 => ['id' => 3, 'name' => 'Smith', 'parent_item_id' => '2'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model_Item($db, 'item');
 
@@ -203,7 +203,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -216,7 +216,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => '2'],
             ],
         ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model_Item2($db, 'item');
 
@@ -232,7 +232,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'age' => 18],
@@ -245,7 +245,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => '2'],
             ],
         ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model_Item3($db, 'item');
 
@@ -260,20 +260,20 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testUpdateCondition()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'item' => [
                 ['name' => 'John'],
                 ['name' => 'Sue'],
                 ['name' => 'Smith'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($db, 'item');
         $m->addField('name');
         $m->load(2);
 
-        $m->onHook(Persistence\SQL::HOOK_AFTER_UPDATE_QUERY, function ($m, $update, $st) {
+        $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, function ($m, $update, $st) {
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
@@ -291,7 +291,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             'item' => [
                 1 => ['id' => 1, 'name' => 'John'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m->set('name', 'Peter');
 
@@ -302,19 +302,19 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         }
 
         $this->assertNotNull($e);
-        $this->assertEquals($a, $this->getDB());
+        $this->assertEquals($a, $this->getDb());
     }
 
     public function testHookBreakers()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'item' => [
                 ['name' => 'John'],
                 ['name' => 'Sue'],
                 ['name' => 'Smith'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model($db, 'user');
         $m->addField('name');
@@ -344,7 +344,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testIssue220()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Item($db);
 
         $this->expectException(Exception::class);
@@ -352,18 +352,18 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 
-    public function testNonSQLFieldClass()
+    public function testNonSqlFieldClass()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'rate' => [
                 ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
             ],
         ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model_Rate($db);
-        $m->addField('x1', new \atk4\data\Field_SQL());
+        $m->addField('x1', new \atk4\data\FieldSql());
         $m->addField('x2', new \atk4\data\Field());
         $m->load(1);
 
@@ -374,7 +374,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testModelCaption()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'user');
 
         // caption is not set, so generate it from class name \atk4\data\Model
@@ -391,13 +391,13 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => '1'],
                 2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => '1'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         $m = new Model_Item($db, 'item');
 
@@ -439,7 +439,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 2 => ['code' => 10, 'name' => 'John'],
                 5 => ['code' => 20, 'name' => 'Sarah'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
         // model without id field
         $m1 = new Model($this->db, ['table' => 'user', 'id_field' => false]);

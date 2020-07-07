@@ -10,9 +10,9 @@ use atk4\dsql\Expressionable;
 /**
  * Class description?
  *
- * @property Join\SQL $join
+ * @property Join\Sql $join
  */
-class Field_SQL extends Field implements Expressionable
+class FieldSql extends Field implements Expressionable
 {
     /**
      * SQL fields are allowed to have expressions inside of them.

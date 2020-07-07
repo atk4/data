@@ -141,7 +141,7 @@ class LFriend extends Model
  *
  * ATK Data has an option to lookup ID values if their "lookup" values are specified.
  */
-class LookupSQLTest extends \atk4\schema\PhpunitTestCase
+class LookupSqlTest extends \atk4\schema\PhpunitTestCase
 {
     public function varexport($expression, $return = false)
     {
@@ -241,7 +241,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
                     'is_eu' => '0',
                 ],
             ],
-        ], $this->getDB('country'));
+        ], $this->getDb('country'));
     }
 
     public function testImportInternationalUsers()
@@ -254,7 +254,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
         // Both lines will work quite similar
         $c->insert(['name' => 'Latvia', 'Users' => [['name' => 'imants'], ['name' => 'juris']]]);
 
-        //$this->varexport($this->getDB(['country','user']));
+        //$this->varexport($this->getDb(['country','user']));
         $this->assertSame([
             'country' => [
                 1 => [
@@ -296,7 +296,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
                     'country_id' => '2',
                 ],
             ],
-        ], $this->getDB(['country', 'user']));
+        ], $this->getDb(['country', 'user']));
     }
 
     public function testImportByLookup()
@@ -320,7 +320,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
             //'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
         ]);
 
-        //$this->varexport($this->getDB(['country','user']));
+        //$this->varexport($this->getDb(['country','user']));
         $this->assertSame([
             'country' => [
                 1 => [
@@ -368,7 +368,7 @@ class LookupSQLTest extends \atk4\schema\PhpunitTestCase
                     'country_id' => '2',
                 ],
             ],
-        ], $this->getDB(['country', 'user']));
+        ], $this->getDb(['country', 'user']));
     }
 
     /*

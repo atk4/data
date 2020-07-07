@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
-use atk4\core\DIContainerTrait;
+use atk4\core\DiContainerTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
 
@@ -19,7 +19,7 @@ class Join
     use InitializerTrait {
         init as _init;
     }
-    use DIContainerTrait;
+    use DiContainerTrait;
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
