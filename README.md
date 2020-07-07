@@ -459,7 +459,7 @@ add higher level features on our solid foundation.
 
 If you pass a `$model` object inside any method, add-on or extension, it's possible for them to discover not only the data, but also field types and various meta-information, references to other models, supported actions and many more.
 
-With that, creating a Dynamic Form UI object that automatically includes DropDown with list of allowed values is possible.
+With that, creating a Dynamic Form UI object that automatically includes Dropdown with list of allowed values is possible.
 
 In fact - we have already stared work on [Agile UI](http://github.com/atk4/ui) project!
 
