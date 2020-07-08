@@ -1098,7 +1098,7 @@ class Model implements \IteratorAggregate
             // no realistic workaround in PHP for 2nd argument being null
             $field = trim($field);
             if (strpos($field, ' ') !== false) {
-                list($field, $desc) = array_map('trim', explode(' ', $field, 2));
+                [$field, $desc] = array_map('trim', explode(' ', $field, 2));
             }
         }
 

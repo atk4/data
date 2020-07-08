@@ -186,9 +186,8 @@ class HasOneSql extends HasOne
                 ->addMoreInfo('arg', $defaults);
         }
 
-        $field = isset($defaults['field'])
-                    ? $defaults['field']
-                    : preg_replace('/_' . ($this->owner->id_field ?: 'id') . '$/i', '', $this->link);
+        $field = $defaults['field']
+                    ?? preg_replace('/_' . ($this->owner->id_field ?: 'id') . '$/i', '', $this->link);
 
         if ($this->owner->hasField($field)) {
             throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))

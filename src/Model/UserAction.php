@@ -28,16 +28,16 @@ class UserAction
     }
 
     /** Defining records scope of the action */
-    const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
-    const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. archive
-    const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
-    const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
+    public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
+    public const APPLIES_TO_SINGLE_RECORD = 'single'; // e.g. archive
+    public const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
+    public const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
 
     // deprecated constants - will be removed in dec-2020
-    const NO_RECORDS = self::APPLIES_TO_NO_RECORDS;
-    const SINGLE_RECORD = self::APPLIES_TO_SINGLE_RECORD;
-    const MULTIPLE_RECORDS = self::APPLIES_TO_MULTIPLE_RECORDS;
-    const ALL_RECORDS = self::APPLIES_TO_ALL_RECORDS;
+    public const NO_RECORDS = self::APPLIES_TO_NO_RECORDS;
+    public const SINGLE_RECORD = self::APPLIES_TO_SINGLE_RECORD;
+    public const MULTIPLE_RECORDS = self::APPLIES_TO_MULTIPLE_RECORDS;
+    public const ALL_RECORDS = self::APPLIES_TO_ALL_RECORDS;
 
     /** @deprecated use appliesTo instead - will be removed in dec-2020 */
     public $scope;
