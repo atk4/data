@@ -113,7 +113,7 @@ class Iterator
 
         // prepare arguments for array_multisort()
         $args = [];
-        foreach ($fields as list($field, $desc)) {
+        foreach ($fields as [$field, $desc]) {
             $args[] = array_column($data, $field);
             $args[] = $desc ? SORT_DESC : SORT_ASC;
             //$args[] = SORT_STRING; // SORT_STRING | SORT_NUMERIC | SORT_REGULAR

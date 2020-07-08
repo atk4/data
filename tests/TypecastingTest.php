@@ -113,7 +113,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
             ], ];
         $this->assertEquals($a, $this->getDb());
 
-        list($first, $duplicate) = $m->export();
+        [$first, $duplicate] = $m->export();
 
         unset($first['id']);
         unset($duplicate['id']);
