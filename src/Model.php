@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
-use atk4\core\AppScopeTrait;
 use atk4\core\CollectionTrait;
 use atk4\core\ContainerTrait;
 use atk4\core\DiContainerTrait;
@@ -32,7 +31,6 @@ class Model implements \IteratorAggregate
     }
     use DiContainerTrait;
     use FactoryTrait;
-    use AppScopeTrait;
     use CollectionTrait;
     use ReadableCaptionTrait;
     use Model\HasUserActionsTrait;
