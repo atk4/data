@@ -517,7 +517,7 @@ Populating Data
 
         $m_x = $m;
         $m_x->unload();
-        $m_x->set($row);
+        $m_x->setMulti($row);
         $m_x->save();
         return $m_x;
 
@@ -575,21 +575,26 @@ use the following syntax when accessing fields of an active record::
 
     $m->set('name', 'John');
     $m->set('surname', 'Peter');
+    // or
+    $m->setMulti(['name' => 'John', 'surname' => 'Peter']);
 
 When you modify active record, it keeps the original value in the $dirty array:
 
-.. php:method:: set
+.. php:method:: set($field, $value)
 
     Set field to a specified value. The original value will be stored in
-    $dirty property. If you pass non-array, then the value will be assigned
-    to the :ref:`title_field`.
+    $dirty property.
 
-.. php:method:: setNull
+.. php:method:: setMulti($fields)
+
+    Set multiple field values.
+
+.. php:method:: setNull($field)
 
     Set value of a specified field to NULL, temporarily ignoring normalization routine.
     Only use this if you intend to set a correct value shortly after.
 
-.. php:method:: unset
+.. php:method:: unset($field)
 
     Restore field value to it's original::
 

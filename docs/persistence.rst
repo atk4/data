@@ -64,17 +64,12 @@ There are several ways to link your model up with the persistence::
         $m->unload();
         $m->save(['name'=>'John']);
 
-    Save, like set() support title field::
-
-        $m->unload();
-        $m->save('John');
-
 .. php:method:: tryLoad
 
     Same as load() but will silently fail if record is not found::
 
         $m->tryLoad(10);
-        $m->set($data);
+        $m->setMulti($data);
 
         $m->save();     // will either create new record or update existing
 
@@ -621,7 +616,7 @@ method altogether::
     $o = new ActiveOrder($db);
     $o->load(123);
 
-    $o->set(['is_arhived', true])->saveAs('Order');
+    $o->set('is_arhived', true)->saveAs('Order');
 
 Currently the implementation of saveAs is rather trivial, but in the future
 versions of Agile Data you may be able to do this::
