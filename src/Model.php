@@ -803,8 +803,8 @@ class Model implements \IteratorAggregate
      */
     public function setMulti(array $fields)
     {
-        foreach ($field as $key => $value) {
-            $this->set($key, $value);
+        foreach ($fields as $field => $value) {
+            $this->set($field, $value);
         }
 
         return $this;

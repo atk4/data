@@ -202,7 +202,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // with address
         $a = $i->ref('addr');
-        a->setMulti(['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01'), 'tags' => [], 'door_code' => null]);
+        $a->setMulti(['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01'), 'tags' => [], 'door_code' => null]);
         $a->save();
 
         // now let's add one more field in address model and save
