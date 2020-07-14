@@ -636,7 +636,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Will return true if any the specified field is dirty.
+     * Will return true if specified field is dirty.
      */
     public function isDirty(string $field): bool
     {
