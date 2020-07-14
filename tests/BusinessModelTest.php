@@ -53,7 +53,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->set(['name' => 5]);
+        $m->set('name', 5);
     }
 
     public function testDirty()
@@ -178,7 +178,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->set('name', 'foo');
         $this->assertSame('foo', $m->get('name'));
 
-        $m->set(['name' => 'baz']);
+        $m->set('name', 'baz');
         $this->assertSame('baz', $m->get('name'));
     }
 
@@ -220,16 +220,6 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m = new Model();
         $this->expectException(Exception::class);
         $m->set('', 'foo');
-    }
-
-    /**
-     * Fields can't be numeric.
-     */
-    public function testException2d()
-    {
-        $m = new Model();
-        $this->expectException(\Error::class);
-        $m->set(['foo', 'bar']);
     }
 
     public function testException3()

@@ -387,8 +387,8 @@ The `$dsn` can also be using the PEAR-style DSN format, such as:
 For some persistence classes, you should use constructor directly::
 
     $array = [];
-    $array->set(1, ['name'=>'John']);
-    $array->set(2, ['name'=>'Peter']);
+    $array[1] = ['name'=>'John'];
+    $array[2] = ['name'=>'Peter'];
 
     $db = new \atk4\data\Persistence\Array_($array);
     $m = new \atk4\data\Model($db);
