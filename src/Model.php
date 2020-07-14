@@ -817,6 +817,26 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * Helper method to call self::set() for each input array element.
+     *
+     * This method does not revert the data when an exception is thrown,
+     * it is presented more for easy fix of old code which relied on self::set()
+     * to accept an array which is no longer supported.
+     *
+     * Remove in the future or revert data properly.
+     *
+     * @return $this
+     */
+    public function setMulti(array $fields)
+    {
+        foreach ($field as $key => $value) {
+            $this->set($key, $value);
+        }
+
+        return $this;
+    }
+
+    /**
      * Returns field value.
      * If no field is passed, then returns array of all field values.
      *
