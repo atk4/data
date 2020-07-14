@@ -37,7 +37,7 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
         $m->addField('array', ['type' => 'array']);
         $m->addField('object', ['type' => 'object']);
 
-        $m->set([
+        $m->setMulti([
             'string' => "Two\r\nLines  ",
             'text' => "Two\r\nLines  ",
             'integer' => 123,
