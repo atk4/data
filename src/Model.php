@@ -797,11 +797,7 @@ class Model implements \IteratorAggregate
     /**
      * Helper method to call self::set() for each input array element.
      *
-     * This method does not revert the data when an exception is thrown,
-     * it is presented more for easy fix of old code which relied on self::set()
-     * to accept an array which is no longer supported.
-     *
-     * Remove in the future or revert data properly.
+     * This method does not revert the data when an exception is thrown.
      *
      * @return $this
      */
