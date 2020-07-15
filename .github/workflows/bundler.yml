@@ -16,6 +16,7 @@ jobs:
         run: |
           # replaces X keys with X-release keys
           jq '. as $in | reduce (keys_unsorted[] | select(endswith("-release")|not)) as $k ({}; . + {($k) : (($k + "-release") as $kr | $in | if has($kr) then .[$kr] else .[$k] end) } )' < composer.json > tmp && mv tmp composer.json
+          composer config version --unset
           v=$(echo ${{ github.ref }} | cut -d / -f 4)
           echo "::set-env name=version::$v"
 
