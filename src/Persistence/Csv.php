@@ -313,7 +313,6 @@ class Csv extends Persistence
      * Inserts record in data array and returns new record ID.
      *
      * @param array  $data
-     * @param string $table
      *
      * @return mixed
      */

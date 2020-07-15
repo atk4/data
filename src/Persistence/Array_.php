@@ -100,7 +100,6 @@ class Array_ extends Persistence
      * Doesn't throw exception if model can't be loaded.
      *
      * @param mixed  $id
-     * @param string $table
      */
     public function tryLoad(Model $m, $id, string $table = null): ?array
     {
