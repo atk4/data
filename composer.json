@@ -32,6 +32,7 @@
       "homepage": "https://mvorisek.cz/"
     }
   ],
+  "version": "dev-develop",
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
@@ -46,8 +47,8 @@
   "require-release": {
     "php": ">=7.3.0",
     "ext-intl": "*",
-    "atk4/core": "^2.0",
-    "atk4/dsql": "^2.0"
+    "atk4/core": "^2.2.0",
+    "atk4/dsql": "^2.2.0"
   },
   "require-dev": {
     "atk4/schema": "dev-develop",
@@ -56,7 +57,7 @@
     "phpunit/phpunit": ">=9.0"
   },
   "require-dev-release": {
-    "atk4/schema": "^2.0",
+    "atk4/schema": "^2.2.0",
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/phpcov": "*",
     "phpunit/phpunit": ">=9.0"
