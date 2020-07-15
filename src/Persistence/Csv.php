@@ -257,7 +257,7 @@ class Csv extends Persistence
         }
 
         $data = $this->getLine();
-        if (!$data) {
+        if ($data === null) {
             return null;
         }
 
@@ -284,7 +284,7 @@ class Csv extends Persistence
 
         while (true) {
             $data = $this->getLine();
-            if (!$data) {
+            if ($data === null) {
                 break;
             }
             $data = $this->typecastLoadRow($m, $data);

@@ -715,17 +715,17 @@ class Sql extends Persistence
 
         // execute action
         try {
-            $data = $this->typecastLoadRow($m, $load->getRow());
+            $dataRaw = $load->getRow();
+            if ($dataRaw === null) {
+                return null;
+            }
+            $data = $this->typecastLoadRow($m, $dataRaw);
         } catch (\PDOException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
                 ->addMoreInfo('query', $load->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
                 ->addMoreInfo('conditions', $m->conditions);
-        }
-
-        if (!$data) {
-            return null;
         }
 
         if (!isset($data[$m->id_field]) || $data[$m->id_field] === null) {
@@ -770,17 +770,17 @@ class Sql extends Persistence
 
         // execute action
         try {
-            $data = $this->typecastLoadRow($m, $load->getRow());
+            $dataRaw = $load->getRow();
+            if ($dataRaw === null) {
+                return null;
+            }
+            $data = $this->typecastLoadRow($m, $dataRaw);
         } catch (\PDOException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
                 ->addMoreInfo('query', $load->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
                 ->addMoreInfo('conditions', $m->conditions);
-        }
-
-        if (!$data) {
-            return null;
         }
 
         if ($m->id_field) {
