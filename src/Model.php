@@ -1988,12 +1988,11 @@ class Model implements \IteratorAggregate
      * join will also query $foreign_table in order to find additional fields. When inserting
      * the record will be also added inside $foreign_table and relationship will be maintained.
      *
-     * @param string $foreign_table
      * @param array  $defaults
      *
      * @return Join
      */
-    public function join($foreign_table, $defaults = [])
+    public function join(string $foreign_table, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
@@ -2014,12 +2013,11 @@ class Model implements \IteratorAggregate
      *
      * @see join()
      *
-     * @param string $foreign_table
      * @param array  $defaults
      *
      * @return Join
      */
-    public function leftJoin($foreign_table, $defaults = [])
+    public function leftJoin(string $foreign_table, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];

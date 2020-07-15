@@ -254,12 +254,11 @@ class Join
     /**
      * Another join will be attached to a current join.
      *
-     * @param string $foreign_table
      * @param array  $defaults
      *
      * @return Join
      */
-    public function join($foreign_table, $defaults = [])
+    public function join(string $foreign_table, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
@@ -272,12 +271,11 @@ class Join
     /**
      * Another leftJoin will be attached to a current join.
      *
-     * @param string $foreign_table
      * @param array  $defaults
      *
      * @return Join
      */
-    public function leftJoin($foreign_table, $defaults = [])
+    public function leftJoin(string $foreign_table, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
