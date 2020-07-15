@@ -254,7 +254,7 @@ class Join
     /**
      * Another join will be attached to a current join.
      *
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Join
      */
@@ -271,7 +271,7 @@ class Join
     /**
      * Another leftJoin will be attached to a current join.
      *
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Join
      */

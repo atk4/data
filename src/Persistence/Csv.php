@@ -312,7 +312,7 @@ class Csv extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
-     * @param array  $data
+     * @param array $data
      *
      * @return mixed
      */
@@ -340,8 +340,8 @@ class Csv extends Persistence
     /**
      * Updates record in data array and returns record ID.
      *
-     * @param mixed  $id
-     * @param array  $data
+     * @param mixed $id
+     * @param array $data
      */
     public function update(Model $m, $id, $data, string $table = null)
     {
@@ -351,7 +351,7 @@ class Csv extends Persistence
     /**
      * Deletes record in data array.
      *
-     * @param mixed  $id
+     * @param mixed $id
      */
     public function delete(Model $m, $id, string $table = null)
     {
@@ -361,7 +361,7 @@ class Csv extends Persistence
     /**
      * Generates new record ID.
      *
-     * @param Model  $m
+     * @param Model $m
      *
      * @return string
      */

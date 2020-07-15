@@ -78,7 +78,7 @@ class Array_ extends Persistence
     /**
      * Loads model and returns data record.
      *
-     * @param mixed  $id
+     * @param mixed $id
      */
     public function load(Model $m, $id, string $table = null): array
     {
@@ -99,7 +99,7 @@ class Array_ extends Persistence
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
      *
-     * @param mixed  $id
+     * @param mixed $id
      */
     public function tryLoad(Model $m, $id, string $table = null): ?array
     {
@@ -142,7 +142,7 @@ class Array_ extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
-     * @param array  $data
+     * @param array $data
      *
      * @return mixed
      */
@@ -166,8 +166,8 @@ class Array_ extends Persistence
     /**
      * Updates record in data array and returns record ID.
      *
-     * @param mixed  $id
-     * @param array  $data
+     * @param mixed $id
+     * @param array $data
      *
      * @return mixed
      */
@@ -191,7 +191,7 @@ class Array_ extends Persistence
     /**
      * Deletes record in data array.
      *
-     * @param mixed  $id
+     * @param mixed $id
      */
     public function delete(Model $m, $id, string $table = null)
     {
@@ -205,7 +205,7 @@ class Array_ extends Persistence
     /**
      * Generates new record ID.
      *
-     * @param Model  $m
+     * @param Model $m
      *
      * @return string
      */

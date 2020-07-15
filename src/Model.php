@@ -1988,7 +1988,7 @@ class Model implements \IteratorAggregate
      * join will also query $foreign_table in order to find additional fields. When inserting
      * the record will be also added inside $foreign_table and relationship will be maintained.
      *
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Join
      */
@@ -2013,7 +2013,7 @@ class Model implements \IteratorAggregate
      *
      * @see join()
      *
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Join
      */
