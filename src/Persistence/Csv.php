@@ -133,15 +133,15 @@ class Csv extends Persistence
 
     /**
      * Returns one line of CSV file as array.
-     *
-     * @return array
      */
-    public function getLine()
+    public function getLine(): ?array
     {
         $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape_char);
-        if ($data) {
-            ++$this->line;
+        if ($data === false || $data === null) {
+            return null;
         }
+
+        ++$this->line;
 
         return $data;
     }
@@ -211,12 +211,8 @@ class Csv extends Persistence
 
     /**
      * Typecasting when load data row.
-     *
-     * @param array $row
-     *
-     * @return array
      */
-    public function typecastLoadRow(Model $m, $row)
+    public function typecastLoadRow(Model $m, array $row): array
     {
         $id = null;
         if (isset($row[$m->id_field])) {
@@ -247,10 +243,8 @@ class Csv extends Persistence
     /**
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
-     *
-     * @return array|null
      */
-    public function tryLoadAny(Model $m)
+    public function tryLoadAny(Model $m): ?array
     {
         if (!$this->mode) {
             $this->mode = 'r';
@@ -263,8 +257,8 @@ class Csv extends Persistence
         }
 
         $data = $this->getLine();
-        if (!$data) {
-            return;
+        if ($data === null) {
+            return null;
         }
 
         $data = $this->typecastLoadRow($m, $data);
@@ -275,10 +269,8 @@ class Csv extends Persistence
 
     /**
      * Prepare iterator.
-     *
-     * @return array
      */
-    public function prepareIterator(Model $m)
+    public function prepareIterator(Model $m): iterable
     {
         if (!$this->mode) {
             $this->mode = 'r';
@@ -292,7 +284,7 @@ class Csv extends Persistence
 
         while (true) {
             $data = $this->getLine();
-            if (!$data) {
+            if ($data === null) {
                 break;
             }
             $data = $this->typecastLoadRow($m, $data);
@@ -304,10 +296,8 @@ class Csv extends Persistence
 
     /**
      * Loads any one record.
-     *
-     * @return array
      */
-    public function loadAny(Model $m)
+    public function loadAny(Model $m): array
     {
         $data = $this->tryLoadAny($m);
 
@@ -322,8 +312,7 @@ class Csv extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
-     * @param array  $data
-     * @param string $table
+     * @param array $data
      *
      * @return mixed
      */
@@ -351,11 +340,10 @@ class Csv extends Persistence
     /**
      * Updates record in data array and returns record ID.
      *
-     * @param mixed  $id
-     * @param array  $data
-     * @param string $table
+     * @param mixed $id
+     * @param array $data
      */
-    public function update(Model $m, $id, $data, $table = null)
+    public function update(Model $m, $id, $data, string $table = null)
     {
         throw new Exception('Updating records is not supported in CSV persistence.');
     }
@@ -363,10 +351,9 @@ class Csv extends Persistence
     /**
      * Deletes record in data array.
      *
-     * @param mixed  $id
-     * @param string $table
+     * @param mixed $id
      */
-    public function delete(Model $m, $id, $table = null)
+    public function delete(Model $m, $id, string $table = null)
     {
         throw new Exception('Deleting records is not supported in CSV persistence.');
     }
@@ -374,14 +361,13 @@ class Csv extends Persistence
     /**
      * Generates new record ID.
      *
-     * @param Model  $m
-     * @param string $table
+     * @param Model $m
      *
      * @return string
      */
-    public function generateNewId($m, $table = null)
+    public function generateNewId($m, string $table = null)
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
@@ -402,17 +388,13 @@ class Csv extends Persistence
 
     /**
      * Export all DataSet.
-     *
-     * @param array|null $fields
-     *
-     * @return array
      */
-    public function export(Model $m, $fields = null)
+    public function export(Model $m, array $fields = null): array
     {
         $data = [];
 
         foreach ($m as $junk) {
-            $data[] = $fields ? array_intersect_key($m->get(), array_flip($fields)) : $m->get();
+            $data[] = $fields !== null ? array_intersect_key($m->get(), array_flip($fields)) : $m->get();
         }
 
         // need to close file otherwise file pointer is at the end of file

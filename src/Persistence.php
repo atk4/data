@@ -148,17 +148,9 @@ class Persistence
      *     'age'=>30,
      *     'is_married'=>1
      *   ]
-     *
-     * @param array $row
-     *
-     * @return array
      */
-    public function typecastSaveRow(Model $m, $row)
+    public function typecastSaveRow(Model $m, array $row): array
     {
-        if (!$row) {
-            return $row;
-        }
-
         $result = [];
         foreach ($row as $key => $value) {
             // We have no knowledge of the field, it wasn't defined, so
@@ -215,17 +207,9 @@ class Persistence
      * NOTE: Please DO NOT perform "actual" field mapping here, because data
      * may be "aliased" from SQL persistences or mapped depending on persistence
      * driver.
-     *
-     * @param array $row
-     *
-     * @return array
      */
-    public function typecastLoadRow(Model $m, $row)
+    public function typecastLoadRow(Model $m, array $row): array
     {
-        if (!$row) {
-            return $row;
-        }
-
         $result = [];
         foreach ($row as $key => $value) {
             // We have no knowledge of the field, it wasn't defined, so

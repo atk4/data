@@ -78,17 +78,16 @@ class Array_ extends Persistence
     /**
      * Loads model and returns data record.
      *
-     * @param mixed  $id
-     * @param string $table
+     * @param mixed $id
      */
-    public function load(Model $m, $id, $table = null): array
+    public function load(Model $m, $id, string $table = null): array
     {
         if (isset($m->table) && !isset($this->data[$m->table])) {
             throw (new Exception('Table was not found in the array data source'))
                 ->addMoreInfo('table', $m->table);
         }
 
-        if (!isset($this->data[$table ?: $m->table][$id])) {
+        if (!isset($this->data[$table ?? $m->table][$id])) {
             throw (new Exception('Record with specified ID was not found', 404))
                 ->addMoreInfo('id', $id);
         }
@@ -100,17 +99,16 @@ class Array_ extends Persistence
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
      *
-     * @param mixed  $id
-     * @param string $table
+     * @param mixed $id
      */
-    public function tryLoad(Model $m, $id, $table = null): ?array
+    public function tryLoad(Model $m, $id, string $table = null): ?array
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
         if (!isset($this->data[$table][$id])) {
-            return null; // no record with such id in table
+            return null;
         }
 
         return $this->typecastLoadRow($m, $this->data[$table][$id]);
@@ -122,14 +120,14 @@ class Array_ extends Persistence
      *
      * @param mixed $table
      */
-    public function tryLoadAny(Model $m, $table = null): ?array
+    public function tryLoadAny(Model $m, string $table = null): ?array
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
         if (!$this->data[$table]) {
-            return null; // no records at all in table
+            return null;
         }
 
         reset($this->data[$table]);
@@ -144,14 +142,13 @@ class Array_ extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
-     * @param array  $data
-     * @param string $table
+     * @param array $data
      *
      * @return mixed
      */
-    public function insert(Model $m, $data, $table = null)
+    public function insert(Model $m, $data, string $table = null)
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
@@ -169,15 +166,14 @@ class Array_ extends Persistence
     /**
      * Updates record in data array and returns record ID.
      *
-     * @param mixed  $id
-     * @param array  $data
-     * @param string $table
+     * @param mixed $id
+     * @param array $data
      *
      * @return mixed
      */
-    public function update(Model $m, $id, $data, $table = null)
+    public function update(Model $m, $id, $data, string $table = null)
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
@@ -195,12 +191,11 @@ class Array_ extends Persistence
     /**
      * Deletes record in data array.
      *
-     * @param mixed  $id
-     * @param string $table
+     * @param mixed $id
      */
-    public function delete(Model $m, $id, $table = null)
+    public function delete(Model $m, $id, string $table = null)
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
@@ -210,14 +205,13 @@ class Array_ extends Persistence
     /**
      * Generates new record ID.
      *
-     * @param Model  $m
-     * @param string $table
+     * @param Model $m
      *
      * @return string
      */
-    public function generateNewId($m, $table = null)
+    public function generateNewId($m, string $table = null)
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
@@ -242,10 +236,8 @@ class Array_ extends Persistence
 
     /**
      * Prepare iterator.
-     *
-     * @return array
      */
-    public function prepareIterator(Model $m)
+    public function prepareIterator(Model $m): iterable
     {
         return $m->action('select')->get();
     }
@@ -253,12 +245,9 @@ class Array_ extends Persistence
     /**
      * Export all DataSet.
      *
-     * @param array|null $fields
-     * @param bool       $typecast_data Should we typecast exported data
-     *
-     * @return array
+     * @param bool $typecast_data Should we typecast exported data
      */
-    public function export(Model $m, $fields = null, $typecast_data = true)
+    public function export(Model $m, array $fields = null, $typecast_data = true): array
     {
         $data = $m->action('select', [$fields])->get();
 
@@ -293,11 +282,8 @@ class Array_ extends Persistence
 
     /**
      * Will set limit defined inside $m onto data.
-     *
-     * @param Model         $m
-     * @param ArrayIterator $action
      */
-    protected function setLimitOrder($m, $action)
+    protected function setLimitOrder(Model $m, \atk4\data\Action\Iterator $action)
     {
         // first order by
         if ($m->order) {

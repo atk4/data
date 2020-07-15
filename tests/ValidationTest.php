@@ -19,7 +19,7 @@ class MyValidationModel extends Model
         $this->addField('domain');
     }
 
-    public function validate($intent = null)
+    public function validate($intent = null): array
     {
         $errors = [];
         if ($this->get('name') === 'Python') {
@@ -42,7 +42,7 @@ class BadValidationModel extends Model
         $this->addField('name');
     }
 
-    public function validate($intent = null)
+    public function validate($intent = null): array
     {
         return 'This should be array';
     }
