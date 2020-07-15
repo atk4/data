@@ -343,9 +343,8 @@ class Csv extends Persistence
      *
      * @param mixed  $id
      * @param array  $data
-     * @param string $table
      */
-    public function update(Model $m, $id, $data, $table = null)
+    public function update(Model $m, $id, $data, string $table = null)
     {
         throw new Exception('Updating records is not supported in CSV persistence.');
     }
@@ -354,9 +353,8 @@ class Csv extends Persistence
      * Deletes record in data array.
      *
      * @param mixed  $id
-     * @param string $table
      */
-    public function delete(Model $m, $id, $table = null)
+    public function delete(Model $m, $id, string $table = null)
     {
         throw new Exception('Deleting records is not supported in CSV persistence.');
     }
@@ -365,13 +363,12 @@ class Csv extends Persistence
      * Generates new record ID.
      *
      * @param Model  $m
-     * @param string $table
      *
      * @return string
      */
-    public function generateNewId($m, $table = null)
+    public function generateNewId($m, string $table = null)
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 

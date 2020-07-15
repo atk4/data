@@ -79,16 +79,15 @@ class Array_ extends Persistence
      * Loads model and returns data record.
      *
      * @param mixed  $id
-     * @param string $table
      */
-    public function load(Model $m, $id, $table = null): array
+    public function load(Model $m, $id, string $table = null): array
     {
         if (isset($m->table) && !isset($this->data[$m->table])) {
             throw (new Exception('Table was not found in the array data source'))
                 ->addMoreInfo('table', $m->table);
         }
 
-        if (!isset($this->data[$table ?: $m->table][$id])) {
+        if (!isset($this->data[$table ?? $m->table][$id])) {
             throw (new Exception('Record with specified ID was not found', 404))
                 ->addMoreInfo('id', $id);
         }
@@ -103,9 +102,9 @@ class Array_ extends Persistence
      * @param mixed  $id
      * @param string $table
      */
-    public function tryLoad(Model $m, $id, $table = null): ?array
+    public function tryLoad(Model $m, $id, string $table = null): ?array
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
@@ -122,9 +121,9 @@ class Array_ extends Persistence
      *
      * @param mixed $table
      */
-    public function tryLoadAny(Model $m, $table = null): ?array
+    public function tryLoadAny(Model $m, string $table = null): ?array
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
@@ -145,13 +144,12 @@ class Array_ extends Persistence
      * Inserts record in data array and returns new record ID.
      *
      * @param array  $data
-     * @param string $table
      *
      * @return mixed
      */
-    public function insert(Model $m, $data, $table = null)
+    public function insert(Model $m, $data, string $table = null)
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
@@ -171,13 +169,12 @@ class Array_ extends Persistence
      *
      * @param mixed  $id
      * @param array  $data
-     * @param string $table
      *
      * @return mixed
      */
-    public function update(Model $m, $id, $data, $table = null)
+    public function update(Model $m, $id, $data, string $table = null)
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
@@ -196,11 +193,10 @@ class Array_ extends Persistence
      * Deletes record in data array.
      *
      * @param mixed  $id
-     * @param string $table
      */
-    public function delete(Model $m, $id, $table = null)
+    public function delete(Model $m, $id, string $table = null)
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
@@ -211,13 +207,12 @@ class Array_ extends Persistence
      * Generates new record ID.
      *
      * @param Model  $m
-     * @param string $table
      *
      * @return string
      */
-    public function generateNewId($m, $table = null)
+    public function generateNewId($m, string $table = null)
     {
-        if (!isset($table)) {
+        if ($table === null) {
             $table = $m->table;
         }
 
