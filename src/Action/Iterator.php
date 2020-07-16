@@ -187,6 +187,6 @@ class Iterator
     {
         $data = $this->getRow();
 
-        return $data === null ? null : reset($data);
+        return reset($data);
     }
 }
