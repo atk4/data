@@ -170,7 +170,7 @@ class Iterator
     /**
      * Return one row of data.
      */
-    public function getRow(): array
+    public function getRow(): ?array
     {
         $row = $this->generator->current();
         $this->generator->next();
