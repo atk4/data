@@ -32,6 +32,7 @@
       "homepage": "https://mvorisek.cz/"
     }
   ],
+  "version": "dev-develop",
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
