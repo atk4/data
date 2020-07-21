@@ -192,6 +192,9 @@ class Model implements \IteratorAggregate
      */
     public $conditions = [];
 
+    /** @var Model\Scope */
+    protected $scope;
+
     /**
      * Array of limit set.
      *
@@ -366,6 +369,8 @@ class Model implements \IteratorAggregate
      */
     public function __construct($persistence = null, $defaults = [])
     {
+        $this->scope = new Model\Scope();
+
         if ((is_string($persistence) || is_array($persistence)) && func_num_args() === 1) {
             $defaults = $persistence;
             $persistence = null;
@@ -392,6 +397,7 @@ class Model implements \IteratorAggregate
      */
     public function __clone()
     {
+        $this->scope = (clone $this->scope)->setModel($this);
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
         $this->_cloneCollection('userActions');
@@ -949,6 +955,15 @@ class Model implements \IteratorAggregate
      *  ->addCondition('my_field', $expr);
      *  ->addCondition($expr);
      *
+     * Conditions on referenced models are also supported:
+     *  $contact->addCondition('company/country', 'US');
+     * where 'company' is the name of the reference
+     * This will limit scope of $contact model to contacts whose company country is set to 'US'
+     *
+     * Using # in conditions on referenced model will apply the condition on the number of records:
+     * $contact->addCondition('tickets/#', '>', 5);
+     * This will limit scope of $contact model to contacts that have more than 5 tickets
+     *
      * To use those, you should consult with documentation of your
      * persistence driver.
      *
@@ -960,47 +975,19 @@ class Model implements \IteratorAggregate
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        if (is_array($field)) {
-            $this->conditions[] = [$field];
-
-            return $this;
-            /*
-            $or = $this->persistence->orExpr();
-
-            foreach ($field as list($field, $operator, $value)) {
-                if (is_string($field)) {
-                    $f = $this->getField($field);
-                } elseif ($field instanceof Field) {
-                    $f = $field;
-                }
-
-                $or->where($f, $operator, $value);
-            }
-
-            return $this;
-            */
-        }
-
-        if (is_string($field)) {
-            $f = $this->getField($field);
-        } else {
-            $f = $field;
-        }
-
-        if ($f instanceof Field) {
-            if ($operator === '=' || func_num_args() === 2) {
-                $v = ($operator === '=' ? $value : $operator);
-
-                if (!is_object($v) && !is_array($v)) {
-                    $f->system = true;
-                    $f->default = $v;
-                }
-            }
-        }
-
-        $this->conditions[] = func_get_args();
+        $this->scope()->add(new Model\Scope\CompoundCondition([func_get_args()]));
 
         return $this;
+    }
+
+    /**
+     * Get the scope object of the Model.
+     *
+     * @return Model\Scope
+     */
+    public function scope()
+    {
+        return $this->scope->setModel($this);
     }
 
     /**
@@ -1349,13 +1336,7 @@ class Model implements \IteratorAggregate
      */
     public function tryLoad($id)
     {
-        if (!$this->persistence) {
-            throw new Exception('Model is not associated with any database');
-        }
-
-        if (!$this->persistence->hasMethod('tryLoad')) {
-            throw new Exception('Persistence does not support tryLoad()');
-        }
+        $this->checkPersistence('tryLoad');
 
         if ($this->loaded()) {
             $this->unload();
@@ -1385,13 +1366,7 @@ class Model implements \IteratorAggregate
      */
     public function loadAny()
     {
-        if (!$this->persistence) {
-            throw new Exception('Model is not associated with any database');
-        }
-
-        if (!$this->persistence->hasMethod('loadAny')) {
-            throw new Exception('Persistence does not support loadAny()');
-        }
+        $this->checkPersistence('loadAny');
 
         if ($this->loaded()) {
             $this->unload();
@@ -1424,13 +1399,7 @@ class Model implements \IteratorAggregate
      */
     public function tryLoadAny()
     {
-        if (!$this->persistence) {
-            throw new Exception('Model is not associated with any database');
-        }
-
-        if (!$this->persistence->hasMethod('tryLoadAny')) {
-            throw new Exception('Persistence does not support tryLoadAny()');
-        }
+        $this->checkPersistence('tryLoadAny');
 
         if ($this->loaded()) {
             $this->unload();
@@ -1465,31 +1434,27 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function loadBy(string $field_name, $value)
+    public function loadBy(string $fieldName, $value)
     {
-        // store
-        $field = $this->getField($field_name);
-        $system = $field->system;
-        $default = $field->default;
+        $field = $this->getField($fieldName);
 
-        // add condition and load record
-        $this->addCondition($field_name, $value);
+        // backup
+        $scopeBak = $this->scope;
+        $systemBak = $field->system;
+        $defaultBak = $field->default;
 
         try {
+            // add condition to cloned scope and try to load record
+            $this->scope = clone $this->scope;
+            $this->addCondition($field, $value);
+
             $this->loadAny();
-        } catch (\Exception $e) {
+        } finally {
             // restore
-            array_pop($this->conditions);
-            $field->system = $system;
-            $field->default = $default;
-
-            throw $e;
+            $this->scope = $scopeBak;
+            $field->system = $systemBak;
+            $field->default = $defaultBak;
         }
-
-        // restore
-        array_pop($this->conditions);
-        $field->system = $system;
-        $field->default = $default;
 
         return $this;
     }
@@ -1502,33 +1467,45 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function tryLoadBy(string $field_name, $value)
+    public function tryLoadBy(string $fieldName, $value)
     {
-        // store
-        $field_name = $this->getField($field_name);
-        $system = $field_name->system;
-        $default = $field_name->default;
+        $field = $this->getField($fieldName);
 
-        // add condition and try to load record
-        $this->addCondition($field_name, $value);
+        // backup
+        $scopeBak = $this->scope;
+        $systemBak = $field->system;
+        $defaultBak = $field->default;
 
         try {
-            $this->tryLoadAny();
-        } catch (\Exception $e) {
-            // restore
-            array_pop($this->conditions);
-            $field_name->system = $system;
-            $field_name->default = $default;
+            // add condition to cloned scope and try to load record
+            $this->scope = clone $this->scope;
+            $this->addCondition($field, $value);
 
-            throw $e;
+            $this->tryLoadAny();
+        } finally {
+            // restore
+            $this->scope = $scopeBak;
+            $field->system = $systemBak;
+            $field->default = $defaultBak;
         }
 
-        // restore
-        array_pop($this->conditions);
-        $field_name->system = $system;
-        $field_name->default = $default;
-
         return $this;
+    }
+
+    /**
+     * Check if model has persistence with specified method.
+     *
+     * @param string $method
+     */
+    public function checkPersistence(string $method = null)
+    {
+        if (!$this->persistence) {
+            throw new Exception('Model is not associated with any persistence');
+        }
+
+        if ($method && !$this->persistence->hasMethod($method)) {
+            throw new Exception("Persistence does not support {$method} method");
+        }
     }
 
     /**
@@ -1744,9 +1721,7 @@ class Model implements \IteratorAggregate
      */
     public function export(array $fields = null, $key_field = null, $typecast_data = true): array
     {
-        if (!$this->persistence->hasMethod('export')) {
-            throw new Exception('Persistence does not support export()');
-        }
+        $this->checkPersistence('export');
 
         // no key field - then just do export
         if ($key_field === null) {
@@ -1966,13 +1941,7 @@ class Model implements \IteratorAggregate
      */
     public function action($mode, $args = [])
     {
-        if (!$this->persistence) {
-            throw new Exception('action() requires model to be associated with db');
-        }
-
-        if (!$this->persistence->hasMethod('action')) {
-            throw new Exception('Persistence does not support action()');
-        }
+        $this->checkPersistence('action');
 
         return $this->persistence->action($this, $mode, $args);
     }
@@ -2257,12 +2226,10 @@ class Model implements \IteratorAggregate
      */
     public function __debugInfo(): array
     {
-        $arr = [
+        return [
             'id' => $this->id,
-            'conditions' => $this->conditions,
+            'scope' => $this->scope()->toWords(),
         ];
-
-        return $arr;
     }
 
     // }}}

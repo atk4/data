@@ -364,60 +364,36 @@ class Sql extends Persistence
     }
 
     /**
-     * Will apply conditions defined inside $m onto query $q.
+     * Will apply scope defined inside $scope or $model->scope() onto $query.
      */
-    public function initQueryConditions(Model $m, Query $q): Query
+    public function initQueryConditions(Model $model, Query $query, Model\Scope\AbstractCondition $condition = null): Query
     {
-        if (!isset($m->conditions)) {
-            // no conditions are set in the model
-            return $q;
+        $condition = $condition ?? $model->scope();
+
+        if (!$condition || $condition->isEmpty()) {
+            return $query;
         }
 
-        foreach ($m->conditions as $cond) {
-            // Options here are:
-            // count($cond) == 1, we will pass the only
-            // parameter inside where()
+        // peel off the single nested scopes to convert (((field = value))) to field = value
+        $condition = $condition->simplify();
 
-            if (count($cond) === 1) {
-                // OR conditions
-                if (is_array($cond[0])) {
-                    foreach ($cond[0] as &$row) {
-                        if (is_string($row[0])) {
-                            $row[0] = $m->getField($row[0]);
-                        }
-
-                        // "like" or "regexp" conditions do not need typecasting to field type!
-                        if ($row[0] instanceof Field && (count($row) === 2 || !in_array(strtolower($row[1]), ['like', 'regexp'], true))) {
-                            $valueKey = count($row) === 2 ? 1 : 2;
-                            $row[$valueKey] = $this->typecastSaveField($row[0], $row[$valueKey]);
-                        }
-                    }
-                }
-
-                $q->where($cond[0]);
-
-                continue;
-            }
-
-            if (is_string($cond[0])) {
-                $cond[0] = $m->getField($cond[0]);
-            }
-
-            if (count($cond) === 2) {
-                if ($cond[0] instanceof Field) {
-                    $cond[1] = $this->typecastSaveField($cond[0], $cond[1]);
-                }
-                $q->where($cond[0], $cond[1]);
-            } else {
-                // "like" or "regexp" conditions do not need typecasting to field type!
-                if ($cond[0] instanceof Field && !in_array(strtolower($cond[1]), ['like', 'regexp'], true)) {
-                    $cond[2] = $this->typecastSaveField($cond[0], $cond[2]);
-                }
-                $q->where($cond[0], $cond[1], $cond[2]);
-            }
+        // simple condition
+        if ($condition instanceof Model\Scope\BasicCondition) {
+            $query = $query->where(...$condition->toArray());
         }
 
-        return $q;
+        // nested conditions
+        if ($condition instanceof Model\Scope\CompoundCondition) {
+            $expression = $condition->isOr() ? $query->orExpr() : $query->andExpr();
+
+            foreach ($condition->getNestedConditions() as $nestedCondition) {
+                $expression = $this->initQueryConditions($model, $expression, $nestedCondition);
+            }
+
+            $query = $query->where($expression);
+        }
+
+        return $query;
     }
 
     /**
@@ -631,14 +607,14 @@ class Sql extends Persistence
                 break;
             case 'count':
                 $this->initQueryConditions($m, $q);
-                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q]);
-                if (isset($args['alias'])) {
-                    $q->reset('field')->field('count(*)', $args['alias']);
-                } else {
-                    $q->reset('field')->field('count(*)');
-                }
+                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
 
-                return $q;
+                return $q->reset('field')->field('count(*)', $args['alias'] ?? null);
+            case 'exists':
+                $this->initQueryConditions($m, $q);
+                $m->hook(self::HOOK_INIT_SELECT_QUERY, [$q, $type]);
+
+                return $this->dsql()->mode('select')->option('exists')->field($q);
             case 'field':
                 if (!isset($args[0])) {
                     throw (new Exception('This action requires one argument with field name'))
@@ -725,7 +701,7 @@ class Sql extends Persistence
                 ->addMoreInfo('query', $load->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         if (!isset($data[$m->id_field]) || $data[$m->id_field] === null) {
@@ -754,7 +730,7 @@ class Sql extends Persistence
             throw (new Exception('Record was not found', 404))
                 ->addMoreInfo('model', $m)
                 ->addMoreInfo('id', $id)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         return $data;
@@ -780,7 +756,7 @@ class Sql extends Persistence
                 ->addMoreInfo('query', $load->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         if ($m->id_field) {
@@ -808,7 +784,7 @@ class Sql extends Persistence
         if (!$data) {
             throw (new Exception('No matching records were found', 404))
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         return $data;
@@ -840,7 +816,7 @@ class Sql extends Persistence
                 ->addMoreInfo('query', $insert->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         $m->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
@@ -882,7 +858,7 @@ class Sql extends Persistence
                 ->addMoreInfo('query', $export->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
     }
 
@@ -919,7 +895,7 @@ class Sql extends Persistence
                 ->addMoreInfo('query', $update->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
 
         if ($m->id_field && isset($data[$m->id_field]) && $m->dirty[$m->id_field]) {
@@ -961,7 +937,7 @@ class Sql extends Persistence
                 ->addMoreInfo('query', $delete->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $m)
-                ->addMoreInfo('conditions', $m->conditions);
+                ->addMoreInfo('scope', $m->scope()->toWords());
         }
     }
 
@@ -997,14 +973,14 @@ class Sql extends Persistence
      *
      * @return mixed
      */
-    public function lastInsertId(Model $m)
+    public function lastInsertId(Model $model)
     {
-        $seq = $m->sequence ?: null;
+        $seq = $model->sequence ?: null;
 
         // PostgreSQL PDO always requires sequence name in lastInsertId method as parameter
         // So let's use its default one if no specific is set
         if ($this->connection instanceof \atk4\dsql\Postgresql\Connection && $seq === null) {
-            $seq = $m->table . '_' . $m->id_field . '_seq';
+            $seq = $model->table . '_' . $model->id_field . '_seq';
         }
 
         return $this->connection->lastInsertId($seq);

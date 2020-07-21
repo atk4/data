@@ -22,7 +22,7 @@ class LocaleTest extends AtkPhpunit\TestCase
     public function testGetPath()
     {
         $rootDir = realpath(dirname(__DIR__) . '/src/..');
-        $this->assertSame($rootDir . \DIRECTORY_SEPARATOR . 'locale', realpath(Locale::getPath()));
+        $this->assertEquals($rootDir . \DIRECTORY_SEPARATOR . 'locale', realpath(Locale::getPath()));
     }
 
     public function testLocaleIntegration()

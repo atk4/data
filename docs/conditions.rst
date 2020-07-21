@@ -2,6 +2,8 @@
 .. _DataSet:
 .. _conditions:
 
+.. php:namespace:: atk4\data
+
 ======================
 Conditions and DataSet
 ======================
@@ -51,7 +53,7 @@ Operations
 
 Most database drivers will support the following additional operations::
 
-    >, <, >=, <=, !=, in, not in
+    >, <, >=, <=, !=, in, not in, like, not like, regexp, not regexp
 
 The operation must be specified as second argument::
 
@@ -139,7 +141,7 @@ There are many other ways to set conditions, but you must always check if they
 are supported by the driver that you are using.
 
 Field Matching
--------------
+--------------
 
 Supported by: SQL   (planned for Array, Mongo)
 
@@ -164,7 +166,7 @@ inside [blah] should correspond to field names.
 
 
 SQL Expression Matching
--------------------
+-----------------------
 
 .. php:method:: expr($expression, $arguments = [])
 
@@ -248,4 +250,173 @@ do not need actual record by are only looking to traverse::
 
     $u = new Model_User($db);
     $books = $u->withId(20)->ref('Books');
+
+Advanced Usage
+==============
+
+
+Model Scope
+-----------
+
+Using the Model::addCondition method is the basic way to limit the model scope of records. Under the hood
+Agile Data utilizes a special set of classes (BasicCondition and CompoundCondition) to apply the conditions as filters on records retrieved.
+These classes can be used directly and independently from Model class.
+
+.. php:method:: scope()
+
+This method provides access to the model scope enablind conditions to be added::
+
+   $contact->scope()->add($condition); // adding condition to a model
+
+.. php:namespace:: atk4\data\Model\Scope
+
+.. php:class:: BasicCondition
+
+BasicCondition represents a simple condition in a form [field, operation, value], similar to the functionality of the 
+Model::addCondition method
+
+.. php:method:: __construct($key, $operator = null, $value = null);
+
+Creates condition object based on provided arguments. It acts similar to Model::addCondition
+
+$key can be Model field name, Field object, Expression object, FALSE (interpreted as Expression('false')), TRUE (interpreted as empty condition) or an array in the form of [$key, $operator, $value]
+$operator can be one of the supported operators >, <, >=, <=, !=, in, not in, like, not like, regexp, not regexp
+$value can be Field object, Expression object, array (interpreted as 'any of the values') or other scalar value
+
+If $value is omitted as argument then $operator is considered as $value and '=' is used as operator
+
+.. php:method:: negate();
+
+Negates the condition, e.g::
+
+	// results in 'name is not John'
+	$condition = (new BasicCondition('name', 'John'))->negate(); 
+
+.. php:method:: on(Model $model);
+
+Sets the model of BasicCondition to a clone of $model to avoid changes to the original object.::
+
+   // uses the $contact model to conver the condition to human readable words
+   $condition->on($contact)->toWords();
+
+.. php:method:: toWords($asHtml = false);
+
+Converts the condition object to human readable words. Model must be set first. Recommended is use of Condition::on method to set the model
+as it clones the model object first::
+
+	// results in 'Contact where Name is John'
+	(new BasicCondition('name', 'John'))->on($contactModel)->toWords(); 
+
+.. php:class:: CompoundCondition
+
+CompoundCondition object has a single defined junction (AND or OR) and can contain multiple nested BasicCondition and/or CompoundCondition objects referred to as nested conditions.
+This makes creating Model scopes with deep nested conditions possible, 
+e.g ((Name like 'ABC%' and Country = 'US') or (Name like 'CDE%' and (Country = 'DE' or Surname = 'XYZ')))
+
+CompoundCondition can be created using new CompoundCondition() statement from an array or joining BasicCondition objects::
+
+   // $condition1 will be used as child-component
+	$condition1 = new BasicCondition('name', 'like', 'ABC%');
+   
+   // $condition1 will be used as child-component
+	$condition2 = new BasicCondition('country', 'US');
+	
+   // $compoundCondition1 is created using AND as junction and $condition1 and $condition2 as nested conditions
+	$compoundCondition1 = CompoundCondition::mergeAnd($condition1, $condition2);
+	
+	$condition3 = new BasicCondition('country', 'DE');
+	$condition4 = new BasicCondition('surname', 'XYZ');
+	
+   // $compoundCondition2 is created using OR as junction and $condition3 and $condition4 as nested conditions
+	$compoundCondition2 = CompoundCondition::mergeOr($condition3, $condition4);
+
+	$condition5 = new BasicCondition('name', 'like', 'CDE%');
+	
+   // $compoundCondition3 is created using AND as junction and $condition5 and $compoundCondition2 as nested conditions
+	$compoundCondition3 = CompoundCondition::mergeAnd($condition5, $compoundCondition2);
+
+   // $compoundCondition is created using OR as junction and $compoundCondition1 and $compoundCondition3 as nested conditions
+	$compoundCondition = CompoundCondition::mergeOr($compoundCondition1, $compoundCondition3);
+	
+	
+CompoundCondition is an independent object not related to any model. Applying scope to model is using the Model::scope()->add($condition) method::
+
+	$contact->scope()->add($condition); // adding condition to a model
+	$contact->scope()->add($conditionXYZ); // adding more conditions
+	
+.. php:method:: __construct($nestedConditions = [], $junction = CompoundCondition::AND);
+
+Creates a CompoundCondition object from an array::
+
+	// below will create 2 conditions and nest them in a compound conditions with AND junction
+	$compoundCondition1 = new CompoundCondition([
+		['name', 'like', 'ABC%'],
+		['country', 'US']
+	]);
+	
+.. php:method:: negate();
+
+Negate method has behind the full map of conditions so any condition object can be negated, e.g negating '>=' results in '<', etc.
+For compound conditionss this method is using De Morgan's laws, e.g::
+
+	// using $compoundCondition1 defined above
+	// results in "(Name not like 'ABC%') or (Country does not equal 'US')"
+	$compoundCondition1->negate();
+
+.. php:method:: mergeAnd(AbstractCondition $conditionA, AbstractCondition $conditionB, $_ = null);
+
+Merge number of conditions using AND as junction. Returns the resulting CompoundCondition object.
+
+.. php:method:: mergeOr(AbstractCondition $conditionA, AbstractCondition $conditionB, $_ = null);
+
+Merge number of conditions using OR as junction. Returns the resulting CompoundCondition object.
+
+.. php:method:: simplify();
+
+Peels off single nested conditions. Useful for converting (((field = value))) to field = value.
+
+.. php:method:: clear();
+
+Clears the condition from nested conditions.
+
+.. php:method:: isOr();
+
+Checks if scope components are joined by OR
+
+.. php:method:: isAnd();
+
+Checks if scope components are joined by AND
+
+Conditions on Referenced Models
+-------------------------------
+
+Agile Data allows for adding conditions on related models for retrieval of type 'model has references where'.
+
+Setting conditions on references can be done utilizing the Model::refLink method but there is a shorthand format 
+directly integrated with addCondition method using "/" to chain the reference names::
+
+	$contact->addCondition('company/country', 'US');
+	
+This will limit the $contact model to those whose company is in US.
+'company' is the name of the reference in $contact model and 'country' is a field in the referenced model.
+
+If a condition must be set directly on the existence or number of referenced records the special symbol "#" can be
+utilized to indicate the condition is on the number of records::
+
+	$contact->addCondition('company/tickets/#', '>', 3);
+	
+This will limit the $contact model to those whose company have more than 3 tickets.
+'company' and 'tickets' are the name of the chained references ('company' is a reference in the $contact model and
+'tickets' is a reference in Company model)
+
+For applying conditions on existence of records the '?' (has any) and '!' (doesn't have any) special symbols can be used.
+Although it is similar in functionality to checking ('company/tickets/#', '>', 0) or ('company/tickets/#', '=', 0)
+'?' and '!' special symbols use optimized query and are much faster::
+
+	// Contact whose company has any tickets
+	$contact->addCondition('company/tickets/?');
+
+	// Contact whose company doesn't have any tickets
+	$contact->addCondition('company/tickets/!');
+
 
