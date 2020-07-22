@@ -237,14 +237,14 @@ class Iterator
     /**
      * Limit Iterator.
      *
-     * @param int $length
+     * @param int $limit
      * @param int $offset
      *
      * @return $this
      */
-    public function limit($length, $offset = 0)
+    public function limit($limit, $offset = 0)
     {
-        $data = array_slice($this->get(), $offset, $length, true);
+        $data = array_slice($this->get(), $offset, $limit, true);
 
         // put data back in generator
         $this->generator = new \ArrayIterator($data);
