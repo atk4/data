@@ -52,7 +52,10 @@ abstract class AbstractCondition
         return $clone;
     }
 
-    public function getModel()
+    /**
+     * Get the model this condition is associated with.
+     */
+    public function getModel(): ?Model
     {
         return $this->owner ? $this->owner->getModel() : null;
     }

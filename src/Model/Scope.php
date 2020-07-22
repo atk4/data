@@ -33,7 +33,7 @@ class Scope extends Scope\CompoundCondition
         return $this;
     }
 
-    public function getModel()
+    public function getModel(): ?Model
     {
         return $this->model;
     }
