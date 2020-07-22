@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace atk4\data\Model\Scope;
 
 use atk4\core\ContainerTrait;
+use atk4\data\Exception;
 
 /**
  * @property AbstractCondition[] $elements
@@ -18,16 +19,6 @@ class CompoundCondition extends AbstractCondition
     public const AND = 'AND';
 
     /**
-     * Array of valid junctions.
-     *
-     * @var array
-     */
-    public const JUNCTIONS = [
-        self::AND,
-        self::OR,
-    ];
-
-    /**
      * Junction to use in case more than one element.
      *
      * @var self::AND|self::OR
@@ -36,11 +27,16 @@ class CompoundCondition extends AbstractCondition
 
     /**
      * Create a CompoundCondition from array of condition objects or condition arrays.
+     *
+     * @param AbstractCondition[]|array[] $nestedConditions
      */
-    public function __construct(array $nestedConditions = [], $junction = self::AND)
+    public function __construct(array $nestedConditions = [], string $junction = self::AND)
     {
-        // use one of JUNCTIONS values, otherwise $junction is truish means OR, falsish means AND
-        $this->junction = in_array($junction, self::JUNCTIONS, true) ? $junction : self::JUNCTIONS[$junction ? 1 : 0];
+        if (!in_array($junction, [self::OR, self::AND], true)) {
+            throw new Exception($junction . ' is not a valid CompondCondition junction');
+        }
+
+        $this->junction = $junction;
 
         foreach ($nestedConditions as $nestedCondition) {
             $nestedCondition = is_string($nestedCondition) ? new BasicCondition($nestedCondition) : $nestedCondition;
