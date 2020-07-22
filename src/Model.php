@@ -182,16 +182,6 @@ class Model implements \IteratorAggregate
      */
     public $persistence_data = [];
 
-    /**
-     * Conditions list several conditions that must be met by all the
-     * records in the associated DataSet. Conditions are stored as
-     * elements of array of 1 to 3. Use addCondition() to add new
-     * conditions.
-     *
-     * @var array
-     */
-    public $conditions = [];
-
     /** @var Model\Scope */
     protected $scope;
 
