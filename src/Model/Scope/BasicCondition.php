@@ -99,7 +99,7 @@ class BasicCondition extends AbstractCondition
             // @todo: consider this when condition is part of OR scope
             if ($this->operator === '=' && !is_object($this->value) && !is_array($this->value)) {
                 // key containing '/' means chained references and it is handled in toArray method
-                if (is_string($field = $this->key) && stripos($field, '/') === false) {
+                if (is_string($field = $this->key) && !str_contains($field, '/')) {
                     $field = $model->getField($field);
                 }
 
