@@ -141,9 +141,7 @@ class CompoundCondition extends AbstractCondition
             return $this;
         }
 
-        /**
-         * @var AbstractCondition $component
-         */
+        /** @var AbstractCondition $component */
         $component = reset($this->elements);
 
         return $component->simplify();

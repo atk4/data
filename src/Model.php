@@ -972,10 +972,8 @@ class Model implements \IteratorAggregate
 
     /**
      * Get the scope object of the Model.
-     *
-     * @return Model\Scope
      */
-    public function scope()
+    public function scope(): Model\Scope
     {
         return $this->scope->setModel($this);
     }
@@ -1428,7 +1426,6 @@ class Model implements \IteratorAggregate
     {
         $field = $this->getField($fieldName);
 
-        // backup
         $scopeBak = $this->scope;
         $systemBak = $field->system;
         $defaultBak = $field->default;
@@ -1440,7 +1437,6 @@ class Model implements \IteratorAggregate
 
             $this->loadAny();
         } finally {
-            // restore
             $this->scope = $scopeBak;
             $field->system = $systemBak;
             $field->default = $defaultBak;
@@ -1461,7 +1457,6 @@ class Model implements \IteratorAggregate
     {
         $field = $this->getField($fieldName);
 
-        // backup
         $scopeBak = $this->scope;
         $systemBak = $field->system;
         $defaultBak = $field->default;
@@ -1473,7 +1468,6 @@ class Model implements \IteratorAggregate
 
             $this->tryLoadAny();
         } finally {
-            // restore
             $this->scope = $scopeBak;
             $field->system = $systemBak;
             $field->default = $defaultBak;

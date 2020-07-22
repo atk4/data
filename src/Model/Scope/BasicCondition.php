@@ -14,10 +14,23 @@ class BasicCondition extends AbstractCondition
 {
     use ReadableCaptionTrait;
 
+    /**
+     * Stores the condition key.
+     *
+     * @var string|Field|Expression
+     */
     public $key;
 
+    /**
+     * Stores the condition operator.
+     *
+     * @var string
+     */
     public $operator;
 
+    /**
+     * Stores the condition value.
+     */
     public $value;
 
     protected static $opposites = [
