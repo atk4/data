@@ -32,14 +32,14 @@ class ConditionTest extends AtkPhpunit\TestCase
 
         $m->addCondition('gender', 'M');
 
-        $this->assertEquals(1, count($m->scope()->getNestedConditions()));
+        $this->assertSame(1, count($m->scope()->getNestedConditions()));
 
         $m->addCondition('gender', 'F');
 
-        $this->assertEquals(2, count($m->scope()->getNestedConditions()));
+        $this->assertSame(2, count($m->scope()->getNestedConditions()));
 
         $m->addCondition([['gender', 'F'], ['foo', 'bar']]);
-        $this->assertEquals(3, count($m->scope()->getNestedConditions()));
+        $this->assertSame(3, count($m->scope()->getNestedConditions()));
     }
 
     public function testEditableAfterCondition()
