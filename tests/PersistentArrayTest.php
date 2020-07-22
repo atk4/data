@@ -181,7 +181,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ],
         ], $this->getInternalPersistenceData($p));
 
-        $this->assertEquals(3, $p->lastInsertID());
+        $this->assertSame(3, $p->lastInsertID());
     }
 
     public function testIterator()
@@ -382,13 +382,13 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->scope()->clear();
         $m->addCondition('country', 'NOT LIKE', 'La%');
         $result = $m->action('select')->get();
-        $this->assertEquals(6, count($m->export()));
-        $this->assertEquals($a['countries'][1], $result[1]);
-        $this->assertEquals($a['countries'][2], $result[2]);
-        $this->assertEquals($a['countries'][4], $result[4]);
-        $this->assertEquals($a['countries'][5], $result[5]);
-        $this->assertEquals($a['countries'][6], $result[6]);
-        $this->assertEquals($a['countries'][8], $result[8]);
+        $this->assertSame(6, count($m->export()));
+        $this->assertSame($a['countries'][1], $result[1]);
+        $this->assertSame($a['countries'][2], $result[2]);
+        $this->assertSame($a['countries'][4], $result[4]);
+        $this->assertSame($a['countries'][5], $result[5]);
+        $this->assertSame($a['countries'][6], $result[6]);
+        $this->assertSame($a['countries'][8], $result[8]);
         unset($result);
 
         // case : %str
@@ -478,81 +478,81 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->scope()->clear();
         $m->addCondition('country', 'REGEXP', 'Ireland|UK');
         $result = $m->action('select')->get();
-        $this->assertEquals(5, count($result));
-        $this->assertEquals($a['countries'][1], $result[1]);
-        $this->assertEquals($a['countries'][2], $result[2]);
-        $this->assertEquals($a['countries'][4], $result[4]);
-        $this->assertEquals($a['countries'][5], $result[5]);
-        $this->assertEquals($a['countries'][6], $result[6]);
+        $this->assertSame(5, count($result));
+        $this->assertSame($a['countries'][1], $result[1]);
+        $this->assertSame($a['countries'][2], $result[2]);
+        $this->assertSame($a['countries'][4], $result[4]);
+        $this->assertSame($a['countries'][5], $result[5]);
+        $this->assertSame($a['countries'][6], $result[6]);
         unset($result);
         $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('country', 'NOT REGEXP', 'Ireland|UK|Latvia');
         $result = $m->action('select')->get();
-        $this->assertEquals(1, count($result));
-        $this->assertEquals($a['countries'][8], $result[8]);
+        $this->assertSame(1, count($result));
+        $this->assertSame($a['countries'][8], $result[8]);
         unset($result);
         $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '>', 18);
         $result = $m->action('select')->get();
-        $this->assertEquals(1, count($result));
-        $this->assertEquals($a['countries'][9], $result[9]);
+        $this->assertSame(1, count($result));
+        $this->assertSame($a['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '>=', 18);
         $result = $m->action('select')->get();
-        $this->assertEquals(2, count($result));
-        $this->assertEquals($a['countries'][8], $result[8]);
-        $this->assertEquals($a['countries'][9], $result[9]);
+        $this->assertSame(2, count($result));
+        $this->assertSame($a['countries'][8], $result[8]);
+        $this->assertSame($a['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '<', 12);
         $result = $m->action('select')->get();
-        $this->assertEquals(1, count($result));
-        $this->assertEquals($a['countries'][1], $result[1]);
+        $this->assertSame(1, count($result));
+        $this->assertSame($a['countries'][1], $result[1]);
         unset($result);
         $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '<=', 12);
         $result = $m->action('select')->get();
-        $this->assertEquals(2, count($result));
-        $this->assertEquals($a['countries'][1], $result[1]);
-        $this->assertEquals($a['countries'][2], $result[2]);
+        $this->assertSame(2, count($result));
+        $this->assertSame($a['countries'][1], $result[1]);
+        $this->assertSame($a['countries'][2], $result[2]);
         unset($result);
         $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', [11, 12]);
         $result = $m->action('select')->get();
-        $this->assertEquals(2, count($result));
-        $this->assertEquals($a['countries'][1], $result[1]);
-        $this->assertEquals($a['countries'][2], $result[2]);
+        $this->assertSame(2, count($result));
+        $this->assertSame($a['countries'][1], $result[1]);
+        $this->assertSame($a['countries'][2], $result[2]);
         unset($result);
         $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', 'NOT IN', [11, 12, 13, 14, 15, 16, 17]);
         $result = $m->action('select')->get();
-        $this->assertEquals(2, count($result));
-        $this->assertEquals($a['countries'][8], $result[8]);
-        $this->assertEquals($a['countries'][9], $result[9]);
+        $this->assertSame(2, count($result));
+        $this->assertSame($a['countries'][8], $result[8]);
+        $this->assertSame($a['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '!=', [11, 12, 13, 14, 15, 16, 17]);
         $result = $m->action('select')->get();
-        $this->assertEquals(2, count($result));
-        $this->assertEquals($a['countries'][8], $result[8]);
-        $this->assertEquals($a['countries'][9], $result[9]);
+        $this->assertSame(2, count($result));
+        $this->assertSame($a['countries'][8], $result[8]);
+        $this->assertSame($a['countries'][9], $result[9]);
         unset($result);
         $m->unload();
     }
@@ -577,11 +577,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = new Model($p, 'invoices');
         $m->addField('items', ['type' => 'integer']);
 
-        $this->assertEquals(13.5, $m->action('fx', ['avg', 'items'])->getOne());
-        $this->assertEquals(12.272727272727273, $m->action('fx0', ['avg', 'items'])->getOne());
-        $this->assertEquals(0, $m->action('fx', ['min', 'items'])->getOne());
-        $this->assertEquals(19, $m->action('fx', ['max', 'items'])->getOne());
-        $this->assertEquals(135, $m->action('fx', ['sum', 'items'])->getOne());
+        $this->assertSame(13.5, $m->action('fx', ['avg', 'items'])->getOne());
+        $this->assertSame(12.272727272727273, $m->action('fx0', ['avg', 'items'])->getOne());
+        $this->assertSame(0, $m->action('fx', ['min', 'items'])->getOne());
+        $this->assertSame(19, $m->action('fx', ['max', 'items'])->getOne());
+        $this->assertSame(135, $m->action('fx', ['sum', 'items'])->getOne());
     }
 
     public function testExists()
@@ -594,11 +594,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = new Model($p, 'invoices');
         $m->addField('items', ['type' => 'integer']);
 
-        $this->assertEquals(1, $m->action('exists')->getOne());
+        $this->assertSame(1, $m->action('exists')->getOne());
 
         $m->delete(1);
 
-        $this->assertEquals(0, $m->action('exists')->getOne());
+        $this->assertSame(0, $m->action('exists')->getOne());
     }
 
     /**
@@ -684,7 +684,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ['f1' => 'A', 'f2' => 'C', 'id' => 4],
             ['f1' => 'A', 'f2' => 'B', 'id' => 1],
         ], $d);
-        $this->assertEquals($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
+        $this->assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }
 
     /**
