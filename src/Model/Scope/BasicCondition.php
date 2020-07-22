@@ -72,17 +72,17 @@ class BasicCondition extends AbstractCondition
 
     public function __construct($key, $operator = null, $value = null)
     {
-        if (func_num_args() == 2) {
-            $value = $operator;
-            $operator = '=';
-        }
-
-        if (is_bool($key)) {
+        if (func_num_args() == 1 && is_bool($key)) {
             if ($key) {
                 return;
             }
 
             $key = new Expression('false');
+        }
+
+        if (func_num_args() == 2) {
+            $value = $operator;
+            $operator = '=';
         }
 
         $this->key = $key;
