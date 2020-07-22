@@ -128,7 +128,7 @@ class BasicCondition extends AbstractCondition
             if (is_string($field)) {
                 // shorthand for adding conditions on references
                 // use chained reference names separated by "/"
-                if (stripos($field, '/') !== false) {
+                if (str_contains($field, '/')) {
                     $references = explode('/', $field);
 
                     $field = array_pop($references);
@@ -236,7 +236,7 @@ class BasicCondition extends AbstractCondition
         $words = [];
 
         if (is_string($field = $this->key)) {
-            if (stripos($field, '/') !== false) {
+            if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
                 $words[] = $model->getModelCaption();
@@ -313,7 +313,7 @@ class BasicCondition extends AbstractCondition
 
         // handling of scope on references
         if (is_string($field = $this->key)) {
-            if (stripos($field, '/') !== false) {
+            if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
                 $field = array_pop($references);
