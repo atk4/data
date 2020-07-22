@@ -161,10 +161,6 @@ class CompoundCondition extends AbstractCondition
 
     public function toWords(bool $asHtml = false): string
     {
-        if ($this->isEmpty()) {
-            return '';
-        }
-
         $parts = [];
         foreach ($this->elements as $nestedCondition) {
             $words = $nestedCondition->toWords($asHtml);
