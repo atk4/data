@@ -46,7 +46,7 @@ class CompoundCondition extends AbstractCondition
             if (is_array($nestedCondition)) {
                 // array of OR nested conditions
                 if (count($nestedCondition) === 1 && isset($nestedCondition[0]) && is_array($nestedCondition[0])) {
-                    $nestedCondition = new self($nestedCondition[0], self::OR);
+                    $nestedCondition = new static($nestedCondition[0], self::OR);
                 } else {
                     $nestedCondition = new BasicCondition(...$nestedCondition);
                 }
@@ -178,7 +178,7 @@ class CompoundCondition extends AbstractCondition
      */
     public static function createAnd(...$conditions)
     {
-        return new self($conditions, self::AND);
+        return new static($conditions, self::AND);
     }
 
     /**
@@ -186,6 +186,6 @@ class CompoundCondition extends AbstractCondition
      */
     public static function createOr(...$conditions)
     {
-        return new self($conditions, self::OR);
+        return new static($conditions, self::OR);
     }
 }
