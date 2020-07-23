@@ -251,7 +251,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $user = clone $this->user;
 
-        // users with tickets that have more than two users per country)
+        // users with tickets that have more than two users per country
         // test if a model can be referenced multiple times
         // and if generated query has no duplicate column names
         // because of counting/# field if added multiple times
@@ -259,9 +259,13 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
         $user->addCondition('Tickets/user/country_id/Users/#', '>=', 2);
         $user->addCondition('Tickets/user/country_id/Users/country_id/Users/#', '>', 1);
+        if ($this->driverType !== 'sqlite') {
+            // not supported because of limitation/issue in Sqlite, the generated query fails
+            // with error: "parser stack overflow"
+            $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true
+        }
 
         $this->assertEquals(2, $user->action('count')->getOne());
-
         foreach ($user as $u) {
             $this->assertTrue(in_array($u->get('name'), ['Aerton', 'Rubens'], true));
         }
