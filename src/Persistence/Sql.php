@@ -376,7 +376,7 @@ class Sql extends Persistence
 
             // simple condition
             if ($condition instanceof Model\Scope\BasicCondition) {
-                $query = $query->where(...$condition->toArray());
+                $query = $query->where(...$condition->toQueryArgumentsArray());
             }
 
             // nested conditions
