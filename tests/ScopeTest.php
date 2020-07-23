@@ -177,7 +177,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals('Country that has reference Users where any referenced record exists', $country->scope()->toWords());
     }
 
-    public function testContitionOnReferencedRecords()
+    public function testConditionOnReferencedRecords()
     {
         $user = clone $this->user;
 
