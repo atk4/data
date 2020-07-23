@@ -99,7 +99,7 @@ class BasicCondition extends AbstractCondition
             // new records will automatically get this value assigned for the field
             // @todo: consider this when condition is part of OR scope
             if ($this->operator === '=' && !is_object($this->value) && !is_array($this->value)) {
-                // key containing '/' means chained references and it is handled in toQueryArgumentsArray method
+                // key containing '/' means chained references and it is handled in toQueryArguments method
                 if (is_string($field = $this->key) && !str_contains($field, '/')) {
                     $field = $model->getField($field);
                 }
@@ -112,7 +112,7 @@ class BasicCondition extends AbstractCondition
         }
     }
 
-    public function toQueryArgumentsArray(): array
+    public function toQueryArguments(): array
     {
         // make sure clones are used to avoid changes
         $condition = clone $this;

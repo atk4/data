@@ -102,7 +102,7 @@ class Iterator
 
         // simple condition
         if ($condition instanceof Model\Scope\BasicCondition) {
-            $args = $condition->toQueryArgumentsArray();
+            $args = $condition->toQueryArguments();
 
             $field = $args[0];
             $operator = $args[1] ?? null;
