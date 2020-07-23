@@ -34,7 +34,7 @@ abstract class AbstractCondition
         $this->onChangeModel();
     }
 
-    abstract public function onChangeModel();
+    abstract protected function onChangeModel();
 
     /**
      * Temporarily assign a model to the condition.

@@ -91,7 +91,7 @@ class BasicCondition extends AbstractCondition
         $this->value = $value;
     }
 
-    public function onChangeModel(): void
+    protected function onChangeModel(): void
     {
         if ($model = $this->getModel()) {
             // if we have a definitive scalar value for a field

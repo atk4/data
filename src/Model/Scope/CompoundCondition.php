@@ -77,7 +77,7 @@ class CompoundCondition extends AbstractCondition
         return $this->elements;
     }
 
-    public function onChangeModel(): void
+    protected function onChangeModel(): void
     {
         foreach ($this->elements as $nestedCondition) {
             $nestedCondition->onChangeModel();
