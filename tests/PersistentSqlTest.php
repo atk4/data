@@ -139,7 +139,11 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
         $m->addField('name');
         $m->addField('surname');
 
+        $this->assertEquals(0, $m->action('exists')->getOne());
+
         $m->import($a['user']); // import data
+
+        $this->assertEquals(1, $m->action('exists')->getOne());
 
         $this->assertEquals(2, $m->action('count')->getOne());
     }
