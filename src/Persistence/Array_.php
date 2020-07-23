@@ -375,8 +375,8 @@ class Array_ extends Persistence
                 }
 
                 $fx = $args[0];
-                $field = $args[1] ?? null;
-                $action = $this->initAction($model, $args[1] ?? null);
+                $field = $args[1];
+                $action = $this->initAction($model, $field);
                 $this->applyScope($model, $action);
                 $this->setLimitOrder($model, $action);
 
