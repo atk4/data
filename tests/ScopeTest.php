@@ -151,7 +151,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         if ($this->driverType == 'sqlite') {
             $condition = new BasicCondition('name', $user->expr('[surname]'));
 
-            $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->toWords($user));
+            $this->assertEquals('Name is equal to expression \'"user"."surname"\'', $condition->toWords($user));
         }
 
         $condition = new BasicCondition('country_id', null);
