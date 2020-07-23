@@ -190,7 +190,8 @@ class BasicCondition extends AbstractCondition
         if ($this->operator && isset(self::$opposites[$this->operator])) {
             $this->operator = self::$opposites[$this->operator];
         } else {
-            throw new Exception('Negation of condition is not supported for ' . ($this->operator ?: 'no') . ' operator');
+            throw (new Exception('Negation of condition is not supported for this operator'))
+                ->addMoreInfo('operator', $this->operator ?: 'no operator');
         }
 
         return $this;
@@ -262,7 +263,8 @@ class BasicCondition extends AbstractCondition
         $operator = strtoupper((string) $this->operator);
 
         if (!isset(self::$dictionary[$operator])) {
-            throw new Exception($operator . ' is not supported');
+            throw (new Exception('Operator is not supported'))
+                ->addMoreInfo('operator', $operator);
         }
 
         return self::$dictionary[$operator];

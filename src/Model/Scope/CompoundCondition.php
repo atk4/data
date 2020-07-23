@@ -34,7 +34,8 @@ class CompoundCondition extends AbstractCondition
     public function __construct(array $nestedConditions = [], string $junction = self::AND)
     {
         if (!in_array($junction, [self::OR, self::AND], true)) {
-            throw new Exception($junction . ' is not a valid CompondCondition junction');
+            throw (new Exception('Using invalid CompondCondition junction'))
+                ->addMoreInfo('junction', $junction);
         }
 
         $this->junction = $junction;
