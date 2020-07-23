@@ -119,9 +119,7 @@ class Iterator
                     ->addMoreInfo('condition', $condition);
             }
 
-            if (isset($row[$field->short_name])) {
-                $match = $this->evaluateIf($row[$field->short_name], $operator, $value);
-            }
+            $match = $this->evaluateIf($row[$field->short_name] ?? null, $operator, $value);
         }
 
         // nested conditions
@@ -148,7 +146,7 @@ class Iterator
     {
         switch (strtoupper((string) $operator)) {
             case '=':
-                $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 == $v2;
+                $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
 
             break;
             case '>':

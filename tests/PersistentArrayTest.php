@@ -352,6 +352,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             7 => ['id' => 7, 'name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
             8 => ['id' => 8, 'name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
             9 => ['id' => 9, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
+            10 => ['id' => 10, 'code' => null, 'country' => 'Germany', 'active' => 1],
         ]];
 
         $p = new Persistence\Array_($a);
@@ -382,7 +383,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->scope()->clear();
         $m->addCondition('country', 'NOT LIKE', 'La%');
         $result = $m->action('select')->get();
-        $this->assertSame(6, count($m->export()));
+        $this->assertSame(7, count($m->export()));
         $this->assertSame($a['countries'][1], $result[1]);
         $this->assertSame($a['countries'][2], $result[2]);
         $this->assertSame($a['countries'][4], $result[4]);
@@ -407,7 +408,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%a%');
         $result = $m->action('select')->get();
-        $this->assertSame(7, count($result));
+        $this->assertSame(8, count($result));
         $this->assertSame($a['countries'][1], $result[1]);
         $this->assertSame($a['countries'][2], $result[2]);
         $this->assertSame($a['countries'][3], $result[3]);
@@ -425,7 +426,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '1');
-        $this->assertSame(5, count($m->export()));
+        $this->assertSame(6, count($m->export()));
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%0%');
@@ -433,7 +434,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%1%');
-        $this->assertSame(5, count($m->export()));
+        $this->assertSame(6, count($m->export()));
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%999%');
@@ -442,6 +443,15 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%ABC%');
         $this->assertSame(0, count($m->export()));
+
+        // null value
+        $m->scope()->clear();
+        $m->addCondition('code', '=', null);
+        $this->assertSame(1, count($m->export()));
+
+        $m->scope()->clear();
+        $m->addCondition('code', '!=', null);
+        $this->assertSame(9, count($m->export()));
     }
 
     /**
