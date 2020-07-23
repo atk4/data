@@ -118,15 +118,13 @@ class CompoundCondition extends AbstractCondition
     }
 
     /**
-     * Clears the group from nested conditions.
+     * Clears the compound condition from nested conditions.
      *
      * @return static
      */
     public function clear()
     {
-        foreach ($this->elements as $nestedCondition) {
-            $nestedCondition->destroy();
-        }
+        $this->elements = [];
 
         return $this;
     }
