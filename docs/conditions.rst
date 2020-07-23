@@ -321,21 +321,21 @@ CompoundCondition can be created using new CompoundCondition() statement from an
 	$condition2 = new BasicCondition('country', 'US');
 	
    // $compoundCondition1 is created using AND as junction and $condition1 and $condition2 as nested conditions
-	$compoundCondition1 = CompoundCondition::mergeAnd($condition1, $condition2);
+	$compoundCondition1 = CompoundCondition::createAnd($condition1, $condition2);
 	
 	$condition3 = new BasicCondition('country', 'DE');
 	$condition4 = new BasicCondition('surname', 'XYZ');
 	
    // $compoundCondition2 is created using OR as junction and $condition3 and $condition4 as nested conditions
-	$compoundCondition2 = CompoundCondition::mergeOr($condition3, $condition4);
+	$compoundCondition2 = CompoundCondition::createOr($condition3, $condition4);
 
 	$condition5 = new BasicCondition('name', 'like', 'CDE%');
 	
    // $compoundCondition3 is created using AND as junction and $condition5 and $compoundCondition2 as nested conditions
-	$compoundCondition3 = CompoundCondition::mergeAnd($condition5, $compoundCondition2);
+	$compoundCondition3 = CompoundCondition::createAnd($condition5, $compoundCondition2);
 
    // $compoundCondition is created using OR as junction and $compoundCondition1 and $compoundCondition3 as nested conditions
-	$compoundCondition = CompoundCondition::mergeOr($compoundCondition1, $compoundCondition3);
+	$compoundCondition = CompoundCondition::createOr($compoundCondition1, $compoundCondition3);
 	
 	
 CompoundCondition is an independent object not related to any model. Applying scope to model is using the Model::scope()->add($condition) method::
@@ -362,11 +362,11 @@ For compound conditionss this method is using De Morgan's laws, e.g::
 	// results in "(Name not like 'ABC%') or (Country does not equal 'US')"
 	$compoundCondition1->negate();
 
-.. php:method:: mergeAnd(AbstractCondition $conditionA, AbstractCondition $conditionB, $_ = null);
+.. php:method:: createAnd(AbstractCondition $conditionA, AbstractCondition $conditionB, $_ = null);
 
 Merge number of conditions using AND as junction. Returns the resulting CompoundCondition object.
 
-.. php:method:: mergeOr(AbstractCondition $conditionA, AbstractCondition $conditionB, $_ = null);
+.. php:method:: createOr(AbstractCondition $conditionA, AbstractCondition $conditionB, $_ = null);
 
 Merge number of conditions using OR as junction. Returns the resulting CompoundCondition object.
 

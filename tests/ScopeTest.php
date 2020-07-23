@@ -281,10 +281,10 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition3 = new BasicCondition('surname', 'Doe');
         $condition4 = new BasicCondition('country_code', 'LV');
 
-        $compoundCondition1 = CompoundCondition::mergeAnd($condition1, $condition2);
-        $compoundCondition2 = CompoundCondition::mergeAnd($condition3, $condition4);
+        $compoundCondition1 = CompoundCondition::createAnd($condition1, $condition2);
+        $compoundCondition2 = CompoundCondition::createAnd($condition3, $condition4);
 
-        $compoundCondition = CompoundCondition::mergeOr($compoundCondition1, $compoundCondition2);
+        $compoundCondition = CompoundCondition::createOr($compoundCondition1, $compoundCondition2);
 
         $this->assertEquals(CompoundCondition::OR, $compoundCondition->getJunction());
 
@@ -300,7 +300,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $condition5 = new BasicCondition('country_code', 'BR');
 
-        $compoundCondition = CompoundCondition::mergeOr($compoundCondition1, $compoundCondition2, $condition5);
+        $compoundCondition = CompoundCondition::createOr($compoundCondition1, $compoundCondition2, $condition5);
 
         $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\') or Code is equal to \'BR\'', $compoundCondition->toWords($user));
 
@@ -318,10 +318,10 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new BasicCondition('name', 'Alain');
         $condition2 = new BasicCondition('country_code', 'CA');
 
-        $compoundCondition1 = CompoundCondition::mergeAnd($condition1, $condition2);
+        $compoundCondition1 = CompoundCondition::createAnd($condition1, $condition2);
         $condition3 = (new BasicCondition('surname', 'Prost'))->negate();
 
-        $compoundCondition = CompoundCondition::mergeAnd($compoundCondition1, $condition3);
+        $compoundCondition = CompoundCondition::createAnd($compoundCondition1, $condition3);
 
         $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $compoundCondition->toWords($user));
     }
@@ -333,7 +333,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new BasicCondition('name', '!=', 'Alain');
         $condition2 = new BasicCondition('country_code', '!=', 'FR');
 
-        $condition = CompoundCondition::mergeOr($condition1, $condition2)->negate();
+        $condition = CompoundCondition::createOr($condition1, $condition2)->negate();
 
         $user->scope()->add($condition);
 
@@ -349,9 +349,9 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new BasicCondition('name', 'Alain');
         $condition2 = new BasicCondition('country_code', 'FR');
 
-        $compoundCondition = CompoundCondition::mergeAnd($condition1, $condition2);
+        $compoundCondition = CompoundCondition::createAnd($condition1, $condition2);
 
-        $compoundCondition = CompoundCondition::mergeOr($compoundCondition, new BasicCondition('name', 'John'));
+        $compoundCondition = CompoundCondition::createOr($compoundCondition, new BasicCondition('name', 'John'));
 
         $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'FR\') or Name is equal to \'John\'', $compoundCondition->toWords($user));
     }
@@ -363,9 +363,9 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new BasicCondition('name', 'Alain');
         $condition2 = new BasicCondition('country_code', 'FR');
 
-        $compoundCondition = CompoundCondition::mergeOr($condition1, $condition2);
+        $compoundCondition = CompoundCondition::createOr($condition1, $condition2);
 
-        $compoundCondition = CompoundCondition::mergeAnd($compoundCondition, new BasicCondition('name', 'John'));
+        $compoundCondition = CompoundCondition::createAnd($compoundCondition, new BasicCondition('name', 'John'));
 
         $this->assertEquals('(Name is equal to \'Alain\' or Code is equal to \'FR\') and Name is equal to \'John\'', $compoundCondition->toWords($user));
     }
@@ -377,7 +377,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new BasicCondition('name', 'Alain');
         $condition2 = new BasicCondition('country_code', 'FR');
 
-        $compoundCondition = CompoundCondition::mergeAnd($condition1, $condition2);
+        $compoundCondition = CompoundCondition::createAnd($condition1, $condition2);
 
         $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $compoundCondition->toWords($user));
     }
@@ -389,7 +389,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new BasicCondition('name', 'Alain');
         $condition2 = new BasicCondition('country_code', 'FR');
 
-        $compoundCondition = CompoundCondition::mergeAnd($condition1, $condition2);
+        $compoundCondition = CompoundCondition::createAnd($condition1, $condition2);
 
         $compoundCondition->clear();
 
