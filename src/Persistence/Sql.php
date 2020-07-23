@@ -366,34 +366,30 @@ class Sql extends Persistence
     /**
      * Will apply a condition defined inside $condition or $model->scope() onto $query.
      */
-    public function initQueryConditions(Model $model, Query $query, Model\Scope\AbstractCondition $condition = null): Query
+    public function initQueryConditions(Model $model, Query $query, Model\Scope\AbstractCondition $condition = null): void
     {
         $condition = $condition ?? $model->scope();
 
-        if ($condition->isEmpty()) {
-            return $query;
-        }
+        if (!$condition->isEmpty()) {
+            // peel off the single nested scopes to convert (((field = value))) to field = value
+            $condition = $condition->simplify();
 
-        // peel off the single nested scopes to convert (((field = value))) to field = value
-        $condition = $condition->simplify();
-
-        // simple condition
-        if ($condition instanceof Model\Scope\BasicCondition) {
-            $query = $query->where(...$condition->toArray());
-        }
-
-        // nested conditions
-        if ($condition instanceof Model\Scope\CompoundCondition) {
-            $expression = $condition->isOr() ? $query->orExpr() : $query->andExpr();
-
-            foreach ($condition->getNestedConditions() as $nestedCondition) {
-                $expression = $this->initQueryConditions($model, $expression, $nestedCondition);
+            // simple condition
+            if ($condition instanceof Model\Scope\BasicCondition) {
+                $query = $query->where(...$condition->toArray());
             }
 
-            $query = $query->where($expression);
-        }
+            // nested conditions
+            if ($condition instanceof Model\Scope\CompoundCondition) {
+                $expression = $condition->isOr() ? $query->orExpr() : $query->andExpr();
 
-        return $query;
+                foreach ($condition->getNestedConditions() as $nestedCondition) {
+                    $this->initQueryConditions($model, $expression, $nestedCondition);
+                }
+
+                $query = $query->where($expression);
+            }
+        }
     }
 
     /**
