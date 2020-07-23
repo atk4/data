@@ -370,7 +370,7 @@ class Sql extends Persistence
     {
         $condition = $condition ?? $model->scope();
 
-        if (!$condition || $condition->isEmpty()) {
+        if ($condition->isEmpty()) {
             return $query;
         }
 
