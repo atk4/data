@@ -780,12 +780,10 @@ class Model implements \IteratorAggregate
         }, [], PHP_INT_MIN);
 
         try {
-            $this->set($field, null);
+            return $this->set($field, null);
         } finally {
             $this->removeHook(self::HOOK_NORMALIZE, $hookIndex, true);
         }
-
-        return $this;
     }
 
     /**
@@ -1435,14 +1433,12 @@ class Model implements \IteratorAggregate
             $this->scope = clone $this->scope;
             $this->addCondition($field, $value);
 
-            $this->loadAny();
+            return $this->loadAny();
         } finally {
             $this->scope = $scopeBak;
             $field->system = $systemBak;
             $field->default = $defaultBak;
         }
-
-        return $this;
     }
 
     /**
@@ -1466,14 +1462,12 @@ class Model implements \IteratorAggregate
             $this->scope = clone $this->scope;
             $this->addCondition($field, $value);
 
-            $this->tryLoadAny();
+            return $this->tryLoadAny();
         } finally {
             $this->scope = $scopeBak;
             $field->system = $systemBak;
             $field->default = $defaultBak;
         }
-
-        return $this;
     }
 
     /**
