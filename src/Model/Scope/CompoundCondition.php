@@ -131,9 +131,9 @@ class CompoundCondition extends AbstractCondition
         return $this;
     }
 
-    public function simplify()
+    public function simplify(): AbstractCondition
     {
-        if (count($this->elements) != 1) {
+        if (count($this->elements) !== 1) {
             return $this;
         }
 

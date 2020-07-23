@@ -90,10 +90,8 @@ abstract class AbstractCondition
     /**
      * Simplifies by peeling off nested group conditions with single contained component.
      * Useful for converting (((field = value))) to field = value.
-     *
-     * @return AbstractCondition
      */
-    public function simplify()
+    public function simplify(): AbstractCondition
     {
         return $this;
     }
