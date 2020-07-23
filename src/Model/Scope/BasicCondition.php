@@ -265,7 +265,7 @@ class BasicCondition extends AbstractCondition
 
     protected function operatorToWords(bool $asHtml = false): string
     {
-        return $this->operator ? (self::$dictionary[strtoupper((string) $this->operator)] ?? 'is equal to') : '';
+        return $this->operator ? (self::$dictionary[strtoupper((string) $this->operator)] ?? $this->operator) : '';
     }
 
     protected function valueToWords($value, bool $asHtml = false): string
