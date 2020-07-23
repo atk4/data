@@ -255,7 +255,17 @@ class BasicCondition extends AbstractCondition
 
     protected function operatorToWords(): string
     {
-        return $this->operator ? (self::$dictionary[strtoupper((string) $this->operator)] ?? $this->operator) : '';
+        if (!$this->operator) {
+            return '';
+        }
+        
+        $operator = strtoupper((string) $this->operator);
+        
+        if (!isset(self::$dictionary[$operator])) {
+            throw new Exception($operator . ' is not supported');
+        }
+        
+        return self::$dictionary[$operator];
     }
 
     protected function valueToWords($value): string
