@@ -130,36 +130,22 @@ class BasicCondition extends AbstractCondition
                 // use chained reference names separated by "/"
                 if (str_contains($field, '/')) {
                     $references = explode('/', $field);
-
                     $field = array_pop($references);
 
+                    $refModels = [];
                     foreach ($references as $link) {
-                        $model = $model->refLink($link);
+                        $refModels[] = $model = $model->refLink($link);
                     }
 
-                    // '#' -> has # referenced records
-                    // '?' -> has any referenced records
-                    // '!' -> does not have any referenced records
-                    if (in_array($field, ['#', '!', '?'], true)) {
-                        // if no operator consider '#' as 'any record exists'
-                        if ($field == '#' && !$operator) {
-                            $field = '?';
+                    foreach (array_reverse($refModels) as $refModel) {
+                        if ($field === '#') {
+                            $field = $value ? $refModel->action('count') : $refModel->action('exists');
+                        } else {
+                            $refModel->addCondition($field, $operator, $value);
+                            $field = $refModel->action('exists');
+                            $operator = $value = null;
                         }
-
-                        if (in_array($field, ['!', '?'], true)) {
-                            $operator = '=';
-                            $value = $field == '?' ? 1 : 0;
-                        }
-                    } else {
-                        // otherwise add the condition to the referenced model
-                        // and check if any records exist matching the criteria
-                        $model->addCondition($field, $operator, $value);
-                        $operator = '=';
-                        $value = 1;
                     }
-
-                    // if not counting we check for existence only
-                    $field = $field == '#' ? $model->action('count') : $model->action('exists');
                 } else {
                     $field = $model->getField($field);
                 }

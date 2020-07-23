@@ -409,14 +409,4 @@ This will limit the $contact model to those whose company have more than 3 ticke
 'company' and 'tickets' are the name of the chained references ('company' is a reference in the $contact model and
 'tickets' is a reference in Company model)
 
-For applying conditions on existence of records the '?' (has any) and '!' (doesn't have any) special symbols can be used.
-Although it is similar in functionality to checking ('company/tickets/#', '>', 0) or ('company/tickets/#', '=', 0)
-'?' and '!' special symbols use optimized query and are much faster::
-
-	// Contact whose company has any tickets
-	$contact->addCondition('company/tickets/?');
-
-	// Contact whose company doesn't have any tickets
-	$contact->addCondition('company/tickets/!');
-
 
