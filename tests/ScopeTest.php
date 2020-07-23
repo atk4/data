@@ -46,6 +46,26 @@ class SUser extends Model
         $this->hasOne('country_id', new SCountry())
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
+        
+        $this->hasMany('Tickets', [new STicket(), 'their_field' => 'user']);
+    }
+}
+
+class STicket extends Model
+{
+    public $table = 'ticket';
+
+    public $caption = 'Ticket';
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->addField('number');
+        $this->addField('venue');
+        $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
+        
+        $this->hasOne('user', new SUser());
     }
 }
 
@@ -53,6 +73,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 {
     protected $user;
     protected $country;
+    protected $ticket;
 
     protected function setUp(): void
     {
@@ -83,6 +104,16 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
             ['name' => 'Alain', 'surname' => 'Prost', 'country_code' => 'FR'],
             ['name' => 'Aerton', 'surname' => 'Senna', 'country_code' => 'BR'],
             ['name' => 'Rubens', 'surname' => 'Barichello', 'country_code' => 'BR'],
+        ]);
+        
+        $this->ticket = new STicket($this->db);
+
+        $this->getMigrator($this->ticket)->drop()->create();
+
+        $this->ticket->import([
+            ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],
+            ['number' => '002', 'venue' => 'Best Stadium', 'user' => 2],
+            ['number' => '003', 'venue' => 'Best Stadium', 'user' => 2],
         ]);
     }
 
@@ -162,24 +193,17 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
             $this->assertEquals('LV', $u->get('country_code'));
         }
 
-        $country = clone $this->country;
-
-        // countries with no users
-        $country->addCondition('Users/!');
-
-        foreach ($country as $c) {
-            $this->assertEmpty($c->get('user_names'));
+        $user = clone $this->user;
+        
+        // users that have no ticket
+        $user->addCondition('Tickets/#', 0);
+        
+        $this->assertEquals(3, $user->action('count')->getOne());
+        
+        foreach ($user as $u) {
+            $this->assertTrue(in_array($u->get('name'), ['Alain', 'Aerton', 'Rubens']));
         }
-
-        $country = clone $this->country;
-
-        // countries with any user
-        $country->addCondition('Users/?');
-
-        foreach ($country as $c) {
-            $this->assertNotEmpty($c->get('user_names'));
-        }
-
+        
         $country = clone $this->country;
 
         // countries with more than one user
@@ -187,6 +211,46 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         foreach ($country as $c) {
             $this->assertEquals('BR', $c->get('code'));
+        }
+        
+        $country = clone $this->country;
+
+        // countries with users that have ticket number 001
+        $country->addCondition('Users/Tickets/number', '001');
+
+        foreach ($country as $c) {
+            $this->assertEquals('CA', $c->get('code'));
+        }
+        
+        $country = clone $this->country;
+
+        // countries with users that have more than one ticket
+        $country->addCondition('Users/Tickets/#', '>', 1);
+        
+        foreach ($country as $c) {
+            $this->assertEquals('LV', $c->get('code'));
+        }
+        
+        $country = clone $this->country;
+
+        // countries with users that have any tickets
+        $country->addCondition('Users/Tickets/#');
+        
+        $this->assertEquals(2, $country->action('count')->getOne());
+        
+        foreach ($country as $c) {
+            $this->assertTrue(in_array($c->get('code'), ['LV', 'CA']));
+        }
+        
+        $country = clone $this->country;
+        
+        // countries with users that have no tickets
+        $country->addCondition('Users/Tickets/#', 0);
+
+        $this->assertEquals(2, $country->action('count')->getOne());
+        
+        foreach ($country as $c) {
+            $this->assertTrue(in_array($c->get('code'), ['FR', 'BR']));
         }
     }
 
