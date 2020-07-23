@@ -44,4 +44,20 @@ class Scope extends Scope\CompoundCondition
     {
         throw new Exception('Model Scope cannot be negated!');
     }
+
+    /**
+     * @return static
+     */
+    public static function createAnd(...$conditions)
+    {
+        return parent::createAnd(...$conditions);
+    }
+
+    /**
+     * @return static
+     */
+    public static function createOr(...$conditions)
+    {
+        return parent::createOr(...$conditions);
+    }
 }
