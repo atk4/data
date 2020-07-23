@@ -199,30 +199,21 @@ class BasicCondition extends AbstractCondition
 
     public function toWords(Model $model = null): string
     {
-        if ($model === null) {
-            if ($this->getModel() === null) {
-                throw new Exception('Condition must be associated with Model to convert to words');
-            }
+        $model = $model ?: $this->getModel();
 
-            $condition = $this;
-        } else {
-            // temporarily assign a model to the condition.
-            $condition = clone $this;
-            $condition->owner = null;
-            (clone $model)->scope()->add($condition);
+        if ($model === null) {
+            throw new Exception('Condition must be associated with Model to convert to words');
         }
 
-        $key = $condition->keyToWords();
-        $operator = $condition->operatorToWords();
-        $value = $condition->valueToWords($condition->value);
+        $key = $this->keyToWords($model);
+        $operator = $this->operatorToWords();
+        $value = $this->valueToWords($model, $this->value);
 
         return trim("{$key} {$operator} {$value}");
     }
 
-    protected function keyToWords(): string
+    protected function keyToWords(Model $model): string
     {
-        $model = $this->getModel();
-
         $words = [];
 
         if (is_string($field = $this->key)) {
@@ -275,10 +266,8 @@ class BasicCondition extends AbstractCondition
         return self::$dictionary[$operator];
     }
 
-    protected function valueToWords($value): string
+    protected function valueToWords(Model $model, $value): string
     {
-        $model = $this->getModel();
-
         if ($value === null) {
             return $this->operator ? 'empty' : '';
         }
@@ -286,7 +275,7 @@ class BasicCondition extends AbstractCondition
         if (is_array($values = $value)) {
             $ret = [];
             foreach ($values as $value) {
-                $ret[] = $this->valueToWords($value);
+                $ret[] = $this->valueToWords($model, $value);
             }
 
             return implode(' or ', $ret);
