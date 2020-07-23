@@ -240,12 +240,6 @@ class BasicCondition extends AbstractCondition
                 if ($field === '#') {
                     $words[] = $this->operator ? 'number of records' : 'any referenced record exists';
                     $field = '';
-                } elseif ($field === '?') {
-                    $words[] = 'any referenced record exists';
-                    $field = '';
-                } elseif ($field === '!') {
-                    $words[] = 'no referenced records exist';
-                    $field = '';
                 }
             }
 
