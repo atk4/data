@@ -359,7 +359,7 @@ class Model implements \IteratorAggregate
      */
     public function __construct($persistence = null, $defaults = [])
     {
-        $this->scope = \Closure::bind(function() {
+        $this->scope = \Closure::bind(function () {
             return new Model\Scope();
         }, null, Model\Scope::class)();
 
