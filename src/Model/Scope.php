@@ -26,9 +26,11 @@ class Scope extends Scope\CompoundCondition
 
     public function setModel(Model $model)
     {
-        $this->model = $model;
+        if ($this->model !== $model) {
+            $this->model = $model;
 
-        $this->onChangeModel();
+            $this->onChangeModel();
+        }
 
         return $this;
     }
