@@ -318,7 +318,7 @@ CompoundCondition can be created using new CompoundCondition() statement from an
    // $condition1 will be used as child-component
 	$condition1 = new BasicCondition('name', 'like', 'ABC%');
    
-   // $condition1 will be used as child-component
+   // $condition2 will be used as child-component
 	$condition2 = new BasicCondition('country', 'US');
 	
    // $compoundCondition1 is created using AND as junction and $condition1 and $condition2 as nested conditions
