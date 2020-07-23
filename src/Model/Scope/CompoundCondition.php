@@ -69,6 +69,22 @@ class CompoundCondition extends AbstractCondition
     }
 
     /**
+     * Add nested condition.
+     *
+     * @param mixed $field
+     * @param mixed $operator
+     * @param mixed $value
+     *
+     * @return static
+     */
+    public function addCondition($field, $operator = null, $value = null)
+    {
+        $this->add(new self([func_get_args()]));
+
+        return $this;
+    }
+
+    /**
      * Return array of nested conditions.
      *
      * @return AbstractCondition[]

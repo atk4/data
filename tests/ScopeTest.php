@@ -298,9 +298,9 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals($compoundCondition->toWords($user), $user->scope()->toWords());
 
-        $condition5 = new BasicCondition('country_code', 'BR');
+        $compoundCondition = CompoundCondition::createOr($compoundCondition1, $compoundCondition2);
 
-        $compoundCondition = CompoundCondition::createOr($compoundCondition1, $compoundCondition2, $condition5);
+        $compoundCondition->addCondition('country_code', 'BR');
 
         $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\') or Code is equal to \'BR\'', $compoundCondition->toWords($user));
 
