@@ -176,24 +176,20 @@ class CompoundCondition extends AbstractCondition
     /**
      * Merge number of conditions using AND as junction.
      *
-     * @param AbstractCondition $_
-     *
      * @return static
      */
-    public static function mergeAnd(AbstractCondition $conditionA, AbstractCondition $conditionB, $_ = null)
+    public static function mergeAnd(...$conditions)
     {
-        return new self(func_get_args(), self::AND);
+        return new self($conditions, self::AND);
     }
 
     /**
      * Merge number of conditions using OR as junction.
      *
-     * @param AbstractCondition $_
-     *
      * @return static
      */
-    public static function mergeOr(AbstractCondition $conditionA, AbstractCondition $conditionB, $_ = null)
+    public static function mergeOr(...$conditions)
     {
-        return new self(func_get_args(), self::OR);
+        return new self($conditions, self::OR);
     }
 }
