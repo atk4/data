@@ -364,7 +364,7 @@ class Sql extends Persistence
     }
 
     /**
-     * Will apply scope defined inside $scope or $model->scope() onto $query.
+     * Will apply a condition defined inside $condition or $model->scope() onto $query.
      */
     public function initQueryConditions(Model $model, Query $query, Model\Scope\AbstractCondition $condition = null): Query
     {
