@@ -37,22 +37,6 @@ abstract class AbstractCondition
     abstract protected function onChangeModel();
 
     /**
-     * Temporarily assign a model to the condition.
-     *
-     * @return static
-     */
-    final protected function on(Model $model)
-    {
-        $clone = clone $this;
-
-        $clone->owner = null;
-
-        (clone $model)->scope()->add($clone);
-
-        return $clone;
-    }
-
-    /**
      * Get the model this condition is associated with.
      */
     public function getModel(): ?Model

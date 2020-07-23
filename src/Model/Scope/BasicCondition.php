@@ -199,16 +199,21 @@ class BasicCondition extends AbstractCondition
 
     public function toWords(Model $model = null): string
     {
-        if (!$model = $model ?: $this->getModel()) {
-            throw new Exception('Condition must be associated with Model to convert to words');
+        if ($model === null) {
+            if ($this->getModel() === null) {
+                throw new Exception('Condition must be associated with Model to convert to words');
+            }
+
+            $condition = $this;
+        } else {
+            // temporarily assign a model to the condition.
+            $condition = clone $this;
+            $condition->owner = null;
+            (clone $model)->scope()->add($condition);
         }
 
-        $condition = $this->on($model);
-
         $key = $condition->keyToWords();
-
         $operator = $condition->operatorToWords();
-
         $value = $condition->valueToWords($condition->value);
 
         return trim("{$key} {$operator} {$value}");
