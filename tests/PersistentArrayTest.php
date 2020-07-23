@@ -539,6 +539,13 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->unload();
 
         $m->scope()->clear();
+        $m->addCondition('code', 'IN', []);
+        $result = $m->action('select')->get();
+        $this->assertSame(0, count($result));
+        unset($result);
+        $m->unload();
+
+        $m->scope()->clear();
         $m->addCondition('code', 'NOT IN', [11, 12, 13, 14, 15, 16, 17]);
         $result = $m->action('select')->get();
         $this->assertSame(2, count($result));
