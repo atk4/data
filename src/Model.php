@@ -359,7 +359,9 @@ class Model implements \IteratorAggregate
      */
     public function __construct($persistence = null, $defaults = [])
     {
-        $this->scope = new Model\Scope();
+        $this->scope = \Closure::bind(function() {
+            return new Model\Scope();
+        }, null, Model\Scope::class)();
 
         if ((is_string($persistence) || is_array($persistence)) && func_num_args() === 1) {
             $defaults = $persistence;

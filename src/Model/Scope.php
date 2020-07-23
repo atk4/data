@@ -19,7 +19,7 @@ class Scope extends Scope\CompoundCondition
      */
     protected $model;
 
-    public function __construct(array $nestedConditions = [])
+    protected function __construct(array $nestedConditions = [])
     {
         parent::__construct($nestedConditions, self::AND);
     }
