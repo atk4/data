@@ -114,18 +114,15 @@ class BasicCondition extends AbstractCondition
 
     public function toQueryArguments(): array
     {
-        // make sure clones are used to avoid changes
-        $condition = clone $this;
-
-        $field = $condition->key;
-        $operator = $condition->operator;
-        $value = $condition->value;
-
-        if ($condition->isEmpty()) {
+        if ($this->isEmpty()) {
             return [];
         }
 
-        if ($model = $condition->getModel()) {
+        $field = $this->key;
+        $operator = $this->operator;
+        $value = $this->value;
+
+        if ($model = $this->getModel()) {
             if (is_string($field)) {
                 // shorthand for adding conditions on references
                 // use chained reference names separated by "/"
@@ -134,8 +131,10 @@ class BasicCondition extends AbstractCondition
                     $field = array_pop($references);
 
                     $refModels = [];
+                    $refModel = $model;
                     foreach ($references as $link) {
-                        $refModels[] = $model = $model->refLink($link);
+                        $refModel = $refModel->refLink($link);
+                        $refModels[] = $refModel;
                     }
 
                     foreach (array_reverse($refModels) as $refModel) {
@@ -144,7 +143,8 @@ class BasicCondition extends AbstractCondition
                         } else {
                             $refModel->addCondition($field, $operator, $value);
                             $field = $refModel->action('exists');
-                            $operator = $value = null;
+                            $operator = null;
+                            $value = null;
                         }
                     }
                 } else {
