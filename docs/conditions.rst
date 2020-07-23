@@ -297,15 +297,14 @@ Negates the condition, e.g::
 Sets the model of BasicCondition to a clone of $model to avoid changes to the original object.::
 
    // uses the $contact model to conver the condition to human readable words
-   $condition->on($contact)->toWords();
+   $condition->toWords($contact);
 
 .. php:method:: toWords($asHtml = false);
 
-Converts the condition object to human readable words. Model must be set first. Recommended is use of Condition::on method to set the model
-as it clones the model object first::
+Converts the condition object to human readable words. Model must be set first::
 
 	// results in 'Contact where Name is John'
-	(new BasicCondition('name', 'John'))->on($contactModel)->toWords(); 
+	(new BasicCondition('name', 'John'))->toWords($contactModel); 
 
 .. php:class:: CompoundCondition
 
