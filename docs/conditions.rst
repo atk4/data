@@ -264,7 +264,7 @@ These classes can be used directly and independently from Model class.
 
 .. php:method:: scope()
 
-This method provides access to the model scope enablind conditions to be added::
+This method provides access to the model scope enabling conditions to be added::
 
    $contact->scope()->add($condition); // adding condition to a model
 
