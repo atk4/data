@@ -41,7 +41,7 @@ abstract class AbstractCondition
      *
      * @return static
      */
-    final public function on(Model $model)
+    final protected function on(Model $model)
     {
         $clone = clone $this;
 
@@ -85,7 +85,7 @@ abstract class AbstractCondition
      *
      * @return bool
      */
-    abstract public function toWords(bool $asHtml = false): string;
+    abstract public function toWords(Model $model = null): string;
 
     /**
      * Simplifies by peeling off nested group conditions with single contained component.

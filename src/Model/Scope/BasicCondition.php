@@ -7,6 +7,7 @@ namespace atk4\data\Model\Scope;
 use atk4\core\ReadableCaptionTrait;
 use atk4\data\Exception;
 use atk4\data\Field;
+use atk4\data\Model;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
@@ -195,27 +196,24 @@ class BasicCondition extends AbstractCondition
         return $this;
     }
 
-    public function toWords(bool $asHtml = false): string
+    public function toWords(Model $model = null): string
     {
-        if (!$this->getModel()) {
+        if (!$model = $model ?: $this->getModel()) {
             throw new Exception('Condition must be associated with Model to convert to words');
         }
 
-        // make sure clones are used to avoid changes
-        $condition = clone $this;
+        $condition = $this->on($model);
 
-        $key = $condition->keyToWords($asHtml);
+        $key = $condition->keyToWords();
 
-        $operator = $condition->operatorToWords($asHtml);
+        $operator = $condition->operatorToWords();
 
-        $value = $condition->valueToWords($condition->value, $asHtml);
+        $value = $condition->valueToWords($condition->value);
 
-        $ret = trim("{$key} {$operator} {$value}");
-
-        return $asHtml ? $ret : html_entity_decode($ret);
+        return trim("{$key} {$operator} {$value}");
     }
 
-    protected function keyToWords(bool $asHtml = false): string
+    protected function keyToWords(): string
     {
         $model = $this->getModel();
 
@@ -252,17 +250,15 @@ class BasicCondition extends AbstractCondition
             $words[] = "expression '{$field->getDebugQuery()}'";
         }
 
-        $string = implode(' ', array_filter($words));
-
-        return $asHtml ? "<strong>{$string}</strong>" : $string;
+        return implode(' ', array_filter($words));
     }
 
-    protected function operatorToWords(bool $asHtml = false): string
+    protected function operatorToWords(): string
     {
         return $this->operator ? (self::$dictionary[strtoupper((string) $this->operator)] ?? $this->operator) : '';
     }
 
-    protected function valueToWords($value, bool $asHtml = false): string
+    protected function valueToWords($value): string
     {
         $model = $this->getModel();
 
@@ -273,7 +269,7 @@ class BasicCondition extends AbstractCondition
         if (is_array($values = $value)) {
             $ret = [];
             foreach ($values as $value) {
-                $ret[] = $this->valueToWords($value, $asHtml);
+                $ret[] = $this->valueToWords($value);
             }
 
             return implode(' or ', $ret);

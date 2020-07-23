@@ -6,6 +6,7 @@ namespace atk4\data\Model\Scope;
 
 use atk4\core\ContainerTrait;
 use atk4\data\Exception;
+use atk4\data\Model;
 
 /**
  * @property AbstractCondition[] $elements
@@ -157,11 +158,11 @@ class CompoundCondition extends AbstractCondition
         return $this;
     }
 
-    public function toWords(bool $asHtml = false): string
+    public function toWords(Model $model = null): string
     {
         $parts = [];
         foreach ($this->elements as $nestedCondition) {
-            $words = $nestedCondition->toWords($asHtml);
+            $words = $nestedCondition->toWords($model);
 
             $parts[] = $this->isCompound() && $nestedCondition->isCompound() ? '(' . $words . ')' : $words;
         }

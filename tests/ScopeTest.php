@@ -138,37 +138,37 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $condition = new BasicCondition(new Expression('false'));
 
-        $this->assertEquals('expression \'false\'', $condition->on($user)->toWords());
+        $this->assertEquals('expression \'false\'', $condition->toWords($user));
 
         $condition = new BasicCondition('country_id/code', 'US');
 
-        $this->assertEquals('User that has reference Country Id where Code is equal to \'US\'', $condition->on($user)->toWords());
+        $this->assertEquals('User that has reference Country Id where Code is equal to \'US\'', $condition->toWords($user));
 
         $condition = new BasicCondition('country_id', 2);
 
-        $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->on($user)->toWords());
+        $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->toWords($user));
 
         if ($this->driverType == 'sqlite') {
             $condition = new BasicCondition('name', $user->expr('[surname]'));
 
-            $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->on($user)->toWords());
+            $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->toWords($user));
         }
 
         $condition = new BasicCondition('country_id', null);
 
-        $this->assertEquals('Country Id is equal to empty', $condition->on($user)->toWords());
+        $this->assertEquals('Country Id is equal to empty', $condition->toWords($user));
 
         $condition = new BasicCondition('name', '>', 'Test');
 
-        $this->assertEquals('Name is greater than \'Test\'', $condition->on($user)->toWords());
+        $this->assertEquals('Name is greater than \'Test\'', $condition->toWords($user));
 
         $condition = (new BasicCondition('country_id', 2))->negate();
 
-        $this->assertEquals('Country Id is not equal to \'Latvia\'', $condition->on($user)->toWords());
+        $this->assertEquals('Country Id is not equal to \'Latvia\'', $condition->toWords($user));
 
         $condition = new BasicCondition($user->getField('surname'), $user->getField('name'));
 
-        $this->assertEquals('Surname is equal to User Name', $condition->on($user)->toWords());
+        $this->assertEquals('Surname is equal to User Name', $condition->toWords($user));
 
         $country = clone $this->country;
 
@@ -284,7 +284,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals(CompoundCondition::OR, $compoundCondition->getJunction());
 
-        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')', $compoundCondition->on($user)->toWords());
+        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')', $compoundCondition->toWords($user));
 
         $user->scope()->add($compoundCondition);
 
@@ -292,13 +292,13 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals(2, count($user->export()));
 
-        $this->assertEquals($compoundCondition->on($user)->toWords(), $user->scope()->toWords());
+        $this->assertEquals($compoundCondition->toWords($user), $user->scope()->toWords());
 
         $condition5 = new BasicCondition('country_code', 'BR');
 
         $compoundCondition = CompoundCondition::mergeOr($compoundCondition1, $compoundCondition2, $condition5);
 
-        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\') or Code is equal to \'BR\'', $compoundCondition->on($user)->toWords());
+        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\') or Code is equal to \'BR\'', $compoundCondition->toWords($user));
 
         $user = clone $this->user;
 
@@ -319,7 +319,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $compoundCondition = CompoundCondition::mergeAnd($compoundCondition1, $condition3);
 
-        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $compoundCondition->on($user)->toWords());
+        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $compoundCondition->toWords($user));
     }
 
     public function testNegate()
@@ -349,7 +349,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $compoundCondition = CompoundCondition::mergeOr($compoundCondition, new BasicCondition('name', 'John'));
 
-        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'FR\') or Name is equal to \'John\'', $compoundCondition->on($user)->toWords());
+        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'FR\') or Name is equal to \'John\'', $compoundCondition->toWords($user));
     }
 
     public function testOr()
@@ -363,7 +363,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $compoundCondition = CompoundCondition::mergeAnd($compoundCondition, new BasicCondition('name', 'John'));
 
-        $this->assertEquals('(Name is equal to \'Alain\' or Code is equal to \'FR\') and Name is equal to \'John\'', $compoundCondition->on($user)->toWords());
+        $this->assertEquals('(Name is equal to \'Alain\' or Code is equal to \'FR\') and Name is equal to \'John\'', $compoundCondition->toWords($user));
     }
 
     public function testMerge()
@@ -375,7 +375,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $compoundCondition = CompoundCondition::mergeAnd($condition1, $condition2);
 
-        $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $compoundCondition->on($user)->toWords());
+        $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $compoundCondition->toWords($user));
     }
 
     public function testDestroyEmpty()
@@ -391,6 +391,6 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertTrue($compoundCondition->isEmpty());
 
-        $this->assertEmpty($compoundCondition->on($user)->toWords());
+        $this->assertEmpty($compoundCondition->toWords($user));
     }
 }
