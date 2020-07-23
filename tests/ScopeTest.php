@@ -46,7 +46,7 @@ class SUser extends Model
         $this->hasOne('country_id', new SCountry())
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
-        
+
         $this->hasMany('Tickets', [new STicket(), 'their_field' => 'user']);
     }
 }
@@ -64,7 +64,7 @@ class STicket extends Model
         $this->addField('number');
         $this->addField('venue');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
-        
+
         $this->hasOne('user', new SUser());
     }
 }
@@ -105,7 +105,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
             ['name' => 'Aerton', 'surname' => 'Senna', 'country_code' => 'BR'],
             ['name' => 'Rubens', 'surname' => 'Barichello', 'country_code' => 'BR'],
         ]);
-        
+
         $this->ticket = new STicket($this->db);
 
         $this->getMigrator($this->ticket)->drop()->create();
@@ -194,16 +194,16 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         }
 
         $user = clone $this->user;
-        
+
         // users that have no ticket
         $user->addCondition('Tickets/#', 0);
-        
+
         $this->assertEquals(3, $user->action('count')->getOne());
-        
+
         foreach ($user as $u) {
-            $this->assertTrue(in_array($u->get('name'), ['Alain', 'Aerton', 'Rubens']));
+            $this->assertTrue(in_array($u->get('name'), ['Alain', 'Aerton', 'Rubens'], true));
         }
-        
+
         $country = clone $this->country;
 
         // countries with more than one user
@@ -212,7 +212,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         foreach ($country as $c) {
             $this->assertEquals('BR', $c->get('code'));
         }
-        
+
         $country = clone $this->country;
 
         // countries with users that have ticket number 001
@@ -221,36 +221,36 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         foreach ($country as $c) {
             $this->assertEquals('CA', $c->get('code'));
         }
-        
+
         $country = clone $this->country;
 
         // countries with users that have more than one ticket
         $country->addCondition('Users/Tickets/#', '>', 1);
-        
+
         foreach ($country as $c) {
             $this->assertEquals('LV', $c->get('code'));
         }
-        
+
         $country = clone $this->country;
 
         // countries with users that have any tickets
         $country->addCondition('Users/Tickets/#');
-        
+
         $this->assertEquals(2, $country->action('count')->getOne());
-        
+
         foreach ($country as $c) {
-            $this->assertTrue(in_array($c->get('code'), ['LV', 'CA']));
+            $this->assertTrue(in_array($c->get('code'), ['LV', 'CA'], true));
         }
-        
+
         $country = clone $this->country;
-        
+
         // countries with users that have no tickets
         $country->addCondition('Users/Tickets/#', 0);
 
         $this->assertEquals(2, $country->action('count')->getOne());
-        
+
         foreach ($country as $c) {
-            $this->assertTrue(in_array($c->get('code'), ['FR', 'BR']));
+            $this->assertTrue(in_array($c->get('code'), ['FR', 'BR'], true));
         }
     }
 

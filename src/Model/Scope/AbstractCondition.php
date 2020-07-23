@@ -91,7 +91,7 @@ abstract class AbstractCondition
      * Simplifies by peeling off nested group conditions with single contained component.
      * Useful for converting (((field = value))) to field = value.
      */
-    public function simplify(): AbstractCondition
+    public function simplify(): self
     {
         return $this;
     }
