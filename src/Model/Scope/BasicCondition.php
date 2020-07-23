@@ -258,13 +258,13 @@ class BasicCondition extends AbstractCondition
         if (!$this->operator) {
             return '';
         }
-        
+
         $operator = strtoupper((string) $this->operator);
-        
+
         if (!isset(self::$dictionary[$operator])) {
             throw new Exception($operator . ' is not supported');
         }
-        
+
         return self::$dictionary[$operator];
     }
 
