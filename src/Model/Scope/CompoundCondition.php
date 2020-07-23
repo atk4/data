@@ -85,7 +85,7 @@ class CompoundCondition extends AbstractCondition
 
     public function isEmpty(): bool
     {
-        return empty($this->elements);
+        return count($this->elements) === 0;
     }
 
     public function isCompound(): bool
