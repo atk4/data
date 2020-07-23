@@ -114,6 +114,8 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
             ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],
             ['number' => '002', 'venue' => 'Best Stadium', 'user' => 2],
             ['number' => '003', 'venue' => 'Best Stadium', 'user' => 2],
+            ['number' => '004', 'venue' => 'Best Stadium', 'user' => 4],
+            ['number' => '005', 'venue' => 'Best Stadium', 'user' => 5],
         ]);
     }
 
@@ -198,7 +200,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         // users that have no ticket
         $user->addCondition('Tickets/#', 0);
 
-        $this->assertEquals(3, $user->action('count')->getOne());
+        $this->assertEquals(1, $user->action('count')->getOne());
 
         foreach ($user as $u) {
             $this->assertTrue(in_array($u->get('name'), ['Alain', 'Aerton', 'Rubens'], true));
@@ -236,10 +238,10 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         // countries with users that have any tickets
         $country->addCondition('Users/Tickets/#');
 
-        $this->assertEquals(2, $country->action('count')->getOne());
+        $this->assertEquals(3, $country->action('count')->getOne());
 
         foreach ($country as $c) {
-            $this->assertTrue(in_array($c->get('code'), ['LV', 'CA'], true));
+            $this->assertTrue(in_array($c->get('code'), ['LV', 'CA', 'BR'], true));
         }
 
         $country = clone $this->country;
@@ -247,10 +249,20 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         // countries with users that have no tickets
         $country->addCondition('Users/Tickets/#', 0);
 
-        $this->assertEquals(2, $country->action('count')->getOne());
+        $this->assertEquals(1, $country->action('count')->getOne());
 
         foreach ($country as $c) {
-            $this->assertTrue(in_array($c->get('code'), ['FR', 'BR'], true));
+            $this->assertTrue(in_array($c->get('code'), ['FR'], true));
+        }
+
+        $user = clone $this->user;
+
+        $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
+
+        $this->assertEquals(2, $user->action('count')->getOne());
+
+        foreach ($user as $u) {
+            $this->assertTrue(in_array($u->get('name'), ['Aerton', 'Rubens'], true));
         }
     }
 
