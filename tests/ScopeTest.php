@@ -257,7 +257,14 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $user = clone $this->user;
 
+        // users with tickets that have more than two users per country)
+        // test if a model can be referenced multiple times
+        // and if generated query has no duplicate column names
+        // because of counting/# field if added multiple times
         $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
+        $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
+        $user->addCondition('Tickets/user/country_id/Users/#', '>=', 2);
+        $user->addCondition('Tickets/user/country_id/Users/country_id/Users/#', '>', 1);
 
         $this->assertEquals(2, $user->action('count')->getOne());
 
