@@ -163,7 +163,7 @@ class CompoundCondition extends AbstractCondition
         foreach ($this->elements as $nestedCondition) {
             $words = $nestedCondition->toWords($asHtml);
 
-            $parts[] = $this->isCompound() && $nestedCondition->isCompound() ? "({$words})" : $words;
+            $parts[] = $this->isCompound() && $nestedCondition->isCompound() ? '(' . $words . ')' : $words;
         }
 
         $glue = ' ' . strtolower($this->junction) . ' ';
