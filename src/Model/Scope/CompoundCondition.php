@@ -41,22 +41,22 @@ class CompoundCondition extends AbstractCondition
         $this->junction = $junction;
 
         foreach ($nestedConditions as $nestedCondition) {
-            $nestedCondition = is_string($nestedCondition) ? new Condition($nestedCondition) : $nestedCondition;
+            if ($nestedCondition instanceof AbstractCondition) {
+                $condition = $nestedCondition;
+            } else {
+                if (!is_array($nestedCondition)) {
+                    $nestedCondition = [$nestedCondition];
+                }
 
-            if (is_array($nestedCondition)) {
                 // array of OR nested conditions
-                if (count($nestedCondition) === 1 && isset($nestedCondition[0]) && is_array($nestedCondition[0])) {
-                    $nestedCondition = new self($nestedCondition[0], self::OR);
+                if (count($nestedCondition) === 1 && is_array(reset($nestedCondition))) {
+                    $condition = new self(reset($nestedCondition), self::OR);
                 } else {
-                    $nestedCondition = new Condition(...$nestedCondition);
+                    $condition = new Condition(...$nestedCondition);
                 }
             }
 
-            if ($nestedCondition->isEmpty()) {
-                continue;
-            }
-
-            $this->add(clone $nestedCondition);
+            $this->add(clone $condition);
         }
     }
 
