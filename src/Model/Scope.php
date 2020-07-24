@@ -50,7 +50,7 @@ class Scope extends Scope\CompoundCondition
      */
     public static function createAnd(...$conditions)
     {
-        return parent::createAnd(...$conditions);
+        return (parent::class)::createAnd(...$conditions);
     }
 
     /**
@@ -58,6 +58,6 @@ class Scope extends Scope\CompoundCondition
      */
     public static function createOr(...$conditions)
     {
-        return parent::createOr(...$conditions);
+        return (parent::class)::createOr(...$conditions);
     }
 }
