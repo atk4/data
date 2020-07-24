@@ -177,13 +177,13 @@ class Csv extends Persistence
      * When load operation starts, this will open file and read
      * the first line. This line is then used to identify columns.
      */
-    public function saveHeader(Model $m)
+    public function saveHeader(Model $model)
     {
         $this->openFile('w');
 
         $header = [];
-        foreach ($m->getFields() as $name => $field) {
-            if ($name === $m->id_field) {
+        foreach ($model->getFields() as $name => $field) {
+            if ($name === $model->id_field) {
                 continue;
             }
 
@@ -212,19 +212,19 @@ class Csv extends Persistence
     /**
      * Typecasting when load data row.
      */
-    public function typecastLoadRow(Model $m, array $row): array
+    public function typecastLoadRow(Model $model, array $row): array
     {
         $id = null;
-        if (isset($row[$m->id_field])) {
+        if (isset($row[$model->id_field])) {
             // temporary remove id field
-            $id = $row[$m->id_field];
-            unset($row[$m->id_field]);
+            $id = $row[$model->id_field];
+            unset($row[$model->id_field]);
         } else {
             $id = null;
         }
         $row = array_combine($this->header, $row);
         if (isset($id)) {
-            $row[$m->id_field] = $id;
+            $row[$model->id_field] = $id;
         }
 
         foreach ($row as $key => $value) {
@@ -232,8 +232,8 @@ class Csv extends Persistence
                 continue;
             }
 
-            if ($m->hasField($key)) {
-                $row[$key] = $this->typecastLoadField($m->getField($key), $value);
+            if ($model->hasField($key)) {
+                $row[$key] = $this->typecastLoadField($model->getField($key), $value);
             }
         }
 
@@ -244,7 +244,7 @@ class Csv extends Persistence
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
      */
-    public function tryLoadAny(Model $m): ?array
+    public function tryLoadAny(Model $model): ?array
     {
         if (!$this->mode) {
             $this->mode = 'r';
@@ -261,7 +261,7 @@ class Csv extends Persistence
             return null;
         }
 
-        $data = $this->typecastLoadRow($m, $data);
+        $data = $this->typecastLoadRow($model, $data);
         $data['id'] = $this->line;
 
         return $data;
@@ -270,7 +270,7 @@ class Csv extends Persistence
     /**
      * Prepare iterator.
      */
-    public function prepareIterator(Model $m): iterable
+    public function prepareIterator(Model $model): iterable
     {
         if (!$this->mode) {
             $this->mode = 'r';
@@ -287,8 +287,8 @@ class Csv extends Persistence
             if ($data === null) {
                 break;
             }
-            $data = $this->typecastLoadRow($m, $data);
-            $data[$m->id_field] = $this->line;
+            $data = $this->typecastLoadRow($model, $data);
+            $data[$model->id_field] = $this->line;
 
             yield $data;
         }
@@ -297,13 +297,13 @@ class Csv extends Persistence
     /**
      * Loads any one record.
      */
-    public function loadAny(Model $m): array
+    public function loadAny(Model $model): array
     {
-        $data = $this->tryLoadAny($m);
+        $data = $this->tryLoadAny($model);
 
         if (!$data) {
             throw (new Exception('No more records', 404))
-                ->addMoreInfo('model', $m);
+                ->addMoreInfo('model', $model);
         }
 
         return $data;
@@ -316,7 +316,7 @@ class Csv extends Persistence
      *
      * @return mixed
      */
-    public function insert(Model $m, $data)
+    public function insert(Model $model, $data)
     {
         if (!$this->mode) {
             $this->mode = 'w';
@@ -325,7 +325,7 @@ class Csv extends Persistence
         }
 
         if (!$this->handle) {
-            $this->saveHeader($m);
+            $this->saveHeader($model);
         }
 
         $line = [];
@@ -343,7 +343,7 @@ class Csv extends Persistence
      * @param mixed $id
      * @param array $data
      */
-    public function update(Model $m, $id, $data, string $table = null)
+    public function update(Model $model, $id, $data, string $table = null)
     {
         throw new Exception('Updating records is not supported in CSV persistence.');
     }
@@ -353,7 +353,7 @@ class Csv extends Persistence
      *
      * @param mixed $id
      */
-    public function delete(Model $m, $id, string $table = null)
+    public function delete(Model $model, $id, string $table = null)
     {
         throw new Exception('Deleting records is not supported in CSV persistence.');
     }
@@ -361,19 +361,17 @@ class Csv extends Persistence
     /**
      * Generates new record ID.
      *
-     * @param Model $m
-     *
      * @return string
      */
-    public function generateNewId($m, string $table = null)
+    public function generateNewId(Model $model, string $table = null)
     {
         if ($table === null) {
-            $table = $m->table;
+            $table = $model->table;
         }
 
         $ids = array_keys($this->data[$table]);
 
-        $type = $m->getField($m->id_field)->type;
+        $type = $model->getField($model->id_field)->type;
 
         switch ($type) {
             case 'integer':
@@ -389,12 +387,12 @@ class Csv extends Persistence
     /**
      * Export all DataSet.
      */
-    public function export(Model $m, array $fields = null): array
+    public function export(Model $model, array $fields = null): array
     {
         $data = [];
 
-        foreach ($m as $junk) {
-            $data[] = $fields !== null ? array_intersect_key($m->get(), array_flip($fields)) : $m->get();
+        foreach ($model as $junk) {
+            $data[] = $fields !== null ? array_intersect_key($model->get(), array_flip($fields)) : $model->get();
         }
 
         // need to close file otherwise file pointer is at the end of file
