@@ -65,8 +65,10 @@ class CompoundCondition extends AbstractCondition
         foreach ($this->elements as $k => $nestedCondition) {
             $this->elements[$k] = clone $nestedCondition;
             $this->elements[$k]->owner = $this;
+            $this->elements[$k]->short_name = $nestedCondition->short_name;
         }
         $this->owner = null;
+        $this->short_name = null;
     }
 
     /**
