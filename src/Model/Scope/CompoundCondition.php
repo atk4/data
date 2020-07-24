@@ -72,17 +72,17 @@ class CompoundCondition extends AbstractCondition
     }
 
     /**
-     * Add nested condition.
-     *
-     * @param mixed $field
-     * @param mixed $operator
-     * @param mixed $value
-     *
-     * @return static
+     * @return $this
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        $this->add(static::createAnd(func_get_args()));
+        if (!is_array($field) && !($field instanceof Scope\AbstractCondition)) {
+            $condition = new Condition(...func_get_args());
+        } else {
+            $condition = static::createAnd(func_get_args());
+        }
+
+        $this->add($condition);
 
         return $this;
     }
