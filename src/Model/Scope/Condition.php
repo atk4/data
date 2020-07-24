@@ -11,7 +11,7 @@ use atk4\data\Model;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
-class BasicCondition extends AbstractCondition
+class Condition extends AbstractCondition
 {
     use ReadableCaptionTrait;
 

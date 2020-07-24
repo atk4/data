@@ -259,7 +259,7 @@ Model Scope
 -----------
 
 Using the Model::addCondition method is the basic way to limit the model scope of records. Under the hood
-Agile Data utilizes a special set of classes (BasicCondition and CompoundCondition) to apply the conditions as filters on records retrieved.
+Agile Data utilizes a special set of classes (Condition and CompoundCondition) to apply the conditions as filters on records retrieved.
 These classes can be used directly and independently from Model class.
 
 .. php:method:: scope()
@@ -270,9 +270,9 @@ This method provides access to the model scope enabling conditions to be added::
 
 .. php:namespace:: atk4\data\Model\Scope
 
-.. php:class:: BasicCondition
+.. php:class:: Condition
 
-BasicCondition represents a simple condition in a form [field, operation, value], similar to the functionality of the 
+Condition represents a simple condition in a form [field, operation, value], similar to the functionality of the 
 Model::addCondition method
 
 .. php:method:: __construct($key, $operator = null, $value = null);
@@ -290,11 +290,11 @@ If $value is omitted as argument then $operator is considered as $value and '=' 
 Negates the condition, e.g::
 
 	// results in 'name is not John'
-	$condition = (new BasicCondition('name', 'John'))->negate(); 
+	$condition = (new Condition('name', 'John'))->negate(); 
 
 .. php:method:: on(Model $model);
 
-Sets the model of BasicCondition to a clone of $model to avoid changes to the original object.::
+Sets the model of Condition to a clone of $model to avoid changes to the original object.::
 
    // uses the $contact model to conver the condition to human readable words
    $condition->toWords($contact);
@@ -304,32 +304,32 @@ Sets the model of BasicCondition to a clone of $model to avoid changes to the or
 Converts the condition object to human readable words. Model must be set first::
 
 	// results in 'Contact where Name is John'
-	(new BasicCondition('name', 'John'))->toWords($contactModel); 
+	(new Condition('name', 'John'))->toWords($contactModel); 
 
 .. php:class:: CompoundCondition
 
-CompoundCondition object has a single defined junction (AND or OR) and can contain multiple nested BasicCondition and/or CompoundCondition objects referred to as nested conditions.
+CompoundCondition object has a single defined junction (AND or OR) and can contain multiple nested Condition and/or CompoundCondition objects referred to as nested conditions.
 This makes creating Model scopes with deep nested conditions possible, 
 e.g ((Name like 'ABC%' and Country = 'US') or (Name like 'CDE%' and (Country = 'DE' or Surname = 'XYZ')))
 
-CompoundCondition can be created using new CompoundCondition() statement from an array or joining BasicCondition objects::
+CompoundCondition can be created using new CompoundCondition() statement from an array or joining Condition objects::
 
    // $condition1 will be used as child-component
-	$condition1 = new BasicCondition('name', 'like', 'ABC%');
+	$condition1 = new Condition('name', 'like', 'ABC%');
    
    // $condition2 will be used as child-component
-	$condition2 = new BasicCondition('country', 'US');
+	$condition2 = new Condition('country', 'US');
 	
    // $compoundCondition1 is created using AND as junction and $condition1 and $condition2 as nested conditions
 	$compoundCondition1 = CompoundCondition::createAnd($condition1, $condition2);
 	
-	$condition3 = new BasicCondition('country', 'DE');
-	$condition4 = new BasicCondition('surname', 'XYZ');
+	$condition3 = new Condition('country', 'DE');
+	$condition4 = new Condition('surname', 'XYZ');
 	
    // $compoundCondition2 is created using OR as junction and $condition3 and $condition4 as nested conditions
 	$compoundCondition2 = CompoundCondition::createOr($condition3, $condition4);
 
-	$condition5 = new BasicCondition('name', 'like', 'CDE%');
+	$condition5 = new Condition('name', 'like', 'CDE%');
 	
    // $compoundCondition3 is created using AND as junction and $condition5 and $compoundCondition2 as nested conditions
 	$compoundCondition3 = CompoundCondition::createAnd($condition5, $compoundCondition2);

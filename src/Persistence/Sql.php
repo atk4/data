@@ -366,7 +366,7 @@ class Sql extends Persistence
             $condition = $condition->simplify();
 
             // simple condition
-            if ($condition instanceof Model\Scope\BasicCondition) {
+            if ($condition instanceof Model\Scope\Condition) {
                 $query = $query->where(...$condition->toQueryArguments());
             }
 
