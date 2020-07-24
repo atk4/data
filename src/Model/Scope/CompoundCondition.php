@@ -79,7 +79,7 @@ class CompoundCondition extends AbstractCondition
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        $this->add(new self([func_get_args()]));
+        $this->add(static::createAnd(func_get_args()));
 
         return $this;
     }
