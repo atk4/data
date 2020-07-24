@@ -47,13 +47,7 @@ class CompoundCondition extends AbstractCondition
                 if (!is_array($nestedCondition)) {
                     $nestedCondition = [$nestedCondition];
                 }
-
-                // array of OR nested conditions
-                if (count($nestedCondition) === 1 && is_array(reset($nestedCondition))) {
-                    $condition = new self(reset($nestedCondition), self::OR);
-                } else {
-                    $condition = new Condition(...$nestedCondition);
-                }
+                $condition = new Condition(...$nestedCondition);
             }
 
             $this->add($condition);
