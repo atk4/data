@@ -360,8 +360,8 @@ class Model implements \IteratorAggregate
     public function __construct($persistence = null, $defaults = [])
     {
         $this->scope = \Closure::bind(function () {
-            return new Model\Scope();
-        }, null, Model\Scope::class)();
+            return new Model\RootScope();
+        }, null, Model\RootScope::class)();
 
         if ((is_string($persistence) || is_array($persistence)) && func_num_args() === 1) {
             $defaults = $persistence;
@@ -973,7 +973,7 @@ class Model implements \IteratorAggregate
     /**
      * Get the scope object of the Model.
      */
-    public function scope(): Model\Scope
+    public function scope(): Model\RootScope
     {
         return $this->scope->setModel($this);
     }
