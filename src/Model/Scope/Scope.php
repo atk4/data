@@ -9,9 +9,9 @@ use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
- * @property AbstractCondition[] $elements
+ * @property AbstractScope[] $elements
  */
-class CompoundCondition extends AbstractCondition
+class Scope extends AbstractScope
 {
     use ContainerTrait;
 
@@ -27,9 +27,9 @@ class CompoundCondition extends AbstractCondition
     protected $junction = self::AND;
 
     /**
-     * Create a CompoundCondition from array of condition objects or condition arrays.
+     * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param AbstractCondition[]|array[] $nestedConditions
+     * @param AbstractScope[]|array[] $nestedConditions
      */
     public function __construct(array $nestedConditions = [], string $junction = self::AND)
     {
@@ -41,7 +41,7 @@ class CompoundCondition extends AbstractCondition
         $this->junction = $junction;
 
         foreach ($nestedConditions as $nestedCondition) {
-            if ($nestedCondition instanceof AbstractCondition) {
+            if ($nestedCondition instanceof AbstractScope) {
                 $condition = $nestedCondition;
             } else {
                 if (!is_array($nestedCondition)) {
@@ -70,7 +70,7 @@ class CompoundCondition extends AbstractCondition
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        if (func_num_args() === 1 && $field instanceof AbstractCondition) {
+        if (func_num_args() === 1 && $field instanceof AbstractScope) {
             $condition = $field;
         } elseif (func_num_args() === 1 && is_array($field)) {
             $condition = static::createAnd(func_get_args());
@@ -86,7 +86,7 @@ class CompoundCondition extends AbstractCondition
     /**
      * Return array of nested conditions.
      *
-     * @return AbstractCondition[]
+     * @return AbstractScope[]
      */
     public function getNestedConditions()
     {
@@ -146,13 +146,13 @@ class CompoundCondition extends AbstractCondition
         return $this;
     }
 
-    public function simplify(): AbstractCondition
+    public function simplify(): AbstractScope
     {
         if (count($this->elements) !== 1) {
             return $this;
         }
 
-        /** @var AbstractCondition $component */
+        /** @var AbstractScope $component */
         $component = reset($this->elements);
 
         return $component->simplify();

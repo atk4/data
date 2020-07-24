@@ -259,14 +259,14 @@ Model Scope
 -----------
 
 Using the Model::addCondition method is the basic way to limit the model scope of records. Under the hood
-Agile Data utilizes a special set of classes (Condition and CompoundCondition) to apply the conditions as filters on records retrieved.
+Agile Data utilizes a special set of classes (Condition and Scope) to apply the conditions as filters on records retrieved.
 These classes can be used directly and independently from Model class.
 
 .. php:method:: scope()
 
 This method provides access to the model scope enabling conditions to be added::
 
-   $contact->scope()->add($condition); // adding condition to a model
+   $contact->scope()->addCondition($condition); // adding condition to a model
 
 .. php:namespace:: atk4\data\Model\Scope
 
@@ -306,49 +306,49 @@ Converts the condition object to human readable words. Model must be set first::
 	// results in 'Contact where Name is John'
 	(new Condition('name', 'John'))->toWords($contactModel); 
 
-.. php:class:: CompoundCondition
+.. php:class:: Scope
 
-CompoundCondition object has a single defined junction (AND or OR) and can contain multiple nested Condition and/or CompoundCondition objects referred to as nested conditions.
+Scope object has a single defined junction (AND or OR) and can contain multiple nested Condition and/or Scope objects referred to as nested conditions.
 This makes creating Model scopes with deep nested conditions possible, 
 e.g ((Name like 'ABC%' and Country = 'US') or (Name like 'CDE%' and (Country = 'DE' or Surname = 'XYZ')))
 
-CompoundCondition can be created using new CompoundCondition() statement from an array or joining Condition objects::
+Scope can be created using new Scope() statement from an array or joining Condition objects or condition arguments arrays::
 
-   // $condition1 will be used as child-component
+   // $condition1 will be used as nested condition
 	$condition1 = new Condition('name', 'like', 'ABC%');
    
-   // $condition2 will be used as child-component
-	$condition2 = new Condition('country', 'US');
+   // $condition2 will converted to Condtion object and used as nested condition
+	$condition2 = ['country', 'US'];
 	
-   // $compoundCondition1 is created using AND as junction and $condition1 and $condition2 as nested conditions
-	$compoundCondition1 = CompoundCondition::createAnd($condition1, $condition2);
+   // $scope1 is created using AND as junction and $condition1 and $condition2 as nested conditions
+	$scope1 = Scope::createAnd($condition1, $condition2);
 	
 	$condition3 = new Condition('country', 'DE');
-	$condition4 = new Condition('surname', 'XYZ');
+	$condition4 = ['surname', 'XYZ'];
 	
-   // $compoundCondition2 is created using OR as junction and $condition3 and $condition4 as nested conditions
-	$compoundCondition2 = CompoundCondition::createOr($condition3, $condition4);
+   // $scope2 is created using OR as junction and $condition3 and $condition4 as nested conditions
+	$scope2 = Scope::createOr($condition3, $condition4);
 
 	$condition5 = new Condition('name', 'like', 'CDE%');
 	
-   // $compoundCondition3 is created using AND as junction and $condition5 and $compoundCondition2 as nested conditions
-	$compoundCondition3 = CompoundCondition::createAnd($condition5, $compoundCondition2);
+   // $scope3 is created using AND as junction and $condition5 and $scope2 as nested conditions
+	$scope3 = Scope::createAnd($condition5, $scope2);
 
-   // $compoundCondition is created using OR as junction and $compoundCondition1 and $compoundCondition3 as nested conditions
-	$compoundCondition = CompoundCondition::createOr($compoundCondition1, $compoundCondition3);
+   // $scope is created using OR as junction and $scope1 and $scope3 as nested conditions
+	$scope = Scope::createOr($scope1, $scope3);
 	
 	
-CompoundCondition is an independent object not related to any model. Applying scope to model is using the Model::scope()->add($condition) method::
+Scope is an independent object not related to any model. Applying scope to model is using the Model::scope()->add($condition) method::
 
 	$contact->scope()->add($condition); // adding condition to a model
 	$contact->scope()->add($conditionXYZ); // adding more conditions
 	
-.. php:method:: __construct($nestedConditions = [], $junction = CompoundCondition::AND);
+.. php:method:: __construct($nestedConditions = [], $junction = Scope::AND);
 
-Creates a CompoundCondition object from an array::
+Creates a Scope object from an array::
 
 	// below will create 2 conditions and nest them in a compound conditions with AND junction
-	$compoundCondition1 = new CompoundCondition([
+	$scope1 = new Scope([
 		['name', 'like', 'ABC%'],
 		['country', 'US']
 	]);
@@ -358,17 +358,17 @@ Creates a CompoundCondition object from an array::
 Negate method has behind the full map of conditions so any condition object can be negated, e.g negating '>=' results in '<', etc.
 For compound conditionss this method is using De Morgan's laws, e.g::
 
-	// using $compoundCondition1 defined above
+	// using $scope1 defined above
 	// results in "(Name not like 'ABC%') or (Country does not equal 'US')"
-	$compoundCondition1->negate();
+	$scope1->negate();
 
-.. php:method:: createAnd(AbstractCondition $conditionA, AbstractCondition $conditionB, $_ = null);
+.. php:method:: createAnd(...$conditions);
 
-Merge number of conditions using AND as junction. Returns the resulting CompoundCondition object.
+Merge $conditions using AND as junction. Returns the resulting Scope object.
 
-.. php:method:: createOr(AbstractCondition $conditionA, AbstractCondition $conditionB, $_ = null);
+.. php:method:: createOr(...$conditions);
 
-Merge number of conditions using OR as junction. Returns the resulting CompoundCondition object.
+Merge $conditions using OR as junction. Returns the resulting Scope object.
 
 .. php:method:: simplify();
 

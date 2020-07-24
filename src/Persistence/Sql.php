@@ -357,7 +357,7 @@ class Sql extends Persistence
     /**
      * Will apply a condition defined inside $condition or $model->scope() onto $query.
      */
-    public function initQueryConditions(Model $model, Query $query, Model\Scope\AbstractCondition $condition = null): void
+    public function initQueryConditions(Model $model, Query $query, Model\Scope\AbstractScope $condition = null): void
     {
         $condition = $condition ?? $model->scope();
 
@@ -371,7 +371,7 @@ class Sql extends Persistence
             }
 
             // nested conditions
-            if ($condition instanceof Model\Scope\CompoundCondition) {
+            if ($condition instanceof Model\Scope\Scope) {
                 $expression = $condition->isOr() ? $query->orExpr() : $query->andExpr();
 
                 foreach ($condition->getNestedConditions() as $nestedCondition) {

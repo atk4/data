@@ -35,7 +35,7 @@ class Iterator
      *
      * @return $this
      */
-    public function filter(Model\Scope\AbstractCondition $condition)
+    public function filter(Model\Scope\AbstractScope $condition)
     {
         if (!$condition->isEmpty()) {
             $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($condition) {
@@ -96,7 +96,7 @@ class Iterator
      *
      * @return bool
      */
-    protected function match(array $row, Model\Scope\AbstractCondition $condition)
+    protected function match(array $row, Model\Scope\AbstractScope $condition)
     {
         $match = false;
 
@@ -123,7 +123,7 @@ class Iterator
         }
 
         // nested conditions
-        if ($condition instanceof Model\Scope\CompoundCondition) {
+        if ($condition instanceof Model\Scope\Scope) {
             $matches = [];
 
             foreach ($condition->getNestedConditions() as $nestedCondition) {

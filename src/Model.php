@@ -182,7 +182,7 @@ class Model implements \IteratorAggregate
      */
     public $persistence_data = [];
 
-    /** @var Model\Scope */
+    /** @var Model\Scope\RootScope */
     protected $scope;
 
     /**
@@ -360,8 +360,8 @@ class Model implements \IteratorAggregate
     public function __construct($persistence = null, $defaults = [])
     {
         $this->scope = \Closure::bind(function () {
-            return new Model\Scope();
-        }, null, Model\Scope::class)();
+            return new Model\Scope\RootScope();
+        }, null, Model\Scope\RootScope::class)();
 
         if ((is_string($persistence) || is_array($persistence)) && func_num_args() === 1) {
             $defaults = $persistence;
@@ -967,7 +967,7 @@ class Model implements \IteratorAggregate
     {
         // legacy OR support before Scope was introduced
         if (func_num_args() === 1 && is_array($field) && count($field) === 1 && is_array(reset($field))) {
-            $this->scope()->addCondition(Model\Scope::createOr(reset($field)));
+            $this->scope()->addCondition(Model\Scope\RootScope::createOr(reset($field)));
 
             return $this;
         }
@@ -980,7 +980,7 @@ class Model implements \IteratorAggregate
     /**
      * Get the scope object of the Model.
      */
-    public function scope(): Model\Scope
+    public function scope(): Model\Scope\RootScope
     {
         return $this->scope->setModel($this);
     }

@@ -11,7 +11,7 @@ use atk4\data\Model;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
-class Condition extends AbstractCondition
+class Condition extends AbstractScope
 {
     use ReadableCaptionTrait;
 
@@ -73,7 +73,7 @@ class Condition extends AbstractCondition
 
     public function __construct($key, $operator = null, $value = null)
     {
-        if ($key instanceof AbstractCondition) {
+        if ($key instanceof AbstractScope) {
             throw new Exception('Only Scope can contain another conditions');
         }
 

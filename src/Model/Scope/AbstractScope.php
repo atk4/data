@@ -10,9 +10,9 @@ use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
- * @property CompoundCondition $owner
+ * @property Scope $owner
  */
-abstract class AbstractCondition
+abstract class AbstractScope
 {
     use InitializerTrait {
         init as _init;

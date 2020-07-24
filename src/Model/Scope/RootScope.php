@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Model;
+namespace atk4\data\Model\Scope;
 
 use atk4\data\Exception;
 use atk4\data\Model;
@@ -12,7 +12,7 @@ use atk4\data\Model;
  * All other conditions of the Model object are elements of the root scope
  * Scope elements are joined only using AND junction.
  */
-class Scope extends Scope\CompoundCondition
+class RootScope extends Scope
 {
     /**
      * @var Model
