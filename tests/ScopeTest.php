@@ -275,10 +275,10 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
     {
         $user = clone $this->user;
 
-        $condition1 = new Condition('name', 'John');
+        $condition1 = ['name', 'John'];
         $condition2 = new Condition('country_code', 'CA');
 
-        $condition3 = new Condition('surname', 'Doe');
+        $condition3 = ['surname', 'Doe'];
         $condition4 = new Condition('country_code', 'LV');
 
         $scope1 = Scope::createAnd($condition1, $condition2);

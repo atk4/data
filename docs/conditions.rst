@@ -312,19 +312,19 @@ Scope object has a single defined junction (AND or OR) and can contain multiple 
 This makes creating Model scopes with deep nested conditions possible, 
 e.g ((Name like 'ABC%' and Country = 'US') or (Name like 'CDE%' and (Country = 'DE' or Surname = 'XYZ')))
 
-Scope can be created using new Scope() statement from an array or joining Condition objects::
+Scope can be created using new Scope() statement from an array or joining Condition objects or condition arguments arrays::
 
-   // $condition1 will be used as child-component
+   // $condition1 will be used as nested condition
 	$condition1 = new Condition('name', 'like', 'ABC%');
    
-   // $condition2 will be used as child-component
-	$condition2 = new Condition('country', 'US');
+   // $condition2 will converted to Condtion object and used as nested condition
+	$condition2 = ['country', 'US'];
 	
    // $scope1 is created using AND as junction and $condition1 and $condition2 as nested conditions
 	$scope1 = Scope::createAnd($condition1, $condition2);
 	
 	$condition3 = new Condition('country', 'DE');
-	$condition4 = new Condition('surname', 'XYZ');
+	$condition4 = ['surname', 'XYZ'];
 	
    // $scope2 is created using OR as junction and $condition3 and $condition4 as nested conditions
 	$scope2 = Scope::createOr($condition3, $condition4);
