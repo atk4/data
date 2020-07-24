@@ -76,12 +76,12 @@ class CompoundCondition extends AbstractCondition
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        if ($field instanceof AbstractCondition && func_get_args() === 1) {
+        if (func_get_args() === 1 && $field instanceof AbstractCondition) {
             $condition = $field;
-        } elseif (!is_array($field) && !($field instanceof AbstractCondition)) {
-            $condition = new Condition(...func_get_args());
+        } elseif (func_get_args() === 1 && is_array($field)) {
+            $condition = new self($field);
         } else {
-            $condition = static::createAnd(func_get_args());
+            $condition = new Condition(...func_get_args());
         }
 
         $this->add($condition);
