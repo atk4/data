@@ -101,7 +101,7 @@ class Iterator
         $match = false;
 
         // simple condition
-        if ($condition instanceof Model\Scope\BasicCondition) {
+        if ($condition instanceof Model\Scope\Condition) {
             $args = $condition->toQueryArguments();
 
             $field = $args[0];
