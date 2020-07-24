@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace atk4\data\tests;
 
 use atk4\data\Model;
+use atk4\data\Model\Scope;
 use atk4\data\Model\Scope\Condition;
-use atk4\data\Model\Scope\Scope;
 use atk4\dsql\Expression;
 
 class SCountry extends Model

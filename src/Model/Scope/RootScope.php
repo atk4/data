@@ -12,7 +12,7 @@ use atk4\data\Model;
  * All other conditions of the Model object are elements of the root scope
  * Scope elements are joined only using AND junction.
  */
-class RootScope extends Scope
+class RootScope extends Model\Scope
 {
     /**
      * @var Model
