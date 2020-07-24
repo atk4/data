@@ -371,7 +371,7 @@ class Sql extends Persistence
             }
 
             // nested conditions
-            if ($condition instanceof Model\Scope\Scope) {
+            if ($condition instanceof Model\Scope) {
                 $expression = $condition->isOr() ? $query->orExpr() : $query->andExpr();
 
                 foreach ($condition->getNestedConditions() as $nestedCondition) {

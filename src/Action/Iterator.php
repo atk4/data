@@ -123,7 +123,7 @@ class Iterator
         }
 
         // nested conditions
-        if ($condition instanceof Model\Scope\Scope) {
+        if ($condition instanceof Model\Scope) {
             $matches = [];
 
             foreach ($condition->getNestedConditions() as $nestedCondition) {

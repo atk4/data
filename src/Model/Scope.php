@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Model\Scope;
+namespace atk4\data\Model;
 
 use atk4\core\ContainerTrait;
 use atk4\data\Exception;
@@ -11,7 +11,7 @@ use atk4\data\Model;
 /**
  * @property AbstractScope[] $elements
  */
-class Scope extends AbstractScope
+class Scope extends Scope\AbstractScope
 {
     use ContainerTrait;
 
@@ -29,7 +29,7 @@ class Scope extends AbstractScope
     /**
      * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param AbstractScope[]|array[] $nestedConditions
+     * @param Scope\AbstractScope[]|array[] $nestedConditions
      */
     public function __construct(array $nestedConditions = [], string $junction = self::AND)
     {
@@ -41,13 +41,13 @@ class Scope extends AbstractScope
         $this->junction = $junction;
 
         foreach ($nestedConditions as $nestedCondition) {
-            if ($nestedCondition instanceof AbstractScope) {
+            if ($nestedCondition instanceof Scope\AbstractScope) {
                 $condition = $nestedCondition;
             } else {
                 if (!is_array($nestedCondition)) {
                     $nestedCondition = [$nestedCondition];
                 }
-                $condition = new Condition(...$nestedCondition);
+                $condition = new Scope\Condition(...$nestedCondition);
             }
 
             $this->add($condition);
@@ -70,12 +70,12 @@ class Scope extends AbstractScope
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        if (func_num_args() === 1 && $field instanceof AbstractScope) {
+        if (func_num_args() === 1 && $field instanceof Scope\AbstractScope) {
             $condition = $field;
         } elseif (func_num_args() === 1 && is_array($field)) {
             $condition = static::createAnd(func_get_args());
         } else {
-            $condition = new Condition(...func_get_args());
+            $condition = new Scope\Condition(...func_get_args());
         }
 
         $this->add($condition);
@@ -86,7 +86,7 @@ class Scope extends AbstractScope
     /**
      * Return array of nested conditions.
      *
-     * @return AbstractScope[]
+     * @return Scope\AbstractScope[]
      */
     public function getNestedConditions()
     {
@@ -146,13 +146,13 @@ class Scope extends AbstractScope
         return $this;
     }
 
-    public function simplify(): AbstractScope
+    public function simplify(): Scope\AbstractScope
     {
         if (count($this->elements) !== 1) {
             return $this;
         }
 
-        /** @var AbstractScope $component */
+        /** @var Scope\AbstractScope $component */
         $component = reset($this->elements);
 
         return $component->simplify();
