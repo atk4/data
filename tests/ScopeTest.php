@@ -301,6 +301,8 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         // TODO once PHP7.3 support is dropped, we should use WeakRef for owner
         // and unset($compoundCondition); here
         // now we need a clone
+        // we should fix then also the short_name issue (if it was generated on adding
+        // to an owner but owner is removed, the short_name should be removed as well)
         $compoundCondition1 = clone $compoundCondition1;
         $compoundCondition2 = clone $compoundCondition2;
         $compoundCondition = CompoundCondition::createOr($compoundCondition1, $compoundCondition2);
