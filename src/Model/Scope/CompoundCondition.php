@@ -56,7 +56,7 @@ class CompoundCondition extends AbstractCondition
                 }
             }
 
-            $this->add(clone $condition);
+            $this->add($condition);
         }
     }
 
@@ -66,6 +66,7 @@ class CompoundCondition extends AbstractCondition
             $this->elements[$k] = clone $nestedCondition;
             $this->elements[$k]->owner = $this;
         }
+        $this->owner = null;
     }
 
     /**

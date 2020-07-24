@@ -298,6 +298,11 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals($compoundCondition->toWords($user), $user->scope()->toWords());
 
+        // TODO once PHP7.3 support is dropped, we should use WeakRef for owner
+        // and unset($compoundCondition); here
+        // now we need a clone
+        $compoundCondition1 = clone $compoundCondition1;
+        $compoundCondition2 = clone $compoundCondition2;
         $compoundCondition = CompoundCondition::createOr($compoundCondition1, $compoundCondition2);
 
         $compoundCondition->addCondition('country_code', 'BR');
