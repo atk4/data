@@ -41,22 +41,22 @@ class CompoundCondition extends AbstractCondition
         $this->junction = $junction;
 
         foreach ($nestedConditions as $nestedCondition) {
-            $nestedCondition = is_string($nestedCondition) ? new Condition($nestedCondition) : $nestedCondition;
+            if ($nestedCondition instanceof AbstractCondition) {
+                $condition = $nestedCondition;
+            } else {
+                if (!is_array($nestedCondition)) {
+                    $nestedCondition = [$nestedCondition];
+                }
 
-            if (is_array($nestedCondition)) {
                 // array of OR nested conditions
-                if (count($nestedCondition) === 1 && isset($nestedCondition[0]) && is_array($nestedCondition[0])) {
-                    $nestedCondition = new self($nestedCondition[0], self::OR);
+                if (count($nestedCondition) === 1 && is_array(reset($nestedCondition))) {
+                    $condition = new self(reset($nestedCondition), self::OR);
                 } else {
-                    $nestedCondition = new Condition(...$nestedCondition);
+                    $condition = new Condition(...$nestedCondition);
                 }
             }
 
-            if ($nestedCondition->isEmpty()) {
-                continue;
-            }
-
-            $this->add(clone $nestedCondition);
+            $this->add($condition);
         }
     }
 
@@ -65,21 +65,26 @@ class CompoundCondition extends AbstractCondition
         foreach ($this->elements as $k => $nestedCondition) {
             $this->elements[$k] = clone $nestedCondition;
             $this->elements[$k]->owner = $this;
+            $this->elements[$k]->short_name = $nestedCondition->short_name;
         }
+        $this->owner = null;
+        $this->short_name = null;
     }
 
     /**
-     * Add nested condition.
-     *
-     * @param mixed $field
-     * @param mixed $operator
-     * @param mixed $value
-     *
-     * @return static
+     * @return $this
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        $this->add(static::createAnd(func_get_args()));
+        if (func_num_args() === 1 && $field instanceof AbstractCondition) {
+            $condition = $field;
+        } elseif (func_num_args() === 1 && is_array($field)) {
+            $condition = static::createAnd(func_get_args());
+        } else {
+            $condition = new Condition(...func_get_args());
+        }
+
+        $this->add($condition);
 
         return $this;
     }

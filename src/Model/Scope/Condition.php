@@ -73,6 +73,10 @@ class Condition extends AbstractCondition
 
     public function __construct($key, $operator = null, $value = null)
     {
+        if ($key instanceof AbstractCondition) {
+            throw new Exception('Only Scope can contain another conditions');
+        }
+
         if (func_num_args() == 1 && is_bool($key)) {
             if ($key) {
                 return;
