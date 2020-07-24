@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use atk4\data\Model\Scope\CompoundCondition;
 use atk4\data\Model\Scope\Condition;
+use atk4\data\Model\Scope\Scope;
 use atk4\dsql\Expression;
 
 class SCountry extends Model
@@ -281,39 +281,39 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition3 = new Condition('surname', 'Doe');
         $condition4 = new Condition('country_code', 'LV');
 
-        $compoundCondition1 = CompoundCondition::createAnd($condition1, $condition2);
-        $compoundCondition2 = CompoundCondition::createAnd($condition3, $condition4);
+        $scope1 = Scope::createAnd($condition1, $condition2);
+        $scope2 = Scope::createAnd($condition3, $condition4);
 
-        $compoundCondition = CompoundCondition::createOr($compoundCondition1, $compoundCondition2);
+        $scope = Scope::createOr($scope1, $scope2);
 
-        $this->assertEquals(CompoundCondition::OR, $compoundCondition->getJunction());
+        $this->assertEquals(Scope::OR, $scope->getJunction());
 
-        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')', $compoundCondition->toWords($user));
+        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')', $scope->toWords($user));
 
-        $user->scope()->add($compoundCondition);
+        $user->scope()->add($scope);
 
-        $this->assertSame($user, $compoundCondition->getModel());
+        $this->assertSame($user, $scope->getModel());
 
         $this->assertEquals(2, count($user->export()));
 
-        $this->assertEquals($compoundCondition->toWords($user), $user->scope()->toWords());
+        $this->assertEquals($scope->toWords($user), $user->scope()->toWords());
 
         // TODO once PHP7.3 support is dropped, we should use WeakRef for owner
-        // and unset($compoundCondition); here
+        // and unset($scope); here
         // now we need a clone
         // we should fix then also the short_name issue (if it was generated on adding
         // to an owner but owner is removed, the short_name should be removed as well)
-        $compoundCondition1 = clone $compoundCondition1;
-        $compoundCondition2 = clone $compoundCondition2;
-        $compoundCondition = CompoundCondition::createOr($compoundCondition1, $compoundCondition2);
+        $scope1 = clone $scope1;
+        $scope2 = clone $scope2;
+        $scope = Scope::createOr($scope1, $scope2);
 
-        $compoundCondition->addCondition('country_code', 'BR');
+        $scope->addCondition('country_code', 'BR');
 
-        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\') or Code is equal to \'BR\'', $compoundCondition->toWords($user));
+        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\') or Code is equal to \'BR\'', $scope->toWords($user));
 
         $user = clone $this->user;
 
-        $user->scope()->add($compoundCondition);
+        $user->scope()->add($scope);
 
         $this->assertEquals(4, count($user->export()));
     }
@@ -325,12 +325,12 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'CA');
 
-        $compoundCondition1 = CompoundCondition::createAnd($condition1, $condition2);
+        $scope1 = Scope::createAnd($condition1, $condition2);
         $condition3 = (new Condition('surname', 'Prost'))->negate();
 
-        $compoundCondition = CompoundCondition::createAnd($compoundCondition1, $condition3);
+        $scope = Scope::createAnd($scope1, $condition3);
 
-        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $compoundCondition->toWords($user));
+        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->toWords($user));
     }
 
     public function testNegate()
@@ -340,7 +340,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new Condition('name', '!=', 'Alain');
         $condition2 = new Condition('country_code', '!=', 'FR');
 
-        $condition = CompoundCondition::createOr($condition1, $condition2)->negate();
+        $condition = Scope::createOr($condition1, $condition2)->negate();
 
         $user->scope()->add($condition);
 
@@ -356,11 +356,11 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
 
-        $compoundCondition = CompoundCondition::createAnd($condition1, $condition2);
+        $scope = Scope::createAnd($condition1, $condition2);
 
-        $compoundCondition = CompoundCondition::createOr($compoundCondition, new Condition('name', 'John'));
+        $scope = Scope::createOr($scope, new Condition('name', 'John'));
 
-        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'FR\') or Name is equal to \'John\'', $compoundCondition->toWords($user));
+        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'FR\') or Name is equal to \'John\'', $scope->toWords($user));
     }
 
     public function testOr()
@@ -370,11 +370,11 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
 
-        $compoundCondition = CompoundCondition::createOr($condition1, $condition2);
+        $scope = Scope::createOr($condition1, $condition2);
 
-        $compoundCondition = CompoundCondition::createAnd($compoundCondition, new Condition('name', 'John'));
+        $scope = Scope::createAnd($scope, new Condition('name', 'John'));
 
-        $this->assertEquals('(Name is equal to \'Alain\' or Code is equal to \'FR\') and Name is equal to \'John\'', $compoundCondition->toWords($user));
+        $this->assertEquals('(Name is equal to \'Alain\' or Code is equal to \'FR\') and Name is equal to \'John\'', $scope->toWords($user));
     }
 
     public function testMerge()
@@ -384,9 +384,9 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
 
-        $compoundCondition = CompoundCondition::createAnd($condition1, $condition2);
+        $scope = Scope::createAnd($condition1, $condition2);
 
-        $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $compoundCondition->toWords($user));
+        $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $scope->toWords($user));
     }
 
     public function testDestroyEmpty()
@@ -396,12 +396,12 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
 
-        $compoundCondition = CompoundCondition::createAnd($condition1, $condition2);
+        $scope = Scope::createAnd($condition1, $condition2);
 
-        $compoundCondition->clear();
+        $scope->clear();
 
-        $this->assertTrue($compoundCondition->isEmpty());
+        $this->assertTrue($scope->isEmpty());
 
-        $this->assertEmpty($compoundCondition->toWords($user));
+        $this->assertEmpty($scope->toWords($user));
     }
 }
