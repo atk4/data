@@ -44,10 +44,7 @@ class CompoundCondition extends AbstractCondition
             if ($nestedCondition instanceof AbstractCondition) {
                 $condition = $nestedCondition;
             } else {
-                if (!is_array($nestedCondition)) {
-                    $nestedCondition = [$nestedCondition];
-                }
-                $condition = new Condition(...$nestedCondition);
+                $condition = new Condition(...(array) $nestedCondition);
             }
 
             $this->add($condition);
