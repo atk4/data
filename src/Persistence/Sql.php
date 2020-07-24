@@ -934,8 +934,8 @@ class Sql extends Persistence
             $mask = '{{}}.{}';
             $prop = [
                 $field->join
-                ? ($field->join->foreign_alias ?: $field->join->short_name)
-                : ($field->owner->table_alias ?: $field->owner->table),
+                    ? ($field->join->foreign_alias ?: $field->join->short_name)
+                    : ($field->owner->table_alias ?: $field->owner->table),
                 $field->actual ?: $field->short_name,
             ];
         } else {
