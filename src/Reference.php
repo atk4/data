@@ -90,6 +90,8 @@ class Reference
     public function init(): void
     {
         $this->_init();
+        
+        $this->initTableAlias();
     }
 
     /**
@@ -124,7 +126,7 @@ class Reference
     public function getTheirModel($defaults = []): Model
     {
         // set table_alias
-        $defaults['table_alias'] = $defaults['table_alias'] ?? $this->getTableAlias();
+        $defaults['table_alias'] = $defaults['table_alias'] ?? $this->table_alias;
 
         // if model is Closure, then call it and return model
         if (is_object($this->model) && $this->model instanceof \Closure) {
@@ -161,7 +163,7 @@ class Reference
         return $this->addToPersistence($theirModel, $defaults);
     }
 
-    protected function getTableAlias(): string
+    protected function initTableAlias(): void
     {
         if (!$this->table_alias) {
             $ourModel = $this->getOurModel();
@@ -173,8 +175,6 @@ class Reference
                 $this->table_alias = $ourModel->table_alias . '_' . $this->table_alias;
             }
         }
-
-        return $this->table_alias;
     }
 
     /**
