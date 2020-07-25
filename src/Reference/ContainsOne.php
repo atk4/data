@@ -97,7 +97,7 @@ class ContainsOne extends Reference
         $row = $ourModel->get($this->our_field) ?: [];
         //$row = $ourModel->persistence->typecastLoadRow($ourModel, $row); // we need this typecasting because we set persistence data directly
 
-        return new Persistence\ArrayOfStrings([$this->table_alias => $row ? [1 => $row] : []]);
+        return new Persistence\ArrayOfStrings([$this->getTableAlias() => $row ? [1 => $row] : []]);
     }
 
     /**
@@ -114,13 +114,13 @@ class ContainsOne extends Reference
         $theirModel = $this->getTheirModel(array_merge($defaults, [
             'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
             'id_field' => false,
-            'table' => $this->table_alias,
+            'table' => $this->getTableAlias(),
         ]));
 
         // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $theirModel->onHook($spot, function ($theirModel) {
-                $row = $theirModel->persistence->getRawDataByTable($this->table_alias);
+                $row = $theirModel->persistence->getRawDataByTable($this->getTableAlias());
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
                 $this->getOurModel()->save([$this->our_field => $row]);
             });

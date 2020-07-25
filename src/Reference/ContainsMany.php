@@ -41,7 +41,7 @@ class ContainsMany extends ContainsOne
         }
         */
 
-        return new Persistence\ArrayOfStrings([$this->table_alias => $rows ?: []]);
+        return new Persistence\ArrayOfStrings([$this->getTableAlias() => $rows ?: []]);
     }
 
     /**
@@ -58,13 +58,13 @@ class ContainsMany extends ContainsOne
         $theirModel = $this->getTheirModel(array_merge($defaults, [
             'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
             //'id_field'              => false,
-            'table' => $this->table_alias,
+            'table' => $this->getTableAlias(),
         ]));
 
         // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $theirModel->onHook($spot, function ($theirModel) {
-                $rows = $theirModel->persistence->getRawDataByTable($this->table_alias);
+                $rows = $theirModel->persistence->getRawDataByTable($this->getTableAlias());
                 $this->getOurModel()->save([$this->our_field => $rows ?: null]);
             });
         }

@@ -123,24 +123,12 @@ class Reference
      */
     public function getTheirModel($defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
-
         // set table_alias
-        if (!isset($defaults['table_alias'])) {
-            if (!$this->table_alias) {
-                $this->table_alias = $this->link;
-                $this->table_alias = preg_replace('/_' . ($ourModel->id_field ?: 'id') . '/', '', $this->table_alias);
-                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
-                if (isset($ourModel->table_alias)) {
-                    $this->table_alias = $ourModel->table_alias . '_' . $this->table_alias;
-                }
-            }
-            $defaults['table_alias'] = $this->table_alias;
-        }
+        $defaults['table_alias'] = $defaults['table_alias'] ?? $this->getTableAlias();
 
         // if model is Closure, then call it and return model
         if (is_object($this->model) && $this->model instanceof \Closure) {
-            $closure = ($this->model)($ourModel, $this, $defaults);
+            $closure = ($this->model)($this->getOurModel(), $this, $defaults);
 
             return $this->addToPersistence($closure, $defaults);
         }
@@ -154,11 +142,12 @@ class Reference
 
         // last effort - try to add model
         if (is_array($this->model)) {
-            $theirModel = [$this->model[0]];
-            $md = $this->model;
-            unset($md[0]);
+            $modelDefaults = $this->model;
+            $theirModel = [$modelDefaults[0]];
 
-            $defaults = array_merge($md, $defaults);
+            unset($modelDefaults[0]);
+
+            $defaults = array_merge($modelDefaults, $defaults);
         } elseif (is_string($this->model)) {
             $theirModel = [$this->model];
         } else {
@@ -170,6 +159,22 @@ class Reference
         }
 
         return $this->addToPersistence($theirModel, $defaults);
+    }
+
+    protected function getTableAlias(): string
+    {
+        if (!$this->table_alias) {
+            $ourModel = $this->getOurModel();
+
+            $this->table_alias = $this->link;
+            $this->table_alias = preg_replace('/_' . ($ourModel->id_field ?: 'id') . '/', '', $this->table_alias);
+            $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
+            if (isset($ourModel->table_alias)) {
+                $this->table_alias = $ourModel->table_alias . '_' . $this->table_alias;
+            }
+        }
+
+        return $this->table_alias;
     }
 
     /**
