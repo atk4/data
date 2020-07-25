@@ -34,41 +34,75 @@ class Condition extends AbstractScope
      */
     public $value;
 
-    protected static $opposites = [
-        '=' => '!=',
-        '!=' => '=',
-        '<' => '>=',
-        '>' => '<=',
-        '>=' => '<',
-        '<=' => '>',
-        'LIKE' => 'NOT LIKE',
-        'NOT LIKE' => 'LIKE',
-        'IN' => 'NOT IN',
-        'NOT IN' => 'IN',
-        'REGEXP' => 'NOT REGEXP',
-        'NOT REGEXP' => 'REGEXP',
-    ];
+    public const OPERATOR_EQUALS = '=';
+    public const OPERATOR_DOESNOT_EQUAL = '!=';
+    public const OPERATOR_GREATER = '>';
+    public const OPERATOR_GREATER_EQUAL = '>=';
+    public const OPERATOR_LESS = '<';
+    public const OPERATOR_LESS_EQUAL = '<=';
+    public const OPERATOR_LIKE = 'LIKE';
+    public const OPERATOR_NOT_LIKE = 'NOT LIKE';
+    public const OPERATOR_IN = 'IN';
+    public const OPERATOR_NOT_IN = 'NOT IN';
+    public const OPERATOR_REGEXP = 'REGEXP';
+    public const OPERATOR_NOT_REGEXP = 'NOT REGEXP';
 
-    protected static $dictionary = [
-        '=' => 'is equal to',
-        '!=' => 'is not equal to',
-        '<' => 'is smaller than',
-        '>' => 'is greater than',
-        '>=' => 'is greater or equal to',
-        '<=' => 'is smaller or equal to',
-        'LIKE' => 'is like',
-        'NOT LIKE' => 'is not like',
-        'IN' => 'is one of',
-        'NOT IN' => 'is not one of',
-        'REGEXP' => 'is regular expression',
-        'NOT REGEXP' => 'is not regular expression',
+    protected static $operators = [
+        self::OPERATOR_EQUALS => [
+            'negate' => self::OPERATOR_DOESNOT_EQUAL,
+            'label' => 'is equal to',
+        ],
+        self::OPERATOR_DOESNOT_EQUAL => [
+            'negate' => self::OPERATOR_EQUALS,
+            'label' => 'is not equal to',
+        ],
+        self::OPERATOR_LESS => [
+            'negate' => self::OPERATOR_GREATER_EQUAL,
+            'label' => 'is smaller than',
+        ],
+        self::OPERATOR_GREATER => [
+            'negate' => self::OPERATOR_LESS_EQUAL,
+            'label' => 'is greater than',
+        ],
+        self::OPERATOR_GREATER_EQUAL => [
+            'negate' => self::OPERATOR_LESS,
+            'label' => 'is greater or equal to',
+        ],
+        self::OPERATOR_LESS_EQUAL => [
+            'negate' => self::OPERATOR_GREATER,
+            'label' => 'is smaller or equal to',
+        ],
+        self::OPERATOR_LIKE => [
+            'negate' => self::OPERATOR_NOT_LIKE,
+            'label' => 'is like',
+        ],
+        self::OPERATOR_NOT_LIKE => [
+            'negate' => self::OPERATOR_LIKE,
+            'label' => 'is not like',
+        ],
+        self::OPERATOR_IN => [
+            'negate' => self::OPERATOR_NOT_IN,
+            'label' => 'is one of',
+        ],
+        self::OPERATOR_NOT_IN => [
+            'negate' => self::OPERATOR_IN,
+            'label' => 'is not one of',
+        ],
+        self::OPERATOR_REGEXP => [
+            'negate' => self::OPERATOR_NOT_REGEXP,
+            'label' => 'is regular expression',
+        ],
+        self::OPERATOR_NOT_REGEXP => [
+            'negate' => self::OPERATOR_REGEXP,
+            'label' => 'is not regular expression',
+        ],
     ];
 
     protected static $skipValueTypecast = [
-        'LIKE',
-        'NOT LIKE',
-        'REGEXP',
-        'NOT REGEXP',
+        self::OPERATOR_LIKE,
+        self::OPERATOR_NOT_LIKE,
+        self::OPERATOR_REGEXP,
+        self::OPERATOR_NOT_REGEXP,
     ];
 
     public function __construct($key, $operator = null, $value = null)
@@ -87,12 +121,20 @@ class Condition extends AbstractScope
 
         if (func_num_args() == 2) {
             $value = $operator;
-            $operator = '=';
+            $operator = self::OPERATOR_EQUALS;
         }
 
         $this->key = $key;
-        $this->operator = $operator;
         $this->value = $value;
+
+        if ($operator !== null) {
+            $this->operator = strtoupper((string) $operator);
+
+            if (!array_key_exists($this->operator, self::$operators)) {
+                throw (new Exception('Operator is not supported'))
+                    ->addMoreInfo('operator', $operator);
+            }
+        }
     }
 
     protected function onChangeModel(): void
@@ -102,7 +144,7 @@ class Condition extends AbstractScope
             // sets it as default value for field and locks it
             // new records will automatically get this value assigned for the field
             // @todo: consider this when condition is part of OR scope
-            if ($this->operator === '=' && !is_object($this->value) && !is_array($this->value)) {
+            if ($this->operator === self::OPERATOR_EQUALS && !is_object($this->value) && !is_array($this->value)) {
                 // key containing '/' means chained references and it is handled in toQueryArguments method
                 if (is_string($field = $this->key) && !str_contains($field, '/')) {
                     $field = $model->getField($field);
@@ -158,7 +200,7 @@ class Condition extends AbstractScope
 
             // @todo: value is array
             // convert the value using the typecasting of persistence
-            if ($field instanceof Field && $model->persistence && !in_array(strtoupper((string) $operator), self::$skipValueTypecast, true)) {
+            if ($field instanceof Field && $model->persistence && !in_array($operator, self::$skipValueTypecast, true)) {
                 $value = $model->persistence->typecastSaveField($field, $value);
             }
 
@@ -167,9 +209,9 @@ class Condition extends AbstractScope
                 return [$field];
             }
 
-            // skip explicitly using '=' as in some cases it is transformed to 'in'
+            // skip explicitly using OPERATOR_EQUALS as in some cases it is transformed to OPERATOR_IN
             // for instance in dsql so let exact operator be handled by Persistence
-            if ($operator === '=') {
+            if ($operator === self::OPERATOR_EQUALS) {
                 return [$field, $value];
             }
         }
@@ -191,8 +233,8 @@ class Condition extends AbstractScope
 
     public function negate()
     {
-        if ($this->operator && isset(self::$opposites[$this->operator])) {
-            $this->operator = self::$opposites[$this->operator];
+        if ($this->operator && isset(self::$operators[$this->operator]['negate'])) {
+            $this->operator = self::$operators[$this->operator]['negate'];
         } else {
             throw (new Exception('Negation of condition is not supported for this operator'))
                 ->addMoreInfo('operator', $this->operator ?: 'no operator');
@@ -238,11 +280,13 @@ class Condition extends AbstractScope
 
                 if ($field === '#') {
                     $words[] = $this->operator ? 'number of records' : 'any referenced record exists';
-                    $field = '';
+                    $field = null;
                 }
             }
 
-            $field = $model->hasField($field) ? $model->getField($field) : null;
+            if ($field !== null) {
+                $field = $model->getField($field);
+            }
         }
 
         if ($field instanceof Field) {
@@ -256,18 +300,7 @@ class Condition extends AbstractScope
 
     protected function operatorToWords(): string
     {
-        if (!$this->operator) {
-            return '';
-        }
-
-        $operator = strtoupper((string) $this->operator);
-
-        if (!isset(self::$dictionary[$operator])) {
-            throw (new Exception('Operator is not supported'))
-                ->addMoreInfo('operator', $operator);
-        }
-
-        return self::$dictionary[$operator];
+        return $this->operator ? self::$operators[$this->operator]['label'] : '';
     }
 
     protected function valueToWords(Model $model, $value): string
@@ -309,7 +342,7 @@ class Condition extends AbstractScope
                 }
             }
 
-            $field = $model->hasField($field) ? $model->getField($field) : null;
+            $field = $model->getField($field);
         }
 
         // use the referenced model title if such exists

@@ -283,7 +283,7 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
-        $m->addCondition('name', 'not', []); // this should not fail, always should be true
+        $m->addCondition('name', 'not in', []); // this should not fail, always should be true
         $this->assertSame(3, count($m->export()));
     }
 
