@@ -164,8 +164,10 @@ class HasOne extends Reference
             $this->our_field = $this->link;
         }
 
-        if (!$this->owner->hasField($this->our_field)) {
-            $this->owner->addField($this->our_field, [
+        $ourModel = $this->getOurModel();
+
+        if (!$ourModel->hasField($this->our_field)) {
+            $ourModel->addField($this->our_field, [
                 'type' => $this->type,
                 'reference' => $this,
                 'system' => $this->system,
@@ -192,47 +194,47 @@ class HasOne extends Reference
      */
     protected function referenceOurValue(): Field
     {
-        $this->owner->persistence_data['use_table_prefixes'] = true;
+        $this->getOurModel()->persistence_data['use_table_prefixes'] = true;
 
-        return $this->owner->getField($this->our_field);
+        return $this->getOurModel()->getField($this->our_field);
     }
 
     /**
-     * If owner model is loaded, then return referenced model with respective record loaded.
+     * If owner (our) model is loaded, then return referenced (their) model with respective record loaded.
      *
-     * If owner model is not loaded, then return referenced model with condition set.
-     * This can happen in case of deep traversal $m->ref('Many')->ref('one_id'), for example.
+     * If owner (our) model is not loaded, then return referenced (their) model with condition set.
+     * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
      *
      * @param array $defaults Properties
      */
     public function ref($defaults = []): Model
     {
-        $m = $this->getModel($defaults);
+        $theirModel = $this->getTheirModel($defaults);
 
         // add hook to set our_field = null when record of referenced model is deleted
-        $m->onHook(Model::HOOK_AFTER_DELETE, function ($m) {
-            $this->owner->set($this->our_field, null);
+        $theirModel->onHook(Model::HOOK_AFTER_DELETE, function ($theirModel) {
+            $this->getOurModel()->set($this->our_field, null);
         });
 
         // if owner model is loaded, then try to load referenced model
         if ($this->their_field) {
-            if ($this->owner->get($this->our_field)) {
-                $m->tryLoadBy($this->their_field, $this->owner->get($this->our_field));
+            if ($this->getOurModel()->get($this->our_field)) {
+                $theirModel->tryLoadBy($this->their_field, $this->getOurModel()->get($this->our_field));
             }
 
-            $m->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
-                $this->owner->set($this->our_field, $m->get($this->their_field));
+            $theirModel->onHook(Model::HOOK_AFTER_SAVE, function ($theirModel) {
+                $this->getOurModel()->set($this->our_field, $theirModel->get($this->their_field));
             });
         } else {
-            if ($this->owner->get($this->our_field)) {
-                $m->tryLoad($this->owner->get($this->our_field));
+            if ($this->getOurModel()->get($this->our_field)) {
+                $theirModel->tryLoad($this->getOurModel()->get($this->our_field));
             }
 
-            $m->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
-                $this->owner->set($this->our_field, $m->id);
+            $theirModel->onHook(Model::HOOK_AFTER_SAVE, function ($theirModel) {
+                $this->getOurModel()->set($this->our_field, $theirModel->id);
             });
         }
 
-        return $m;
+        return $theirModel;
     }
 }
