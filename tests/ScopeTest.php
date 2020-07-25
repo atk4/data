@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Model\Scope;
 use atk4\data\Model\Scope\Condition;
@@ -175,6 +176,42 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $country->addCondition('Users/#');
 
         $this->assertEquals('Country that has reference Users where any referenced record exists', $country->scope()->toWords());
+    }
+
+    public function testContitionUnsupportedToWords()
+    {
+        $condition = new Condition('name', 'abc');
+
+        $this->expectException(Exception::class);
+
+        $condition->toWords();
+    }
+
+    public function testContitionUnsupportedOperator()
+    {
+        $country = clone $this->country;
+
+        $this->expectException(Exception::class);
+
+        $country->addCondition('name', '==', 'abc');
+    }
+
+    public function testContitionUnsupportedNegate()
+    {
+        $condition = new Condition(new Expression('false'));
+
+        $this->expectException(Exception::class);
+
+        $condition->negate();
+    }
+
+    public function testRootScopeUnsupportedNegate()
+    {
+        $country = clone $this->country;
+
+        $this->expectException(Exception::class);
+
+        $country->scope()->negate();
     }
 
     public function testConditionOnReferencedRecords()
