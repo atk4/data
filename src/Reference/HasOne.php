@@ -216,24 +216,20 @@ class HasOne extends Reference
             $this->getOurModel()->set($this->our_field, null);
         });
 
-        // if owner model is loaded, then try to load referenced model
-        if ($this->their_field) {
-            if ($this->getOurModel()->get($this->our_field)) {
-                $theirModel->tryLoadBy($this->their_field, $this->getOurModel()->get($this->our_field));
+        if ($ourValue = $this->getOurModel()->get($this->our_field)) {
+            // if owner model is loaded, then try to load referenced model
+            if ($this->their_field) {
+                $theirModel->tryLoadBy($this->their_field, $ourValue);
+            } else {
+                $theirModel->tryLoad($ourValue);
             }
-
-            $theirModel->onHook(Model::HOOK_AFTER_SAVE, function ($theirModel) {
-                $this->getOurModel()->set($this->our_field, $theirModel->get($this->their_field));
-            });
-        } else {
-            if ($this->getOurModel()->get($this->our_field)) {
-                $theirModel->tryLoad($this->getOurModel()->get($this->our_field));
-            }
-
-            $theirModel->onHook(Model::HOOK_AFTER_SAVE, function ($theirModel) {
-                $this->getOurModel()->set($this->our_field, $theirModel->id);
-            });
         }
+
+        $theirModel->onHook(Model::HOOK_AFTER_SAVE, function ($theirModel) {
+            $ourValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->id;
+
+            $this->getOurModel()->set($this->our_field, $ourValue);
+        });
 
         return $theirModel;
     }
