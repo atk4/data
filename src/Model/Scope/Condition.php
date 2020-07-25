@@ -127,10 +127,10 @@ class Condition extends AbstractScope
         $this->key = $key;
         $this->value = $value;
 
-        if (isset($operator)) {
+        if ($operator !== null) {
             $this->operator = strtoupper((string) $operator);
 
-            if (!isset(self::$operators[$this->operator])) {
+            if (!array_key_exists($this->operator, self::$operators)) {
                 throw (new Exception('Operator is not supported'))
                     ->addMoreInfo('operator', $operator);
             }
