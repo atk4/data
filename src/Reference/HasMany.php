@@ -80,7 +80,7 @@ class HasMany extends Reference
     }
 
     /**
-     * Adds field as expression to owner (our) model.
+     * Adds field as expression to our model.
      * Used in aggregate strategy.
      *
      * @param string $fieldName Field name

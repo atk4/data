@@ -200,9 +200,9 @@ class HasOne extends Reference
     }
 
     /**
-     * If owner (our) model is loaded, then return referenced (their) model with respective record loaded.
+     * If our model is loaded, then return their model with respective record loaded.
      *
-     * If owner (our) model is not loaded, then return referenced (their) model with condition set.
+     * If our model is not loaded, then return their model with condition set.
      * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
      *
      * @param array $defaults Properties
@@ -217,7 +217,7 @@ class HasOne extends Reference
         });
 
         if ($ourValue = $this->getOurModel()->get($this->our_field)) {
-            // if owner model is loaded, then try to load referenced model
+            // if our model is loaded, then try to load referenced model
             if ($this->their_field) {
                 $theirModel->tryLoadBy($this->their_field, $ourValue);
             } else {

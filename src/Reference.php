@@ -11,7 +11,7 @@ namespace atk4\data;
  *
  * It's possible to extend the basic reference with more meaningful references.
  *
- * @property Model $owner definition of "our model"
+ * @property Model $owner definition of our model
  */
 class Reference
 {
@@ -41,7 +41,7 @@ class Reference
     public $link;
 
     /**
-     * Definition of the destination (their) model, that can be either an object, a
+     * Definition of the destination their model, that can be either an object, a
      * callback or a string. This can be defined during initialization and
      * then used inside getModel() to fully populate and associate with
      * persistence.
@@ -128,37 +128,34 @@ class Reference
         // set table_alias
         $defaults['table_alias'] = $defaults['table_alias'] ?? $this->table_alias;
 
-        // if model is Closure, then call it and return model
-        if (is_object($this->model) && $this->model instanceof \Closure) {
-            $closure = ($this->model)($this->getOurModel(), $this, $defaults);
-
-            return $this->addToPersistence($closure, $defaults);
-        }
-
-        // if model is set, then return clone of this model
         if (is_object($this->model)) {
-            $theirModel = clone $this->model;
+            if ($this->model instanceof \Closure) {
+                // if model is Closure, then call the closure and whci should return a model
+                $theirModel = ($this->model)($this->getOurModel(), $this, $defaults);
+            }
+            else {
+                // if model is set, then use clone of this model
+                $theirModel = clone $this->model;
+            }
 
             return $this->addToPersistence($theirModel, $defaults);
         }
 
-        // last effort - try to add model
+        // add model from seed
         if (is_array($this->model)) {
             $modelDefaults = $this->model;
-            $theirModel = [$modelDefaults[0]];
+            $theirModelSeed = [$modelDefaults[0]];
 
             unset($modelDefaults[0]);
 
             $defaults = array_merge($modelDefaults, $defaults);
         } elseif (is_string($this->model)) {
-            $theirModel = [$this->model];
+            $theirModelSeed = [$this->model];
         } else {
-            $theirModel = $this->model;
+            $theirModelSeed = $this->model;
         }
 
-        if (!$theirModel instanceof Model) {
-            $theirModel = $this->factory($theirModel, $defaults);
-        }
+        $theirModel = $this->factory($theirModelSeed, $defaults);
 
         return $this->addToPersistence($theirModel, $defaults);
     }
