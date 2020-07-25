@@ -9,7 +9,7 @@ use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
- * @property AbstractScope[] $elements
+ * @property Scope\AbstractScope[] $elements
  */
 class Scope extends Scope\AbstractScope
 {
