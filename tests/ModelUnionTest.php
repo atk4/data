@@ -6,10 +6,13 @@ namespace atk4\data\tests;
 
 class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 {
+    /** @var Model\Client */
+    protected $client;
     /** @var Model\Transaction */
     protected $transaction;
-    protected $client;
-    
+    /** @var Model\Transaction */
+    protected $subtractInvoiceTransaction;
+
     /** @var array */
     private $init_db =
         [
@@ -33,12 +36,39 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
         parent::setUp();
         $this->setDB($this->init_db);
 
-        $this->transaction = new Model\Transaction($this->db);
-        
-        $this->client = new Model\Client($this->db);
-        
-        $this->client->hasMany('Payment', [Model\Payment::class]);
-        $this->client->hasMany('Invoice', [Model\Invoice::class]);
+        $this->client = $this->createClient($this->db);
+        $this->transaction = $this->createTransaction($this->db);
+        $this->subtractInvoiceTransaction = $this->createSubtractInvoiceTransaction($this->db);
+    }
+
+    protected function createTransaction($persistence = null)
+    {
+        return new Model\Transaction($persistence);
+    }
+
+    protected function createSubtractInvoiceTransaction($persistence = null)
+    {
+        return new Model\Transaction($persistence, ['subtractInvoice' => true]);
+    }
+
+    protected function createClient($persistence = null)
+    {
+        $client = new Model\Client($this->db);
+
+        $client->hasMany('Payment', [Model\Payment::class]);
+        $client->hasMany('Invoice', [Model\Invoice::class]);
+
+        return $client;
+    }
+
+    public function testFieldExpr()
+    {
+        $transaction = $this->subtractInvoiceTransaction;
+
+        $e = $this->getEscapeChar();
+        $this->assertSame(str_replace('"', $e, '"amount"'), $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount')])->render());
+        $this->assertSame(str_replace('"', $e, '-"amount"'), $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount', '-[]')])->render());
+        $this->assertSame(str_replace('"', $e, '-NULL'), $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'blah', '-[]')])->render());
     }
 
     public function testNestedQuery1()
@@ -102,6 +132,13 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             str_replace('"', $e, 'select sum("val") from (select sum("amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "derivedTable"'),
             $transaction->action('fx', ['sum', 'amount'])->render()
         );
+
+        $transaction = $this->subtractInvoiceTransaction;
+
+        $this->assertSame(
+            str_replace('"', $e, 'select sum("val") from (select sum(-"amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "derivedTable"'),
+            $transaction->action('fx', ['sum', 'amount'])->render()
+        );
     }
 
     public function testActions2()
@@ -109,20 +146,35 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
         $transaction = $this->transaction;
         $this->assertSame(5, (int) $transaction->action('count')->getOne());
         $this->assertSame(37.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
+
+        $transaction = $this->subtractInvoiceTransaction;
+        $this->assertSame(-9.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
+    }
+
+    public function testSubAction1()
+    {
+        $transaction = $this->subtractInvoiceTransaction;
+        $e = $this->getEscapeChar();
+        $this->assertSame(
+            str_replace('"', $e, '(select sum(-"amount") from "invoice" UNION ALL select sum("amount") from "payment") "derivedTable"'),
+            $transaction->getSubAction('fx', ['sum', 'amount'])->render()
+        );
     }
 
     public function testBasics()
     {
-        $client = $this->client;
+        $client = clone $this->client;
 
         // There are total of 2 clients
         $this->assertSame(2, (int) $client->action('count')->getOne());
 
         // Client with ID=1 has invoices for 19
         $client->load(1);
+
         $this->assertSame(19.0, (float) $client->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
 
-        $transaction = new Model\Transaction($this->db);
+        $transaction = $this->transaction;
+
         $this->assertSame([
             ['name' => 'chair purchase', 'amount' => 4.0],
             ['name' => 'table purchase', 'amount' => 15.0],
@@ -132,11 +184,34 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
         ], $transaction->export());
 
         // Transaction is Union Model
-        $client->hasMany('Transaction', new Model\Transaction());
+        $client->hasMany('Transaction', $transaction);
 
         $this->assertSame([
             ['name' => 'chair purchase', 'amount' => 4.0],
             ['name' => 'table purchase', 'amount' => 15.0],
+            ['name' => 'prepay', 'amount' => 10.0],
+        ], $client->ref('Transaction')->export());
+
+        $client = clone $this->client;
+
+        $client->load(1);
+
+        $transaction = $this->subtractInvoiceTransaction;
+
+        $this->assertSame([
+            ['name' => 'chair purchase', 'amount' => -4.0],
+            ['name' => 'table purchase', 'amount' => -15.0],
+            ['name' => 'chair purchase', 'amount' => -4.0],
+            ['name' => 'prepay', 'amount' => 10.0],
+            ['name' => 'full pay', 'amount' => 4.0],
+        ], $transaction->export());
+
+        // Transaction is Union Model
+        $client->hasMany('Transaction', $transaction);
+
+        $this->assertSame([
+            ['name' => 'chair purchase', 'amount' => -4.0],
+            ['name' => 'table purchase', 'amount' => -15.0],
             ['name' => 'prepay', 'amount' => 10.0],
         ], $client->ref('Transaction')->export());
     }
@@ -152,6 +227,16 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             str_replace('"', $e, '(select "name" "name",sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable"'),
             $transaction->getSubQuery(['name', 'amount'])->render()
         );
+
+        $transaction = $this->subtractInvoiceTransaction;
+
+        $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'money']]);
+
+        $e = $this->getEscapeChar();
+        $this->assertSame(
+            str_replace('"', $e, '(select "name" "name",sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable"'),
+            $transaction->getSubQuery(['name', 'amount'])->render()
+        );
     }
 
     public function testGrouping2()
@@ -163,6 +248,16 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
         $e = $this->getEscapeChar();
         $this->assertSame(
             str_replace('"', $e, 'select "name",sum("amount") "amount" from (select "name" "name",sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"'),
+            $transaction->action('select', [['name', 'amount']])->render()
+        );
+
+        $transaction = $this->subtractInvoiceTransaction;
+
+        $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'money']]);
+
+        $e = $this->getEscapeChar();
+        $this->assertSame(
+            str_replace('"', $e, 'select "name",sum("amount") "amount" from (select "name" "name",sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"'),
             $transaction->action('select', [['name', 'amount']])->render()
         );
     }
@@ -183,6 +278,17 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             ['name' => 'prepay', 'amount' => 10.0],
             ['name' => 'table purchase', 'amount' => 15.0],
         ], $transaction->export());
+
+        $transaction = $this->subtractInvoiceTransaction;
+        $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'money']]);
+        $transaction->setOrder('name');
+
+        $this->assertSame([
+            ['name' => 'chair purchase', 'amount' => -8.0],
+            ['name' => 'full pay', 'amount' => 4.0],
+            ['name' => 'prepay', 'amount' => 10.0],
+            ['name' => 'table purchase', 'amount' => -15.0],
+        ], $transaction->export());
     }
 
     /**
@@ -202,12 +308,24 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             ['type' => 'invoice', 'amount' => 23.0],
             ['type' => 'payment', 'amount' => 14.0],
         ], $transaction->export(['type', 'amount']));
+
+        $transaction = $this->subtractInvoiceTransaction;
+        $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
+        $transaction->nestedPayment->addExpression('type', '\'payment\'');
+        $transaction->addField('type');
+
+        $transaction->groupBy('type', ['amount' => ['sum([])', 'type' => 'money']]);
+
+        $this->assertSame([
+            ['type' => 'invoice', 'amount' => -23.0],
+            ['type' => 'payment', 'amount' => 14.0],
+        ], $transaction->export(['type', 'amount']));
     }
 
     public function testReference()
     {
-        $client = $this->client;
-        $client->hasMany('tr', new Model\Transaction());
+        $client = clone $this->client;
+        $client->hasMany('tr', $this->createTransaction());
 
         $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
         $this->assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
@@ -217,6 +335,20 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame(
             str_replace('"', $e, 'select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = :a ' .
             'UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "derivedTable"'),
+            $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()
+        );
+
+        $client = clone $this->client;
+        $client->hasMany('tr', $this->createSubtractInvoiceTransaction());
+
+        $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
+        $this->assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
+        $this->assertSame(-9.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
+
+        $e = $this->getEscapeChar();
+        $this->assertSame(
+            str_replace('"', $e, 'select sum("val") from (select sum(-"amount") "val" from "invoice" where "client_id" = :a ' .
+                'UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "derivedTable"'),
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()
         );
     }
@@ -230,11 +362,27 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
     public function testFieldAggregate()
     {
         $client = $this->client;
-        $client->hasMany('tr', new Model\Transaction2())
+        $client->hasMany('tr', $this->createTransaction())
             ->addField('balance', ['field' => 'amount', 'aggregate' => 'sum']);
 
         $this->assertTrue(true); // fake assert
         //select "client"."id","client"."name",(select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = "client"."id" UNION ALL select sum("amount") "val" from "payment" where "client_id" = "client"."id") "derivedTable") "balance" from "client" where "client"."id" = 1 limit 0, 1
         //$c->load(1);
+    }
+
+    /**
+     * Model's conditions can still be placed on the original field values.
+     */
+    public function testConditionOnMappedField()
+    {
+        $transaction = $this->subtractInvoiceTransaction;
+        $transaction->nestedInvoice->addCondition('amount', 4);
+
+        $this->assertSame([
+            ['name' => 'chair purchase', 'amount' => -4.0],
+            ['name' => 'chair purchase', 'amount' => -4.0],
+            ['name' => 'prepay', 'amount' => 10.0],
+            ['name' => 'full pay', 'amount' => 4.0],
+        ], $transaction->export());
     }
 }

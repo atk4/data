@@ -34,10 +34,10 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
         parent::setUp();
         $this->setDB($this->init_db);
 
-        $m_invoice = new Model\Invoice($this->db);
-        $m_invoice->getRef('client_id')->addTitle();
+        $invoice = new Model\Invoice($this->db);
+        $invoice->getRef('client_id')->addTitle();
 
-        $this->aggregate = new Aggregate($m_invoice);
+        $this->aggregate = new Aggregate($invoice);
         $this->aggregate->addField('client');
     }
 

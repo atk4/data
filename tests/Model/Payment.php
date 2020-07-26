@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace atk4\data\tests\Model;
 
 use atk4\data\Model;
-use atk4\data\tests\Model\Client;
 
 class Payment extends Model
 {
