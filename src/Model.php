@@ -1278,11 +1278,6 @@ class Model implements \IteratorAggregate
      * is already record like that in the destination
      * persistence.
      *
-     * If you wish to fully copy the data from one
-     * model to another you should use:
-     *
-     * $model->withPersistence($p2, false)->set($model->get())->save();
-     *
      * See https://github.com/atk4/data/issues/111 for use-case examples.
      *
      * @param mixed $id
