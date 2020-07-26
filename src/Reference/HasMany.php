@@ -31,7 +31,7 @@ class HasMany extends Reference
 
         // create expression based on existing conditions
         return $ourModel->action('field', [
-            $this->our_field ?: ($ourModel->id_field ?: 'id'),
+            $this->our_field ?: $ourModel->id_field,
         ]);
     }
 
@@ -44,7 +44,7 @@ class HasMany extends Reference
 
         $ourModel->persistence_data['use_table_prefixes'] = true;
 
-        return $ourModel->getField($this->our_field ?: ($ourModel->id_field ?: 'id'));
+        return $ourModel->getField($this->our_field ?: $ourModel->id_field);
     }
 
     /**
@@ -57,7 +57,7 @@ class HasMany extends Reference
         $ourModel = $this->getOurModel();
 
         return $this->getTheirModel($defaults)->addCondition(
-            $this->their_field ?: ($ourModel->table . '_' . ($ourModel->id_field ?: 'id')),
+            $this->their_field ?: ($ourModel->table . '_' . $ourModel->id_field),
             $this->getOurValue()
         );
     }
@@ -72,7 +72,7 @@ class HasMany extends Reference
         $ourModel = $this->getOurModel();
 
         $theirModelLinked = $this->getTheirModel($defaults)->addCondition(
-            $this->their_field ?: ($ourModel->table . '_' . ($ourModel->id_field ?: 'id')),
+            $this->their_field ?: ($ourModel->table . '_' . $ourModel->id_field),
             $this->referenceOurValue()
         );
 

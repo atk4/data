@@ -90,7 +90,7 @@ class Reference
     public function init(): void
     {
         $this->_init();
-        
+
         $this->initTableAlias();
     }
 
@@ -132,8 +132,7 @@ class Reference
             if ($this->model instanceof \Closure) {
                 // if model is Closure, then call the closure and whci should return a model
                 $theirModel = ($this->model)($this->getOurModel(), $this, $defaults);
-            }
-            else {
+            } else {
                 // if model is set, then use clone of this model
                 $theirModel = clone $this->model;
             }
