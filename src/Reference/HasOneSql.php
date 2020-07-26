@@ -89,31 +89,30 @@ class HasOneSql extends HasOne
      * addFields(['from', 'to'], ['type' => 'date']);
      *
      * @param array $fields
-     * @param array $groupDefaults
+     * @param array $defaults
      *
      * @return $this
      */
-    public function addFields($fields = [], $groupDefaults = [])
+    public function addFields($fields = [], $defaults = [])
     {
-        foreach ($fields as $fieldName => $defaults) {
-            if (is_array($defaults)) {
-                $field = array_merge($groupDefaults, $defaults);
-                if (!isset($defaults[0])) {
-                    throw (new Exception('Incorrect definition for addFields. Field name must be specified'))
-                        ->addMoreInfo('fieldName', $fieldName)
-                        ->addMoreInfo('alias', $defaults);
-                }
-                $defaults = $defaults[0];
-            } else {
-                $field = $groupDefaults;
+        foreach ($fields as $ourFieldName => $ourFieldDefaults) {
+            $ourFieldDefaults = array_merge($defaults, (array) $ourFieldDefaults);
+
+            if (!isset($ourFieldDefaults[0])) {
+                throw (new Exception('Incorrect definition for addFields. Field name must be specified'))
+                    ->addMoreInfo('ourFieldName', $ourFieldName)
+                    ->addMoreInfo('ourFieldDefaults', $ourFieldDefaults);
             }
 
-            if (is_numeric($fieldName)) {
-                $fieldName = $defaults;
+            $theirFieldName = $ourFieldDefaults[0];
+
+            if (is_numeric($ourFieldName)) {
+                $ourFieldName = $theirFieldName;
             }
 
-            $field[0] = $fieldName;
-            $this->addField($field, $defaults);
+            $ourFieldDefaults[0] = $ourFieldName;
+
+            $this->addField($ourFieldDefaults, $theirFieldName);
         }
 
         return $this;
