@@ -1278,47 +1278,42 @@ class Model implements \IteratorAggregate
      * is already record like that in the destination
      * persistence.
      *
-     * If you wish to fully copy the data from one
-     * model to another you should use:
+     * See https://github.com/atk4/data/issues/111 for use-case examples.
      *
-     * $m->withPersistence($p2, false)->set($m->get())->save();
+     * @param mixed $id
      *
-     * See https://github.com/atk4/data/issues/111 for
-     * use-case examples.
-     *
-     * @param Persistence $persistence
-     * @param mixed       $id
-     * @param string      $class
-     *
-     * @return $this
+     * @return static
      */
-    public function withPersistence($persistence, $id = null, string $class = null)
+    public function withPersistence(Persistence $persistence, $id = null, string $class = null)
     {
-        if (!$persistence instanceof Persistence) {
-            throw (new Exception('Please supply valid persistence'))
-                ->addMoreInfo('arg', $persistence);
-        }
+        $class = $class ?? static::class;
 
-        if (!$class) {
-            $class = static::class;
-        }
-
-        $m = new $class($persistence);
+        $model = new $class($persistence, $this->table);
 
         if ($this->id_field) {
             if ($id === true) {
-                $m->id = $this->id;
-                $m->set($m->id_field, $this->get($this->id_field));
+                $model->id = $this->id;
+                $model->set($model->id_field, $this->get($this->id_field));
             } elseif ($id) {
-                $m->id = null; // record shouldn't exist yet
-                $m->set($m->id_field, $id);
+                $model->id = null; // record shouldn't exist yet
+                $model->set($model->id_field, $id);
             }
         }
 
-        $m->data = $this->data;
-        $m->dirty = $this->dirty;
+        // include any fields defined inline
+        foreach ($this->fields as $fieldName => $field) {
+            if (!$model->hasField($fieldName)) {
+                $model->addField($fieldName, clone $field);
+            }
+        }
 
-        return $m;
+        $model->data = $this->data;
+        $model->dirty = $this->dirty;
+        $model->limit = $this->limit;
+        $model->order = $this->order;
+        $model->scope = (clone $this->scope)->setModel($model);
+
+        return $model;
     }
 
     /**
