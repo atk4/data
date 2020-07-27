@@ -13,43 +13,41 @@ use atk4\data\Reference;
 trait ReferencesTrait
 {
     /**
-     * The class used by addRef() method.
+     * The seed used by addRef() method.
      *
      * @var string|array
      */
     public $_default_seed_addRef = [Reference::class];
 
     /**
-     * The class used by hasOne() method.
+     * The seed used by hasOne() method.
      *
      * @var string|array
      */
     public $_default_seed_hasOne = [Reference\HasOne::class];
 
     /**
-     * The class used by hasMany() method.
+     * The seed used by hasMany() method.
      *
      * @var string|array
      */
     public $_default_seed_hasMany = [Reference\HasMany::class];
 
     /**
-     * The class used by containsOne() method.
+     * The seed used by containsOne() method.
      *
      * @var string|array
      */
     public $_default_seed_containsOne = [Reference\ContainsOne::class];
 
     /**
-     * The class used by containsMany() method.
+     * The seed used by containsMany() method.
      *
      * @var string
      */
     public $_default_seed_containsMany = [Reference\ContainsMany::class];
 
     /**
-     * Private method.
-     *
      * @param string         $className Class name
      * @param string         $link      Link
      * @param array|callable $defaults  Properties which we will pass to Reference object constructor
@@ -79,8 +77,7 @@ trait ReferencesTrait
     }
 
     /**
-     * Add generic relation. Provide your own call-back that will
-     * return the model.
+     * Add generic relation. Provide your own call-back that will return the model.
      *
      * @param string         $link     Link
      * @param array|callable $callback Callback
@@ -91,7 +88,7 @@ trait ReferencesTrait
     }
 
     /**
-     * Add hasOne field.
+     * Add hasOne reference.
      *
      * @param string $link
      * @param array  $defaults
@@ -104,7 +101,7 @@ trait ReferencesTrait
     }
 
     /**
-     * Add hasMany field.
+     * Add hasMany reference.
      *
      * @param string $link
      * @param array  $defaults
@@ -117,7 +114,7 @@ trait ReferencesTrait
     }
 
     /**
-     * Add containsOne field.
+     * Add containsOne reference.
      *
      * @param string $link
      * @param array  $defaults
@@ -130,7 +127,7 @@ trait ReferencesTrait
     }
 
     /**
-     * Add containsMany field.
+     * Add containsMany reference.
      *
      * @param string $link
      * @param array  $defaults
@@ -182,7 +179,7 @@ trait ReferencesTrait
     }
 
     /**
-     * Return reference field.
+     * Returns the reference.
      *
      * @param string $link
      */
@@ -192,7 +189,7 @@ trait ReferencesTrait
     }
 
     /**
-     * Returns all reference fields.
+     * Returns all references.
      */
     public function getRefs(): array
     {
@@ -207,7 +204,7 @@ trait ReferencesTrait
     }
 
     /**
-     * Returns true if reference field exists.
+     * Returns true if reference exists.
      *
      * @param string $link
      */
