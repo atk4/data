@@ -89,18 +89,18 @@ class Aggregate extends Model
     /**
      * Specify a single field or array of fields on which we will group model.
      *
-     * @param array $group     Array of field names
+     * @param array $fields    Array of field names
      * @param array $aggregate Array of aggregate mapping
      *
      * @return $this
      */
-    public function groupBy(array $group, array $aggregate = [])
+    public function groupBy(array $fields, array $aggregate = [])
     {
-        $this->group = $group;
+        $this->group = $fields;
         $this->aggregate = $aggregate;
 
-        $this->system_fields = array_unique($this->system_fields + $group);
-        foreach ($group as $fieldName) {
+        $this->system_fields = array_unique($this->system_fields + $fields);
+        foreach ($fields as $fieldName) {
             $this->addField($fieldName);
         }
 
@@ -130,6 +130,23 @@ class Aggregate extends Model
     public function getRef($link): Reference
     {
         return $this->master_model->getRef($link);
+    }
+
+    /**
+     * Method to enable commutative usage of methods enabling both of below
+     * Resulting in Aggregate on $model.
+     *
+     * $model->groupBy(['abc'])->withAggregateField('xyz');
+     *
+     * and
+     *
+     * $model->withAggregateField('xyz')->groupBy(['abc']);
+     */
+    public function withAggregateField($name, $seed = [])
+    {
+        static::addField(...func_get_args());
+
+        return $this;
     }
 
     /**

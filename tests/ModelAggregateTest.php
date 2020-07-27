@@ -37,8 +37,7 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
         $invoice = new Model\Invoice($this->db);
         $invoice->getRef('client_id')->addTitle();
 
-        $this->aggregate = new Aggregate($invoice);
-        $this->aggregate->addField('client');
+        $this->aggregate = $invoice->withAggregateField('client');
     }
 
     public function testGroupSelect()
