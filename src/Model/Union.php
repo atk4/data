@@ -36,15 +36,6 @@ class Union extends Model
     public $read_only = true;
 
     /**
-     * Contain array of array containing model and mappings.
-     *
-     * $union = [ [ $m1, ['amount'=>'total_gross'] ] , [$m2, []] ];
-     *
-     * @var array
-     */
-    public $union = [];
-
-    /**
      * Union normally does not have ID field. Setting this to null will
      * disable various per-id operations, such as load().
      *
@@ -54,6 +45,15 @@ class Union extends Model
      * @var string
      */
     public $id_field;
+
+    /**
+     * Contain array of array containing model and mappings.
+     *
+     * $union = [ [ $model1, ['amount'=>'total_gross'] ] , [$model2, []] ];
+     *
+     * @var array
+     */
+    public $union = [];
 
     /**
      * When aggregation happens, this field will contain list of fields

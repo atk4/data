@@ -52,11 +52,15 @@ class Aggregate extends Model
      */
     public $read_only = true;
 
+    /**
+     * Aggregate does not have ID field.
+     *
+     * @var string
+     */
+    public $id_field;
+
     /** @var Model */
     public $master_model;
-
-    /** @var string */
-    public $id_field;
 
     /** @var array */
     public $group = [];
