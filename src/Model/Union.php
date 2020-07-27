@@ -23,10 +23,10 @@ use atk4\dsql\Query;
 class Union extends Model
 {
     /** @const string */
-    public const HOOK_AFTER_SELECT = self::class . '@afterSelect';
+    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
 
-    /** @deprecated use HOOK_AFTER_SELECT instead - will be removed dec-2020 */
-    public const HOOK_AFTER_UNION_SELECT = self::HOOK_AFTER_SELECT;
+    /** @deprecated use HOOK_INIT_SELECT_QUERY instead - will be removed dec-2020 */
+    public const HOOK_AFTER_UNION_SELECT = self::HOOK_INIT_SELECT_QUERY;
 
     /**
      * Union model should always be read-only.
@@ -260,7 +260,7 @@ class Union extends Model
                 if (isset($this->group)) {
                     $query->group($this->group);
                 }
-                $this->hook(self::HOOK_AFTER_SELECT, [$query]);
+                $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
                 return $query;
             case 'count':

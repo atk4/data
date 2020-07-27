@@ -38,12 +38,12 @@ use atk4\dsql\Query;
 class Aggregate extends Model
 {
     /** @const string */
-    public const HOOK_AFTER_SELECT = self::class . '@afterSelect';
+    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
 
     /**
-     * @deprecated use HOOK_AFTER_SELECT instead - will be removed dec-2020
+     * @deprecated use HOOK_INIT_SELECT_QUERY instead - will be removed dec-2020
      */
-    public const HOOK_AFTER_GROUP_SELECT = self::HOOK_AFTER_SELECT;
+    public const HOOK_AFTER_GROUP_SELECT = self::HOOK_INIT_SELECT_QUERY;
 
     /**
      * Aggregate model should always be read-only.
@@ -167,7 +167,7 @@ class Aggregate extends Model
     /**
      * Given a query, will add safe fields in.
      */
-    public function queryFields(Query $query, array $fields = []): Query
+    public function initQueryFields(Query $query, array $fields = []): Query
     {
         $this->persistence->initQueryFields($this, $query, $fields);
 
@@ -177,7 +177,7 @@ class Aggregate extends Model
     /**
      * Adds grouping in query.
      */
-    public function addGrouping(Query $query)
+    public function initQueryGrouping(Query $query)
     {
         // use table alias of master model
         $this->table_alias = $this->master_model->table_alias;
@@ -244,21 +244,21 @@ class Aggregate extends Model
 
                 // select but no need your fields
                 $query = $this->master_model->action($mode, [false]);
-                $query = $this->queryFields($query, array_unique($fields + $this->system_fields));
+                $this->initQueryFields($query, array_unique($fields + $this->system_fields));
 
-                $this->addGrouping($query);
+                $this->initQueryGrouping($query);
                 $this->initQueryConditions($query);
 
-                $this->hook(self::HOOK_AFTER_SELECT, [$query]);
+                $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
                 return $query;
             case 'count':
                 $query = $this->master_model->action($mode, $args);
 
                 $query->reset('field')->field($this->expr('1'));
-                $this->addGrouping($query);
+                $this->initQueryGrouping($query);
 
-                $this->hook(self::HOOK_AFTER_SELECT, [$query]);
+                $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
                 return $query->dsql()->field('count(*)')->table($this->expr('([]) der', [$query]));
             case 'field':
