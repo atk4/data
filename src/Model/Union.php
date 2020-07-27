@@ -300,27 +300,6 @@ class Union extends Model
     }
 
     /**
-     * Export model.
-     *
-     * @param array|null $fields        Names of fields to export
-     * @param string     $key_field     Optional name of field which value we will use as array key
-     * @param bool       $typecast_data Should we typecast exported data
-     */
-    public function export($fields = null, $key_field = null, $typecast_data = true): array
-    {
-        if ($fields) {
-            $this->onlyFields($fields);
-        }
-
-        $data = [];
-        foreach ($this->getIterator() as $row) {
-            $data[] = $row->get();
-        }
-
-        return $data;
-    }
-
-    /**
      * Adds nested model in union.
      *
      * @param string|Model $class    model
