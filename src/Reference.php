@@ -11,7 +11,7 @@ namespace atk4\data;
  *
  * It's possible to extend the basic reference with more meaningful references.
  *
- * @property Model $owner
+ * @property Model $owner definition of our model
  */
 class Reference
 {
@@ -41,7 +41,7 @@ class Reference
     public $link;
 
     /**
-     * Definition of the destination model, that can be either an object, a
+     * Definition of the destination their model, that can be either an object, a
      * callback or a string. This can be defined during initialization and
      * then used inside getModel() to fully populate and associate with
      * persistence.
@@ -90,6 +90,8 @@ class Reference
     public function init(): void
     {
         $this->_init();
+
+        $this->initTableAlias();
     }
 
     /**
@@ -100,59 +102,75 @@ class Reference
         return '#ref_' . $this->link;
     }
 
+    public function getOurModel(): Model
+    {
+        return $this->owner;
+    }
+
+    /**
+     * @deprecated use getTheirModel instead - will be removed in dec-2020
+     */
+    public function getModel($defaults = []): Model
+    {
+        'trigger_error'('Method Reference::getModel is deprecated. Use Model::getTheirModel instead', E_USER_DEPRECATED);
+
+        return $this->getTheirModel($defaults);
+    }
+
     /**
      * Returns destination model that is linked through this reference. Will apply
      * necessary conditions.
      *
      * @param array $defaults Properties
      */
-    public function getModel($defaults = []): Model
+    public function getTheirModel($defaults = []): Model
     {
         // set table_alias
-        if (!isset($defaults['table_alias'])) {
-            if (!$this->table_alias) {
-                $this->table_alias = $this->link;
-                $this->table_alias = preg_replace('/_' . ($this->owner->id_field ?: 'id') . '/', '', $this->table_alias);
-                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
-                if (isset($this->owner->table_alias)) {
-                    $this->table_alias = $this->owner->table_alias . '_' . $this->table_alias;
-                }
-            }
-            $defaults['table_alias'] = $this->table_alias;
-        }
+        $defaults['table_alias'] = $defaults['table_alias'] ?? $this->table_alias;
 
-        // if model is Closure, then call it and return model
-        if (is_object($this->model) && $this->model instanceof \Closure) {
-            $c = ($this->model)($this->owner, $this, $defaults);
-
-            return $this->addToPersistence($c, $defaults);
-        }
-
-        // if model is set, then return clone of this model
         if (is_object($this->model)) {
-            $c = clone $this->model;
+            if ($this->model instanceof \Closure) {
+                // if model is Closure, then call the closure and whci should return a model
+                $theirModel = ($this->model)($this->getOurModel(), $this, $defaults);
+            } else {
+                // if model is set, then use clone of this model
+                $theirModel = clone $this->model;
+            }
 
-            return $this->addToPersistence($c, $defaults);
+            return $this->addToPersistence($theirModel, $defaults);
         }
 
-        // last effort - try to add model
+        // add model from seed
         if (is_array($this->model)) {
-            $model = [$this->model[0]];
-            $md = $this->model;
-            unset($md[0]);
+            $modelDefaults = $this->model;
+            $theirModelSeed = [$modelDefaults[0]];
 
-            $defaults = array_merge($md, $defaults);
+            unset($modelDefaults[0]);
+
+            $defaults = array_merge($modelDefaults, $defaults);
         } elseif (is_string($this->model)) {
-            $model = [$this->model];
+            $theirModelSeed = [$this->model];
         } else {
-            $model = $this->model;
+            $theirModelSeed = $this->model;
         }
 
-        if (!$model instanceof Model) {
-            $model = $this->factory($model, $defaults);
-        }
+        $theirModel = $this->factory($theirModelSeed, $defaults);
 
-        return $this->addToPersistence($model, $defaults);
+        return $this->addToPersistence($theirModel, $defaults);
+    }
+
+    protected function initTableAlias(): void
+    {
+        if (!$this->table_alias) {
+            $ourModel = $this->getOurModel();
+
+            $this->table_alias = $this->link;
+            $this->table_alias = preg_replace('/_' . ($ourModel->id_field ?: 'id') . '/', '', $this->table_alias);
+            $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
+            if (isset($ourModel->table_alias)) {
+                $this->table_alias = $ourModel->table_alias . '_' . $this->table_alias;
+            }
+        }
     }
 
     /**
@@ -163,8 +181,8 @@ class Reference
      */
     protected function addToPersistence($model, $defaults = []): Model
     {
-        if (!$model->persistence && $p = $this->getDefaultPersistence($model)) {
-            $p->add($model, $defaults);
+        if (!$model->persistence && $persistence = $this->getDefaultPersistence($model)) {
+            $persistence->add($model, $defaults);
         }
 
         // set model caption
@@ -184,16 +202,16 @@ class Reference
      */
     protected function getDefaultPersistence($model)
     {
-        $m = $this->owner;
+        $ourModel = $this->getOurModel();
 
         // this will be useful for containsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
         // from Array persistence used in containsOne model
-        if ($m->contained_in_root_model && $m->contained_in_root_model->persistence) {
-            return $m->contained_in_root_model->persistence;
+        if ($ourModel->contained_in_root_model && $ourModel->contained_in_root_model->persistence) {
+            return $ourModel->contained_in_root_model->persistence;
         }
 
-        return $m->persistence ?: false;
+        return $ourModel->persistence ?: false;
     }
 
     /**
@@ -204,7 +222,7 @@ class Reference
      */
     public function ref($defaults = []): Model
     {
-        return $this->getModel($defaults);
+        return $this->getTheirModel($defaults);
     }
 
     /**
@@ -216,7 +234,7 @@ class Reference
      */
     public function refModel($defaults = []): Model
     {
-        return $this->getModel($defaults);
+        return $this->getTheirModel($defaults);
     }
 
     // {{{ Debug Methods
