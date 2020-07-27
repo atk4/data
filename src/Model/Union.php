@@ -112,7 +112,7 @@ class Union extends Model
 
         foreach ($this->union as $n => [$nestedModel, $fieldMap]) {
             // map fields for related model
-            $queryFieldMap = [];
+            $queryFieldExpressions = [];
             foreach ($fields as $fieldName) {
                 try {
                     // Union can be joined with additional
@@ -120,32 +120,34 @@ class Union extends Model
                     // fields
 
                     if (!$this->hasField($fieldName)) {
-                        $queryFieldMap[$fieldName] = $nestedModel->expr('NULL');
+                        $queryFieldExpressions[$fieldName] = $nestedModel->expr('NULL');
 
                         continue;
                     }
 
-                    if ($this->getField($fieldName)->join || $this->getField($fieldName)->never_persist) {
+                    $field = $this->getField($fieldName);
+
+                    if ($field->join || $field->never_persist) {
                         continue;
                     }
 
                     // Union can have some fields defined as expressions. We don't touch those either.
                     // Imants: I have no idea why this condition was set, but it's limiting our ability
                     // to use expression fields in mapping
-                    if ($this->getField($fieldName) instanceof FieldSqlExpression && !isset($this->aggregate[$fieldName])) {
+                    if ($field instanceof FieldSqlExpression && !isset($this->aggregate[$fieldName])) {
                         continue;
                     }
 
-                    $field = $this->getFieldExpr($nestedModel, $fieldName, $fieldMap[$fieldName] ?? null);
+                    $fieldExpression = $this->getFieldExpr($nestedModel, $fieldName, $fieldMap[$fieldName] ?? null);
 
                     if (isset($this->aggregate[$fieldName])) {
                         $seed = (array) $this->aggregate[$fieldName];
 
                         // first element of seed should be expression itself
-                        $field = $nestedModel->expr($seed[0], [$field]);
+                        $fieldExpression = $nestedModel->expr($seed[0], [$fieldExpression]);
                     }
 
-                    $queryFieldMap[$fieldName] = $field;
+                    $queryFieldExpressions[$fieldName] = $fieldExpression;
                 } catch (\atk4\core\Exception $e) {
                     throw $e->addMoreInfo('model', $n);
                 }
@@ -165,7 +167,7 @@ class Union extends Model
                 }
             }
 
-            $query->field($queryFieldMap);
+            $query->field($queryFieldExpressions);
 
             // also for sub-queries
             if ($this->group) {
