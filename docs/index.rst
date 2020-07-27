@@ -21,13 +21,13 @@ Contents:
     references
     expressions
     joins
+    unions
+    aggregates
     hooks
     deriving
     advanced
     extensions
     persistence/csv
-
-
 
 Indices and tables
 ==================

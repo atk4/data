@@ -1,0 +1,120 @@
+
+.. _Unions:
+
+============
+Model Unions
+============
+
+.. php:namespace:: atk4\data\Model
+
+.. php:class:: Union
+
+In some cases data from multiple models need to be combined. In this case the Union model comes very handy.
+In the case used below Client model schema may have multiple invoices and multiple payments. Payment is not related to the invoice.::
+
+   class Client extends \atk4\data\Model {
+     public $table = 'client';
+     
+     function init() {
+      parent::init();
+         $this->addField('name');
+       
+         $this->hasMany('Payment');
+         $this->hasMany('Invoice');
+     }
+   }
+
+(see tests/ModelUnionTest.php, tests/Client.php, tests/Payment.php and tests/Invoice.php files).
+
+Union Model Definition
+----------------------
+
+Normally a model is associated with a single table. Union model can have multiple nested models defined and it fetches 
+results from that. As a result, Union model will have no "id" field. Below is an example of inline definition of Union model.
+The Union model can be separated in a designated class and nested model added within the init() method body of the new class::
+
+   $unionPaymentInvoice = new \atk4\data\Model\Union();
+   
+   $nestedPayment = $unionPaymentInvoice->addNestedModel(new Invoice());
+   $nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment());
+
+Next, assuming that both models have common fields "name" and "amount", `$unionPaymentInvoice` fields can be set::
+
+   $unionPaymentInvoice->addField('name');
+   $unionPaymentInvoice->addFiled('amount', ['type'=>'money']);
+
+Then data can be queried::
+
+   $unionPaymentInvoice->export();
+
+Union Model Fields
+------------------
+
+Below is an example of 3 different ways to define fields for the Union model::
+
+   // Will link the "name" field will all the nested models.
+   $unionPaymentInvoice->addField('client_id'); 
+   
+   // Expression will not affect nested models in any way
+   $unionPaymentInvoice->addExpression('name_capital','upper([name])');
+   
+   // Union model can be joined with extra tables and define some fields from those joins
+   $unionPaymentInvoice
+      ->join('client','client_id')
+      ->addField('client_name', 'name');
+
+:ref:`Expressions` and :ref:`Joins` are working just as they would on any other model.
+
+Field Mapping
+-------------
+
+Sometimes the field that is defined in the Union model may be named differently inside nested models. 
+E.g. Invoice has field "description" and payment has field "note". 
+When defining a nested model a field map array needs to be specified::
+
+   $nestedPayment = $unionPaymentInvoice->addNestedModel(new Invoice());
+   $nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment(), ['description'=>'[note]']);
+   $unionPaymentInvoice->addField('description');
+
+The key of the field map array must match the Union field. The value is an expression. (See :ref:`Model<addExpression>`).
+This format can also be used to reverse sign on amounts. When we are creating "Transactions", then invoices would be subtracted from the amount, 
+while payments will be added::
+
+   $nestedPayment = $m_uni->addNestedModel(new Invoice(), ['amount'=>'-[amount]']);
+   $nestedInvoice = $m_uni->addNestedModel(new Payment(), ['description'=>'[note]']);
+   $unionPaymentInvoice->addField('description');
+
+Should more flexibility be needed, more expressions (or fields) can be added directly to nested models::
+
+   $nestedPayment = $unionPaymentInvoice->addNestedModel(new Invoice(), ['amount'=>'-[amount]']);
+   $nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment(), ['description'=>'[note]']);
+
+   $nestedPayment->addExpression('type', '"payment"');
+   $nestedInvoice->addExpression('type', '"invoice"');
+   $unionPaymentInvoice->addField('type');
+
+A new field "type" has been added that will be defined as a static constant.
+
+Referencing an Union Model
+--------------------------
+
+Like any other model, Union model can be assigned through a reference. In the case here one Client can have multiple transactions.
+Initially a related union can be defined::
+
+   $client->hasMany('Transaction', new Transaction());
+
+When condition is added on an Union model it will send it down to every nested model. This way the resulting SQL query remains optimized.
+
+The exception is when field is not mapped to nested model (if it's an Expression or associated with a Join).
+
+In most cases optimization on the query and Union model is not necessary as it will be done automatically.
+
+Grouping Results
+----------------
+
+Union model has also a built-in grouping support::
+
+   $unionPaymentInvoice->groupBy('client_id', ['amount'=>'sum']);
+
+When specifying a grouping field and it is associated with nested models then grouping will be enabled on every nested model.
+
