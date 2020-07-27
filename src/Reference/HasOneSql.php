@@ -20,57 +20,60 @@ class HasOneSql extends HasOne
      *
      * Returns Expression in case you want to do something else with it.
      *
-     * @param string|Field|array $field or [$field, ..defaults]
+     * @param string|Field|array $fieldName or [$field, ..defaults]
      */
-    public function addField($field, string $their_field = null): FieldSqlExpression
+    public function addField($fieldName, string $theirFieldName = null): FieldSqlExpression
     {
-        if (is_array($field)) {
-            $defaults = $field;
+        if (is_array($fieldName)) {
+            $defaults = $fieldName;
             if (!isset($defaults[0])) {
                 throw (new Exception('Field name must be specified'))
-                    ->addMoreInfo('field', $field);
+                    ->addMoreInfo('field', $fieldName);
             }
-            $field = $defaults[0];
+            $fieldName = $defaults[0];
             unset($defaults[0]);
         } else {
             $defaults = [];
         }
 
-        if ($their_field === null) {
-            $their_field = $field;
+        if ($theirFieldName === null) {
+            $theirFieldName = $fieldName;
         }
 
-        // if caption is not defined in $defaults -> get it directly from the linked model field $their_field
-        $defaults['caption'] = $defaults['caption'] ?? $this->owner->refModel($this->link)->getField($their_field)->getCaption();
+        $ourModel = $this->getOurModel();
 
-        /** @var FieldSqlExpression $e */
-        $e = $this->owner->addExpression($field, array_merge(
+        // if caption is not defined in $defaults -> get it directly from the linked model field $theirFieldName
+        $defaults['caption'] = $defaults['caption'] ?? $ourModel->refModel($this->link)->getField($theirFieldName)->getCaption();
+
+        /** @var FieldSqlExpression $fieldExpression */
+        $fieldExpression = $ourModel->addExpression($fieldName, array_merge(
             [
-                function (Model $m) use ($their_field) {
+                function (Model $ourModel) use ($theirFieldName) {
                     // remove order if we just select one field from hasOne model
                     // that is mandatory for Oracle
-                    return $m->refLink($this->link)->action('field', [$their_field])->reset('order');
-                }, ],
+                    return $ourModel->refLink($this->link)->action('field', [$theirFieldName])->reset('order');
+                },
+            ],
             $defaults
         ));
 
-        $e->read_only = false;
-        $e->never_save = true;
+        $fieldExpression->read_only = false;
+        $fieldExpression->never_save = true;
 
         // Will try to execute last
-        $this->owner->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) use ($field, $their_field) {
+        $ourModel->onHook(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldName) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
-            if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
-                $mm = $this->getModel();
+            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
+                $theirModel = $this->getTheirModel();
 
-                $mm->addCondition($their_field, $m->get($field));
-                $m->set($this->our_field, $mm->action('field', [$mm->id_field]));
-                $m->_unset($field);
+                $theirModel->addCondition($theirFieldName, $ourModel->get($fieldName));
+                $ourModel->set($this->our_field, $theirModel->action('field', [$theirModel->id_field]));
+                $ourModel->_unset($fieldName);
             }
         }, [], 21);
 
-        return $e;
+        return $fieldExpression;
     }
 
     /**
@@ -92,25 +95,24 @@ class HasOneSql extends HasOne
      */
     public function addFields($fields = [], $defaults = [])
     {
-        foreach ($fields as $field => $alias) {
-            if (is_array($alias)) {
-                $d = array_merge($defaults, $alias);
-                if (!isset($alias[0])) {
-                    throw (new Exception('Incorrect definition for addFields. Field name must be specified'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('alias', $alias);
-                }
-                $alias = $alias[0];
-            } else {
-                $d = $defaults;
+        foreach ($fields as $ourFieldName => $ourFieldDefaults) {
+            $ourFieldDefaults = array_merge($defaults, (array) $ourFieldDefaults);
+
+            if (!isset($ourFieldDefaults[0])) {
+                throw (new Exception('Incorrect definition for addFields. Field name must be specified'))
+                    ->addMoreInfo('ourFieldName', $ourFieldName)
+                    ->addMoreInfo('ourFieldDefaults', $ourFieldDefaults);
             }
 
-            if (is_numeric($field)) {
-                $field = $alias;
+            $theirFieldName = $ourFieldDefaults[0];
+
+            if (is_numeric($ourFieldName)) {
+                $ourFieldName = $theirFieldName;
             }
 
-            $d[0] = $field;
-            $this->addField($d, $alias);
+            $ourFieldDefaults[0] = $ourFieldName;
+
+            $this->addField($ourFieldDefaults, $theirFieldName);
         }
 
         return $this;
@@ -123,14 +125,14 @@ class HasOneSql extends HasOne
      */
     public function refLink($defaults = []): Model
     {
-        $m = $this->getModel($defaults);
+        $theirModel = $this->getTheirModel($defaults);
 
-        $m->addCondition(
-            $this->their_field ?: ($m->id_field),
+        $theirModel->addCondition(
+            $this->their_field ?: $theirModel->id_field,
             $this->referenceOurValue()
         );
 
-        return $m;
+        return $theirModel;
     }
 
     /**
@@ -140,32 +142,33 @@ class HasOneSql extends HasOne
      */
     public function ref($defaults = []): Model
     {
-        $m = parent::ref($defaults);
+        $theirModel = parent::ref($defaults);
+        $ourModel = $this->getOurModel();
 
-        if (!isset($this->owner->persistence) || !($this->owner->persistence instanceof Persistence\Sql)) {
-            return $m;
+        if (!isset($ourModel->persistence) || !($ourModel->persistence instanceof Persistence\Sql)) {
+            return $theirModel;
         }
 
         // If model is not loaded, then we are probably doing deep traversal
-        if (!$this->owner->loaded()) {
-            $values = $this->owner->action('field', [$this->our_field]);
+        if (!$ourModel->loaded()) {
+            $values = $ourModel->action('field', [$this->our_field]);
 
-            return $m->addCondition($this->their_field ?: $m->id_field, $values);
+            return $theirModel->addCondition($this->their_field ?: $theirModel->id_field, $values);
         }
 
         // At this point the reference
         // if our_field is the id_field and is being used in the reference
         // we should persist the relation in condtition
-        // example - $m->load(1)->ref('refLink')->import($rows);
-        if ($this->owner->loaded() && !$m->loaded()) {
-            if ($this->owner->id_field === $this->our_field) {
-                $condition_field = $this->their_field ?: $m->id_field;
-                $condition_value = $this->owner->get($this->our_field ?: $this->owner->id_field);
-                $m->addCondition($condition_field, $condition_value);
+        // example - $model->load(1)->ref('refLink')->import($rows);
+        if ($ourModel->loaded() && !$theirModel->loaded()) {
+            if ($ourModel->id_field === $this->our_field) {
+                $field = $this->their_field ?: $theirModel->id_field;
+                $value = $ourModel->get($this->our_field ?: $ourModel->id_field);
+                $theirModel->addCondition($field, $value);
             }
         }
 
-        return $m;
+        return $theirModel;
     }
 
     /**
@@ -186,21 +189,22 @@ class HasOneSql extends HasOne
                 ->addMoreInfo('arg', $defaults);
         }
 
-        $field = $defaults['field']
-                    ?? preg_replace('/_' . ($this->owner->id_field ?: 'id') . '$/i', '', $this->link);
+        $ourModel = $this->getOurModel();
 
-        if ($this->owner->hasField($field)) {
+        $field = $defaults['field'] ?? preg_replace('/_' . $ourModel->id_field . '$/i', '', $this->link);
+
+        if ($ourModel->hasField($field)) {
             throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))
                 ->addMoreInfo('field', $field);
         }
 
-        /** @var FieldSqlExpression $ex */
-        $ex = $this->owner->addExpression($field, array_replace_recursive(
+        /** @var FieldSqlExpression $fieldExpression */
+        $fieldExpression = $ourModel->addExpression($field, array_replace_recursive(
             [
-                function (Model $m) {
-                    $mm = $m->refLink($this->link);
+                function (Model $ourModel) {
+                    $theirModel = $ourModel->refLink($this->link);
 
-                    return $mm->action('field', [$mm->title_field])->reset('order');
+                    return $theirModel->action('field', [$theirModel->title_field])->reset('order');
                 },
                 'type' => null,
                 'ui' => ['editable' => false, 'visible' => true],
@@ -215,23 +219,23 @@ class HasOneSql extends HasOne
         ));
 
         // Will try to execute last
-        $this->owner->onHook(Model::HOOK_BEFORE_SAVE, function (Model $m) use ($field) {
+        $ourModel->onHook(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($field) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
-            if ($m->isDirty($field) && !$m->isDirty($this->our_field)) {
-                $mm = $this->getModel();
+            if ($ourModel->isDirty($field) && !$ourModel->isDirty($this->our_field)) {
+                $theirModel = $this->getTheirModel();
 
-                $mm->addCondition($mm->title_field, $m->get($field));
-                $m->set($this->our_field, $mm->action('field', [$mm->id_field]));
+                $theirModel->addCondition($theirModel->title_field, $ourModel->get($field));
+                $ourModel->set($this->our_field, $theirModel->action('field', [$theirModel->id_field]));
             }
         }, [], 20);
 
         // Set ID field as not visible in grid by default
-        if (!array_key_exists('visible', $this->owner->getField($this->our_field)->ui)) {
-            $this->owner->getField($this->our_field)->ui['visible'] = false;
+        if (!array_key_exists('visible', $ourModel->getField($this->our_field)->ui)) {
+            $ourModel->getField($this->our_field)->ui['visible'] = false;
         }
 
-        return $ex;
+        return $fieldExpression;
     }
 
     /**

@@ -1986,11 +1986,11 @@ class Model implements \IteratorAggregate
     /**
      * Private method.
      *
-     * @param string         $c        Class name
-     * @param string         $link     Link
-     * @param array|callable $defaults Properties which we will pass to Reference object constructor
+     * @param string         $className Class name
+     * @param string         $link      Link
+     * @param array|callable $defaults  Properties which we will pass to Reference object constructor
      */
-    protected function _hasReference($c, $link, $defaults = []): Reference
+    protected function _hasReference($className, $link, $defaults = []): Reference
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_' . $link];
@@ -2001,7 +2001,7 @@ class Model implements \IteratorAggregate
 
         $defaults[0] = $link;
 
-        $obj = $this->factory($c, $defaults);
+        $obj = $this->factory($className, $defaults);
 
         // if reference with such name already exists, then throw exception
         if ($this->hasElement($name = $obj->getDesiredName())) {
