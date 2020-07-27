@@ -41,7 +41,7 @@ The Union model can be separated in a designated class and nested model added wi
 Next, assuming that both models have common fields "name" and "amount", `$unionPaymentInvoice` fields can be set::
 
    $unionPaymentInvoice->addField('name');
-   $unionPaymentInvoice->addFiled('amount', ['type'=>'money']);
+   $unionPaymentInvoice->addField('amount', ['type'=>'money']);
 
 Then data can be queried::
 
@@ -52,7 +52,7 @@ Union Model Fields
 
 Below is an example of 3 different ways to define fields for the Union model::
 
-   // Will link the "name" field will all the nested models.
+   // Will link the "name" field with all the nested models.
    $unionPaymentInvoice->addField('client_id'); 
    
    // Expression will not affect nested models in any way
