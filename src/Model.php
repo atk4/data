@@ -33,8 +33,8 @@ class Model implements \IteratorAggregate
     use FactoryTrait;
     use CollectionTrait;
     use ReadableCaptionTrait;
-    use Model\HasUserActionsTrait;
     use Model\ReferencesTrait;
+    use Model\UserActionsTrait;
 
     /** @const string */
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
