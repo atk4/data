@@ -6,7 +6,7 @@ namespace atk4\data\Model;
 
 use atk4\data\Model;
 
-trait HasUserActionsTrait
+trait UserActionsTrait
 {
     /**
      * Default class for addUserAction().
