@@ -20,24 +20,24 @@ class HasOneSql extends HasOne
      *
      * Returns Expression in case you want to do something else with it.
      *
-     * @param string|Field|array $fieldName or [$field, ..defaults]
+     * @param string|Field|array $ourFieldName or [$field, ..defaults]
      */
-    public function addField($fieldName, string $theirFieldName = null): FieldSqlExpression
+    public function addField($ourFieldName, string $theirFieldName = null): FieldSqlExpression
     {
-        if (is_array($fieldName)) {
-            $defaults = $fieldName;
+        if (is_array($ourFieldName)) {
+            $defaults = $ourFieldName;
             if (!isset($defaults[0])) {
                 throw (new Exception('Field name must be specified'))
-                    ->addMoreInfo('field', $fieldName);
+                    ->addMoreInfo('field', $ourFieldName);
             }
-            $fieldName = $defaults[0];
+            $ourFieldName = $defaults[0];
             unset($defaults[0]);
         } else {
             $defaults = [];
         }
 
         if ($theirFieldName === null) {
-            $theirFieldName = $fieldName;
+            $theirFieldName = $ourFieldName;
         }
 
         $ourModel = $this->getOurModel();
@@ -46,7 +46,7 @@ class HasOneSql extends HasOne
         $defaults['caption'] = $defaults['caption'] ?? $ourModel->refModel($this->link)->getField($theirFieldName)->getCaption();
 
         /** @var FieldSqlExpression $fieldExpression */
-        $fieldExpression = $ourModel->addExpression($fieldName, array_merge(
+        $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
             [
                 function (Model $ourModel) use ($theirFieldName) {
                     // remove order if we just select one field from hasOne model
@@ -61,15 +61,15 @@ class HasOneSql extends HasOne
         $fieldExpression->never_save = true;
 
         // Will try to execute last
-        $ourModel->onHook(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldName) {
+        $ourModel->onHook(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($ourFieldName, $theirFieldName) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
+            if ($ourModel->isDirty($ourFieldName) && !$ourModel->isDirty($this->our_field)) {
                 $theirModel = $this->getTheirModel();
 
-                $theirModel->addCondition($theirFieldName, $ourModel->get($fieldName));
+                $theirModel->addCondition($theirFieldName, $ourModel->get($ourFieldName));
                 $ourModel->set($this->our_field, $theirModel->action('field', [$theirModel->id_field]));
-                $ourModel->_unset($fieldName);
+                $ourModel->_unset($ourFieldName);
             }
         }, [], 21);
 
