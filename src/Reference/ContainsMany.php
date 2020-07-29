@@ -23,25 +23,9 @@ class ContainsMany extends ContainsOne
      */
     protected function getDefaultPersistence($model)
     {
-        $ourModel = $this->getOurModel();
-
-        // model should be loaded
-        /* Imants: it looks that this is not actually required - disabling
-        if (!$ourModel->loaded()) {
-            throw (new Exception('Model should be loaded!'))
-                ->addMoreInfo('model', get_class($ourModel));
-        }
-        */
-
-        // set data source of referenced array persistence
-        $rows = $ourModel->get($this->our_field) ?: [];
-        /*
-        foreach ($rows as $id=>$row) {
-            $rows[$id] = $ourModel->persistence->typecastLoadRow($ourModel, $row); // we need this typecasting because we set persistence data directly
-        }
-        */
-
-        return new Persistence\ArrayOfStrings([$this->table_alias => $rows ?: []]);
+        return new Persistence\ArrayOfStrings([
+            $this->table_alias => $this->getOurFieldValue() ?: [],
+        ]);
     }
 
     /**
@@ -65,7 +49,9 @@ class ContainsMany extends ContainsOne
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $theirModel->onHook($spot, function ($theirModel) {
                 $rows = $theirModel->persistence->getRawDataByTable($this->table_alias);
-                $this->getOurModel()->save([$this->our_field => $rows ?: null]);
+                $this->getOurModel()->save([
+                    $this->getOurFieldName() => $rows ?: null,
+                ]);
             });
         }
 

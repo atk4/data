@@ -31,7 +31,7 @@ class HasMany extends Reference
 
         // create expression based on existing conditions
         return $ourModel->action('field', [
-            $this->our_field ?: $ourModel->id_field,
+            $this->getOurFieldName(),
         ]);
     }
 
@@ -44,7 +44,7 @@ class HasMany extends Reference
 
         $ourModel->persistence_data['use_table_prefixes'] = true;
 
-        return $ourModel->getField($this->our_field ?: $ourModel->id_field);
+        return $this->getOurField();
     }
 
     /**
