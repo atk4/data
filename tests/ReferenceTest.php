@@ -115,10 +115,10 @@ class ReferenceTest extends \atk4\schema\PhpunitTestCase
         $company->hasMany('Orders', [$order]);
 
         $this->assertEquals($user->ref('Company')->ref('Orders'), $user->ref('Company/Orders'));
-        $this->assertSame(20, $user->get('Company/Orders/amount')); // 'amount' default value
-        $this->assertSame('65', $user->get('Company/Orders/sum(amount)'));
-        $this->assertSame('2', $user->get('Company/Orders/count(*)'));
-        $this->assertSame('1', $user->get('Company/count(*)'));
+        $this->assertEquals(20, $user->get('Company/Orders/amount')); // 'amount' default value
+        $this->assertEquals(65, $user->get('Company/Orders/sum(amount)'));
+        $this->assertEquals(2, $user->get('Company/Orders/count(*)'));
+        $this->assertEquals(1, $user->get('Company/count(*)'));
     }
 
     public function testRefName1()
