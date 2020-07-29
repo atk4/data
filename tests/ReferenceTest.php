@@ -26,8 +26,9 @@ class ReferenceTest extends \atk4\schema\PhpunitTestCase
         ],
         'order' => [
             ['company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['company_id' => 2, 'description' => 'Zoe Company Order', 'amount' => 10.0],
+            ['company_id' => 2, 'description' => 'Zoe Company Order 1', 'amount' => 10.0],
             ['company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+            ['company_id' => 1, 'description' => 'Zoe Company Order 2', 'amount' => null],
         ],
     ];
 
@@ -117,8 +118,9 @@ class ReferenceTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals($user->ref('Company')->ref('Orders'), $user->ref('Company/Orders'));
         $this->assertEquals(20, $user->get('Company/Orders/amount')); // 'amount' default value
         $this->assertEquals(65, $user->get('Company/Orders/sum(amount)'));
-        $this->assertEquals(2, $user->get('Company/Orders/count(*)'));
-        $this->assertEquals(2, $user->get('Company/Orders/#'));
+        $this->assertEquals(3, $user->get('Company/Orders/count(*)'));
+        $this->assertEquals(3, $user->get('Company/Orders/#'));
+        $this->assertEquals(2, $user->get('Company/Orders/count(amount)'));
         $this->assertEquals(1, $user->get('Company/count(*)'));
     }
 
