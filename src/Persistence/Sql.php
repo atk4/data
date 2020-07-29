@@ -628,8 +628,16 @@ class Sql extends Persistence
                         ->addMoreInfo('action', $type);
                 }
 
-                $fx = $args[0];
-                $field = is_string($args[1]) ? $model->getField($args[1]) : $args[1];
+                [$fx, $field] = $args;
+
+                if (is_string($field)) {
+                    if ($model->hasField($field)) {
+                        $field = $model->getField($field);
+                    } else {
+                        $field = new Expression($field);
+                    }
+                }
+
                 $this->initQueryConditions($model, $query);
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
 

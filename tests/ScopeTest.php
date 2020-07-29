@@ -65,6 +65,7 @@ class STicket extends Model
         $this->addField('number');
         $this->addField('venue');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
+        $this->addField('price', ['type' => 'float']);
 
         $this->hasOne('user', new SUser());
     }
@@ -112,11 +113,11 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $this->getMigrator($this->ticket)->drop()->create();
 
         $this->ticket->import([
-            ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],
-            ['number' => '002', 'venue' => 'Best Stadium', 'user' => 2],
-            ['number' => '003', 'venue' => 'Best Stadium', 'user' => 2],
-            ['number' => '004', 'venue' => 'Best Stadium', 'user' => 4],
-            ['number' => '005', 'venue' => 'Best Stadium', 'user' => 5],
+            ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1, 'price' => 11],
+            ['number' => '002', 'venue' => 'Best Stadium', 'user' => 2, 'price' => 22],
+            ['number' => '003', 'venue' => 'Best Stadium', 'user' => 2, 'price' => 33],
+            ['number' => '004', 'venue' => 'Best Stadium', 'user' => 4, 'price' => 44],
+            ['number' => '005', 'venue' => 'Best Stadium', 'user' => 5, 'price' => 55],
         ]);
     }
 
@@ -284,6 +285,17 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         foreach ($country as $c) {
             $this->assertTrue(in_array($c->get('code'), ['FR'], true));
+        }
+
+        $country = clone $this->country;
+
+        // countries of a user that has tickets price summing up to more than 50
+        $country->addCondition('Users/Tickets/sum(price)', '>', 50);
+
+        $this->assertEquals(2, $country->action('count')->getOne());
+
+        foreach ($country as $c) {
+            $this->assertTrue(in_array($c->get('code'), ['LV', 'BR'], true));
         }
 
         $user = clone $this->user;
