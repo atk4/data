@@ -152,24 +152,20 @@ class HasOneSql extends HasOne
         $theirField = $this->their_field ?: $theirModel->id_field;
         $ourField = $this->getOurField();
 
-        // If model is not loaded, then we are probably doing deep traversal
-        if (!$ourModel->loaded()) {
-            $values = $ourModel->action('field', [$ourField]);
-
-            return $theirModel->addCondition($theirField, $values);
-        }
-
         // At this point the reference
         // if our_field is the id_field and is being used in the reference
         // we should persist the relation in condtition
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->loaded() && !$theirModel->loaded()) {
             if ($ourModel->id_field === $this->getOurFieldName()) {
-                $theirModel->addCondition($theirField, $this->getOurFieldValue());
+                return $theirModel->addCondition($theirField, $this->getOurFieldValue());
             }
         }
 
-        return $theirModel;
+        // handles the deep traversal using an expression
+        $ourFieldExpression = $ourModel->action('field', [$ourField]);
+
+        return $theirModel->addCondition($theirField, $ourFieldExpression);
     }
 
     /**

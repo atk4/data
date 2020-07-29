@@ -225,10 +225,15 @@ class HasOne extends Reference
             }
         }
 
+        // their model will be reloaded after saving our model to reflect changes in referenced fields
+        $theirModel->reload_after_save = false;
+
         $theirModel->onHook(Model::HOOK_AFTER_SAVE, function ($theirModel) {
             $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->id;
 
-            $this->getOurField()->set($theirValue);
+            $this->getOurField()->set($theirValue)->owner->save();
+
+            $theirModel->reload();
         });
 
         return $theirModel;
