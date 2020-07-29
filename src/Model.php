@@ -776,33 +776,59 @@ class Model implements \IteratorAggregate
      *
      * @return mixed
      */
-    public function get(string $field = null)
+    public function get(string $fieldName = null)
     {
-        if ($field === null) {
+        if ($fieldName === null) {
             // Collect list of eligible fields
             $data = [];
             if ($this->only_fields) {
                 // collect data for actual fields
-                foreach ($this->only_fields as $field) {
-                    $data[$field] = $this->get($field);
+                foreach ($this->only_fields as $fieldName) {
+                    $data[$fieldName] = $this->get($fieldName);
                 }
             } else {
                 // get all fields
-                foreach ($this->getFields() as $field => $f) {
-                    $data[$field] = $this->get($field);
+                foreach ($this->getFields() as $fieldName => $field) {
+                    $data[$fieldName] = $this->get($fieldName);
                 }
             }
 
             return $data;
         }
 
-        $this->checkOnlyFieldsField($field);
+        // if field is not existing maybe it is a traversing link or aggregate function
+        if (!$this->hasField($fieldName)) {
+            // traverses relationships and returns value from a referenced model, e.g contact/company/name
+            if (str_contains($fieldName, '/')) {
+                $refs = explode('/', $fieldName);
 
-        if (array_key_exists($field, $this->data)) {
-            return $this->data[$field];
+                $fieldName = array_pop($refs);
+
+                return $this->ref(implode('/', $refs))->get($fieldName);
+            }
+
+            // aggregate function
+            if (str_contains($fieldName, '(')) {
+                $args = [];
+                if (preg_match('/^([\w ]+)\(([\w \*]*)/', $fieldName, $args)) {
+                    array_shift($args);
+
+                    return $this->action('fx', $args)->getOne();
+                }
+            }
         }
 
-        return $this->getField($field)->default;
+        $this->checkOnlyFieldsField($fieldName);
+
+        if ($fieldName === $this->id_field) {
+            return $this->id;
+        }
+
+        if (array_key_exists($fieldName, $this->data)) {
+            return $this->data[$fieldName];
+        }
+
+        return $this->getField($fieldName)->default;
     }
 
     /**
