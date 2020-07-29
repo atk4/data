@@ -798,6 +798,11 @@ class Model implements \IteratorAggregate
 
         // if field is not existing maybe it is a traversing link or aggregate function
         if (!$this->hasField($fieldName)) {
+            // alias for count aggregate, consistent with Model scopes
+            if ($fieldName === '#') {
+                $fieldName = 'count(*)';
+            }
+
             // traverses relationships and returns value from a referenced model, e.g contact/company/name
             if (str_contains($fieldName, '/')) {
                 $refs = explode('/', $fieldName);

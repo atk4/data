@@ -118,6 +118,7 @@ class ReferenceTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(20, $user->get('Company/Orders/amount')); // 'amount' default value
         $this->assertEquals(65, $user->get('Company/Orders/sum(amount)'));
         $this->assertEquals(2, $user->get('Company/Orders/count(*)'));
+        $this->assertEquals(2, $user->get('Company/Orders/#'));
         $this->assertEquals(1, $user->get('Company/count(*)'));
     }
 
