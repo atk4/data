@@ -61,11 +61,14 @@ class HasOneSql extends HasOne
                     return $ourModel->refLink($this->link)->action('field', [$theirFieldName])->reset('order');
                 },
             ],
-            $defaults
+            $defaults,
+            [
+                // to be able to change field, but not save it
+                // afterSave hook will take care of the rest
+                'read_only' => false,
+                'never_save' => true,
+            ]
         ));
-
-        $fieldExpression->read_only = false;
-        $fieldExpression->never_save = true;
 
         // Will try to execute last
         $ourModel->onHook(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($ourFieldName, $theirFieldName) {

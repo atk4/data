@@ -374,8 +374,8 @@ class Array_ extends Persistence
                         ->addMoreInfo('action', $type);
                 }
 
-                $fx = $args[0];
-                $field = $args[1];
+                [$fx, $field] = $args;
+
                 $action = $this->initAction($model, $field);
                 $this->applyScope($model, $action);
                 $this->setLimitOrder($model, $action);
