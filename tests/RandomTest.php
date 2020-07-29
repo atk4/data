@@ -347,7 +347,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Item($db);
 
-        $this->expectException(Exception::class);
+        $this->expectException(\atk4\core\Exception::class);
         $m->hasOne('foo', ['model' => [Model_Item::class]])
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
