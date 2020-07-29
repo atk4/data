@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace atk4\data\tests;
 
-use atk4\core\AtkPhpunit;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
@@ -12,8 +11,33 @@ use atk4\data\Persistence;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ReferenceTest extends AtkPhpunit\TestCase
+class ReferenceTest extends \atk4\schema\PhpunitTestCase
 {
+    /** @var array */
+    private $init_db =
+    [
+        'user' => [
+            ['name' => 'Vinny', 'company_id' => 1],
+            ['name' => 'Zoe', 'company_id' => 2],
+        ],
+        'company' => [
+            ['name' => 'Vinny Company'],
+            ['name' => 'Zoe Company'],
+        ],
+        'order' => [
+            ['company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['company_id' => 2, 'description' => 'Zoe Company Order', 'amount' => 10.0],
+            ['company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+        ],
+    ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->setDB($this->init_db);
+    }
+
     public function testBasicReferences()
     {
         $user = new Model(['table' => 'user']);
@@ -27,7 +51,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $user->hasMany('Orders', [$order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders');
 
-        $this->assertSame(20, $o->get('amount'));
+        $this->assertSame(20, $o->get('amount')); // 'amount' default value
         $this->assertSame(1, $o->get('user_id'));
 
         $user->hasMany('BigOrders', function () {
@@ -39,6 +63,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
         });
 
         $this->assertSame(100, $user->ref('BigOrders')->get('amount'));
+        $this->assertSame(100, $user->get('BigOrders/amount'));
     }
 
     /**
@@ -71,6 +96,31 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $this->assertSame('order', $o->table);
     }
 
+    public function testRefTraversing()
+    {
+        $user = new Model($this->db, 'user');
+        $user->addField('name');
+        $user->addField('company_id');
+
+        $user->id = 1;
+
+        $company = new Model($this->db, 'company');
+        $company->addField('name');
+        $user->hasOne('Company', [$company, 'our_field' => 'company_id', 'their_field' => 'id']);
+
+        $order = new Model($this->db, 'order');
+        $order->addField('company_id');
+        $order->addField('amount', ['default' => 20]);
+
+        $company->hasMany('Orders', [$order]);
+
+        $this->assertEquals($user->ref('Company')->ref('Orders'), $user->ref('Company/Orders'));
+        $this->assertSame(20, $user->get('Company/Orders/amount')); // 'amount' default value
+        $this->assertSame('65', $user->get('Company/Orders/sum(amount)'));
+        $this->assertSame('2', $user->get('Company/Orders/count(*)'));
+        $this->assertSame('1', $user->get('Company/count(*)'));
+    }
+
     public function testRefName1()
     {
         $user = new Model(['table' => 'user']);
@@ -84,7 +134,6 @@ class ReferenceTest extends AtkPhpunit\TestCase
 
     public function testRefName2()
     {
-        $order = new Model(['table' => 'order']);
         $user = new Model(['table' => 'user']);
 
         $user->hasOne('user_id', $user);
