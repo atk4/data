@@ -159,6 +159,21 @@ class Reference
         return $this->addToPersistence($theirModel, $defaults);
     }
 
+    protected function getOurField(): Field
+    {
+        return $this->getOurModel()->getField($this->getOurFieldName());
+    }
+
+    protected function getOurFieldName(): string
+    {
+        return $this->our_field ?: $this->getOurModel()->id_field;
+    }
+
+    protected function getOurFieldValue()
+    {
+        return $this->getOurField()->get();
+    }
+
     protected function initTableAlias(): void
     {
         if (!$this->table_alias) {
