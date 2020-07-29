@@ -539,7 +539,9 @@ class Field implements Expressionable
      */
     public function getCaption(): string
     {
-        return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption($this->short_name);
+        $caption = $this->caption ?? $this->ui['caption'] ?? $this->readableCaption($this->short_name);
+
+        return $caption instanceof \Closure ? $caption($this) : $caption;
     }
 
     // }}}
