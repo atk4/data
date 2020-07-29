@@ -20,7 +20,7 @@ class HasOneSql extends HasOne
      *
      * Returns Expression in case you want to do something else with it.
      *
-     * @param string|Field|array $ourFieldName or [$field, ..defaults]
+     * @param string|Field|array $ourFieldName   or [$field, ..defaults]
      * @param string|\Closure    $theirFieldName
      */
     public function addField($ourFieldName, $theirFieldName = null): FieldSqlExpression
