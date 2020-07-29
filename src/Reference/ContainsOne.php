@@ -79,25 +79,13 @@ class ContainsOne extends Reference
      *
      * @param Model $model Referenced model
      *
-     * @return Persistence|false
+     * @return Persistence
      */
     protected function getDefaultPersistence($model)
     {
-        $ourModel = $this->getOurModel();
-
-        // model should be loaded
-        /* Imants: it looks that this is not actually required - disabling
-        if (!$ourModel->loaded()) {
-            throw (new Exception('Model should be loaded!'))
-                ->addMoreInfo('model', get_class($ourModel));
-        }
-        */
-
-        // set data source of referenced array persistence
-        $row = $ourModel->get($this->our_field) ?: [];
-        //$row = $ourModel->persistence->typecastLoadRow($ourModel, $row); // we need this typecasting because we set persistence data directly
-
-        return new Persistence\ArrayOfStrings([$this->table_alias => $row ? [1 => $row] : []]);
+        return new Persistence\ArrayOfStrings([
+            $this->table_alias => $this->getOurFieldValue() ? [1 => $this->getOurFieldValue()] : [],
+        ]);
     }
 
     /**
@@ -122,7 +110,7 @@ class ContainsOne extends Reference
             $theirModel->onHook($spot, function ($theirModel) {
                 $row = $theirModel->persistence->getRawDataByTable($this->table_alias);
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
-                $this->getOurModel()->save([$this->our_field => $row]);
+                $this->getOurModel()->save([$this->getOurFieldName() => $row]);
             });
         }
 

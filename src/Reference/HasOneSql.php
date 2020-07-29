@@ -68,7 +68,7 @@ class HasOneSql extends HasOne
                 $theirModel = $this->getTheirModel();
 
                 $theirModel->addCondition($theirFieldName, $ourModel->get($ourFieldName));
-                $ourModel->set($this->our_field, $theirModel->action('field', [$theirModel->id_field]));
+                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->id_field]));
                 $ourModel->_unset($ourFieldName);
             }
         }, [], 21);
@@ -149,11 +149,14 @@ class HasOneSql extends HasOne
             return $theirModel;
         }
 
+        $theirField = $this->their_field ?: $theirModel->id_field;
+        $ourField = $this->getOurField();
+
         // If model is not loaded, then we are probably doing deep traversal
         if (!$ourModel->loaded()) {
-            $values = $ourModel->action('field', [$this->our_field]);
+            $values = $ourModel->action('field', [$ourField]);
 
-            return $theirModel->addCondition($this->their_field ?: $theirModel->id_field, $values);
+            return $theirModel->addCondition($theirField, $values);
         }
 
         // At this point the reference
@@ -161,10 +164,8 @@ class HasOneSql extends HasOne
         // we should persist the relation in condtition
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->loaded() && !$theirModel->loaded()) {
-            if ($ourModel->id_field === $this->our_field) {
-                $field = $this->their_field ?: $theirModel->id_field;
-                $value = $ourModel->get($this->our_field ?: $ourModel->id_field);
-                $theirModel->addCondition($field, $value);
+            if ($ourModel->id_field === $this->getOurFieldName()) {
+                $theirModel->addCondition($theirField, $this->getOurFieldValue());
             }
         }
 
@@ -191,15 +192,15 @@ class HasOneSql extends HasOne
 
         $ourModel = $this->getOurModel();
 
-        $field = $defaults['field'] ?? preg_replace('/_' . $ourModel->id_field . '$/i', '', $this->link);
+        $fieldName = $defaults['field'] ?? preg_replace('/_' . $ourModel->id_field . '$/i', '', $this->link);
 
-        if ($ourModel->hasField($field)) {
+        if ($ourModel->hasField($fieldName)) {
             throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))
-                ->addMoreInfo('field', $field);
+                ->addMoreInfo('field', $fieldName);
         }
 
         /** @var FieldSqlExpression $fieldExpression */
-        $fieldExpression = $ourModel->addExpression($field, array_replace_recursive(
+        $fieldExpression = $ourModel->addExpression($fieldName, array_replace_recursive(
             [
                 function (Model $ourModel) {
                     $theirModel = $ourModel->refLink($this->link);
@@ -219,20 +220,20 @@ class HasOneSql extends HasOne
         ));
 
         // Will try to execute last
-        $ourModel->onHook(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($field) {
+        $ourModel->onHook(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($field) && !$ourModel->isDirty($this->our_field)) {
+            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
                 $theirModel = $this->getTheirModel();
 
-                $theirModel->addCondition($theirModel->title_field, $ourModel->get($field));
-                $ourModel->set($this->our_field, $theirModel->action('field', [$theirModel->id_field]));
+                $theirModel->addCondition($theirModel->title_field, $ourModel->get($fieldName));
+                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->id_field]));
             }
         }, [], 20);
 
         // Set ID field as not visible in grid by default
-        if (!array_key_exists('visible', $ourModel->getField($this->our_field)->ui)) {
-            $ourModel->getField($this->our_field)->ui['visible'] = false;
+        if (!array_key_exists('visible', $this->getOurField()->ui)) {
+            $this->getOurField()->ui['visible'] = false;
         }
 
         return $fieldExpression;

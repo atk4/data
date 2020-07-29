@@ -196,7 +196,7 @@ class HasOne extends Reference
     {
         $this->getOurModel()->persistence_data['use_table_prefixes'] = true;
 
-        return $this->getOurModel()->getField($this->our_field);
+        return $this->getOurField();
     }
 
     /**
@@ -213,10 +213,10 @@ class HasOne extends Reference
 
         // add hook to set our_field = null when record of referenced model is deleted
         $theirModel->onHook(Model::HOOK_AFTER_DELETE, function ($theirModel) {
-            $this->getOurModel()->set($this->our_field, null);
+            $this->getOurField()->setNull();
         });
 
-        if ($ourValue = $this->getOurModel()->get($this->our_field)) {
+        if ($ourValue = $this->getOurFieldValue()) {
             // if our model is loaded, then try to load referenced model
             if ($this->their_field) {
                 $theirModel->tryLoadBy($this->their_field, $ourValue);
@@ -226,9 +226,9 @@ class HasOne extends Reference
         }
 
         $theirModel->onHook(Model::HOOK_AFTER_SAVE, function ($theirModel) {
-            $ourValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->id;
+            $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->id;
 
-            $this->getOurModel()->set($this->our_field, $ourValue);
+            $this->getOurField()->set($theirValue);
         });
 
         return $theirModel;
