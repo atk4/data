@@ -620,6 +620,10 @@ class Sql extends Persistence
                 $this->initQueryConditions($model, $query);
                 $this->setLimitOrder($model, $query);
 
+                if ($model->loaded()) {
+                    $query->where($model->id_field, $model->id);
+                }
+
                 return $query;
             case 'fx':
             case 'fx0':
