@@ -185,6 +185,15 @@ trait ReferencesTrait
      */
     public function getRef($link): Reference
     {
+        // support for relationship traversing link, e.g contact/company/customers
+        if (str_contains($link, '/')) {
+            $link = explode('/', $link);
+
+            $directLink = array_shift($link);
+
+            return $this->ref($directLink)->getRef(implode('/', $link));
+        }
+
         return $this->getElement('#ref_' . $link);
     }
 
