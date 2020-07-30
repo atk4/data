@@ -441,14 +441,14 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEmpty($scope->toWords($user));
     }
-    
+
     public function testInvalid1()
     {
         $this->expectException(Exception::class);
 
         new Condition('name', '>', ['a', 'b']);
     }
-    
+
     public function testInvalid2()
     {
         $this->expectException(Exception::class);
