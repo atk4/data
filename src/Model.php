@@ -34,6 +34,7 @@ class Model implements \IteratorAggregate
     use CollectionTrait;
     use ReadableCaptionTrait;
     use Model\ReferencesTrait;
+    use Model\JoinsTrait;
     use Model\UserActionsTrait;
 
     /** @const string */
@@ -92,13 +93,6 @@ class Model implements \IteratorAggregate
      * @var string|array
      */
     public $_default_seed_addExpression = [Field\Callback::class];
-
-    /**
-     * The class used by join() method.
-     *
-     * @var string|array
-     */
-    public $_default_seed_join = [Join::class];
 
     /**
      * @var array Collection containing Field Objects - using key as the field system name
@@ -1892,56 +1886,6 @@ class Model implements \IteratorAggregate
         $this->checkPersistence('action');
 
         return $this->persistence->action($this, $mode, $args);
-    }
-
-    // }}}
-
-    // {{{ Join support
-
-    /**
-     * Creates an objects that describes relationship between multiple tables (or collections).
-     *
-     * When object is loaded, then instead of pulling all the data from a single table,
-     * join will also query $foreign_table in order to find additional fields. When inserting
-     * the record will be also added inside $foreign_table and relationship will be maintained.
-     *
-     * @param array $defaults
-     *
-     * @return Join
-     */
-    public function join(string $foreign_table, $defaults = [])
-    {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        } elseif (isset($defaults[0])) {
-            $defaults['master_field'] = $defaults[0];
-            unset($defaults[0]);
-        }
-
-        $defaults[0] = $foreign_table;
-
-        $c = $this->_default_seed_join;
-
-        return $this->add($this->factory($c, $defaults));
-    }
-
-    /**
-     * Left Join support.
-     *
-     * @see join()
-     *
-     * @param array $defaults
-     *
-     * @return Join
-     */
-    public function leftJoin(string $foreign_table, $defaults = [])
-    {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        }
-        $defaults['weak'] = true;
-
-        return $this->join($foreign_table, $defaults);
     }
 
     // }}}

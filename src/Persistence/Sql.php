@@ -71,7 +71,7 @@ class Sql extends Persistence
      *
      * @var string
      */
-    public $_default_seed_join = [\atk4\data\Join\Sql::class];
+    public $_default_seed_join = [Sql\Join::class];
 
     /**
      * Constructor.
