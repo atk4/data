@@ -516,8 +516,6 @@ class Field implements Expressionable
      *
      * @param string|null $operator one of Scope\Condition operators
      * @param mixed       $value    the condition value to be handled
-     *
-     * @todo: value is array
      */
     public function getQueryArguments($operator, $value): array
     {
@@ -529,7 +527,13 @@ class Field implements Expressionable
         ];
 
         if (!in_array($operator, $skipValueTypecast, true)) {
-            $value = $this->owner->persistence->typecastSaveField($this, $value);
+            if (is_array($value)) {
+                foreach ($value as &$option) {
+                    $option = $this->owner->persistence->typecastSaveField($this, $option);
+                }
+            } else {
+                $value = $this->owner->persistence->typecastSaveField($this, $value);
+            }
         }
 
         return [$this, $operator, $value];
