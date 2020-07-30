@@ -521,17 +521,15 @@ class Field implements Expressionable
      */
     public function getQueryArguments($operator, $value): array
     {
-        if ($persistence = $this->owner->persistence) {
-            $skipValueTypecast = [
-                Scope\Condition::OPERATOR_LIKE,
-                Scope\Condition::OPERATOR_NOT_LIKE,
-                Scope\Condition::OPERATOR_REGEXP,
-                Scope\Condition::OPERATOR_NOT_REGEXP,
-            ];
+        $skipValueTypecast = [
+            Scope\Condition::OPERATOR_LIKE,
+            Scope\Condition::OPERATOR_NOT_LIKE,
+            Scope\Condition::OPERATOR_REGEXP,
+            Scope\Condition::OPERATOR_NOT_REGEXP,
+        ];
 
-            if (!in_array($operator, $skipValueTypecast, true)) {
-                $value = $persistence->typecastSaveField($this, $value);
-            }
+        if (!in_array($operator, $skipValueTypecast, true)) {
+            $value = $this->owner->persistence->typecastSaveField($this, $value);
         }
 
         return [$this, $operator, $value];
