@@ -12,16 +12,7 @@ use atk4\data\Persistence;
  */
 class ContainsMany extends ContainsOne
 {
-    /**
-     * Returns default persistence. It will be empty at this point.
-     *
-     * @see ref()
-     *
-     * @param Model $model Referenced model
-     *
-     * @return Persistence|false
-     */
-    protected function getDefaultPersistence($model)
+    protected function getDefaultPersistence(Model $theirModel)
     {
         return new Persistence\ArrayOfStrings([
             $this->table_alias => $this->getOurFieldValue() ?: [],
