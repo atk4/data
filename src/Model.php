@@ -813,13 +813,11 @@ class Model implements \IteratorAggregate
             }
 
             // aggregate function
-            if (str_contains($fieldName, '(')) {
-                $args = [];
-                if (preg_match('/^([\w ]+)\(([\w \*]*)/', $fieldName, $args)) {
-                    array_shift($args);
+            $args = [];
+            if (preg_match('~^(\w+)\(([\w*]*)\)$~', $fieldName, $args)) {
+                array_shift($args);
 
-                    return $this->action('fx', $args)->getOne();
-                }
+                return $this->action('fx', $args)->getOne();
             }
         }
 
