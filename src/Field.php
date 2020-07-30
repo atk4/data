@@ -7,6 +7,7 @@ namespace atk4\data;
 use atk4\core\DiContainerTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\core\TrackableTrait;
+use atk4\data\Model\Scope;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
@@ -513,19 +514,19 @@ class Field implements Expressionable
     /**
      * Returns arguments to be used for query on this field based on the condition.
      *
-     * @param string|null $operator one of Model\Scope\Condition operators
+     * @param string|null $operator one of Scope\Condition operators
      * @param mixed       $value    the condition value to be handled
      *
      * @todo: value is array
      */
-    public function getQueryArguments(Model\Scope\Condition $condition, $operator, $value): array
+    public function getQueryArguments($operator, $value): array
     {
         if ($persistence = $this->owner->persistence) {
             $skipValueTypecast = [
-                Model\Scope\Condition::OPERATOR_LIKE,
-                Model\Scope\Condition::OPERATOR_NOT_LIKE,
-                Model\Scope\Condition::OPERATOR_REGEXP,
-                Model\Scope\Condition::OPERATOR_NOT_REGEXP,
+                Scope\Condition::OPERATOR_LIKE,
+                Scope\Condition::OPERATOR_NOT_LIKE,
+                Scope\Condition::OPERATOR_REGEXP,
+                Scope\Condition::OPERATOR_NOT_REGEXP,
             ];
 
             if (!in_array($operator, $skipValueTypecast, true)) {

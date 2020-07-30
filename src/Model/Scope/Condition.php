@@ -193,7 +193,7 @@ class Condition extends AbstractScope
 
             // handle the query arguments using field
             if ($field instanceof Field) {
-                [$field, $operator, $value] = $field->getQueryArguments($this, $operator, $value);
+                [$field, $operator, $value] = $field->getQueryArguments($operator, $value);
             }
 
             // only expression contained in $field
