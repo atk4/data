@@ -191,31 +191,29 @@ class Reference
     /**
      * Adds model to persistence.
      *
-     * @param Model $model
+     * @param Model $theirModel
      * @param array $defaults
      */
-    protected function addToPersistence($model, $defaults = []): Model
+    protected function addToPersistence($theirModel, $defaults = []): Model
     {
-        if (!$model->persistence && $persistence = $this->getDefaultPersistence($model)) {
-            $persistence->add($model, $defaults);
+        if (!$theirModel->persistence && $persistence = $this->getDefaultPersistence($theirModel)) {
+            $persistence->add($theirModel, $defaults);
         }
 
         // set model caption
         if ($this->caption !== null) {
-            $model->caption = $this->caption;
+            $theirModel->caption = $this->caption;
         }
 
-        return $model;
+        return $theirModel;
     }
 
     /**
-     * Returns default persistence.
-     *
-     * @param Model $model Referenced model
+     * Returns default persistence for theirModel.
      *
      * @return Persistence|false
      */
-    protected function getDefaultPersistence($model)
+    protected function getDefaultPersistence(Model $theirModel)
     {
         $ourModel = $this->getOurModel();
 
