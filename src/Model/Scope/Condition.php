@@ -128,6 +128,24 @@ class Condition extends AbstractScope
                     ->addMoreInfo('operator', $operator);
             }
         }
+
+        if (is_array($value)) {
+            if (array_filter($value, 'is_array')) {
+                throw (new Exception('Multi-dimensional array as condition value is not supported'))
+                    ->addMoreInfo('value', $value);
+            }
+
+            if (!in_array($this->operator, [
+                self::OPERATOR_EQUALS,
+                self::OPERATOR_IN,
+                self::OPERATOR_DOESNOT_EQUAL,
+                self::OPERATOR_NOT_IN,
+            ], true)) {
+                throw (new Exception('Operator is not supported for array condition value'))
+                    ->addMoreInfo('operator', $operator)
+                    ->addMoreInfo('value', $value);
+            }
+        }
     }
 
     protected function onChangeModel(): void
