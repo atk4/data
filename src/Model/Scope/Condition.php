@@ -98,13 +98,6 @@ class Condition extends AbstractScope
         ],
     ];
 
-    protected static $skipValueTypecast = [
-        self::OPERATOR_LIKE,
-        self::OPERATOR_NOT_LIKE,
-        self::OPERATOR_REGEXP,
-        self::OPERATOR_NOT_REGEXP,
-    ];
-
     public function __construct($key, $operator = null, $value = null)
     {
         if ($key instanceof AbstractScope) {
@@ -133,6 +126,24 @@ class Condition extends AbstractScope
             if (!array_key_exists($this->operator, self::$operators)) {
                 throw (new Exception('Operator is not supported'))
                     ->addMoreInfo('operator', $operator);
+            }
+        }
+
+        if (is_array($value)) {
+            if (array_filter($value, 'is_array')) {
+                throw (new Exception('Multi-dimensional array as condition value is not supported'))
+                    ->addMoreInfo('value', $value);
+            }
+
+            if (!in_array($this->operator, [
+                self::OPERATOR_EQUALS,
+                self::OPERATOR_IN,
+                self::OPERATOR_DOESNOT_EQUAL,
+                self::OPERATOR_NOT_IN,
+            ], true)) {
+                throw (new Exception('Operator is not supported for array condition value'))
+                    ->addMoreInfo('operator', $operator)
+                    ->addMoreInfo('value', $value);
             }
         }
     }
@@ -198,10 +209,9 @@ class Condition extends AbstractScope
                 }
             }
 
-            // @todo: value is array
-            // convert the value using the typecasting of persistence
-            if ($field instanceof Field && $model->persistence && !in_array($operator, self::$skipValueTypecast, true)) {
-                $value = $model->persistence->typecastSaveField($field, $value);
+            // handle the query arguments using field
+            if ($field instanceof Field) {
+                [$field, $operator, $value] = $field->getQueryArguments($operator, $value);
             }
 
             // only expression contained in $field

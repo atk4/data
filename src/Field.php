@@ -7,6 +7,7 @@ namespace atk4\data;
 use atk4\core\DiContainerTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\core\TrackableTrait;
+use atk4\data\Model\Scope;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
@@ -504,6 +505,38 @@ class Field implements Expressionable
     public function useAlias(): bool
     {
         return isset($this->actual);
+    }
+
+    // }}}
+
+    // {{{ Scope condition
+
+    /**
+     * Returns arguments to be used for query on this field based on the condition.
+     *
+     * @param string|null $operator one of Scope\Condition operators
+     * @param mixed       $value    the condition value to be handled
+     */
+    public function getQueryArguments($operator, $value): array
+    {
+        $skipValueTypecast = [
+            Scope\Condition::OPERATOR_LIKE,
+            Scope\Condition::OPERATOR_NOT_LIKE,
+            Scope\Condition::OPERATOR_REGEXP,
+            Scope\Condition::OPERATOR_NOT_REGEXP,
+        ];
+
+        if (!in_array($operator, $skipValueTypecast, true)) {
+            if (is_array($value)) {
+                $value = array_map(function ($option) {
+                    return $this->owner->persistence->typecastSaveField($this, $option);
+                }, $value);
+            } else {
+                $value = $this->owner->persistence->typecastSaveField($this, $value);
+            }
+        }
+
+        return [$this, $operator, $value];
     }
 
     // }}}
