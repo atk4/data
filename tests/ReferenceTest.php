@@ -114,6 +114,9 @@ class ReferenceTest extends \atk4\schema\PhpunitTestCase
         $company->hasMany('Orders', [$order]);
 
         $this->assertEquals(20, $user->ref('Company')->ref('Orders')->get('amount')); // 'amount' default value
+        $this->assertEquals(65, $user->ref('Company')->ref('Orders')->action('fx', ['sum', 'amount'])->getOne());
+        $this->assertEquals(2, $user->ref('Company')->ref('Orders')->action('count')->getOne());
+        $this->assertEquals(1, $user->ref('Company')->action('count')->getOne());
     }
 
     public function testRefName1()
