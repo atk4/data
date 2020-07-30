@@ -528,9 +528,9 @@ class Field implements Expressionable
 
         if (!in_array($operator, $skipValueTypecast, true)) {
             if (is_array($value)) {
-                foreach ($value as &$option) {
-                    $option = $this->owner->persistence->typecastSaveField($this, $option);
-                }
+                $value = array_map(function ($option) {
+                    return $this->owner->persistence->typecastSaveField($this, $option);
+                }, $value);
             } else {
                 $value = $this->owner->persistence->typecastSaveField($this, $value);
             }
