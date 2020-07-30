@@ -508,6 +508,36 @@ class Field implements Expressionable
 
     // }}}
 
+    // {{{ Scope condition
+
+    /**
+     * Returns arguments to be used for query on this field based on the condition.
+     *
+     * @param string|null $operator one of Model\Scope\Condition operators
+     * @param mixed       $value    the condition value to be handled
+     *
+     * @todo: value is array
+     */
+    public function getQueryArguments(Model\Scope\Condition $condition, $operator, $value): array
+    {
+        if ($persistence = $this->owner->persistence) {
+            $skipValueTypecast = [
+                Model\Scope\Condition::OPERATOR_LIKE,
+                Model\Scope\Condition::OPERATOR_NOT_LIKE,
+                Model\Scope\Condition::OPERATOR_REGEXP,
+                Model\Scope\Condition::OPERATOR_NOT_REGEXP,
+            ];
+
+            if (!in_array($operator, $skipValueTypecast, true)) {
+                $value = $persistence->typecastSaveField($this, $value);
+            }
+        }
+
+        return [$this, $operator, $value];
+    }
+
+    // }}}
+
     // {{{ Handy methods used by UI
 
     /**

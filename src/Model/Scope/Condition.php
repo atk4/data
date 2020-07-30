@@ -98,13 +98,6 @@ class Condition extends AbstractScope
         ],
     ];
 
-    protected static $skipValueTypecast = [
-        self::OPERATOR_LIKE,
-        self::OPERATOR_NOT_LIKE,
-        self::OPERATOR_REGEXP,
-        self::OPERATOR_NOT_REGEXP,
-    ];
-
     public function __construct($key, $operator = null, $value = null)
     {
         if ($key instanceof AbstractScope) {
@@ -198,10 +191,9 @@ class Condition extends AbstractScope
                 }
             }
 
-            // @todo: value is array
-            // convert the value using the typecasting of persistence
-            if ($field instanceof Field && $model->persistence && !in_array($operator, self::$skipValueTypecast, true)) {
-                $value = $model->persistence->typecastSaveField($field, $value);
+            // handle the query arguments using field
+            if ($field instanceof Field) {
+                [$field, $operator, $value] = $field->getQueryArguments($this, $operator, $value);
             }
 
             // only expression contained in $field
