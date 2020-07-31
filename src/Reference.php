@@ -148,10 +148,8 @@ class Reference
             unset($modelDefaults[0]);
 
             $defaults = array_merge($modelDefaults, $defaults);
-        } elseif (is_string($this->model)) {
-            $theirModelSeed = [$this->model];
         } else {
-            $theirModelSeed = $this->model;
+            $theirModelSeed = [$this->model];
         }
 
         $theirModel = $this->factory($theirModelSeed, $defaults);

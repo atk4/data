@@ -79,13 +79,6 @@ class Persistence
      */
     public function add(Model $m, array $defaults = []): Model
     {
-        /*
-        if (isset($defaults[0])) {
-            $m->table = $defaults[0];
-            unset($defaults[0]);
-        }
-         */
-
         $m = $this->factory($m, $defaults);
 
         if ($m->persistence) {
