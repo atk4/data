@@ -241,21 +241,21 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(3, $client3->id);
 
         // We should have one of each records for this new client
-        $this->assertEquals(1, $client3->ref('Invoices')->action('count')->getOne());
-        $this->assertEquals(1, $client3->ref('Quotes')->action('count')->getOne());
-        $this->assertEquals(1, $client3->ref('Payments')->action('count')->getOne());
+        $this->assertEquals(1, $client3->ref('Invoices')->toQuery('count')->getOne());
+        $this->assertEquals(1, $client3->ref('Quotes')->toQuery('count')->getOne());
+        $this->assertEquals(1, $client3->ref('Payments')->toQuery('count')->getOne());
 
         // We created invoice for 90 for client1, so after copying it should still be 90
-        $this->assertEquals(90, $client3->ref('Quotes')->action('fx', ['sum', 'total'])->getOne());
+        $this->assertEquals(90, $client3->ref('Quotes')->toQuery('fx', ['sum', 'total'])->getOne());
 
         // The total of the invoice we copied, should remain, it's calculated based on lines
-        $this->assertEquals(108.9, $client3->ref('Invoices')->action('fx', ['sum', 'total'])->getOne());
+        $this->assertEquals(108.9, $client3->ref('Invoices')->toQuery('fx', ['sum', 'total'])->getOne());
 
         // Payments by this clients should also be copied correctly
-        $this->assertEquals(103.9, $client3->ref('Payments')->action('fx', ['sum', 'amount'])->getOne());
+        $this->assertEquals(103.9, $client3->ref('Payments')->toQuery('fx', ['sum', 'amount'])->getOne());
 
         // If copied payments are properly allocated against copied invoices, then due amount will be 5
-        $this->assertEquals(5, $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
+        $this->assertEquals(5, $client3->ref('Invoices')->toQuery('fx', ['sum', 'due'])->getOne());
     }
 
     public function testError()

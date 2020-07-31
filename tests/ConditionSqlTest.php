@@ -38,7 +38,7 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         if ($this->driverType === 'sqlite') {
             $this->assertSame(
                 'select "id","name","gender" from "user" where "gender" = :a',
-                $mm->action('select')->render()
+                $mm->toQuery('select')->render()
             );
         }
 
@@ -364,13 +364,13 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
             ['name', 'Peter'],
         ]);
 
-        $this->assertEquals(2, $u->action('count')->getOne());
+        $this->assertEquals(2, $u->toQuery('count')->getOne());
 
         $u->addCondition([
             ['name', 'Peter'],
             ['name', 'Joe'],
         ]);
-        $this->assertEquals(1, $u->action('count')->getOne());
+        $this->assertEquals(1, $u->toQuery('count')->getOne());
     }
 
     /**

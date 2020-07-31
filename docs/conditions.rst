@@ -207,7 +207,7 @@ of objects as well as actions::
     $m->addCondition(
         $m->expr('[age] between [min_age] and [max_age]'),
         [
-            'min_age'=>$m->action('min', ['age']),
+            'min_age'=>$m->toQuery('min', ['age']),
             'max_age'=>$m->expr('(20 + [])', [20])
         ]
     );

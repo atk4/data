@@ -427,14 +427,14 @@ Create copy of existing record
     a new ID::
 
         // First, lets delete all records except 123
-        (clone $m)->addCondition('id', '!=', 123)->action('delete')->execute();
+        (clone $m)->addCondition('id', '!=', 123)->toQuery('delete')->execute();
 
         // Next we can duplicate
         $m->load(123)->duplicate()->save();
 
         // Now you have 2 records:
         // one with ID=123 and another with ID={next db generated id}
-        echo $m->action('count')->getOne();
+        echo $m->toQuery('count')->getOne();
 
 Duplicate then save under a new ID
 ----------------------------------
@@ -834,7 +834,7 @@ conditions)
         $m = Model_User();
         $m->addCondition('last_login', '<', date('Y-m-d', strtotime('-2 months')));
 
-        $m->action('delete')->execute();
+        $m->toQuery('delete')->execute();
 
 
 Action Types
@@ -853,20 +853,20 @@ rows of data.
 Action can be executed at any time and that will return an expected result::
 
     $m = Model_Invoice();
-    $val = $m->action('count')->getOne();
+    $val = $m->toQuery('count')->getOne();
 
 Most actions are sufficiently smart to understand what type of result you are
 expecting, so you can have the following code::
 
     $m = Model_Invoice();
-    $val = $m->action('count')();
+    $val = $m->toQuery('count')();
 
 When used inside the same Persistence, sometimes actions can be used without
 executing::
 
     $m = Model_Product($db);
     $m->addCondition('name', $product_name);
-    $id_query_action = $m->action('getOne',['id']);
+    $id_query_action = $m->toQuery('getOne',['id']);
 
     $m = Model_Invoice($db);
     $m->insert(['qty'=>20, 'product_id'=>$id_query_action]);
@@ -880,7 +880,7 @@ of queries issued.
 
 The default action type can be set when executing action, for example::
 
-    $a = $m->action('field', 'user', 'getOne');
+    $a = $m->toQuery('field', 'user', 'getOne');
 
     echo $a();   // same as $a->getOne();
 
@@ -903,14 +903,14 @@ Example of using update::
     $m = Model_Invoice($db);
     $m->addCondition('has_discount', true);
 
-    $m->action('update')
+    $m->toQuery('update')
         ->set('has_dicount', false)
         ->execute();
 
 You must be aware that set() operates on a DSQL object and will no longer
 work with your model fields. You should use the object like this if you can::
 
-    $m->action('update')
+    $m->toQuery('update')
         ->set($m->getField('has_discount'), false)
         ->execute();
 
@@ -918,11 +918,11 @@ See $actual for more details.
 
 There are ability to execute aggregation functions::
 
-    echo $m->action('fx', ['max', 'salary'])->getOne();
+    echo $m->toQuery('fx', ['max', 'salary'])->getOne();
 
 and finally you can also use count::
 
-    echo $m->action('count')->getOne();
+    echo $m->toQuery('count')->getOne();
 
 
 SQL Actions on Linked Records
@@ -951,7 +951,7 @@ Here is a way how to intervene with the process::
         return $m->refLink('Invoice')
             ->setOrder('date desc')
             ->setLimit(1)
-            ->action('field', ['total_gross'], 'getOne');
+            ->toQuery('field', ['total_gross'], 'getOne');
 
     });
 

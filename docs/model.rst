@@ -34,7 +34,7 @@ and even perform operations on multiple records (See `Persistence Actions` below
    $m = new User($db);
    $m->addCondition('expired', true);
 
-   $m->action('delete')->execute(); // performs mass delete, hooks are not executed
+   $m->toQuery('delete')->execute(); // performs mass delete, hooks are not executed
    
    $m->each('delete'); // deletes each record, hooks are executed
 

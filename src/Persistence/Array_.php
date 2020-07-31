@@ -249,7 +249,7 @@ class Array_ extends Persistence
      */
     public function prepareIterator(Model $model): iterable
     {
-        return $model->action('select')->get();
+        return $model->toQuery('select')->get();
     }
 
     /**
@@ -259,7 +259,7 @@ class Array_ extends Persistence
      */
     public function export(Model $model, array $fields = null, $typecast = true): array
     {
-        $data = $model->action('select', [$fields])->get();
+        $data = $model->toQuery('select', [$fields])->get();
 
         if ($typecast) {
             $data = array_map(function ($row) use ($model) {

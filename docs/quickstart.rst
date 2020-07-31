@@ -138,7 +138,7 @@ inside console::
     $m->addCondition('address_1', 'not', null);
     $m->loadAny();
     $m->get();
-    $m->action('count')->getOne();
+    $m->toQuery('count')->getOne();
 
 Next, exit and create file `src/Model_ContactInfo.php`::
 
@@ -454,9 +454,9 @@ corresponding to all Systems that belong to user john. You can use the following
 to see number of records in DataSet or export DataSet::
 
     $s->loaded();
-    $s->action('count')->getOne();
+    $s->toQuery('count')->getOne();
     $s->export();
-    $s->action('count')->getDebugQuery();
+    $s->toQuery('count')->getDebugQuery();
 
 Many to Many
 ------------
@@ -471,9 +471,9 @@ the Clients that are contained in all of the Systems that belong to user john.
 You can examine the this model further::
 
     $c->loaded();
-    $c->action('count')->getOne();
+    $c->toQuery('count')->getOne();
     $c->export();
-    $c->action('count')->getDebugQuery();
+    $c->toQuery('count')->getDebugQuery();
 
 By looking at the code - both MtM and OtM references are defined with 'hasMany'.
 The only difference is the loaded() state of the source model.
@@ -529,9 +529,9 @@ basic aggregation without grouping. This type of aggregation provides some
 specific value from a data-set. SQL persistence implements some of the operations::
 
     $m = new Model_Invoice($db);
-    $m->action('count')->getOne();
-    $m->action('fx', ['sum', 'total'])->getOne();
-    $m->action('fx', ['max', 'shipping'])->getOne();
+    $m->toQuery('count')->getOne();
+    $m->toQuery('fx', ['sum', 'total'])->getOne();
+    $m->toQuery('fx', ['max', 'shipping'])->getOne();
 
 Aggregation actions can be used in Expressions with hasMany references and they
 can be brought into the original model as fields::
@@ -545,8 +545,8 @@ The above code is more concise and can be used together with reference declarati
 although this is how it works::
 
     $m = new Model_Client($db);
-    $m->addExpression('max_delivery', $m->refLink('Invoice')->action('fx', ['max', 'shipping']));
-    $m->addExpression('total_paid', $m->refLink('Payment')->action('fx', ['sum', 'amount']));
+    $m->addExpression('max_delivery', $m->refLink('Invoice')->toQuery('fx', ['max', 'shipping']));
+    $m->addExpression('total_paid', $m->refLink('Payment')->toQuery('fx', ['sum', 'amount']));
     $m->export(['name','max_delivery','total_paid']);
 
 In this example calling refLink is similar to traversing reference but instead
@@ -566,8 +566,8 @@ Field-reference actions
 Field referencing allows you to fetch a specific field from related model::
 
     $m = new Model_Country($db);
-    $m->action('field', ['name'])->get();
-    $m->action('field', ['name'])->getDebugQuery();
+    $m->toQuery('field', ['name'])->get();
+    $m->toQuery('field', ['name'])->getDebugQuery();
 
 This is useful with hasMany references::
 
@@ -579,7 +579,7 @@ This is useful with hasMany references::
 hasMany::addField() again is a short-cut for creating expression, which you can
 also build manually::
 
-    $m->addExpression('country', $m->refLink('country_id')->action('field',['name']));
+    $m->addExpression('country', $m->refLink('country_id')->toQuery('field',['name']));
 
 Multi-record actions
 --------------------
@@ -595,8 +595,8 @@ console once away::
     $c = $m->ref('System')->ref('Client');
     $s = $m->ref('System')->ref('Supplier');
 
-    $c->action('update')->set('status', 'suspended')->execute();
-    $s->action('update')->set('status', 'suspended')->execute();
+    $c->toQuery('update')->set('status', 'suspended')->execute();
+    $s->toQuery('update')->set('status', 'suspended')->execute();
 
 Note that I had to perform 2 updates here, because Agile Data considers Client
 and Supplier as separate models. In our implementation they happened to be in
@@ -622,7 +622,7 @@ you could do this::
     $m = new Model_User($db);
     $m->set('username', 'peter');
     $m->set('address_1', 'street 49');
-    $m->set('country_id', (new Model_Country($db))->addCondition('name','UK')->action('field',['id']));
+    $m->set('country_id', (new Model_Country($db))->addCondition('name','UK')->toQuery('field',['id']));
     $m->save();
 
 This way it will not execute any code, but instead it will provide expression

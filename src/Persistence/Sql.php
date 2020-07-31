@@ -259,7 +259,7 @@ class Sql extends Persistence
             }
             // 2nd parameter here strictly define which fields should be selected
             // as result system fields will not be added if they are not requested
-            $subQuery = $withModel->action('select', [$fieldsFrom]);
+            $subQuery = $withModel->toQuery('select', [$fieldsFrom]);
 
             // add With cursor
             $query->with($subQuery, $alias, $fieldsTo ?: null, $recursive);
@@ -558,7 +558,7 @@ class Sql extends Persistence
     }
 
     /**
-     * Executing $model->action('update') will call this method.
+     * Executing $model->toQuery('update') will call this method.
      *
      * @param string $type
      * @param array  $args
@@ -678,7 +678,7 @@ class Sql extends Persistence
                 ->addMoreInfo('id', $id);
         }
 
-        $query = $model->action('select');
+        $query = $model->toQuery('select');
         $query->where($model->getField($model->id_field), $id);
         $query->limit(1);
 
@@ -734,7 +734,7 @@ class Sql extends Persistence
      */
     public function tryLoadAny(Model $model): ?array
     {
-        $load = $model->action('select');
+        $load = $model->toQuery('select');
         $load->limit(1);
 
         // execute action
@@ -790,7 +790,7 @@ class Sql extends Persistence
      */
     public function insert(Model $model, array $data)
     {
-        $insert = $model->action('insert');
+        $insert = $model->toQuery('insert');
 
         // don't set id field at all if it's NULL
         if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
@@ -824,7 +824,7 @@ class Sql extends Persistence
      */
     public function export(Model $model, array $fields = null, $typecast = true): array
     {
-        $data = $model->action('select', [$fields])->get();
+        $data = $model->toQuery('select', [$fields])->get();
 
         if ($typecast) {
             $data = array_map(function ($row) use ($model) {
@@ -843,7 +843,7 @@ class Sql extends Persistence
     public function prepareIterator(Model $model): iterable
     {
         try {
-            $export = $model->action('select');
+            $export = $model->toQuery('select');
 
             return $export->execute();
         } catch (\PDOException $e) {

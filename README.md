@@ -29,7 +29,7 @@ Agile Data is data persistence framework - like ORM it helps you escape raw SQL.
 $vip_clients = (new Client($db))->addCondition('is_vip', true);
 
 // express total for all VIP client invoices. The value of the variable is an object
-$total_due = $vip_clients->ref('Invoice')->action('fx', ['sum', 'total']);
+$total_due = $vip_clients->ref('Invoice')->toQuery('fx', ['sum', 'total']);
 
 // Single database query is executed here, but not before!
 echo $total_due->getOne();
@@ -294,7 +294,7 @@ You get to manipulate your objects first before query is invoked. The next code 
 ``` php
 $m = new Client($db);
 echo $m->addCondition('vip', true)
-  ->ref('Order')->ref('Line')->action('fx', ['sum', 'total'])->getOne();
+  ->ref('Order')->ref('Line')->toQuery('fx', ['sum', 'total'])->getOne();
 ```
 
 Resulting Query will always use parametric variables if vendor driver supports them (such as PDO):
@@ -600,8 +600,8 @@ Now you can explore. Try typing:
 > $m->loadBy('email', 'example@example.com')
 > $m->get()
 > $m->export(['email','name'])
-> $m->action('count')
-> $m->action('count')->getOne()
+> $m->toQuery('count')
+> $m->toQuery('count')->getOne()
 ```
 
 ## Agile Core and DSQL

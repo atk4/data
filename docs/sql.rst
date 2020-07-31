@@ -224,7 +224,7 @@ Actions
 
 The most basic action you can use with SQL persistence is 'select'::
 
-    $action = $model->action('select');
+    $action = $model->toQuery('select');
 
 Action is implemented by DSQL library, that is further documented at
 http://dsql.readthedocs.io (See section Queries).
@@ -236,12 +236,12 @@ Action: select
 This action returns a basic select query. You may pass one argument - array
 containing list of fields::
 
-    $action = $model->action('select', ['name', 'surname']);
+    $action = $model->toQuery('select', ['name', 'surname']);
 
 Passing false will not include any fields into select (so that you can include
 them yourself)::
 
-    $action = $model->action('select', [false]);
+    $action = $model->toQuery('select', [false]);
     $action->field('count(*)', 'c);
 
 
@@ -261,12 +261,12 @@ Action: count
 
 Returns query for `count(*)`::
 
-    $action = $model->action('count');
+    $action = $model->toQuery('count');
     $cnt = $action->getOne();
 
 You can also specify alias::
 
-    $action = $model->action('count', ['alias'=>'cc']);
+    $action = $model->toQuery('count', ['alias'=>'cc']);
     $data = $action->getRow();
     $cnt = $data->get('cc');
 
@@ -275,12 +275,12 @@ Action: field
 
 Get query for a specific field::
 
-    $action = $model->action('field', ['age']);
+    $action = $model->toQuery('field', ['age']);
     $age = $action->limit(1)->getOne();
 
 You can also specify alias::
 
-    $action = $model->action('field', ['age', 'alias'=>'the_age']]);
+    $action = $model->toQuery('field', ['age', 'alias'=>'the_age']]);
     $age = $action->limit(1)->getRow()['the_age'];
 
 Action: fx
@@ -288,7 +288,7 @@ Action: fx
 
 Executes single-argument SQL function on field::
 
-    $action = $model->action('fx', ['avg', 'age']);
+    $action = $model->toQuery('fx', ['avg', 'age']);
     $avg_age = $action->getOne();
 
 This method also supports alias. Use of alias is handy if you are using those
@@ -428,12 +428,12 @@ This should translate into SQL query::
 where once again, stored function is hidden.
 
 
-as an Action
+as an Query
 ------------
 
 .. important:: Not all SQL vendors may support this approach.
 
-Method :php:meth:`Persistence\\Sql::action` and :php:meth:`Model::action`
+Method :php:meth:`Persistence\\Sql::action` and :php:meth:`Model::toQuery`
 generates queries for most of model operations.  By re-defining this method,
 you can significantly affect the query building of an SQL model::
 
@@ -449,7 +449,7 @@ you can significantly affect the query building of an SQL model::
             $this->addField('profit');
         }
 
-        public function action($mode, $args = [])
+        public function toQuery($mode, $args = [])
 
             if ($mode == 'select') {
 

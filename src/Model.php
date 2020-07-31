@@ -1881,7 +1881,7 @@ class Model implements \IteratorAggregate
      *
      * @return Query
      */
-    public function action($mode, $args = [])
+    public function toQuery($mode, $args = [])
     {
         $this->checkPersistence('action');
 

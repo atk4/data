@@ -81,7 +81,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->action('insert');
+        $m->toQuery('insert');
     }
 
     public function testBasic()
