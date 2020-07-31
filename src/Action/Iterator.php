@@ -9,7 +9,7 @@ use atk4\data\Field;
 use atk4\data\Model;
 
 /**
- * Class Array_ is returned by $model->action(). Compatible with DSQL to a certain point as it implements
+ * Class Array_ is returned by $model->toQuery(). Compatible with DSQL to a certain point as it implements
  * specific actions such as getOne() or get().
  */
 class Iterator

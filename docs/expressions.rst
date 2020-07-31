@@ -80,18 +80,18 @@ can be gained when you need to pull various statistical values from your
 database at once::
 
     $m = new Model($db, false);
-    $m->addExpression('total_orders', (new Model_Order($db))->action('count'));
-    $m->addExpression('total_payments', (new Model_Payment($db))->action('count'));
-    $m->addExpression('total_received', (new Model_Payment($db))->action('fx0', ['sum', 'amount']));
+    $m->addExpression('total_orders', (new Model_Order($db))->toQuery('count'));
+    $m->addExpression('total_payments', (new Model_Payment($db))->toQuery('count'));
+    $m->addExpression('total_received', (new Model_Payment($db))->toQuery('fx0', ['sum', 'amount']));
 
     $data = $m->loadAny()->get();
 
 Of course you can also use a DSQL for this::
 
     $q = $db->dsql();
-    $q->field(new Model_Order($db)->action('count'), 'total_orders');
-    $q->field(new Model_Payment($db)->action('count'), 'total_orders');
-    $q->field(new Model_Payment($db)->action('fx0', ['sum', 'amount']), 'total_received');
+    $q->field(new Model_Order($db)->toQuery('count'), 'total_orders');
+    $q->field(new Model_Payment($db)->toQuery('count'), 'total_orders');
+    $q->field(new Model_Payment($db)->toQuery('fx0', ['sum', 'amount']), 'total_received');
     $data = $q->getRow();
 
 You can decide for yourself based on circumstances.

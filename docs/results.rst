@@ -82,7 +82,7 @@ Fetching data through action
 
 You can invoke and iterate action (particularly SQL) to fetch the data::
 
-    foreach($m->action('select') as $row) {
+    foreach($m->toQuery('select') as $row) {
         var_dump($row); // array
     }
 

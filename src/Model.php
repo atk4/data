@@ -1871,17 +1871,25 @@ class Model implements \IteratorAggregate
 
     // }}}
 
-    // {{{ Support for actions
+    // {{{ Support for query and expressions
 
     /**
-     * Execute action.
-     *
+     * @deprecated use toQuery instead - will be removed in dec-2020
+     */
+    public function action($mode, $args = [])
+    {
+        'trigger_error'('Method Model::action is deprecated. Use Model::toQuery instead', E_USER_DEPRECATED);
+
+        return $this->toQuery($mode, $args);
+    }
+
+    /**
      * @param string $mode
      * @param array  $args
      *
      * @return Query
      */
-    public function action($mode, $args = [])
+    public function toQuery($mode, $args = [])
     {
         $this->checkPersistence('action');
 

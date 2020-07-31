@@ -57,7 +57,7 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $e = $this->getEscapeChar();
         $this->assertSame(
             str_replace('"', $e, 'select "id","amount","user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)'),
-            $oo->action('select')->render()
+            $oo->toQuery('select')->render()
         );
     }
 
@@ -74,7 +74,7 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $e = $this->getEscapeChar();
         $this->assertSame(
             str_replace('"', $e, 'select "id","amount","user_id" from "order" where "user_id" = "user"."id"'),
-            $u->refLink('Orders')->action('select')->render()
+            $u->refLink('Orders')->toQuery('select')->render()
         );
     }
 
@@ -116,7 +116,7 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $e = $this->getEscapeChar();
         $this->assertSame(
             str_replace('"', $e, 'select "id","code","name" from "currency" where "code" = "user"."currency_code"'),
-            $u->refLink('cur')->action('select')->render()
+            $u->refLink('cur')->toQuery('select')->render()
         );
     }
 
@@ -157,7 +157,7 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $e = $this->getEscapeChar();
         $this->assertSame(
             str_replace('"', $e, 'select "id","name" from "user" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))'),
-            $o->ref('user_id')->action('select')->render()
+            $o->ref('user_id')->toQuery('select')->render()
         );
     }
 
@@ -225,12 +225,12 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $l = (new Model($this->db, 'invoice_line'))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
         $i->hasMany('line', $l);
 
-        $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
+        $i->addExpression('total_net', $i->refLink('line')->toQuery('fx', ['sum', 'total_net']));
 
         $e = $this->getEscapeChar();
         $this->assertSame(
             str_replace('"', $e, 'select "invoice"."id","invoice"."ref_no",(select sum("total_net") from "invoice_line" where "invoice_id" = "invoice"."id") "total_net" from "invoice"'),
-            $i->action('select')->render()
+            $i->toQuery('select')->render()
         );
     }
 

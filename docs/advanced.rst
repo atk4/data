@@ -518,7 +518,7 @@ Next we need to define reference. Inside Model_Invoice add::
     }, 'their_field'=>'invoice_id']);
 
     $this->onHook(Model::HOOK_BEFORE_DELETE, function($m){
-        $m->ref('InvoicePayment')->action('delete')->execute();
+        $m->ref('InvoicePayment')->toQuery('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment
         // $m->ref('InvoicePayment')->each('delete');
@@ -656,19 +656,19 @@ persistence layer to load or save anything. Next I need a beforeSave handler::
         if($m->_isset($m['client_code') && !$m->_isset($m['client_id')) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('code',$m->get('client_code'));
-            $m->set('client_id', $cl->action('field',['id']));
+            $m->set('client_id', $cl->toQuery('field',['id']));
         }
 
         if($m->_isset('client_name') && !$m->_isset('client_id')) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('name', 'like', $m->get('client_name'));
-            $m->set('client_id', $cl->action('field',['id']));
+            $m->set('client_id', $cl->toQuery('field',['id']));
         }
 
         if($m->_isset('category') && !$m->_isset('category_id')) {
             $c = $this->refModel('category_id');
             $c->addCondition($c->title_field, 'like', $m->get('category'));
-            $m->set('category_id', $c->action('field',['id']));
+            $m->set('category_id', $c->toQuery('field',['id']));
         }
     });
 
@@ -687,7 +687,7 @@ What if the user-specified entry is not found? Lets look at the code::
     if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
         $c->addCondition($c->title_field, 'like', $m->get('category'));
-        $m->set('category_id', $c->action('field',['id']));
+        $m->set('category_id', $c->toQuery('field',['id']));
     }
 
 So if category with a name is not found, then sub-query will return "NULL".
@@ -697,7 +697,7 @@ If you wish to use a different value instead, you can create an expression::
         $c = $this->refModel('category_id');
         $c->addCondition($c->title_field, 'like', $m->get('category'));
         $m->set('category_id', $this->expr('coalesce([],[])',[
-            $c->action('field',['id']),
+            $c->toQuery('field',['id']),
             $m->getField('category_id')->default
         ]));
     }
@@ -708,7 +708,7 @@ as a lookup query::
     $this->hasOne('category_id','Model_Category');
     $this->getField('category_id')->default =
         $this->refModel('category_id')->addCondition('name','Other')
-            ->action('field',['id']);
+            ->toQuery('field',['id']);
 
 
 Inserting Hierarchical Data

@@ -259,7 +259,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         which still is not equal to max number which SQL server allows - 18446744073709551615
         $this->assertEquals(
             'select "total_net" from "invoice" order by "total_net" limit 1, 9223372036854775807',
-            $i->action('select')->render()
+            $i->toQuery('select')->render()
         );
         */
         $this->assertEquals([
