@@ -25,11 +25,11 @@ trait UserActionsTrait
      * from UI.
      *
      * @param string         $name     Action name
-     * @param array|callable $defaults
+     * @param array|\Closure $defaults
      */
     public function addUserAction($name, $defaults = []): Model\UserAction
     {
-        if (is_callable($defaults)) {
+        if ($defaults instanceof \Closure) {
             $defaults = ['callback' => $defaults];
         }
 

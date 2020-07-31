@@ -222,7 +222,7 @@ class Field implements Expressionable
         }
         foreach ($defaults as $key => $val) {
             if (is_array($val)) {
-                $this->{$key} = array_merge(isset($this->{$key}) && is_array($this->{$key}) ? $this->{$key} : [], $val);
+                $this->{$key} = array_merge(is_array($this->{$key} ?? null) ? $this->{$key} : [], $val);
             } else {
                 $this->{$key} = $val;
             }
