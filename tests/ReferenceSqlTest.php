@@ -388,22 +388,22 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
         $firstUserOrders = $user->ref('Company')->ref('Orders');
 
-        $this->assertSame([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => '50'],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => '15'],
+        $this->assertEquals([
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
         ], $firstUserOrders->export());
 
         $user->unload();
 
-        $this->assertSame([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => '50'],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => '15'],
+        $this->assertEquals([
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
         ], $firstUserOrders->export());
 
-        $this->assertSame([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => '50'],
-            ['id' => '2', 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => '10'],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => '15'],
+        $this->assertEquals([
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
+            ['id' => '2', 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
         ], $user->ref('Company')->ref('Orders')->export());
     }
 
