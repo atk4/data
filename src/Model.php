@@ -1787,14 +1787,14 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Executes specified method or callback for each record in DataSet.
+     * Executes specified callback for each record in DataSet.
      *
      * @return $this
      */
-    public function each(\Closure $method)
+    public function each(\Closure $fx)
     {
         foreach ($this as $rec) {
-            $method($rec);
+            $fx($rec);
         }
 
         return $this;
