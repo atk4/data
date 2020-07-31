@@ -112,7 +112,7 @@ class Reference
      */
     public function getModel($defaults = []): Model
     {
-        'trigger_error'('Method Reference::getModel is deprecated. Use Model::getTheirModel instead', E_USER_DEPRECATED);
+        'trigger_error'('Method Reference::getModel is deprecated. Use Reference::getTheirModel instead', E_USER_DEPRECATED);
 
         return $this->getTheirModel($defaults);
     }
