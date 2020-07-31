@@ -126,11 +126,11 @@ class Sql extends Persistence
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param callable $fx
+     * @param \Closure $fx
      *
      * @return mixed
      */
-    public function atomic($fx)
+    public function atomic(\Closure $fx)
     {
         return $this->connection->atomic($fx);
     }
@@ -482,7 +482,7 @@ class Sql extends Persistence
 
                 break;
             case 'boolean':
-                if (isset($field->enum) && is_array($field->enum)) {
+                if (is_array($field->enum ?? null)) {
                     if (isset($field->enum[0]) && $v == $field->enum[0]) {
                         $v = false;
                     } elseif (isset($field->enum[1]) && $v == $field->enum[1]) {

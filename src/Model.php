@@ -507,7 +507,7 @@ class Model implements \IteratorAggregate
                 // or it can be simple string = field name
                 $name = $field;
                 $field = [];
-            } elseif (is_array($field) && isset($field[0]) && is_string($field[0])) {
+            } elseif (is_array($field) && is_string($field[0] ?? null)) {
                 // or field name can be passed as first element of seed array (old behaviour)
                 $name = array_shift($field);
             } else {
@@ -1789,18 +1789,12 @@ class Model implements \IteratorAggregate
     /**
      * Executes specified method or callback for each record in DataSet.
      *
-     * @param string|callable $method
-     *
      * @return $this
      */
-    public function each($method)
+    public function each(\Closure $method)
     {
         foreach ($this as $rec) {
-            if (is_string($method)) {
-                $rec->{$method}();
-            } elseif (is_callable($method)) {
-                call_user_func($method, $rec);
-            }
+            $method($rec);
         }
 
         return $this;
@@ -1850,13 +1844,13 @@ class Model implements \IteratorAggregate
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param callable $f
+     * @param \Closure $f
      *
      * @return mixed
      */
-    public function atomic($f, Persistence $persistence = null)
+    public function atomic(\Closure $f, Persistence $persistence = null)
     {
-        if (!$persistence) {
+        if ($persistence === null) {
             $persistence = $this->persistence;
         }
 
@@ -1895,7 +1889,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|callable $expression
+     * @param string|array|\Closure $expression
      *
      * @return Field\Callback
      */
@@ -1920,7 +1914,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @param string|array|callable $expression
+     * @param string|array|\Closure $expression
      *
      * @return Field\Callback
      */

@@ -54,10 +54,10 @@ class UserAction
     /** @var string How this action interact with record. default = 'read' */
     public $modifier = self::MODIFIER_READ;
 
-    /** @var callable code to execute. By default will call method with same name */
+    /** @var \Closure code to execute. By default will call method with same name */
     public $callback;
 
-    /** @var callable code, identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure code, identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
     /** @var string caption to put on the button */
@@ -69,13 +69,13 @@ class UserAction
     /** @var bool Specifies that the action is dangerous. Should be displayed in red. */
     public $dangerous = false;
 
-    /** @var bool|string|callable Set this to "true", string or return the value from the callback. Will ask user to confirm. */
+    /** @var bool|string|\Closure Set this to "true", string or return the value from the callback. Will ask user to confirm. */
     public $confirmation = false;
 
     /** @var array UI properties, e,g. 'icon'=>.. , 'warning', etc. UI implementation can interpret or extend. */
     public $ui = [];
 
-    /** @var bool|callable setting this to false will disable action. Callback will be executed with ($m) and must return bool */
+    /** @var bool|\Closure setting this to false will disable action. Callback will be executed with ($m) and must return bool */
     public $enabled = true;
 
     /** @var bool system action will be hidden from UI, but can still be explicitly triggered */
@@ -125,7 +125,7 @@ class UserAction
                     $fx = $this->callback;
                 }
 
-                return call_user_func_array($fx, $args);
+                return $fx(...$args);
             };
 
             if ($this->atomic) {
@@ -142,7 +142,7 @@ class UserAction
 
     protected function validateBeforeExecute()
     {
-        if ($this->enabled === false || (is_callable($this->enabled) && call_user_func($this->enabled) === false)) {
+        if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)() === false)) {
             throw new Exception('This action is disabled');
         }
 
@@ -197,7 +197,7 @@ class UserAction
             $cb = $this->preview;
         }
 
-        return call_user_func_array($cb, $args);
+        return $cb(...$args);
     }
 
     /**
@@ -219,7 +219,7 @@ class UserAction
     {
         $confirmation = $this->confirmation;
 
-        if (is_callable($confirmation)) {
+        if ($confirmation instanceof \Closure) {
             $confirmation = $confirmation($this);
         }
 

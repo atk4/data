@@ -203,8 +203,8 @@ class DeepCopy
 
                 // do data transformation from source to destination
                 // see self::transformData()
-                if (isset($transforms[0]) && is_callable($transforms[0])) {
-                    $data = call_user_func($transforms[0], $data);
+                if (isset($transforms[0]) && $transforms[0] instanceof \Closure) {
+                    $data = $transforms[0]($data);
                 }
 
                 // TODO add a way here to look for duplicates based on unique fields

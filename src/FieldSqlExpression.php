@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace atk4\data;
 
 use atk4\core\InitializerTrait;
+use atk4\dsql\Expression;
 
 /**
  * Class description?
@@ -18,7 +19,7 @@ class FieldSqlExpression extends FieldSql
     /**
      * Used expression.
      *
-     * @var mixed
+     * @var \Closure|string|Expression
      */
     public $expr;
 
@@ -87,14 +88,12 @@ class FieldSqlExpression extends FieldSql
     /**
      * When field is used as expression, this method will be called.
      *
-     * @param \atk4\dsql\Expression $expression
-     *
-     * @return \atk4\dsql\Expression
+     * @param Expression $expression
      */
-    public function getDsqlExpression($expression)
+    public function getDsqlExpression($expression): Expression
     {
         $expr = $this->expr;
-        if (is_callable($expr)) {
+        if ($expr instanceof \Closure) {
             $expr = $expr($this->owner, $expression);
         }
 

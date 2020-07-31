@@ -120,13 +120,11 @@ class Persistence
      * persistences will support atomic operations, so by default we just
      * don't do anything.
      *
-     * @param callable $f
-     *
      * @return mixed
      */
-    public function atomic($f)
+    public function atomic(\Closure $f)
     {
-        return call_user_func($f);
+        return $f();
     }
 
     /**
@@ -259,7 +257,7 @@ class Persistence
     {
         try {
             // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
+            if (is_array($f->typecast) && isset($f->typecast[0]) && ($t = $f->typecast[0]) instanceof \Closure) {
                 return $t($value, $f, $this);
             }
 
@@ -288,7 +286,7 @@ class Persistence
     {
         try {
             // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[1]) && is_callable($t = $f->typecast[1])) {
+            if (is_array($f->typecast) && isset($f->typecast[1]) && ($t = $f->typecast[1]) instanceof \Closure) {
                 return $t($value, $f, $this);
             }
 
@@ -349,7 +347,7 @@ class Persistence
     {
         try {
             // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[0]) && is_callable($t = $f->serialize[0])) {
+            if (is_array($f->serialize) && isset($f->serialize[0]) && ($t = $f->typecast[0]) instanceof \Closure) {
                 return $t($f, $value, $this);
             }
 
@@ -373,7 +371,7 @@ class Persistence
     {
         try {
             // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[1]) && is_callable($t = $f->serialize[1])) {
+            if (is_array($f->serialize) && isset($f->serialize[1]) && ($t = $f->typecast[1]) instanceof \Closure) {
                 return $t($f, $value, $this);
             }
 
