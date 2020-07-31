@@ -1793,8 +1793,8 @@ class Model implements \IteratorAggregate
      */
     public function each(\Closure $fx)
     {
-        foreach ($this as $rec) {
-            $fx($rec);
+        foreach ($this as $record) {
+            $fx($record);
         }
 
         return $this;
@@ -1846,14 +1846,14 @@ class Model implements \IteratorAggregate
      *
      * @return mixed
      */
-    public function atomic(\Closure $f, Persistence $persistence = null)
+    public function atomic(\Closure $fx, Persistence $persistence = null)
     {
         if ($persistence === null) {
             $persistence = $this->persistence;
         }
 
         try {
-            return $persistence->atomic($f);
+            return $persistence->atomic($fx);
         } catch (\Exception $e) {
             if ($this->hook(self::HOOK_ROLLBACK, [$this, $e]) !== false) {
                 throw $e;

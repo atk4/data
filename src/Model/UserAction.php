@@ -191,13 +191,13 @@ class UserAction
         if ($this->preview === null) {
             throw new Exception('You must specify preview callback explicitly');
         } elseif (is_string($this->preview)) {
-            $cb = [$this->owner, $this->preview];
+            $fx = \Closure::fromCallable([$this->owner, $this->preview]);
         } else {
             array_unshift($args, $this->owner);
-            $cb = $this->preview;
+            $fx = $this->preview;
         }
 
-        return $cb(...$args);
+        return $fx(...$args);
     }
 
     /**

@@ -79,12 +79,12 @@ trait ReferencesTrait
     /**
      * Add generic relation. Provide your own call-back that will return the model.
      *
-     * @param string         $link     Link
-     * @param array|\Closure $callback Callback
+     * @param string         $link Link
+     * @param array|\Closure $fx   Callback
      */
-    public function addRef($link, $callback): Reference
+    public function addRef($link, $fx): Reference
     {
-        return $this->_hasReference($this->_default_seed_addRef, $link, $callback);
+        return $this->_hasReference($this->_default_seed_addRef, $link, $fx);
     }
 
     /**

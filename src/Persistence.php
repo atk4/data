@@ -122,9 +122,9 @@ class Persistence
      *
      * @return mixed
      */
-    public function atomic(\Closure $f)
+    public function atomic(\Closure $fx)
     {
-        return $f();
+        return $fx();
     }
 
     /**
