@@ -126,8 +126,6 @@ class Sql extends Persistence
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param \Closure $fx
-     *
      * @return mixed
      */
     public function atomic(\Closure $fx)

@@ -1844,8 +1844,6 @@ class Model implements \IteratorAggregate
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param \Closure $f
-     *
      * @return mixed
      */
     public function atomic(\Closure $f, Persistence $persistence = null)
