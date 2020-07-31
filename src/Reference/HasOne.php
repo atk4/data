@@ -231,7 +231,9 @@ class HasOne extends Reference
         $theirModel->onHook(Model::HOOK_AFTER_SAVE, function ($theirModel) {
             $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->id;
 
-            $this->getOurField()->set($theirValue)->owner->save();
+            if ($this->getOurFieldValue() !== $theirValue) {
+                $this->getOurField()->set($theirValue)->owner->save();
+            }
 
             $theirModel->reload();
         });
