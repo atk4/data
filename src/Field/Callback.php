@@ -46,8 +46,8 @@ class Callback extends \atk4\data\Field
 
         $this->ui['table']['sortable'] = false;
 
-        $this->owner->onHook(Model::HOOK_AFTER_LOAD, function ($m) {
-            $m->data[$this->short_name] = ($this->expr)($m);
+        $this->owner->onHook(Model::HOOK_AFTER_LOAD, function (Model $model) {
+            $model->data[$this->short_name] = ($this->expr)($model);
         });
     }
 }
