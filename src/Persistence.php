@@ -429,42 +429,16 @@ class Persistence
      */
     public function jsonDecode(Field $f, string $json, bool $assoc = true)
     {
-        // constant supported only starting PHP 7.3
-        if (!defined('JSON_THROW_ON_ERROR')) {
-            define('JSON_THROW_ON_ERROR', 0);
-        }
-
-        $res = json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
-        if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
-            throw (new Exception('There was error while decoding JSON'))
-                ->addMoreInfo('code', json_last_error())
-                ->addMoreInfo('error', json_last_error_msg());
-        }
-
-        return $res;
+        return json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
      * JSON encoding with proper error treatment.
      *
      * @param mixed $value
-     *
-     * @return string
      */
-    public function jsonEncode(Field $f, $value)
+    public function jsonEncode(Field $f, $value): string
     {
-        // constant supported only starting PHP 7.3
-        if (!defined('JSON_THROW_ON_ERROR')) {
-            define('JSON_THROW_ON_ERROR', 0);
-        }
-
-        $res = json_encode($value, JSON_THROW_ON_ERROR, 512);
-        if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
-            throw (new Exception('There was error while encoding JSON'))
-                ->addMoreInfo('code', json_last_error())
-                ->addMoreInfo('error', json_last_error_msg());
-        }
-
-        return $res;
+        return json_encode($value, JSON_THROW_ON_ERROR, 512);
     }
 }
