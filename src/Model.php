@@ -1885,10 +1885,8 @@ class Model implements \IteratorAggregate
     /**
      * @param string $mode
      * @param array  $args
-     *
-     * @return Persistence\QueryInterface
      */
-    public function toQuery($mode, $args = [])
+    public function toQuery($mode, $args = []): Persistence\AbstractQuery
     {
         $this->checkPersistence('action');
 
