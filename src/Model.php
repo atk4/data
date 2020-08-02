@@ -12,7 +12,6 @@ use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\ReadableCaptionTrait;
-use atk4\dsql\Query;
 
 /**
  * Data model class.
@@ -1887,7 +1886,7 @@ class Model implements \IteratorAggregate
      * @param string $mode
      * @param array  $args
      *
-     * @return Query
+     * @return Persistence\QueryInterface
      */
     public function toQuery($mode, $args = [])
     {

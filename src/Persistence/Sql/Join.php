@@ -6,7 +6,6 @@ namespace atk4\data\Persistence\Sql;
 
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\dsql\Query;
 
 /**
  * Provides model joining functionality specific for the Sql persistence.
@@ -113,9 +112,9 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
      */
     public function dsql()
     {
-        $dsql = $this->owner->persistence->initQuery($this->owner);
+        $query = new Query($this->owner);
 
-        return $dsql->reset('table')->table($this->foreign_table, $this->foreign_alias);
+        return $query->reset('table')->table($this->foreign_table, $this->foreign_alias);
     }
 
     /**

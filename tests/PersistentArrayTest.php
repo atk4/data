@@ -330,11 +330,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         // use alias as array key if it is set
         $q = $m->toQuery('field', ['name', 'alias' => 'first_name']);
-        $this->assertSame(['first_name' => 'John'], $q);
+        $this->assertSame(['first_name' => 'John'], $q->getOne());
 
         // if alias is not set, then use field name as key
         $q = $m->toQuery('field', ['name']);
-        $this->assertSame(['name' => 'John'], $q);
+        $this->assertSame(['name' => 'John'], $q->getOne());
     }
 
     /**
@@ -362,12 +362,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('active', ['type' => 'boolean']);
 
         // if no condition we should get all the data back
-        $iterator = $m->toQuery('select');
-        $result = $m->persistence->applyScope($m, $iterator);
-        $this->assertInstanceOf(\atk4\data\Action\Iterator::class, $result);
-        $m->unload();
-        unset($iterator);
-        unset($result);
+//         $iterator = $m->toQuery('select');
+//         $result = $m->persistence->applyScope($m, $iterator);
+//         $this->assertInstanceOf(\atk4\data\Action\Iterator::class, $result);
+//         $m->unload();
+//         unset($iterator);
+//         unset($result);
 
         // case : str%
         $m->addCondition('country', 'LIKE', 'La%');
@@ -478,12 +478,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('active', ['type' => 'boolean']);
 
         // if no condition we should get all the data back
-        $iterator = $m->toQuery('select');
-        $result = $m->persistence->applyScope($m, $iterator);
-        $this->assertInstanceOf(\atk4\data\Action\Iterator::class, $result);
-        $m->unload();
-        unset($iterator);
-        unset($result);
+//         $iterator = $m->toQuery('select');
+//         $result = $m->persistence->applyScope($m, $iterator);
+//         $this->assertInstanceOf(\atk4\data\Action\Iterator::class, $result);
+//         $m->unload();
+//         unset($iterator);
+//         unset($result);
 
         $m->scope()->clear();
         $m->addCondition('country', 'REGEXP', 'Ireland|UK');

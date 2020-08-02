@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
+use atk4\data\Persistence\QueryInterface;
+
 /**
  * Persistence class.
  */
@@ -17,6 +19,19 @@ class Persistence
     use \atk4\core\DynamicMethodTrait;
     use \atk4\core\NameTrait;
     use \atk4\core\DiContainerTrait;
+
+    /** @const string */
+    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
+    /** @const string */
+    public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsertQuery';
+    /** @const string */
+    public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsertQuery';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdateQuery';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdateQuery';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
 
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
@@ -100,11 +115,77 @@ class Persistence
     }
 
     /**
+     * Executing $model->toQuery('update') will call this method.
+     *
+     * @param string $type
+     * @param array  $args
+     */
+    public function action(Model $model, $type, $args = []): QueryInterface
+    {
+        if (!is_array($args)) {
+            throw (new Exception('$args must be an array'))
+                ->addMoreInfo('args', $args);
+        }
+
+        $query = $this->initQuery($model);
+
+        switch ($type) {
+            case 'insert':
+                return $query->insert();
+            case 'update':
+                return $query->update();
+            case 'delete':
+                $query->delete();
+
+                break;
+            case 'select':
+                $query->select($args[0] ?? null);
+
+                break;
+            case 'count':
+                $query->count($args['alias'] ?? null);
+
+                break;
+            case 'exists':
+                $query->exists();
+
+                break;
+            case 'field':
+                $query->field($args[0] ?? null, $args['alias'] ?? null);
+
+                break;
+            case 'fx':
+            case 'fx0':
+                if (!isset($args[0], $args[1])) {
+                    throw (new Exception('fx action needs 2 arguments, eg: ["sum", "amount"]'))
+                        ->addMoreInfo('action', $type);
+                }
+
+                [$fx, $field] = $args;
+
+                $query->aggregate($fx, $field, $args['alias'] ?? null, $type === 'fx0');
+
+                break;
+            default:
+                throw (new Exception('Unsupported action mode'))
+                    ->addMoreInfo('type', $type);
+        }
+
+        $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
+
+        return $query;
+    }
+
+    /**
      * Extend this method to enhance model to work with your persistence. Here
      * you can define additional methods or store additional data. This method
      * is executed before model's init().
      */
-    protected function initPersistence(Model $m)
+    protected function initPersistence(Model $model)
+    {
+    }
+
+    protected function initQuery(Model $model): QueryInterface
     {
     }
 

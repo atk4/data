@@ -18,19 +18,6 @@ use atk4\dsql\Query;
  */
 class Sql extends Persistence
 {
-    /** @const string */
-    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
-    /** @const string */
-    public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsertQuery';
-    /** @const string */
-    public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsertQuery';
-    /** @const string */
-    public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdateQuery';
-    /** @const string */
-    public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdateQuery';
-    /** @const string */
-    public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
-
     /**
      * Connection object.
      *
@@ -220,170 +207,6 @@ class Sql extends Persistence
     }
 
     /**
-     * Initializes base query for model $m.
-     */
-    public function initQuery(Model $model): Query
-    {
-        $query = $model->persistence_data['dsql'] = $this->dsql();
-
-        if ($model->table) {
-            $query->table($model->table, $model->table_alias ?? null);
-        }
-
-        // add With cursors
-        $this->initWithCursors($model, $query);
-
-        return $query;
-    }
-
-    /**
-     * Initializes WITH cursors.
-     */
-    public function initWithCursors(Model $model, Query $query)
-    {
-        if (!$with = $model->with) {
-            return;
-        }
-
-        foreach ($with as $alias => ['model' => $withModel, 'mapping' => $withMapping, 'recursive' => $recursive]) {
-            // prepare field names
-            $fieldsFrom = $fieldsTo = [];
-            foreach ($withMapping as $from => $to) {
-                $fieldsFrom[] = is_int($from) ? $to : $from;
-                $fieldsTo[] = $to;
-            }
-
-            // prepare sub-query
-            if ($fieldsFrom) {
-                $withModel->onlyFields($fieldsFrom);
-            }
-            // 2nd parameter here strictly define which fields should be selected
-            // as result system fields will not be added if they are not requested
-            $subQuery = $withModel->toQuery('select', [$fieldsFrom]);
-
-            // add With cursor
-            $query->with($subQuery, $alias, $fieldsTo ?: null, $recursive);
-        }
-    }
-
-    /**
-     * Adds Field in Query.
-     */
-    public function initField(Query $query, Field $field)
-    {
-        $query->field($field, $field->useAlias() ? $field->short_name : null);
-    }
-
-    /**
-     * Adds model fields in Query.
-     *
-     * @param array|false|null $fields
-     */
-    public function initQueryFields(Model $model, Query $query, $fields = null)
-    {
-        // do nothing on purpose
-        if ($fields === false) {
-            return;
-        }
-
-        // init fields
-        if (is_array($fields)) {
-            // Set of fields is strictly defined for purposes of export,
-            // so we will ignore even system fields.
-            foreach ($fields as $fieldName) {
-                $this->initField($query, $model->getField($fieldName));
-            }
-        } elseif ($model->only_fields) {
-            $addedFields = [];
-
-            // Add requested fields first
-            foreach ($model->only_fields as $fieldName) {
-                $field = $model->getField($fieldName);
-                if ($field->never_persist) {
-                    continue;
-                }
-                $this->initField($query, $field);
-                $addedFields[$fieldName] = true;
-            }
-
-            // now add system fields, if they were not added
-            foreach ($model->getFields() as $fieldName => $field) {
-                if ($field->never_persist) {
-                    continue;
-                }
-                if ($field->system && !isset($addedFields[$fieldName])) {
-                    $this->initField($query, $field);
-                }
-            }
-        } else {
-            foreach ($model->getFields() as $fieldName => $field) {
-                if ($field->never_persist) {
-                    continue;
-                }
-                $this->initField($query, $field);
-            }
-        }
-    }
-
-    /**
-     * Will set limit defined inside $m onto query $q.
-     */
-    protected function setLimitOrder(Model $model, Query $query)
-    {
-        // set limit
-        if ($model->limit && ($model->limit[0] || $model->limit[1])) {
-            if ($model->limit[0] === null) {
-                $model->limit[0] = PHP_INT_MAX;
-            }
-            $query->limit($model->limit[0], $model->limit[1]);
-        }
-
-        // set order
-        if ($model->order) {
-            foreach ($model->order as $order) {
-                if ($order[0] instanceof Expression) {
-                    $query->order($order[0], $order[1]);
-                } elseif (is_string($order[0])) {
-                    $query->order($model->getField($order[0]), $order[1]);
-                } else {
-                    throw (new Exception('Unsupported order parameter'))
-                        ->addMoreInfo('model', $model)
-                        ->addMoreInfo('field', $order[0]);
-                }
-            }
-        }
-    }
-
-    /**
-     * Will apply a condition defined inside $condition or $model->scope() onto $query.
-     */
-    public function initQueryConditions(Model $model, Query $query, Model\Scope\AbstractScope $condition = null): void
-    {
-        $condition = $condition ?? $model->scope();
-
-        if (!$condition->isEmpty()) {
-            // peel off the single nested scopes to convert (((field = value))) to field = value
-            $condition = $condition->simplify();
-
-            // simple condition
-            if ($condition instanceof Model\Scope\Condition) {
-                $query->where(...$condition->toQueryArguments());
-            }
-
-            // nested conditions
-            if ($condition instanceof Model\Scope) {
-                $expression = $condition->isOr() ? $query->orExpr() : $query->andExpr();
-
-                foreach ($condition->getNestedConditions() as $nestedCondition) {
-                    $this->initQueryConditions($model, $expression, $nestedCondition);
-                }
-
-                $query->where($expression);
-            }
-        }
-    }
-
-    /**
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
@@ -557,113 +380,9 @@ class Sql extends Persistence
         return $v;
     }
 
-    /**
-     * Executing $model->toQuery('update') will call this method.
-     *
-     * @param string $type
-     * @param array  $args
-     *
-     * @return Query
-     */
-    public function action(Model $model, $type, $args = [])
+    protected function initQuery(Model $model): QueryInterface
     {
-        if (!is_array($args)) {
-            throw (new Exception('$args must be an array'))
-                ->addMoreInfo('args', $args);
-        }
-
-        $query = $this->initQuery($model);
-        switch ($type) {
-            case 'insert':
-                return $query->mode('insert');
-                // cannot apply conditions now
-
-            case 'update':
-                $query->mode('update');
-
-                break;
-            case 'delete':
-                $query->mode('delete');
-                $this->initQueryConditions($model, $query);
-                $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-                return $query;
-            case 'select':
-                $this->initQueryFields($model, $query, $args[0] ?? null);
-
-                break;
-            case 'count':
-                $this->initQueryConditions($model, $query);
-                $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-                return $query->reset('field')->field('count(*)', $args['alias'] ?? null);
-            case 'exists':
-                $this->initQueryConditions($model, $query);
-                $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-                return $this->dsql()->mode('select')->option('exists')->field($query);
-            case 'field':
-                if (!isset($args[0])) {
-                    throw (new Exception('This action requires one argument with field name'))
-                        ->addMoreInfo('action', $type);
-                }
-
-                $field = is_string($args[0]) ? $model->getField($args[0]) : $args[0];
-                $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-                if (isset($args['alias'])) {
-                    $query->reset('field')->field($field, $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
-                    $query->reset('field')->field($field, $field->short_name);
-                } else {
-                    $query->reset('field')->field($field);
-                }
-                $this->initQueryConditions($model, $query);
-                $this->setLimitOrder($model, $query);
-
-                if ($model->loaded()) {
-                    $query->where($model->id_field, $model->id);
-                }
-
-                return $query;
-            case 'fx':
-            case 'fx0':
-                if (!isset($args[0], $args[1])) {
-                    throw (new Exception('fx action needs 2 arguments, eg: ["sum", "amount"]'))
-                        ->addMoreInfo('action', $type);
-                }
-
-                [$fx, $field] = $args;
-
-                $field = is_string($field) ? $model->getField($field) : $field;
-
-                $this->initQueryConditions($model, $query);
-                $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-                if ($type === 'fx') {
-                    $expr = "{$fx}([])";
-                } else {
-                    $expr = "coalesce({$fx}([]), 0)";
-                }
-
-                if (isset($args['alias'])) {
-                    $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
-                    $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->short_name);
-                } else {
-                    $query->reset('field')->field($query->expr($expr, [$field]));
-                }
-
-                return $query;
-            default:
-                throw (new Exception('Unsupported action mode'))
-                    ->addMoreInfo('type', $type);
-        }
-
-        $this->initQueryConditions($model, $query);
-        $this->setLimitOrder($model, $query);
-        $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-        return $query;
+        return new Sql\Query($model);
     }
 
     /**
@@ -678,13 +397,9 @@ class Sql extends Persistence
                 ->addMoreInfo('id', $id);
         }
 
-        $query = $model->toQuery('select');
-        $query->where($model->getField($model->id_field), $id);
-        $query->limit(1);
-
         // execute action
         try {
-            $dataRaw = $query->getRow();
+            $dataRaw = $this->initQuery($model)->find($id);
             if ($dataRaw === null) {
                 return null;
             }
@@ -867,7 +582,7 @@ class Sql extends Persistence
             throw new Exception('id_field of a model is not set. Unable to update record.');
         }
 
-        $update = $this->initQuery($model);
+        $update = new Sql\Query($model);
         $update->mode('update');
 
         $data = $this->typecastSaveRow($model, $data);
@@ -918,7 +633,7 @@ class Sql extends Persistence
             throw new Exception('id_field of a model is not set. Unable to delete record.');
         }
 
-        $delete = $this->initQuery($model);
+        $delete = new Sql\Query($model);
         $delete->mode('delete');
         $delete->where($model->id_field, $id);
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
