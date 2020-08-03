@@ -8,50 +8,30 @@ use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\FieldSqlExpression;
 use atk4\data\Model;
-use atk4\data\Persistence;
-use atk4\data\Persistence\QueryInterface;
+use atk4\data\Persistence\AbstractQuery;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 use atk4\dsql\Query as DsqlQuery;
 
 /**
- * @method Query get()
- * @method Query getOne()
- * @method Query limit($limit, $offset = 0)
- * @method Query order($fields)
  * @method Query getDebugQuery()
  * @method Query render()
  * @method Query mode()
  */
-class Query implements Persistence\QueryInterface, Expressionable
+class Query extends AbstractQuery implements Expressionable
 {
-    /** @var Model */
-    protected $model;
-
-    protected $scope;
-
-    protected $order;
-
-    protected $limit;
-
     /** @var DsqlQuery */
     protected $dsql;
 
     public function __construct(Model $model)
     {
+        parent::__construct($model);
+
         $this->dsql = $model->persistence_data['dsql'] = $model->persistence->dsql();
 
         if ($model->table) {
             $this->dsql->table($model->table, $model->table_alias ?? null);
         }
-
-        $this->model = $model;
-
-        $this->scope = clone $model->scope();
-
-        $this->order = $model->order;
-
-        $this->limit = $model->limit;
 
         // add With cursors
         $this->addWithCursors();
@@ -103,7 +83,7 @@ class Query implements Persistence\QueryInterface, Expressionable
 //         return $this->select()->limit(1)->getRow();
     }
 
-    public function select($fields = []): QueryInterface
+    public function select($fields = []): AbstractQuery
     {
         $this->initFields($fields);
         $this->initWhere();
@@ -115,7 +95,7 @@ class Query implements Persistence\QueryInterface, Expressionable
         return $this;
     }
 
-    public function initFields($fields = null)
+    protected function initFields($fields = null)
     {
         // do nothing on purpose
         if ($fields === false) {
@@ -163,28 +143,28 @@ class Query implements Persistence\QueryInterface, Expressionable
         return $this;
     }
 
-    public function addField(Field $field)
+    protected function addField(Field $field)
     {
         $this->dsql->field($field, $field->useAlias() ? $field->short_name : null);
 
         return $this;
     }
 
-    public function insert(): QueryInterface
+    public function insert(): AbstractQuery
     {
         $this->dsql->mode('insert');
 
         return $this;
     }
 
-    public function update(): QueryInterface
+    public function update(): AbstractQuery
     {
         $this->dsql->mode('update');
 
         return $this;
     }
 
-    public function delete(): QueryInterface
+    public function delete(): AbstractQuery
     {
         $this->initWhere();
 
@@ -193,7 +173,7 @@ class Query implements Persistence\QueryInterface, Expressionable
         return $this;
     }
 
-    public function exists(): QueryInterface
+    public function exists(): AbstractQuery
     {
         $this->initWhere();
 
@@ -202,7 +182,7 @@ class Query implements Persistence\QueryInterface, Expressionable
         return $this;
     }
 
-    public function count($alias = null): QueryInterface
+    public function count($alias = null): AbstractQuery
     {
         $this->initWhere();
 
@@ -211,14 +191,14 @@ class Query implements Persistence\QueryInterface, Expressionable
         return $this;
     }
 
-//     public function where($fieldName, $operator = null, $value = null): QueryInterface
-//     {
-//         $this->scope->addCondition(...func_get_args());
+    public function where($fieldName, $operator = null, $value = null): AbstractQuery
+    {
+        $this->fillWhere($this->dsql, new Model\Scope\Condition(...func_get_args()));
 
-//         return $this;
-//     }
+        return $this;
+    }
 
-    public function aggregate($fx, $field, string $alias = null, bool $coalesce = false): QueryInterface
+    public function aggregate($fx, $field, string $alias = null, bool $coalesce = false): AbstractQuery
     {
         $field = is_string($field) ? $this->model->getField($field) : $field;
 
@@ -235,7 +215,7 @@ class Query implements Persistence\QueryInterface, Expressionable
         return $this;
     }
 
-    public function field($fieldName, string $alias = null): QueryInterface
+    public function field($fieldName, string $alias = null): AbstractQuery
     {
         if (!$fieldName) {
             throw new Exception('Field query requires field name');
@@ -260,52 +240,29 @@ class Query implements Persistence\QueryInterface, Expressionable
         return $this;
     }
 
-    public function order($order, $desc = null): QueryInterface
-    {
-        $this->dsql->order($order, $desc);
-
-        return $this;
-    }
-
     protected function initOrder()
     {
-        foreach ($this->order as $order) {
-            if ($order[0] instanceof Expression) {
-                $this->order($order[0], $order[1]);
-            } elseif (is_string($order[0])) {
-                $this->order($this->model->getField($order[0]), $order[1]);
-            } else {
+        foreach ((array) $this->order as [$field, $desc]) {
+            if (is_string($field)) {
+                $field = $this->model->getField($field);
+            }
+
+            if (!$field instanceof Expression && !$field instanceof Expressionable) {
                 throw (new Exception('Unsupported order parameter'))
                     ->addMoreInfo('model', $this->model)
-                    ->addMoreInfo('field', $order[0]);
+                    ->addMoreInfo('field', $field);
             }
+
+            $this->dsql->order($field, $desc);
         }
-
-        return $this;
-    }
-
-    public function limit($limit, $offset = 0): QueryInterface
-    {
-        $this->dsql->reset('limit');
-
-        $this->dsql->limit($limit, $offset);
 
         return $this;
     }
 
     protected function initLimit()
     {
-        if ($this->limit) {
-            $offset = $this->limit[1] ?? 0;
-            $limit = $this->limit[0] ?? null;
-
-            if ($limit || $offset) {
-                if ($limit === null) {
-                    $limit = PHP_INT_MAX;
-                }
-
-                $this->limit($limit, $offset ?? 0);
-            }
+        if ($args = $this->getLimitArgs()) {
+            $this->dsql->reset('limit')->limit(...$args);
         }
 
         return $this;
@@ -383,6 +340,11 @@ class Query implements Persistence\QueryInterface, Expressionable
                 ->addMoreInfo('model', $this->model)
                 ->addMoreInfo('scope', $this->model->scope()->toWords());
         }
+    }
+
+    public function getDebug(): string
+    {
+        return $this->dsql->getDebugQuery();
     }
 
     public function __call($method, $args)

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
-use atk4\data\Persistence\QueryInterface;
-
 /**
  * Persistence class.
  */
@@ -120,7 +118,7 @@ class Persistence
      * @param string $type
      * @param array  $args
      */
-    public function action(Model $model, $type, $args = []): QueryInterface
+    public function action(Model $model, $type, $args = []): Persistence\AbstractQuery
     {
         if (!is_array($args)) {
             throw (new Exception('$args must be an array'))
@@ -185,7 +183,7 @@ class Persistence
     {
     }
 
-    protected function initQuery(Model $model): QueryInterface
+    protected function initQuery(Model $model): Persistence\AbstractQuery
     {
     }
 

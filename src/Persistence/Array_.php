@@ -270,7 +270,7 @@ class Array_ extends Persistence
         return $data;
     }
 
-    protected function initQuery(Model $model): QueryInterface
+    protected function initQuery(Model $model): AbstractQuery
     {
         return new Array_\Query($model);
     }

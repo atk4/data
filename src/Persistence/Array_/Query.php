@@ -7,41 +7,27 @@ namespace atk4\data\Persistence\Array_;
 use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\Model;
-use atk4\data\Persistence;
-use atk4\data\Persistence\QueryInterface;
+use atk4\data\Persistence\AbstractQuery;
 
 /**
  * Class Array_ is returned by $model->toQuery(). Compatible with DSQL to a certain point as it implements
  * specific actions such as getOne() or get().
  */
-class Query implements Persistence\QueryInterface
+class Query extends AbstractQuery
 {
-    /**
-     * @var Model
-     */
-    protected $model;
-
-    protected $scope;
-
-    protected $order;
-
-    protected $limit;
-
     private $iterator;
 
     private $data;
 
+    private $fields;
+
     public function __construct(Model $model)
     {
+        parent::__construct($model);
+
         $this->data = $model->persistence->getRawDataByTable($model->table);
 
         $this->iterator = new \ArrayIterator($this->data);
-
-        $this->scope = clone $model->scope();
-
-        $this->order = $model->order;
-
-        $this->limit = $model->limit;
     }
 
     public function find($id): ?array
@@ -56,7 +42,7 @@ class Query implements Persistence\QueryInterface
 //         return $this->select()->limit(1)->getRow();
     }
 
-    public function select($fields = []): QueryInterface
+    public function select($fields = []): AbstractQuery
     {
         $this->initFields($fields);
         $this->initWhere();
@@ -69,7 +55,7 @@ class Query implements Persistence\QueryInterface
     protected function initFields($fields = null)
     {
         if ($fields) {
-            $data = $this->get();
+            $this->fields = $fields;
 
             $keys = array_flip((array) $fields);
 
@@ -91,28 +77,13 @@ class Query implements Persistence\QueryInterface
     {
     }
 
-    public function delete(): QueryInterface
+    public function delete(): AbstractQuery
     {
     }
 
-    public function getIterator()
+    public function getIterator(): iterable
     {
         return $this->iterator;
-    }
-
-    public function order($field, $desc = null): QueryInterface
-    {
-//         $this->iterator->uasort(function($a, $b) use ($field, $desc) {
-//             if ($a[$field] == $b[$field]) {
-//                 return 0;
-//             }
-
-//             $order = $desc ? -1 : 1;
-
-//             return $order * (($a[$field] < $b[$field]) ? -1 : 1);
-//         });
-
-//         return $this;
     }
 
     /**
@@ -122,64 +93,35 @@ class Query implements Persistence\QueryInterface
      *
      * @return $this
      */
-    public function initOrder()
+    protected function initOrder()
     {
-        if (!$this->order) {
-            return;
+        if ($this->order) {
+            $data = $this->get();
+
+            // prepare arguments for array_multisort()
+            $args = [];
+            foreach ($this->order as [$field, $desc]) {
+                $args[] = array_column($data, $field);
+                $args[] = $desc ? SORT_DESC : SORT_ASC;
+            }
+            $args[] = &$data;
+
+            // call sorting
+            array_multisort(...$args);
+
+            // put data back in generator
+            $this->iterator = new \ArrayIterator(array_pop($args));
         }
-//         foreach ($fields as [$field, $desc]) {
-//             $this->order($field, $desc);
-//         }
-
-//         return $this;
-        $data = $this->get();
-
-        // prepare arguments for array_multisort()
-        $args = [];
-        foreach ($this->order as [$field, $desc]) {
-            $args[] = array_column($data, $field);
-            $args[] = $desc ? SORT_DESC : SORT_ASC;
-        }
-        $args[] = &$data;
-
-        // call sorting
-        array_multisort(...$args);
-
-        // put data back in generator
-        $this->iterator = new \ArrayIterator(array_pop($args));
-
-        return $this;
-    }
-
-    /**
-     * Limit Iterator.
-     *
-     * @param int $limit
-     * @param int $offset
-     *
-     * @return $this
-     */
-    public function limit($limit, $offset = 0): QueryInterface
-    {
-        // put data back in generator
-        $this->iterator = new \LimitIterator($this->iterator, $offset, $limit);
 
         return $this;
     }
 
     protected function initLimit()
     {
-        if ($this->limit) {
-            $offset = $this->limit[1] ?? 0;
-            $limit = $this->limit[0] ?? null;
+        if ($args = $this->getLimitArgs()) {
+            [$limit, $offset] = $args;
 
-            if ($limit || $offset) {
-                if ($limit === null) {
-                    $limit = PHP_INT_MAX;
-                }
-
-                $this->limit($limit, $offset ?? 0);
-            }
+            $this->iterator = new \LimitIterator($this->iterator, $offset, $limit);
         }
 
         return $this;
@@ -190,7 +132,7 @@ class Query implements Persistence\QueryInterface
      *
      * @return $this
      */
-    public function count($alias = null): QueryInterface
+    public function count($alias = null): AbstractQuery
     {
         $this->initWhere();
         // @todo: kept for BC, inconstent results with SQL count!
@@ -208,21 +150,21 @@ class Query implements Persistence\QueryInterface
      *
      * @return $this
      */
-    public function exists(): QueryInterface
+    public function exists(): AbstractQuery
     {
         $this->iterator = new \ArrayIterator([[$this->iterator->valid() ? 1 : 0]]);
 
         return $this;
     }
 
-//     public function where($fieldName, $operator = null, $value = null): QueryInterface
-//     {
-//         $this->scope->addCondition(...func_get_args());
+    public function where($fieldName, $operator = null, $value = null): AbstractQuery
+    {
+        $this->scope->addCondition(...func_get_args());
 
-//         return $this;
-//     }
+        return $this;
+    }
 
-    public function field($fieldName, string $alias = null): QueryInterface
+    public function field($fieldName, string $alias = null): AbstractQuery
     {
         if (!$fieldName) {
             throw new Exception('Field query requires field name');
@@ -465,5 +407,15 @@ class Query implements Persistence\QueryInterface
         }
 
         return $result;
+    }
+
+    public function getDebug(): string
+    {
+        return print_r([
+            'fields' => $this->fields,
+            'scope' => $this->scope->toWords($this->model),
+            'order' => $this->order,
+            'limit' => $this->limit,
+        ], true);
     }
 }

@@ -380,7 +380,7 @@ class Sql extends Persistence
         return $v;
     }
 
-    protected function initQuery(Model $model): QueryInterface
+    protected function initQuery(Model $model): AbstractQuery
     {
         return new Sql\Query($model);
     }
@@ -397,9 +397,11 @@ class Sql extends Persistence
                 ->addMoreInfo('id', $id);
         }
 
+        $query = $this->initQuery($model);
+
         // execute action
         try {
-            $dataRaw = $this->initQuery($model)->find($id);
+            $dataRaw = $query->find($id);
             if ($dataRaw === null) {
                 return null;
             }
