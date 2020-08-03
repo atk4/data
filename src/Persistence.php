@@ -88,6 +88,42 @@ class Persistence
     }
 
     /**
+     * Prepare iterator.
+     */
+    public function prepareIterator(Model $model): iterable
+    {
+        try {
+            $query = $model->toQuery('select');
+
+            return $query->execute();
+        } catch (\PDOException $e) {
+            throw (new Exception('Unable to execute iteration query', 0, $e))
+                ->addMoreInfo('query', $query->getDebug())
+                ->addMoreInfo('message', $e->getMessage())
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('scope', $model->scope()->toWords());
+        }
+    }
+
+    /**
+     * Export all DataSet.
+     *
+     * @param bool $typecast Should we typecast exported data
+     */
+    public function export(Model $model, array $fields = null, bool $typecast = true): array
+    {
+        $data = $model->toQuery('select', [$fields])->get();
+
+        if ($typecast) {
+            $data = array_map(function ($row) use ($model) {
+                return $this->typecastLoadRow($model, $row);
+            }, $data);
+        }
+
+        return $data;
+    }
+
+    /**
      * Associate model with the data driver.
      */
     public function add(Model $m, array $defaults = []): Model

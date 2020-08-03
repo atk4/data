@@ -387,7 +387,7 @@ class Csv extends Persistence
     /**
      * Export all DataSet.
      */
-    public function export(Model $model, array $fields = null): array
+    public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
         $data = [];
 

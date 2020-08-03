@@ -72,6 +72,8 @@ abstract class AbstractQuery implements \IteratorAggregate
         }
     }
 
+    abstract public function execute(): iterable;
+
     abstract public function get(): array;
 
     abstract public function count($alias = null);

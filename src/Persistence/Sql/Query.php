@@ -268,6 +268,11 @@ class Query extends AbstractQuery implements Expressionable
         return $this;
     }
 
+    public function execute(): iterable
+    {
+        return $this->dsql->execute();
+    }
+
     public function get(): array
     {
         return $this->dsql->get();

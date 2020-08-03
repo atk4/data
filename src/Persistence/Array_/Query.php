@@ -194,6 +194,11 @@ class Query extends AbstractQuery
         return $this;
     }
 
+    public function execute(): iterable
+    {
+        return $this->iterator;
+    }
+
     /**
      * Return all data inside array.
      */

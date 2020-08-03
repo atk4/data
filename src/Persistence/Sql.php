@@ -535,44 +535,6 @@ class Sql extends Persistence
     }
 
     /**
-     * Export all DataSet.
-     *
-     * @param bool $typecast Should we typecast exported data
-     */
-    public function export(Model $model, array $fields = null, $typecast = true): array
-    {
-        $data = $model->toQuery('select', [$fields])->get();
-
-        if ($typecast) {
-            $data = array_map(function ($row) use ($model) {
-                return $this->typecastLoadRow($model, $row);
-            }, $data);
-        }
-
-        return $data;
-    }
-
-    /**
-     * Prepare iterator.
-     *
-     * @return \PDOStatement
-     */
-    public function prepareIterator(Model $model): iterable
-    {
-        try {
-            $export = $model->toQuery('select');
-
-            return $export->execute();
-        } catch (\PDOException $e) {
-            throw (new Exception('Unable to execute iteration query', 0, $e))
-                ->addMoreInfo('query', $export->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
-        }
-    }
-
-    /**
      * Updates record in database.
      *
      * @param mixed $id

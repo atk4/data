@@ -244,32 +244,6 @@ class Array_ extends Persistence
         return $this->lastInsertIds['$'] ?? null;
     }
 
-    /**
-     * Prepare iterator.
-     */
-    public function prepareIterator(Model $model): iterable
-    {
-        return $model->toQuery('select')->get();
-    }
-
-    /**
-     * Export all DataSet.
-     *
-     * @param bool $typecast_data Should we typecast exported data
-     */
-    public function export(Model $model, array $fields = null, $typecast = true): array
-    {
-        $data = $model->toQuery('select', [$fields])->get();
-
-        if ($typecast) {
-            $data = array_map(function ($row) use ($model) {
-                return $this->typecastLoadRow($model, $row);
-            }, $data);
-        }
-
-        return $data;
-    }
-
     protected function initQuery(Model $model): AbstractQuery
     {
         return new Array_\Query($model);
