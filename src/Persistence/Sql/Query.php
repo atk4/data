@@ -64,42 +64,13 @@ class Query extends AbstractQuery implements Expressionable
         }
     }
 
-    public function find($id): ?array
+    protected function initSelect($fields = null): void
     {
-        if (!$this->model->id_field) {
-            throw (new Exception('Unable to load record by "id" when Model::id_field is not defined.'))
-                ->addMoreInfo('id', $id);
-        }
+        $this->dsql->reset('field');
 
-        //to trigger init select hook in persistence
-        //@todo: decide on hooks
-        $query = $this->model->toQuery('select');
-
-        $query->where($this->model->getField($this->model->id_field), $id);
-
-        return $query->limit(1)->getRow();
-//         $this->scope->addCondition($this->model->id_field, $id);
-
-//         return $this->select()->limit(1)->getRow();
-    }
-
-    public function select($fields = []): AbstractQuery
-    {
-        $this->initFields($fields);
-        $this->initWhere();
-        $this->initLimit();
-        $this->initOrder();
-
-        $this->dsql->mode('select');
-
-        return $this;
-    }
-
-    protected function initFields($fields = null)
-    {
         // do nothing on purpose
         if ($fields === false) {
-            return $this;
+            return;
         }
 
         // add fields
@@ -139,70 +110,47 @@ class Query extends AbstractQuery implements Expressionable
                 $this->addField($field);
             }
         }
-
-        return $this;
     }
 
-    protected function addField(Field $field)
+    protected function addField(Field $field): void
     {
         $this->dsql->field($field, $field->useAlias() ? $field->short_name : null);
-
-        return $this;
     }
 
-    public function insert(): AbstractQuery
+    protected function initInsert(array $data): void
     {
-        $this->dsql->mode('insert');
-
-        return $this;
+        if ($data) {
+            $this->dsql->mode('insert')->set($data);
+        }
     }
 
-    public function update(): AbstractQuery
+    protected function initUpdate(array $data): void
     {
-        $this->dsql->mode('update');
-
-        return $this;
+        if ($data) {
+            $this->dsql->mode('update')->set($data);
+        }
     }
 
-    public function delete(): AbstractQuery
+    protected function initDelete($id = null): void
     {
-        $this->initWhere();
-
         $this->dsql->mode('delete');
-
-        return $this;
     }
 
-    public function exists(): AbstractQuery
+    protected function initExists(): void
     {
-        $this->initWhere();
+        $newDsql = $this->dsql->dsql();
 
-        $this->dsql = $this->dsql->dsql()->mode('select')->option('exists')->field($this->dsql);
-
-        return $this;
+        $this->dsql = $newDsql->mode('select')->option('exists')->field($this->dsql);
     }
 
-    public function count($alias = null): AbstractQuery
+    protected function initCount($alias = null): void
     {
-        $this->initWhere();
-
         $this->dsql->reset('field')->field('count(*)', $alias);
-
-        return $this;
     }
 
-    public function where($fieldName, $operator = null, $value = null): AbstractQuery
-    {
-        $this->fillWhere($this->dsql, new Model\Scope\Condition(...func_get_args()));
-
-        return $this;
-    }
-
-    public function aggregate($fx, $field, string $alias = null, bool $coalesce = false): AbstractQuery
+    protected function initAggregate($fx, $field, string $alias = null, bool $coalesce = false): void
     {
         $field = is_string($field) ? $this->model->getField($field) : $field;
-
-        $this->initWhere();
 
         $expr = $coalesce ? "coalesce({$fx}([]), 0)" : "{$fx}([])";
 
@@ -211,11 +159,9 @@ class Query extends AbstractQuery implements Expressionable
         }
 
         $this->dsql->reset('field')->field($this->dsql->expr($expr, [$field]), $alias);
-
-        return $this;
     }
 
-    public function field($fieldName, string $alias = null): AbstractQuery
+    protected function initField($fieldName, string $alias = null): void
     {
         if (!$fieldName) {
             throw new Exception('Field query requires field name');
@@ -227,21 +173,20 @@ class Query extends AbstractQuery implements Expressionable
             $alias = $field->short_name;
         }
 
-        $this->initWhere();
-        $this->initLimit();
-        $this->initOrder();
-
-        if ($this->model->loaded()) {
-            $this->dsql->where($this->model->id_field, $this->model->id);
-        }
-
         $this->dsql->reset('field')->field($field, $alias);
+    }
+
+    public function where($fieldName, $operator = null, $value = null): AbstractQuery
+    {
+        $this->fillWhere($this->dsql, new Model\Scope\Condition(...func_get_args()));
 
         return $this;
     }
 
-    protected function initOrder()
+    protected function initOrder(): void
     {
+        $this->dsql->reset('order');
+
         foreach ((array) $this->order as [$field, $desc]) {
             if (is_string($field)) {
                 $field = $this->model->getField($field);
@@ -255,35 +200,33 @@ class Query extends AbstractQuery implements Expressionable
 
             $this->dsql->order($field, $desc);
         }
-
-        return $this;
     }
 
-    protected function initLimit()
+    protected function initLimit(): void
     {
-        if ($args = $this->getLimitArgs()) {
-            $this->dsql->reset('limit')->limit(...$args);
-        }
+        $this->dsql->reset('limit');
 
-        return $this;
+        if ($args = $this->getLimitArgs()) {
+            $this->dsql->limit(...$args);
+        }
     }
 
-    public function execute(): iterable
+    protected function doExecute()
     {
         return $this->dsql->execute();
     }
 
-    public function get(): array
+    protected function doGet(): array
     {
         return $this->dsql->get();
     }
 
-    public function getRow(): ?array
+    protected function doGetRow(): ?array
     {
         return $this->dsql->getRow();
     }
 
-    public function getOne()
+    protected function doGetOne()
     {
         return $this->dsql->getOne();
     }
@@ -298,16 +241,9 @@ class Query extends AbstractQuery implements Expressionable
         return $this->dsql;
     }
 
-    public function model()
-    {
-        return $this->model;
-    }
-
-    protected function initWhere()
+    protected function initWhere(): void
     {
         $this->fillWhere($this->dsql, $this->scope);
-
-        return $this;
     }
 
     protected static function fillWhere(DsqlQuery $query, Model\Scope\AbstractScope $condition)
@@ -336,20 +272,18 @@ class Query extends AbstractQuery implements Expressionable
 
     public function getIterator(): iterable
     {
-        try {
-            return $this->select()->execute();
-        } catch (\PDOException $e) {
-            throw (new Exception('Unable to execute iteration query', 0, $e))
-                ->addMoreInfo('query', $this->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
-                ->addMoreInfo('model', $this->model)
-                ->addMoreInfo('scope', $this->model->scope()->toWords());
-        }
+        return $this->tryExecute();
     }
 
     public function getDebug(): string
     {
-        return $this->dsql->getDebugQuery();
+        return print_r([
+            'sql' => $this->dsql->getDebugQuery(),
+            'model' => $this->model,
+            'scope' => $this->scope->toWords($this->model),
+            'order' => $this->order,
+            'limit' => $this->limit,
+        ], true);
     }
 
     public function __call($method, $args)

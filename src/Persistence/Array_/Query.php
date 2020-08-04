@@ -30,29 +30,7 @@ class Query extends AbstractQuery
         $this->iterator = new \ArrayIterator($this->data);
     }
 
-    public function find($id): ?array
-    {
-        $query = $this->model->toQuery('select');
-
-        $query->scope->addCondition($this->model->id_field, $id);
-
-        return $query->getRow();
-//         $this->scope->addCondition($this->model->id_field, $id);
-
-//         return $this->select()->limit(1)->getRow();
-    }
-
-    public function select($fields = []): AbstractQuery
-    {
-        $this->initFields($fields);
-        $this->initWhere();
-        $this->initOrder();
-        $this->initLimit();
-
-        return $this;
-    }
-
-    protected function initFields($fields = null)
+    protected function initSelect($fields = null): void
     {
         if ($fields) {
             $this->fields = $fields;
@@ -65,19 +43,17 @@ class Query extends AbstractQuery
 
             $this->iterator = new \ArrayIterator($data);
         }
-
-        return $this;
     }
 
-    public function update()
+    protected function initInsert(array $data): void
     {
     }
 
-    public function insert()
+    protected function initUpdate(array $data): void
     {
     }
 
-    public function delete(): AbstractQuery
+    protected function initDelete($id = null): void
     {
     }
 
@@ -93,7 +69,7 @@ class Query extends AbstractQuery
      *
      * @return $this
      */
-    protected function initOrder()
+    protected function initOrder(): void
     {
         if ($this->order) {
             $data = $this->get();
@@ -112,19 +88,15 @@ class Query extends AbstractQuery
             // put data back in generator
             $this->iterator = new \ArrayIterator(array_pop($args));
         }
-
-        return $this;
     }
 
-    protected function initLimit()
+    protected function initLimit(): void
     {
         if ($args = $this->getLimitArgs()) {
             [$limit, $offset] = $args;
 
             $this->iterator = new \LimitIterator($this->iterator, $offset, $limit);
         }
-
-        return $this;
     }
 
     /**
@@ -132,17 +104,14 @@ class Query extends AbstractQuery
      *
      * @return $this
      */
-    public function count($alias = null): AbstractQuery
+    protected function initCount($alias = null): void
     {
-        $this->initWhere();
         // @todo: kept for BC, inconstent results with SQL count!
         $this->initLimit();
 
         $alias = $alias ?? 'count';
 
         $this->iterator = new \ArrayIterator([[$alias => iterator_count($this->iterator)]]);
-
-        return $this;
     }
 
     /**
@@ -150,21 +119,12 @@ class Query extends AbstractQuery
      *
      * @return $this
      */
-    public function exists(): AbstractQuery
+    protected function initExists(): void
     {
         $this->iterator = new \ArrayIterator([[$this->iterator->valid() ? 1 : 0]]);
-
-        return $this;
     }
 
-    public function where($fieldName, $operator = null, $value = null): AbstractQuery
-    {
-        $this->scope->addCondition(...func_get_args());
-
-        return $this;
-    }
-
-    public function field($fieldName, string $alias = null): AbstractQuery
+    protected function initField($fieldName, string $alias = null): void
     {
         if (!$fieldName) {
             throw new Exception('Field query requires field name');
@@ -176,10 +136,7 @@ class Query extends AbstractQuery
             $fieldName = $field->short_name;
         }
 
-        $this->initFields([$fieldName]);
-        $this->initWhere();
-        $this->initOrder();
-        $this->initLimit();
+        $this->initSelect([$fieldName]);
 
         // get first record
         if ($row = $this->getRow()) {
@@ -190,11 +147,9 @@ class Query extends AbstractQuery
         }
 
         $this->iterator = new \ArrayIterator([[$row]]);
-
-        return $this;
     }
 
-    public function execute(): iterable
+    protected function doExecute()
     {
         return $this->iterator;
     }
@@ -202,7 +157,7 @@ class Query extends AbstractQuery
     /**
      * Return all data inside array.
      */
-    public function get(): array
+    protected function doGet(): array
     {
         return iterator_to_array($this->iterator, true);
     }
@@ -210,13 +165,11 @@ class Query extends AbstractQuery
     /**
      * Return one row of data.
      */
-    public function getRow(): ?array
+    protected function doGetRow(): ?array
     {
-        $row = $this->iterator->current();
+        $this->iterator->rewind();
 
-        $this->iterator->next();
-
-        return $row;
+        return $this->iterator->current();
     }
 
     /**
@@ -224,7 +177,7 @@ class Query extends AbstractQuery
      *
      * @return mixed
      */
-    public function getOne()
+    protected function doGetOne()
     {
         $data = $this->getRow();
 
@@ -237,14 +190,9 @@ class Query extends AbstractQuery
      * @param string $fx
      * @param string $field
      * @param bool   $coalesce
-     *
-     * @return \atk4\data\Action\Iterator
      */
-    public function aggregate($fx, $field, $alias = null, $coalesce = false)
+    protected function initAggregate($fx, $field, $alias = null, $coalesce = false): void
     {
-        $this->initWhere();
-        $this->initLimit();
-
         $result = 0;
         $column = array_column($this->get(), $field);
 
@@ -275,8 +223,6 @@ class Query extends AbstractQuery
         }
 
         $this->iterator = new \ArrayIterator([[$result]]);
-
-        return $this;
     }
 
     /**
@@ -287,7 +233,7 @@ class Query extends AbstractQuery
      *
      * @return $this
      */
-    protected function initWhere()
+    protected function initWhere(): void
     {
         if (!$this->scope->isEmpty()) {
             $this->iterator = new \CallbackFilterIterator($this->iterator, function ($row, $id) {
@@ -297,8 +243,6 @@ class Query extends AbstractQuery
                 return $this->match($row, $this->scope);
             });
         }
-
-        return $this;
     }
 
     /**
@@ -418,6 +362,7 @@ class Query extends AbstractQuery
     {
         return print_r([
             'fields' => $this->fields,
+            'model' => $this->model,
             'scope' => $this->scope->toWords($this->model),
             'order' => $this->order,
             'limit' => $this->limit,

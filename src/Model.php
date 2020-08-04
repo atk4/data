@@ -1888,9 +1888,41 @@ class Model implements \IteratorAggregate
      */
     public function toQuery($mode, $args = []): Persistence\AbstractQuery
     {
-        $this->checkPersistence('action');
+        $this->checkPersistence('query');
 
-        return $this->persistence->action($this, $mode, $args);
+        // start backward compatibility -->
+        switch ($mode) {
+            case 'fx':
+            case 'fx0':
+                [$fx, $field] = $args;
+                $alias = $args['alias'] ?? null;
+                $coalesce = $mode === 'fx0';
+
+                $args = [$fx, $field, $alias, $coalesce];
+                $mode = 'aggregate';
+
+                break;
+            case 'field':
+                $args = [$args[0], $args['alias'] ?? null];
+
+                break;
+            case 'count':
+                $args = [$args['alias'] ?? null];
+
+                break;
+            default:
+                break;
+        }
+        // <-- end backward compatibility
+
+        $query = $this->persistence->query($this);
+
+        if (!method_exists($query, $mode)) {
+            throw (new Exception('Unsupported query mode'))
+                ->addMoreInfo('type', $mode);
+        }
+
+        return $this->persistence->query($this)->{$mode}(...$args);
     }
 
     // }}}

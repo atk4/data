@@ -244,7 +244,7 @@ class Array_ extends Persistence
         return $this->lastInsertIds['$'] ?? null;
     }
 
-    protected function initQuery(Model $model): AbstractQuery
+    public function query(Model $model): AbstractQuery
     {
         return new Array_\Query($model);
     }

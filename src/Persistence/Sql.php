@@ -166,6 +166,8 @@ class Sql extends Persistence
      */
     protected function initPersistence(Model $model)
     {
+        parent::initPersistence($model);
+
         $model->addMethod('expr', \Closure::fromCallable([$this, 'expr']));
         $model->addMethod('dsql', \Closure::fromCallable([$this, 'dsql']));
         $model->addMethod('exprNow', \Closure::fromCallable([$this, 'exprNow']));
@@ -380,7 +382,7 @@ class Sql extends Persistence
         return $v;
     }
 
-    protected function initQuery(Model $model): AbstractQuery
+    public function query(Model $model): AbstractQuery
     {
         return new Sql\Query($model);
     }
@@ -397,7 +399,7 @@ class Sql extends Persistence
                 ->addMoreInfo('id', $id);
         }
 
-        $query = $this->initQuery($model);
+        $query = $this->query($model);
 
         // execute action
         try {
@@ -434,9 +436,7 @@ class Sql extends Persistence
      */
     public function load(Model $model, $id): array
     {
-        $data = $this->tryLoad($model, $id);
-
-        if (!$data) {
+        if (!$data = $this->tryLoad($model, $id)) {
             throw (new Exception('Record was not found', 404))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id', $id)
@@ -451,23 +451,31 @@ class Sql extends Persistence
      */
     public function tryLoadAny(Model $model): ?array
     {
-        $load = $model->toQuery('select');
-        $load->limit(1);
+        $rawData = $this->query($model)->getRow();
 
-        // execute action
-        try {
-            $dataRaw = $load->getRow();
-            if ($dataRaw === null) {
-                return null;
-            }
-            $data = $this->typecastLoadRow($model, $dataRaw);
-        } catch (\PDOException $e) {
-            throw (new Exception('Unable to load due to query error', 0, $e))
-                ->addMoreInfo('query', $load->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
+        if ($rawData === null) {
+            return null;
         }
+
+        $data = $this->typecastLoadRow($model, $rawData);
+
+//         $load = $model->toQuery('select');
+//         $load->limit(1);
+
+//         // execute action
+//         try {
+//             $dataRaw = $load->getRow();
+//             if ($dataRaw === null) {
+//                 return null;
+//             }
+//             $data = $this->typecastLoadRow($model, $dataRaw);
+//         } catch (\PDOException $e) {
+//             throw (new Exception('Unable to load due to query error', 0, $e))
+//                 ->addMoreInfo('query', $load->getDebugQuery())
+//                 ->addMoreInfo('message', $e->getMessage())
+//                 ->addMoreInfo('model', $model)
+//                 ->addMoreInfo('scope', $model->scope()->toWords());
+//         }
 
         if ($model->id_field) {
             // If id_field is not set, model will be read-only
@@ -489,9 +497,7 @@ class Sql extends Persistence
      */
     public function loadAny(Model $model): array
     {
-        $data = $this->tryLoadAny($model);
-
-        if (!$data) {
+        if (!$data = $this->tryLoadAny($model)) {
             throw (new Exception('No matching records were found', 404))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->scope()->toWords());
@@ -507,31 +513,16 @@ class Sql extends Persistence
      */
     public function insert(Model $model, array $data)
     {
-        $insert = $model->toQuery('insert');
-
         // don't set id field at all if it's NULL
         if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
             unset($data[$model->id_field]);
         }
 
-        $insert->set($this->typecastSaveRow($model, $data));
+        $data = $this->typecastSaveRow($model, $data);
 
-        $st = null;
+        $this->query($model)->insert($data)->tryExecute();
 
-        try {
-            $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
-            $st = $insert->execute();
-        } catch (\PDOException $e) {
-            throw (new Exception('Unable to execute insert query', 0, $e))
-                ->addMoreInfo('query', $insert->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
-        }
-
-        $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
-
-        return $model->persistence->lastInsertId($model);
+        return $this->lastInsertId($model);
     }
 
     /**
@@ -542,47 +533,25 @@ class Sql extends Persistence
      */
     public function update(Model $model, $id, $data)
     {
-        if (!$model->id_field) {
-            throw new Exception('id_field of a model is not set. Unable to update record.');
-        }
-
-        $update = new Sql\Query($model);
-        $update->mode('update');
-
         $data = $this->typecastSaveRow($model, $data);
 
-        // only apply fields that has been modified
-        $update->set($data);
-        $update->where($model->getField($model->id_field), $id);
+        $query = $this->query($model)->whereId($id)->update($data);
 
-        $st = null;
-
-        try {
-            $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
-            if ($data) {
-                $st = $update->execute();
+        $model->onHook(AbstractQuery::HOOK_AFTER_UPDATE, function (Model $model, AbstractQuery $query) use ($data) {
+            if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
+                // ID was changed
+                $model->id = $data[$model->id_field];
             }
-        } catch (\PDOException $e) {
-            throw (new Exception('Unable to update due to query error', 0, $e))
-                ->addMoreInfo('query', $update->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
-        }
+        }, [], -1000);
 
-        if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
-            // ID was changed
-            $model->id = $data[$model->id_field];
-        }
-
-        $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
+        $result = $query->tryExecute();
 
         // if any rows were updated in database, and we had expressions, reload
-        if ($model->reload_after_save === true && (!$st || $st->rowCount())) {
-            $d = $model->dirty;
+        if ($model->reload_after_save === true && (!$result || $result->rowCount())) {
+            $dirty = $model->dirty;
             $model->reload();
             $model->_dirty_after_reload = $model->dirty;
-            $model->dirty = $d;
+            $model->dirty = $dirty;
         }
     }
 
@@ -593,24 +562,7 @@ class Sql extends Persistence
      */
     public function delete(Model $model, $id)
     {
-        if (!$model->id_field) {
-            throw new Exception('id_field of a model is not set. Unable to delete record.');
-        }
-
-        $delete = new Sql\Query($model);
-        $delete->mode('delete');
-        $delete->where($model->id_field, $id);
-        $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
-
-        try {
-            $delete->execute();
-        } catch (\PDOException $e) {
-            throw (new Exception('Unable to delete due to query error', 0, $e))
-                ->addMoreInfo('query', $delete->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
-        }
+        $this->query($model)->delete($id)->tryExecute();
     }
 
     public function getFieldSqlExpression(Field $field, Expression $expression)
