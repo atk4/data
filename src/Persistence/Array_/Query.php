@@ -10,8 +10,7 @@ use atk4\data\Model;
 use atk4\data\Persistence\AbstractQuery;
 
 /**
- * Class Array_ is returned by $model->toQuery(). Compatible with DSQL to a certain point as it implements
- * specific actions such as getOne() or get().
+ * Class to perform queries on Array_ persistence.
  */
 class Query extends AbstractQuery
 {

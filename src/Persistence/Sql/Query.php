@@ -14,9 +14,12 @@ use atk4\dsql\Expressionable;
 use atk4\dsql\Query as DsqlQuery;
 
 /**
- * @method Query getDebugQuery()
- * @method Query render()
- * @method Query mode()
+ * Class to perform queries on Sql persistence.
+ * Utilizes atk4\dsql\Query to perform the operations.
+ *
+ * @method DsqlQuery getDebugQuery()
+ * @method DsqlQuery render()
+ * @method DsqlQuery mode()
  */
 class Query extends AbstractQuery implements Expressionable
 {
@@ -33,7 +36,6 @@ class Query extends AbstractQuery implements Expressionable
             $this->dsql->table($model->table, $model->table_alias ?? null);
         }
 
-        // add With cursors
         $this->addWithCursors();
     }
 
@@ -236,6 +238,11 @@ class Query extends AbstractQuery implements Expressionable
         return $this->dsql;
     }
 
+    /**
+     * Return the underlying Dsql object performing the query to DB.
+     *
+     * @return \atk4\dsql\Query
+     */
     public function dsql()
     {
         return $this->dsql;

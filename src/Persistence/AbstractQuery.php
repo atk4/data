@@ -34,12 +34,16 @@ abstract class AbstractQuery implements \IteratorAggregate
     /** @var Model */
     protected $model;
 
+    /** @var Model\Scope */
     protected $scope;
 
+    /** @var array */
     protected $order = [];
 
+    /** @var array */
     protected $limit = [];
 
+    /** @var string */
     protected $mode;
 
     public function __construct(Model $model)
@@ -53,11 +57,19 @@ abstract class AbstractQuery implements \IteratorAggregate
         $this->limit = $model->limit;
     }
 
+    /**
+     * Find and return data from record with $id or NULL if none found.
+     */
     public function find($id): ?array
     {
         return $this->whereId($id)->getRow();
     }
 
+    /**
+     * Setup query as selecting list of $fields or all if $field = NULL.
+     *
+     * @param array|false|null $fields
+     */
     public function select($fields = null): self
     {
         $this->initWhere();
@@ -70,8 +82,16 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the select operation in the child class.
+     *
+     * @param array|false|null $fields
+     */
     abstract protected function initSelect($fields = null): void;
 
+    /**
+     * Setup query as updating records in the AbstractQuery::$scope using $data.
+     */
     public function update(array $data): self
     {
         $this->initUpdate($data);
@@ -81,8 +101,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the update operation in the child class.
+     */
     abstract protected function initUpdate(array $data): void;
 
+    /**
+     * Setup query as inserting a record using $data.
+     */
     public function insert(array $data): self
     {
         $this->initInsert($data);
@@ -92,8 +118,17 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the insert operation in the child class.
+     */
     abstract protected function initInsert(array $data): void;
 
+    /**
+     * Setup query as deleting record(s) within the AbstractQuery::$scope.
+     * If $id argument provided only record with $id will be deleted if within the scope.
+     *
+     * @param int|string $id
+     */
     public function delete($id = null): self
     {
         $this->initWhere();
@@ -111,8 +146,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the delete operation in the child class.
+     */
     abstract protected function initDelete($id = null): void;
 
+    /**
+     * Setup query as exists within the AbstractQuery::$scope.
+     */
     public function exists(): self
     {
         $this->initWhere();
@@ -123,8 +164,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the exists operation in the child class.
+     */
     abstract protected function initExists(): void;
 
+    /**
+     * Setup query as counting of records within the AbstractQuery::$scope.
+     */
     public function count($alias = null): self
     {
         $this->initWhere();
@@ -135,8 +182,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the count operation in the child class.
+     */
     abstract protected function initCount($alias = null): void;
 
+    /**
+     * Setup query as aggregate function result of records within the AbstractQuery::$scope.
+     */
     public function aggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): self
     {
         $this->initWhere();
@@ -147,8 +200,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the aggregate operation in the child class.
+     */
     abstract protected function initAggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): void;
 
+    /**
+     * Setup query as selecting a field value from records within the AbstractQuery::$scope.
+     */
     public function field($fieldName, string $alias = null): self
     {
         $this->initWhere();
@@ -165,6 +224,9 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the field operation in the child class.
+     */
     abstract protected function initField($fieldName, string $alias = null): void;
 
     protected function withMode(): self
@@ -192,6 +254,9 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Add condition to the query scope (leaves model scope intact).
+     */
     public function where($fieldName, $operator = null, $value = null): self
     {
         $this->scope->addCondition(...func_get_args());
@@ -199,6 +264,9 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Limit scope to only records with $id (leaves model scope intact).
+     */
     public function whereId($id)
     {
         if (!$this->model->id_field) {
@@ -211,8 +279,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the application of scope conditions in the underlying query engine.
+     */
     abstract protected function initWhere(): void;
 
+    /**
+     * Set the order required from query result (leaves model order intact).
+     */
     public function order($field, $desc = null): self
     {
         $this->order[] = [$field, $desc];
@@ -222,8 +296,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the application of order in the underlying query engine.
+     */
     abstract protected function initOrder(): void;
 
+    /**
+     * Set the limit required from query result (leaves model order intact).
+     */
     public function limit($limit, $offset = 0): self
     {
         $this->limit = [$limit, $offset];
@@ -233,8 +313,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
+    /**
+     * Initiate the application of limit in the underlying query engine.
+     */
     abstract protected function initLimit(): void;
 
+    /**
+     * Converts limit array to arguments [$limit, $offset].
+     */
     protected function getLimitArgs()
     {
         if ($this->limit) {
@@ -251,6 +337,9 @@ abstract class AbstractQuery implements \IteratorAggregate
         }
     }
 
+    /**
+     * Executes the query and returns the result.
+     */
     public function execute()
     {
         return $this->executeQueryWithDebug(function () {
@@ -274,6 +363,9 @@ abstract class AbstractQuery implements \IteratorAggregate
         });
     }
 
+    /**
+     * Actual routine for query execution defined in child class.
+     */
     abstract protected function doExecute();
 
     protected function hookOnModel($name, $args = []): void
@@ -288,6 +380,9 @@ abstract class AbstractQuery implements \IteratorAggregate
         }
     }
 
+    /**
+     * Get array of records matching the query.
+     */
     public function get(): array
     {
         return $this->executeQueryWithDebug(function () {
@@ -295,8 +390,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         });
     }
 
+    /**
+     * Actual routine for query get execution defined in child class.
+     */
     abstract protected function doGet(): array;
 
+    /**
+     * Get one row from the records matching the query.
+     */
     public function getRow(): ?array
     {
         return $this->executeQueryWithDebug(function () {
@@ -306,8 +407,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         });
     }
 
+    /**
+     * Actual routine for query get row execution defined in child class.
+     */
     abstract protected function doGetRow(): ?array;
 
+    /**
+     * Get value from the first field of the first record in the query results.
+     */
     public function getOne()
     {
         return $this->executeQueryWithDebug(function () {
@@ -315,6 +422,9 @@ abstract class AbstractQuery implements \IteratorAggregate
         });
     }
 
+    /**
+     * Actual routine for query get one execution defined in child class.
+     */
     abstract protected function doGetOne();
 
     protected function executeQueryWithDebug(\Closure $fx)
@@ -333,16 +443,25 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this->execute();
     }
 
+    /**
+     * Return the model the query runs on.
+     */
     public function getModel(): Model
     {
         return $this->model;
     }
 
+    /**
+     * Return the mode the query is setup for.
+     */
     public function getMode(): string
     {
         return $this->mode;
     }
 
+    /**
+     * Return the mode the query debug array with necessary details.
+     */
     public function getDebug(): array
     {
         return [
