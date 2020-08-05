@@ -270,7 +270,7 @@ abstract class AbstractQuery implements \IteratorAggregate
 
 //         $this->model->hook(self::HOOK_AFTER_EXECUTE, [$this, $result]);
         } catch (Exception $e) {
-            throw (new Exception('Unable to execute query', 0, $e))
+            throw (new Exception('Execution of query failed', 0, $e))
                 ->addMoreInfo('query', $this->getDebug())
                 ->addMoreInfo('message', $e->getMessage());
         }
