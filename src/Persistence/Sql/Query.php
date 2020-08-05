@@ -20,6 +20,8 @@ use atk4\dsql\Query as DsqlQuery;
  * @method DsqlQuery getDebugQuery()
  * @method DsqlQuery render()
  * @method DsqlQuery mode()
+ * @method DsqlQuery reset()
+ * @method DsqlQuery join()
  */
 class Query extends AbstractQuery implements Expressionable
 {
