@@ -253,13 +253,13 @@ abstract class AbstractQuery implements \IteratorAggregate
 
     public function execute()
     {
-        try {
+        return $this->executeQueryWithDebug(function () {
             $this->withMode();
 
             // backward compatibility
             $this->hookOnModel('HOOK_BEFORE_' . $this->getMode(), [$this]);
 
-//         $this->model->hook(self::HOOK_BEFORE_EXECUTE, [$this]);
+//          $this->model->hook(self::HOOK_BEFORE_EXECUTE, [$this]);
 
             $this->hookOnModel('HOOK_BEFORE_' . $this->getMode(), [$this]);
 
@@ -268,14 +268,10 @@ abstract class AbstractQuery implements \IteratorAggregate
             // backward compatibility
             $this->hookOnModel('HOOK_AFTER_' . $this->getMode(), [$this, $result]);
 
-//         $this->model->hook(self::HOOK_AFTER_EXECUTE, [$this, $result]);
-        } catch (Exception $e) {
-            throw (new Exception('Execution of query failed', 0, $e))
-                ->addMoreInfo('query', $this->getDebug())
-                ->addMoreInfo('message', $e->getMessage());
-        }
+//          $this->model->hook(self::HOOK_AFTER_EXECUTE, [$this, $result]);
 
-        return $result;
+            return $result;
+        });
     }
 
     abstract protected function doExecute();
@@ -294,26 +290,43 @@ abstract class AbstractQuery implements \IteratorAggregate
 
     public function get(): array
     {
-        return $this->doGet();
+        return $this->executeQueryWithDebug(function () {
+            return $this->doGet();
+        });
     }
 
     abstract protected function doGet(): array;
 
     public function getRow(): ?array
     {
-        $this->withMode()->limit(1);
+        return $this->executeQueryWithDebug(function () {
+            $this->withMode()->limit(1);
 
-        return $this->doGetRow();
+            return $this->doGetRow();
+        });
     }
 
     abstract protected function doGetRow(): ?array;
 
     public function getOne()
     {
-        return $this->doGetOne();
+        return $this->executeQueryWithDebug(function () {
+            return $this->doGetOne();
+        });
     }
 
     abstract protected function doGetOne();
+
+    protected function executeQueryWithDebug(\Closure $fx)
+    {
+        try {
+            return $fx();
+        } catch (Exception $e) {
+            throw (new Exception('Execution of query failed', 0, $e))
+                ->addMoreInfo('query', $this->getDebug())
+                ->addMoreInfo('message', $e->getMessage());
+        }
+    }
 
     public function getModel(): Model
     {
