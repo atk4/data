@@ -77,42 +77,12 @@ class Query extends Persistence\AbstractQuery implements Expressionable
             return;
         }
 
-        // add fields
-        if (is_array($fields)) {
-            // Set of fields is strictly defined for purposes of export,
-            // so we will ignore even system fields.
-            foreach ($fields as $fieldName) {
-                $this->addField($this->model->getField($fieldName));
-            }
-        } elseif ($this->model->only_fields) {
-            $addedFields = [];
+        if (!is_array($fields)) {
+            $fields = array_keys($this->model->getFields('persisting'));
+        }
 
-            // Add requested fields first
-            foreach ($this->model->only_fields as $fieldName) {
-                $field = $this->model->getField($fieldName);
-                if ($field->never_persist) {
-                    continue;
-                }
-                $this->addField($field);
-                $addedFields[$fieldName] = true;
-            }
-
-            // now add system fields, if they were not added
-            foreach ($this->model->getFields() as $fieldName => $field) {
-                if ($field->never_persist) {
-                    continue;
-                }
-                if ($field->system && !isset($addedFields[$fieldName])) {
-                    $this->addField($field);
-                }
-            }
-        } else {
-            foreach ($this->model->getFields() as $fieldName => $field) {
-                if ($field->never_persist) {
-                    continue;
-                }
-                $this->addField($field);
-            }
+        foreach ($fields as $fieldName) {
+            $this->addField($this->model->getField($fieldName));
         }
     }
 
