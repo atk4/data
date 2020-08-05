@@ -577,17 +577,20 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    private function checkOnlyFieldsField(string $field)
+    private function checkOnlyFieldsField(string $fieldName)
     {
-        $this->getField($field); // test if field exists
+        $field = $this->getField($fieldName); // test if field exists
 
-        if ($this->only_fields) {
-            if (!in_array($field, $this->only_fields, true) && !$this->getField($field)->system) {
-                throw (new Exception('Attempt to use field outside of those set by onlyFields'))
-                    ->addMoreInfo('field', $field)
-                    ->addMoreInfo('only_fields', $this->only_fields);
-            }
+        if (!$this->isOnlyFieldsField($fieldName) && !$field->system) {
+            throw (new Exception('Attempt to use field outside of those set by onlyFields'))
+                ->addMoreInfo('field', $fieldName)
+                ->addMoreInfo('only_fields', $this->only_fields);
         }
+    }
+
+    public function isOnlyFieldsField(string $fieldName)
+    {
+        return !$this->only_fields || in_array($fieldName, $this->only_fields, true);
     }
 
     /**
@@ -619,16 +622,16 @@ class Model implements \IteratorAggregate
 
         $filterPresets = [
             'system' => function (Field $field) {
-                return $this->isOnlyField($field->short_name) && $field->system;
+                return $this->isOnlyFieldsField($field->short_name) && $field->system;
             },
             'not system' => function (Field $field) {
-                return $this->isOnlyField($field->short_name) && !$field->system;
+                return $this->isOnlyFieldsField($field->short_name) && !$field->system;
             },
             'editable' => function (Field $field) {
-                return $this->isOnlyField($field->short_name) && $field->isEditable();
+                return $this->isOnlyFieldsField($field->short_name) && $field->isEditable();
             },
             'visible' => function (Field $field) {
-                return $this->isOnlyField($field->short_name) && $field->isVisible();
+                return $this->isOnlyFieldsField($field->short_name) && $field->isVisible();
             },
             'persisting' => function (Field $field) {
                 if ($field->never_persist) {
@@ -636,7 +639,7 @@ class Model implements \IteratorAggregate
                 }
 
                 if (!$field->system) {
-                    return $this->isOnlyField($field->short_name);
+                    return $this->isOnlyFieldsField($field->short_name);
                 }
 
                 return true;
@@ -661,11 +664,6 @@ class Model implements \IteratorAggregate
 
             return false;
         }, ARRAY_FILTER_USE_BOTH);
-    }
-
-    public function isOnlyField($fieldName)
-    {
-        return !$this->only_fields || in_array($fieldName, $this->only_fields, true);
     }
 
     /**
