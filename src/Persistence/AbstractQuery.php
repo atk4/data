@@ -251,36 +251,29 @@ abstract class AbstractQuery implements \IteratorAggregate
         }
     }
 
-    public function tryExecute()
+    public function execute()
     {
         try {
-            $result = $this->execute();
+            $this->withMode();
+
+            // backward compatibility
+            $this->hookOnModel('HOOK_BEFORE_' . $this->getMode(), [$this]);
+
+//         $this->model->hook(self::HOOK_BEFORE_EXECUTE, [$this]);
+
+            $this->hookOnModel('HOOK_BEFORE_' . $this->getMode(), [$this]);
+
+            $result = $this->doExecute();
+
+            // backward compatibility
+            $this->hookOnModel('HOOK_AFTER_' . $this->getMode(), [$this, $result]);
+
+//         $this->model->hook(self::HOOK_AFTER_EXECUTE, [$this, $result]);
         } catch (Exception $e) {
             throw (new Exception('Unable to execute query', 0, $e))
                 ->addMoreInfo('query', $this->getDebug())
                 ->addMoreInfo('message', $e->getMessage());
         }
-
-        return $result;
-    }
-
-    public function execute()
-    {
-        $this->withMode();
-
-        // backward compatibility
-        $this->hookOnModel('HOOK_BEFORE_' . $this->getMode(), [$this]);
-
-//         $this->model->hook(self::HOOK_BEFORE_EXECUTE, [$this]);
-
-        $this->hookOnModel('HOOK_BEFORE_' . $this->getMode(), [$this]);
-
-        $result = $this->doExecute();
-
-        // backward compatibility
-        $this->hookOnModel('HOOK_AFTER_' . $this->getMode(), [$this, $result]);
-
-//         $this->model->hook(self::HOOK_BEFORE_EXECUTE, [$this, $result]);
 
         return $result;
     }

@@ -92,7 +92,7 @@ class Persistence
      */
     public function prepareIterator(Model $model): iterable
     {
-        return $this->query($model)->tryExecute();
+        return $this->query($model)->execute();
     }
 
     /**

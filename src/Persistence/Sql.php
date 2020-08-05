@@ -520,7 +520,7 @@ class Sql extends Persistence
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $this->query($model)->insert($data)->tryExecute();
+        $this->query($model)->insert($data)->execute();
 
         return $this->lastInsertId($model);
     }
@@ -544,7 +544,7 @@ class Sql extends Persistence
             }
         }, [], -1000);
 
-        $result = $query->tryExecute();
+        $result = $query->execute();
 
         // if any rows were updated in database, and we had expressions, reload
         if ($model->reload_after_save === true && (!$result || $result->rowCount())) {
@@ -562,7 +562,7 @@ class Sql extends Persistence
      */
     public function delete(Model $model, $id)
     {
-        $this->query($model)->delete($id)->tryExecute();
+        $this->query($model)->delete($id)->execute();
     }
 
     public function getFieldSqlExpression(Field $field, Expression $expression)

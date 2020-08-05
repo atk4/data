@@ -272,7 +272,7 @@ class Query extends AbstractQuery implements Expressionable
 
     public function getIterator(): iterable
     {
-        return $this->tryExecute();
+        return $this->execute();
     }
 
     public function getDebug(): string
