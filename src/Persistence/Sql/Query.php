@@ -148,14 +148,14 @@ class Query extends AbstractQuery implements Expressionable
         $this->dsql->reset('field')->field('count(*)', $alias);
     }
 
-    protected function initAggregate($fx, $field, string $alias = null, bool $coalesce = false): void
+    protected function initAggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): void
     {
         $field = is_string($field) ? $this->model->getField($field) : $field;
 
-        $expr = $coalesce ? "coalesce({$fx}([]), 0)" : "{$fx}([])";
+        $expr = $coalesce ? "coalesce({$functionName}([]), 0)" : "{$functionName}([])";
 
         if (!$alias && $field instanceof FieldSqlExpression) {
-            $alias = $fx . '_' . $field->short_name;
+            $alias = $functionName . '_' . $field->short_name;
         }
 
         $this->dsql->reset('field')->field($this->dsql->expr($expr, [$field]), $alias);

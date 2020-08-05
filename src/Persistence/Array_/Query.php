@@ -187,16 +187,17 @@ class Query extends AbstractQuery
     /**
      * Calculates SUM|AVG|MIN|MAX aggragate values for $field.
      *
-     * @param string $fx
-     * @param string $field
-     * @param bool   $coalesce
+     * @param string $fieldName
+     * @param string $alias
      */
-    protected function initAggregate($fx, $field, $alias = null, $coalesce = false): void
+    protected function initAggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): void
     {
+        $field = is_string($field) ? $field : $field->short_name;
+
         $result = 0;
         $column = array_column($this->get(), $field);
 
-        switch (strtoupper($fx)) {
+        switch (strtoupper($functionName)) {
             case 'SUM':
                 $result = array_sum($column);
 
@@ -218,20 +219,15 @@ class Query extends AbstractQuery
 
             break;
             default:
-                throw (new Exception('Persistence\Array_ driver action unsupported format'))
-                    ->addMoreInfo('action', $fx);
+                throw (new Exception('Persistence\Array_ query unsupported aggregate function'))
+                    ->addMoreInfo('function', $functionName);
         }
 
         $this->iterator = new \ArrayIterator([[$result]]);
     }
 
     /**
-     * Applies FilterIterator making sure that values of $field equal to $value.
-     *
-     * @param string $field
-     * @param string $value
-     *
-     * @return $this
+     * Applies FilterIterator.
      */
     protected function initWhere(): void
     {
@@ -247,10 +243,8 @@ class Query extends AbstractQuery
 
     /**
      * Checks if $row matches $condition.
-     *
-     * @return bool
      */
-    protected function match(array $row, Model\Scope\AbstractScope $condition)
+    protected function match(array $row, Model\Scope\AbstractScope $condition): bool
     {
         $match = false;
 

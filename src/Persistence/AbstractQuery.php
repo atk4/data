@@ -137,17 +137,17 @@ abstract class AbstractQuery implements \IteratorAggregate
 
     abstract protected function initCount($alias = null): void;
 
-    public function aggregate($fx, $field, string $alias = null, bool $coalesce = false): self
+    public function aggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): self
     {
         $this->initWhere();
-        $this->initAggregate(...func_get_args());
+        $this->initAggregate($functionName, $field, $alias, $coalesce);
 
         $this->hookInitSelect('aggregate');
 
         return $this;
     }
 
-    abstract protected function initAggregate($fx, $field, string $alias = null, bool $coalesce = false): void;
+    abstract protected function initAggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): void;
 
     public function field($fieldName, string $alias = null): self
     {
