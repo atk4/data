@@ -436,7 +436,9 @@ class Sql extends Persistence
      */
     public function load(Model $model, $id): array
     {
-        if (!$data = $this->tryLoad($model, $id)) {
+        $data = $this->tryLoad($model, $id);
+
+        if (!$data) {
             throw (new Exception('Record was not found', 404))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id', $id)
@@ -497,7 +499,9 @@ class Sql extends Persistence
      */
     public function loadAny(Model $model): array
     {
-        if (!$data = $this->tryLoadAny($model)) {
+        $data = $this->tryLoadAny($model);
+
+        if (!$data) {
             throw (new Exception('No matching records were found', 404))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->scope()->toWords());
