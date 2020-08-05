@@ -352,14 +352,10 @@ class Query extends AbstractQuery
         return $result;
     }
 
-    public function getDebug(): string
+    public function getDebug(): array
     {
-        return print_r([
+        return array_merge([
             'fields' => $this->fields,
-            'model' => $this->model,
-            'scope' => $this->scope->toWords($this->model),
-            'order' => $this->order,
-            'limit' => $this->limit,
-        ], true);
+        ], parent::getDebug());
     }
 }

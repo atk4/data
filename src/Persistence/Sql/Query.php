@@ -275,15 +275,11 @@ class Query extends AbstractQuery implements Expressionable
         return $this->execute();
     }
 
-    public function getDebug(): string
+    public function getDebug(): array
     {
-        return print_r([
+        return array_merge([
             'sql' => $this->dsql->getDebugQuery(),
-            'model' => $this->model,
-            'scope' => $this->scope->toWords($this->model),
-            'order' => $this->order,
-            'limit' => $this->limit,
-        ], true);
+        ], parent::getDebug());
     }
 
     public function __call($method, $args)

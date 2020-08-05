@@ -323,8 +323,8 @@ abstract class AbstractQuery implements \IteratorAggregate
             return $fx();
         } catch (Exception $e) {
             throw (new Exception('Execution of query failed', 0, $e))
-                ->addMoreInfo('query', $this->getDebug())
-                ->addMoreInfo('message', $e->getMessage());
+                ->addMoreInfo('message', $e->getMessage())
+                ->addMoreInfo('query', $this->getDebug());
         }
     }
 
@@ -338,5 +338,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this->mode;
     }
 
-    abstract public function getDebug(): string;
+    public function getDebug(): array
+    {
+        return [
+            'mode' => $this->mode,
+            'model' => $this->model,
+            'scope' => $this->scope->toWords($this->model),
+            'order' => $this->order,
+            'limit' => $this->limit,
+        ];
+    }
 }
