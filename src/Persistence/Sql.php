@@ -401,7 +401,7 @@ class Sql extends Persistence
 
         $data = $this->typecastLoadRow($model, $dataRaw);
 
-        $this->loadModelIdFromData($model, $data);
+        $this->setModelIdFromData($model, $data);
 
         return $data;
     }
@@ -437,13 +437,13 @@ class Sql extends Persistence
         $data = $this->typecastLoadRow($model, $rawData);
 
         if ($model->id_field) {
-            $this->loadModelIdFromData($model, $data);
+            $this->setModelIdFromData($model, $data);
         }
 
         return $data;
     }
 
-    protected function loadModelIdFromData(Model $model, $data): void
+    protected function setModelIdFromData(Model $model, $data): void
     {
         if (!isset($data[$model->id_field])) {
             throw (new Exception('Model uses "id_field" but it wasn\'t available in the database'))
