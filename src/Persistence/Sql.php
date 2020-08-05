@@ -394,11 +394,6 @@ class Sql extends Persistence
      */
     public function tryLoad(Model $model, $id): ?array
     {
-        if (!$model->id_field) {
-            throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
-                ->addMoreInfo('id', $id);
-        }
-
         $query = $this->query($model);
 
         // execute action
