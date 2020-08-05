@@ -73,6 +73,17 @@ class Model implements \IteratorAggregate
     /** @const string Executed when self::onlyFields() method is called. */
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
+    /** @const string */
+    public const FIELD_FILTER_SYSTEM = 'system';
+    /** @const string */
+    public const FIELD_FILTER_NOT_SYSTEM = 'not system';
+    /** @const string */
+    public const FIELD_FILTER_VISIBLE = 'visible';
+    /** @const string */
+    public const FIELD_FILTER_EDITABLE = 'editable';
+    /** @const string */
+    public const FIELD_FILTER_PERSIST = 'persist';
+
     // {{{ Properties of the class
 
     /**
@@ -621,19 +632,19 @@ class Model implements \IteratorAggregate
         }
 
         $filterPresets = [
-            'system' => function (Field $field) {
+            self::FIELD_FILTER_SYSTEM => function (Field $field) {
                 return $this->isOnlyFieldsField($field->short_name) && $field->system;
             },
-            'not system' => function (Field $field) {
+            self::FIELD_FILTER_NOT_SYSTEM => function (Field $field) {
                 return $this->isOnlyFieldsField($field->short_name) && !$field->system;
             },
-            'editable' => function (Field $field) {
+            self::FIELD_FILTER_EDITABLE => function (Field $field) {
                 return $this->isOnlyFieldsField($field->short_name) && $field->isEditable();
             },
-            'visible' => function (Field $field) {
+            self::FIELD_FILTER_VISIBLE => function (Field $field) {
                 return $this->isOnlyFieldsField($field->short_name) && $field->isVisible();
             },
-            'persisting' => function (Field $field) {
+            self::FIELD_FILTER_PERSIST => function (Field $field) {
                 if ($field->never_persist) {
                     return false;
                 }
@@ -1654,7 +1665,7 @@ class Model implements \IteratorAggregate
 
         // prepare array with field names
         if ($fields === null) {
-            $fields = array_keys($this->getFields('persisting'));
+            $fields = array_keys($this->getFields(self::FIELD_FILTER_PERSIST));
         }
 
         // add key_field to array if it's not there
