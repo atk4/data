@@ -328,6 +328,11 @@ abstract class AbstractQuery implements \IteratorAggregate
         }
     }
 
+    public function getIterator(): iterable
+    {
+        return $this->execute();
+    }
+
     public function getModel(): Model
     {
         return $this->model;

@@ -57,11 +57,6 @@ class Query extends AbstractQuery
     {
     }
 
-    public function getIterator(): iterable
-    {
-        return $this->iterator;
-    }
-
     /**
      * Applies sorting on Iterator.
      *

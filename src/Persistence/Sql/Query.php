@@ -270,11 +270,6 @@ class Query extends AbstractQuery implements Expressionable
         }
     }
 
-    public function getIterator(): iterable
-    {
-        return $this->execute();
-    }
-
     public function getDebug(): array
     {
         return array_merge([
