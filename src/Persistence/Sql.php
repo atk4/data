@@ -534,16 +534,14 @@ class Sql extends Persistence
     {
         $data = $this->typecastSaveRow($model, $data);
 
-        $query = $this->query($model)->whereId($id)->update($data);
-
-        $model->onHook(AbstractQuery::HOOK_AFTER_UPDATE, function (Model $model, AbstractQuery $query) use ($data) {
+        $model->onHook(AbstractQuery::HOOK_AFTER_UPDATE, function (Model $model, AbstractQuery $query, $result) use ($data) {
             if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
                 // ID was changed
                 $model->id = $data[$model->id_field];
             }
         }, [], -1000);
 
-        $result = $query->execute();
+        $result = $this->query($model)->whereId($id)->update($data)->execute();
 
         // if any rows were updated in database, and we had expressions, reload
         if ($model->reload_after_save === true && (!$result || $result->rowCount())) {
@@ -552,6 +550,8 @@ class Sql extends Persistence
             $model->_dirty_after_reload = $model->dirty;
             $model->dirty = $dirty;
         }
+
+        return $result;
     }
 
     /**
