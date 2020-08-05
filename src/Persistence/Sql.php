@@ -395,7 +395,6 @@ class Sql extends Persistence
     public function tryLoad(Model $model, $id): ?array
     {
         $dataRaw = $this->query($model)->find($id);
-
         if ($dataRaw === null) {
             return null;
         }
@@ -415,7 +414,6 @@ class Sql extends Persistence
     public function load(Model $model, $id): array
     {
         $data = $this->tryLoad($model, $id);
-
         if (!$data) {
             throw (new Exception('Record was not found', 404))
                 ->addMoreInfo('model', $model)
@@ -432,7 +430,6 @@ class Sql extends Persistence
     public function tryLoadAny(Model $model): ?array
     {
         $rawData = $this->query($model)->getRow();
-
         if ($rawData === null) {
             return null;
         }
@@ -464,7 +461,6 @@ class Sql extends Persistence
     public function loadAny(Model $model): array
     {
         $data = $this->tryLoadAny($model);
-
         if (!$data) {
             throw (new Exception('No matching records were found', 404))
                 ->addMoreInfo('model', $model)
