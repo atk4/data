@@ -394,32 +394,15 @@ class Sql extends Persistence
      */
     public function tryLoad(Model $model, $id): ?array
     {
-        $query = $this->query($model);
+        $dataRaw = $this->query($model)->find($id);
 
-        // execute action
-        try {
-            $dataRaw = $query->find($id);
-            if ($dataRaw === null) {
-                return null;
-            }
-            $data = $this->typecastLoadRow($model, $dataRaw);
-        } catch (\PDOException $e) {
-            throw (new Exception('Unable to load due to query error', 0, $e))
-                ->addMoreInfo('query', $query->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
+        if ($dataRaw === null) {
+            return null;
         }
 
-        if (!isset($data[$model->id_field]) || $data[$model->id_field] === null) {
-            throw (new Exception('Model uses "id_field" but it wasn\'t available in the database'))
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('id_field', $model->id_field)
-                ->addMoreInfo('id', $id)
-                ->addMoreInfo('data', $data);
-        }
+        $data = $this->typecastLoadRow($model, $dataRaw);
 
-        $model->id = $data[$model->id_field];
+        $this->loadModelIdFromData($model, $data);
 
         return $data;
     }
@@ -456,37 +439,23 @@ class Sql extends Persistence
 
         $data = $this->typecastLoadRow($model, $rawData);
 
-//         $load = $model->toQuery('select');
-//         $load->limit(1);
-
-//         // execute action
-//         try {
-//             $dataRaw = $load->getRow();
-//             if ($dataRaw === null) {
-//                 return null;
-//             }
-//             $data = $this->typecastLoadRow($model, $dataRaw);
-//         } catch (\PDOException $e) {
-//             throw (new Exception('Unable to load due to query error', 0, $e))
-//                 ->addMoreInfo('query', $load->getDebugQuery())
-//                 ->addMoreInfo('message', $e->getMessage())
-//                 ->addMoreInfo('model', $model)
-//                 ->addMoreInfo('scope', $model->scope()->toWords());
-//         }
-
         if ($model->id_field) {
-            // If id_field is not set, model will be read-only
-            if (isset($data[$model->id_field])) {
-                $model->id = $data[$model->id_field];
-            } else {
-                throw (new Exception('Model uses "id_field" but it was not available in the database'))
-                    ->addMoreInfo('model', $model)
-                    ->addMoreInfo('id_field', $model->id_field)
-                    ->addMoreInfo('data', $data);
-            }
+            $this->loadModelIdFromData($model, $data);
         }
 
         return $data;
+    }
+
+    protected function loadModelIdFromData(Model $model, $data): void
+    {
+        if (!isset($data[$model->id_field])) {
+            throw (new Exception('Model uses "id_field" but it wasn\'t available in the database'))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('id_field', $model->id_field)
+                ->addMoreInfo('data', $data);
+        }
+
+        $model->id = $data[$model->id_field];
     }
 
     /**
