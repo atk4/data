@@ -820,7 +820,8 @@ class Model implements \IteratorAggregate
                 $data[$field->short_name] = $this->get($field->short_name);
             }
 
-            return $data;
+            // return $data keys sorted in the order of Model::$only_fields
+            return array_merge($this->only_fields ? array_flip($this->only_fields): [], $data);
         }
 
         $this->assertOnlyFieldsField($field);
