@@ -590,7 +590,7 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    private function checkOnlyFieldsField(string $fieldName)
+    private function assertOnlyFieldsField(string $fieldName)
     {
         $field = $this->getField($fieldName); // test if field exists
 
@@ -611,7 +611,7 @@ class Model implements \IteratorAggregate
      */
     public function isDirty(string $field): bool
     {
-        $this->checkOnlyFieldsField($field);
+        $this->assertOnlyFieldsField($field);
 
         if (array_key_exists($field, $this->dirty)) {
             return true;
@@ -691,7 +691,7 @@ class Model implements \IteratorAggregate
      */
     public function set(string $field, $value)
     {
-        $this->checkOnlyFieldsField($field);
+        $this->assertOnlyFieldsField($field);
 
         $f = $this->getField($field);
 
@@ -823,7 +823,7 @@ class Model implements \IteratorAggregate
             return $data;
         }
 
-        $this->checkOnlyFieldsField($field);
+        $this->assertOnlyFieldsField($field);
 
         if (array_key_exists($field, $this->data)) {
             return $this->data[$field];
@@ -890,7 +890,7 @@ class Model implements \IteratorAggregate
      */
     public function _isset(string $name): bool
     {
-        $this->checkOnlyFieldsField($name);
+        $this->assertOnlyFieldsField($name);
 
         return array_key_exists($name, $this->dirty);
     }
@@ -902,7 +902,7 @@ class Model implements \IteratorAggregate
      */
     public function _unset(string $name)
     {
-        $this->checkOnlyFieldsField($name);
+        $this->assertOnlyFieldsField($name);
 
         if (array_key_exists($name, $this->dirty)) {
             $this->data[$name] = $this->dirty[$name];
