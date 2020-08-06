@@ -781,11 +781,11 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $model->addField('not_editable', ['ui' => ['editable' => false]]);
 
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
-        $this->assertSame(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
-        $this->assertSame(['editable', 'visible', 'not_editable'], array_keys($model->getFields('not system')));
-        $this->assertSame(['editable', 'editable_system', 'visible'], array_keys($model->getFields('editable')));
-        $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
-        $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
+        $this->assertSame(['system', 'editable_system', 'visible_system'], array_keys($model->getFields(Model::FIELD_FILTER_SYSTEM)));
+        $this->assertSame(['editable', 'visible', 'not_editable'], array_keys($model->getFields(Model::FIELD_FILTER_NOT_SYSTEM)));
+        $this->assertSame(['editable', 'editable_system', 'visible'], array_keys($model->getFields(Model::FIELD_FILTER_EDITABLE)));
+        $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(Model::FIELD_FILTER_VISIBLE)));
+        $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields([Model::FIELD_FILTER_EDITABLE, Model::FIELD_FILTER_VISIBLE])));
 
         $model->onlyFields(['system', 'visible', 'not_editable']);
 
@@ -793,7 +793,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
 
         // only return subset of only_fields
-        $this->assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
+        $this->assertSame(['visible', 'not_editable'], array_keys($model->getFields(Model::FIELD_FILTER_VISIBLE)));
 
         $this->expectExceptionMessage('not supported');
         $model->getFields('foo');
