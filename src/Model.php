@@ -592,7 +592,7 @@ class Model implements \IteratorAggregate
 
     private function assertOnlyFieldsField(string $fieldName)
     {
-        $field = $this->getField($fieldName); // test if field exists
+        $field = $this->getField($fieldName);
 
         if (!$this->isOnlyFieldsField($fieldName) && !$field->system) {
             throw (new Exception('Attempt to use field outside of those set by onlyFields'))
@@ -807,8 +807,7 @@ class Model implements \IteratorAggregate
                 $data[$field->short_name] = $this->get($field->short_name);
             }
 
-            // return $data keys sorted in the order of Model::$only_fields
-            return array_merge($this->only_fields ? array_flip($this->only_fields) : [], $data);
+            return $data;
         }
 
         $this->assertOnlyFieldsField($field);
