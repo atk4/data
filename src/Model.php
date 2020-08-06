@@ -83,6 +83,8 @@ class Model implements \IteratorAggregate
     public const FIELD_FILTER_EDITABLE = 'editable';
     /** @const string */
     public const FIELD_FILTER_PERSIST = 'persist';
+    /** @const string */
+    public const FIELD_FILTER_ONLY_FIELDS = 'only fields';
 
     // {{{ Properties of the class
 
@@ -644,6 +646,9 @@ class Model implements \IteratorAggregate
             self::FIELD_FILTER_VISIBLE => function (Field $field) {
                 return $this->isOnlyFieldsField($field->short_name) && $field->isVisible();
             },
+            self::FIELD_FILTER_ONLY_FIELDS => function (Field $field) {
+                return $this->isOnlyFieldsField($field->short_name);
+            },
             self::FIELD_FILTER_PERSIST => function (Field $field) {
                 if ($field->never_persist) {
                     return false;
@@ -811,16 +816,8 @@ class Model implements \IteratorAggregate
         if ($field === null) {
             // Collect list of eligible fields
             $data = [];
-            if ($this->only_fields) {
-                // collect data for actual fields
-                foreach ($this->only_fields as $field) {
-                    $data[$field] = $this->get($field);
-                }
-            } else {
-                // get all fields
-                foreach ($this->getFields() as $field => $f) {
-                    $data[$field] = $this->get($field);
-                }
+            foreach ($this->getFields(self::FIELD_FILTER_ONLY_FIELDS) as $field) {
+                $data[$field->short_name] = $this->get($field->short_name);
             }
 
             return $data;
