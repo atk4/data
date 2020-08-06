@@ -601,7 +601,7 @@ class Model implements \IteratorAggregate
         }
     }
 
-    public function isOnlyFieldsField(string $fieldName)
+    public function isOnlyFieldsField(string $fieldName): bool
     {
         return !$this->only_fields || in_array($fieldName, $this->only_fields, true);
     }
@@ -625,61 +625,48 @@ class Model implements \IteratorAggregate
      *
      * @return Field[]
      */
-    public function getFields($filter = null): array
+    public function getFields($filters = null): array
     {
-        if ($filter === null) {
+        if ($filters === null) {
             return $this->fields;
-        } elseif (!is_array($filter)) {
-            $filter = [$filter];
+        } elseif (!is_array($filters)) {
+            $filters = [$filters];
         }
 
-        $filterPresets = [
-            self::FIELD_FILTER_SYSTEM => function (Field $field) {
-                return $this->isOnlyFieldsField($field->short_name) && $field->system;
-            },
-            self::FIELD_FILTER_NOT_SYSTEM => function (Field $field) {
-                return $this->isOnlyFieldsField($field->short_name) && !$field->system;
-            },
-            self::FIELD_FILTER_EDITABLE => function (Field $field) {
-                return $this->isOnlyFieldsField($field->short_name) && $field->isEditable();
-            },
-            self::FIELD_FILTER_VISIBLE => function (Field $field) {
-                return $this->isOnlyFieldsField($field->short_name) && $field->isVisible();
-            },
-            self::FIELD_FILTER_ONLY_FIELDS => function (Field $field) {
-                return $this->isOnlyFieldsField($field->short_name);
-            },
-            self::FIELD_FILTER_PERSIST => function (Field $field) {
-                if ($field->never_persist) {
-                    return false;
-                }
-
-                if (!$field->system) {
-                    return $this->isOnlyFieldsField($field->short_name);
-                }
-
-                return true;
-            },
-        ];
-
-        return array_filter($this->fields, function (Field $field, $name) use ($filter, $filterPresets) {
-            foreach ($filter as $fx) {
-                if (!$fx instanceof \Closure) {
-                    if (!isset($filterPresets[$fx])) {
-                        throw (new Exception('Filter is not supported'))
-                            ->addMoreInfo('filter', $fx);
-                    }
-
-                    $fx = $filterPresets[$fx];
-                }
-
-                if ($fx($field, $name)) {
+        return array_filter($this->fields, function (Field $field, $name) use ($filters) {
+            foreach ($filters as $filter) {
+                if ($this->fieldMatchesFilter($field, $filter)) {
                     return true;
                 }
             }
 
             return false;
         }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    protected function fieldMatchesFilter(Field $field, string $filter): bool
+    {
+        switch ($filter) {
+            case self::FIELD_FILTER_SYSTEM:
+                return $this->isOnlyFieldsField($field->short_name) && $field->system;
+            case self::FIELD_FILTER_NOT_SYSTEM:
+                return $this->isOnlyFieldsField($field->short_name) && !$field->system;
+            case self::FIELD_FILTER_EDITABLE:
+                return $this->isOnlyFieldsField($field->short_name) && $field->isEditable();
+            case self::FIELD_FILTER_VISIBLE:
+                return $this->isOnlyFieldsField($field->short_name) && $field->isVisible();
+            case self::FIELD_FILTER_ONLY_FIELDS:
+                return $this->isOnlyFieldsField($field->short_name);
+            case self::FIELD_FILTER_PERSIST:
+                if ($field->never_persist) {
+                    return false;
+                }
+
+                return $field->system || $this->isOnlyFieldsField($field->short_name);
+            default:
+                throw (new Exception('Filter is not supported'))
+                    ->addMoreInfo('filter', $filter);
+        }
     }
 
     /**
@@ -821,7 +808,7 @@ class Model implements \IteratorAggregate
             }
 
             // return $data keys sorted in the order of Model::$only_fields
-            return array_merge($this->only_fields ? array_flip($this->only_fields): [], $data);
+            return array_merge($this->only_fields ? array_flip($this->only_fields) : [], $data);
         }
 
         $this->assertOnlyFieldsField($field);
