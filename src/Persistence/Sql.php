@@ -365,7 +365,7 @@ class Sql extends Persistence
 
             // simple condition
             if ($condition instanceof Model\Scope\Condition) {
-                $query = $query->where(...$condition->toQueryArguments());
+                $query->where(...$condition->toQueryArguments());
             }
 
             // nested conditions
@@ -376,7 +376,7 @@ class Sql extends Persistence
                     $this->initQueryConditions($model, $expression, $nestedCondition);
                 }
 
-                $query = $query->where($expression);
+                $query->where($expression);
             }
         }
     }
@@ -618,6 +618,10 @@ class Sql extends Persistence
                 $this->initQueryConditions($model, $query);
                 $this->setLimitOrder($model, $query);
 
+                if ($model->loaded()) {
+                    $query->where($model->id_field, $model->id);
+                }
+
                 return $query;
             case 'fx':
             case 'fx0':
@@ -626,8 +630,10 @@ class Sql extends Persistence
                         ->addMoreInfo('action', $type);
                 }
 
-                $fx = $args[0];
-                $field = is_string($args[1]) ? $model->getField($args[1]) : $args[1];
+                [$fx, $field] = $args;
+
+                $field = is_string($field) ? $model->getField($field) : $field;
+
                 $this->initQueryConditions($model, $query);
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
 

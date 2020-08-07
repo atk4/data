@@ -112,7 +112,7 @@ class Reference
      */
     public function getModel($defaults = []): Model
     {
-        'trigger_error'('Method Reference::getModel is deprecated. Use Model::getTheirModel instead', E_USER_DEPRECATED);
+        'trigger_error'('Method Reference::getModel is deprecated. Use Reference::getTheirModel instead', E_USER_DEPRECATED);
 
         return $this->getTheirModel($defaults);
     }
@@ -148,15 +148,28 @@ class Reference
             unset($modelDefaults[0]);
 
             $defaults = array_merge($modelDefaults, $defaults);
-        } elseif (is_string($this->model)) {
-            $theirModelSeed = [$this->model];
         } else {
-            $theirModelSeed = $this->model;
+            $theirModelSeed = [$this->model];
         }
 
         $theirModel = $this->factory($theirModelSeed, $defaults);
 
         return $this->addToPersistence($theirModel, $defaults);
+    }
+
+    protected function getOurField(): Field
+    {
+        return $this->getOurModel()->getField($this->getOurFieldName());
+    }
+
+    protected function getOurFieldName(): string
+    {
+        return $this->our_field ?: $this->getOurModel()->id_field;
+    }
+
+    protected function getOurFieldValue()
+    {
+        return $this->getOurField()->get();
     }
 
     protected function initTableAlias(): void
@@ -176,31 +189,29 @@ class Reference
     /**
      * Adds model to persistence.
      *
-     * @param Model $model
+     * @param Model $theirModel
      * @param array $defaults
      */
-    protected function addToPersistence($model, $defaults = []): Model
+    protected function addToPersistence($theirModel, $defaults = []): Model
     {
-        if (!$model->persistence && $persistence = $this->getDefaultPersistence($model)) {
-            $persistence->add($model, $defaults);
+        if (!$theirModel->persistence && $persistence = $this->getDefaultPersistence($theirModel)) {
+            $persistence->add($theirModel, $defaults);
         }
 
         // set model caption
         if ($this->caption !== null) {
-            $model->caption = $this->caption;
+            $theirModel->caption = $this->caption;
         }
 
-        return $model;
+        return $theirModel;
     }
 
     /**
-     * Returns default persistence.
-     *
-     * @param Model $model Referenced model
+     * Returns default persistence for theirModel.
      *
      * @return Persistence|false
      */
-    protected function getDefaultPersistence($model)
+    protected function getDefaultPersistence(Model $theirModel)
     {
         $ourModel = $this->getOurModel();
 

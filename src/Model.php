@@ -1379,7 +1379,6 @@ class Model implements \IteratorAggregate
     /**
      * Load record by condition.
      *
-     * @param mixed $field_name
      * @param mixed $value
      *
      * @return $this

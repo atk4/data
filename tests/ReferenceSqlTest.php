@@ -350,6 +350,63 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertNull($l->get('chicken5'));
     }
 
+    public function testReferenceHasOneTraversing()
+    {
+        $a =
+        [
+            'user' => [
+                ['name' => 'Vinny', 'company_id' => 1],
+                ['name' => 'Zoe', 'company_id' => 2],
+            ],
+            'company' => [
+                ['name' => 'Vinny Company'],
+                ['name' => 'Zoe Company'],
+            ],
+            'order' => [
+                ['company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+                ['company_id' => 2, 'description' => 'Zoe Company Order', 'amount' => 10.0],
+                ['company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+            ],
+        ];
+
+        $this->setDb($a);
+
+        $user = (new Model($this->db, 'user'))->addFields(['name', 'company_id']);
+
+        $company = (new Model($this->db, 'company'))->addFields(['name']);
+
+        $user->hasOne('Company', [$company, 'our_field' => 'company_id', 'their_field' => 'id']);
+
+        $order = new Model($this->db, 'order');
+        $order->addField('company_id');
+        $order->addField('description');
+        $order->addField('amount', ['default' => 20]);
+
+        $company->hasMany('Orders', [$order]);
+
+        $user->load(1);
+
+        $firstUserOrders = $user->ref('Company')->ref('Orders');
+
+        $this->assertEquals([
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
+        ], $firstUserOrders->export());
+
+        $user->unload();
+
+        $this->assertEquals([
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
+        ], $firstUserOrders->export());
+
+        $this->assertEquals([
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
+            ['id' => '2', 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
+        ], $user->ref('Company')->ref('Orders')->export());
+    }
+
     public function testReferenceHook()
     {
         $a = [
