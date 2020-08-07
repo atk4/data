@@ -50,7 +50,7 @@ trait ReferencesTrait
     /**
      * @param string         $className Class name
      * @param string         $link      Link
-     * @param array|callable $defaults  Properties which we will pass to Reference object constructor
+     * @param array|\Closure $defaults  Properties which we will pass to Reference object constructor
      */
     protected function _hasReference($className, $link, $defaults = []): Reference
     {
@@ -79,12 +79,12 @@ trait ReferencesTrait
     /**
      * Add generic relation. Provide your own call-back that will return the model.
      *
-     * @param string         $link     Link
-     * @param array|callable $callback Callback
+     * @param string         $link Link
+     * @param array|\Closure $fx   Callback
      */
-    public function addRef($link, $callback): Reference
+    public function addRef($link, $fx): Reference
     {
-        return $this->_hasReference($this->_default_seed_addRef, $link, $callback);
+        return $this->_hasReference($this->_default_seed_addRef, $link, $fx);
     }
 
     /**
