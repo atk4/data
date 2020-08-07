@@ -201,16 +201,8 @@ class Condition extends AbstractScope
                         }
 
                         // support for conditions on aggregates
-                        if (is_string($field) && str_contains($field, '(')) {
-                            $args = [];
-                            if (preg_match('/^([\w ]+)\(([\w \*]*)/', $field, $args)) {
-                                array_shift($args);
-
-                                $field = $value ? $refModel->action('fx', $args) : $refModel->action('exists');
-                            } else {
-                                throw (new Exception('Invalid condition field'))
-                                    ->addMoreInfo('field', $field);
-                            }
+                        if (preg_match('~^(\w+)\(([\w *]*)$~', $field, $matches)) {
+                            $field = $value ? $refModel->action('fx', array_slice($matches, 1)) : $refModel->action('exists');
                         } else {
                             $refModel->addCondition($field, $operator, $value);
                             $field = $refModel->action('exists');
