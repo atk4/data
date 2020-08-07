@@ -106,6 +106,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
             ['name' => 'Alain', 'surname' => 'Prost', 'country_code' => 'FR'],
             ['name' => 'Aerton', 'surname' => 'Senna', 'country_code' => 'BR'],
             ['name' => 'Rubens', 'surname' => 'Barichello', 'country_code' => 'BR'],
+            ['name' => 'Vitaly', 'surname' => 'Petrov', 'country_code' => 'RU'],
         ]);
 
         $this->ticket = new STicket($this->db);
@@ -118,6 +119,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
             ['number' => '003', 'venue' => 'Best Stadium', 'user' => 2, 'price' => 33],
             ['number' => '004', 'venue' => 'Best Stadium', 'user' => 4, 'price' => 44],
             ['number' => '005', 'venue' => 'Best Stadium', 'user' => 5, 'price' => 55],
+            ['number' => '006', 'venue' => 'Best Stadium', 'user' => 6, 'price' => 0],
         ]);
     }
 
@@ -266,10 +268,10 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         // countries with users that have any tickets
         $country->addCondition('Users/Tickets/#');
 
-        $this->assertEquals(3, $country->action('count')->getOne());
+        $this->assertEquals(4, $country->action('count')->getOne());
 
         foreach ($country as $c) {
-            $this->assertTrue(in_array($c->get('code'), ['LV', 'CA', 'BR'], true));
+            $this->assertTrue(in_array($c->get('code'), ['LV', 'CA', 'BR', 'RU'], true));
         }
 
         $country = clone $this->country;
@@ -292,6 +294,17 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         foreach ($country as $c) {
             $this->assertTrue(in_array($c->get('code'), ['LV', 'BR'], true));
+        }
+
+        $country = clone $this->country;
+
+        // countries of a user that has tickets price summing up to more than 0 (as fallback)
+        $country->addCondition('Users/Tickets/sum(price)');
+
+        $this->assertEquals(3, $country->action('count')->getOne());
+
+        foreach ($country as $c) {
+            $this->assertTrue(in_array($c->get('code'), ['CA', 'LV', 'BR'], true));
         }
 
         $user = clone $this->user;

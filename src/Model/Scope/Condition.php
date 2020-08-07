@@ -205,7 +205,7 @@ class Condition extends AbstractScope
                         $matches = [];
                         // support for conditions on aggregates
                         if (is_string($field) && preg_match('~^(\w+)\(([\w *]*)\)$~', $field, $matches)) {
-                            $field = $value ? $refModel->action('fx', array_slice($matches, 1)) : $refModel->action('exists');
+                            $field = $refModel->action('fx', array_slice($matches, 1));
                         } else {
                             $refModel->addCondition($field, $operator, $value);
                             $field = $refModel->action('exists');
