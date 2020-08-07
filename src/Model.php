@@ -34,6 +34,7 @@ class Model implements \IteratorAggregate
     use CollectionTrait;
     use ReadableCaptionTrait;
     use Model\ReferencesTrait;
+    use Model\JoinsTrait;
     use Model\UserActionsTrait;
 
     /** @const string */
@@ -92,13 +93,6 @@ class Model implements \IteratorAggregate
      * @var string|array
      */
     public $_default_seed_addExpression = [Field\Callback::class];
-
-    /**
-     * The class used by join() method.
-     *
-     * @var string|array
-     */
-    public $_default_seed_join = [Join::class];
 
     /**
      * @var array Collection containing Field Objects - using key as the field system name
@@ -513,7 +507,7 @@ class Model implements \IteratorAggregate
                 // or it can be simple string = field name
                 $name = $field;
                 $field = [];
-            } elseif (is_array($field) && isset($field[0]) && is_string($field[0])) {
+            } elseif (is_array($field) && is_string($field[0] ?? null)) {
                 // or field name can be passed as first element of seed array (old behaviour)
                 $name = array_shift($field);
             } else {
@@ -1385,7 +1379,6 @@ class Model implements \IteratorAggregate
     /**
      * Load record by condition.
      *
-     * @param mixed $field_name
      * @param mixed $value
      *
      * @return $this
@@ -1793,20 +1786,14 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Executes specified method or callback for each record in DataSet.
-     *
-     * @param string|callable $method
+     * Executes specified callback for each record in DataSet.
      *
      * @return $this
      */
-    public function each($method)
+    public function each(\Closure $fx)
     {
-        foreach ($this as $rec) {
-            if (is_string($method)) {
-                $rec->{$method}();
-            } elseif (is_callable($method)) {
-                call_user_func($method, $rec);
-            }
+        foreach ($this as $record) {
+            $fx($record);
         }
 
         return $this;
@@ -1856,18 +1843,16 @@ class Model implements \IteratorAggregate
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param callable $f
-     *
      * @return mixed
      */
-    public function atomic($f, Persistence $persistence = null)
+    public function atomic(\Closure $fx, Persistence $persistence = null)
     {
-        if (!$persistence) {
+        if ($persistence === null) {
             $persistence = $this->persistence;
         }
 
         try {
-            return $persistence->atomic($f);
+            return $persistence->atomic($fx);
         } catch (\Exception $e) {
             if ($this->hook(self::HOOK_ROLLBACK, [$this, $e]) !== false) {
                 throw $e;
@@ -1896,62 +1881,12 @@ class Model implements \IteratorAggregate
 
     // }}}
 
-    // {{{ Join support
-
-    /**
-     * Creates an objects that describes relationship between multiple tables (or collections).
-     *
-     * When object is loaded, then instead of pulling all the data from a single table,
-     * join will also query $foreign_table in order to find additional fields. When inserting
-     * the record will be also added inside $foreign_table and relationship will be maintained.
-     *
-     * @param array $defaults
-     *
-     * @return Join
-     */
-    public function join(string $foreign_table, $defaults = [])
-    {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        } elseif (isset($defaults[0])) {
-            $defaults['master_field'] = $defaults[0];
-            unset($defaults[0]);
-        }
-
-        $defaults[0] = $foreign_table;
-
-        $c = $this->_default_seed_join;
-
-        return $this->add($this->factory($c, $defaults));
-    }
-
-    /**
-     * Left Join support.
-     *
-     * @see join()
-     *
-     * @param array $defaults
-     *
-     * @return Join
-     */
-    public function leftJoin(string $foreign_table, $defaults = [])
-    {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        }
-        $defaults['weak'] = true;
-
-        return $this->join($foreign_table, $defaults);
-    }
-
-    // }}}
-
     // {{{ Expressions
 
     /**
      * Add expression field.
      *
-     * @param string|array|callable $expression
+     * @param string|array|\Closure $expression
      *
      * @return Field\Callback
      */
@@ -1976,7 +1911,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @param string|array|callable $expression
+     * @param string|array|\Closure $expression
      *
      * @return Field\Callback
      */

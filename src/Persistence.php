@@ -79,13 +79,6 @@ class Persistence
      */
     public function add(Model $m, array $defaults = []): Model
     {
-        /*
-        if (isset($defaults[0])) {
-            $m->table = $defaults[0];
-            unset($defaults[0]);
-        }
-         */
-
         $m = $this->factory($m, $defaults);
 
         if ($m->persistence) {
@@ -120,13 +113,11 @@ class Persistence
      * persistences will support atomic operations, so by default we just
      * don't do anything.
      *
-     * @param callable $f
-     *
      * @return mixed
      */
-    public function atomic($f)
+    public function atomic(\Closure $fx)
     {
-        return call_user_func($f);
+        return $fx();
     }
 
     /**
@@ -259,7 +250,7 @@ class Persistence
     {
         try {
             // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
+            if (is_array($f->typecast) && isset($f->typecast[0]) && ($t = $f->typecast[0]) instanceof \Closure) {
                 return $t($value, $f, $this);
             }
 
@@ -288,7 +279,7 @@ class Persistence
     {
         try {
             // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[1]) && is_callable($t = $f->typecast[1])) {
+            if (is_array($f->typecast) && isset($f->typecast[1]) && ($t = $f->typecast[1]) instanceof \Closure) {
                 return $t($value, $f, $this);
             }
 
@@ -349,7 +340,7 @@ class Persistence
     {
         try {
             // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[0]) && is_callable($t = $f->serialize[0])) {
+            if (is_array($f->serialize) && isset($f->serialize[0]) && ($t = $f->typecast[0]) instanceof \Closure) {
                 return $t($f, $value, $this);
             }
 
@@ -373,7 +364,7 @@ class Persistence
     {
         try {
             // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[1]) && is_callable($t = $f->serialize[1])) {
+            if (is_array($f->serialize) && isset($f->serialize[1]) && ($t = $f->typecast[1]) instanceof \Closure) {
                 return $t($f, $value, $this);
             }
 
@@ -436,42 +427,16 @@ class Persistence
      */
     public function jsonDecode(Field $f, string $json, bool $assoc = true)
     {
-        // constant supported only starting PHP 7.3
-        if (!defined('JSON_THROW_ON_ERROR')) {
-            define('JSON_THROW_ON_ERROR', 0);
-        }
-
-        $res = json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
-        if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
-            throw (new Exception('There was error while decoding JSON'))
-                ->addMoreInfo('code', json_last_error())
-                ->addMoreInfo('error', json_last_error_msg());
-        }
-
-        return $res;
+        return json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
      * JSON encoding with proper error treatment.
      *
      * @param mixed $value
-     *
-     * @return string
      */
-    public function jsonEncode(Field $f, $value)
+    public function jsonEncode(Field $f, $value): string
     {
-        // constant supported only starting PHP 7.3
-        if (!defined('JSON_THROW_ON_ERROR')) {
-            define('JSON_THROW_ON_ERROR', 0);
-        }
-
-        $res = json_encode($value, JSON_THROW_ON_ERROR, 512);
-        if (JSON_THROW_ON_ERROR === 0 && json_last_error() !== JSON_ERROR_NONE) {
-            throw (new Exception('There was error while encoding JSON'))
-                ->addMoreInfo('code', json_last_error())
-                ->addMoreInfo('error', json_last_error_msg());
-        }
-
-        return $res;
+        return json_encode($value, JSON_THROW_ON_ERROR, 512);
     }
 }

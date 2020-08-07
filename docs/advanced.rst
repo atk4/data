@@ -521,7 +521,7 @@ Next we need to define reference. Inside Model_Invoice add::
         $m->ref('InvoicePayment')->action('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment
-        // $m->ref('InvoicePayment')->each('delete');
+        // $payment = $m->ref('InvoicePayment'); $payment->each(function () use ($payment) { $payment->delete(); });
     });
 
 You'll have to do a similar change inside Payment model. The code for '$j->'

@@ -184,7 +184,6 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition = new Condition('name', 'abc');
 
         $this->expectException(Exception::class);
-
         $condition->toWords();
     }
 
@@ -193,7 +192,6 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $country = clone $this->country;
 
         $this->expectException(Exception::class);
-
         $country->addCondition('name', '==', 'abc');
     }
 
@@ -202,7 +200,6 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition = new Condition(new Expression('false'));
 
         $this->expectException(Exception::class);
-
         $condition->negate();
     }
 
@@ -211,7 +208,6 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $country = clone $this->country;
 
         $this->expectException(Exception::class);
-
         $country->scope()->negate();
     }
 
@@ -452,5 +448,17 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $this->assertTrue($scope->isEmpty());
 
         $this->assertEmpty($scope->toWords($user));
+    }
+
+    public function testInvalid1()
+    {
+        $this->expectException(Exception::class);
+        new Condition('name', '>', ['a', 'b']);
+    }
+
+    public function testInvalid2()
+    {
+        $this->expectException(Exception::class);
+        new Condition('name', ['a', 'b' => ['c']]);
     }
 }

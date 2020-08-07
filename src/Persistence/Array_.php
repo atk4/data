@@ -53,7 +53,7 @@ class Array_ extends Persistence
         }
 
         $defaults = array_merge([
-            '_default_seed_join' => [\atk4\data\Join\Array_::class],
+            '_default_seed_join' => [Array_\Join::class],
         ], $defaults);
 
         $model = parent::add($model, $defaults);
@@ -374,8 +374,8 @@ class Array_ extends Persistence
                         ->addMoreInfo('action', $type);
                 }
 
-                $fx = $args[0];
-                $field = $args[1];
+                [$fx, $field] = $args;
+
                 $action = $this->initAction($model, $field);
                 $this->applyScope($model, $action);
                 $this->setLimitOrder($model, $action);

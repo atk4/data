@@ -71,7 +71,7 @@ class Sql extends Persistence
      *
      * @var string
      */
-    public $_default_seed_join = [\atk4\data\Join\Sql::class];
+    public $_default_seed_join = [Sql\Join::class];
 
     /**
      * Constructor.
@@ -126,11 +126,9 @@ class Sql extends Persistence
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param callable $fx
-     *
      * @return mixed
      */
-    public function atomic($fx)
+    public function atomic(\Closure $fx)
     {
         return $this->connection->atomic($fx);
     }
@@ -367,7 +365,7 @@ class Sql extends Persistence
 
             // simple condition
             if ($condition instanceof Model\Scope\Condition) {
-                $query = $query->where(...$condition->toQueryArguments());
+                $query->where(...$condition->toQueryArguments());
             }
 
             // nested conditions
@@ -378,7 +376,7 @@ class Sql extends Persistence
                     $this->initQueryConditions($model, $expression, $nestedCondition);
                 }
 
-                $query = $query->where($expression);
+                $query->where($expression);
             }
         }
     }
@@ -482,7 +480,7 @@ class Sql extends Persistence
 
                 break;
             case 'boolean':
-                if (isset($field->enum) && is_array($field->enum)) {
+                if (is_array($field->enum ?? null)) {
                     if (isset($field->enum[0]) && $v == $field->enum[0]) {
                         $v = false;
                     } elseif (isset($field->enum[1]) && $v == $field->enum[1]) {
@@ -620,6 +618,10 @@ class Sql extends Persistence
                 $this->initQueryConditions($model, $query);
                 $this->setLimitOrder($model, $query);
 
+                if ($model->loaded()) {
+                    $query->where($model->id_field, $model->id);
+                }
+
                 return $query;
             case 'fx':
             case 'fx0':
@@ -630,13 +632,7 @@ class Sql extends Persistence
 
                 [$fx, $field] = $args;
 
-                if (is_string($field)) {
-                    if ($model->hasField($field)) {
-                        $field = $model->getField($field);
-                    } else {
-                        $field = new Expression($field);
-                    }
-                }
+                $field = is_string($field) ? $model->getField($field) : $field;
 
                 $this->initQueryConditions($model, $query);
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
