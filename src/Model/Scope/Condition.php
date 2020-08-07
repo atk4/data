@@ -196,12 +196,15 @@ class Condition extends AbstractScope
 
                     foreach (array_reverse($refModels) as $refModel) {
                         // # is alias for count(*)
-                        if ($field === '#') {
-                            $field = 'count(*)';
+                        if ($field === '#' || $field === 'count(*)') {
+                            $field = $refModel->action('count');
+
+                            continue;
                         }
 
+                        $matches = [];
                         // support for conditions on aggregates
-                        if (preg_match('~^(\w+)\(([\w *]*)$~', $field, $matches)) {
+                        if (is_string($field) && preg_match('~^(\w+)\(([\w *]*)\)$~', $field, $matches)) {
                             $field = $value ? $refModel->action('fx', array_slice($matches, 1)) : $refModel->action('exists');
                         } else {
                             $refModel->addCondition($field, $operator, $value);

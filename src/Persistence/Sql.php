@@ -632,13 +632,7 @@ class Sql extends Persistence
 
                 [$fx, $field] = $args;
 
-                if (is_string($field)) {
-                    if ($model->hasField($field)) {
-                        $field = $model->getField($field);
-                    } else {
-                        $field = new Expression($field);
-                    }
-                }
+                $field = is_string($field) ? $model->getField($field) : $field;
 
                 $this->initQueryConditions($model, $query);
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
