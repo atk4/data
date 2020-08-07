@@ -197,7 +197,7 @@ class Condition extends AbstractScope
                     foreach (array_reverse($refModels) as $refModel) {
                         // # is alias for count(*)
                         if ($field === '#' || $field === 'count(*)') {
-                            $field = $refModel->action('count');
+                            $field = $refModel->action($value ? 'count' : 'exists');
 
                             continue;
                         }
