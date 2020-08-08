@@ -202,7 +202,6 @@ class Condition extends AbstractScope
                             continue;
                         }
 
-                        $matches = [];
                         // support for conditions on aggregates
                         if (is_string($field) && preg_match('~^(\w+)\(([\w *]*)\)$~', $field, $matches)) {
                             $field = $refModel->action('fx', array_slice($matches, 1));
