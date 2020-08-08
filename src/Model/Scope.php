@@ -70,7 +70,15 @@ class Scope extends Scope\AbstractScope
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        $this->add(static::create(...func_get_args()));
+        if (func_num_args() === 1 && $field instanceof Scope\AbstractScope) {
+            $condition = $field;
+        } elseif (func_num_args() === 1 && is_array($field)) {
+            $condition = static::createAnd(func_get_args());
+        } else {
+            $condition = new Scope\Condition(...func_get_args());
+        }
+
+        $this->add($condition);
 
         return $this;
     }
@@ -187,28 +195,6 @@ class Scope extends Scope\AbstractScope
         $glue = ' ' . strtolower($this->junction) . ' ';
 
         return implode($glue, $parts);
-    }
-
-    /**
-     * Creates the simplest scope object based on arguments.
-     *
-     * @param Scope\AbstractScope|string|array|\atk4\data\Field $field
-     * @param string                                            $operator
-     * @param mixed                                             $value
-     *
-     * @return Scope\AbstractScope
-     */
-    public static function create($field, $operator = null, $value = null)
-    {
-        if (func_num_args() === 1 && $field instanceof Scope\AbstractScope) {
-            $scope = $field;
-        } elseif (func_num_args() === 1 && is_array($field)) {
-            $scope = static::createAnd(func_get_args());
-        } else {
-            $scope = new Scope\Condition(...func_get_args());
-        }
-
-        return $scope;
     }
 
     /**
