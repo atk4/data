@@ -31,10 +31,15 @@ abstract class AbstractScope
 
         $this->_init();
 
+        // always set system flag if condition added to another condition
+        $this->setSystem($this->owner instanceof RootScope);
+
         $this->onChangeModel();
     }
 
     abstract protected function onChangeModel();
+
+    abstract protected function setSystem($system = true);
 
     /**
      * Get the model this condition is associated with.

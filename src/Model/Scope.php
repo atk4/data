@@ -75,6 +75,11 @@ class Scope extends Scope\AbstractScope
         return $this;
     }
 
+    protected function setSystem($system = true)
+    {
+        foreach ($this->elements as $nestedCondition) {
+            $nestedCondition->setSystem($system && $this->isAnd());
+        }
 
         return $this;
     }
