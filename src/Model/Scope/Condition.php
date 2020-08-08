@@ -155,7 +155,7 @@ class Condition extends AbstractScope
             // @todo: consider this when condition is part of OR scope
             if ($this->system && $this->setsDefiniteValue()) {
                 // key containing '/' means chained references and it is handled in toQueryArguments method
-                if (is_string($field = $this->key) && !$this->isTraversing()) {
+                if (is_string($field = $this->key) && !str_contains($field, '/')) {
                     $field = $model->getField($field);
                 }
 
@@ -165,11 +165,6 @@ class Condition extends AbstractScope
                 }
             }
         }
-    }
-
-    protected function isTraversing()
-    {
-        return is_string($this->key) && str_contains($this->key, '/');
     }
 
     public function toQueryArguments(): array
@@ -186,7 +181,7 @@ class Condition extends AbstractScope
             if (is_string($field)) {
                 // shorthand for adding conditions on references
                 // use chained reference names separated by "/"
-                if ($this->isTraversing()) {
+                if (str_contains($field, '/')) {
                     $references = explode('/', $field);
                     $field = array_pop($references);
 
@@ -285,7 +280,7 @@ class Condition extends AbstractScope
         $words = [];
 
         if (is_string($field = $this->key)) {
-            if ($this->isTraversing()) {
+            if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
                 $words[] = $model->getModelCaption();
@@ -354,7 +349,7 @@ class Condition extends AbstractScope
 
         // handling of scope on references
         if (is_string($field = $this->key)) {
-            if ($this->isTraversing()) {
+            if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
                 $field = array_pop($references);
