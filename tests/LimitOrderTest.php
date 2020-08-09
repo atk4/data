@@ -250,18 +250,6 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
         $i = clone $ii;
         $i->setLimit(null, 1);
-        /*
-        This test is incorrect because last number in rendered query is dependent on server.
-        For example, on Imants Win10 64-bit this renders as:
-        select "total_net" from "invoice" order by "total_net" limit 1, 2147483647
-        On Travis server it renders as:
-        select "total_net" from "invoice" order by "total_net" limit 1, 9223372036854775807
-        which still is not equal to max number which SQL server allows - 18446744073709551615
-        $this->assertEquals(
-            'select "total_net" from "invoice" order by "total_net" limit 1, 9223372036854775807',
-            $i->action('select')->render()
-        );
-        */
         $this->assertEquals([
             ['total_net' => 15],
             ['total_net' => 20],
