@@ -18,7 +18,7 @@ class Persistence
     use \atk4\core\NameTrait;
     use \atk4\core\DiContainerTrait;
 
-    // backward compatibility - will be removed in jul-2021 -->
+    // backward compatibility - will be removed in dec-2020 -->
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = Persistence\AbstractQuery::HOOK_INIT_SELECT;
     /** @const string */
