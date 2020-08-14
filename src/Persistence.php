@@ -165,6 +165,23 @@ class Persistence
         return $fx();
     }
 
+    public function getRow(Model $model, $id = null)
+    {
+        $query = $this->query($model);
+        
+        if ($id !== null) {
+            $query->whereId($id);
+        }
+        
+        $rawData = $query->getRow();
+        
+        if ($rawData === null) {
+            return null;
+        }
+        
+        return $this->typecastLoadRow($model, $rawData);
+    }
+
     /**
      * Will convert one row of data from native PHP types into
      * persistence types. This will also take care of the "actual"

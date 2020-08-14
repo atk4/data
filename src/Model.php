@@ -1285,24 +1285,9 @@ class Model implements \IteratorAggregate
      */
     public function tryLoad($id)
     {
-        $this->checkPersistence('tryLoad');
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        $this->data = $this->persistence->tryLoad($this, $id);
-        if ($this->data) {
-            $this->id = $id;
-
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                return $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret;
-            }
-        } else {
-            $this->unload();
+        try {
+            return $this->loadFromPersistence($id);
+        } catch (RecordNotFoundException $e) {
         }
 
         return $this;
@@ -1315,29 +1300,7 @@ class Model implements \IteratorAggregate
      */
     public function loadAny()
     {
-        $this->checkPersistence('loadAny');
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        $this->data = $this->persistence->loadAny($this);
-        if ($this->data) {
-            if ($this->id_field) {
-                $this->id = $this->data[$this->id_field];
-            }
-
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                return $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret;
-            }
-        } else {
-            $this->unload();
-        }
-
-        return $this;
+        return $this->loadFromPersistence();
     }
 
     /**
@@ -1348,18 +1311,33 @@ class Model implements \IteratorAggregate
      */
     public function tryLoadAny()
     {
-        $this->checkPersistence('tryLoadAny');
+        try {
+            return $this->loadFromPersistence();
+        } catch (RecordNotFoundException $e) {
+        }
+
+        return $this;
+    }
+
+    protected function loadFromPersistence($id = null, Persistence $persistence = null)
+    {
+        $persistence = $persistence ?? $this->persistence;
+
+        $this->checkPersistence('getRow', $persistence);
 
         if ($this->loaded()) {
             $this->unload();
         }
 
-        $this->data = $this->persistence->tryLoadAny($this);
+        if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
+            return $this;
+        }
+
+        $this->data = $persistence->getRow($this, $id);
+
         if ($this->data) {
             if ($this->id_field) {
-                if (isset($this->data[$this->id_field])) {
-                    $this->id = $this->data[$this->id_field];
-                }
+                $this->id = $this->data[$this->id_field] ?? $id;
             }
 
             $ret = $this->hook(self::HOOK_AFTER_LOAD);
@@ -1370,6 +1348,11 @@ class Model implements \IteratorAggregate
             }
         } else {
             $this->unload();
+        }
+
+        if (!$this->data) {
+            throw (new RecordNotFoundException())
+                ->setRecordParameters($this, $id);
         }
 
         return $this;
@@ -1437,14 +1420,18 @@ class Model implements \IteratorAggregate
      *
      * @param string $method
      */
-    public function checkPersistence(string $method = null)
+    public function checkPersistence(string $method = null, Persistence $persistence = null)
     {
-        if (!$this->persistence) {
+        $persistence = $persistence ?? $this->persistence;
+
+        if (!$persistence) {
             throw new Exception('Model is not associated with any persistence');
         }
 
-        if ($method && !$this->persistence->hasMethod($method)) {
-            throw new Exception("Persistence does not support {$method} method");
+        if ($method && !$persistence->hasMethod($method)) {
+            throw (new Exception('Method is not supported by persistence'))
+                ->addMoreInfo('persistence', get_class($persistence))
+                ->addMoreInfo('method', $method);
         }
     }
 
@@ -1980,4 +1967,23 @@ class Model implements \IteratorAggregate
     }
 
     // }}}
+}
+
+class RecordNotFoundException extends Exception
+{
+    protected $message = 'Record not found';
+    protected $code = 404;
+
+    public function setRecordParameters(Model $model, $id = null)
+    {
+        $this
+            ->addMoreInfo('model', $model)
+            ->addMoreInfo('scope', $model->scope()->toWords());
+
+        if ($id !== null) {
+            $this->addMoreInfo('id', $id);
+        }
+
+        return $this;
+    }
 }
