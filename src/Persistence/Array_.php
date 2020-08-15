@@ -44,10 +44,12 @@ class Array_ extends Persistence
 
     public function setRawData(Model $model, $data, $id = null)
     {
-        $id = $id ?? $this->generateNewId($model);
+        if ($id === null) {
+            $id = $this->generateNewId($model);
 
-        if ($model->id_field) {
-            $data[$model->id_field] = $id;
+            if ($model->id_field) {
+                $data[$model->id_field] = $id;
+            }
         }
 
         $this->data[$model->table][$id] = $data;
@@ -98,59 +100,6 @@ class Array_ extends Persistence
         }
 
         return $model;
-    }
-
-    /**
-     * Inserts record in data array and returns new record ID.
-     *
-     * @param array $data
-     *
-     * @return mixed
-     */
-    public function insert(Model $model, $data, string $table = null)
-    {
-        $table = $table ?? $model->table;
-
-        $data = $this->typecastSaveRow($model, $data);
-
-        $id = $this->generateNewId($model, $table);
-        if ($model->id_field) {
-            $data[$model->id_field] = $id;
-        }
-        $this->data[$table][$id] = $data;
-
-        return $id;
-    }
-
-    /**
-     * Updates record in data array and returns record ID.
-     *
-     * @param mixed $id
-     * @param array $data
-     *
-     * @return mixed
-     */
-    public function update(Model $model, $id, $data, string $table = null)
-    {
-        $table = $table ?? $model->table;
-
-        $data = $this->typecastSaveRow($model, $data);
-
-        $this->data[$table][$id] = array_merge($this->data[$table][$id] ?? [], $data);
-
-        return $id;
-    }
-
-    /**
-     * Deletes record in data array.
-     *
-     * @param mixed $id
-     */
-    public function delete(Model $model, $id, string $table = null)
-    {
-        $table = $table ?? $model->table;
-
-        unset($this->data[$table][$id]);
     }
 
     /**
