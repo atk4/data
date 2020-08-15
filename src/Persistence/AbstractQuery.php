@@ -83,6 +83,7 @@ abstract class AbstractQuery implements \IteratorAggregate
 
     public function update(array $data): self
     {
+        $this->initWhere();
         $this->initUpdate($data);
 
         $this->setMode(self::MODE_UPDATE);
