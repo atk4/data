@@ -74,7 +74,7 @@ abstract class AbstractQuery implements \IteratorAggregate
         $this->initOrder();
         $this->initSelect($fields);
 
-        $this->hookInitSelect('select');
+        $this->hookInitSelect(__FUNCTION__);
 
         return $this;
     }
@@ -117,7 +117,7 @@ abstract class AbstractQuery implements \IteratorAggregate
             $this->whereId($id);
         }
 
-        $this->initDelete($id);
+        $this->initDelete();
 
         $this->hookInitSelect(__FUNCTION__);
 
@@ -126,7 +126,7 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
-    abstract protected function initDelete($id = null): void;
+    abstract protected function initDelete(): void;
 
     public function exists(): self
     {

@@ -42,6 +42,24 @@ class Array_ extends Persistence
         return $this->data[$table];
     }
 
+    public function setRawData(Model $model, $data, $id = null)
+    {
+        $id = $id ?? $this->generateNewId($model);
+
+        if ($model->id_field) {
+            $data[$model->id_field] = $id;
+        }
+
+        $this->data[$model->table][$id] = $data;
+
+        return $id;
+    }
+
+    public function unsetRawData(string $table, $id)
+    {
+        unset($this->data[$table][$id]);
+    }
+
     /**
      * {@inheritdoc}
      */

@@ -14,11 +14,15 @@ use atk4\data\Persistence\AbstractQuery;
  */
 class Query extends AbstractQuery
 {
+    /** @var \Iterator */
     private $iterator;
 
     private $data;
 
     private $fields;
+
+    /** @var \Closure */
+    private $fx;
 
     public function __construct(Model $model)
     {
@@ -27,6 +31,10 @@ class Query extends AbstractQuery
         $this->data = $model->persistence->getRawDataByTable($model->table);
 
         $this->iterator = new \ArrayIterator($this->data);
+
+        $this->fx = function (\Iterator $iterator) {
+            return $iterator;
+        };
     }
 
     protected function initSelect($fields = null): void
@@ -46,14 +54,27 @@ class Query extends AbstractQuery
 
     protected function initInsert(array $data): void
     {
+        $this->fx = function (\Iterator $iterator) use ($data) {
+            return $this->model->persistence->setRawData($this->model, $data);
+        };
     }
 
     protected function initUpdate(array $data): void
     {
+        $this->fx = function (\Iterator $iterator) use ($data) {
+            foreach ($iterator as $id => $row) {
+                $this->model->persistence->setRawData($this->model, array_merge($row, $data), $id);
+            }
+        };
     }
 
-    protected function initDelete($id = null): void
+    protected function initDelete(): void
     {
+        $this->fx = function (\Iterator $iterator) {
+            foreach ($iterator as $id => $row) {
+                $this->model->persistence->unsetRawData($this->model->table, $id);
+            }
+        };
     }
 
     /**
@@ -145,7 +166,7 @@ class Query extends AbstractQuery
 
     protected function doExecute()
     {
-        return $this->iterator;
+        return ($this->fx)($this->iterator);
     }
 
     /**

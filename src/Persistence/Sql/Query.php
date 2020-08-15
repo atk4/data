@@ -135,7 +135,7 @@ class Query extends AbstractQuery implements Expressionable
         }
     }
 
-    protected function initDelete($id = null): void
+    protected function initDelete(): void
     {
         $this->dsql->mode('delete');
     }
