@@ -385,65 +385,6 @@ class Sql extends Persistence
         return new Sql\Query($model);
     }
 
-    /**
-     * Inserts record in database and returns new record ID.
-     *
-     * @return mixed
-     */
-    public function insert(Model $model, array $data)
-    {
-        // don't set id field at all if it's NULL
-        if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
-            unset($data[$model->id_field]);
-        }
-
-        $data = $this->typecastSaveRow($model, $data);
-
-        $this->query($model)->insert($data)->execute();
-
-        return $this->lastInsertId($model);
-    }
-
-    /**
-     * Updates record in database.
-     *
-     * @param mixed $id
-     * @param array $data
-     */
-    public function update(Model $model, $id, $data)
-    {
-        $data = $this->typecastSaveRow($model, $data);
-
-        $model->onHook(AbstractQuery::HOOK_AFTER_UPDATE, function (Model $model, AbstractQuery $query, $result) use ($data) {
-            if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
-                // ID was changed
-                $model->id = $data[$model->id_field];
-            }
-        }, [], -1000);
-
-        $result = $this->query($model)->whereId($id)->update($data)->execute();
-
-        // if any rows were updated in database, and we had expressions, reload
-        if ($model->reload_after_save === true && (!$result || $result->rowCount())) {
-            $dirty = $model->dirty;
-            $model->reload();
-            $model->_dirty_after_reload = $model->dirty;
-            $model->dirty = $dirty;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Deletes record from database.
-     *
-     * @param mixed $id
-     */
-    public function delete(Model $model, $id)
-    {
-        $this->query($model)->delete($id)->execute();
-    }
-
     public function getFieldSqlExpression(Field $field, Expression $expression)
     {
         if (isset($field->owner->persistence_data['use_table_prefixes'])) {

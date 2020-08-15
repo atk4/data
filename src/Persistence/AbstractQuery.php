@@ -109,14 +109,9 @@ abstract class AbstractQuery implements \IteratorAggregate
      *
      * @param int|string $id
      */
-    public function delete($id = null): self
+    public function delete(): self
     {
         $this->initWhere();
-
-        if ($id !== null) {
-            $this->whereId($id);
-        }
-
         $this->initDelete();
 
         $this->hookInitSelect(__FUNCTION__);
