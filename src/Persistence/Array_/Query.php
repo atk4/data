@@ -7,6 +7,7 @@ namespace atk4\data\Persistence\Array_;
 use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\Model;
+use atk4\data\Model\Scope\Condition;
 use atk4\data\Persistence\AbstractQuery;
 
 /**
@@ -283,7 +284,7 @@ class Query extends AbstractQuery
             if (count($args) == 2) {
                 $value = $operator;
 
-                $operator = '=';
+                $operator = Condition::OPERATOR_EQUALS;
             }
 
             if (!is_a($field, Field::class)) {
@@ -318,55 +319,54 @@ class Query extends AbstractQuery
     protected function evaluateIf($v1, $operator, $v2): bool
     {
         switch (strtoupper((string) $operator)) {
-            case '=':
-                $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 == $v2;
+            case Condition::OPERATOR_EQUALS:
+                $result = is_array($v2) ? $this->evaluateIf($v1, Condition::OPERATOR_IN, $v2) : $v1 == $v2;
 
             break;
-            case '>':
+            case Condition::OPERATOR_GREATER:
                 $result = $v1 > $v2;
 
             break;
-            case '>=':
+            case Condition::OPERATOR_GREATER_EQUAL:
                 $result = $v1 >= $v2;
 
             break;
-            case '<':
+            case Condition::OPERATOR_LESS:
                 $result = $v1 < $v2;
 
             break;
-            case '<=':
+            case Condition::OPERATOR_LESS_EQUAL:
                 $result = $v1 <= $v2;
 
             break;
-            case '!=':
-            case '<>':
-                $result = !$this->evaluateIf($v1, '=', $v2);
+            case Condition::OPERATOR_DOESNOT_EQUAL:
+                $result = !$this->evaluateIf($v1, Condition::OPERATOR_EQUALS, $v2);
 
             break;
-            case 'LIKE':
+            case Condition::OPERATOR_LIKE:
                 $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
 
                 $result = (bool) preg_match('/^' . $pattern . '$/', (string) $v1);
 
             break;
-            case 'NOT LIKE':
-                $result = !$this->evaluateIf($v1, 'LIKE', $v2);
+            case Condition::OPERATOR_NOT_LIKE:
+                $result = !$this->evaluateIf($v1, Condition::OPERATOR_LIKE, $v2);
 
             break;
-            case 'IN':
+            case Condition::OPERATOR_IN:
                 $result = is_array($v2) ? in_array($v1, $v2, true) : $this->evaluateIf($v1, '=', $v2);
 
             break;
-            case 'NOT IN':
-                $result = !$this->evaluateIf($v1, 'IN', $v2);
+            case Condition::OPERATOR_NOT_IN:
+                $result = !$this->evaluateIf($v1, Condition::OPERATOR_IN, $v2);
 
             break;
-            case 'REGEXP':
+            case Condition::OPERATOR_REGEXP:
                 $result = (bool) preg_match('/' . $v2 . '/', $v1);
 
             break;
-            case 'NOT REGEXP':
-                $result = !$this->evaluateIf($v1, 'REGEXP', $v2);
+            case Condition::OPERATOR_NOT_REGEXP:
+                $result = !$this->evaluateIf($v1, Condition::OPERATOR_REGEXP, $v2);
 
             break;
             default:
