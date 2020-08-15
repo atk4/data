@@ -83,66 +83,6 @@ class Array_ extends Persistence
     }
 
     /**
-     * Loads model and returns data record.
-     *
-     * @param mixed $id
-     */
-    public function load(Model $model, $id, string $table = null): array
-    {
-        if (isset($model->table) && !isset($this->data[$model->table])) {
-            throw (new Exception('Table was not found in the array data source'))
-                ->addMoreInfo('table', $model->table);
-        }
-
-        if (!isset($this->data[$table ?? $model->table][$id])) {
-            throw (new Exception('Record with specified ID was not found', 404))
-                ->addMoreInfo('id', $id);
-        }
-
-        return $this->tryLoad($model, $id, $table);
-    }
-
-    /**
-     * Tries to load model and return data record.
-     * Doesn't throw exception if model can't be loaded.
-     *
-     * @param mixed $id
-     */
-    public function tryLoad(Model $model, $id, string $table = null): ?array
-    {
-        $table = $table ?? $model->table;
-
-        if (!isset($this->data[$table][$id])) {
-            return null;
-        }
-
-        return $this->typecastLoadRow($model, $this->data[$table][$id]);
-    }
-
-    /**
-     * Tries to load first available record and return data record.
-     * Doesn't throw exception if model can't be loaded or there are no data records.
-     *
-     * @param mixed $table
-     */
-    public function tryLoadAny(Model $model, string $table = null): ?array
-    {
-        $table = $table ?? $model->table;
-
-        if (!$this->data[$table]) {
-            return null;
-        }
-
-        reset($this->data[$table]);
-        $id = key($this->data[$table]);
-
-        $row = $this->load($model, $id, $table);
-        $model->id = $id;
-
-        return $row;
-    }
-
-    /**
      * Inserts record in data array and returns new record ID.
      *
      * @param array $data

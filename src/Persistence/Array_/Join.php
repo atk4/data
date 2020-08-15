@@ -50,13 +50,17 @@ class Join extends Model\Join
             return;
         }
 
-        try {
-            $data = $model->persistence->load($model, $this->id, $this->foreign_table);
-        } catch (Exception $e) {
-            throw (new Exception('Unable to load joined record', $e->getCode(), $e))
+        $joinModel = clone $model;
+        $joinModel->table = $this->foreign_table;
+
+        $data = $joinModel->persistence->getRow($joinModel, $this->id);
+
+        if (!$data) {
+            throw (new Exception('Unable to load joined record'))
                 ->addMoreInfo('table', $this->foreign_table)
                 ->addMoreInfo('id', $this->id);
         }
+
         $model->data = array_merge($data, $model->data);
     }
 

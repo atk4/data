@@ -168,17 +168,17 @@ class Persistence
     public function getRow(Model $model, $id = null)
     {
         $query = $this->query($model);
-        
+
         if ($id !== null) {
             $query->whereId($id);
         }
-        
+
         $rawData = $query->getRow();
-        
+
         if ($rawData === null) {
             return null;
         }
-        
+
         return $this->typecastLoadRow($model, $rawData);
     }
 

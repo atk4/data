@@ -162,9 +162,9 @@ class Query extends AbstractQuery
     protected function doGetRow(): ?array
     {
         $this->iterator->rewind();
-        
+
         $row = $this->iterator->current();
-        
+
         if ($row && $this->model->id_field && !isset($row[$this->model->id_field])) {
             $row[$this->model->id_field] = $this->iterator->key();
         }
@@ -235,7 +235,7 @@ class Query extends AbstractQuery
             $this->iterator = new \CallbackFilterIterator($this->iterator, function ($row, $id) {
                 // make sure we use the complete row with the filter
                 $row = $this->data[$id];
-                
+
                 if ($this->model->id_field && !isset($row[$this->model->id_field])) {
                     $row[$this->model->id_field] = $id;
                 }
@@ -298,7 +298,7 @@ class Query extends AbstractQuery
     {
         switch (strtoupper((string) $operator)) {
             case '=':
-                $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
+                $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 == $v2;
 
             break;
             case '>':

@@ -1079,46 +1079,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Load model.
-     *
-     * @param mixed $id
-     *
-     * @return $this
-     */
-    public function load($id, Persistence $from_persistence = null)
-    {
-        if (!$from_persistence) {
-            $from_persistence = $this->persistence;
-        }
-
-        if (!$from_persistence) {
-            throw new Exception('Model is not associated with any database');
-        }
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
-            return $this;
-        }
-
-        $this->data = $from_persistence->load($this, $id);
-        if ($this->id === null) {
-            $this->id = $id;
-        }
-
-        $ret = $this->hook(self::HOOK_AFTER_LOAD);
-        if ($ret === false) {
-            return $this->unload();
-        } elseif (is_object($ret)) {
-            return $ret;
-        }
-
-        return $this;
-    }
-
-    /**
      * Reload model by taking its current ID.
      *
      * @return $this
@@ -1286,7 +1246,7 @@ class Model implements \IteratorAggregate
     public function tryLoad($id)
     {
         try {
-            return $this->loadFromPersistence($id);
+            return $this->load($id);
         } catch (RecordNotFoundException $e) {
         }
 
@@ -1300,7 +1260,7 @@ class Model implements \IteratorAggregate
      */
     public function loadAny()
     {
-        return $this->loadFromPersistence();
+        return $this->load();
     }
 
     /**
@@ -1312,14 +1272,21 @@ class Model implements \IteratorAggregate
     public function tryLoadAny()
     {
         try {
-            return $this->loadFromPersistence();
+            return $this->load();
         } catch (RecordNotFoundException $e) {
         }
 
         return $this;
     }
 
-    protected function loadFromPersistence($id = null, Persistence $persistence = null)
+    /**
+     * Load model.
+     *
+     * @param mixed $id
+     *
+     * @return $this
+     */
+    public function load($id = null, Persistence $persistence = null)
     {
         $persistence = $persistence ?? $this->persistence;
 
@@ -1971,8 +1938,10 @@ class Model implements \IteratorAggregate
 
 class RecordNotFoundException extends Exception
 {
-    protected $message = 'Record not found';
-    protected $code = 404;
+    public function __construct(string $message = '', int $code = 0, \Throwable $previous = null)
+    {
+        parent::__construct($message ?: 'Record not found', $code ?: 404, $previous);
+    }
 
     public function setRecordParameters(Model $model, $id = null)
     {

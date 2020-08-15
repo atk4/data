@@ -10,6 +10,7 @@ use atk4\data\Exception;
 use atk4\data\Locale;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use atk4\data\RecordNotFoundException;
 
 class LocaleTest extends AtkPhpunit\TestCase
 {
@@ -43,7 +44,7 @@ class LocaleTest extends AtkPhpunit\TestCase
             $m->addField('name');
             $m->addField('surname');
             $m->load(4);
-        } catch (Exception $e) {
+        } catch (RecordNotFoundException $e) {
             $this->assertStringContainsString('Запись', json_decode($e->getJson(), true)['message']);
 
             return;
