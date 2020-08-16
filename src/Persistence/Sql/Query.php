@@ -8,7 +8,7 @@ use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\FieldSqlExpression;
 use atk4\data\Model;
-use atk4\data\Persistence\AbstractQuery;
+use atk4\data\Persistence;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 use atk4\dsql\Query as DsqlQuery;
@@ -23,16 +23,16 @@ use atk4\dsql\Query as DsqlQuery;
  * @method DsqlQuery reset()
  * @method DsqlQuery join()
  */
-class Query extends AbstractQuery implements Expressionable
+class Query extends Persistence\AbstractQuery implements Expressionable
 {
     /** @var DsqlQuery */
     protected $dsql;
 
-    public function __construct(Model $model)
+    public function __construct(Model $model, Persistence\Sql $persistence = null)
     {
-        parent::__construct($model);
+        parent::__construct($model, $persistence);
 
-        $this->dsql = $model->persistence_data['dsql'] = $model->persistence->dsql();
+        $this->dsql = $model->persistence_data['dsql'] = $this->persistence->dsql();
 
         if ($model->table) {
             $this->dsql->table($model->table, $model->table_alias ?? null);
@@ -180,7 +180,7 @@ class Query extends AbstractQuery implements Expressionable
         $this->dsql->reset('field')->field($field, $alias);
     }
 
-    public function where($fieldName, $operator = null, $value = null): AbstractQuery
+    public function where($fieldName, $operator = null, $value = null): Persistence\AbstractQuery
     {
         $this->fillWhere($this->dsql, new Model\Scope\Condition(...func_get_args()));
 

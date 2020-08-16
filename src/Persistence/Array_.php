@@ -153,6 +153,6 @@ class Array_ extends Persistence
 
     public function query(Model $model): AbstractQuery
     {
-        return new Array_\Query($model);
+        return new Array_\Query($model, $this);
     }
 }

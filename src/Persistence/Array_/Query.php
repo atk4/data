@@ -8,6 +8,7 @@ use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Model\Scope\Condition;
+use atk4\data\Persistence;
 use atk4\data\Persistence\AbstractQuery;
 
 /**
@@ -25,11 +26,11 @@ class Query extends AbstractQuery
     /** @var \Closure */
     private $fx;
 
-    public function __construct(Model $model)
+    public function __construct(Model $model, Persistence\Array_ $persistence = null)
     {
-        parent::__construct($model);
+        parent::__construct($model, $persistence);
 
-        $this->data = $model->persistence->getRawDataByTable($model->table);
+        $this->data = $this->persistence->getRawDataByTable($model->table);
 
         $this->iterator = new \ArrayIterator($this->data);
 
@@ -56,7 +57,7 @@ class Query extends AbstractQuery
     protected function initInsert(array $data): void
     {
         $this->fx = function (\Iterator $iterator) use ($data) {
-            return $this->model->persistence->setRawData($this->model, $data);
+            return $this->persistence->setRawData($this->model, $data);
         };
     }
 
@@ -64,7 +65,7 @@ class Query extends AbstractQuery
     {
         $this->fx = function (\Iterator $iterator) use ($data) {
             foreach ($iterator as $id => $row) {
-                $this->model->persistence->setRawData($this->model, array_merge($row, $data), $id);
+                $this->persistence->setRawData($this->model, array_merge($row, $data), $id);
             }
         };
     }
@@ -73,7 +74,7 @@ class Query extends AbstractQuery
     {
         $this->fx = function (\Iterator $iterator) {
             foreach ($iterator as $id => $row) {
-                $this->model->persistence->unsetRawData($this->model->table, $id);
+                $this->persistence->unsetRawData($this->model->table, $id);
             }
         };
     }

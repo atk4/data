@@ -6,6 +6,7 @@ namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
 use atk4\data\Model;
+use atk4\data\Persistence;
 
 abstract class AbstractQuery implements \IteratorAggregate
 {
@@ -34,6 +35,9 @@ abstract class AbstractQuery implements \IteratorAggregate
     /** @var Model */
     protected $model;
 
+    /** @var Persistence */
+    protected $persistence;
+
     /** @var Model\Scope */
     protected $scope;
 
@@ -46,7 +50,7 @@ abstract class AbstractQuery implements \IteratorAggregate
     /** @var string */
     protected $mode;
 
-    public function __construct(Model $model)
+    public function __construct(Model $model, Persistence $persistence = null)
     {
         $this->model = clone $model;
 
@@ -55,6 +59,8 @@ abstract class AbstractQuery implements \IteratorAggregate
         $this->order = $model->order;
 
         $this->limit = $model->limit;
+
+        $this->persistence = $persistence ?? $model->persistence;
     }
 
     public function find($id): ?array

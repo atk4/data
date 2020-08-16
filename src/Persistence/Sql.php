@@ -382,7 +382,7 @@ class Sql extends Persistence
 
     public function query(Model $model): AbstractQuery
     {
-        return new Sql\Query($model);
+        return new Sql\Query($model, $this);
     }
 
     public function getFieldSqlExpression(Field $field, Expression $expression)
