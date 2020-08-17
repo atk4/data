@@ -1691,7 +1691,7 @@ class Model implements \IteratorAggregate
      */
     public function getIterator(): iterable
     {
-        foreach ($this->rawIterator() as $data) {
+        foreach ($this->toQuery('select')->execute() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
                 $this->id = $data[$this->id_field] ?? null;
@@ -1712,30 +1712,18 @@ class Model implements \IteratorAggregate
                 continue;
             }
 
-            if (is_object($ret)) {
-                if ($ret->id_field) {
-                    yield $ret->id => $ret;
-                } else {
-                    yield $ret;
-                }
+            if (!is_object($ret)) {
+                $ret = $this;
+            }
+
+            if ($ret->id_field) {
+                yield $ret->id => $ret;
             } else {
-                if ($this->id_field) {
-                    yield $this->id => $this;
-                } else {
-                    yield $this;
-                }
+                yield $ret;
             }
         }
 
         $this->unload();
-    }
-
-    /**
-     * Returns iterator.
-     */
-    public function rawIterator(): iterable
-    {
-        return $this->persistence->prepareIterator($this);
     }
 
     /**

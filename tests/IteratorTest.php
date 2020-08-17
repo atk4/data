@@ -128,7 +128,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
         ], $data);
     }
 
-    public function testRawIterator()
+    public function testRawQuery()
     {
         $a = [
             'invoice' => [
@@ -146,18 +146,18 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
         $i->onlyFields(['total_net']);
 
         $data = [];
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->toQuery('select')->execute() as $row) {
             $data[] = $row;
 
             break;
         }
 
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->toQuery('select')->execute() as $row) {
             $data[] = $row;
             $i->setLimit(1);
         }
 
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->toQuery('select')->execute() as $row) {
             $data[] = $row;
         }
 

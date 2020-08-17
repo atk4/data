@@ -92,14 +92,6 @@ class Persistence
     }
 
     /**
-     * Prepare iterator.
-     */
-    public function prepareIterator(Model $model): iterable
-    {
-        return $this->query($model)->execute();
-    }
-
-    /**
      * Export all DataSet.
      *
      * @param bool $typecast Should we typecast exported data
