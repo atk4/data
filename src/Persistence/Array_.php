@@ -31,15 +31,9 @@ class Array_ extends Persistence
      */
     protected $lastInsertIds = [];
 
-    /**
-     * @deprecated TODO temporary for these:
-     *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsOne.php#L119
-     *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsMany.php#L66
-     *             remove once fixed/no longer needed
-     */
-    public function getRawDataByTable(string $table): array
+    public function getRawDataIterator($table): \Iterator
     {
-        return $this->data[$table];
+        return new \ArrayIterator($this->data[$table]);
     }
 
     public function setRawData(Model $model, $data, $id = null)

@@ -113,13 +113,12 @@ class CsvTest extends AtkPhpunit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m->loadAny();
-        $m->loadAny();
+        $m->load(2);
 
         $this->assertSame('Sarah', $m->get('name'));
         $this->assertSame('Jones', $m->get('surname'));
 
-        $m->tryLoadAny();
+        $m->tryLoad(3);
         $this->assertFalse($m->loaded());
     }
 
@@ -144,8 +143,8 @@ class CsvTest extends AtkPhpunit\TestCase
         }
 
         $this->assertSame(
-            file_get_contents($this->file2),
-            file_get_contents($this->file)
+            file_get_contents($this->file),
+            file_get_contents($this->file2)
         );
     }
 
@@ -166,13 +165,13 @@ class CsvTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $this->assertSame([
-            ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
+            1 => ['name' => 'John', 'surname' => 'Smith', 'id' => 1],
+            2 => ['name' => 'Sarah', 'surname' => 'Jones', 'id' => 2],
         ], $m->export());
 
         $this->assertSame([
-            ['surname' => 'Smith'],
-            ['surname' => 'Jones'],
+            1 => ['surname' => 'Smith'],
+            2 => ['surname' => 'Jones'],
         ], $m->export(['surname']));
     }
 }
