@@ -360,6 +360,11 @@ abstract class AbstractQuery implements \IteratorAggregate
         }
     }
 
+    public function export(): array
+    {
+        return iterator_to_array($this);
+    }
+
     public function getIterator(): iterable
     {
         return $this->execute();

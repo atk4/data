@@ -39,9 +39,8 @@ class ContainsMany extends ContainsOne
         // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $theirModel->onHook($spot, function ($theirModel) {
-                $rows = iterator_to_array($theirModel->persistence->getRawDataIterator($this->table_alias));
                 $this->getOurModel()->save([
-                    $this->getOurFieldName() => $rows ?: null,
+                    $this->getOurFieldName() => $theirModel->toQuery('select')->export() ?: null,
                 ]);
             });
         }
