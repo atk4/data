@@ -78,7 +78,7 @@ class Query extends Persistence\AbstractQuery implements Expressionable
         }
 
         if (!is_array($fields)) {
-            $fields = array_keys($this->model->getFields(Model::FIELD_FILTER_PERSIST));
+            $fields = array_keys($this->model->getFields(Model::FIELD_FILTER_PERSIST, false));
         }
 
         foreach ($fields as $fieldName) {

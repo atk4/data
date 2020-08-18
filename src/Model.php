@@ -625,15 +625,21 @@ class Model implements \IteratorAggregate
      *
      * @return Field[]
      */
-    public function getFields($filters = null): array
+    public function getFields($filters = null, bool $onlyFields = null): array
     {
         if ($filters === null) {
-            return $this->fields;
+            return $onlyFields ? $this->getFields(self::FIELD_FILTER_ONLY_FIELDS) : $this->fields;
         } elseif (!is_array($filters)) {
             $filters = [$filters];
         }
 
-        return array_filter($this->fields, function (Field $field, $name) use ($filters) {
+        $onlyFields = $onlyFields ?? true;
+
+        return array_filter($this->fields, function (Field $field, $name) use ($filters, $onlyFields) {
+            if ($onlyFields && !$this->isOnlyFieldsField($field->short_name)) {
+                return false;
+            }
+
             foreach ($filters as $filter) {
                 if ($this->fieldMatchesFilter($field, $filter)) {
                     return true;
@@ -648,13 +654,13 @@ class Model implements \IteratorAggregate
     {
         switch ($filter) {
             case self::FIELD_FILTER_SYSTEM:
-                return $this->isOnlyFieldsField($field->short_name) && $field->system;
+                return $field->system;
             case self::FIELD_FILTER_NOT_SYSTEM:
-                return $this->isOnlyFieldsField($field->short_name) && !$field->system;
+                return !$field->system;
             case self::FIELD_FILTER_EDITABLE:
-                return $this->isOnlyFieldsField($field->short_name) && $field->isEditable();
+                return $field->isEditable();
             case self::FIELD_FILTER_VISIBLE:
-                return $this->isOnlyFieldsField($field->short_name) && $field->isVisible();
+                return $field->isVisible();
             case self::FIELD_FILTER_ONLY_FIELDS:
                 return $this->isOnlyFieldsField($field->short_name);
             case self::FIELD_FILTER_PERSIST:
@@ -1649,7 +1655,7 @@ class Model implements \IteratorAggregate
 
         // prepare array with field names
         if ($fields === null) {
-            $fields = array_keys($this->getFields(self::FIELD_FILTER_PERSIST));
+            $fields = array_keys($this->getFields(self::FIELD_FILTER_PERSIST, false));
         }
 
         // add key_field to array if it's not there
