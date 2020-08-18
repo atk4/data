@@ -1691,7 +1691,7 @@ class Model implements \IteratorAggregate
      */
     public function getIterator(): iterable
     {
-        foreach ($this->toQuery('select')->execute() as $data) {
+        foreach ($this->toQuery('select') as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
                 $this->id = $data[$this->id_field] ?? null;
