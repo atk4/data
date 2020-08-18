@@ -83,7 +83,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Rate($db);
 
-        $this->assertEquals(2, $m->toQuery('count')->getOne());
+        $this->assertEquals(2, $m->toQuery()->count()->getOne());
     }
 
     public function testTitleImport()
@@ -254,7 +254,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             $m->load(2)->get()
         );
 
-        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->toQuery('count')->getOne());
+        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->toQuery()->count()->getOne());
         $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 
@@ -538,7 +538,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $q = str_replace('"', $this->getEscapeChar(), $q);
         $this->assertSame(
             $q,
-            $d->toQuery('select')->render()
+            $d->toQuery()->select()->render()
         );
     }
 }

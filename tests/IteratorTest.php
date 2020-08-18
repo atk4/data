@@ -81,7 +81,7 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->toQuery('insert');
+        $m->toQuery()->insert();
     }
 
     public function testBasic()
@@ -146,18 +146,18 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
         $i->onlyFields(['total_net']);
 
         $data = [];
-        foreach ($i->toQuery('select')->execute() as $row) {
+        foreach ($i->toQuery() as $row) {
             $data[] = $row;
 
             break;
         }
 
-        foreach ($i->toQuery('select')->execute() as $row) {
+        foreach ($i->toQuery() as $row) {
             $data[] = $row;
             $i->setLimit(1);
         }
 
-        foreach ($i->toQuery('select')->execute() as $row) {
+        foreach ($i->toQuery() as $row) {
             $data[] = $row;
         }
 

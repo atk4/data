@@ -40,7 +40,7 @@ class ContainsMany extends ContainsOne
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $theirModel->onHook($spot, function ($theirModel) {
                 $this->getOurModel()->save([
-                    $this->getOurFieldName() => $theirModel->toQuery('select')->export() ?: null,
+                    $this->getOurFieldName() => $theirModel->toQuery()->export() ?: null,
                 ]);
             });
         }

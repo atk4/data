@@ -317,7 +317,7 @@ abstract class AbstractQuery implements \IteratorAggregate
     public function get(): array
     {
         return $this->executeQueryWithDebug(function () {
-            return $this->doGet();
+            return $this->withMode()->doGet();
         });
     }
 

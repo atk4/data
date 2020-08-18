@@ -51,7 +51,7 @@ class HasOneSql extends HasOne
                 function (Model $ourModel) use ($theirFieldName) {
                     // remove order if we just select one field from hasOne model
                     // that is mandatory for Oracle
-                    return $ourModel->refLink($this->link)->toQuery('field', [$theirFieldName])->reset('order');
+                    return $ourModel->refLink($this->link)->toQuery()->field($theirFieldName)->reset('order');
                 },
             ],
             $defaults,
@@ -71,7 +71,7 @@ class HasOneSql extends HasOne
                 $theirModel = $this->getTheirModel();
 
                 $theirModel->addCondition($theirFieldName, $ourModel->get($ourFieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->toQuery('field', [$theirModel->id_field]));
+                $ourModel->set($this->getOurFieldName(), $theirModel->toQuery()->field($theirModel->id_field));
                 $ourModel->_unset($ourFieldName);
             }
         }, [], 21);
@@ -166,7 +166,7 @@ class HasOneSql extends HasOne
         }
 
         // handles the deep traversal using an expression
-        $ourFieldExpression = $ourModel->toQuery('field', [$ourField]);
+        $ourFieldExpression = $ourModel->toQuery()->field($ourField);
 
         return $theirModel->addCondition($theirField, $ourFieldExpression);
     }
@@ -204,7 +204,7 @@ class HasOneSql extends HasOne
                 function (Model $ourModel) {
                     $theirModel = $ourModel->refLink($this->link);
 
-                    return $theirModel->toQuery('field', [$theirModel->title_field])->reset('order');
+                    return $theirModel->toQuery()->field($theirModel->title_field)->reset('order');
                 },
                 'type' => null,
                 'ui' => ['editable' => false, 'visible' => true],
@@ -226,7 +226,7 @@ class HasOneSql extends HasOne
                 $theirModel = $this->getTheirModel();
 
                 $theirModel->addCondition($theirModel->title_field, $ourModel->get($fieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->toQuery('field', [$theirModel->id_field]));
+                $ourModel->set($this->getOurFieldName(), $theirModel->toQuery()->field($theirModel->id_field));
             }
         }, [], 20);
 

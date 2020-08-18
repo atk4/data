@@ -196,10 +196,10 @@ class Condition extends AbstractScope
 
                     foreach (array_reverse($refModels) as $refModel) {
                         if ($field === '#') {
-                            $field = $value ? $refModel->toQuery('count') : $refModel->toQuery('exists');
+                            $field = $value ? $refModel->toQuery()->count() : $refModel->toQuery()->exists();
                         } else {
                             $refModel->addCondition($field, $operator, $value);
-                            $field = $refModel->toQuery('exists');
+                            $field = $refModel->toQuery()->exists();
                             $operator = null;
                             $value = null;
                         }

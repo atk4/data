@@ -61,7 +61,7 @@ class Query extends Persistence\AbstractQuery implements Expressionable
             }
             // 2nd parameter here strictly define which fields should be selected
             // as result system fields will not be added if they are not requested
-            $subQuery = $withModel->toQuery('select', [$fieldsFrom])->dsql();
+            $subQuery = $withModel->toQuery()->select($fieldsFrom)->dsql();
 
             // add With cursor
             $this->dsql->with($subQuery, $alias, $fieldsTo ?: null, $recursive);

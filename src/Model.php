@@ -1691,7 +1691,7 @@ class Model implements \IteratorAggregate
      */
     public function getIterator(): iterable
     {
-        foreach ($this->toQuery('select') as $data) {
+        foreach ($this->toQuery() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
                 $this->id = $data[$this->id_field] ?? null;
@@ -1808,19 +1808,10 @@ class Model implements \IteratorAggregate
     /**
      * @deprecated use toQuery instead - will be removed in dec-2020
      */
-    public function action($mode, $args = [])
+    public function action($mode, $args = []): Persistence\AbstractQuery
     {
         'trigger_error'('Method Model::action is deprecated. Use Model::toQuery instead', E_USER_DEPRECATED);
 
-        return $this->toQuery($mode, $args);
-    }
-
-    /**
-     * @param string $mode
-     * @param array  $args
-     */
-    public function toQuery($mode, $args = []): Persistence\AbstractQuery
-    {
         $this->checkPersistence('query');
 
         // start backward compatibility -->
@@ -1855,7 +1846,17 @@ class Model implements \IteratorAggregate
                 ->addMoreInfo('type', $mode);
         }
 
-        return $this->persistence->query($this)->{$mode}(...$args);
+        return $this->toQuery()->{$mode}(...$args);
+    }
+
+    /**
+     * Get query object to perform query on raw persistence data.
+     */
+    public function toQuery(): Persistence\AbstractQuery
+    {
+        $this->checkPersistence('query');
+
+        return $this->persistence->query($this);
     }
 
     // }}}

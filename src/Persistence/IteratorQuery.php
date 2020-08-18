@@ -88,7 +88,7 @@ class IteratorQuery extends AbstractQuery
     protected function initOrder(): void
     {
         if ($this->order) {
-            $data = $this->get();
+            $data = $this->doGet();
 
             // prepare arguments for array_multisort()
             $args = [];
