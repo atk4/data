@@ -241,9 +241,9 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(3, $client3->id);
 
         // We should have one of each records for this new client
-        $this->assertEquals(1, $client3->ref('Invoices')->toQuery()->count()->getOne());
-        $this->assertEquals(1, $client3->ref('Quotes')->toQuery()->count()->getOne());
-        $this->assertEquals(1, $client3->ref('Payments')->toQuery()->count()->getOne());
+        $this->assertEquals(1, $client3->ref('Invoices')->getCount());
+        $this->assertEquals(1, $client3->ref('Quotes')->getCount());
+        $this->assertEquals(1, $client3->ref('Payments')->getCount());
 
         // We created invoice for 90 for client1, so after copying it should still be 90
         $this->assertEquals(90, $client3->ref('Quotes')->toQuery()->aggregate('sum', 'total')->getOne());

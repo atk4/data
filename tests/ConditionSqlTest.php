@@ -364,13 +364,13 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
             ['name', 'Peter'],
         ]);
 
-        $this->assertEquals(2, $u->toQuery()->count()->getOne());
+        $this->assertEquals(2, $u->getCount());
 
         $u->addCondition([
             ['name', 'Peter'],
             ['name', 'Joe'],
         ]);
-        $this->assertEquals(1, $u->toQuery()->count()->getOne());
+        $this->assertEquals(1, $u->getCount());
     }
 
     /**

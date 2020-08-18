@@ -145,7 +145,7 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals(1, $m->toQuery()->exists()->getOne());
 
-        $this->assertEquals(2, $m->toQuery()->count()->getOne());
+        $this->assertEquals(2, $m->getCount());
     }
 
     public function testPersistenceDelete()

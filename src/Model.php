@@ -1685,6 +1685,14 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * Number of records in current model scope
+     */
+    public function getCount(): int
+    {
+        return (int) $this->toQuery()->count()->getOne();
+    }
+
+    /**
      * Returns iterator (yield values).
      *
      * @return mixed

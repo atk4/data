@@ -294,7 +294,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * Test Model->toQuery()->count().
+     * Test Model->toQuery()->getCount().
      */
     public function testActionCount()
     {
@@ -308,7 +308,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame(2, $m->toQuery()->count()->getOne());
+        $this->assertSame(2, $m->getCount());
     }
 
     /**
@@ -326,7 +326,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame(2, $m->toQuery()->count()->getOne());
+        $this->assertSame(2, $m->getCount());
 
         // use alias as array key if it is set
         $q = $m->toQuery()->field('name', 'first_name');
@@ -721,10 +721,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = new Model($p);
         $m->addField('f1');
 
-        $this->assertSame(4, $m->toQuery()->count()->getOne());
+        $this->assertSame(4, $m->getCount());
 
         $m->setLimit(3);
-        $this->assertSame(3, $m->toQuery()->count()->getOne());
+        $this->assertSame(3, $m->getCount());
         $this->assertSame([
             ['f1' => 'A'],
             ['f1' => 'D'],
@@ -732,7 +732,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         ], array_values($m->export()));
 
         $m->setLimit(2, 1);
-        $this->assertSame(2, $m->toQuery()->count()->getOne());
+        $this->assertSame(2, $m->getCount());
         $this->assertSame([
             ['f1' => 'D'],
             ['f1' => 'E'],
@@ -741,7 +741,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         // well, this is strange, that you can actually change limit on-the-fly and then previous
         // limit is not taken into account, but most likely you will never set it multiple times
         $m->setLimit(3);
-        $this->assertSame(3, $m->toQuery()->count()->getOne());
+        $this->assertSame(3, $m->getCount());
     }
 
     /**
@@ -761,19 +761,19 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame(4, $m->toQuery()->count()->getOne());
+        $this->assertSame(4, $m->getCount());
         $this->assertSame(['data' => $a], $this->getInternalPersistenceData($p));
 
         $m->addCondition('name', 'Sarah');
-        $this->assertSame(3, $m->toQuery()->count()->getOne());
+        $this->assertSame(3, $m->getCount());
 
         $m->addCondition('surname', 'Smith');
-        $this->assertSame(1, $m->toQuery()->count()->getOne());
+        $this->assertSame(1, $m->getCount());
         $this->assertSame([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->export());
         $this->assertSame([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->toQuery()->get());
 
         $m->addCondition('surname', 'Siiiith');
-        $this->assertSame(0, $m->toQuery()->count()->getOne());
+        $this->assertSame(0, $m->getCount());
     }
 
     public function testUnsupportedQuery()
@@ -885,9 +885,9 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $user->hasOne('country_id', $country);
 
         $country->load(1);
-        $this->assertSame(2, $country->ref('Users')->toQuery()->count()->getOne());
+        $this->assertSame(2, $country->ref('Users')->getCount());
 
         $country->load(2);
-        $this->assertSame(1, $country->ref('Users')->toQuery()->count()->getOne());
+        $this->assertSame(1, $country->ref('Users')->getCount());
     }
 }
