@@ -179,10 +179,16 @@ class IteratorQuery extends AbstractQuery
 
         $iterator->rewind();
 
-        $row = $iterator->current();
+        return $this->getRowWithId($iterator->current(), $this->iterator->key());
+    }
 
+    protected function getRowWithId($row, $id)
+    {
         if ($row && $this->model->id_field && !isset($row[$this->model->id_field])) {
-            $row[$this->model->id_field] = $this->iterator->key();
+            $field = $this->model->getField($this->model->id_field);
+
+            // typecastSave value so we can use strict comparison
+            $row[$this->model->id_field] = $this->persistence->typecastSaveField($field, $id);
         }
 
         return $row;
@@ -249,11 +255,7 @@ class IteratorQuery extends AbstractQuery
     {
         if (!$this->scope->isEmpty()) {
             $this->iterator = new \CallbackFilterIterator($this->iterator, function ($row, $id) {
-                if ($this->model->id_field && !isset($row[$this->model->id_field])) {
-                    $row[$this->model->id_field] = $id;
-                }
-
-                return $this->match($row, $this->scope);
+                return $this->match($this->getRowWithId($row, $id), $this->scope);
             });
         }
     }
@@ -311,7 +313,7 @@ class IteratorQuery extends AbstractQuery
     {
         switch (strtoupper((string) $operator)) {
             case Condition::OPERATOR_EQUALS:
-                $result = is_array($v2) ? $this->evaluateIf($v1, Condition::OPERATOR_IN, $v2) : $v1 == $v2;
+                $result = is_array($v2) ? $this->evaluateIf($v1, Condition::OPERATOR_IN, $v2) : $v1 === $v2;
 
             break;
             case Condition::OPERATOR_GREATER:

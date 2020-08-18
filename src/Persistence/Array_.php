@@ -42,7 +42,7 @@ class Array_ extends Persistence
             $id = $this->generateNewId($model);
 
             if ($model->id_field) {
-                $data[$model->id_field] = $id;
+                $data[$model->id_field] = $this->typecastSaveField($model->getField($model->id_field), $id);
             }
         }
 
