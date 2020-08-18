@@ -1685,7 +1685,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Number of records in current model scope
+     * Number of records in current model scope.
      */
     public function getCount(): int
     {
