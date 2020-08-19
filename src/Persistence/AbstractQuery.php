@@ -284,8 +284,6 @@ abstract class AbstractQuery implements \IteratorAggregate
 
 //          $this->model->hook(self::HOOK_BEFORE_EXECUTE, [$this]);
 
-            $this->hookOnModel('HOOK_BEFORE_' . $this->getMode(), [$this]);
-
             $result = $this->doExecute();
 
             // backward compatibility
