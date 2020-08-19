@@ -139,7 +139,8 @@ using::
     $gross = $user->ref('Invoice')
         ->addCondition('status', 'due')
         ->ref('Lines')
-        ->toQuery('sum', 'gross')
+        ->toQuery()
+        ->aggregate('sum', 'gross')
         ->getOne();
                                 // get sum of all gross fields for due invoices
 

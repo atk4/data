@@ -80,7 +80,7 @@ Safety and Performance
 ----------------------
 
 When using ref() on hasMany reference, it will always return a fresh clone of
-the model. You can perform actions on the clone and next time you execute ref()
+the model. You can perform queries on the clone and next time you execute ref()
 you will get a fresh copy.
 
 If you are worried about performance you can keep 2 models in memory::
@@ -94,7 +94,7 @@ If you are worried about performance you can keep 2 models in memory::
 
 .. warning:: This code is seriously flawed and is called "N+1 Problem".
     Agile Data discourages you from using this and instead offers you many
-    other tools: field importing, model joins, field actions and refLink().
+    other tools: field importing, model joins, field queries and refLink().
 
 
 hasMany Reference
@@ -264,7 +264,7 @@ sub-queries::
     $m->hasMany('Orders', new Model_Order($db_sql));
     $m->addCondition('is_vip', true);
 
-    $sum = $m->refLink('Orders')->toQuery('fx0', ['sum', 'amount']);
+    $sum = $m->refLink('Orders')->toQuery()->aggregate('sum', 'amount', null, true);
     $m->addExpression('sum_amount')->set($sum);
 
 The refLink would define a condition on a query like this:

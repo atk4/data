@@ -427,14 +427,14 @@ Create copy of existing record
     a new ID::
 
         // First, lets delete all records except 123
-        (clone $m)->addCondition('id', '!=', 123)->toQuery('delete')->execute();
+        (clone $m)->addCondition('id', '!=', 123)->toQuery()->delete()->execute();
 
         // Next we can duplicate
         $m->load(123)->duplicate()->save();
 
         // Now you have 2 records:
         // one with ID=123 and another with ID={next db generated id}
-        echo $m->toQuery('count')->getOne();
+        echo $m->getCount();
 
 Duplicate then save under a new ID
 ----------------------------------
@@ -816,31 +816,30 @@ How to add record inside session, e.g. log the user in? Here is the code::
 
     $u->withPersistence($sess, 'active_user')->save();
 
-.. _Action:
+.. _Query:
 
-
-Actions
+Queries
 =======
 
-Action is a multi-row operation that will affect all the records inside DataSet.
-Actions will not affect records outside of DataSet (records that do not match
+Query is a multi-row operation that will affect all the records inside DataSet.
+Queries will not affect records outside of DataSet (records that do not match
 conditions)
 
-.. php:method:: action($action, $args = [])
+.. php:method:: toQuery()
 
-    Prepares a special object representing "action" of a persistence layer based
+    Prepares a special object representing "Query" on a persistence layer based
     around your current model::
 
         $m = Model_User();
         $m->addCondition('last_login', '<', date('Y-m-d', strtotime('-2 months')));
 
-        $m->toQuery('delete')->execute();
+        $m->toQuery()->delete()->execute();
 
 
-Action Types
-------------
+Query Types
+-----------
 
-Actions can be grouped by their result. Some action will be executed and will
+Queries can be grouped by their result. Some queries will be executed and will
 not produce any results. Others will respond with either one value or multiple
 rows of data.
 
@@ -850,44 +849,32 @@ rows of data.
  - single column
  - array of hashes
 
-Action can be executed at any time and that will return an expected result::
+A Query can be executed at any time and that will return an expected result::
 
     $m = Model_Invoice();
-    $val = $m->toQuery('count')->getOne();
+    $val = $m->getCount();
 
-Most actions are sufficiently smart to understand what type of result you are
-expecting, so you can have the following code::
-
-    $m = Model_Invoice();
-    $val = $m->toQuery('count')();
-
-When used inside the same Persistence, sometimes actions can be used without
+When used inside the same Persistence, sometimes queries can be used without
 executing::
 
     $m = Model_Product($db);
     $m->addCondition('name', $product_name);
-    $id_query_action = $m->toQuery('getOne',['id']);
+    $id_query_action = $m->toQuery()->select('id')->getOne();
 
     $m = Model_Invoice($db);
     $m->insert(['qty'=>20, 'product_id'=>$id_query_action]);
 
 Insert operation will check if you are using same persistence.
-If the persistence object is different, it will execute action and will use
+If the persistence object is different, it will execute the query and will use
 result instead.
 
-Being able to embed actions inside next query allows Agile Data to reduce number
+Being able to embed queries inside next query allows Agile Data to reduce number
 of queries issued.
 
-The default action type can be set when executing action, for example::
-
-    $a = $m->toQuery('field', 'user', 'getOne');
-
-    echo $a();   // same as $a->getOne();
-
-SQL Actions
+SQL Queries
 -----------
 
-The following actions are currently supported by `Persistence\\Sql`:
+The following queries are currently supported by `Persistence\\Sql`:
 
  - select - produces query that returns DataSet  (array of hashes)
  - delete - produces query for deleting DataSet (no result)
@@ -903,33 +890,25 @@ Example of using update::
     $m = Model_Invoice($db);
     $m->addCondition('has_discount', true);
 
-    $m->toQuery('update')
-        ->set('has_dicount', false)
-        ->execute();
-
-You must be aware that set() operates on a DSQL object and will no longer
-work with your model fields. You should use the object like this if you can::
-
-    $m->toQuery('update')
-        ->set($m->getField('has_discount'), false)
-        ->execute();
-
-See $actual for more details.
+    $m->toQuery()->update(['has_dicount' => false])->execute();
 
 There are ability to execute aggregation functions::
 
-    echo $m->toQuery('fx', ['max', 'salary'])->getOne();
+    echo $m->toQuery()->aggregate('max', 'salary')->getOne();
 
-and finally you can also use count::
+and finally you can also use getCount::
 
-    echo $m->toQuery('count')->getOne();
+    echo $m->getCount();
+    
+which is short for::
 
+   echo $m->toQuery()->count()->getOne();
 
-SQL Actions on Linked Records
+SQL Queries on Linked Records
 -----------------------------
 
 In conjunction with Model::refLink() you can produce expressions for creating
-sub-selects. The functionality is nicely wrapped inside FieldSql_Many::addField()::
+sub-select queries. The functionality is nicely wrapped inside `Reference\\HasMany::addField()`::
 
     $client->hasMany('Invoice')
         ->addField('total_gross', ['aggregate'=>'sum', 'field'=>'gross']);
@@ -940,9 +919,9 @@ This operation is actually consisting of 3 following operations::
    a condition between $client and $invoice assuming they will appear inside
    same query.
 
-2. Action is created from $invoice using 'fx' and requested method / field.
+2. A query is created from $invoice using 'aggregate' on requested method / field.
 
-3. Expression is created with name 'total_gross' that uses Action.
+3. Expression is created with name 'total_gross' that uses the 'aggregate' query .
 
 Here is a way how to intervene with the process::
 
@@ -951,18 +930,19 @@ Here is a way how to intervene with the process::
         return $m->refLink('Invoice')
             ->setOrder('date desc')
             ->setLimit(1)
-            ->toQuery('field', ['total_gross'], 'getOne');
+            ->toQuery()
+            ->select('total_gross')
+            ->getOne();
 
     });
 
-The code above uses refLink and also creates expression, but it tweaks
-the action used.
+The code above uses refLink and also creates expression, but it tweaks the query used.
 
 
-Action Matrix
--------------
+Query Matrix
+------------
 
-SQL actions apply the following:
+SQL queries apply the following:
 
 - insert: init, mode
 - update: init, mode, conditions, limit, order, hook
@@ -970,5 +950,5 @@ SQL actions apply the following:
 - select: init, fields, conditions, limit, order, hook
 - count:  init, field, conditions, hook,
 - field:  init, field, conditions
-- fx:     init, field, conditions
+- aggregate:  init, field, conditions
 

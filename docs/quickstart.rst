@@ -76,7 +76,7 @@ Business Model (see :ref:`Model`)
 Persistence (see :ref:`Persistence`)
     Object representing a connection to database. Linking your Business Model
     to a persistence allows you to load/save individual records as well as
-    execute multi-record operations (Actions)
+    execute multi-record operations (Queries)
 
     For developer, persistence should be a secondary concern, after all it is
     possible to switch from one persistence to another and compensate for the
@@ -90,9 +90,9 @@ Active Record (see :ref:`Active Record`)
     Model can load individual record from DataSet, work with it and save it back
     into DataSet. While the record is loaded, we call it an Active Record.
 
-Action (see :ref:`Action`)
+Query (see :ref:`Query`)
     Operation that Model performs on all of DataSet records without loading
-    them individually. Actions have 3 main purposes: data aggregation,
+    them individually. Queries have 3 main purposes: data aggregation,
     referencing and multi-record operations.
 
 Persistence Domain vs Business Domain
@@ -120,7 +120,7 @@ words - Business Logic is an API you and the rest of your developer team can use
 without concerning about data storage.
 
 Agile Data has a rich set of features to define how Business Domain maps into
-Persistence Domain. It also allows you to perform most actions with only
+Persistence Domain. It also allows you to perform most queries with only
 knowledge of Business Domain, keeping the rest of your application independent
 from your database choice, structure or patterns.
 
@@ -138,7 +138,7 @@ inside console::
     $m->addCondition('address_1', 'not', null);
     $m->loadAny();
     $m->get();
-    $m->toQuery('count')->getOne();
+    $m->getCount();
 
 Next, exit and create file `src/Model_ContactInfo.php`::
 
@@ -454,9 +454,9 @@ corresponding to all Systems that belong to user john. You can use the following
 to see number of records in DataSet or export DataSet::
 
     $s->loaded();
-    $s->toQuery('count')->getOne();
+    $s->getCount();
     $s->export();
-    $s->toQuery('count')->getDebugQuery();
+    $s->toQuery()->count()->getDebugQuery();
 
 Many to Many
 ------------
@@ -471,9 +471,9 @@ the Clients that are contained in all of the Systems that belong to user john.
 You can examine the this model further::
 
     $c->loaded();
-    $c->toQuery('count')->getOne();
+    $c->getCount();
     $c->export();
-    $c->toQuery('count')->getDebugQuery();
+    $c->toQuery()->count()->getDebugQuery();
 
 By looking at the code - both MtM and OtM references are defined with 'hasMany'.
 The only difference is the loaded() state of the source model.
@@ -515,13 +515,13 @@ Finally this reference object contains method :php:meth:`Reference::getModel()`
 which will produce a (possibly) fresh copy of related entity and will either
 adjust it's DataSet or set the active record.
 
-Actions
+Queries
 =======
 
-Since NoSQL databases will always have some specific features, Agile Data uses
-the concept of 'action' to map into vendor-specific operations.
+Since various persistences will always have some specific features, Agile Data uses
+the concept of 'AbstractQuery' to map into vendor-specific queries.
 
-Aggregation actions
+Aggregation queries
 -------------------
 
 SQL implements methods such as sum(), count() or max() that can offer you some
@@ -529,11 +529,11 @@ basic aggregation without grouping. This type of aggregation provides some
 specific value from a data-set. SQL persistence implements some of the operations::
 
     $m = new Model_Invoice($db);
-    $m->toQuery('count')->getOne();
-    $m->toQuery('fx', ['sum', 'total'])->getOne();
-    $m->toQuery('fx', ['max', 'shipping'])->getOne();
+    $m->getCount();
+    $m->toQuery()->aggregate('sum', 'total')->getOne();
+    $m->toQuery()->aggregate('max', 'shipping')->getOne();
 
-Aggregation actions can be used in Expressions with hasMany references and they
+Aggregation queries can be used in Expressions with hasMany references and they
 can be brought into the original model as fields::
 
     $m = new Model_Client($db);
@@ -545,14 +545,14 @@ The above code is more concise and can be used together with reference declarati
 although this is how it works::
 
     $m = new Model_Client($db);
-    $m->addExpression('max_delivery', $m->refLink('Invoice')->toQuery('fx', ['max', 'shipping']));
-    $m->addExpression('total_paid', $m->refLink('Payment')->toQuery('fx', ['sum', 'amount']));
+    $m->addExpression('max_delivery', $m->refLink('Invoice')->toQuery()->aggregate('max', 'shipping'));
+    $m->addExpression('total_paid', $m->refLink('Payment')->toQuery()->aggregate('sum', 'amount'));
     $m->export(['name','max_delivery','total_paid']);
 
 In this example calling refLink is similar to traversing reference but instead
 of calculating DataSet based on Active Record or DataSet it references the actual
-field, making it ideal for placing into sub-query which SQL action is using.
-So when calling like above, action() will produce expression for calculating
+field, making it ideal for placing into sub-query which SQL query is using.
+So when calling like above, toQuery() will produce expression for calculating
 max/sum for the specific record of Client and those calculation are used inside
 an Expression().
 
@@ -560,14 +560,14 @@ Expression is a special type of read-only Field that uses sub-query or a more
 complex SQL expression instead of a physical field. (See :ref:`Expressions` and
 :ref:`References`)
 
-Field-reference actions
+Field-reference queries
 -----------------------
 
 Field referencing allows you to fetch a specific field from related model::
 
     $m = new Model_Country($db);
-    $m->toQuery('field', ['name'])->get();
-    $m->toQuery('field', ['name'])->getDebugQuery();
+    $m->toQuery()->field('name')->get();
+    $m->toQuery()->field('name')->getDebugQuery();
 
 This is useful with hasMany references::
 
@@ -579,12 +579,12 @@ This is useful with hasMany references::
 hasMany::addField() again is a short-cut for creating expression, which you can
 also build manually::
 
-    $m->addExpression('country', $m->refLink('country_id')->toQuery('field',['name']));
+    $m->addExpression('country', $m->refLink('country_id')->toQuery()->field('name'));
 
-Multi-record actions
+Multi-record queries
 --------------------
 
-Actions also allow you to perform operations on multiple records. This can be
+Queries also allow you to perform operations on multiple records. This can be
 very handy with some deep traversal to improve query efficiency. Suppose you need
 to change Client/Supplier status to 'suspended' for a specific user. Fire up a
 console once away::
@@ -595,18 +595,18 @@ console once away::
     $c = $m->ref('System')->ref('Client');
     $s = $m->ref('System')->ref('Supplier');
 
-    $c->toQuery('update')->set('status', 'suspended')->execute();
-    $s->toQuery('update')->set('status', 'suspended')->execute();
+    $c->toQuery()->update(['status' => 'suspended'])->execute();
+    $s->toQuery()->update(['status' => 'suspended'])->execute();
 
 Note that I had to perform 2 updates here, because Agile Data considers Client
 and Supplier as separate models. In our implementation they happened to be in
 a same table, but technically that could also be implemented differently by
 persistence layer.
 
-Advanced Use of Actions
+Advanced Use of Queries
 -----------------------
 
-Actions prove to be very useful in various situations. For instance, if you are
+Queries prove to be very useful in various situations. For instance, if you are
 looking to add a new user::
 
     $m = new Model_User($db);
@@ -622,7 +622,7 @@ you could do this::
     $m = new Model_User($db);
     $m->set('username', 'peter');
     $m->set('address_1', 'street 49');
-    $m->set('country_id', (new Model_Country($db))->addCondition('name','UK')->toQuery('field',['id']));
+    $m->set('country_id', (new Model_Country($db))->toQuery()->field('id')->where('name', 'UK'));
     $m->save();
 
 This way it will not execute any code, but instead it will provide expression
@@ -631,7 +631,7 @@ that will then be used to lookup ID of 'UK' when inserting data into SQL table.
 Expressions
 ===========
 
-Expressions that are defined based on Actions (such as aggregate or field-reference)
+Expressions that are defined based on Queries (such as aggregate or field-reference)
 will continue to work even without SQL (although might be more performance-expensive),
 however if you're stuck with SQL you can use free-form pattern-based expressions::
 

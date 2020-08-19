@@ -201,13 +201,13 @@ Usage::
     );
 
 Allow you to pass parameters into expressions. Those can be nested and consist
-of objects as well as actions::
+of objects as well as queries::
 
 
     $m->addCondition(
         $m->expr('[age] between [min_age] and [max_age]'),
         [
-            'min_age'=>$m->toQuery('min', ['age']),
+            'min_age'=>$m->toQuery->aggregate('min', 'age'),
             'max_age'=>$m->expr('(20 + [])', [20])
         ]
     );

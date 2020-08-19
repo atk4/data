@@ -219,80 +219,80 @@ field expressions will be automatically substituted. Here is long / short format
 This method is automatically used by :php:class:`FieldSqlExpression`.
 
 
-Actions
+Queries
 =======
 
-The most basic action you can use with SQL persistence is 'select'::
+The most basic query mode you can use with SQL persistence is 'select'::
 
-    $action = $model->toQuery('select');
+    $query = $model->toQuery()->select();
 
-Action is implemented by DSQL library, that is further documented at
+The query is implemented by DSQL library, that is further documented at
 http://dsql.readthedocs.io (See section Queries).
 
 
-Action: select
---------------
+Query: select
+-------------
 
-This action returns a basic select query. You may pass one argument - array
+This mode returns a basic select query. You may pass one argument - array
 containing list of fields::
 
-    $action = $model->toQuery('select', ['name', 'surname']);
+    $query = $model->toQuery()->select(['name', 'surname']);
 
 Passing false will not include any fields into select (so that you can include
 them yourself)::
 
-    $action = $model->toQuery('select', [false]);
-    $action->field('count(*)', 'c);
+    $query = $model->toQuery()->select(false);
+    $query->field('count(*)', 'c');
 
 
-Action: insert
---------------
+Query: insert
+-------------
 
 Will prepare query for performing insert of a new record.
 
-Action: update, delete
-----------------------
+Query: update, delete
+---------------------
 
 Will prepare query for performing update or delete of records.
 Applies conditions set.
 
-Action: count
--------------
+Query: count
+------------
 
 Returns query for `count(*)`::
 
-    $action = $model->toQuery('count');
-    $cnt = $action->getOne();
+    $query = $model->toQuery()->count();
+    $cnt = $query->getOne();
 
 You can also specify alias::
 
-    $action = $model->toQuery('count', ['alias'=>'cc']);
-    $data = $action->getRow();
+    $query = $model->toQuery()->count('cc');
+    $data = $query->getRow();
     $cnt = $data->get('cc');
 
-Action: field
--------------
+Query: field
+------------
 
 Get query for a specific field::
 
-    $action = $model->toQuery('field', ['age']);
-    $age = $action->limit(1)->getOne();
+    $query = $model->toQuery()->field('age');
+    $age = $query->limit(1)->getOne();
 
 You can also specify alias::
 
-    $action = $model->toQuery('field', ['age', 'alias'=>'the_age']]);
-    $age = $action->limit(1)->getRow()['the_age'];
+    $query = $model->toQuery()->field('age', 'the_age');
+    $age = $query->limit(1)->getRow()['the_age'];
 
-Action: fx
-----------
+Query: aggregate
+----------------
 
 Executes single-argument SQL function on field::
 
-    $action = $model->toQuery('fx', ['avg', 'age']);
-    $avg_age = $action->getOne();
+    $query = $model->toQuery()->aggregate('avg', 'age');
+    $avg_age = $query->getOne();
 
 This method also supports alias. Use of alias is handy if you are using those
-actions as part of other query (e.g. UNION)
+queries as part of other query (e.g. UNION)
 
 Stored Procedures
 =================
@@ -324,7 +324,7 @@ Compatibility Warning
 ---------------------
 
 Agile Data is designed to be cross-database agnostic. That means you should be
-able to swap your SQL to NoSQL or RestAPI at any moment. My relying on stored
+able to swap your SQL to NoSQL or RestAPI at any moment. By relying on stored
 procedures you will loose portability of your application.
 
 We do have our legacy applications to maintain, so Stored Procedures and SQL
@@ -428,13 +428,13 @@ This should translate into SQL query::
 where once again, stored function is hidden.
 
 
-as an Query
-------------
+as a Query
+----------
 
 .. important:: Not all SQL vendors may support this approach.
 
-Method :php:meth:`Persistence\\Sql::action` and :php:meth:`Model::toQuery`
-generates queries for most of model operations.  By re-defining this method,
+Method :php:meth:`Model::toQuery`
+generates queries for most of model operations.  By using hooks on queries
 you can significantly affect the query building of an SQL model::
 
     class CompanyProfit extends \atk4\data\Model {
@@ -447,28 +447,28 @@ you can significantly affect the query building of an SQL model::
 
             $this->addField('date_period');
             $this->addField('profit');
-        }
-
-        public function toQuery($mode, $args = [])
-
-            if ($mode == 'select') {
-
-                // must return DSQL object here
-                return $this->expr("call get_company_profit([company_id])", [
-                    'company_id' => $this->company_id,
-                ]);
-            }
-
-            if ($mode == 'count') {
-
-                // optionally - expression for counting data rows, for pagination support
-                return $this->expr("select count(*) from (call get_company_profit([company_id]))", [
-                    'company_id' => $this->company_id,
-                ]);
-            }
-
-            throw (new \atk4\core\Exception('You may only perform "select" or "count" action on this model'))
-                ->addMoreInfo('action', $mode);
+            
+            $this->onHook(AbstractQuery::HOOK_INIT_SELECT, function($query, $type) {
+               switch ($type) {
+                  case 'select':
+                      $expr = $this->expr("call get_company_profit([company_id])", [
+                          'company_id' => $this->company_id,
+                      ]);
+      
+                      break;
+                  case 'count':
+                      $expr = $this->expr("select count(*) from (call get_company_profit([company_id]))", [
+                          'company_id' => $this->company_id,
+                      ]);
+      
+                      break;
+                  case default:
+                     throw (new \atk4\core\Exception('You may only perform "select" or "count" action on this model'))
+                        ->addMoreInfo('action', $mode);
+              }
+              
+              $query->dsql()->reset()->field($expr);
+            });
         }
     }
 
@@ -498,8 +498,8 @@ procedure inside Model::init() then set $table property to a temporary table::
     }
 
 
-as an Model Source
-------------------
+as a Model Source
+-----------------
 
 .. important:: Not all SQL vendors may support this approach.
 
@@ -513,7 +513,7 @@ Technically you can also specify expression as a $table property of your model::
         function init(): void {
             parent::init();
 
-            $this->init = $this->expr("call get_report_data()");
+            $this->table = $this->expr('call get_report_data()');
 
             $this->addField('date', ['type'=>'date']);
             $this->addField('items', ['type'=>'integer']);

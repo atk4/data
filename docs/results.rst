@@ -55,14 +55,14 @@ will consume memory), you can do it like this::
 
 
 Raw Data Fetching
-----------------
+-----------------
 
 .. php:method:: rawIterator()
 
 If you do not care about the hooks and simply wish to get the data, you can fetch
-it::
+it using a query with is an iterator (operation automatically defauts to 'select'::
 
-    foreach($m->rawIterator() as $row) {
+    foreach($m->toQuery() as $row) {
         var_dump($row); // array
     }
 
@@ -77,22 +77,3 @@ you and server-side expressions executed that are embedded in the query.
 
 By default - 'only_fields' will be presented as well as system fields.
 
-Fetching data through action
-----------------------------
-
-You can invoke and iterate action (particularly SQL) to fetch the data::
-
-    foreach($m->toQuery('select') as $row) {
-        var_dump($row); // array
-    }
-
-This has the identical behavior to $m->rawIterator();
-
-
-Comparison of various ways of fetching
-======================================
-
-- getIterator - action(select), [ fetches row, set ID/Data, call afterLoad hook,
-  yields model ], unloads data
-- rawIterator - action(select), [ fetches row, yields row ]
-- export - action(select), fetches all rows, returns all rows

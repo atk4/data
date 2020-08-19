@@ -29,14 +29,14 @@ object you can load/unload individual records (See Single record Operations belo
    $m->load(8);
    ....
 
-and even perform operations on multiple records (See `Persistence Actions` below)::
+and even perform operations on multiple records (See `Persistence Queries` below)::
 
    $m = new User($db);
    $m->addCondition('expired', true);
 
-   $m->toQuery('delete')->execute(); // performs mass delete, hooks are not executed
+   $m->toQuery()->delete()->execute(); // performs mass delete, hooks are not executed
    
-   $m->each(function () use ($m) { $m->delete(); }); // deletes each record, hooks are executed
+   $m->each(function ($m) { $m->delete(); }); // deletes each record, hooks are executed
 
 When data is loaded from associated Persistence, it is automatically converted into
 a native PHP type (such as DateTime object) through a process called Typecasting. Various
@@ -44,17 +44,15 @@ rules apply when you set value for model fields (Normalization) or when data is 
 into database that does support a field type (Serialization)
 
 Furthermore, because you define Models as a class, it is very easy to introduce your own
-extensions which may include Hooks and Actions.
+extensions which may include Hooks and Queries.
 
 There are many advanced topics that ATK Data covers, such as References, Joins, Aggregation,
-SQL actions, Unions, Deep Traversal and Containment.
+SQL queries, Unions, Deep Traversal and Containment.
 
 The design is also very extensible allowing you to introduce new Field types, Join strategies,
-Reference patterns, Action types.
+Reference patterns, User Actions and Query types.
 
-I suggest you to read the next section to make sure you fully understand the Model and its role
-in ATK Data.
-
+The next section contains more information on the Model and its role in ATK Data.
 
 Understanding Model
 ===================
@@ -332,8 +330,8 @@ defined, you'll get an exception. Read more about :php:class:`Field`
 
 If you set `strict_fields` to false, then the check will not be performed.
 
-Actions
--------
+User Actions
+------------
 Another common thing to define inside :php:meth:`Model::init()` would be
 a user invokable actions::
 
@@ -431,7 +429,7 @@ ATK Data models are really good for structuring hierarchically. Here is example:
    }
 
 This introduces a new business object, which is a sub-set of User. The new class will
-inherit all the fields, methods and actions of "User" class but will introduce one new
+inherit all the fields, methods and user actions of "User" class but will introduce one new
 action - `send_gift`.
 
 There are some advanced techniques like "SubTypes" or class substitution,
@@ -476,7 +474,7 @@ See :php:class:`Persistence\\Static_`
 .. php:attr:: persistence
 
 Refers to the persistence driver in use by current model. Calling certain
-methods such as save(), addCondition() or action() will rely on this property.
+methods such as save(), addCondition() or toQuery() will rely on this property.
 
 .. php:attr:: persistence_data
 

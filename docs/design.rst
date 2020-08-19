@@ -49,7 +49,7 @@ application performance or feature restrictions.
 
 
 The Domain Layer Scope
-=======================
+======================
 
 Agile Data is a framework that will allow you to define your Domain objects
 and will map them into database of your choice.
@@ -464,7 +464,7 @@ After `ref()` is executed, you have a new DataSet with a condition based on
 user sub-query. The actual implementation may be different depending on vendor,
 but Agile Data will prefer not to fetch list of "user_id"s without need.
 
-Domain Model Actions
+Domain Model Queries
 --------------------
 
 Persistence layer in Agile Data uses intelligent mapping of your Domain Logic
@@ -473,7 +473,7 @@ into DatabaseVendor-specific operations.
 To continue my example from above, I'll use a query method to calculate number
 of orders placed by VIP clients::
 
-    $vip_order_count = $vip_orders->fx(['count'])->getOne();
+    $vip_order_count = $vip_orders->getCount();
 
 This code will attempt to execute a single-query only, however the ability to
 optimize your request relies on the capabilities of database vendor.
@@ -520,15 +520,15 @@ executed when you call getOne(). For SQL persistences it returns \atk4\dsql\Quer
 object, for example.
 
 Even though for a brief moment you had your hands on a "database-vendor specific"
-object, you have immediately converted Action into an actual value. As result
+object, you have immediately converted Query into an actual value. As result
 your code is universal and is not persistence-specific. In Agile Data we permit
-code like that in our Domain Model and we call it "Domain Model Action".
+code like that in our Domain Model and we call it "Domain Model Query".
 
-Let me define this properly: Domain Model Action is an operation that can be
+Let me define this properly: Domain Model Query is an operation that can be
 executed in your Domain Model layer which assumes existence of SOME Persistence
 for your model, but not a specific one.
 
-As long as your Domain Model is restricted to generic Domain Model Actions, it
+As long as your Domain Model is restricted to generic Domain Model Queries, it
 will not violate SRP (Single Responsibility Principle)
 
 

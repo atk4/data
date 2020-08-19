@@ -16,6 +16,7 @@ of Persistence\Csv are limited to the following actions:
 - support for CSV files that have extra lines on top/bottom/etc
 - listing/iterating
 - adding a new record
+- updating a record
 
 Setting Up
 ==========
