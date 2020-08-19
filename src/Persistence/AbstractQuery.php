@@ -219,16 +219,14 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this;
     }
 
-    public function whereId($id)
+    public function whereId($id): self
     {
         if (!$this->model->id_field) {
             throw (new Exception('Unable to find record by "id" when Model::id_field is not defined.'))
                 ->addMoreInfo('id', $id);
         }
 
-        $this->where($this->model->getField($this->model->id_field), $id);
-
-        return $this;
+        return $this->where($this->model->getField($this->model->id_field), $id);
     }
 
     abstract protected function initWhere(): void;
