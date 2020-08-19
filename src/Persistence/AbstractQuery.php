@@ -119,6 +119,8 @@ abstract class AbstractQuery implements \IteratorAggregate
     public function delete(): self
     {
         $this->initWhere();
+        $this->initLimit();
+        $this->initOrder();
         $this->initDelete();
 
         $this->hookInitSelect(__FUNCTION__);
@@ -157,6 +159,8 @@ abstract class AbstractQuery implements \IteratorAggregate
     public function aggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): self
     {
         $this->initWhere();
+        $this->initLimit();
+        $this->initOrder();
         $this->initAggregate($functionName, $field, $alias, $coalesce);
 
         $this->hookInitSelect(__FUNCTION__);
