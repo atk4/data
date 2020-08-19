@@ -15,23 +15,6 @@ abstract class AbstractQuery implements \IteratorAggregate
     public const MODE_INSERT = 'INSERT';
     public const MODE_DELETE = 'DELETE';
 
-    /** @const string */
-    public const HOOK_INIT_SELECT = self::class . '@initSelect';
-    /** @const string */
-    public const HOOK_BEFORE_INSERT = self::class . '@beforeInsert';
-    /** @const string */
-    public const HOOK_AFTER_INSERT = self::class . '@afterInsert';
-    /** @const string */
-    public const HOOK_BEFORE_UPDATE = self::class . '@beforeUpdate';
-    /** @const string */
-    public const HOOK_AFTER_UPDATE = self::class . '@afterUpdate';
-    /** @const string */
-    public const HOOK_BEFORE_DELETE = self::class . '@beforeDelete';
-    /** @const string */
-    public const HOOK_BEFORE_EXECUTE = self::class . '@beforeExecute';
-    /** @const string */
-    public const HOOK_AFTER_EXECUTE = self::class . '@afterExecute';
-
     /** @var Model */
     protected $model;
 
@@ -200,9 +183,9 @@ abstract class AbstractQuery implements \IteratorAggregate
     protected function hookInitSelect($type): void
     {
         if ($this->mode !== self::MODE_SELECT) {
-            $this->model->hook(self::HOOK_INIT_SELECT, [$this, $type]);
-
             $this->setMode(self::MODE_SELECT);
+
+            $this->hookOnModel('INIT', [$this, $type]);
         }
     }
 
@@ -281,17 +264,11 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this->executeQueryWithDebug(function () {
             $this->withMode();
 
-            // backward compatibility
-            $this->hookOnModel('HOOK_BEFORE_' . $this->getMode(), [$this]);
-
-//          $this->model->hook(self::HOOK_BEFORE_EXECUTE, [$this]);
+            $this->hookOnModel('BEFORE', [$this]);
 
             $result = $this->doExecute();
 
-            // backward compatibility
-            $this->hookOnModel('HOOK_AFTER_' . $this->getMode(), [$this, $result]);
-
-//          $this->model->hook(self::HOOK_AFTER_EXECUTE, [$this, $result]);
+            $this->hookOnModel('AFTER', [$this, $result]);
 
             return $result;
         });
@@ -299,14 +276,10 @@ abstract class AbstractQuery implements \IteratorAggregate
 
     abstract protected function doExecute();
 
-    protected function hookOnModel($name, $args = []): void
+    protected function hookOnModel(string $stage, array $args = []): void
     {
-        $hookSpotConst = self::class . '::' . $name;
+        $hookSpotConst = get_class($this->persistence) . '::HOOK_' . $stage . '_' . $this->getMode() . '_QUERY';
         if (defined($hookSpotConst)) {
-            // backward compatibility
-//             if ($this->model->hookHasCallbacks(constant($hookSpotConst))) {
-//                 'trigger_error'('Hook spot deprecated. Use AbstractQuery::HOOK_BEFORE_EXECUTE or AbstractQuery::HOOK_AFTER_EXECUTE instead', E_USER_DEPRECATED);
-//             }
             $this->model->hook(constant($hookSpotConst), $args);
         }
     }

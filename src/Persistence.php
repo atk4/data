@@ -20,20 +20,18 @@ class Persistence
     use \atk4\core\NameTrait;
     use \atk4\core\DiContainerTrait;
 
-    // backward compatibility - will be removed in dec-2020 -->
     /** @const string */
-    public const HOOK_INIT_SELECT_QUERY = Persistence\AbstractQuery::HOOK_INIT_SELECT;
+    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelect';
     /** @const string */
-    public const HOOK_BEFORE_INSERT_QUERY = Persistence\AbstractQuery::HOOK_BEFORE_INSERT;
+    public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsert';
     /** @const string */
-    public const HOOK_AFTER_INSERT_QUERY = Persistence\AbstractQuery::HOOK_AFTER_INSERT;
+    public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsert';
     /** @const string */
-    public const HOOK_BEFORE_UPDATE_QUERY = Persistence\AbstractQuery::HOOK_BEFORE_UPDATE;
+    public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdate';
     /** @const string */
-    public const HOOK_AFTER_UPDATE_QUERY = Persistence\AbstractQuery::HOOK_AFTER_UPDATE;
+    public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdate';
     /** @const string */
-    public const HOOK_BEFORE_DELETE_QUERY = Persistence\AbstractQuery::HOOK_BEFORE_DELETE;
-    // <-- backward compatibility
+    public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDelete';
 
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
@@ -205,7 +203,7 @@ class Persistence
     {
         $data = $this->typecastSaveRow($model, $data);
 
-        $model->onHook(AbstractQuery::HOOK_AFTER_UPDATE, function (Model $model, AbstractQuery $query, $result) use ($data) {
+        $model->onHook(self::HOOK_AFTER_UPDATE_QUERY, function (Model $model, AbstractQuery $query, $result) use ($data) {
             if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
                 // ID was changed
                 $model->id = $data[$model->id_field];
