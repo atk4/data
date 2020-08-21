@@ -973,55 +973,48 @@ class Model implements \IteratorAggregate
     /**
      * Set order for model records. Multiple calls.
      *
-     * @param mixed     $field
-     * @param bool|null $desc
+     * @param string|array $field
+     * @param string       $direction "asc" or "desc"
      *
      * @return $this
      */
-    public function setOrder($field, $desc = null)
+    public function setOrder($field, string $direction = 'asc')
     {
-        // fields passed as CSV string
-        if (is_string($field) && strpos($field, ',') !== false) {
-            $field = explode(',', $field);
-        }
-
         // fields passed as array
         if (is_array($field)) {
-            if ($desc !== null) {
+            if (func_num_args() > 1) {
                 throw (new Exception('If first argument is array, second argument must not be used'))
                     ->addMoreInfo('arg1', $field)
-                    ->addMoreInfo('arg2', $desc);
+                    ->addMoreInfo('arg2', $direction);
             }
 
-            foreach (array_reverse($field) as $key => $o) {
+            foreach (array_reverse($field) as $key => $direction) {
                 if (is_int($key)) {
-                    if (is_array($o)) {
-                        // format [field,order]
-                        $this->setOrder(...$o);
+                    if (is_array($direction)) {
+                        // format [field, direction]
+                        $this->setOrder(...$direction);
                     } else {
-                        // format "field order"
-                        $this->setOrder($o);
+                        // format "field"
+                        $this->setOrder($direction);
                     }
                 } else {
-                    // format "field"=>order
-                    $this->setOrder($key, $o);
+                    // format "field" => direction
+                    $this->setOrder($key, $direction);
                 }
             }
 
             return $this;
         }
 
-        // extract sort order from field name string
-        if ($desc === null && is_string($field)) {
-            // no realistic workaround in PHP for 2nd argument being null
-            $field = trim($field);
-            if (strpos($field, ' ') !== false) {
-                [$field, $desc] = array_map('trim', explode(' ', $field, 2));
-            }
+        $direction = strtolower($direction);
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            throw (new Exception('Invalid order direction, direction can be only "asc" or "desc"'))
+                ->addMoreInfo('field', $field)
+                ->addMoreInfo('direction', $direction);
         }
 
         // finally set order
-        $this->order[] = [$field, $desc];
+        $this->order[] = [$field, $direction];
 
         return $this;
     }
