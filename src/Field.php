@@ -211,15 +211,9 @@ class Field implements Expressionable
 
     /**
      * Constructor. You can pass field properties as array.
-     *
-     * @param array $defaults
      */
-    public function __construct($defaults = [])
+    public function __construct(array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            throw (new Exception('Field requires array for defaults'))
-                ->addMoreInfo('arg', $defaults);
-        }
         foreach ($defaults as $key => $val) {
             if (is_array($val)) {
                 $this->{$key} = array_merge(is_array($this->{$key} ?? null) ? $this->{$key} : [], $val);

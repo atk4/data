@@ -91,12 +91,9 @@ class HasOneSql extends HasOne
      *
      * addFields(['from', 'to'], ['type' => 'date']);
      *
-     * @param array $fields
-     * @param array $defaults
-     *
      * @return $this
      */
-    public function addFields($fields = [], $defaults = [])
+    public function addFields(array $fields = [], array $defaults = [])
     {
         foreach ($fields as $ourFieldName => $ourFieldDefaults) {
             $ourFieldDefaults = array_merge($defaults, (array) $ourFieldDefaults);
@@ -123,10 +120,8 @@ class HasOneSql extends HasOne
 
     /**
      * Creates model that can be used for generating sub-query actions.
-     *
-     * @param array $defaults Properties
      */
-    public function refLink($defaults = []): Model
+    public function refLink(array $defaults = []): Model
     {
         $theirModel = $this->getTheirModel($defaults);
 
@@ -140,10 +135,8 @@ class HasOneSql extends HasOne
 
     /**
      * Navigate to referenced model.
-     *
-     * @param array $defaults Properties
      */
-    public function ref($defaults = []): Model
+    public function ref(array $defaults = []): Model
     {
         $theirModel = parent::ref($defaults);
         $ourModel = $this->getOurModel();
@@ -179,16 +172,9 @@ class HasOneSql extends HasOne
      * This will add expression 'user' equal to ref('user_id')['name'];
      *
      * This method returns newly created expression field.
-     *
-     * @param array $defaults Properties
      */
-    public function addTitle($defaults = []): FieldSqlExpression
+    public function addTitle(array $defaults = []): FieldSqlExpression
     {
-        if (!is_array($defaults)) {
-            throw (new Exception('Argument to addTitle should be an array'))
-                ->addMoreInfo('arg', $defaults);
-        }
-
         $ourModel = $this->getOurModel();
 
         $fieldName = $defaults['field'] ?? preg_replace('/_' . $ourModel->id_field . '$/i', '', $this->link);
@@ -245,11 +231,9 @@ class HasOneSql extends HasOne
      *
      * This will add expression 'user' equal to ref('user_id')['name'];
      *
-     * @param array $defaults Properties
-     *
      * @return $this
      */
-    public function withTitle($defaults = [])
+    public function withTitle(array $defaults = [])
     {
         $this->addTitle($defaults);
 

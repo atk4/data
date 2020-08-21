@@ -129,7 +129,7 @@ class Model implements \IteratorAggregate
     /**
      * Persistence driver inherited from atk4\data\Persistence.
      *
-     * @var Persistence
+     * @var Persistence|Persistence\Sql
      */
     public $persistence;
 
@@ -422,7 +422,7 @@ class Model implements \IteratorAggregate
      *
      * @return array [field => err_spec]
      */
-    public function validate($intent = null): array
+    public function validate(string $intent = null): array
     {
         $errors = [];
         foreach ($this->hook(self::HOOK_VALIDATE, [$intent]) as $handler_error) {
@@ -450,10 +450,8 @@ class Model implements \IteratorAggregate
      * Adds new field into model.
      *
      * @param array|object $seed
-     *
-     * @return Field
      */
-    public function addField(string $name, $seed = [])
+    public function addField(string $name, $seed = []): Field
     {
         if (is_object($seed)) {
             $field = $seed;
@@ -466,12 +464,8 @@ class Model implements \IteratorAggregate
 
     /**
      * Given a field seed, return a field object.
-     *
-     * @param array $seed
-     *
-     * @return Field
      */
-    public function fieldFactory($seed = [])
+    public function fieldFactory(array $seed = null): Field
     {
         $seed = $this->mergeSeeds(
             $seed,
@@ -492,11 +486,9 @@ class Model implements \IteratorAggregate
     /**
      * Adds multiple fields into model.
      *
-     * @param array $defaults
-     *
      * @return $this
      */
-    public function addFields(array $fields, $defaults = [])
+    public function addFields(array $fields, array $defaults = [])
     {
         foreach ($fields as $key => $field) {
             if (!is_int($key)) {
@@ -801,10 +793,8 @@ class Model implements \IteratorAggregate
     /**
      * Return (possibly localized) $model->caption.
      * If caption is not set, then generate it from model class name.
-     *
-     * @return string
      */
-    public function getModelCaption()
+    public function getModelCaption(): string
     {
         return $this->caption ?: $this->readableCaption(
             strpos(static::class, 'class@anonymous') === 0 ? get_parent_class(static::class) : static::class
@@ -1038,12 +1028,9 @@ class Model implements \IteratorAggregate
     /**
      * Set limit of DataSet.
      *
-     * @param int      $count
-     * @param int|null $offset
-     *
      * @return $this
      */
-    public function setLimit($count, $offset = null)
+    public function setLimit(int $count = null, int $offset = 0)
     {
         $this->limit = [$count, $offset];
 

@@ -6,6 +6,7 @@ namespace atk4\data\Persistence\Sql;
 
 use atk4\data\Model;
 use atk4\data\Persistence;
+use atk4\dsql\Expression;
 
 /**
  * Provides model joining functionality specific for the Sql persistence.
@@ -35,10 +36,8 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
      * Returns DSQL Expression.
      *
      * @param \atk4\dsql\Expression $q
-     *
-     * @return \atk4\dsql\Expression
      */
-    public function getDsqlExpression($q)
+    public function getDsqlExpression($q): Expression
     {
         /*
         // If our Model has expr() method (inherited from Persistence\Sql) then use it
@@ -107,10 +106,8 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
 
     /**
      * Returns DSQL query.
-     *
-     * @return \atk4\dsql\Query
      */
-    public function dsql()
+    public function dsql(): \atk4\dsql\Query
     {
         $query = new Query($this->owner);
 
@@ -120,7 +117,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
     /**
      * Before query is executed, this method will be called.
      */
-    public function initSelectQuery(Model $model, Query $query)
+    public function initSelectQuery(Model $model, Query $query): void
     {
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
@@ -161,7 +158,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
     /**
      * Called from afterLoad hook.
      */
-    public function afterLoad(Model $model)
+    public function afterLoad(Model $model): void
     {
         // we need to collect ID
         if (isset($model->data[$this->short_name])) {
@@ -172,10 +169,8 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
 
     /**
      * Called from beforeInsert hook.
-     *
-     * @param array $data
      */
-    public function beforeInsert(Model $model, &$data)
+    public function beforeInsert(Model $model, array &$data): void
     {
         if ($this->weak) {
             return;
@@ -206,7 +201,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
      *
      * @param mixed $id
      */
-    public function afterInsert(Model $model, $id)
+    public function afterInsert(Model $model, $id): void
     {
         if ($this->weak) {
             return;
@@ -222,10 +217,8 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
 
     /**
      * Called from beforeUpdate hook.
-     *
-     * @param array $data
      */
-    public function beforeUpdate(Model $model, &$data)
+    public function beforeUpdate(Model $model, array &$data): void
     {
         if ($this->weak) {
             return;
@@ -249,7 +242,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
      *
      * @param mixed $id
      */
-    public function doDelete(Model $model, $id)
+    public function doDelete(Model $model, $id): void
     {
         if ($this->weak) {
             return;

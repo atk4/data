@@ -26,12 +26,12 @@ class DeepCopy
     public const HOOK_AFTER_COPY = self::class . '@afterCopy';
 
     /**
-     * @var \atk4\data\Model from which we want to copy records
+     * @var Model from which we want to copy records
      */
     protected $source;
 
     /**
-     * @var \atk4\data\Model in which we want to copy records into
+     * @var Model in which we want to copy records into
      */
     protected $destination;
 
@@ -130,11 +130,9 @@ class DeepCopy
      *          }]
      *  );
      *
-     * @param array $transforms
-     *
      * @return $this
      */
-    public function transformData($transforms)
+    public function transformData(array $transforms)
     {
         $this->transforms = $transforms;
 
@@ -160,10 +158,8 @@ class DeepCopy
 
     /**
      * Copy records.
-     *
-     * @return Model Destination model
      */
-    public function copy()
+    public function copy(): Model
     {
         return $this->_copy(
             $this->source,
@@ -177,12 +173,12 @@ class DeepCopy
     /**
      * Internal method for copying records.
      *
-     * @param array $exclusions of fields to exclude
+     * @param array $exclusions fields to exclude
      * @param array $transforms callbacks for data transforming
      *
      * @return Model Destination model
      */
-    protected function _copy(Model $source, Model $destination, array $references, array $exclusions, array $transforms)
+    protected function _copy(Model $source, Model $destination, array $references, array $exclusions, array $transforms): Model
     {
         try {
             // Perhaps source was already copied, then simply load destination model and return
