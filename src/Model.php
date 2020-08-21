@@ -73,6 +73,19 @@ class Model implements \IteratorAggregate
     /** @const string Executed when self::onlyFields() method is called. */
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
+    /** @const string */
+    public const FIELD_FILTER_SYSTEM = 'system';
+    /** @const string */
+    public const FIELD_FILTER_NOT_SYSTEM = 'not system';
+    /** @const string */
+    public const FIELD_FILTER_VISIBLE = 'visible';
+    /** @const string */
+    public const FIELD_FILTER_EDITABLE = 'editable';
+    /** @const string */
+    public const FIELD_FILTER_PERSIST = 'persist';
+    /** @const string */
+    public const FIELD_FILTER_ONLY_FIELDS = 'only fields';
+
     // {{{ Properties of the class
 
     /**
@@ -577,17 +590,20 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    private function checkOnlyFieldsField(string $field)
+    private function assertOnlyFieldsField(string $fieldName)
     {
-        $this->getField($field); // test if field exists
+        $field = $this->getField($fieldName);
 
-        if ($this->only_fields) {
-            if (!in_array($field, $this->only_fields, true) && !$this->getField($field)->system) {
-                throw (new Exception('Attempt to use field outside of those set by onlyFields'))
-                    ->addMoreInfo('field', $field)
-                    ->addMoreInfo('only_fields', $this->only_fields);
-            }
+        if (!$this->isOnlyFieldsField($fieldName) && !$field->system) {
+            throw (new Exception('Attempt to use field outside of those set by onlyFields'))
+                ->addMoreInfo('field', $fieldName)
+                ->addMoreInfo('only_fields', $this->only_fields);
         }
+    }
+
+    public function isOnlyFieldsField(string $fieldName): bool
+    {
+        return !$this->only_fields || in_array($fieldName, $this->only_fields, true);
     }
 
     /**
@@ -595,7 +611,7 @@ class Model implements \IteratorAggregate
      */
     public function isDirty(string $field): bool
     {
-        $this->checkOnlyFieldsField($field);
+        $this->assertOnlyFieldsField($field);
 
         if (array_key_exists($field, $this->dirty)) {
             return true;
@@ -609,35 +625,54 @@ class Model implements \IteratorAggregate
      *
      * @return Field[]
      */
-    public function getFields($filter = null): array
+    public function getFields($filters = null, bool $onlyFields = null): array
     {
-        if ($filter === null) {
-            return $this->fields;
-        } elseif (is_string($filter)) {
-            $filter = [$filter];
+        if ($filters === null) {
+            return $onlyFields ? $this->getFields(self::FIELD_FILTER_ONLY_FIELDS) : $this->fields;
+        } elseif (!is_array($filters)) {
+            $filters = [$filters];
         }
 
-        return array_filter($this->fields, function (Field $field, $name) use ($filter) {
-            // do not return fields outside of "only_fields" scope
-            if ($this->only_fields && !in_array($name, $this->only_fields, true)) {
+        $onlyFields = $onlyFields ?? true;
+
+        return array_filter($this->fields, function (Field $field, $name) use ($filters, $onlyFields) {
+            if ($onlyFields && !$this->isOnlyFieldsField($field->short_name)) {
                 return false;
             }
-            foreach ($filter as $f) {
-                if (
-                    ($f === 'system' && $field->system)
-                    || ($f === 'not system' && !$field->system)
-                    || ($f === 'editable' && $field->isEditable())
-                    || ($f === 'visible' && $field->isVisible())
-                ) {
+
+            foreach ($filters as $filter) {
+                if ($this->fieldMatchesFilter($field, $filter)) {
                     return true;
-                } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'], true)) {
-                    throw (new Exception('Filter is not supported'))
-                        ->addMoreInfo('filter', $f);
                 }
             }
 
             return false;
         }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    protected function fieldMatchesFilter(Field $field, string $filter): bool
+    {
+        switch ($filter) {
+            case self::FIELD_FILTER_SYSTEM:
+                return $field->system;
+            case self::FIELD_FILTER_NOT_SYSTEM:
+                return !$field->system;
+            case self::FIELD_FILTER_EDITABLE:
+                return $field->isEditable();
+            case self::FIELD_FILTER_VISIBLE:
+                return $field->isVisible();
+            case self::FIELD_FILTER_ONLY_FIELDS:
+                return $this->isOnlyFieldsField($field->short_name);
+            case self::FIELD_FILTER_PERSIST:
+                if ($field->never_persist) {
+                    return false;
+                }
+
+                return $field->system || $this->isOnlyFieldsField($field->short_name);
+            default:
+                throw (new Exception('Filter is not supported'))
+                    ->addMoreInfo('filter', $filter);
+        }
     }
 
     /**
@@ -649,7 +684,7 @@ class Model implements \IteratorAggregate
      */
     public function set(string $field, $value)
     {
-        $this->checkOnlyFieldsField($field);
+        $this->assertOnlyFieldsField($field);
 
         $f = $this->getField($field);
 
@@ -774,22 +809,14 @@ class Model implements \IteratorAggregate
         if ($field === null) {
             // Collect list of eligible fields
             $data = [];
-            if ($this->only_fields) {
-                // collect data for actual fields
-                foreach ($this->only_fields as $field) {
-                    $data[$field] = $this->get($field);
-                }
-            } else {
-                // get all fields
-                foreach ($this->getFields() as $field => $f) {
-                    $data[$field] = $this->get($field);
-                }
+            foreach ($this->getFields(self::FIELD_FILTER_ONLY_FIELDS) as $field) {
+                $data[$field->short_name] = $this->get($field->short_name);
             }
 
             return $data;
         }
 
-        $this->checkOnlyFieldsField($field);
+        $this->assertOnlyFieldsField($field);
 
         if (array_key_exists($field, $this->data)) {
             return $this->data[$field];
@@ -856,7 +883,7 @@ class Model implements \IteratorAggregate
      */
     public function _isset(string $name): bool
     {
-        $this->checkOnlyFieldsField($name);
+        $this->assertOnlyFieldsField($name);
 
         return array_key_exists($name, $this->dirty);
     }
@@ -868,7 +895,7 @@ class Model implements \IteratorAggregate
      */
     public function _unset(string $name)
     {
-        $this->checkOnlyFieldsField($name);
+        $this->assertOnlyFieldsField($name);
 
         if (array_key_exists($name, $this->dirty)) {
             $this->data[$name] = $this->dirty[$name];
@@ -1628,38 +1655,7 @@ class Model implements \IteratorAggregate
 
         // prepare array with field names
         if ($fields === null) {
-            $fields = [];
-
-            if ($this->only_fields) {
-                // Add requested fields first
-                foreach ($this->only_fields as $field) {
-                    $f_object = $this->getField($field);
-                    if ($f_object->never_persist) {
-                        continue;
-                    }
-                    $fields[$field] = true;
-                }
-
-                // now add system fields, if they were not added
-                foreach ($this->getFields() as $field => $f_object) {
-                    if ($f_object->never_persist) {
-                        continue;
-                    }
-                    if ($f_object->system && !isset($fields[$field])) {
-                        $fields[$field] = true;
-                    }
-                }
-
-                $fields = array_keys($fields);
-            } else {
-                // Add all model fields
-                foreach ($this->getFields() as $field => $f_object) {
-                    if ($f_object->never_persist) {
-                        continue;
-                    }
-                    $fields[] = $field;
-                }
-            }
+            $fields = array_keys($this->getFields(self::FIELD_FILTER_PERSIST, false));
         }
 
         // add key_field to array if it's not there
