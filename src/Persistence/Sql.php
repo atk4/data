@@ -338,10 +338,12 @@ class Sql extends Persistence
         // set order
         if ($model->order) {
             foreach ($model->order as $order) {
+                $isDesc = strtolower($order[1]) === 'desc';
+
                 if ($order[0] instanceof Expression) {
-                    $query->order($order[0], $order[1]);
+                    $query->order($order[0], $isDesc);
                 } elseif (is_string($order[0])) {
-                    $query->order($model->getField($order[0]), $order[1]);
+                    $query->order($model->getField($order[0]), $isDesc);
                 } else {
                     throw (new Exception('Unsupported order parameter'))
                         ->addMoreInfo('model', $model)
