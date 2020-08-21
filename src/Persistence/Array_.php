@@ -145,11 +145,9 @@ class Array_ extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
-     * @param array $data
-     *
      * @return mixed
      */
-    public function insert(Model $model, $data, string $table = null)
+    public function insert(Model $model, array $data, string $table = null)
     {
         $table = $table ?? $model->table;
 
@@ -168,11 +166,10 @@ class Array_ extends Persistence
      * Updates record in data array and returns record ID.
      *
      * @param mixed $id
-     * @param array $data
      *
      * @return mixed
      */
-    public function update(Model $model, $id, $data, string $table = null)
+    public function update(Model $model, $id, array $data, string $table = null)
     {
         $table = $table ?? $model->table;
 
@@ -254,10 +251,8 @@ class Array_ extends Persistence
 
     /**
      * Export all DataSet.
-     *
-     * @param bool $typecast_data Should we typecast exported data
      */
-    public function export(Model $model, array $fields = null, $typecast = true): array
+    public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
         $data = $model->action('select', [$fields])->get();
 
@@ -272,18 +267,14 @@ class Array_ extends Persistence
 
     /**
      * Typecast data and return Iterator of data array.
-     *
-     * @param array $fields
-     *
-     * @return \atk4\data\Action\Iterator
      */
-    public function initAction(Model $model, $fields = null)
+    public function initAction(Model $model, array $fields = null): \atk4\data\Action\Iterator
     {
         $data = $this->data[$model->table];
 
-        if ($keys = array_flip((array) $fields)) {
-            $data = array_map(function ($row) use ($model, $keys) {
-                return array_intersect_key($row, $keys);
+        if ($fields !== null) {
+            $data = array_map(function ($row) use ($model, $fields) {
+                return array_intersect_key($row, array_flip($fields));
             }, $data);
         }
 
@@ -376,7 +367,7 @@ class Array_ extends Persistence
 
                 [$fx, $field] = $args;
 
-                $action = $this->initAction($model, $field);
+                $action = $this->initAction($model, [$field]);
                 $this->applyScope($model, $action);
                 $this->setLimitOrder($model, $action);
 

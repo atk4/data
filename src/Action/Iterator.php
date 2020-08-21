@@ -235,12 +235,9 @@ class Iterator
     /**
      * Limit Iterator.
      *
-     * @param int $limit
-     * @param int $offset
-     *
      * @return $this
      */
-    public function limit($limit, $offset = 0)
+    public function limit(int $limit = null, int $offset = 0)
     {
         $data = array_slice($this->get(), $offset, $limit, true);
 

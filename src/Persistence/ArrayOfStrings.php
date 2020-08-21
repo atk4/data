@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace atk4\data\Persistence;
 
 use atk4\data\Field;
-use atk4\data\Persistence;
 
 /**
  * Array persistence which will always typecast all values to strings.
