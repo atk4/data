@@ -106,7 +106,7 @@ class Sql extends Persistence
     /**
      * Disconnect from database explicitly.
      */
-    public function disconnect()
+    public function disconnect(): void
     {
         parent::disconnect();
 
@@ -175,7 +175,7 @@ class Sql extends Persistence
     /**
      * Initialize persistence.
      */
-    protected function initPersistence(Model $model)
+    protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', \Closure::fromCallable([$this, 'expr']));
         $model->addMethod('dsql', \Closure::fromCallable([$this, 'dsql']));
@@ -186,9 +186,8 @@ class Sql extends Persistence
      * Creates new Expression object from expression string.
      *
      * @param mixed $expr
-     * @param array $args
      */
-    public function expr(Model $model, $expr, $args = []): Expression
+    public function expr(Model $model, $expr, array $args = []): Expression
     {
         if (!is_string($expr)) {
             return $this->connection->expr($expr, $args);
@@ -558,18 +557,10 @@ class Sql extends Persistence
     /**
      * Executing $model->action('update') will call this method.
      *
-     * @param string $type
-     * @param array  $args
-     *
      * @return Query
      */
-    public function action(Model $model, $type, $args = [])
+    public function action(Model $model, string $type, array $args = [])
     {
-        if (!is_array($args)) {
-            throw (new Exception('$args must be an array'))
-                ->addMoreInfo('args', $args);
-        }
-
         $query = $this->initQuery($model);
         switch ($type) {
             case 'insert':
@@ -817,10 +808,8 @@ class Sql extends Persistence
 
     /**
      * Export all DataSet.
-     *
-     * @param bool $typecast Should we typecast exported data
      */
-    public function export(Model $model, array $fields = null, $typecast = true): array
+    public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
         $data = $model->action('select', [$fields])->get();
 
@@ -835,10 +824,8 @@ class Sql extends Persistence
 
     /**
      * Prepare iterator.
-     *
-     * @return \PDOStatement
      */
-    public function prepareIterator(Model $model): iterable
+    public function prepareIterator(Model $model): \PDOStatement
     {
         try {
             $export = $model->action('select');
@@ -857,9 +844,8 @@ class Sql extends Persistence
      * Updates record in database.
      *
      * @param mixed $id
-     * @param array $data
      */
-    public function update(Model $model, $id, $data)
+    public function update(Model $model, $id, array $data)
     {
         if (!$model->id_field) {
             throw new Exception('id_field of a model is not set. Unable to update record.');

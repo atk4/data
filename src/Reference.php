@@ -110,7 +110,7 @@ class Reference
     /**
      * @deprecated use getTheirModel instead - will be removed in dec-2020
      */
-    public function getModel($defaults = []): Model
+    public function getModel(array $defaults = []): Model
     {
         'trigger_error'('Method Reference::getModel is deprecated. Use Reference::getTheirModel instead', E_USER_DEPRECATED);
 
@@ -120,10 +120,8 @@ class Reference
     /**
      * Returns destination model that is linked through this reference. Will apply
      * necessary conditions.
-     *
-     * @param array $defaults Properties
      */
-    public function getTheirModel($defaults = []): Model
+    public function getTheirModel(array $defaults = []): Model
     {
         // set table_alias
         $defaults['table_alias'] = $defaults['table_alias'] ?? $this->table_alias;
@@ -188,11 +186,8 @@ class Reference
 
     /**
      * Adds model to persistence.
-     *
-     * @param Model $theirModel
-     * @param array $defaults
      */
-    protected function addToPersistence($theirModel, $defaults = []): Model
+    protected function addToPersistence(Model $theirModel, array $defaults = []): Model
     {
         if (!$theirModel->persistence && $persistence = $this->getDefaultPersistence($theirModel)) {
             $persistence->add($theirModel, $defaults);
@@ -228,10 +223,8 @@ class Reference
     /**
      * Returns referenced model without any extra conditions. However other
      * relationship types may override this to imply conditions.
-     *
-     * @param array $defaults Properties
      */
-    public function ref($defaults = []): Model
+    public function ref(array $defaults = []): Model
     {
         return $this->getTheirModel($defaults);
     }
@@ -240,10 +233,8 @@ class Reference
      * Returns referenced model without any extra conditions. Ever when extended
      * must always respond with Model that does not look into current record
      * or scope.
-     *
-     * @param array $defaults Properties
      */
-    public function refModel($defaults = []): Model
+    public function refModel(array $defaults = []): Model
     {
         return $this->getTheirModel($defaults);
     }

@@ -27,7 +27,7 @@ trait UserActionsTrait
      * @param string         $name     Action name
      * @param array|\Closure $defaults
      */
-    public function addUserAction($name, $defaults = []): Model\UserAction
+    public function addUserAction(string $name, $defaults = []): Model\UserAction
     {
         if ($defaults instanceof \Closure) {
             $defaults = ['callback' => $defaults];
@@ -51,7 +51,7 @@ trait UserActionsTrait
      *
      * @param string $appliesTo e.g. Model\UserAction::APPLIES_TO_ALL_RECORDS
      */
-    public function getUserActions($appliesTo = null): array
+    public function getUserActions(string $appliesTo = null): array
     {
         return array_filter($this->userActions, function ($action) use ($appliesTo) {
             return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
@@ -63,7 +63,7 @@ trait UserActionsTrait
      *
      * @param string $name UserAction name
      */
-    public function hasUserAction($name): bool
+    public function hasUserAction(string $name): bool
     {
         return $this->_hasInCollection($name, 'userActions');
     }
@@ -73,7 +73,7 @@ trait UserActionsTrait
      *
      * @param string $name Action name
      */
-    public function getUserAction($name): Model\UserAction
+    public function getUserAction(string $name): Model\UserAction
     {
         return $this->_getFromCollection($name, 'userActions');
     }
@@ -83,7 +83,7 @@ trait UserActionsTrait
      *
      * @param string $name UserAction name
      */
-    public function executeUserAction($name, ...$args)
+    public function executeUserAction(string $name, ...$args)
     {
         $this->getUserAction($name)->execute(...$args);
     }
@@ -95,7 +95,7 @@ trait UserActionsTrait
      *
      * @return $this
      */
-    public function removeUserAction($name)
+    public function removeUserAction(string $name)
     {
         foreach ((array) $name as $action) {
             $this->_removeFromCollection($action, 'userActions');
@@ -107,7 +107,7 @@ trait UserActionsTrait
     /**
      * @deprecated use addUserAction instead - will be removed in dec-2020
      */
-    public function addAction($name, $defaults = []): Model\UserAction
+    public function addAction(string $name, array $defaults = []): Model\UserAction
     {
         'trigger_error'('Method Model::addAction is deprecated. Use Model::addUserAction instead', E_USER_DEPRECATED);
 
@@ -117,7 +117,7 @@ trait UserActionsTrait
     /**
      * @deprecated use getUserActions instead - will be removed in dec-2020
      */
-    public function getActions($scope = null): array
+    public function getActions(string $appliesTo = null): array
     {
         'trigger_error'('Method Model::getActions is deprecated. Use Model::getUserActions instead', E_USER_DEPRECATED);
 
@@ -127,7 +127,7 @@ trait UserActionsTrait
     /**
      * @deprecated use hasUserAction instead - will be removed in dec-2020
      */
-    public function hasAction($name): bool
+    public function hasAction(string $name): bool
     {
         'trigger_error'('Method Model::hasAction is deprecated. Use Model::hasUserAction instead', E_USER_DEPRECATED);
 
@@ -137,7 +137,7 @@ trait UserActionsTrait
     /**
      * @deprecated use getUserAction instead - will be removed in dec-2020
      */
-    public function getAction($name): Model\UserAction
+    public function getAction(string $name): Model\UserAction
     {
         'trigger_error'('Method Model::getAction is deprecated. Use Model::getUserAction instead', E_USER_DEPRECATED);
 
@@ -147,7 +147,7 @@ trait UserActionsTrait
     /**
      * @deprecated use executeUserAction instead - will be removed in dec-2020
      */
-    public function executeAction($name, ...$args)
+    public function executeAction(string $name, ...$args)
     {
         'trigger_error'('Method Model::executeAction is deprecated. Use Model::executeUserAction instead', E_USER_DEPRECATED);
 
@@ -157,7 +157,7 @@ trait UserActionsTrait
     /**
      * @deprecated use removeUserAction instead - will be removed in dec-2020
      */
-    public function removeAction($name)
+    public function removeAction(string $name)
     {
         'trigger_error'('Method Model::removeAction is deprecated. Use Model::removeUserAction instead', E_USER_DEPRECATED);
 

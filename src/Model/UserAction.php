@@ -140,7 +140,7 @@ class UserAction
         }
     }
 
-    protected function validateBeforeExecute()
+    protected function validateBeforeExecute(): void
     {
         if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)() === false)) {
             throw new Exception('This action is disabled');
@@ -202,18 +202,14 @@ class UserAction
 
     /**
      * Get description of this current action in a user-understandable language.
-     *
-     * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description ?? ('Will execute ' . $this->caption);
     }
 
     /**
      * Return confirmation message for action.
-     *
-     * @return string
      */
     public function getConfirmation()
     {
@@ -232,10 +228,8 @@ class UserAction
 
     /**
      * Return model associate with this action.
-     *
-     * @return Model
      */
-    public function getModel()
+    public function getModel(): Model
     {
         return $this->owner;
     }

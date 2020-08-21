@@ -108,7 +108,7 @@ class Csv extends Persistence
      *
      * @param string $mode 'r' or 'w'
      */
-    public function openFile($mode = 'r')
+    public function openFile(string $mode = 'r'): void
     {
         if (!$this->handle) {
             $this->handle = fopen($this->file, $mode);
@@ -123,7 +123,7 @@ class Csv extends Persistence
     /**
      * Close CSV file.
      */
-    public function closeFile()
+    public function closeFile(): void
     {
         if ($this->handle) {
             fclose($this->handle);
@@ -148,10 +148,8 @@ class Csv extends Persistence
 
     /**
      * Writes array as one record to CSV file.
-     *
-     * @param array
      */
-    public function putLine($data)
+    public function putLine(array $data): void
     {
         $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escape_char);
         if ($ok === false) {
@@ -163,7 +161,7 @@ class Csv extends Persistence
      * When load operation starts, this will open file and read
      * the first line. This line is then used to identify columns.
      */
-    public function loadHeader()
+    public function loadHeader(): void
     {
         $this->openFile('r');
 
@@ -177,7 +175,7 @@ class Csv extends Persistence
      * When load operation starts, this will open file and read
      * the first line. This line is then used to identify columns.
      */
-    public function saveHeader(Model $model)
+    public function saveHeader(Model $model): void
     {
         $this->openFile('w');
 
@@ -198,10 +196,8 @@ class Csv extends Persistence
     /**
      * Remembers $this->header so that the data can be
      * easier mapped.
-     *
-     * @param array
      */
-    public function initializeHeader($header)
+    public function initializeHeader(array $header): void
     {
         // removes forbidden symbols from header (field names)
         $this->header = array_map(function ($name) {
@@ -312,11 +308,9 @@ class Csv extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
-     * @param array $data
-     *
      * @return mixed
      */
-    public function insert(Model $model, $data)
+    public function insert(Model $model, array $data)
     {
         if (!$this->mode) {
             $this->mode = 'w';
@@ -341,9 +335,8 @@ class Csv extends Persistence
      * Updates record in data array and returns record ID.
      *
      * @param mixed $id
-     * @param array $data
      */
-    public function update(Model $model, $id, $data, string $table = null)
+    public function update(Model $model, $id, array $data, string $table = null)
     {
         throw new Exception('Updating records is not supported in CSV persistence.');
     }
