@@ -474,9 +474,7 @@ class Model implements \IteratorAggregate
             $this->_default_seed_addField
         );
 
-        $field = Field::fromSeed($seed);
-
-        return $field;
+        return Field::fromSeed($seed);
     }
 
     protected $typeToFieldSeed = [
@@ -1198,7 +1196,7 @@ class Model implements \IteratorAggregate
      */
     public function newInstance(string $class = null, array $options = [])
     {
-        $model = $this->factory([$class ?? static::class], $options);
+        $model = self::fromSeed([$class ?? static::class], $options);
 
         if ($this->persistence) {
             return $this->persistence->add($model);
@@ -1878,9 +1876,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        $c = $this->_default_seed_addExpression;
-
-        $field = $this->factory($c, $expression);
+        $field = Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);
 

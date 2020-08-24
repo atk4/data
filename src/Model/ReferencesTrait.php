@@ -63,7 +63,7 @@ trait ReferencesTrait
 
         $defaults[0] = $link;
 
-        $reference = $this->factory($className, $defaults);
+        $reference = Reference::fromSeed($className, $defaults);
 
         // if reference with such name already exists, then throw exception
         if ($this->hasElement($name = $reference->getDesiredName())) {

@@ -36,7 +36,7 @@ trait JoinsTrait
 
         $defaults[0] = $foreignTable;
 
-        return $this->add($this->factory($this->_default_seed_join, $defaults));
+        return $this->add(Join::fromSeed($this->_default_seed_join, $defaults));
     }
 
     /**
