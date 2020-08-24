@@ -1196,7 +1196,7 @@ class Model implements \IteratorAggregate
      */
     public function newInstance(string $class = null, array $options = [])
     {
-        $model = self::fromSeed([$class ?? static::class], $options);
+        $model = (self::class)::fromSeed([$class ?? static::class], $options);
 
         if ($this->persistence) {
             return $this->persistence->add($model);
