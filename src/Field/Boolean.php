@@ -42,7 +42,7 @@ class Boolean extends \atk4\data\Field
     /**
      * Constructor.
      */
-    public function init(): void
+    protected function init(): void
     {
         $this->_init();
 

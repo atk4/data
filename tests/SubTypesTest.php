@@ -10,7 +10,7 @@ class StAccount extends Model
 {
     public $table = 'account';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -64,7 +64,7 @@ class StGenericTransaction extends Model
     public $table = 'transaction';
     public $type;
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -112,7 +112,7 @@ class StTransaction_TransferOut extends StGenericTransaction
 {
     public $type = 'TransferOut';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
         $this->hasOne('link_id', new StTransaction_TransferIn());
@@ -125,7 +125,7 @@ class StTransaction_TransferIn extends StGenericTransaction
 {
     public $type = 'TransferIn';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
         $this->hasOne('link_id', new StTransaction_TransferOut());

@@ -311,7 +311,7 @@ later::
 
     $m = new Model_User();
 
-    $db->add($m); // calls $m->init()
+    $db->add($m); // calls $m->invokeInit()
 
 You cannot add conditions just yet, although you can pass in some of the defaults::
 

@@ -8,7 +8,7 @@ class Contact extends \atk4\data\Model
 {
     public $table = 'contact';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 

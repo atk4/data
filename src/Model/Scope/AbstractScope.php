@@ -23,7 +23,7 @@ abstract class AbstractScope
      * Method is executed when the scope is added to parent scope using Scope::add
      * $this->owner is the Scope object.
      */
-    public function init(): void
+    protected function init(): void
     {
         if (!$this->owner instanceof self) {
             throw new Exception('Scope can only be added as element to scope');

@@ -223,7 +223,7 @@ For example, consider you want to output a "table" to the user using HTML by
 using Agile UI::
 
     $htmltable = new \atk4\ui\Table();
-    $htmltable->init();
+    $htmltable->invokeInit();
 
     $htmltable->setModel(new User($db));
 
@@ -235,7 +235,7 @@ But what if you have your data inside an array?
 You can use :php:class:`Persistence\Static_` for that::
 
     $htmltable = new \atk4\ui\Table();
-    $htmltable->init();
+    $htmltable->invokeInit();
 
     $htmltable->setModel(new User(new Persistence\Static_([
         ['name'=>'John', 'is_admin'=>false, 'salary'=>34400.00],
@@ -248,7 +248,7 @@ Even if you don't have a model, you can use Static persistence with Generic
 model class to display VAT breakdown table::
 
     $htmltable = new \atk4\ui\Table();
-    $htmltable->init();
+    $htmltable->invokeInit();
 
     $htmltable->setModel(new Model(new Persistence\Static_([
         ['VAT_rate'=>'12.0%', 'VAT'=>'36.00', 'Net'=>'300.00'],
@@ -260,7 +260,7 @@ model class to display VAT breakdown table::
 It can be made even simpler::
 
     $htmltable = new \atk4\ui\Table();
-    $htmltable->init();
+    $htmltable->invokeInit();
 
     $htmltable->setModel(new Model(new Persistence\Static_([
         'John',
@@ -272,7 +272,7 @@ It can be made even simpler::
 Agile UI even offers a wrapper for static persistence::
 
     $htmltable = new \atk4\ui\Table();
-    $htmltable->init();
+    $htmltable->invokeInit();
 
     $htmltable->setSource([ 'John', 'Peter' ]);
 

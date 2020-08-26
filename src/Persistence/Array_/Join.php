@@ -15,7 +15,7 @@ class Join extends Model\Join
     /**
      * This method is to figure out stuff.
      */
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 

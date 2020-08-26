@@ -90,7 +90,7 @@ class UserAction
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
-    public function init(): void
+    protected function init(): void
     {
         $this->init_();
 

@@ -12,7 +12,7 @@ class DcClient extends Model
 {
     public $table = 'client';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -28,7 +28,7 @@ class DcInvoice extends Model
 {
     public $table = 'invoice';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -58,7 +58,7 @@ class DcQuote extends Model
 {
     public $table = 'quote';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
         $this->hasOne('client_id', new DcClient());
@@ -76,7 +76,7 @@ class DcInvoiceLine extends Model
 {
     public $table = 'line';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
         $this->hasOne('parent_id', new DcInvoice());
@@ -99,7 +99,7 @@ class DcQuoteLine extends Model
 {
     public $table = 'line';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -122,7 +122,7 @@ class DcPayment extends Model
 {
     public $table = 'payment';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
         $this->hasOne('client_id', new DcClient());

@@ -32,7 +32,7 @@ class UaClient extends Model
 {
     use UaReminder;
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 

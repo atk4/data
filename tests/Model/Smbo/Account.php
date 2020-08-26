@@ -8,7 +8,7 @@ class Account extends \atk4\data\Model
 {
     public $table = 'account';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
