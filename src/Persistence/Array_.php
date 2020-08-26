@@ -134,7 +134,7 @@ class Array_ extends Persistence
 
     /**
      * Tries to load first available record and return data record.
-     * Doesn't throw exception if model can't be loaded or there are no data records
+     * Doesn't throw exception if model can't be loaded or there are no data records.
      */
     public function tryLoadAny(Model $model, string $table = null): ?array
     {
