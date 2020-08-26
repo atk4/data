@@ -125,7 +125,7 @@ class Array_ extends Persistence
     public function loadAny(Model $model, string $table = null): ?array
     {
         $row = $this->tryLoadAny($model, $table);
-        if(!$row) {
+        if (!$row) {
             throw new Exception('No matching records were found!', 404);
         }
 

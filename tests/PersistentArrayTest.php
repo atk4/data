@@ -267,24 +267,27 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->tryLoadAny();
     }
 
-    public function testLoadAnyThrowsExceptionOnRecordNotFound() {
+    public function testLoadAnyThrowsExceptionOnRecordNotFound()
+    {
         $p = new Persistence\Array_();
         $m = new Model($p);
         $m->addField('name');
-        self::expectExceptionCode(404);
+        $this->expectExceptionCode(404);
         $m->loadAny();
     }
 
-    public function testTryLoadAnyThrowsExceptionOnRecordNotFound() {
+    public function testTryLoadAnyThrowsExceptionOnRecordNotFound()
+    {
         $p = new Persistence\Array_();
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
         $m->tryLoadAny();
-        self::assertFalse($m->loaded());
+        $this->assertFalse($m->loaded());
     }
 
-    public function testTryLoadAnyReturnsFirstRecord() {
+    public function testTryLoadAnyReturnsFirstRecord()
+    {
         $a = [
             2 => ['name' => 'John', 'surname' => 'Smith'],
             3 => ['name' => 'Sarah', 'surname' => 'Jones'],
@@ -295,10 +298,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
         $m->tryLoadAny();
-        self::assertSame(
-            2,
-            $m->id
-        );
+        $this->assertSame(2, $m->id);
     }
 
     /**
