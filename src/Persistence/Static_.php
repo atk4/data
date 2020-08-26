@@ -1,13 +1,10 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+declare(strict_types=1);
 
 namespace atk4\data\Persistence;
 
-use atk4\data\Exception;
-use atk4\data\Field;
 use atk4\data\Model;
-use atk4\data\Persistence;
 
 /**
  * Implements a very basic array-access pattern:.
@@ -24,12 +21,12 @@ class Static_ extends Array_
      *
      * @var string
      */
-    public $titleForModel = null;
+    public $titleForModel;
 
     /**
      * Populate the following fields for the model.
      *
-     * @var array
+     * @var string[]
      */
     public $fieldsForModel = [];
 
@@ -38,25 +35,22 @@ class Static_ extends Array_
      *
      * @param array $data Static data in one of supported formats
      */
-    public function __construct($data = null)
+    public function __construct(array $data = null)
     {
-        if (!is_array($data)) {
-            throw new Exception(['Static data should be array of strings or array of hashes', 'data'=>$data]);
-        }
-
         // chomp off first row, we will use it to deduct fields
         $row1 = reset($data);
 
-        $this->addHook('afterAdd', [$this, 'afterAdd']);
+        $this->onHook(self::HOOK_AFTER_ADD, \Closure::fromCallable([$this, 'afterAdd']));
 
         if (!is_array($row1)) {
-            // We are dealing with array of strings. Convert it into array of hashes
-            array_walk($data, function (&$str, $key) {
-                $str = ['id'=>$key, 'name'=>$str];
-            });
+            // convert array of strings into array of hashes
+            foreach ($data as $k => $str) {
+                $data[$k] = ['id' => $k, 'name' => $str];
+            }
+            unset($str);
 
             $this->titleForModel = 'name';
-            $this->fieldsForModel = ['name'=>[]];
+            $this->fieldsForModel = ['name' => []];
 
             return parent::__construct($data);
         }
@@ -71,26 +65,25 @@ class Static_ extends Array_
         $def_types = [];
         $must_override = false;
 
-        foreach ($row1 as $key=>$value) {
-
+        foreach ($row1 as $key => $value) {
             // id information present, use it instead
-            if ($key == 'id') {
+            if ($key === 'id') {
                 $must_override = true;
             }
 
             // try to detect type of field by its value
             if (is_int($value)) {
-                $def_types[] = ['type'=>'integer'];
+                $def_types[] = ['type' => 'integer'];
             } elseif ($value instanceof \DateTime) {
-                $def_types[] = ['type'=>'datetime'];
+                $def_types[] = ['type' => 'datetime'];
             } elseif (is_bool($value)) {
-                $def_types[] = ['type'=>'boolean'];
+                $def_types[] = ['type' => 'boolean'];
             } elseif (is_float($value)) {
-                $def_types[] = ['type'=>'float'];
+                $def_types[] = ['type' => 'float'];
             } elseif (is_array($value)) {
-                $def_types[] = ['type'=>'array'];
+                $def_types[] = ['type' => 'array'];
             } elseif (is_object($value)) {
-                $def_types[] = ['type'=>'object'];
+                $def_types[] = ['type' => 'object'];
             } else {
                 $def_types[] = [];
             }
@@ -101,15 +94,17 @@ class Static_ extends Array_
                     $key_override[] = 'name';
                     $this->titleForModel = 'name';
                     $must_override = true;
+
                     continue;
-                } else {
-                    $this->titleForModel = $key;
                 }
+
+                $this->titleForModel = $key;
             }
 
             if (is_int($key)) {
-                $key_override[] = 'field'.$key;
+                $key_override[] = 'field' . $key;
                 $must_override = true;
+
                 continue;
             }
 
@@ -119,7 +114,7 @@ class Static_ extends Array_
         if ($must_override) {
             $data2 = [];
 
-            foreach ($data as $key=>$row) {
+            foreach ($data as $key => $row) {
                 $row = array_combine($key_override, $row);
                 if (isset($row['id'])) {
                     $key = $row['id'];
@@ -137,22 +132,21 @@ class Static_ extends Array_
      * Automatically adds missing model fields.
      * Called from AfterAdd hook.
      *
-     * @param Persistence_Static $p
-     * @param Model              $m
+     * @param Static_ $persistence
      */
-    public function afterAdd($p, $m)
+    public function afterAdd(self $persistence, Model $model)
     {
-        if ($p->titleForModel) {
-            $m->title_field = $p->titleForModel;
+        if ($persistence->titleForModel) {
+            $model->title_field = $persistence->titleForModel;
         }
 
-        foreach ($this->fieldsForModel as $field=>$def) {
-            if ($m->hasField($field)) {
+        foreach ($this->fieldsForModel as $field => $def) {
+            if ($model->hasField($field)) {
                 continue;
             }
 
             // add new field
-            $m->addField($field, $def);
+            $model->addField($field, $def);
         }
     }
 }

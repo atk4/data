@@ -89,7 +89,7 @@ If you are worried about performance you can keep 2 models in memory::
     $client = $order->refModel('client_id');
 
     foreach($order as $o) {
-        $client->load($o['client_id']);
+        $client->load($o->get('client_id'));
     }
 
 .. warning:: This code is seriously flawed and is called "N+1 Problem".
@@ -204,7 +204,7 @@ You can also specify a type yourself::
     ->addField('paid_amount', ['aggregate'=>'sum', 'field'=>'amount', 'type'=>'money']);
 
 Aggregate fields are always declared read-only, and if you try to
-change them (`$m['paid_amount'] = 123;`), you will receive exception.
+change them (`$m->set('paid_amount', 123);`), you will receive exception.
 
 Available Aggregation Functions
 -------------------------------
@@ -407,15 +407,15 @@ This would create 'currency' field containing name of the currency::
 
     $i->load(20);
 
-    echo "Currency for invoice 20 is ".$i['currency'];   // EUR
+    echo "Currency for invoice 20 is ".$i->get('currency');   // EUR
 
 Unlike addField() which creates fields read-only, title field can in fact be
 modified::
 
-    $i['currency'] = 'GBP';
+    $i->set('currency', 'GBP');
     $i->save();
 
-    // will update $i['currency_id'] to the corresponding ID for currency with name GBP.
+    // will update $i->get('currency_id') to the corresponding ID for currency with name GBP.
 
 This behavior is awesome when you are importing large amounts of data, because
 the lookup for the currency_id is entirely done in a database.
@@ -484,7 +484,9 @@ model and you can do fancy things with it.
 You can also use :php:meth:`Model::hasRef()` to check if particular reference
 exists in model::
 
-    $ref = $model->hasRef('owner_id');
+    if ($model->hasRef('owner_id')) {
+        $ref = $model->getRef('owner_id');
+    }
 
 Deep traversal
 ==============
@@ -497,9 +499,9 @@ The above example will actually perform 3 load operations, because as I have
 explained above, :php:meth:`Model::ref()` loads related model when called on
 a loaded model. To perform a single query instead, you can use::
 
-    echo $o->withID(1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
+    echo $o->withId(1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
 
-Here ``withID()`` will only set a condition without actually loading the record
+Here ``withId()`` will only set a condition without actually loading the record
 and traversal will encapsulate sub-queries resulting in a query like this:
 
 .. code-block:: sql
@@ -538,7 +540,7 @@ that relate to itself. Here is example::
 
     class Model_Item3 extends \atk4\data\Model {
         public $table='item';
-        function init() {
+        function init(): void {
             parent::init();
 
             $m = new Model_Item3();
@@ -601,7 +603,7 @@ Consider the following two models::
 
     class Model_User extends \atk4\data\Model {
         public $table = 'user';
-        function init() {
+        function init(): void {
             parent::init();
             $this->addField('name');
 
@@ -611,7 +613,7 @@ Consider the following two models::
 
     class Model_Contact extends \atk4\data\Model {
         public $table = 'contact';
-        function init() {
+        function init(): void {
             parent::init();
 
             $this->addField('address');
@@ -623,7 +625,7 @@ working with a new model::
 
     $m = new Model_User($db);
 
-    $m['name'] = 'John';
+    $m->set('name', 'John');
     $m->save();
 
 In this scenario, a new record will be added into 'user' with 'contact_id' equal
@@ -631,12 +633,12 @@ to null. The next example will traverse into the contact to set it up::
 
     $m = new Model_User($db);
 
-    $m['name'] = 'John';
+    $m->set('name', 'John');
     $m->ref('address_id')->save(['address'=>'street']);
     $m->save();
 
 When entity which you have referenced through ref() is saved, it will automatically
-populate $m['contact_id'] field and the final $m->save() will also store the reference.
+populate $m->get('contact_id') field and the final $m->save() will also store the reference.
 
 ID setting is implemented through a basic hook. Related model will have afterSave
 hook, which will update address_id field of the $m.

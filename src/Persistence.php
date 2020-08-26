@@ -1,6 +1,6 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+declare(strict_types=1);
 
 namespace atk4\data;
 
@@ -14,13 +14,15 @@ class Persistence
     }
     use \atk4\core\FactoryTrait;
     use \atk4\core\HookTrait;
-    use \atk4\core\AppScopeTrait;
     use \atk4\core\DynamicMethodTrait;
     use \atk4\core\NameTrait;
-    use \atk4\core\DIContainerTrait;
+    use \atk4\core\DiContainerTrait;
+
+    /** @const string */
+    public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
     /** @var string Connection driver name, for example, mysql, pgsql, oci etc. */
-    public $driver;
+    public $driverType;
 
     /**
      * Connects database.
@@ -30,19 +32,16 @@ class Persistence
      * @param string $password
      * @param array  $args
      *
-     * @throws Exception
-     * @throws \atk4\dsql\Exception
-     *
      * @return Persistence
      */
     public static function connect($dsn, $user = null, $password = null, $args = [])
     {
         // Process DSN string
-        $dsn = \atk4\dsql\Connection::normalizeDSN($dsn, $user, $password);
+        $dsn = \atk4\dsql\Connection::normalizeDsn($dsn, $user, $password);
 
-        $driver = isset($args['driver']) ? strtolower($args['driver']) : $dsn['driver'];
+        $driverType = strtolower($args['driver']/*BC compatibility*/ ?? $args['driverType'] ?? $dsn['driverType']);
 
-        switch ($driver) {
+        switch ($driverType) {
             case 'mysql':
             case 'oci':
             case 'oci12':
@@ -53,49 +52,33 @@ class Persistence
                     $dsn['dsn'] .= ';charset=utf8mb4';
                 }
 
+                // no break
             case 'pgsql':
             case 'dumper':
             case 'counter':
             case 'sqlite':
-                $db = new \atk4\data\Persistence\SQL($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
-                $db->driver = $driver;
+                $db = new \atk4\data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
+                $db->driverType = $driverType;
 
                 return $db;
             default:
-                throw new Exception([
-                    'Unable to determine persistence driver from DSN',
-                    'dsn' => $dsn['dsn'],
-                ]);
+                throw (new Exception('Unable to determine persistence driver type from DSN'))
+                    ->addMoreInfo('dsn', $dsn['dsn']);
         }
     }
 
     /**
      * Disconnect from database explicitly.
      */
-    public function disconnect()
+    public function disconnect(): void
     {
     }
 
     /**
      * Associate model with the data driver.
-     *
-     * @param Model|string $m        Model which will use this persistence
-     * @param array        $defaults Properties
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
-    public function add($m, $defaults = [])
+    public function add(Model $m, array $defaults = []): Model
     {
-        /*
-        if (isset($defaults[0])) {
-            $m->table = $defaults[0];
-            unset($defaults[0]);
-        }
-         */
-
         $m = $this->factory($m, $defaults);
 
         if ($m->persistence) {
@@ -103,9 +86,7 @@ class Persistence
                 return $m;
             }
 
-            throw new Exception([
-                'Model is already related to another persistence',
-            ]);
+            throw new Exception('Model is already related to another persistence');
         }
 
         $m->persistence = $this;
@@ -113,7 +94,7 @@ class Persistence
         $this->initPersistence($m);
         $m = $this->_add($m);
 
-        $this->hook('afterAdd', [$m]);
+        $this->hook(self::HOOK_AFTER_ADD, [$m]);
 
         return $m;
     }
@@ -122,8 +103,6 @@ class Persistence
      * Extend this method to enhance model to work with your persistence. Here
      * you can define additional methods or store additional data. This method
      * is executed before model's init().
-     *
-     * @param Model $m
      */
     protected function initPersistence(Model $m)
     {
@@ -134,13 +113,11 @@ class Persistence
      * persistences will support atomic operations, so by default we just
      * don't do anything.
      *
-     * @param callable $f
-     *
      * @return mixed
      */
-    public function atomic($f)
+    public function atomic(\Closure $fx)
     {
-        return call_user_func($f);
+        return $fx();
     }
 
     /**
@@ -162,33 +139,24 @@ class Persistence
      *     'age'=>30,
      *     'is_married'=>1
      *   ]
-     *
-     * @param Model $m
-     * @param array $row
-     *
-     * @return array
      */
-    public function typecastSaveRow(Model $m, $row)
+    public function typecastSaveRow(Model $m, array $row): array
     {
-        if (!$row) {
-            return $row;
-        }
-
         $result = [];
         foreach ($row as $key => $value) {
-
-            // Look up field object
-            $f = $m->hasField($key);
-
-            // Figure out the name of the destination field
-            $field = $f && isset($f->actual) && $f->actual ? $f->actual : $key;
-
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
-            if (!$f) {
-                $result[$field] = $value;
+            if (!$m->hasField($key)) {
+                $result[$key] = $value;
+
                 continue;
             }
+
+            // Look up field object
+            $f = $m->getField($key);
+
+            // Figure out the name of the destination field
+            $field = isset($f->actual) && $f->actual ? $f->actual : $key;
 
             // check null values for mandatory fields
             if ($value === null && $f->mandatory) {
@@ -202,6 +170,7 @@ class Persistence
                 $value === null
             ) {
                 $result[$field] = $value;
+
                 continue;
             }
 
@@ -229,34 +198,26 @@ class Persistence
      * NOTE: Please DO NOT perform "actual" field mapping here, because data
      * may be "aliased" from SQL persistences or mapped depending on persistence
      * driver.
-     *
-     * @param Model $m
-     * @param array $row
-     *
-     * @return array
      */
-    public function typecastLoadRow(Model $m, $row)
+    public function typecastLoadRow(Model $m, array $row): array
     {
-        if (!$row) {
-            return $row;
-        }
-
         $result = [];
-        foreach ($row as $key => &$value) {
-
-            // Look up field object
-            $f = $m->hasField($key);
-
+        foreach ($row as $key => $value) {
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
-            if (!$f) {
+            if (!$m->hasField($key)) {
                 $result[$key] = $value;
+
                 continue;
             }
+
+            // Look up field object
+            $f = $m->getField($key);
 
             // ignore null values
             if ($value === null) {
                 $result[$key] = $value;
+
                 continue;
             }
 
@@ -281,7 +242,6 @@ class Persistence
      * Prepare value of a specific field by converting it to
      * persistence-friendly format.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -290,7 +250,7 @@ class Persistence
     {
         try {
             // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[0]) && is_callable($t = $f->typecast[0])) {
+            if (is_array($f->typecast) && isset($f->typecast[0]) && ($t = $f->typecast[0]) instanceof \Closure) {
                 return $t($value, $f, $this);
             }
 
@@ -302,7 +262,8 @@ class Persistence
             // run persistence-specific typecasting of field value
             return $this->_typecastSaveField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to typecast field value on save', 'field' => $f->name], null, $e);
+            throw (new Exception('Unable to typecast field value on save', 0, $e))
+                ->addMoreInfo('field', $f->name);
         }
     }
 
@@ -310,7 +271,6 @@ class Persistence
      * Cast specific field value from the way how it's stored inside
      * persistence to a PHP format.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -319,13 +279,13 @@ class Persistence
     {
         try {
             // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[1]) && is_callable($t = $f->typecast[1])) {
+            if (is_array($f->typecast) && isset($f->typecast[1]) && ($t = $f->typecast[1]) instanceof \Closure) {
                 return $t($value, $f, $this);
             }
 
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
-            if ($f->type && $f->type != 'string' && $value === '') {
+            if ($f->type && $f->type !== 'string' && $value === '') {
                 return;
             }
 
@@ -337,7 +297,8 @@ class Persistence
             // run persistence-specific typecasting of field value
             return $this->_typecastLoadField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to typecast field value on load', 'field' => $f->name], null, $e);
+            throw (new Exception('Unable to typecast field value on load', 0, $e))
+                ->addMoreInfo('field', $f->name);
         }
     }
 
@@ -345,7 +306,6 @@ class Persistence
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -359,7 +319,6 @@ class Persistence
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -373,7 +332,6 @@ class Persistence
      * Provided with a value, will perform field serialization.
      * Can be used for the purposes of encryption or storing unsupported formats.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -382,14 +340,15 @@ class Persistence
     {
         try {
             // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[0]) && is_callable($t = $f->serialize[0])) {
+            if (is_array($f->serialize) && isset($f->serialize[0]) && ($t = $f->typecast[0]) instanceof \Closure) {
                 return $t($f, $value, $this);
             }
 
             // run persistence-specific serialization of field value
             return $this->_serializeSaveField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to serialize field value on save', 'field' => $f->name], null, $e);
+            throw (new Exception('Unable to serialize field value on save', 0, $e))
+                ->addMoreInfo('field', $f->name);
         }
     }
 
@@ -397,7 +356,6 @@ class Persistence
      * Provided with a value, will perform field un-serialization.
      * Can be used for the purposes of encryption or storing unsupported formats.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -406,21 +364,21 @@ class Persistence
     {
         try {
             // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[1]) && is_callable($t = $f->serialize[1])) {
+            if (is_array($f->serialize) && isset($f->serialize[1]) && ($t = $f->typecast[1]) instanceof \Closure) {
                 return $t($f, $value, $this);
             }
 
             // run persistence-specific un-serialization of field value
             return $this->_serializeLoadField($f, $value);
         } catch (\Exception $e) {
-            throw new Exception(['Unable to serialize field value on load', 'field' => $f->name], null, $e);
+            throw (new Exception('Unable to serialize field value on load', 0, $e))
+                ->addMoreInfo('field', $f->name);
         }
     }
 
     /**
      * Override this to fine-tune serialization for your persistence.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -434,11 +392,9 @@ class Persistence
             return $this->jsonEncode($f, $value);
         case 'base64':
             if (!is_string($value)) {
-                throw new Exception([
-                    'Field value can not be base64 encoded because it is not of string type',
-                    'field' => $f,
-                    'value' => $value,
-                ]);
+                throw (new Exception('Field value can not be base64 encoded because it is not of string type'))
+                    ->addMoreInfo('field', $f)
+                    ->addMoreInfo('value', $value);
             }
 
             return base64_encode($value);
@@ -448,7 +404,6 @@ class Persistence
     /**
      * Override this to fine-tune un-serialization for your persistence.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -459,64 +414,29 @@ class Persistence
         case 'serialize':
             return unserialize($value);
         case 'json':
-            return $this->jsonDecode($f, $value, $f->type == 'array');
+            return $this->jsonDecode($f, $value, $f->type === 'array');
         case 'base64':
-            return base64_decode($value);
+            return base64_decode($value, true);
         }
     }
 
     /**
      * JSON decoding with proper error treatment.
      *
-     * @param Field  $f
-     * @param string $value
-     * @param bool   $assoc
-     *
      * @return mixed
      */
-    public function jsonDecode(Field $f, $value, $assoc = true)
+    public function jsonDecode(Field $f, string $json, bool $assoc = true)
     {
-        // constant supported only starting PHP 7.3
-        if (!defined('JSON_THROW_ON_ERROR')) {
-            define('JSON_THROW_ON_ERROR', 0);
-        }
-
-        $res = json_decode($value, $assoc, 512, JSON_THROW_ON_ERROR);
-        if (JSON_THROW_ON_ERROR == 0 && json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception([
-                'There was error while decoding JSON',
-                'code'  => json_last_error(),
-                'error' => json_last_error_msg(),
-            ]);
-        }
-
-        return $res;
+        return json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
      * JSON encoding with proper error treatment.
      *
-     * @param Field $f
      * @param mixed $value
-     *
-     * @return string
      */
-    public function jsonEncode(Field $f, $value)
+    public function jsonEncode(Field $f, $value): string
     {
-        // constant supported only starting PHP 7.3
-        if (!defined('JSON_THROW_ON_ERROR')) {
-            define('JSON_THROW_ON_ERROR', 0);
-        }
-
-        $res = json_encode($value, JSON_THROW_ON_ERROR, 512);
-        if (JSON_THROW_ON_ERROR == 0 && json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception([
-                'There was error while encoding JSON',
-                'code'  => json_last_error(),
-                'error' => json_last_error_msg(),
-            ]);
-        }
-
-        return $res;
+        return json_encode($value, JSON_THROW_ON_ERROR, 512);
     }
 }

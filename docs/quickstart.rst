@@ -46,7 +46,7 @@ Console is using `Psysh <http://psysh.org>`_ to help you interact with objects
 like this::
 
     > $db
-    => atk4\data\Persistence\SQL {...}
+    => atk4\data\Persistence\Sql {...}
 
     > exit
 
@@ -62,7 +62,7 @@ like this::
 
 
 Core Concepts
-==============
+=============
 
 Business Model (see :ref:`Model`)
     You define business logic inside your own classes that extend :php:class:`Model`.
@@ -146,7 +146,7 @@ Next, exit and create file `src/Model_ContactInfo.php`::
     class Model_ContactInfo extends \atk4\data\Model
     {
         public $table = 'contact_info';
-        function init()
+        function init(): void
         {
             parent::init();
 
@@ -224,7 +224,7 @@ You can load / unload records like this::
 
     $m->get();     // inside console, this will show you what's inside your model
 
-    $m['email'] = 'test@example.com';
+    $m->set('email', 'test@example.com');
     $m->save();
 
 You can call `$m->loaded()` to see if there is active record and `$m->id` will
@@ -238,11 +238,11 @@ be saved inside DataSet::
 
     $m = new Model_User($db);
     $m->addCondition('country_id', 2);
-    $m['username'] = 'peter';
+    $m->set('username', 'peter');
     $m->save();
 
     $m->get(); // will show country_id as 2
-    $m['country_id'] = 3;
+    $m->set('country_id', 3);
     $m->save();  // will generate exception because model you try to save doesn't match conditions set
 
 
@@ -276,7 +276,7 @@ like this::
     {
         public $table = 'user';
 
-        function init() {
+        function init(): void {
             parent::init();
 
             $this->addField('username');
@@ -311,7 +311,7 @@ later::
 
     $m = new Model_User();
 
-    $db->add($m); // calls $m->init()
+    $db->add($m); // calls $m->invokeInit()
 
 You cannot add conditions just yet, although you can pass in some of the defaults::
 
@@ -394,7 +394,7 @@ For some persistence classes, you should use constructor directly::
     $m = new \atk4\data\Model($db);
     $m->addField('name');
     $m->load(2);
-    echo $m['name'];  // Peter
+    echo $m->get('name');  // Peter
 
 There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
@@ -402,8 +402,8 @@ Lets load up our console and try out a different persistence::
     $a=['user'=>[],'contact_info'=>[]];
     $ar = new \atk4\data\Persistence\Array_($a);
     $m = new Model_User($ar);
-    $m['username']='test';
-    $m['address_1']='street'
+    $m->set('username', 'test');
+    $m->set('address_1', 'street');
 
     $m->save();
 
@@ -499,7 +499,7 @@ Implementation of References
 
 When reference is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
 the new object is created and added into Model of class :php:class:`Reference\HasMany`
-or :php:class:`Reference\HasOne` (or :php:class:`Reference\HasOne_SQL` in case you
+or :php:class:`Reference\\HasOne` (or :php:class:`Reference\\HasOneSql` in case you
 use SQL database). The object itself is quite simple and you can fetch it from
 the model if you keep the return value of hasOne() / hasMany() or call
 :php:meth:`Model::getRef()` with the same identifier later on.
@@ -610,9 +610,9 @@ Actions prove to be very useful in various situations. For instance, if you are
 looking to add a new user::
 
     $m = new Model_User($db);
-    $m['username'] = 'peter';
-    $m['address_1'] = 'street 49';
-    $m['country'] = 'UK';
+    $m->set('username', 'peter');
+    $m->set('address_1', 'street 49');
+    $m->set('country', 'UK');
     $m->save();
 
 Normally this would not work, because country is read-only expression, however
@@ -620,9 +620,9 @@ if you wish to avoid creating an intermediate select to determine ID for 'UK',
 you could do this::
 
     $m = new Model_User($db);
-    $m['username'] = 'peter';
-    $m['address_1'] = 'street 49';
-    $m['country_id'] = (new Model_Country($db))->addCondition('name','UK')->action('field',['id']);
+    $m->set('username', 'peter');
+    $m->set('address_1', 'street 49');
+    $m->set('country_id', (new Model_Country($db))->addCondition('name','UK')->action('field',['id']));
     $m->save();
 
 This way it will not execute any code, but instead it will provide expression

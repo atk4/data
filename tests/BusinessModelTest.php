@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
+use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence;
@@ -11,7 +15,7 @@ use atk4\data\tests\Model\User as User;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
+class BusinessModelTest extends AtkPhpunit\TestCase
 {
     /**
      * Test constructor.
@@ -22,11 +26,11 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('name');
 
         $f = $m->getField('name');
-        $this->assertEquals('name', $f->short_name);
+        $this->assertSame('name', $f->short_name);
 
         $m->addField('surname', new Field());
         $f = $m->getField('surname');
-        $this->assertEquals('surname', $f->short_name);
+        $this->assertSame('surname', $f->short_name);
     }
 
     public function testFieldAccess()
@@ -35,70 +39,21 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $m['name'] = 5;
-        $this->assertEquals(5, $m->get('name'));
+        $m->set('name', 5);
+        $this->assertSame(5, $m->get('name'));
 
         $m->set('surname', 'Bilbo');
-        $this->assertEquals(5, $m->get('name'));
-        $this->assertEquals('Bilbo', $m->get('surname'));
+        $this->assertSame(5, $m->get('name'));
+        $this->assertSame('Bilbo', $m->get('surname'));
 
-        $this->assertEquals(['name' => 5, 'surname' => 'Bilbo'], $m->get());
+        $this->assertSame(['name' => 5, 'surname' => 'Bilbo'], $m->get());
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testNoFieldException()
     {
         $m = new Model();
-        $m->set(['name' => 5]);
-    }
-
-    public function testNull()
-    {
-        $m = new Model(['strict_field_check' => false]);
-        $m->set(['name' => 5]);
-        $m['name'] = null;
-        $this->assertEquals(['name' => null], $m->data);
-    }
-
-    public function testFieldAccess2()
-    {
-        $m = new Model(['strict_field_check' => false]);
-        $this->assertEquals(false, isset($m['name']));
-        $m->set(['name' => 5]);
-        $this->assertEquals(true, isset($m['name']));
-        $this->assertEquals(5, $m['name']);
-
-        $m['name'] = null;
-        $this->assertEquals(false, isset($m['name']));
-
-        $m = new Model();
-        $n = $m->addField('name');
-        $m->set($n, 5);
-        $m->set($n, 5);
-        $this->assertEquals(5, $m['name']);
-    }
-
-    public function testGet()
-    {
-        $m = new Model(['strict_field_check' => false]);
-        $m->addField('name');
-        $m->addField('surname');
-
-        $m->set(['name' => 'john', 'surname' => 'peter', 'foo' => 'bar']);
-        $this->assertEquals(['name' => 'john', 'surname' => 'peter'], $m->get());
-        $this->assertEquals(['name' => null, 'surname' => null, 'foo' => null], $m->dirty);
-
-        // we can define fields later if strict_field_check=false
-        $m->addField('foo');
-        $this->assertEquals(['name' => 'john', 'surname' => 'peter', 'foo' => 'bar'], $m->get());
-        $this->assertEquals(['name' => null, 'surname' => null, 'foo' => null], $m->dirty);
-
-        // test with onlyFields
-        $m->onlyFields(['surname']);
-        $this->assertEquals(['surname' => 'peter'], $m->get());
-        $this->assertEquals(['name' => null, 'surname' => null, 'foo' => null], $m->dirty);
+        $this->expectException(Exception::class);
+        $m->set('name', 5);
     }
 
     public function testDirty()
@@ -106,73 +61,73 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
         $m = new Model();
         $m->addField('name');
         $m->data = ['name' => 5];
-        $m['name'] = 5;
-        $this->assertEquals([], $m->dirty);
+        $m->set('name', 5);
+        $this->assertSame([], $m->dirty);
 
-        $m['name'] = 10;
-        $this->assertEquals(['name' => 5], $m->dirty);
+        $m->set('name', 10);
+        $this->assertSame(['name' => 5], $m->dirty);
 
-        $m['name'] = 15;
-        $this->assertEquals(['name' => 5], $m->dirty);
+        $m->set('name', 15);
+        $this->assertSame(['name' => 5], $m->dirty);
 
-        $m['name'] = 5;
-        $this->assertEquals([], $m->dirty);
+        $m->set('name', 5);
+        $this->assertSame([], $m->dirty);
 
-        $m['name'] = '5';
+        $m->set('name', '5');
         $this->assertSame(5, $m->dirty['name']);
 
-        $m['name'] = '6';
+        $m->set('name', '6');
         $this->assertSame(5, $m->dirty['name']);
-        $m['name'] = '5';
+        $m->set('name', '5');
         $this->assertSame(5, $m->dirty['name']);
 
-        $m['name'] = '5.0';
+        $m->set('name', '5.0');
         $this->assertSame(5, $m->dirty['name']);
 
         $m->dirty = [];
         $m->data = ['name' => ''];
-        $m['name'] = '';
-        $this->assertEquals([], $m->dirty);
+        $m->set('name', '');
+        $this->assertSame([], $m->dirty);
 
         $m->data = ['name' => '5'];
-        $m['name'] = 5;
+        $m->set('name', 5);
         $this->assertSame('5', $m->dirty['name']);
-        $m['name'] = 6;
+        $m->set('name', 6);
         $this->assertSame('5', $m->dirty['name']);
-        $m['name'] = 5;
+        $m->set('name', 5);
         $this->assertSame('5', $m->dirty['name']);
-        $m['name'] = '5';
-        $this->assertEquals([], $m->dirty);
+        $m->set('name', '5');
+        $this->assertSame([], $m->dirty);
 
         $m->data = ['name' => 4.28];
-        $m['name'] = '4.28';
+        $m->set('name', '4.28');
         $this->assertSame(4.28, $m->dirty['name']);
-        $m['name'] = '5.28';
+        $m->set('name', '5.28');
         $this->assertSame(4.28, $m->dirty['name']);
-        $m['name'] = 4.28;
-        $this->assertEquals([], $m->dirty);
+        $m->set('name', 4.28);
+        $this->assertSame([], $m->dirty);
 
         // now with defaults
         $m = new Model();
         $f = $m->addField('name', ['default' => 'John']);
-        $this->assertEquals('John', $f->default);
+        $this->assertSame('John', $f->default);
 
-        $this->assertEquals('John', $m->get('name'));
+        $this->assertSame('John', $m->get('name'));
 
-        $m['name'] = null;
-        $this->assertEquals(['name' => 'John'], $m->dirty);
-        $this->assertEquals(['name' => null], $m->data);
-        $this->assertEquals(null, $m['name']);
+        $m->set('name', null);
+        $this->assertSame(['name' => 'John'], $m->dirty);
+        $this->assertSame(['name' => null], $m->data);
+        $this->assertNull($m->get('name'));
 
-        unset($m['name']);
-        $this->assertEquals('John', $m->get('name'));
+        $m->_unset('name');
+        $this->assertSame('John', $m->get('name'));
     }
 
     /*
      * This is no longer the case after PR #69
      *
-     * Now changing $m['id'] will actually update the value
-     * of original records. In a way $m['id'] is not a direct
+     * Now changing $m->get('id') will actually update the value
+     * of original records. In a way $m->get('id') is not a direct
      * alias to ID, but has a deeper meaning and behaves more
      * like a regular field.
      *
@@ -184,14 +139,11 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $this->assertNotNull($m->getField('id'));
 
-        $m['id'] = 20;
+        $m->set('id', 20);
         $this->assertEquals(20, $m->id);
     }
      */
 
-    /**
-     * @expectedException Exception
-     */
     public function testException1()
     {
         $m = new Model();
@@ -199,7 +151,8 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('surname');
         $m->onlyFields(['surname']);
 
-        $m['name'] = 5;
+        $this->expectException(Exception::class);
+        $m->set('name', 5);
     }
 
     public function testException1fixed()
@@ -211,7 +164,8 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $m->allFields();
 
-        $m['name'] = 5;
+        $m->set('name', 5);
+        $this->assertSame(5, $m->get('name'));
     }
 
     /**
@@ -221,77 +175,57 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
     {
         $m = new Model();
         $m->addField('name');
-        $m->set('foo');
-        $this->assertEquals($m['name'], 'foo');
+        $m->set('name', 'foo');
+        $this->assertSame('foo', $m->get('name'));
 
-        $m->set(['bar']);
-        $this->assertEquals($m['name'], 'bar');
-
-        $m->set(['name' => 'baz']);
-        $this->assertEquals($m['name'], 'baz');
+        $m->set('name', 'baz');
+        $this->assertSame('baz', $m->get('name'));
     }
 
     /**
-     * @expectedException Exception
-     *
-     * fields can't be numeric
+     * Fields can't be numeric.
      */
     public function testException2()
     {
         $m = new Model();
+        $this->expectException(\Error::class);
         $m->set(0, 'foo');
     }
 
     /**
-     * @expectedException Exception
-     *
-     * fields can't be numeric
+     * Fields can't be numeric.
      */
     public function testException2a()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->set('3', 'foo');
     }
 
     /**
-     * @expectedException Exception
-     *
-     * fields can't be numeric
+     * Fields can't be numeric.
      */
     public function testException2b()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->set('3b', 'foo');
     }
 
     /**
-     * @expectedException Exception
-     *
-     * fields can't be numeric
+     * Fields can't be numeric.
      */
     public function testException2c()
     {
         $m = new Model();
+        $this->expectException(Exception::class);
         $m->set('', 'foo');
     }
 
-    /**
-     * @expectedException Exception
-     *
-     * fields can't be numeric
-     */
-    public function testException2d()
-    {
-        $m = new Model();
-        $m->set(['foo', 'bar']);
-    }
-
-    /**
-     * @expectedException Exception
-     */
     public function testException3()
     {
         $m = new Model();
+        $this->expectException(\Error::class);
         $m->set(4, 5);
     }
 
@@ -299,7 +233,7 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
     {
         $p = new Persistence();
         $c = new Client($p);
-        $this->assertEquals(10, $c['order']);
+        $this->assertEquals(10, $c->get('order'));
     }
 
     public function testNormalize()
@@ -309,14 +243,14 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('age', ['type' => 'int']);
         $m->addField('data');
 
-        $m['name'] = '';
-        $this->assertSame('', $m['name']);
+        $m->set('name', '');
+        $this->assertSame('', $m->get('name'));
 
-        $m['age'] = '';
-        $this->assertSame(null, $m['age']);
+        $m->set('age', '');
+        $this->assertNull($m->get('age'));
 
-        $m['data'] = '';
-        $this->assertSame('', $m['data']);
+        $m->set('data', '');
+        $this->assertSame('', $m->get('data'));
     }
 
     public function testExampleFromDoc()
@@ -324,24 +258,20 @@ class BusinessModelTest extends \atk4\core\PHPUnit_AgileTestCase
         $m = new User();
 
         $m->addField('salary', ['default' => 1000]);
-
-        $this->assertEquals(false, isset($m['salary']));   // false
-        $this->assertEquals(1000, $m['salary']);           // 1000
+        $this->assertSame(1000, $m->get('salary'));
+        $this->assertFalse($m->_isset('salary'));
 
         // Next we load record from $db
         $m->data = ['salary' => 2000];
+        $this->assertSame(2000, $m->get('salary'));
+        $this->assertFalse($m->_isset('salary'));
 
-        $this->assertEquals(2000, $m['salary']);           // 2000 (from db)
-        $this->assertEquals(false, isset($m['salary']));   // false, was not changed
+        $m->set('salary', 3000);
+        $this->assertSame(3000, $m->get('salary'));
+        $this->assertTrue($m->_isset('salary'));
 
-        $m['salary'] = 3000;
-
-        $this->assertEquals(3000, $m['salary']);          // 3000 (changed)
-        $this->assertEquals(true, isset($m['salary']));   // true
-
-        unset($m['salary']);        // return to original value
-
-        $this->assertEquals(2000, $m['salary']);          // 2000
-        $this->assertEquals(false, isset($m['salary']));  // false
+        $m->_unset('salary');
+        $this->assertSame(2000, $m->get('salary'));
+        $this->assertFalse($m->_isset('salary'));
     }
 }

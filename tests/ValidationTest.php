@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use atk4\data\ValidationException;
 
 class MyValidationModel extends Model
 {
-    public function init()
+    protected function init(): void
     {
         parent::init();
 
@@ -15,13 +19,13 @@ class MyValidationModel extends Model
         $this->addField('domain');
     }
 
-    public function validate($intent = null)
+    public function validate($intent = null): array
     {
         $errors = [];
-        if ($this['name'] === 'Python') {
+        if ($this->get('name') === 'Python') {
             $errors['name'] = 'Snakes are not allowed on this plane';
         }
-        if ($this['domain'] === 'example.com') {
+        if ($this->get('domain') === 'example.com') {
             $errors['domain'] = 'This domain is reserved for examples only';
         }
 
@@ -31,112 +35,106 @@ class MyValidationModel extends Model
 
 class BadValidationModel extends Model
 {
-    public function init()
+    protected function init(): void
     {
         parent::init();
 
         $this->addField('name');
     }
 
-    public function validate($intent = null)
+    public function validate($intent = null): array
     {
         return 'This should be array';
     }
 }
 
-class ValidationTests extends \atk4\core\PHPUnit_AgileTestCase
+class ValidationTests extends AtkPhpunit\TestCase
 {
     public $m;
 
-    public function setUp()
+    protected function setUp(): void
     {
-        $a = [];
-        $p = new Persistence\Array_($a);
+        parent::setUp();
+
+        $p = new Persistence\Array_();
         $this->m = new MyValidationModel($p);
     }
 
     public function testValidate1()
     {
-        $this->m['name'] = 'john';
-        $this->m['domain'] = 'gmail.com';
+        $this->m->set('name', 'john');
+        $this->m->set('domain', 'gmail.com');
         $this->m->save();
+        $this->assertTrue(true); // no exception
     }
 
-    /**
-     * @expectedException        \atk4\data\ValidationException
-     * @expectedExceptionMessage Snakes
-     */
     public function testValidate2()
     {
-        $this->m['name'] = 'Python';
+        $this->m->set('name', 'Python');
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Snakes');
         $this->m->save();
     }
 
-    /**
-     * @expectedException        \atk4\data\ValidationException
-     * @expectedExceptionMessage Multiple
-     */
     public function testValidate3()
     {
-        $this->m['name'] = 'Python';
-        $this->m['domain'] = 'example.com';
+        $this->m->set('name', 'Python');
+        $this->m->set('domain', 'example.com');
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('Multiple');
         $this->m->save();
     }
 
     public function testValidate4()
     {
         try {
-            $this->m['name'] = 'Python';
-            $this->m['domain'] = 'example.com';
+            $this->m->set('name', 'Python');
+            $this->m->set('domain', 'example.com');
             $this->m->save();
             $this->fail('Expected exception');
         } catch (\atk4\data\ValidationException $e) {
-            $this->assertEquals('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
+            $this->assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
 
             return;
         }
     }
 
-    /**
-     * @expectedException        \Exception
-     * @expectedExceptionMessage Incorrect use of ValidationException, argument should be an array
-     */
     public function testValidate5()
     {
-        $a = [];
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_();
         $m = new BadValidationModel($p);
 
-        $m['name'] = 'john';
+        $this->expectException(\TypeError::class);
+        $m->set('name', 'john');
         $m->save();
     }
 
     public function testValidateHook()
     {
-        $this->m->addHook('validate', function ($m) {
-            if ($m['name'] === 'C#') {
-                return ['name'=>'No sharp objects allowed'];
+        $this->m->onHook(Model::HOOK_VALIDATE, function ($m) {
+            if ($m->get('name') === 'C#') {
+                return ['name' => 'No sharp objects allowed'];
             }
         });
 
-        $this->m['name'] = 'Swift';
+        $this->m->set('name', 'Swift');
         $this->m->save();
 
         try {
-            $this->m['name'] = 'C#';
+            $this->m->set('name', 'C#');
             $this->m->save();
             $this->fail('Expected exception');
         } catch (\atk4\data\ValidationException $e) {
-            $this->assertEquals('No sharp objects allowed', $e->errors['name']);
+            $this->assertSame('No sharp objects allowed', $e->errors['name']);
         }
 
         try {
-            $this->m['name'] = 'Python';
-            $this->m['domain'] = 'example.com';
+            $this->m->set('name', 'Python');
+            $this->m->set('domain', 'example.com');
             $this->m->save();
             $this->fail('Expected exception');
         } catch (\atk4\data\ValidationException $e) {
-            $this->assertEquals(2, count($e->errors));
+            $this->assertSame(2, count($e->errors));
         }
     }
 }

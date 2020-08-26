@@ -1,6 +1,6 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+declare(strict_types=1);
 
 namespace atk4\data\Reference;
 
@@ -21,132 +21,112 @@ class HasMany extends Reference
      */
     protected function getOurValue()
     {
-        if ($this->owner->loaded()) {
+        $ourModel = $this->getOurModel();
+
+        if ($ourModel->loaded()) {
             return $this->our_field
-                ? $this->owner[$this->our_field]
-                : $this->owner->id;
-        } else {
-            // create expression based on existing conditions
-            return $this->owner->action(
-                'field',
-                [
-                    $this->our_field ?: ($this->owner->id_field ?: 'id'),
-                ]
-            );
+                ? $ourModel->get($this->our_field)
+                : $ourModel->id;
         }
+
+        // create expression based on existing conditions
+        return $ourModel->action('field', [
+            $this->getOurFieldName(),
+        ]);
     }
 
     /**
      * Returns our field or id field.
-     *
-     * @return Field
      */
-    protected function referenceOurValue() : Field
+    protected function referenceOurValue(): Field
     {
-        $this->owner->persistence_data['use_table_prefixes'] = true;
+        $ourModel = $this->getOurModel();
 
-        return $this->owner->getField($this->our_field ?: ($this->owner->id_field ?: 'id'));
+        $ourModel->persistence_data['use_table_prefixes'] = true;
+
+        return $this->getOurField();
     }
 
     /**
      * Returns referenced model with condition set.
-     *
-     * @param array $defaults Properties
-     *
-     * @throws Exception
-     *
-     * @return Model
      */
-    public function ref($defaults = []) : Model
+    public function ref(array $defaults = []): Model
     {
-        return $this->getModel($defaults)
-            ->addCondition(
-                $this->their_field ?: ($this->owner->table.'_'.($this->owner->id_field ?: 'id')),
-                $this->getOurValue()
-            );
+        $ourModel = $this->getOurModel();
+
+        return $this->getTheirModel($defaults)->addCondition(
+            $this->their_field ?: ($ourModel->table . '_' . $ourModel->id_field),
+            $this->getOurValue()
+        );
     }
 
     /**
      * Creates model that can be used for generating sub-query actions.
-     *
-     * @param array $defaults Properties
-     *
-     * @throws Exception
-     *
-     * @return Model
      */
-    public function refLink($defaults = []) : Model
+    public function refLink(array $defaults = []): Model
     {
-        return $this->getModel($defaults)
-            ->addCondition(
-                $this->their_field ?: ($this->owner->table.'_'.($this->owner->id_field ?: 'id')),
-                $this->referenceOurValue()
-            );
+        $ourModel = $this->getOurModel();
+
+        $theirModelLinked = $this->getTheirModel($defaults)->addCondition(
+            $this->their_field ?: ($ourModel->table . '_' . $ourModel->id_field),
+            $this->referenceOurValue()
+        );
+
+        return $theirModelLinked;
     }
 
     /**
-     * Adds field as expression to owner model.
+     * Adds field as expression to our model.
      * Used in aggregate strategy.
-     *
-     * @param string $n        Field name
-     * @param array  $defaults Properties
-     *
-     * @throws Exception
-     *
-     * @return Field
      */
-    public function addField($n, $defaults = []) : Field
+    public function addField(string $fieldName, array $defaults = []): Field
     {
         if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
-            throw new Exception([
-                'Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()',
-                'field'    => $n,
-                'defaults' => $defaults,
-            ]);
+            throw (new Exception('Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()'))
+                ->addMoreInfo('field', $fieldName)
+                ->addMoreInfo('defaults', $defaults);
         }
 
         $defaults['aggregate_relation'] = $this;
 
-        $field_n = isset($defaults['field']) ? $defaults['field'] : $n;
-        $field = isset($defaults['field']) ? $defaults['field'] : null;
+        $alias = $defaults['field'] ?? null;
+        $field = $alias ?? $fieldName;
 
         if (isset($defaults['concat'])) {
-            $defaults['aggregate'] = $this->owner->dsql()->groupConcat($field_n, $defaults['concat']);
+            $defaults['aggregate'] = $this->getOurModel()->dsql()->groupConcat($field, $defaults['concat']);
             $defaults['read_only'] = false;
             $defaults['never_save'] = true;
         }
 
         if (isset($defaults['expr'])) {
-            $cb = function () use ($defaults, $field) {
-                $r = $this->refLink();
+            $fx = function () use ($defaults, $alias) {
+                $theirModelLinked = $this->refLink();
 
-                return $r->action('field', [$r->expr(
+                return $theirModelLinked->action('field', [$theirModelLinked->expr(
                     $defaults['expr'],
-                    isset($defaults['args']) ? $defaults['args'] : null
-                ), 'alias'=>$field]);
+                    $defaults['args'] ?? []
+                ), 'alias' => $alias]);
             };
             unset($defaults['args']);
         } elseif (is_object($defaults['aggregate'])) {
-            $cb = function () use ($defaults, $field) {
-                return $this->refLink()->action('field', [$defaults['aggregate'], 'alias'=>$field]);
+            $fx = function () use ($defaults, $alias) {
+                return $this->refLink()->action('field', [$defaults['aggregate'], 'alias' => $alias]);
             };
-        } elseif ($defaults['aggregate'] == 'count' && !isset($defaults['field'])) {
-            $cb = function () use ($defaults, $field) {
-                return $this->refLink()->action('count', ['alias'=>$field]);
+        } elseif ($defaults['aggregate'] === 'count' && !isset($defaults['field'])) {
+            $fx = function () use ($defaults, $alias) {
+                return $this->refLink()->action('count', ['alias' => $alias]);
             };
-        } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'])) {
-            $cb = function () use ($defaults, $field_n) {
-                return $this->refLink()->action('fx0', [$defaults['aggregate'], $field_n]);
+        } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {
+            $fx = function () use ($defaults, $field) {
+                return $this->refLink()->action('fx0', [$defaults['aggregate'], $field]);
             };
         } else {
-            $cb = function () use ($defaults, $field_n) {
-                return $this->refLink()->action('fx', [$defaults['aggregate'], $field_n]);
+            $fx = function () use ($defaults, $field) {
+                return $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
             };
         }
 
-        $e = $this->owner->addExpression($n, array_merge([$cb], $defaults));
-
-        return $e;
+        return $this->getOurModel()->addExpression($fieldName, array_merge([$fx], $defaults));
     }
 
     /**
@@ -154,18 +134,14 @@ class HasMany extends Reference
      *
      * @see addField()
      *
-     * @param array $fields Array of fields
-     *
-     * @throws Exception
-     *
      * @return $this
      */
-    public function addFields($fields = [])
+    public function addFields(array $fields = [])
     {
-        foreach ($fields as $field) {
-            $name = $field[0];
-            unset($field[0]);
-            $this->addField($name, $field);
+        foreach ($fields as $defaults) {
+            $fieldName = $defaults[0];
+            unset($defaults[0]);
+            $this->addField($fieldName, $defaults);
         }
 
         return $this;

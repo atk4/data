@@ -1,191 +1,194 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Util\DeepCopy;
+use atk4\data\Util\DeepCopyException;
 
-class DCClient extends Model
+class DcClient extends Model
 {
     public $table = 'client';
 
-    public function init()
+    protected function init(): void
     {
         parent::init();
 
         $this->addField('name');
 
-        $this->hasMany('Invoices', new DCInvoice());
-        $this->hasMany('Quotes', new DCQuote());
-        $this->hasMany('Payments', new DCPayment());
+        $this->hasMany('Invoices', new DcInvoice());
+        $this->hasMany('Quotes', new DcQuote());
+        $this->hasMany('Payments', new DcPayment());
     }
 }
 
-class DCInvoice extends Model
+class DcInvoice extends Model
 {
     public $table = 'invoice';
 
-    public function init()
+    protected function init(): void
     {
         parent::init();
 
-        $this->hasOne('client_id', new DCClient());
+        $this->hasOne('client_id', new DcClient());
 
-        $this->hasMany('Lines', [new DCInvoiceLine(), 'their_field'=>'parent_id'])
-            ->addField('total', ['aggregate'=>'sum', 'field'=>'total']);
+        $this->hasMany('Lines', [new DcInvoiceLine(), 'their_field' => 'parent_id'])
+            ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
-        $this->hasMany('Payments', new DCPayment())
-            ->addField('paid', ['aggregate'=>'sum', 'field'=>'amount']);
+        $this->hasMany('Payments', new DcPayment())
+            ->addField('paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
         $this->addExpression('due', '[total]-[paid]');
 
         $this->addField('ref');
 
-        $this->addField('is_paid', ['type'=>'boolean', 'default'=>false]);
+        $this->addField('is_paid', ['type' => 'boolean', 'default' => false]);
 
-        $this->addHook('afterCopy', function ($m, $s) {
-            if (get_class($s) == get_class($this)) {
-                $m['ref'] = $m['ref'].'_copy';
+        $this->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m, $s) {
+            if (get_class($s) === static::class) {
+                $m->set('ref', $m->get('ref') . '_copy');
             }
         });
     }
 }
 
-class DCQuote extends Model
+class DcQuote extends Model
 {
     public $table = 'quote';
 
-    public function init()
+    protected function init(): void
     {
         parent::init();
-        $this->hasOne('client_id', new DCClient());
+        $this->hasOne('client_id', new DcClient());
 
-        $this->hasMany('Lines', [new DCQuoteLine(), 'their_field'=>'parent_id'])
-            ->addField('total', ['aggregate'=>'sum', 'field'=>'total']);
+        $this->hasMany('Lines', [new DcQuoteLine(), 'their_field' => 'parent_id'])
+            ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
         $this->addField('ref');
 
-        $this->addField('is_converted', ['type'=>'boolean', 'default'=>false]);
+        $this->addField('is_converted', ['type' => 'boolean', 'default' => false]);
     }
 }
 
-class DCInvoiceLine extends Model
+class DcInvoiceLine extends Model
 {
     public $table = 'line';
 
-    public function init()
+    protected function init(): void
     {
         parent::init();
-        $this->hasOne('parent_id', new DCInvoice());
+        $this->hasOne('parent_id', new DcInvoice());
 
         $this->addField('name');
 
-        $this->addField('type', ['enum'=>['invoice', 'quote']]);
+        $this->addField('type', ['enum' => ['invoice', 'quote']]);
         $this->addCondition('type', '=', 'invoice');
 
-        $this->addField('qty', ['type'=>'integer', 'mandatory'=>true]);
-        $this->addField('price', ['type'=>'money']);
-        $this->addField('vat', ['type'=>'numeric', 'default'=>0.21]);
+        $this->addField('qty', ['type' => 'integer', 'mandatory' => true]);
+        $this->addField('price', ['type' => 'money']);
+        $this->addField('vat', ['type' => 'numeric', 'default' => 0.21]);
 
         // total is calculated with VAT
-        $this->addExpression('total', '[qty]*[price]*(1+vat)');
+        $this->addExpression('total', '[qty]*[price]*(1+[vat])');
     }
 }
 
-class DCQuoteLine extends Model
+class DcQuoteLine extends Model
 {
     public $table = 'line';
 
-    public function init()
+    protected function init(): void
     {
         parent::init();
 
-        $this->hasOne('parent_id', new DCQuote());
+        $this->hasOne('parent_id', new DcQuote());
 
         $this->addField('name');
 
-        $this->addField('type', ['enum'=>['invoice', 'quote']]);
+        $this->addField('type', ['enum' => ['invoice', 'quote']]);
         $this->addCondition('type', '=', 'quote');
 
-        $this->addField('qty', ['type'=>'integer']);
-        $this->addField('price', ['type'=>'money']);
+        $this->addField('qty', ['type' => 'integer']);
+        $this->addField('price', ['type' => 'money']);
 
         // total is calculated WITHOUT VAT
         $this->addExpression('total', '[qty]*[price]');
     }
 }
 
-class DCPayment extends Model
+class DcPayment extends Model
 {
     public $table = 'payment';
 
-    public function init()
+    protected function init(): void
     {
         parent::init();
-        $this->hasOne('client_id', new DCClient());
+        $this->hasOne('client_id', new DcClient());
 
-        $this->hasOne('invoice_id', new DCInvoice());
+        $this->hasOne('invoice_id', new DcInvoice());
 
-        $this->addField('amount', ['type'=>'money']);
+        $this->addField('amount', ['type' => 'money']);
     }
 }
 
 /**
  * Implements various tests for deep copying objects.
  */
-class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigration(new DCClient($this->db))->drop()->create();
-        $this->getMigration(new DCInvoice($this->db))->drop()->create();
-        $this->getMigration(new DCQuote($this->db))->drop()->create();
-        $this->getMigration(new DCInvoiceLine($this->db))->drop()->create();
-        $this->getMigration(new DCPayment($this->db))->drop()->create();
+        $this->getMigrator(new DcClient($this->db))->drop()->create();
+        $this->getMigrator(new DcInvoice($this->db))->drop()->create();
+        $this->getMigrator(new DcQuote($this->db))->drop()->create();
+        $this->getMigrator(new DcInvoiceLine($this->db))->drop()->create();
+        $this->getMigrator(new DcPayment($this->db))->drop()->create();
     }
 
     public function testBasic()
     {
-        $client = new DCClient($this->db);
-        $client_id = $client->insert('John');
+        $client = new DcClient($this->db);
+        $client_id = $client->insert(['name' => 'John']);
 
-        $quote = new DCQuote($this->db);
+        $quote = new DcQuote($this->db);
 
-        $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
-            ['tools', 'qty'=>5, 'price'=>10],
-            ['work', 'qty'=>1, 'price'=>40],
+        $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
+            ['name' => 'tools', 'qty' => 5, 'price' => 10],
+            ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
         $quote->loadAny();
 
         // total price should match
-        $this->assertEquals(90.00, $quote['total']);
+        $this->assertEquals(90.00, $quote->get('total'));
 
         $dc = new DeepCopy();
         $invoice = $dc
             ->from($quote)
-            ->to(new DCInvoice())
+            ->to(new DcInvoice())
             ->with(['Lines'])
             ->copy();
 
         // price now will be with VAT
-        $this->assertEquals('q1', $invoice['ref']);
-        $this->assertEquals(108.90, $invoice['total']);
+        $this->assertSame('q1', $invoice->get('ref'));
+        $this->assertEquals(108.90, $invoice->get('total'));
         $this->assertEquals(1, $invoice->id);
 
         // Note that we did not specify that 'client_id' should be copied, so same value here
-        $this->assertEquals($quote['client_id'], $invoice['client_id']);
-        $this->assertEquals('John', $invoice->ref('client_id')['name']);
+        $this->assertSame($quote->get('client_id'), $invoice->get('client_id'));
+        $this->assertSame('John', $invoice->ref('client_id')->get('name'));
 
         // now to add payment for the invoice. Payment originates from the same client as noted on the invoice
-        $invoice->ref('Payments')->insert(['amount'=>$invoice['total'] - 5, 'client_id'=>$invoice['client_id']]);
+        $invoice->ref('Payments')->insert(['amount' => $invoice->get('total') - 5, 'client_id' => $invoice->get('client_id')]);
 
         $invoice->reload();
 
         // now that invoice is mostly paid, due amount will reflect that
-        $this->assertEquals(5, $invoice['due']);
+        $this->assertEquals(5, $invoice->get('due'));
 
         // Next we copy invocie into simply a new record. Duplicate. However this time we will also duplicate payments,
         // and client. Because Payment references client too, we need to duplicate that one also, this way new record
@@ -193,43 +196,41 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $dc = new DeepCopy();
         $invoice_copy = $dc
             ->from($invoice)
-            ->to(new DCInvoice())
-            ->with(['Lines', 'client_id', 'Payments'=>['client_id']])
+            ->to(new DcInvoice())
+            ->with(['Lines', 'client_id', 'Payments' => ['client_id']])
             ->copy();
 
         // Invoice copy receives a new ID
-        $this->assertNotEquals($invoice->id, $invoice_copy->id);
-        $this->assertEquals('q1_copy', $invoice_copy['ref']);
+        $this->assertNotSame($invoice->id, $invoice_copy->id);
+        $this->assertSame('q1_copy', $invoice_copy->get('ref'));
 
         // ..however the due amount is the same - 5
-        $this->assertEquals(5, $invoice_copy['due']);
+        $this->assertEquals(5, $invoice_copy->get('due'));
 
         // ..client record was created in the process
-        $this->assertNotEquals($invoice_copy['client_id'], $invoice['client_id']);
+        $this->assertNotSame($invoice_copy->get('client_id'), $invoice->get('client_id'));
 
         // ..but he is still called John
-        $this->assertEquals('John', $invoice_copy->ref('client_id')['name']);
+        $this->assertSame('John', $invoice_copy->ref('client_id')->get('name'));
 
         // finally, the client_id used for newly created payment and new invoice correspond
-        $this->assertEquals($invoice_copy['client_id'], $invoice_copy->ref('Payments')->loadAny()['client_id']);
+        $this->assertSame($invoice_copy->get('client_id'), $invoice_copy->ref('Payments')->loadAny()->get('client_id'));
 
         // the final test is to copy client entirely!
 
         $dc = new DeepCopy();
         $client3 = $dc
-            ->from((new DCClient($this->db))->load(1))
-            ->to(new DCClient())
+            ->from((new DcClient($this->db))->load(1))
+            ->to(new DcClient())
             ->with([
-
                 // Invoices are copied, but unless we also copy lines, totals won't be there!
-                'Invoices'=> [
+                'Invoices' => [
                     'Lines',
                 ],
-                'Quotes'=> [
+                'Quotes' => [
                     'Lines',
                 ],
-                'Payments'=> [
-
+                'Payments' => [
                     // this is important to have here, because we want copied payments to be linked with NEW invoices!
                     'invoice_id',
                 ],
@@ -257,34 +258,33 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $this->assertEquals(5, $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
     }
 
-    /**
-     * @expectedException \atk4\data\Util\DeepCopyException
-     */
     public function testError()
     {
-        $client = new DCClient($this->db);
-        $client_id = $client->insert('John');
+        $client = new DcClient($this->db);
+        $client_id = $client->insert(['name' => 'John']);
 
-        $quote = new DCQuote($this->db);
-        $quote->hasMany('Lines2', [new DCQuoteLine(), 'their_field'=>'parent_id']);
+        $quote = new DcQuote($this->db);
+        $quote->hasMany('Lines2', [new DcQuoteLine(), 'their_field' => 'parent_id']);
 
-        $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
-            ['tools', 'qty'=>5, 'price'=>10],
-            ['work', 'qty'=>1, 'price'=>40],
+        $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
+            ['name' => 'tools', 'qty' => 5, 'price' => 10],
+            ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
         $quote->loadAny();
 
-        $invoice = new DCInvoice();
-        $invoice->addHook('afterCopy', function ($m) {
-            if (!$m['ref']) {
+        $invoice = new DcInvoice();
+        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m) {
+            if (!$m->get('ref')) {
                 throw new \atk4\core\Exception('no ref');
             }
         });
 
         // total price should match
-        $this->assertEquals(90.00, $quote['total']);
+        $this->assertEquals(90.00, $quote->get('total'));
 
         $dc = new DeepCopy();
+
+        $this->expectException(DeepCopyException::class);
 
         try {
             $invoice = $dc
@@ -293,50 +293,49 @@ class DeepCopyTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 ->to($invoice)
                 ->with(['Lines', 'Lines2'])
                 ->copy();
-        } catch (\atk4\data\Util\DeepCopyException $e) {
-            $this->assertEquals('no ref', $e->getPrevious()->getMessage());
+        } catch (DeepCopyException $e) {
+            $this->assertSame('no ref', $e->getPrevious()->getMessage());
 
             throw $e;
         }
     }
 
-    /**
-     * @expectedException \atk4\data\Util\DeepCopyException
-     */
     public function testDeepError()
     {
-        $client = new DCClient($this->db);
-        $client_id = $client->insert('John');
+        $client = new DcClient($this->db);
+        $client_id = $client->insert(['name' => 'John']);
 
-        $quote = new DCQuote($this->db);
+        $quote = new DcQuote($this->db);
 
-        $quote->insert(['ref'=> 'q1', 'client_id'=>$client_id, 'Lines'=> [
-            ['tools', 'qty'=>5, 'price'=>10],
-            ['work', 'qty'=>1, 'price'=>40],
+        $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
+            ['name' => 'tools', 'qty' => 5, 'price' => 10],
+            ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
         $quote->loadAny();
 
-        $invoice = new DCInvoice();
-        $invoice->addHook('afterCopy', function ($m) {
-            if (!$m['ref']) {
+        $invoice = new DcInvoice();
+        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m) {
+            if (!$m->get('ref')) {
                 throw new \atk4\core\Exception('no ref');
             }
         });
 
         // total price should match
-        $this->assertEquals(90.00, $quote['total']);
+        $this->assertEquals(90.00, $quote->get('total'));
 
         $dc = new DeepCopy();
+
+        $this->expectException(DeepCopyException::class);
 
         try {
             $invoice = $dc
                 ->from($quote)
-                ->excluding(['Lines'=>['qty']])
+                ->excluding(['Lines' => ['qty']])
                 ->to($invoice)
                 ->with(['Lines'])
                 ->copy();
         } catch (\atk4\data\Util\DeepCopyException $e) {
-            $this->assertEquals('Mandatory field value cannot be null', $e->getPrevious()->getMessage());
+            $this->assertSame('Mandatory field value cannot be null', $e->getPrevious()->getMessage());
 
             throw $e;
         }

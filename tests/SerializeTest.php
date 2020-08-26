@@ -1,59 +1,69 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
-class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class SerializeTest extends \atk4\schema\PhpunitTestCase
 {
     public function testBasicSerialize()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'job');
 
         $f = $m->addField('data', ['serialize' => 'serialize']);
 
-        $this->assertEquals(
-            ['data' => 'a:1:{s:3:"foo";s:3:"bar";}'], $db->typecastSaveRow($m,
-            ['data' => ['foo' => 'bar']]
-        ));
-        $this->assertEquals(
-            ['data' => ['foo' => 'bar']], $db->typecastLoadRow($m,
-            ['data' => 'a:1:{s:3:"foo";s:3:"bar";}']
-        ));
+        $this->assertSame(
+            ['data' => 'a:1:{s:3:"foo";s:3:"bar";}'],
+            $db->typecastSaveRow(
+                $m,
+                ['data' => ['foo' => 'bar']]
+            )
+        );
+        $this->assertSame(
+            ['data' => ['foo' => 'bar']],
+            $db->typecastLoadRow(
+                $m,
+                ['data' => 'a:1:{s:3:"foo";s:3:"bar";}']
+            )
+        );
 
         $f->serialize = 'json';
         $f->type = 'array';
-        $this->assertEquals(
-            ['data' => '{"foo":"bar"}'], $db->typecastSaveRow($m,
-            ['data' => ['foo' => 'bar']]
-        ));
-        $this->assertEquals(
-            ['data' => ['foo' => 'bar']], $db->typecastLoadRow($m,
-            ['data' => '{"foo":"bar"}']
-        ));
+        $this->assertSame(
+            ['data' => '{"foo":"bar"}'],
+            $db->typecastSaveRow(
+                $m,
+                ['data' => ['foo' => 'bar']]
+            )
+        );
+        $this->assertSame(
+            ['data' => ['foo' => 'bar']],
+            $db->typecastLoadRow(
+                $m,
+                ['data' => '{"foo":"bar"}']
+            )
+        );
     }
 
-    /**
-     * @expectedException Exception
-     */
-    public function testSerializeErrorJSON()
+    public function testSerializeErrorJson()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'job');
 
         $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
 
+        $this->expectException(Exception::class);
         $db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
     }
 
-    /**
-     * @expectedException Exception
-     */
-    public function testSerializeErrorJSON2()
+    public function testSerializeErrorJson2()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'job');
 
         $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
@@ -62,12 +72,11 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
         $a = [];
         $a[] = &$a;
 
+        $this->expectException(Exception::class);
         $db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $a]]);
     }
 
     /*
-     * @expectedException Exception
-     *
      * THIS IS NOT POSSIBLE BECAUSE unserialize() produces error
      * and not exception
      */
@@ -75,10 +84,11 @@ class SerializeTest extends \atk4\schema\PHPUnit_SchemaTestCase
     /*
     public function testSerializeErrorSerialize()
     {
-        $db = new Persistence\SQL($this->db->connection);
+        $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'job');
 
         $f = $m->addField('data', ['serialize' => 'serialize']);
+        $this->expectException(Exception::class);
         $this->assertEquals(
             ['data' => ['foo' => 'bar']]
             , $db->typecastLoadRow($m,

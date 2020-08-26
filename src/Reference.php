@@ -1,6 +1,6 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+declare(strict_types=1);
 
 namespace atk4\data;
 
@@ -10,6 +10,8 @@ namespace atk4\data;
  * getModel() and that's pretty much it.
  *
  * It's possible to extend the basic reference with more meaningful references.
+ *
+ * @property Model $owner definition of our model
  */
 class Reference
 {
@@ -17,16 +19,8 @@ class Reference
         init as _init;
     }
     use \atk4\core\TrackableTrait;
-    use \atk4\core\DIContainerTrait;
+    use \atk4\core\DiContainerTrait;
     use \atk4\core\FactoryTrait;
-
-    /**
-     * Owner Model of the reference.
-     * override the hint type definition already present in TrackableTrait.
-     *
-     * @var Model
-     */
-    public $owner;
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -47,12 +41,12 @@ class Reference
     public $link;
 
     /**
-     * Definition of the destination model, that can be either an object, a
+     * Definition of the destination their model, that can be either an object, a
      * callback or a string. This can be defined during initialization and
      * then used inside getModel() to fully populate and associate with
      * persistence.
      *
-     * @var Model|null
+     * @var Model|string|array
      */
     public $model;
 
@@ -62,7 +56,7 @@ class Reference
      *
      * @var string
      */
-    protected $our_field = null;
+    protected $our_field;
 
     /**
      * This is an optional property which can be used by your implementation
@@ -70,7 +64,15 @@ class Reference
      *
      * @var string
      */
-    protected $their_field = null;
+    protected $their_field;
+
+    /**
+     * Caption of the reeferenced model. Can be used in UI components, for example.
+     * Should be in plain English and ready for proper localization.
+     *
+     * @var string
+     */
+    public $caption;
 
     /**
      * Default constructor. Will copy argument into properties.
@@ -85,148 +87,156 @@ class Reference
     /**
      * Initialization.
      */
-    public function init()
+    protected function init(): void
     {
         $this->_init();
+
+        $this->initTableAlias();
     }
 
     /**
      * Will use #ref_<link>.
-     *
-     * @return string
      */
-    public function getDesiredName()
+    public function getDesiredName(): string
     {
-        return '#ref_'.$this->link;
+        return '#ref_' . $this->link;
+    }
+
+    public function getOurModel(): Model
+    {
+        return $this->owner;
+    }
+
+    /**
+     * @deprecated use getTheirModel instead - will be removed in dec-2020
+     */
+    public function getModel(array $defaults = []): Model
+    {
+        'trigger_error'('Method Reference::getModel is deprecated. Use Reference::getTheirModel instead', E_USER_DEPRECATED);
+
+        return $this->getTheirModel($defaults);
     }
 
     /**
      * Returns destination model that is linked through this reference. Will apply
      * necessary conditions.
-     *
-     * @param array $defaults Properties
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
-    public function getModel($defaults = []) : Model
+    public function getTheirModel(array $defaults = []): Model
     {
         // set table_alias
-        if (!isset($defaults['table_alias'])) {
-            if (!$this->table_alias) {
-                $this->table_alias = $this->link;
-                $this->table_alias = preg_replace('/_'.($this->owner->id_field ?: 'id').'/', '', $this->table_alias);
-                $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
-                if (isset($this->owner->table_alias)) {
-                    $this->table_alias = $this->owner->table_alias.'_'.$this->table_alias;
-                }
-            }
-            $defaults['table_alias'] = $this->table_alias;
-        }
+        $defaults['table_alias'] = $defaults['table_alias'] ?? $this->table_alias;
 
-        // if model is Closure, then call it and return model
-        if (is_object($this->model) && $this->model instanceof \Closure) {
-            $c = ($this->model)($this->owner, $this, $defaults);
-
-            return $this->addToPersistence($c, $defaults);
-        }
-
-        // if model is set, then return clone of this model
         if (is_object($this->model)) {
-            $c = clone $this->model;
+            if ($this->model instanceof \Closure) {
+                // if model is Closure, then call the closure and whci should return a model
+                $theirModel = ($this->model)($this->getOurModel(), $this, $defaults);
+            } else {
+                // if model is set, then use clone of this model
+                $theirModel = clone $this->model;
+            }
 
-            return $this->addToPersistence($c, $defaults);
+            return $this->addToPersistence($theirModel, $defaults);
         }
 
-        // last effort - try to add model
+        // add model from seed
         if (is_array($this->model)) {
-            $model = $this->model[0];
-            $md = $this->model;
-            unset($md[0]);
+            $modelDefaults = $this->model;
+            $theirModelSeed = [$modelDefaults[0]];
 
-            $defaults = array_merge($md, $defaults);
+            unset($modelDefaults[0]);
+
+            $defaults = array_merge($modelDefaults, $defaults);
         } else {
-            $model = $this->model;
+            $theirModelSeed = [$this->model];
         }
 
-        if (!$model instanceof Model) {
-            $model = $this->factory($model, $defaults);
-        }
+        $theirModel = $this->factory($theirModelSeed, $defaults);
 
-        return $this->addToPersistence($model, $defaults);
+        return $this->addToPersistence($theirModel, $defaults);
+    }
+
+    protected function getOurField(): Field
+    {
+        return $this->getOurModel()->getField($this->getOurFieldName());
+    }
+
+    protected function getOurFieldName(): string
+    {
+        return $this->our_field ?: $this->getOurModel()->id_field;
+    }
+
+    protected function getOurFieldValue()
+    {
+        return $this->getOurField()->get();
+    }
+
+    protected function initTableAlias(): void
+    {
+        if (!$this->table_alias) {
+            $ourModel = $this->getOurModel();
+
+            $this->table_alias = $this->link;
+            $this->table_alias = preg_replace('/_' . ($ourModel->id_field ?: 'id') . '/', '', $this->table_alias);
+            $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
+            if (isset($ourModel->table_alias)) {
+                $this->table_alias = $ourModel->table_alias . '_' . $this->table_alias;
+            }
+        }
     }
 
     /**
      * Adds model to persistence.
-     *
-     * @param Model $model
-     * @param array $defaults
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
-    protected function addToPersistence($model, $defaults = []) : Model
+    protected function addToPersistence(Model $theirModel, array $defaults = []): Model
     {
-        if (!$model->persistence && $p = $this->getDefaultPersistence($model)) {
-            $p->add($model, $defaults);
+        if (!$theirModel->persistence && $persistence = $this->getDefaultPersistence($theirModel)) {
+            $persistence->add($theirModel, $defaults);
         }
 
-        return $model;
+        // set model caption
+        if ($this->caption !== null) {
+            $theirModel->caption = $this->caption;
+        }
+
+        return $theirModel;
     }
 
     /**
-     * Returns default persistence.
-     *
-     * @param Model $model Referenced model
+     * Returns default persistence for theirModel.
      *
      * @return Persistence|false
      */
-    protected function getDefaultPersistence($model)
+    protected function getDefaultPersistence(Model $theirModel)
     {
-        $m = $this->owner;
+        $ourModel = $this->getOurModel();
 
         // this will be useful for containsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
         // from Array persistence used in containsOne model
-        if ($m->contained_in_root_model && $m->contained_in_root_model->persistence) {
-            return $m->contained_in_root_model->persistence;
+        if ($ourModel->contained_in_root_model && $ourModel->contained_in_root_model->persistence) {
+            return $ourModel->contained_in_root_model->persistence;
         }
 
-        return $m->persistence ?: false;
+        return $ourModel->persistence ?: false;
     }
 
     /**
      * Returns referenced model without any extra conditions. However other
      * relationship types may override this to imply conditions.
-     *
-     * @param array $defaults Properties
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
-    public function ref($defaults = []) : Model
+    public function ref(array $defaults = []): Model
     {
-        return $this->getModel($defaults);
+        return $this->getTheirModel($defaults);
     }
 
     /**
      * Returns referenced model without any extra conditions. Ever when extended
      * must always respond with Model that does not look into current record
      * or scope.
-     *
-     * @param array $defaults Properties
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Model
      */
-    public function refModel($defaults = []) : Model
+    public function refModel(array $defaults = []): Model
     {
-        return $this->getModel($defaults);
+        return $this->getTheirModel($defaults);
     }
 
     // {{{ Debug Methods
@@ -238,16 +248,14 @@ class Reference
 
     /**
      * Returns array with useful debug info for var_dump.
-     *
-     * @return array
      */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
         $arr = [];
         foreach ($this->__debug_fields as $k => $v) {
             $k = is_numeric($k) ? $v : $k;
-            if (isset($this->$v)) {
-                $arr[$k] = $this->$v;
+            if (isset($this->{$v})) {
+                $arr[$k] = $this->{$v};
             }
         }
 

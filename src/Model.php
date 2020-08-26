@@ -1,26 +1,25 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+declare(strict_types=1);
 
 namespace atk4\data;
 
-use ArrayAccess;
-use atk4\core\AppScopeTrait;
 use atk4\core\CollectionTrait;
 use atk4\core\ContainerTrait;
-use atk4\core\DIContainerTrait;
+use atk4\core\DiContainerTrait;
 use atk4\core\DynamicMethodTrait;
 use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
-use atk4\core\NameTrait;
+use atk4\core\ReadableCaptionTrait;
 use atk4\dsql\Query;
-use IteratorAggregate;
 
 /**
  * Data model class.
+ *
+ * @property Field[]|Reference[] $elements
  */
-class Model implements ArrayAccess, IteratorAggregate
+class Model implements \IteratorAggregate
 {
     use ContainerTrait {
         add as _add;
@@ -30,11 +29,50 @@ class Model implements ArrayAccess, IteratorAggregate
     use InitializerTrait {
         init as _init;
     }
-    use NameTrait;
-    use DIContainerTrait;
+    use DiContainerTrait;
     use FactoryTrait;
-    use AppScopeTrait;
     use CollectionTrait;
+    use ReadableCaptionTrait;
+    use Model\ReferencesTrait;
+    use Model\JoinsTrait;
+    use Model\UserActionsTrait;
+
+    /** @const string */
+    public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
+    /** @const string */
+    public const HOOK_AFTER_LOAD = self::class . '@afterLoad';
+    /** @const string */
+    public const HOOK_BEFORE_UNLOAD = self::class . '@beforeUnload';
+    /** @const string */
+    public const HOOK_AFTER_UNLOAD = self::class . '@afterUnload';
+
+    /** @const string */
+    public const HOOK_BEFORE_INSERT = self::class . '@beforeInsert';
+    /** @const string */
+    public const HOOK_AFTER_INSERT = self::class . '@afterInsert';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE = self::class . '@beforeUpdate';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE = self::class . '@afterUpdate';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE = self::class . '@beforeDelete';
+    /** @const string */
+    public const HOOK_AFTER_DELETE = self::class . '@afterDelete';
+
+    /** @const string */
+    public const HOOK_BEFORE_SAVE = self::class . '@beforeSave';
+    /** @const string */
+    public const HOOK_AFTER_SAVE = self::class . '@afterSave';
+
+    /** @const string Executed when execution of self::atomic() failed. */
+    public const HOOK_ROLLBACK = self::class . '@rollback';
+
+    /** @const string Executed for every field set using self::set() method. */
+    public const HOOK_NORMALIZE = self::class . '@normalize';
+    /** @const string Executed when self::validate() method is called. */
+    public const HOOK_VALIDATE = self::class . '@validate';
+    /** @const string Executed when self::onlyFields() method is called. */
+    public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
     // {{{ Properties of the class
 
@@ -42,78 +80,24 @@ class Model implements ArrayAccess, IteratorAggregate
      * The class used by addField() method.
      *
      * @todo use Field::class here and refactor addField() method to not use namespace prefixes.
-     *       but because that's backward incomatible change, then we can do that only in next
+     *       but because that's backward incompatible change, then we can do that only in next
      *       major version.
      *
      * @var string|array
      */
-    public $_default_seed_addField = Field::class;
+    public $_default_seed_addField = [Field::class];
 
     /**
      * The class used by addField() method.
      *
      * @var string|array
      */
-    public $_default_seed_addExpression = Field\Callback::class;
-
-    /**
-     * The class used by addRef() method.
-     *
-     * @var string|array
-     */
-    public $_default_seed_addRef = Reference::class;
-
-    /**
-     * The class used by hasOne() method.
-     *
-     * @var string|array
-     */
-    public $_default_seed_hasOne = Reference\HasOne::class;
-
-    /**
-     * The class used by hasMany() method.
-     *
-     * @var string|array
-     */
-    public $_default_seed_hasMany = Reference\HasMany::class;
-
-    /**
-     * The class used by containsOne() method.
-     *
-     * @var string|array
-     */
-    public $_default_seed_containsOne = Reference\ContainsOne::class;
-
-    /**
-     * The class used by containsMany() method.
-     *
-     * @var string
-     */
-    public $_default_seed_containsMany = Reference\ContainsMany::class;
-
-    /**
-     * The class used by join() method.
-     *
-     * @var string|array
-     */
-    public $_default_seed_join = Join::class;
-
-    /**
-     * Default class for addAction().
-     *
-     * @var string|array
-     */
-    public $_default_seed_action = UserAction\Generic::class;
+    public $_default_seed_addExpression = [Field\Callback::class];
 
     /**
      * @var array Collection containing Field Objects - using key as the field system name
      */
     protected $fields = [];
-
-    /**
-     * @var array Collection of actions - using key as action system name
-     */
-    protected $actions = [];
 
     /**
      * Contains name of table, session key, collection or file where this
@@ -127,28 +111,28 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @var string|array
      */
-    public $table = null;
+    public $table;
 
     /**
      * Use alias for $table.
      *
      * @var string
      */
-    public $table_alias = null;
+    public $table_alias;
 
     /**
      * Sequence name. Some DB engines use sequence for generating auto_increment IDs.
      *
      * @var string
      */
-    public $sequence = null;
+    public $sequence;
 
     /**
      * Persistence driver inherited from atk4\data\Persistence.
      *
-     * @var Persistence
+     * @var Persistence|Persistence\Sql
      */
-    public $persistence = null;
+    public $persistence;
 
     /**
      * Persistence store some custom information in here that may be useful
@@ -158,15 +142,8 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public $persistence_data = [];
 
-    /**
-     * Conditions list several conditions that must be met by all the
-     * records in the associated DataSet. Conditions are stored as
-     * elements of array of 1 to 3. Use addCondition() to add new
-     * conditions.
-     *
-     * @var array
-     */
-    public $conditions = [];
+    /** @var Model\Scope\RootScope */
+    protected $scope;
 
     /**
      * Array of limit set.
@@ -181,6 +158,13 @@ class Model implements ArrayAccess, IteratorAggregate
      * @var array
      */
     public $order = [];
+
+    /**
+     * Array of WITH cursors set.
+     *
+     * @var array
+     */
+    public $with = [];
 
     /**
      * Currently loaded record data. This record is associative array
@@ -216,6 +200,8 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * SECURITY WARNING: If you are looking for a RELIABLE way to restrict access
      * to model data, please check Secure Enclave extension.
+     *
+     * @var bool
      */
     public $read_only = false;
 
@@ -225,7 +211,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @var mixed
      */
-    public $id = null;
+    public $id;
 
     /**
      * While in most cases your id field will be called 'id', sometimes
@@ -237,12 +223,8 @@ class Model implements ArrayAccess, IteratorAggregate
     public $id_field = 'id';
 
     /**
-     * Title field has a special meaning in various situations and framework
-     * provides various shortcuts for this field. Although it's not important
-     * to set this property to an existing fields, it would enable several
-     * shortcuts for you such as::.
-     *
-     *    $model->import(['Bananas','Oranges']); // 2 records imported
+     * Title field is used typically by UI components for a simple human
+     * readable row title/description.
      *
      * @var string
      */
@@ -250,11 +232,11 @@ class Model implements ArrayAccess, IteratorAggregate
 
     /**
      * Caption of the model. Can be used in UI components, for example.
-     * Should be iun plain English and ready for proper localization.
+     * Should be in plain English and ready for proper localization.
      *
      * @var string
      */
-    public $caption = null;
+    public $caption;
 
     /**
      * When using onlyFields() this property will contain list of desired
@@ -273,19 +255,6 @@ class Model implements ArrayAccess, IteratorAggregate
      * @var false|array
      */
     public $only_fields = false;
-
-    /**
-     * When set to true, you can only change the fields inside a model,
-     * that was properly declared. This helps you avoid mistake by
-     * accessing or changing the field that does not exist.
-     *
-     * In some situations you want to set field value and then declare
-     * it later, then set $strict_field_check = false, but it's not
-     * recommended.
-     *
-     * @var bool
-     */
-    protected $strict_field_check = true;
 
     /**
      * When set to true, all the field types will be enforced and
@@ -316,7 +285,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @var bool|null
      */
-    public $reload_after_save = null;
+    public $reload_after_save;
 
     /**
      * If this model is "contained into" another model by using containsOne
@@ -325,7 +294,7 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @var Model|null
      */
-    public $contained_in_root_model = null;
+    public $contained_in_root_model;
 
     // }}}
 
@@ -347,12 +316,14 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @param Persistence|array $persistence
      * @param string|array      $defaults
-     *
-     * @throws Exception
      */
     public function __construct($persistence = null, $defaults = [])
     {
-        if (is_string($persistence) || is_array($persistence)) {
+        $this->scope = \Closure::bind(function () {
+            return new Model\Scope\RootScope();
+        }, null, Model\Scope\RootScope::class)();
+
+        if ((is_string($persistence) || is_array($persistence)) && func_num_args() === 1) {
             $defaults = $persistence;
             $persistence = null;
         }
@@ -378,23 +349,64 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function __clone()
     {
+        $this->scope = (clone $this->scope)->setModel($this);
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
-        $this->_cloneCollection('actions');
+        $this->_cloneCollection('userActions');
     }
 
     /**
      * Extend this method to define fields of your choice.
      */
-    public function init()
+    protected function init(): void
     {
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, [
-                'system' => true,
-            ]);
+            $this->addField($this->id_field, ['system' => true]);
+        } else {
+            return; // don't declare actions for model without id_field
         }
+
+        if ($this->read_only) {
+            return; // don't declare action for read-only model
+        }
+
+        // Declare our basic Crud actions for the model.
+        $this->addUserAction('add', [
+            'fields' => true,
+            'modifier' => Model\UserAction::MODIFIER_CREATE,
+            'appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS,
+            'callback' => 'save',
+            'description' => 'Add ' . $this->getModelCaption(),
+            'ui' => ['icon' => 'plus'],
+        ]);
+
+        $this->addUserAction('edit', [
+            'fields' => true,
+            'modifier' => Model\UserAction::MODIFIER_UPDATE,
+            'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
+            'callback' => 'save',
+            'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'edit']], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
+        ]);
+
+        $this->addUserAction('delete', [
+            'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
+            'modifier' => Model\UserAction::MODIFIER_DELETE,
+            'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'red trash']], 'confirm' => 'Are you sure?'],
+            'callback' => function ($model) {
+                return $model->delete();
+            },
+        ]);
+
+        $this->addUserAction('validate', [
+            //'appliesTo'=> any!
+            'description' => 'Provided with modified values will validate them but will not save',
+            'modifier' => Model\UserAction::MODIFIER_READ,
+            'fields' => true,
+            'system' => true, // don't show by default
+            'args' => ['intent' => 'string'],
+        ]);
     }
 
     /**
@@ -407,16 +419,14 @@ class Model implements ArrayAccess, IteratorAggregate
      * Always use
      *   return array_merge(parent::validate($intent), $errors);
      *
-     * @param string $intent By default only 'save' is used (from beforeSave) but you can use other intents yourself.
+     * @param string $intent by default only 'save' is used (from beforeSave) but you can use other intents yourself
      *
-     * @throws \atk4\core\Exception
-     *
-     * @return array ['field'=> err_spec]
+     * @return array [field => err_spec]
      */
-    public function validate($intent = null)
+    public function validate(string $intent = null): array
     {
         $errors = [];
-        foreach ($this->hook('validate', [$intent]) as $handler_error) {
+        foreach ($this->hook(self::HOOK_VALIDATE, [$intent]) as $handler_error) {
             if ($handler_error) {
                 $errors = array_merge($errors, $handler_error);
             }
@@ -426,29 +436,23 @@ class Model implements ArrayAccess, IteratorAggregate
     }
 
     /**
-     * TEMPORARY to spot any use of $model->add(new Field(), 'bleh'); form.
+     * TEMPORARY to spot any use of $model->add(new Field(), ['bleh']); form.
      */
-    public function add($obj, $args = [])
+    public function add(object $obj, array $defaults = []): object
     {
-        $obj = $this->_add($obj, $args);
         if ($obj instanceof Field) {
-            throw new Exception(['You should always use addField() for adding fields, not add()']);
+            throw new Exception('You should always use addField() for adding fields, not add()');
         }
 
-        return $obj;
+        return $this->_add($obj, $defaults);
     }
 
     /**
      * Adds new field into model.
      *
-     * @param string       $name
      * @param array|object $seed
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Field
      */
-    public function addField($name, $seed = [])
+    public function addField(string $name, $seed = []): Field
     {
         if (is_object($seed)) {
             $field = $seed;
@@ -461,55 +465,48 @@ class Model implements ArrayAccess, IteratorAggregate
 
     /**
      * Given a field seed, return a field object.
-     *
-     * @param array $seed
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Field
      */
-    public function fieldFactory($seed = [])
+    public function fieldFactory(array $seed = null): Field
     {
         $seed = $this->mergeSeeds(
             $seed,
             isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
-            [Field::class]
+            $this->_default_seed_addField
         );
 
-        /** @var Field $field */
-        $field = $this->factory($seed, null, '\atk4\data\Field');
-
-        return $field;
+        return Field::fromSeed($seed);
     }
 
     protected $typeToFieldSeed = [
-        'boolean' => ['Boolean'],
+        'boolean' => [Field\Boolean::class],
     ];
 
     /**
      * Adds multiple fields into model.
      *
-     * @param array $fields
-     * @param array $defaults
-     *
-     * @throws \atk4\core\Exception
-     *
      * @return $this
      */
-    public function addFields($fields = [], $defaults = [])
+    public function addFields(array $fields, array $defaults = [])
     {
-        foreach ($fields as $field) {
-            if (is_string($field)) {
-                $this->addField($field, $defaults);
+        foreach ($fields as $key => $field) {
+            if (!is_int($key)) {
+                // field name can be passed as array key
+                $name = $key;
+            } elseif (is_string($field)) {
+                // or it can be simple string = field name
+                $name = $field;
+                $field = [];
+            } elseif (is_array($field) && is_string($field[0] ?? null)) {
+                // or field name can be passed as first element of seed array (old behaviour)
+                $name = array_shift($field);
+            } else {
+                // some unsupported format, maybe throw exception here?
                 continue;
             }
 
-            if (is_array($field) && isset($field[0])) {
-                $name = $field[0];
-                unset($field[0]);
-                $this->addField($name, $field);
-                continue;
-            }
+            $seed = array_merge($defaults, (array) $field);
+
+            $this->addField($name, $seed);
         }
 
         return $this;
@@ -518,63 +515,41 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Remove field that was added previously.
      *
-     * @param string $name
-     *
-     * @throws \atk4\core\Exception
-     *
      * @return $this
      */
     public function removeField(string $name)
     {
+        $this->getField($name); // better exception if field does not exist
+
         $this->_removeFromCollection($name, 'fields');
 
         return $this;
     }
 
-    /**
-     * Finds a field with a corresponding name. Returns false if field not found. Similar
-     * to hasElement() but with extra checks to make sure it's certainly a field you are
-     * getting.
-     *
-     * @param string $name
-     *
-     * @return Field|false
-     */
-    public function hasField(string $name)
+    public function hasField(string $name): bool
     {
         return $this->_hasInCollection($name, 'fields');
     }
 
-    /**
-     * Same as hasField, but will throw exception if field not found.
-     * Similar to getElement().
-     *
-     * @param string $name
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Field
-     */
-    public function getField(string $name)
+    public function getField(string $name): Field
     {
-        /** @var Field $field */
-        $field = $this->_getFromCollection($name, 'fields');
-
-        return $field;
+        try {
+            return $this->_getFromCollection($name, 'fields');
+        } catch (\atk4\core\Exception $e) {
+            throw (new Exception('Field is not defined in model', 0, $e))
+                ->addMoreInfo('model', $this)
+                ->addMoreInfo('field', $name);
+        }
     }
 
     /**
      * Sets which fields we will select.
      *
-     * @param array $fields
-     *
-     * @throws \atk4\core\Exception
-     *
      * @return $this
      */
-    public function onlyFields($fields = [])
+    public function onlyFields(array $fields = [])
     {
-        $this->hook('onlyFields', [&$fields]);
+        $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
         $this->only_fields = $fields;
 
         return $this;
@@ -592,144 +567,84 @@ class Model implements ArrayAccess, IteratorAggregate
         return $this;
     }
 
-    /**
-     * Normalize field name.
-     *
-     * @param mixed $field
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return string
-     */
-    private function normalizeFieldName($field)
+    private function checkOnlyFieldsField(string $field)
     {
-        if (
-            is_object($field)
-            && isset($field->_trackableTrait)
-            && $field->owner === $this
-        ) {
-            $field = $field->short_name;
-        }
-
-        if (!is_string($field) || $field === '' || is_numeric($field[0])) {
-            throw new Exception([
-                'Incorrect specification of field name',
-                'arg' => $field,
-            ]);
-        }
+        $this->getField($field); // test if field exists
 
         if ($this->only_fields) {
-            if (!in_array($field, $this->only_fields) && !$this->getField($field)->system) {
-                throw new Exception([
-                    'Attempt to use field outside of those set by onlyFields',
-                    'field'       => $field,
-                    'only_fields' => $this->only_fields,
-                ]);
+            if (!in_array($field, $this->only_fields, true) && !$this->getField($field)->system) {
+                throw (new Exception('Attempt to use field outside of those set by onlyFields'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('only_fields', $this->only_fields);
             }
         }
-
-        if ($this->strict_field_check && !$this->hasField($field)) {
-            throw new Exception([
-                'Field is not defined inside a Model',
-                'field'       => $field,
-                'model'       => $this,
-            ]);
-        }
-
-        return $field;
     }
 
     /**
-     * Will return true if any of the specified fields are dirty.
-     *
-     * @param string|array $field
-     *
-     * @return bool
+     * Will return true if specified field is dirty.
      */
-    public function isDirty($fields = [])
+    public function isDirty(string $field): bool
     {
-        if (!is_array($fields)) {
-            $fields = [$fields];
-        }
+        $this->checkOnlyFieldsField($field);
 
-        foreach ($fields as $field) {
-            $field = $this->normalizeFieldName($field);
-
-            if (array_key_exists($field, $this->dirty)) {
-                return true;
-            }
+        if (array_key_exists($field, $this->dirty)) {
+            return true;
         }
 
         return false;
     }
 
     /**
-     * @param string|null $filter
+     * @param string|array|null $filter
      *
-     * @return array
+     * @return Field[]
      */
-    public function getFields(string $filter = null)
+    public function getFields($filter = null): array
     {
-        if (!$filter) {
+        if ($filter === null) {
             return $this->fields;
+        } elseif (is_string($filter)) {
+            $filter = [$filter];
         }
 
         return array_filter($this->fields, function (Field $field, $name) use ($filter) {
-
             // do not return fields outside of "only_fields" scope
-            if ($this->only_fields && !in_array($name, $this->only_fields)) {
+            if ($this->only_fields && !in_array($name, $this->only_fields, true)) {
                 return false;
             }
-
-            switch ($filter) {
-                case 'system': return $field->system;
-                case 'not system': return !$field->system;
-                case 'editable': return $field->isEditable();
-                case 'visible': return $field->isVisible();
-                default:
-                    throw new Exception(['Filter is not supported', 'filter'=>$filter]);
+            foreach ($filter as $f) {
+                if (
+                    ($f === 'system' && $field->system)
+                    || ($f === 'not system' && !$field->system)
+                    || ($f === 'editable' && $field->isEditable())
+                    || ($f === 'visible' && $field->isVisible())
+                ) {
+                    return true;
+                } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'], true)) {
+                    throw (new Exception('Filter is not supported'))
+                        ->addMoreInfo('filter', $f);
+                }
             }
+
+            return false;
         }, ARRAY_FILTER_USE_BOTH);
     }
 
     /**
      * Set field value.
      *
-     * @param string|array|Model $field
-     * @param mixed              $value
+     * @param mixed $value
      *
      * @return $this
      */
-    public function set($field, $value = null)
+    public function set(string $field, $value)
     {
-        if (func_num_args() == 1) {
-            if (is_array($field)) {
-                foreach ($field as $key => $value) {
-                    if ($key === '0' || $key === 0) {
-                        $this->set($value);
-                    } else {
-                        $this->set($key, $value);
-                    }
-                }
+        $this->checkOnlyFieldsField($field);
 
-                return $this;
-            } elseif ($field instanceof self) {
-                $this->data = $field->data;
-                //$this->id = $field->id;
-
-                return $this;
-            } else {
-                $value = $field;
-                $field = $this->title_field;
-            }
-        }
-
-        $field = $this->normalizeFieldName($field);
-
-        $f = $this->hasField($field);
+        $f = $this->getField($field);
 
         try {
-            if ($f && $this->hook('normalize', [$f, $value]) !== false) {
+            if ($this->hook(self::HOOK_NORMALIZE, [$f, $value]) !== false) {
                 $value = $f->normalize($value);
             }
         } catch (Exception $e) {
@@ -740,10 +655,7 @@ class Model implements ArrayAccess, IteratorAggregate
             throw $e;
         }
 
-        $default_value = $f ? $f->default : null;
-
-        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] :
-            ((isset($f) && isset($f->default)) ? $f->default : null);
+        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] : $f->default;
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
@@ -752,55 +664,45 @@ class Model implements ArrayAccess, IteratorAggregate
             return $this;
         }
 
-        if ($f) {
-            // perform bunch of standard validation here. This can be re-factored in the future.
-            if ($f->read_only) {
-                throw new Exception([
-                    'Attempting to change read-only field',
-                    'field' => $field,
-                    'model' => $this,
-                ]);
-            }
+        // perform bunch of standard validation here. This can be re-factored in the future.
+        if ($f->read_only) {
+            throw (new Exception('Attempting to change read-only field'))
+                ->addMoreInfo('field', $field)
+                ->addMoreInfo('model', $this);
+        }
 
-            // enum property support
-            if (isset($f->enum) && $f->enum && $f->type != 'boolean') {
-                if ($value === '') {
-                    $value = null;
-                }
-                if ($value !== null && !in_array($value, $f->enum, true)) {
-                    throw new Exception([
-                        'This is not one of the allowed values for the field',
-                        'field' => $field,
-                        'model' => $this,
-                        'value' => $value,
-                        'enum'  => $f->enum,
-                    ]);
-                }
+        // enum property support
+        if (isset($f->enum) && $f->enum && $f->type !== 'boolean') {
+            if ($value === '') {
+                $value = null;
             }
+            if ($value !== null && !in_array($value, $f->enum, true)) {
+                throw (new Exception('This is not one of the allowed values for the field'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('model', $this)
+                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('enum', $f->enum);
+            }
+        }
 
-            // values property support
-            if ($f->values) {
-                if ($value === '') {
-                    $value = null;
-                } elseif ($value === null) {
-                    // all is good
-                } elseif (!is_string($value) && !is_int($value)) {
-                    throw new Exception([
-                        'Field can be only one of pre-defined value, so only "string" and "int" keys are supported',
-                        'field' => $field,
-                        'model' => $this,
-                        'value' => $value,
-                        'values'=> $f->values,
-                    ]);
-                } elseif (!array_key_exists($value, $f->values)) {
-                    throw new Exception([
-                        'This is not one of the allowed values for the field',
-                        'field'   => $field,
-                        'model'   => $this,
-                        'value'   => $value,
-                        'values'  => $f->values,
-                    ]);
-                }
+        // values property support
+        if ($f->values) {
+            if ($value === '') {
+                $value = null;
+            } elseif ($value === null) {
+                // all is good
+            } elseif (!is_string($value) && !is_int($value)) {
+                throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('model', $this)
+                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('values', $f->values);
+            } elseif (!array_key_exists($value, $f->values)) {
+                throw (new Exception('This is not one of the allowed values for the field'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('model', $this)
+                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('values', $f->values);
             }
         }
 
@@ -809,11 +711,44 @@ class Model implements ArrayAccess, IteratorAggregate
         )) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
-            $this->dirty[$field] =
-                array_key_exists($field, $this->data) ?
-                $this->data[$field] : $default_value;
+            $this->dirty[$field] = array_key_exists($field, $this->data) ? $this->data[$field] : $f->default;
         }
         $this->data[$field] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Unset field value even if null value is not allowed.
+     *
+     * @return $this
+     */
+    public function setNull(string $field)
+    {
+        // set temporary hook to disable any normalization (null validation)
+        $hookIndex = $this->onHook(self::HOOK_NORMALIZE, function () {
+            throw new \atk4\core\HookBreaker(false);
+        }, [], PHP_INT_MIN);
+
+        try {
+            return $this->set($field, null);
+        } finally {
+            $this->removeHook(self::HOOK_NORMALIZE, $hookIndex, true);
+        }
+    }
+
+    /**
+     * Helper method to call self::set() for each input array element.
+     *
+     * This method does not revert the data when an exception is thrown.
+     *
+     * @return $this
+     */
+    public function setMulti(array $fields)
+    {
+        foreach ($fields as $field => $value) {
+            $this->set($field, $value);
+        }
 
         return $this;
     }
@@ -822,14 +757,11 @@ class Model implements ArrayAccess, IteratorAggregate
      * Returns field value.
      * If no field is passed, then returns array of all field values.
      *
-     * @param mixed $field
-     *
      * @return mixed
      */
-    public function get($field = null)
+    public function get(string $field = null)
     {
         if ($field === null) {
-
             // Collect list of eligible fields
             $data = [];
             if ($this->only_fields) {
@@ -847,40 +779,28 @@ class Model implements ArrayAccess, IteratorAggregate
             return $data;
         }
 
-        $field = $this->normalizeFieldName($field);
+        $this->checkOnlyFieldsField($field);
 
         if (array_key_exists($field, $this->data)) {
             return $this->data[$field];
         }
 
-        $f = $this->hasField($field);
-
-        return $f ? $f->default : null;
+        return $this->getField($field)->default;
     }
 
     /**
      * Return (possibly localized) $model->caption.
-     *
-     * @return string
+     * If caption is not set, then generate it from model class name.
      */
-    public function getModelCaption()
+    public function getModelCaption(): string
     {
-        if ($this->caption) {
-            return $this->caption;
-        }
-
-        // if caption is not set, then generate it from model class name
-        $s = strtolower(get_class($this));
-        //$s = str_replace('model', '', $s);
-        $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
-        $s = array_map('trim', $s);
-        $s = ucwords(implode(' ', $s));
-
-        return $s;
+        return $this->caption ?: $this->readableCaption(
+            strpos(static::class, 'class@anonymous') === 0 ? get_parent_class(static::class) : static::class
+        );
     }
 
     /**
-     * Return value of $model[$model->title_field]. If not set, returns id value.
+     * Return value of $model->get($model->title_field). If not set, returns id value.
      *
      * @return mixed
      */
@@ -889,196 +809,61 @@ class Model implements ArrayAccess, IteratorAggregate
         if (!$this->title_field) {
             return $this->id;
         }
-        $f = $this->hasField($this->title_field);
 
-        return $f ? $f->get() : $this->id;
+        return $this->hasField($this->title_field) ? $this->getField($this->title_field)->get() : $this->id;
     }
 
     /**
-     * You can compare new value of the field with existing one without
-     * retrieving. In the trivial case it's same as ($value == $model[$name])
-     * but this method can be used for:.
-     *
+     * Returns array of model record titles [id => title].
+     */
+    public function getTitles(): array
+    {
+        $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
+
+        return array_map(function ($row) use ($field) {
+            return $row[$field];
+        }, $this->export([$field], $this->id_field));
+    }
+
+    /**
+     * Compare new value of the field with existing one without retrieving.
+     * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
      *  - comparing values that can't be received - passwords, encrypted data
      *  - comparing images
-     *  - if get() is expensive (e.g. retrieve object)
+     *  - if get() is expensive (e.g. retrieve object).
      *
-     * @param string $name
-     * @param mixed  $value
-     *
-     * @return bool true if $value matches saved one
+     * @param mixed $value
      */
-    public function compare($name, $value)
+    public function compare(string $name, $value): bool
     {
         return $this->getField($name)->compare($value);
     }
 
     /**
+     * Does field exist?
+     */
+    public function _isset(string $name): bool
+    {
+        $this->checkOnlyFieldsField($name);
+
+        return array_key_exists($name, $this->dirty);
+    }
+
+    /**
      * Remove current field value and use default.
-     *
-     * @param string|array $name
      *
      * @return $this
      */
-    public function _unset($name)
+    public function _unset(string $name)
     {
-        $name = $this->normalizeFieldName($name);
+        $this->checkOnlyFieldsField($name);
+
         if (array_key_exists($name, $this->dirty)) {
             $this->data[$name] = $this->dirty[$name];
             unset($this->dirty[$name]);
         }
 
         return $this;
-    }
-
-    // }}}
-
-    // {{{ ArrayAccess support
-
-    /**
-     * Do field exist?
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function offsetExists($name)
-    {
-        return array_key_exists($this->normalizeFieldName($name), $this->dirty);
-    }
-
-    /**
-     * Returns field value.
-     *
-     * @param string $name
-     *
-     * @return mixed
-     */
-    public function offsetGet($name)
-    {
-        return $this->get($name);
-    }
-
-    /**
-     * Set field value.
-     *
-     * @param string $name
-     * @param mixed  $val
-     */
-    public function offsetSet($name, $val)
-    {
-        $this->set($name, $val);
-    }
-
-    /**
-     * Redo field value.
-     *
-     * @param string $name
-     */
-    public function offsetUnset($name)
-    {
-        $this->_unset($name);
-    }
-
-    // }}}
-
-    // {{{ UserAction support
-
-    /**
-     * Register new user action for this model. By default UI will allow users to trigger actions
-     * from UI.
-     *
-     * @param string         $name     Action name
-     * @param array|callable $defaults
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return UserAction\Generic
-     */
-    public function addAction($name, $defaults = []) : UserAction\Generic
-    {
-        if (is_callable($defaults)) {
-            $defaults = ['callback'=>$defaults];
-        }
-
-        if (!isset($defaults['caption'])) {
-            $s = $name;
-
-            $s = preg_split('/[\\\\_]/', $s, -1, PREG_SPLIT_NO_EMPTY);
-            $s = array_map('trim', $s);
-            $s = ucwords(implode(' ', $s));
-
-            $defaults['caption'] = $s;
-        }
-
-        /** @var UserAction\Generic $action */
-        $action = $this->factory($this->_default_seed_action, $defaults);
-
-        $this->_addIntoCollection($name, $action, 'actions');
-
-        return $action;
-    }
-
-    /**
-     * Returns list of actions for this model. Can filter actions by scope.
-     * It will also skip system actions (where system === true).
-     *
-     * @param int $scope e.g. UserAction::ALL_RECORDS
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return array
-     */
-    public function getActions($scope = null) : array
-    {
-        return array_filter($this->actions, function ($action) use ($scope) {
-            return !$action->system && ($scope === null || $action->scope === $scope);
-        });
-    }
-
-    /**
-     * Finds a user action with a corresponding name. Returns false if action not found. Similar
-     * to hasElement() but with extra checks to make sure it's certainly an action you are
-     * getting.
-     *
-     * @param string $name Action name
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return UserAction\Generic|false
-     */
-    public function hasAction($name)
-    {
-        return $this->_hasInCollection($name, 'actions');
-    }
-
-    /**
-     * Returns one action object of this model. If action not defined, then throws exception.
-     *
-     * @param string $name Action name
-     *
-     * @throws \atk4\core\Exception
-     * @throws Exception
-     *
-     * @return UserAction\Generic
-     */
-    public function getAction($name) : UserAction\Generic
-    {
-        return $this->_getFromCollection($name, 'actions');
-    }
-
-    /**
-     * Execute specified action with specified arguments.
-     *
-     * @param $name
-     * @param $args
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     */
-    public function executeAction($name, ...$args)
-    {
-        $this->getAction($name)->execute(...$args);
     }
 
     // }}}
@@ -1100,12 +885,21 @@ class Model implements ArrayAccess, IteratorAggregate
      *  ->addCondition('my_field', '!=', $value);
      *  ->addCondition('my_field', 'in', [$value1, $value2]);
      *
-     * Second argument could be '=', '>', '<', '>=', '<=', '!=' or 'in'.
+     * Second argument could be '=', '>', '<', '>=', '<=', '!=', 'in', 'like' or 'regexp'.
      * Those conditions are still supported by most of persistence drivers.
      *
      * There are also vendor-specific expression support:
      *  ->addCondition('my_field', $expr);
      *  ->addCondition($expr);
+     *
+     * Conditions on referenced models are also supported:
+     *  $contact->addCondition('company/country', 'US');
+     * where 'company' is the name of the reference
+     * This will limit scope of $contact model to contacts whose company country is set to 'US'
+     *
+     * Using # in conditions on referenced model will apply the condition on the number of records:
+     * $contact->addCondition('tickets/#', '>', 5);
+     * This will limit scope of $contact model to contacts that have more than 5 tickets
      *
      * To use those, you should consult with documentation of your
      * persistence driver.
@@ -1118,50 +912,24 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        if (is_array($field)) {
-            $this->conditions[] = [$field];
+        // legacy OR support before Scope was introduced
+        if (func_num_args() === 1 && is_array($field) && count($field) === 1 && is_array(reset($field))) {
+            $this->scope()->addCondition(Model\Scope\RootScope::createOr(reset($field)));
 
             return $this;
-
-            /*
-            $or = $this->persistence->orExpr();
-
-            foreach ($field as list($field, $operator, $value)) {
-                if (is_string($field)) {
-                    $f = $this->hasField($field);
-                    if (!$f) {
-                        throw new Exception([
-                            'Field does not exist',
-                            'model' => $this,
-                            'field' => $field,
-                        ]);
-                    }
-                } elseif ($field instanceof Field) {
-                    $f = $field;
-                }
-
-                $or->where($f, $operator, $value);
-            }
-
-            return $this;
-            */
         }
 
-        $f = is_string($field) ? $this->getField($field) : ($field instanceof Field ? $field : false);
-        if ($f) {
-            if ($operator === '=' || func_num_args() == 2) {
-                $v = $operator === '=' ? $value : $operator;
-
-                if (!is_object($v) && !is_array($v)) {
-                    $f->system = true;
-                    $f->default = $v;
-                }
-            }
-        }
-
-        $this->conditions[] = func_get_args();
+        $this->scope()->addCondition(...func_get_args());
 
         return $this;
+    }
+
+    /**
+     * Get the scope object of the Model.
+     */
+    public function scope(): Model\Scope\RootScope
+    {
+        return $this->scope->setModel($this);
     }
 
     /**
@@ -1171,65 +939,79 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @return $this
      */
-    public function withID($id)
+    public function withId($id)
     {
         return $this->addCondition($this->id_field, $id);
     }
 
     /**
-     * Set order for model records. Multiple calls.
+     * Adds WITH cursor.
      *
-     * @param mixed     $field
-     * @param bool|null $desc
+     * @param Model $model
      *
      * @return $this
      */
-    public function setOrder($field, $desc = null)
+    public function addWith(self $model, string $alias, array $mapping = [], bool $recursive = false)
     {
-        // fields passed as CSV string
-        if (is_string($field) && strpos($field, ',') !== false) {
-            $field = explode(',', $field);
+        if (isset($this->with[$alias])) {
+            throw (new Exception('With cursor already set with this alias'))
+                ->addMoreInfo('alias', $alias);
         }
 
+        $this->with[$alias] = [
+            'model' => $model,
+            'mapping' => $mapping,
+            'recursive' => $recursive,
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Set order for model records. Multiple calls.
+     *
+     * @param string|array $field
+     * @param string       $direction "asc" or "desc"
+     *
+     * @return $this
+     */
+    public function setOrder($field, string $direction = 'asc')
+    {
         // fields passed as array
         if (is_array($field)) {
-            if (null !== $desc) {
-                throw new Exception([
-                    'If first argument is array, second argument must not be used',
-                    'arg1' => $field,
-                    'arg2' => $desc,
-                ]);
+            if (func_num_args() > 1) {
+                throw (new Exception('If first argument is array, second argument must not be used'))
+                    ->addMoreInfo('arg1', $field)
+                    ->addMoreInfo('arg2', $direction);
             }
 
-            foreach (array_reverse($field) as $key=>$o) {
+            foreach (array_reverse($field) as $key => $direction) {
                 if (is_int($key)) {
-                    if (is_array($o)) {
-                        // format [field,order]
-                        $this->setOrder(...$o);
+                    if (is_array($direction)) {
+                        // format [field, direction]
+                        $this->setOrder(...$direction);
                     } else {
-                        // format "field order"
-                        $this->setOrder($o);
+                        // format "field"
+                        $this->setOrder($direction);
                     }
                 } else {
-                    // format "field"=>order
-                    $this->setOrder($key, $o);
+                    // format "field" => direction
+                    $this->setOrder($key, $direction);
                 }
             }
 
             return $this;
         }
 
-        // extract sort order from field name string
-        if (null === $desc && is_string($field)) {
-            // no realistic workaround in PHP for 2nd argument being null
-            $field = trim($field);
-            if (strpos($field, ' ') !== false) {
-                list($field, $desc) = array_map('trim', explode(' ', $field, 2));
-            }
+        $direction = strtolower($direction);
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            throw (new Exception('Invalid order direction, direction can be only "asc" or "desc"'))
+                ->addMoreInfo('field', $field)
+                ->addMoreInfo('direction', $direction);
         }
 
         // finally set order
-        $this->order[] = [$field, $desc];
+        $this->order[] = [$field, $direction];
 
         return $this;
     }
@@ -1237,12 +1019,9 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Set limit of DataSet.
      *
-     * @param int      $count
-     * @param int|null $offset
-     *
      * @return $this
      */
-    public function setLimit($count, $offset = null)
+    public function setLimit(int $count = null, int $offset = 0)
     {
         $this->limit = [$count, $offset];
 
@@ -1255,10 +1034,8 @@ class Model implements ArrayAccess, IteratorAggregate
 
     /**
      * Is model loaded?
-     *
-     * @return bool
      */
-    public function loaded()
+    public function loaded(): bool
     {
         return $this->id !== null;
     }
@@ -1270,11 +1047,11 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function unload()
     {
-        $this->hook('beforeUnload');
+        $this->hook(self::HOOK_BEFORE_UNLOAD);
         $this->id = null;
         $this->data = [];
         $this->dirty = [];
-        $this->hook('afterUnload');
+        $this->hook(self::HOOK_AFTER_UNLOAD);
 
         return $this;
     }
@@ -1293,23 +1070,23 @@ class Model implements ArrayAccess, IteratorAggregate
         }
 
         if (!$from_persistence) {
-            throw new Exception(['Model is not associated with any database']);
+            throw new Exception('Model is not associated with any database');
         }
 
         if ($this->loaded()) {
             $this->unload();
         }
 
-        if ($this->hook('beforeLoad', [$id]) === false) {
+        if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
             return $this;
         }
 
         $this->data = $from_persistence->load($this, $id);
-        if (null === $this->id) {
+        if ($this->id === null) {
             $this->id = $id;
         }
 
-        $ret = $this->hook('afterLoad');
+        $ret = $this->hook(self::HOOK_AFTER_LOAD);
         if ($ret === false) {
             return $this->unload();
         } elseif (is_object($ret)) {
@@ -1346,7 +1123,7 @@ class Model implements ArrayAccess, IteratorAggregate
         $this->id = null;
 
         if ($this->id_field) {
-            $this[$this->id_field] = $new_id;
+            $this->set($this->id_field, $new_id);
         }
 
         return $this;
@@ -1363,13 +1140,8 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * but will assume that both models are compatible,
      * therefore will not perform any loading.
-     *
-     * @param string|Model $class
-     * @param array        $options
-     *
-     * @return Model
      */
-    public function saveAs($class, $options = [])
+    public function saveAs(string $class, array $options = []): self
     {
         return $this->asModel($class, $options)->save();
     }
@@ -1380,11 +1152,9 @@ class Model implements ArrayAccess, IteratorAggregate
      * Use this instead of save() if you want to squeeze a
      * little more performance out.
      *
-     * @param array $data
-     *
      * @return $this
      */
-    public function saveAndUnload($data = [])
+    public function saveAndUnload(array $data = [])
     {
         $ras = $this->reload_after_save;
         $this->reload_after_save = false;
@@ -1400,21 +1170,15 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * This will cast Model into another class without
      * loosing state of your active record.
-     *
-     * @param string|Model $class
-     * @param array        $options
-     *
-     * @return Model
      */
-    public function asModel($class, $options = [])
+    public function asModel(string $class, array $options = []): self
     {
         $m = $this->newInstance($class, $options);
 
-        foreach ($this->data as $field=> $value) {
+        foreach ($this->data as $field => $value) {
             if ($value !== null && $value !== $this->getField($field)->default) {
-
                 // Copying only non-default value
-                $m[$field] = $value;
+                $m->set($field, $value);
             }
         }
 
@@ -1428,28 +1192,17 @@ class Model implements ArrayAccess, IteratorAggregate
      * Create new model from the same base class
      * as $this.
      *
-     * @param string|Model $class
-     * @param array        $options
-     *
-     * @return Model
+     * @return static
      */
-    public function newInstance($class = null, $options = [])
+    public function newInstance(string $class = null, array $options = [])
     {
-        if ($class === null) {
-            $class = get_class($this);
-        } elseif ($class instanceof self) {
-            $class = get_class($class);
-        }
-
-        if (is_string($class) && $class[0] != '\\') {
-            $class = '\\'.$class;
-        }
+        $model = (self::class)::fromSeed([$class ?? static::class], $options);
 
         if ($this->persistence) {
-            return $this->persistence->add($class, $options);
+            return $this->persistence->add($model);
         }
 
-        return new $class($options);
+        return $model;
     }
 
     /**
@@ -1462,49 +1215,42 @@ class Model implements ArrayAccess, IteratorAggregate
      * is already record like that in the destination
      * persistence.
      *
-     * If you wish to fully copy the data from one
-     * model to another you should use:
+     * See https://github.com/atk4/data/issues/111 for use-case examples.
      *
-     * $m->withPersistence($p2, false)->set($m)->save();
+     * @param mixed $id
      *
-     * See https://github.com/atk4/data/issues/111 for
-     * use-case examples.
-     *
-     * @param Persistence $persistence
-     * @param mixed       $id
-     * @param string      $class
-     *
-     * @return $this
+     * @return static
      */
-    public function withPersistence($persistence, $id = null, string $class = null)
+    public function withPersistence(Persistence $persistence, $id = null, string $class = null)
     {
-        if (!$persistence instanceof Persistence) {
-            throw new Exception([
-                'Please supply valid persistence',
-                'arg' => $persistence,
-            ]);
-        }
+        $class = $class ?? static::class;
 
-        if (!$class) {
-            $class = get_class($this);
-        }
-
-        $m = new $class($persistence);
+        $model = new $class($persistence, $this->table);
 
         if ($this->id_field) {
             if ($id === true) {
-                $m->id = $this->id;
-                $m[$m->id_field] = $this[$this->id_field];
+                $model->id = $this->id;
+                $model->set($model->id_field, $this->get($this->id_field));
             } elseif ($id) {
-                $m->id = null; // record shouldn't exist yet
-                $m[$m->id_field] = $id;
+                $model->id = null; // record shouldn't exist yet
+                $model->set($model->id_field, $id);
             }
         }
 
-        $m->data = $this->data;
-        $m->dirty = $this->dirty;
+        // include any fields defined inline
+        foreach ($this->fields as $fieldName => $field) {
+            if (!$model->hasField($fieldName)) {
+                $model->addField($fieldName, clone $field);
+            }
+        }
 
-        return $m;
+        $model->data = $this->data;
+        $model->dirty = $this->dirty;
+        $model->limit = $this->limit;
+        $model->order = $this->order;
+        $model->scope = (clone $this->scope)->setModel($model);
+
+        return $model;
     }
 
     /**
@@ -1517,13 +1263,7 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function tryLoad($id)
     {
-        if (!$this->persistence) {
-            throw new Exception(['Model is not associated with any database']);
-        }
-
-        if (!$this->persistence->hasMethod('tryLoad')) {
-            throw new Exception('Persistence does not support tryLoad()');
-        }
+        $this->checkPersistence('tryLoad');
 
         if ($this->loaded()) {
             $this->unload();
@@ -1533,7 +1273,7 @@ class Model implements ArrayAccess, IteratorAggregate
         if ($this->data) {
             $this->id = $id;
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
@@ -1553,13 +1293,7 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function loadAny()
     {
-        if (!$this->persistence) {
-            throw new Exception(['Model is not associated with any database']);
-        }
-
-        if (!$this->persistence->hasMethod('loadAny')) {
-            throw new Exception('Persistence does not support loadAny()');
-        }
+        $this->checkPersistence('loadAny');
 
         if ($this->loaded()) {
             $this->unload();
@@ -1571,7 +1305,7 @@ class Model implements ArrayAccess, IteratorAggregate
                 $this->id = $this->data[$this->id_field];
             }
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
@@ -1592,13 +1326,7 @@ class Model implements ArrayAccess, IteratorAggregate
      */
     public function tryLoadAny()
     {
-        if (!$this->persistence) {
-            throw new Exception(['Model is not associated with any database']);
-        }
-
-        if (!$this->persistence->hasMethod('tryLoadAny')) {
-            throw new Exception('Persistence does not support tryLoadAny()');
-        }
+        $this->checkPersistence('tryLoadAny');
 
         if ($this->loaded()) {
             $this->unload();
@@ -1612,7 +1340,7 @@ class Model implements ArrayAccess, IteratorAggregate
                 }
             }
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
@@ -1628,124 +1356,118 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Load record by condition.
      *
-     * @param mixed $field_name
      * @param mixed $value
-     *
-     * @throws \atk4\core\Exception
      *
      * @return $this
      */
-    public function loadBy(string $field_name, $value)
+    public function loadBy(string $fieldName, $value)
     {
-        // store
-        $field = $this->getField($field_name);
-        $system = $field->system;
-        $default = $field->default;
+        $field = $this->getField($fieldName);
 
-        // add condition and load record
-        $this->addCondition($field_name, $value);
+        $scopeBak = $this->scope;
+        $systemBak = $field->system;
+        $defaultBak = $field->default;
 
         try {
-            $this->loadAny();
-        } catch (\Exception $e) {
-            // restore
-            array_pop($this->conditions);
-            $field->system = $system;
-            $field->default = $default;
+            // add condition to cloned scope and try to load record
+            $this->scope = clone $this->scope;
+            $this->addCondition($field, $value);
 
-            throw $e;
+            return $this->loadAny();
+        } finally {
+            $this->scope = $scopeBak;
+            $field->system = $systemBak;
+            $field->default = $defaultBak;
         }
-
-        // restore
-        array_pop($this->conditions);
-        $field->system = $system;
-        $field->default = $default;
-
-        return $this;
     }
 
     /**
      * Try to load record by condition.
      * Will not throw exception if record doesn't exist.
      *
-     * @param string $field_name
-     * @param mixed  $value
-     *
-     * @throws \atk4\core\Exception
+     * @param mixed $value
      *
      * @return $this
      */
-    public function tryLoadBy(string $field_name, $value)
+    public function tryLoadBy(string $fieldName, $value)
     {
-        // store
-        $field_name = $this->getField($field_name);
-        $system = $field_name->system;
-        $default = $field_name->default;
+        $field = $this->getField($fieldName);
 
-        // add condition and try to load record
-        $this->addCondition($field_name, $value);
+        $scopeBak = $this->scope;
+        $systemBak = $field->system;
+        $defaultBak = $field->default;
 
         try {
-            $this->tryLoadAny();
-        } catch (\Exception $e) {
-            // restore
-            array_pop($this->conditions);
-            $field_name->system = $system;
-            $field_name->default = $default;
+            // add condition to cloned scope and try to load record
+            $this->scope = clone $this->scope;
+            $this->addCondition($field, $value);
 
-            throw $e;
+            return $this->tryLoadAny();
+        } finally {
+            $this->scope = $scopeBak;
+            $field->system = $systemBak;
+            $field->default = $defaultBak;
+        }
+    }
+
+    /**
+     * Check if model has persistence with specified method.
+     *
+     * @param string $method
+     */
+    public function checkPersistence(string $method = null)
+    {
+        if (!$this->persistence) {
+            throw new Exception('Model is not associated with any persistence');
         }
 
-        // restore
-        array_pop($this->conditions);
-        $field_name->system = $system;
-        $field_name->default = $default;
-
-        return $this;
+        if ($method && !$this->persistence->hasMethod($method)) {
+            throw new Exception("Persistence does not support {$method} method");
+        }
     }
 
     /**
      * Save record.
      *
-     * @param array $data
-     *
      * @return $this
      */
     public $_dirty_after_reload = [];
 
-    public function save($data = [], Persistence $to_persistence = null)
+    public function save(array $data = [], Persistence $to_persistence = null)
     {
         if (!$to_persistence) {
             $to_persistence = $this->persistence;
         }
 
         if (!$to_persistence) {
-            throw new Exception(['Model is not associated with any database']);
+            throw new Exception('Model is not associated with any database');
         }
 
         if ($this->read_only) {
-            throw new Exception(['Model is read-only and cannot be saved']);
+            throw new Exception('Model is read-only and cannot be saved');
         }
 
-        if ($data) {
-            $this->set($data);
-        }
+        $this->setMulti($data);
 
         return $this->atomic(function () use ($to_persistence) {
             if (($errors = $this->validate('save')) !== []) {
                 throw new ValidationException($errors, $this);
             }
-            if ($this->hook('beforeSave') === false) {
+            $is_update = $this->loaded();
+            if ($this->hook(self::HOOK_BEFORE_SAVE, [$is_update]) === false) {
                 return $this;
             }
 
-            $is_update = $this->loaded();
             if ($is_update) {
                 $data = [];
                 $dirty_join = false;
                 foreach ($this->dirty as $name => $junk) {
-                    $field = $this->hasField($name);
-                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                    if (!$this->hasField($name)) {
+                        continue;
+                    }
+
+                    $field = $this->getField($name);
+                    if ($field->read_only || $field->never_persist || $field->never_save) {
                         continue;
                     }
 
@@ -1766,18 +1488,22 @@ class Model implements ArrayAccess, IteratorAggregate
                     return $this;
                 }
 
-                if ($this->hook('beforeUpdate', [&$data]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_UPDATE, [&$data]) === false) {
                     return $this;
                 }
 
                 $to_persistence->update($this, $this->id, $data);
 
-                $this->hook('afterUpdate', [&$data]);
+                $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             } else {
                 $data = [];
                 foreach ($this->get() as $name => $value) {
-                    $field = $this->hasField($name);
-                    if (!$field || $field->read_only || $field->never_persist || $field->never_save) {
+                    if (!$this->hasField($name)) {
+                        continue;
+                    }
+
+                    $field = $this->getField($name);
+                    if ($field->read_only || $field->never_persist || $field->never_save) {
                         continue;
                     }
 
@@ -1789,7 +1515,7 @@ class Model implements ArrayAccess, IteratorAggregate
                     }
                 }
 
-                if ($this->hook('beforeInsert', [&$data]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_INSERT, [&$data]) === false) {
                     return $this;
                 }
 
@@ -1800,12 +1526,12 @@ class Model implements ArrayAccess, IteratorAggregate
                     // Model inserted without any ID fields. Theoretically
                     // we should ignore $this->id even if it was returned.
                     $this->id = null;
-                    $this->hook('afterInsert', [null]);
+                    $this->hook(self::HOOK_AFTER_INSERT, [null]);
 
                     $this->dirty = [];
                 } elseif ($this->id) {
                     $this->set($this->id_field, $this->id);
-                    $this->hook('afterInsert', [$this->id]);
+                    $this->hook(self::HOOK_AFTER_INSERT, [$this->id]);
 
                     if ($this->reload_after_save !== false) {
                         $d = $this->dirty;
@@ -1817,7 +1543,7 @@ class Model implements ArrayAccess, IteratorAggregate
                 }
             }
 
-            $this->hook('afterSave', [$is_update]);
+            $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
 
             if ($this->loaded()) {
                 $this->dirty = $this->_dirty_after_reload;
@@ -1831,33 +1557,17 @@ class Model implements ArrayAccess, IteratorAggregate
      * This is a temporary method to avoid code duplication, but insert / import should
      * be implemented differently.
      *
-     * @param Model        $m   Model where to insert
-     * @param array|string $row Data row to insert or title field value
+     * @param Model $m Model where to insert
      */
-    protected function _rawInsert($m, $row)
+    protected function _rawInsert(self $m, array $row)
     {
         $m->reload_after_save = false;
         $m->unload();
-
-        if (!is_array($row)) {
-            $row = [$m->title_field => $row];
-        }
 
         // Find any row values that do not correspond to fields, and they may correspond to
         // references instead
         $refs = [];
         foreach ($row as $key => $value) {
-
-            // no field exists
-            if ($field = $this->hasField($key)) {
-
-                // In certain cases, there may be exceptions when providing field values
-                if ($field instanceof Field_SQL_Expression && $field->concat && is_string($value) && $field->aggregate_relation) {
-                    $refs[$field->aggregate_relation->link] = explode($field->concat, $value);
-                    unset($row[$key]);
-                }
-            }
-
             // and we only support array values
             if (!is_array($value)) {
                 continue;
@@ -1892,11 +1602,9 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * Will be further optimized in the future.
      *
-     * @param array|Model $row
-     *
      * @return mixed
      */
-    public function insert($row)
+    public function insert(array $row)
     {
         $m = clone $this;
         $this->_rawInsert($m, $row);
@@ -1910,11 +1618,9 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * Will be further optimized in the future.
      *
-     * @param array|Model $row
-     *
      * @return $this
      */
-    public function import($rows)
+    public function import(array $rows)
     {
         $m = clone $this;
         foreach ($rows as $row) {
@@ -1930,14 +1636,10 @@ class Model implements ArrayAccess, IteratorAggregate
      * @param array|null $fields        Names of fields to export
      * @param string     $key_field     Optional name of field which value we will use as array key
      * @param bool       $typecast_data Should we typecast exported data
-     *
-     * @return array
      */
-    public function export($fields = null, $key_field = null, $typecast_data = true)
+    public function export(array $fields = null, $key_field = null, $typecast_data = true): array
     {
-        if (!$this->persistence->hasMethod('export')) {
-            throw new Exception('Persistence does not support export()');
-        }
+        $this->checkPersistence('export');
 
         // no key field - then just do export
         if ($key_field === null) {
@@ -1949,11 +1651,10 @@ class Model implements ArrayAccess, IteratorAggregate
         $key_field_added = false;
 
         // prepare array with field names
-        if (!is_array($fields)) {
+        if ($fields === null) {
             $fields = [];
 
             if ($this->only_fields) {
-
                 // Add requested fields first
                 foreach ($this->only_fields as $field) {
                     $f_object = $this->getField($field);
@@ -1975,7 +1676,6 @@ class Model implements ArrayAccess, IteratorAggregate
 
                 $fields = array_keys($fields);
             } else {
-
                 // Add all model fields
                 foreach ($this->getFields() as $field => $f_object) {
                     if ($f_object->never_persist) {
@@ -1987,7 +1687,7 @@ class Model implements ArrayAccess, IteratorAggregate
         }
 
         // add key_field to array if it's not there
-        if (!in_array($key_field, $fields)) {
+        if (!in_array($key_field, $fields, true)) {
             $fields[] = $key_field;
             $key_field_added = true;
         }
@@ -1996,43 +1696,41 @@ class Model implements ArrayAccess, IteratorAggregate
         $data = $this->persistence->export($this, $fields, $typecast_data);
 
         // prepare resulting array
-        $return = [];
+        $res = [];
         foreach ($data as $row) {
             $key = $row[$key_field];
             if ($key_field_added) {
                 unset($row[$key_field]);
             }
-            $return[$key] = $row;
+            $res[$key] = $row;
         }
 
-        return $return;
+        return $res;
     }
 
     /**
      * Returns iterator (yield values).
      *
-     * @throws \atk4\core\Exception
-     *
      * @return mixed
      */
-    public function getIterator()
+    public function getIterator(): iterable
     {
         foreach ($this->rawIterator() as $data) {
             $this->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $this->id = isset($data[$this->id_field]) ? $data[$this->id_field] : null;
+                $this->id = $data[$this->id_field] ?? null;
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:
-            // $model->addHook('afterLoad', function ($m) {
-            //     if ($m['date'] < $m->date_from) $m->breakHook(false);
+            // $model->onHook(self::HOOK_AFTER_LOAD, function ($m) {
+            //     if ($m->get('date') < $m->date_from) $m->breakHook(false);
             // })
 
             // you can also use breakHook() with specific object which will then be returned
             // as a next iterator value
 
-            $ret = $this->hook('afterLoad');
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
 
             if ($ret === false) {
                 continue;
@@ -2058,29 +1756,21 @@ class Model implements ArrayAccess, IteratorAggregate
 
     /**
      * Returns iterator.
-     *
-     * @return Iterator
      */
-    public function rawIterator()
+    public function rawIterator(): iterable
     {
         return $this->persistence->prepareIterator($this);
     }
 
     /**
-     * Executes specified method or callback for each record in DataSet.
-     *
-     * @param string|callable $method
+     * Executes specified callback for each record in DataSet.
      *
      * @return $this
      */
-    public function each($method)
+    public function each(\Closure $fx)
     {
-        foreach ($this as $rec) {
-            if (is_string($method)) {
-                $rec->$method();
-            } elseif (is_callable($method)) {
-                call_user_func($method, $rec);
-            }
+        foreach ($this as $record) {
+            $fx($record);
         }
 
         return $this;
@@ -2092,14 +1782,12 @@ class Model implements ArrayAccess, IteratorAggregate
      *
      * @param mixed $id
      *
-     * @throws Exception
-     *
      * @return $this
      */
     public function delete($id = null)
     {
         if ($this->read_only) {
-            throw new Exception(['Model is read-only and cannot be deleted']);
+            throw new Exception('Model is read-only and cannot be deleted');
         }
 
         if ($id == $this->id) {
@@ -2113,17 +1801,17 @@ class Model implements ArrayAccess, IteratorAggregate
 
                 return $this;
             } elseif ($this->loaded()) {
-                if ($this->hook('beforeDelete', [$this->id]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->id]) === false) {
                     return $this;
                 }
                 $this->persistence->delete($this, $this->id);
-                $this->hook('afterDelete', [$this->id]);
+                $this->hook(self::HOOK_AFTER_DELETE, [$this->id]);
                 $this->unload();
 
                 return $this;
-            } else {
-                throw new Exception(['No active record is set, unable to delete.']);
             }
+
+            throw new Exception('No active record is set, unable to delete.');
         });
     }
 
@@ -2132,17 +1820,21 @@ class Model implements ArrayAccess, IteratorAggregate
      * the code inside callback will fail, then all of the transaction
      * will be also rolled back.
      *
-     * @param callable $f
-     *
      * @return mixed
      */
-    public function atomic($f, Persistence $persistence = null)
+    public function atomic(\Closure $fx, Persistence $persistence = null)
     {
-        if (!$persistence) {
+        if ($persistence === null) {
             $persistence = $this->persistence;
         }
 
-        return $persistence->atomic($f);
+        try {
+            return $persistence->atomic($fx);
+        } catch (\Exception $e) {
+            if ($this->hook(self::HOOK_ROLLBACK, [$this, $e]) !== false) {
+                throw $e;
+            }
+        }
     }
 
     // }}}
@@ -2155,288 +1847,13 @@ class Model implements ArrayAccess, IteratorAggregate
      * @param string $mode
      * @param array  $args
      *
-     * @throws Exception
-     *
      * @return Query
      */
     public function action($mode, $args = [])
     {
-        if (!$this->persistence) {
-            throw new Exception(['action() requires model to be associated with db']);
-        }
-
-        if (!$this->persistence->hasMethod('action')) {
-            throw new Exception('Persistence does not support action()');
-        }
+        $this->checkPersistence('action');
 
         return $this->persistence->action($this, $mode, $args);
-    }
-
-    // }}}
-
-    // {{{ Join support
-
-    /**
-     * Creates an objects that describes relationship between multiple tables (or collections).
-     *
-     * When object is loaded, then instead of pulling all the data from a single table,
-     * join will also query $foreign_table in order to find additional fields. When inserting
-     * the record will be also added inside $foreign_table and relationship will be maintained.
-     *
-     * @param string $foreign_table
-     * @param array  $defaults
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Join
-     */
-    public function join($foreign_table, $defaults = [])
-    {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        } elseif (isset($defaults[0])) {
-            $defaults['master_field'] = $defaults[0];
-            unset($defaults[0]);
-        }
-
-        $defaults[0] = $foreign_table;
-
-        $c = $this->_default_seed_join;
-
-        return $this->add($this->factory($c, $defaults));
-    }
-
-    /**
-     * Left Join support.
-     *
-     * @see join()
-     *
-     * @param string $foreign_table
-     * @param array  $defaults
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Join
-     */
-    public function leftJoin($foreign_table, $defaults = [])
-    {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        }
-        $defaults['weak'] = true;
-
-        return $this->join($foreign_table, $defaults);
-    }
-
-    // }}}
-
-    // {{{ References
-
-    /**
-     * Private method.
-     *
-     * @param string         $c        Class name
-     * @param string         $link     Link
-     * @param array|callable $defaults Properties which we will pass to Reference object constructor
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
-     * @return Reference
-     */
-    protected function _hasReference($c, $link, $defaults = []) : Reference
-    {
-        if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model_'.$link];
-        } elseif (isset($defaults[0])) {
-            $defaults['model'] = $defaults[0];
-            unset($defaults[0]);
-        }
-
-        $defaults[0] = $link;
-
-        $obj = $this->factory($c, $defaults);
-
-        // if reference with such name already exists, then throw exception
-        if ($this->hasElement($name = $obj->getDesiredName())) {
-            throw new Exception([
-                'Reference with such name already exists',
-                'name'     => $name,
-                'link'     => $link,
-                'defaults' => $defaults,
-            ]);
-        }
-
-        return $this->add($obj);
-    }
-
-    /**
-     * Add generic relation. Provide your own call-back that will
-     * return the model.
-     *
-     * @param string         $link     Link
-     * @param array|callable $callback Callback
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
-     * @return Reference
-     */
-    public function addRef($link, $callback) : Reference
-    {
-        return $this->_hasReference($this->_default_seed_addRef, $link, $callback);
-    }
-
-    /**
-     * Add hasOne field.
-     *
-     * @param string $link
-     * @param array  $defaults
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
-     * @return Reference\HasOne
-     */
-    public function hasOne($link, $defaults = []) : Reference
-    {
-        return $this->_hasReference($this->_default_seed_hasOne, $link, $defaults);
-    }
-
-    /**
-     * Add hasMany field.
-     *
-     * @param string $link
-     * @param array  $defaults
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
-     * @return Reference\HasMany
-     */
-    public function hasMany($link, $defaults = []) : Reference
-    {
-        return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults);
-    }
-
-    /**
-     * Add containsOne field.
-     *
-     * @param string $link
-     * @param array  $defaults
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
-     * @return Reference\ContainsOne
-     */
-    public function containsOne($link, $defaults = []) : Reference
-    {
-        return $this->_hasReference($this->_default_seed_containsOne, $link, $defaults);
-    }
-
-    /**
-     * Add containsMany field.
-     *
-     * @param string $link
-     * @param array  $defaults
-     *
-     * @throws Exception
-     * @throws \atk4\core\Exception
-     *
-     * @return Reference\ContainsMany
-     */
-    public function containsMany($link, $defaults = []) : Reference
-    {
-        return $this->_hasReference($this->_default_seed_containsMany, $link, $defaults);
-    }
-
-    /**
-     * Traverse to related model.
-     *
-     * @param string $link
-     * @param array  $defaults
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Model
-     */
-    public function ref($link, $defaults = []) : self
-    {
-        return $this->getRef($link)->ref($defaults);
-    }
-
-    /**
-     * Return related model.
-     *
-     * @param string $link
-     * @param array  $defaults
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Model
-     */
-    public function refModel($link, $defaults = []) : self
-    {
-        return $this->getRef($link)->refModel($defaults);
-    }
-
-    /**
-     * Returns model that can be used for generating sub-query actions.
-     *
-     * @param string $link
-     * @param array  $defaults
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Model
-     */
-    public function refLink($link, $defaults = []) : self
-    {
-        return $this->getRef($link)->refLink($defaults);
-    }
-
-    /**
-     * Return reference field.
-     *
-     * @param string $link
-     *
-     * @throws \atk4\core\Exception
-     *
-     * @return Reference
-     */
-    public function getRef($link) : Reference
-    {
-        return $this->getElement('#ref_'.$link);
-    }
-
-    /**
-     * Returns all reference fields.
-     *
-     * @return array
-     */
-    public function getRefs() : array
-    {
-        $refs = [];
-        foreach ($this->elements as $key => $val) {
-            if (substr($key, 0, 5) == '#ref_') {
-                $refs[substr($key, 5)] = $val;
-            }
-        }
-
-        return $refs;
-    }
-
-    /**
-     * Return reference field or false if reference field does not exist.
-     *
-     * @param string $link
-     *
-     * @return Field|bool
-     */
-    public function hasRef($link)
-    {
-        return $this->hasElement('#ref_'.$link);
     }
 
     // }}}
@@ -2446,14 +1863,11 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string                $name
-     * @param string|array|callable $expression
-     *
-     * @throws \atk4\core\Exception
+     * @param string|array|\Closure $expression
      *
      * @return Field\Callback
      */
-    public function addExpression($name, $expression)
+    public function addExpression(string $name, $expression)
     {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];
@@ -2462,9 +1876,7 @@ class Model implements ArrayAccess, IteratorAggregate
             unset($expression[0]);
         }
 
-        $c = $this->_default_seed_addExpression;
-
-        $field = $this->factory($c, $expression);
+        $field = Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);
 
@@ -2474,14 +1886,11 @@ class Model implements ArrayAccess, IteratorAggregate
     /**
      * Add expression field which will calculate its value by using callback.
      *
-     * @param string                $name
-     * @param string|array|callable $expression
-     *
-     * @throws \atk4\core\Exception
+     * @param string|array|\Closure $expression
      *
      * @return Field\Callback
      */
-    public function addCalculatedField($name, $expression)
+    public function addCalculatedField(string $name, $expression)
     {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];
@@ -2495,41 +1904,17 @@ class Model implements ArrayAccess, IteratorAggregate
 
     // }}}
 
-    // {{{ Misc methods
-
-    /**
-     * Last ID inserted.
-     *
-     * @throws Exception
-     *
-     * @return mixed
-     */
-    public function lastInsertID()
-    {
-        if (isset($this->persistence) && $this->persistence instanceof Persistence\SQL) {
-            return $this->persistence->connection->lastInsertId($this);
-        }
-
-        throw new Exception('Model is not associated with SQL-enabled persistence');
-    }
-
-    // }}}
-
     // {{{ Debug Methods
 
     /**
      * Returns array with useful debug info for var_dump.
-     *
-     * @return array
      */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
-        $arr = [
-            'id'         => $this->id,
-            'conditions' => $this->conditions,
+        return [
+            'id' => $this->id,
+            'scope' => $this->scope()->toWords(),
         ];
-
-        return $arr;
     }
 
     // }}}

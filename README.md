@@ -1,27 +1,61 @@
-# Data Access PHP framework for High-Latency databases
+# ATK Data - Data Model Abstraction for Agile Toolkit
 
-The reason you hate Object Relational Mapper (ORM) is because it's [slow, clumsy, limited and flawed](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3). The reason you *have to* use it is because of consistency, compatibility and abstraction it offers to larger projects.
+[Agile Toolkit](https://agiletoolkit.org/) is a Low Code framework written in PHP. Agile UI implement server side rendering engine and over 50 UI generic components for interacting with your Data Model.
 
-**ATK Data provides a PHP framework, an alternative to ORM, which comes with [same and more features](https://socialcompare.com/en/comparison/php-data-access-libraries-orm-activerecord-persistence) without inheriting any design flaws of ORM pattern.**
+Agile Data is a framework for defining your "business layer" which is separate from your "presentation layer" and "persistence". Together with [Agile UI](https://github.com/atk4/ui) you can deliver user interface "out of the box" or with [Agile UI](https://github.com/atk4/api) - general-purpose API endpoints.
 
-ATK Data is focused on reducing number of database queries, moving CPU-intensive tasks into your database (if possible). It is well suited for Amazon RDS, Google Cloud SQL and ClearDB but thanks to abstraction will work transparently with Static data, NoSQL or RestAPIs backends.
+- Agile Data uses PHP to define your Business Objects, their properties and actions.
+- Agile Data works with SQL, NoSQL or external API sources.
+- Agile Data plugs into generic UI components (Crud, Card, Table, Form, etc) with a minimum code.
+- Agile Data supports "user actions". UI layer uses "action executor" to read ACL-controlled metadata.
+- Agile Data is developer-friendly and easy to learn
+- Agile Data is high-performance, capable of abstracting aggregation logic and shifting it into a capable database persistence (such as SQL) through advanced expressions.
+- Agile Data is extensible - field types, persistence types, relations and action types can be extended.
 
-ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation](https://github.com/atk4/report) all the way to [Web UI](https://github.com/atk4/ui) and [RestAPI](https://github.com/atk4/api). Minimalistic interface allows you to use ATK Data in your legacy apps or with modern PHP frameworks.
-
-[![Documentation Status](https://readthedocs.org/projects/agile-data/badge/?version=latest)](http://agile-data.readthedocs.io/en/latest/?badge=latest)
-[![Build Status](https://travis-ci.org/atk4/data.png?branch=develop)](https://travis-ci.org/atk4/data)
-[![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
-[![StyleCI](https://styleci.io/repos/56442737/shield)](https://styleci.io/repos/56442737)
+![Build](https://github.com/atk4/data/workflows/Unit%20Testing/badge.svg)
 [![CodeCov](https://codecov.io/gh/atk4/data/branch/develop/graph/badge.svg)](https://codecov.io/gh/atk4/data)
-[![Test Coverage](https://codeclimate.com/github/atk4/data/badges/coverage.svg)](https://codeclimate.com/github/atk4/data/coverage)
-[![Issue Count](https://codeclimate.com/github/atk4/data/badges/issue_count.svg)](https://codeclimate.com/github/atk4/data)
-
-[![License](https://poser.pugx.org/atk4/data/license)](https://packagist.org/packages/atk4/data)
-[![GitHub release](https://img.shields.io/github/release/atk4/data.svg?maxAge=2592000)](CHANGELOG.md)
-
 [![GitHub release](https://img.shields.io/github/release/atk4/data.svg)](CHANGELOG.md)
+[![Code Climate](https://codeclimate.com/github/atk4/data/badges/gpa.svg)](https://codeclimate.com/github/atk4/data)
 
 Quick-Links: [Documentation](http://agile-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
+
+## Is ATK Data similar to ORM?
+
+Yes and no.
+
+Agile Data is data persistence framework - like ORM it helps you escape raw SQL. Unlike ORM, it maps objects into "data set" and not "data record". Operating with data sets offers higher level of abstraction:
+
+``` php
+$vip_clients = (new Client($db))->addCondition('is_vip', true);
+
+// express total for all VIP client invoices. The value of the variable is an object
+$total_due = $vip_clients->ref('Invoice')->action('fx', ['sum', 'total']);
+
+// Single database query is executed here, but not before!
+echo $total_due->getOne();
+```
+
+In other ORM the similar implementation would be either [slow, clumsy, limited or flawed](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3).
+
+## How ATK Data integrates with UI (or API)
+
+Agile Toolkit is a low-code framework. Once you have defined your business object, it can be associated with a UI widget:
+
+``` php
+$app->add(new Crud())->setModel(new Client($db), ['name', 'surname'], ['edit', 'archive']);
+```
+
+or with an API end-point:
+
+``` php
+$api->rest('/clients', new Client($db));
+```
+
+## Extensibility and Add-ons
+
+ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation/Reporting](https://github.com/atk4/report). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database. 
+
+Regardless of how your model is constructed and what database backend is used, it can easily be used in conjunction with any 3rd party add-on, like [Charts](https://github.com/atk4/chart).
 
 ### Benefits of using ATK Data
 
@@ -31,7 +65,7 @@ Designed for medium to large PHP applications and frameworks, ATK Data is a clea
 -   Execute more on the server. Agile Data converts query logic into server-specific language (e.g. SQL) then delivers you the exact data rows / columns which you need from a single statement, no matter how complex.
 -   Data architecture transparency. As your database structure change, your application code does not need to be refactored. Replace fields with expressions, denormalize/normalize data, join and merge tables. Only update your application in a single place.
 -   Extensions. "[Audit](https://github.com/atk4/audit)" - transparently record all edits, updates and deletes with "Undo" support. "[Reports](https://github.com/atk4/report)" - add conditions, group results, union results then group them again, join add limit for a great report design.
--   [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [CRUD](http://ui.agiletoolkit.org/demos/crud.php), [Grid](http://ui.agiletoolkit.org/demos/grid.php), [Form](http://ui.agiletoolkit.org/demos/form3.php) as well as add-ons like [Charts](https://github.com/atk4/chart)  can be added to your PHP app with 3-lines of code.
+-   [Out of the box UI](https://github.com/atk4/ui). Who wants to build Admin systems today? Tens of professional components: [Crud](http://ui.agiletoolkit.org/demos/crud.php), [Grid](http://ui.agiletoolkit.org/demos/grid.php), [Form](http://ui.agiletoolkit.org/demos/form3.php) as well as add-ons like [Charts](https://github.com/atk4/chart)  can be added to your PHP app with 3-lines of code.
 -   RestAPI server for Agile Data is currently under development.
 -   Agile Data and all extensions mentioned above are licensed under MIT and are free to use.
 
@@ -58,9 +92,9 @@ Most of the ORM (including the one you are probably using now) suffer from one f
 
 As a result the UI layer cannot simply discover how your Invoice relate to the Client. This makes YOU write a lot of glue code - performing query and feeding data into the UI layer.
 
->    *With most ORMs you cannot design an generic CRUD or Form which would work with ANY model. As a result server-side rendering becoming more extinct in the face of Client-side frameworks.*
+>    *With most ORMs you cannot design an generic Crud or Form which would work with ANY model. As a result server-side rendering becoming more extinct in the face of Client-side frameworks.*
 
-Agile Data addresses this balance. For the presentation logic you can use tools such as [Agile UI](https://github.com/atk4/ui), that consists of generic CRUD, Form implementations or other modules which accept the Model protocol of Agile Data:
+Agile Data addresses this balance. For the presentation logic you can use tools such as [Agile UI](https://github.com/atk4/ui), that consists of generic Crud, Form implementations or other modules which accept the Model protocol of Agile Data:
 
 ``` php
 $presentation->setModel($business_model);
@@ -92,7 +126,7 @@ This next example builds a complex "Job Profitability Report" by only relying on
 
 ``` php
 class JobReport extends Job {
-  function init() {
+  function init(): void {
     parent::init();
 
     // Invoice contains Lines that may relevant to this job
@@ -217,11 +251,11 @@ While in most cases modern SQL sub-queries have comparable speed to JOIN, Agile 
 
 You can, however, [import fields through joins too](http://agile-data.readthedocs.io/en/develop/joins.html)
 
-#### Q: I don't like the `$book['field'] = 123`, I prefer properties
+#### Q: I don't like the `$book->set('field', 123)`, I prefer properties
 
 Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$model->id`, `$model->persistence` and `model->data`.
 
-To simplify work with model records, you can use `$model['field']` which will be routed to `$model->data['field']`. Read more on [working with individual data records](http://agile-data.readthedocs.io/en/develop/persistence.html).
+Read more on [working with individual data records](http://agile-data.readthedocs.io/en/develop/persistence.html).
 
 #### Q: I do not like to use class `\atk4\data\Model` as a parent
 
@@ -317,7 +351,7 @@ Agile Data uses vendor-independent and lightweight `Model` class to describe you
 ``` php
 class Client extends \atk4\data\Model {
   public $table = 'client';
-  function init() {
+  function init(): void {
     parent::init();
 
     $this->addFields(['name','address']);
@@ -344,7 +378,7 @@ Each persistence implements actions differently. SQL is probably the most full-f
 
 ### Introducing Expressions
 
-Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `Field_SQL_Expression` and `Field_Expression` can define field through custom SQL or PHP code:
+Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `FieldSqlExpression` and `Field_Expression` can define field through custom SQL or PHP code:
 
 ![GitHub release](docs/images/expression.gif)
 
@@ -425,7 +459,7 @@ add higher level features on our solid foundation.
 
 If you pass a `$model` object inside any method, add-on or extension, it's possible for them to discover not only the data, but also field types and various meta-information, references to other models, supported actions and many more.
 
-With that, creating a Dynamic Form UI object that automatically includes DropDown with list of allowed values is possible.
+With that, creating a Dynamic Form UI object that automatically includes Dropdown with list of allowed values is possible.
 
 In fact - we have already stared work on [Agile UI](http://github.com/atk4/ui) project!
 
@@ -534,7 +568,7 @@ namespace my;
 class User extends \atk4\data\Model
 {
     public $table = 'user';
-    function init()
+    function init(): void
     {
         parent::init();
 
@@ -579,35 +613,14 @@ Agile Data relies on [DSQL - Query Builder](https://github.com/atk4/dsql) for SQ
 
 ## UI for Agile Data
 
-In a universe with hundreds of [different PHP CRUD implementations](https://codecanyon.net/category/php-scripts?utf8=✓&term=crud&as=0&referrer=search&view=list), we thought you might like to have an open-source Grid/CRUD/Forms/Other UI library that is specifically designed for Agile Data.
+In a universe with hundreds of [different PHP Crud implementations](https://codecanyon.net/category/php-scripts?utf8=✓&term=crud&as=0&referrer=search&view=list), we thought you might like to have an open-source Grid/Crud/Forms/Other UI library that is specifically designed for Agile Data.
 
 Please consider our other MIT-licensed project - [Agile UI](http://www.agiletoolkit.org/ui) to build something like this:
 
 ![image](https://github.com/atk4/ui/raw/develop/docs/images/grid.png)
 
-## Current Status
-
-Agile Data is **Stable since Jul 2016**. For more recent updates see [Changelog](https://github.com/atk4/data/blob/develop/CHANGELOG.md).
-
 ## Community and Support
 
-[![Gitter](https://img.shields.io/gitter/room/atk4/data.svg?maxAge=2592000)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg?maxAge=2592000)](http://stackoverflow.com/questions/ask?tags=atk4)
+[![Gitter](https://img.shields.io/gitter/room/atk4/data.svg)](https://gitter.im/atk4/dataset?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Stack Overlfow Community](https://img.shields.io/stackexchange/stackoverflow/t/atk4.svg)](http://stackoverflow.com/questions/ask?tags=atk4)
 [![Discord User forum](https://img.shields.io/badge/discord-User_Forum-green.svg)](https://forum.agiletoolkit.org/c/44)
-
-
-### Timeline to the first release
-
-* 20 Jul 2016: Release of 1.0 with a new QuickStart guide
-* 15 Jul 2016: Rewrote README preparing for our first BETA release
-* 05 Jul 2016: Released 0.5 Expressions, Conditions, Relations
-* 28 Jun 2016: Released 0.4 join support for SQL and Array
-* 24 Jun 2016: Released 0.3 with general improvements
-* 17 Jun 2016: Finally shipping 0.2: With good starting support of SQL and Array
-* 29 May 2016: Finished implementation of core logic for Business Model
-* 11 May 2016: Released 0.1: Implemented code climate, test coverage and CI
-* 06 May 2016: Revamped the concept, updated video and made it simpler
-* 22 Apr 2016: Finalized concept, created presentation slides.
-* 17 Apr 2016: Started working on concept draft (in wiki)
-* 14 Apr 2016: [Posted my concept on Reddit](https://www.reddit.com/r/PHP/comments/4f2epw/reinventing_the_faulty_orm_concept_subqueries/)
-* Early 2016: Extensive research

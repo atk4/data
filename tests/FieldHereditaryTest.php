@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence;
 
-class FieldHereditaryTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class FieldHereditaryTest extends \atk4\schema\PhpunitTestCase
 {
     public function testDirty1()
     {
@@ -14,11 +16,11 @@ class FieldHereditaryTest extends \atk4\schema\PHPUnit_SchemaTestCase
         // default title field
         $m = new Model($p);
         $m->addExpression('caps', function ($m) {
-            return strtoupper($m['name']);
+            return strtoupper($m->get('name'));
         });
 
         $m->load(1);
-        $this->assertEquals('world', $m['name']);
-        $this->assertEquals('WORLD', $m['caps']);
+        $this->assertSame('world', $m->get('name'));
+        $this->assertSame('WORLD', $m->get('caps'));
     }
 }

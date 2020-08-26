@@ -1,14 +1,14 @@
 
-.. _Persistence\CSV:
+.. _Persistence\Csv:
 
 ============================
 Loading and Saving CSV Files
 ============================
 
-.. php:class:: Persistence\CSV
+.. php:class:: Persistence\Csv
 
 Agile Data can operate with CSV files for data loading, or saving. The capabilities
-of Persistence\CSV are limited to the following actions:
+of Persistence\Csv are limited to the following actions:
 
 - open any CSV file, use column mapping
 - identify which column is corresponding for respective field
@@ -25,7 +25,7 @@ the file that might be stored either on a local system or
 use a remote file scheme (ftp://...). The file will not be
 actually opened unless you perform load/save operation::
 
-    $p = new Persistence\CSV('myfile.csv');
+    $p = new Persistence\Csv('myfile.csv');
 
     $u = new Model_User($p);
     $u->tryLoadAny();   // actually opens file and finds first record
@@ -37,8 +37,8 @@ You can take a model that is loaded from other persistence and save
 it into CSV like this. The next example demonstrates a basic functionality
 of SQL database export to CSV file::
 
-    $db = new Persistence\SQL($pdo);
-    $csv = new Persistence\CSV('dump.csv');
+    $db = new Persistence\Sql($pdo);
+    $csv = new Persistence\Csv('dump.csv');
 
     $m = new Model_User($db);
 
@@ -68,7 +68,7 @@ Like with any other persistence you can use typecasting if you want data to be
 stored in any particular format.
 
 The examples above also create object on each iteration, that may appear as
-a performance inefficiency. This can be solved by re-using CSV model through
+a performance inefficiency. This can be solved by re-using Csv model through
 iterations::
 
     $m = new Model_User($db);

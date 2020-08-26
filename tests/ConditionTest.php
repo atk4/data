@@ -1,22 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ConditionTest extends \atk4\core\PHPUnit_AgileTestCase
+class ConditionTest extends AtkPhpunit\TestCase
 {
-    /**
-     * @expectedException \atk4\core\Exception
-     */
     public function testException1()
     {
         // not existing field in condition
         $m = new Model();
         $m->addField('name');
+
+        $this->expectException(\atk4\core\Exception::class);
         $m->addCondition('last_name', 'Smith');
     }
 
@@ -30,14 +32,14 @@ class ConditionTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $m->addCondition('gender', 'M');
 
-        $this->assertEquals(1, count($m->conditions));
+        $this->assertSame(1, count($m->scope()->getNestedConditions()));
 
         $m->addCondition('gender', 'F');
 
-        $this->assertEquals(2, count($m->conditions));
+        $this->assertSame(2, count($m->scope()->getNestedConditions()));
 
         $m->addCondition([['gender', 'F'], ['foo', 'bar']]);
-        $this->assertEquals(3, count($m->conditions));
+        $this->assertSame(3, count($m->scope()->getNestedConditions()));
     }
 
     public function testEditableAfterCondition()
@@ -45,10 +47,11 @@ class ConditionTest extends \atk4\core\PHPUnit_AgileTestCase
         $m = new Model();
         $m->addField('name');
         $m->addField('gender');
+
         $m->addCondition('gender', 'M');
 
-        $this->assertEquals(true, $m->getField('gender')->system);
-        $this->assertEquals(false, $m->getField('gender')->isEditable());
+        $this->assertTrue($m->getField('gender')->system);
+        $this->assertFalse($m->getField('gender')->isEditable());
     }
 
     public function testEditableHasOne()
@@ -60,7 +63,7 @@ class ConditionTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('name');
         $m->hasOne('gender_id', $gender);
 
-        $this->assertEquals(false, $m->getField('gender_id')->system);
-        $this->assertEquals(true, $m->getField('gender_id')->isEditable());
+        $this->assertFalse($m->getField('gender_id')->system);
+        $this->assertTrue($m->getField('gender_id')->isEditable());
     }
 }

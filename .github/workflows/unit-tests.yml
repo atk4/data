@@ -1,0 +1,105 @@
+name: Unit Testing
+
+on:
+  pull_request:
+    branches: '**'
+  push:
+    branches: '**'
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  unit-test:
+    name: Unit
+    runs-on: ubuntu-latest
+    container:
+      image: atk4/image:${{ matrix.php }} # https://github.com/atk4/image
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.3', 'latest', '8.0']
+        type: ['Phpunit']
+        include:
+          - php: 'latest'
+            type: 'CodingStyle'
+    env:
+      LOG_COVERAGE: "${{ fromJSON('{true: \"1\", false: \"\"}')[matrix.php == 'latest' && matrix.type == 'Phpunit' && (github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')))] }}"
+    services:
+      mysql:
+        image: mysql:8
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5 -e MYSQL_ROOT_PASSWORD=atk4_pass -e MYSQL_USER=atk4_test -e MYSQL_PASSWORD=atk4_pass -e MYSQL_DATABASE=atk4_test__data --entrypoint sh mysql:8 -c "exec docker-entrypoint.sh mysqld --default-authentication-plugin=mysql_native_password"
+      postgres:
+        image: postgres:12-alpine
+        env:
+          POSTGRES_USER: atk4_test
+          POSTGRES_PASSWORD: atk4_pass
+          POSTGRES_DB: atk4_test__data
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure PHP
+        run: |
+          if [ -z "$LOG_COVERAGE" ]; then rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ; fi
+          php --version
+
+      # trick composer that this is a "atk4/data:develop" dependency to install atk4/schema
+      - name: Rename HEAD to develop for Composer
+        run: git switch -C develop HEAD
+
+      - name: Setup cache 1/2
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Setup cache 2/2
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ matrix.php }}-${{ matrix.type }}-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install PHP dependencies
+        run: |
+          if [ "${{ matrix.type }}" != "Phpunit" ]; then composer remove --no-interaction --no-update phpunit/phpunit phpunit/dbunit phpunit/phpcov --dev ; fi
+          if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer --dev ; fi
+          if [ "${{ matrix.php }}" == "8.0" ]; then composer config platform.php 7.4.5 ; fi
+          composer install --no-suggest --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Init
+        run: |
+          mkdir -p build/logs
+
+      - name: "Run tests: SQLite (only for Phpunit)"
+        if: matrix.type == 'Phpunit'
+        run: "vendor/bin/phpunit \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
+
+      - name: "Run tests: MySQL (only for Phpunit)"
+        if: matrix.type == 'Phpunit'
+        run: "vendor/bin/phpunit --configuration phpunit-mysql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
+
+      - name: "Run tests: PostgreSQL (expected errors) (only for Phpunit)"
+        if: matrix.type == 'Phpunit'
+        continue-on-error: true
+        run: "vendor/bin/phpunit --configuration phpunit-pgsql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
+
+      - name: Lint / check syntax (only for CodingStyle)
+        if: matrix.type == 'CodingStyle'
+        run: find . \( -type d \( -path './vendor/*' \) \) -prune -o ! -type d -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Check Coding Style (only for CodingStyle)
+        if: matrix.type == 'CodingStyle'
+        run: vendor/bin/php-cs-fixer fix --dry-run --using-cache=no --diff --diff-format=udiff --verbose --show-progress=dots
+
+      - name: Upload coverage logs 1/2 (only for "latest" Phpunit)
+        if: env.LOG_COVERAGE
+        run: vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml
+
+      - name: Upload coverage logs 2/2 (only for "latest" Phpunit)
+        if: env.LOG_COVERAGE
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: build/logs/cc.xml

@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 use atk4\data\tests\Model\Female as Female;
@@ -10,8 +14,13 @@ use atk4\data\tests\Model\Male as Male;
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
+class PersistentArrayTest extends AtkPhpunit\TestCase
 {
+    private function getInternalPersistenceData(Persistence\Array_ $db): array
+    {
+        return $this->getProtected($db, 'data');
+    }
+
     /**
      * Test constructor.
      */
@@ -30,7 +39,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('surname');
 
         $m->load(1);
-        $this->assertEquals('John', $m['name']);
+        $this->assertSame('John', $m->get('name'));
 
         $m->unload();
         $this->assertFalse($m->loaded());
@@ -39,20 +48,19 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $this->assertTrue($m->loaded());
 
         $m->load(2);
-        $this->assertEquals('Jones', $m['surname']);
-        $m['surname'] = 'Smith';
+        $this->assertSame('Jones', $m->get('surname'));
+        $m->set('surname', 'Smith');
         $m->save();
 
         $m->load(1);
-        $this->assertEquals('John', $m['name']);
+        $this->assertSame('John', $m->get('name'));
 
         $m->load(2);
-        $this->assertEquals('Smith', $m['surname']);
+        $this->assertSame('Smith', $m->get('surname'));
     }
 
     public function testSaveAs()
     {
-        //$this->markTestSkipped('TODO: see #146');
         $a = [
             'person' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
@@ -64,15 +72,15 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $m = new Male($p);
         $m->load(1);
-        $m->saveAs(new Female());
+        $m->saveAs(Female::class);
         $m->delete();
 
         $this->assertEquals([
             'person' => [
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
-                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F', 'id'=>3],
+                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F', 'id' => 3],
             ],
-        ], $a);
+        ], $this->getInternalPersistenceData($p));
     }
 
     public function testSaveAndUnload()
@@ -89,7 +97,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $m->load(1);
         $this->assertTrue($m->loaded());
-        $m['gender'] = 'F';
+        $m->set('gender', 'F');
         $m->saveAndUnload();
         $this->assertFalse($m->loaded());
 
@@ -97,12 +105,12 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->load(1);
         $this->assertTrue($m->loaded());
 
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
-        ], $a);
+        ], $this->getInternalPersistenceData($p));
     }
 
     public function testUpdateArray()
@@ -120,24 +128,24 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('surname');
 
         $m->load(1);
-        $m['name'] = 'Peter';
+        $m->set('name', 'Peter');
         $m->save();
 
         $m->load(2);
-        $m['surname'] = 'Smith';
+        $m->set('surname', 'Smith');
         $m->save();
-        $m['surname'] = 'QQ';
+        $m->set('surname', 'QQ');
         $m->save();
 
-        $this->assertEquals([
+        $this->assertSame([
             'user' => [
                 1 => ['name' => 'Peter', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'QQ'],
             ],
-        ], $a);
+        ], $this->getInternalPersistenceData($p));
 
         $m->unload();
-        $m->set(['name' => 'Foo', 'surname' => 'Bar']);
+        $m->setMulti(['name' => 'Foo', 'surname' => 'Bar']);
         $m->save();
 
         $this->assertEquals([
@@ -146,7 +154,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
                 2 => ['name' => 'Sarah', 'surname' => 'QQ'],
                 3 => ['name' => 'Foo', 'surname' => 'Bar', 'id' => 3],
             ],
-        ], $a);
+        ], $this->getInternalPersistenceData($p));
     }
 
     public function testInsert()
@@ -171,7 +179,9 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
                 3 => ['name' => 'Foo', 'surname' => 'Bar', 'id' => 3],
             ],
-        ], $a);
+        ], $this->getInternalPersistenceData($p));
+
+        $this->assertSame(3, $p->lastInsertID());
     }
 
     public function testIterator()
@@ -191,10 +201,10 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $output = '';
 
         foreach ($m as $row) {
-            $output .= $row['name'];
+            $output .= $row->get('name');
         }
 
-        $this->assertEquals('JohnSarah', $output);
+        $this->assertSame('JohnSarah', $output);
     }
 
     /**
@@ -213,50 +223,47 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('surname');
 
         $m->load(1);
-        $this->assertEquals('John', $m['name']);
+        $this->assertSame('John', $m->get('name'));
 
         $m->load(2);
-        $this->assertEquals('Jones', $m['surname']);
-        $m['surname'] = 'Smith';
+        $this->assertSame('Jones', $m->get('surname'));
+        $m->set('surname', 'Smith');
         $m->save();
 
         $m->load(1);
-        $this->assertEquals('John', $m['name']);
+        $this->assertSame('John', $m->get('name'));
 
         $m->load(2);
-        $this->assertEquals('Smith', $m['surname']);
+        $this->assertSame('Smith', $m->get('surname'));
     }
 
     /**
      * Some persistences don't support tryLoad() method.
-     *
-     * @expectedException Exception
      */
     public function testTryLoadNotSupportedException()
     {
         $m = new Model(new Persistence());
+        $this->expectException(Exception::class);
         $m->tryLoad(1);
     }
 
     /**
      * Some persistences don't support loadAny() method.
-     *
-     * @expectedException Exception
      */
     public function testLoadAnyNotSupportedException()
     {
         $m = new Model(new Persistence());
+        $this->expectException(Exception::class);
         $m->loadAny();
     }
 
     /**
      * Some persistences don't support tryLoadAny() method.
-     *
-     * @expectedException Exception
      */
     public function testTryLoadAnyNotSupportedException()
     {
         $m = new Model(new Persistence());
+        $this->expectException(Exception::class);
         $m->tryLoadAny();
     }
 
@@ -275,12 +282,12 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertEquals([
+        $this->assertSame([
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
-        $this->assertEquals([
+        $this->assertSame([
             1 => ['surname' => 'Smith'],
             2 => ['surname' => 'Jones'],
         ], $m->export(['surname']));
@@ -301,7 +308,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertEquals(2, $m->action('count')->getOne());
+        $this->assertSame(2, $m->action('count')->getOne());
     }
 
     /**
@@ -319,15 +326,15 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertEquals(2, $m->action('count')->getOne());
+        $this->assertSame(2, $m->action('count')->getOne());
 
         // use alias as array key if it is set
-        $q = $m->action('field', ['name', 'alias'=>'first_name']);
-        $this->assertEquals(['first_name'=>'John'], $q);
+        $q = $m->action('field', ['name', 'alias' => 'first_name']);
+        $this->assertSame(['first_name' => 'John'], $q);
 
         // if alias is not set, then use field name as key
         $q = $m->action('field', ['name']);
-        $this->assertEquals(['name'=>'John'], $q);
+        $this->assertSame(['name' => 'John'], $q);
     }
 
     /**
@@ -336,25 +343,27 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     public function testLike()
     {
         $a = ['countries' => [
-            1 => ['id'=>1, 'name'=>'ABC9', 'code'=>11, 'country'=>'Ireland'],
-            2 => ['id'=>2, 'name'=>'ABC8', 'code'=>12, 'country'=>'Ireland'],
-            3 => ['id'=>3, 'code'=>13, 'country'=>'Latvia'],
-            4 => ['id'=>4, 'name'=>'ABC6', 'code'=>14, 'country'=>'UK'],
-            5 => ['id'=>5, 'name'=>'ABC5', 'code'=>15, 'country'=>'UK'],
-            6 => ['id'=>6, 'name'=>'ABC4', 'code'=>16, 'country'=>'Ireland'],
-            7 => ['id'=>7, 'name'=>'ABC3', 'code'=>17, 'country'=>'Latvia'],
-            8 => ['id'=>8, 'name'=>'ABC2', 'code'=>18, 'country'=>'Russia'],
-            9 => ['id'=>9, 'code'=>19, 'country'=>'Latvia'],
+            1 => ['id' => 1, 'name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
+            2 => ['id' => 2, 'name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
+            3 => ['id' => 3, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
+            4 => ['id' => 4, 'name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
+            5 => ['id' => 5, 'name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
+            6 => ['id' => 6, 'name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
+            7 => ['id' => 7, 'name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
+            8 => ['id' => 8, 'name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
+            9 => ['id' => 9, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
+            10 => ['id' => 10, 'code' => null, 'country' => 'Germany', 'active' => 1],
         ]];
 
         $p = new Persistence\Array_($a);
         $m = new Model($p, 'countries');
-        $m->addField('code', ['type' => 'int']);
+        $m->addField('code', ['type' => 'integer']);
         $m->addField('country');
+        $m->addField('active', ['type' => 'boolean']);
 
         // if no condition we should get all the data back
         $iterator = $m->action('select');
-        $result = $m->persistence->applyConditions($m, $iterator);
+        $result = $m->persistence->applyScope($m, $iterator);
         $this->assertInstanceOf(\atk4\data\Action\Iterator::class, $result);
         $m->unload();
         unset($iterator);
@@ -363,50 +372,256 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         // case : str%
         $m->addCondition('country', 'LIKE', 'La%');
         $result = $m->action('select')->get();
-        $this->assertEquals(3, count($result));
-        $this->assertEquals($a['countries'][3], $result[3]);
-        $this->assertEquals($a['countries'][7], $result[7]);
-        $this->assertEquals($a['countries'][9], $result[9]);
+        $this->assertSame(3, count($result));
+        $this->assertSame($a['countries'][3], $result[3]);
+        $this->assertSame($a['countries'][7], $result[7]);
+        $this->assertSame($a['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
+        // case : str% NOT LIKE
+        $m->scope()->clear();
+        $m->addCondition('country', 'NOT LIKE', 'La%');
+        $result = $m->action('select')->get();
+        $this->assertSame(7, count($m->export()));
+        $this->assertSame($a['countries'][1], $result[1]);
+        $this->assertSame($a['countries'][2], $result[2]);
+        $this->assertSame($a['countries'][4], $result[4]);
+        $this->assertSame($a['countries'][5], $result[5]);
+        $this->assertSame($a['countries'][6], $result[6]);
+        $this->assertSame($a['countries'][8], $result[8]);
+        unset($result);
+
         // case : %str
-        $m->conditions = [];
+        $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%ia');
         $result = $m->action('select')->get();
-        $this->assertEquals(4, count($result));
-        $this->assertEquals($a['countries'][3], $result[3]);
-        $this->assertEquals($a['countries'][7], $result[7]);
-        $this->assertEquals($a['countries'][8], $result[8]);
-        $this->assertEquals($a['countries'][9], $result[9]);
+        $this->assertSame(4, count($result));
+        $this->assertSame($a['countries'][3], $result[3]);
+        $this->assertSame($a['countries'][7], $result[7]);
+        $this->assertSame($a['countries'][8], $result[8]);
+        $this->assertSame($a['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
         // case : %str%
-        $m->conditions = [];
+        $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%a%');
         $result = $m->action('select')->get();
-        $this->assertEquals(7, count($result));
-        $this->assertEquals($a['countries'][1], $result[1]);
-        $this->assertEquals($a['countries'][2], $result[2]);
-        $this->assertEquals($a['countries'][3], $result[3]);
-        $this->assertEquals($a['countries'][6], $result[6]);
-        $this->assertEquals($a['countries'][7], $result[7]);
-        $this->assertEquals($a['countries'][8], $result[8]);
-        $this->assertEquals($a['countries'][9], $result[9]);
+        $this->assertSame(8, count($result));
+        $this->assertSame($a['countries'][1], $result[1]);
+        $this->assertSame($a['countries'][2], $result[2]);
+        $this->assertSame($a['countries'][3], $result[3]);
+        $this->assertSame($a['countries'][6], $result[6]);
+        $this->assertSame($a['countries'][7], $result[7]);
+        $this->assertSame($a['countries'][8], $result[8]);
+        $this->assertSame($a['countries'][9], $result[9]);
+        unset($result);
+        $m->unload();
+
+        // case : boolean field
+        $m->scope()->clear();
+        $m->addCondition('active', 'LIKE', '0');
+        $this->assertSame(4, count($m->export()));
+
+        $m->scope()->clear();
+        $m->addCondition('active', 'LIKE', '1');
+        $this->assertSame(6, count($m->export()));
+
+        $m->scope()->clear();
+        $m->addCondition('active', 'LIKE', '%0%');
+        $this->assertSame(4, count($m->export()));
+
+        $m->scope()->clear();
+        $m->addCondition('active', 'LIKE', '%1%');
+        $this->assertSame(6, count($m->export()));
+
+        $m->scope()->clear();
+        $m->addCondition('active', 'LIKE', '%999%');
+        $this->assertSame(0, count($m->export()));
+
+        $m->scope()->clear();
+        $m->addCondition('active', 'LIKE', '%ABC%');
+        $this->assertSame(0, count($m->export()));
+
+        // null value
+        $m->scope()->clear();
+        $m->addCondition('code', '=', null);
+        $this->assertSame(1, count($m->export()));
+
+        $m->scope()->clear();
+        $m->addCondition('code', '!=', null);
+        $this->assertSame(9, count($m->export()));
+    }
+
+    /**
+     * Test Model->addCondition operator REGEXP.
+     */
+    public function testConditions()
+    {
+        $a = ['countries' => [
+            1 => ['id' => 1, 'name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
+            2 => ['id' => 2, 'name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
+            3 => ['id' => 3, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
+            4 => ['id' => 4, 'name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
+            5 => ['id' => 5, 'name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
+            6 => ['id' => 6, 'name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
+            7 => ['id' => 7, 'name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
+            8 => ['id' => 8, 'name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
+            9 => ['id' => 9, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
+        ]];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p, 'countries');
+        $m->addField('code', ['type' => 'integer']);
+        $m->addField('country');
+        $m->addField('active', ['type' => 'boolean']);
+
+        // if no condition we should get all the data back
+        $iterator = $m->action('select');
+        $result = $m->persistence->applyScope($m, $iterator);
+        $this->assertInstanceOf(\atk4\data\Action\Iterator::class, $result);
+        $m->unload();
+        unset($iterator);
+        unset($result);
+
+        $m->scope()->clear();
+        $m->addCondition('country', 'REGEXP', 'Ireland|UK');
+        $result = $m->action('select')->get();
+        $this->assertSame(5, count($result));
+        $this->assertSame($a['countries'][1], $result[1]);
+        $this->assertSame($a['countries'][2], $result[2]);
+        $this->assertSame($a['countries'][4], $result[4]);
+        $this->assertSame($a['countries'][5], $result[5]);
+        $this->assertSame($a['countries'][6], $result[6]);
+        unset($result);
+        $m->unload();
+
+        $m->scope()->clear();
+        $m->addCondition('country', 'NOT REGEXP', 'Ireland|UK|Latvia');
+        $result = $m->action('select')->get();
+        $this->assertSame(1, count($result));
+        $this->assertSame($a['countries'][8], $result[8]);
+        unset($result);
+        $m->unload();
+
+        $m->scope()->clear();
+        $m->addCondition('code', '>', 18);
+        $result = $m->action('select')->get();
+        $this->assertSame(1, count($result));
+        $this->assertSame($a['countries'][9], $result[9]);
+        unset($result);
+        $m->unload();
+
+        $m->scope()->clear();
+        $m->addCondition('code', '>=', 18);
+        $result = $m->action('select')->get();
+        $this->assertSame(2, count($result));
+        $this->assertSame($a['countries'][8], $result[8]);
+        $this->assertSame($a['countries'][9], $result[9]);
+        unset($result);
+        $m->unload();
+
+        $m->scope()->clear();
+        $m->addCondition('code', '<', 12);
+        $result = $m->action('select')->get();
+        $this->assertSame(1, count($result));
+        $this->assertSame($a['countries'][1], $result[1]);
+        unset($result);
+        $m->unload();
+
+        $m->scope()->clear();
+        $m->addCondition('code', '<=', 12);
+        $result = $m->action('select')->get();
+        $this->assertSame(2, count($result));
+        $this->assertSame($a['countries'][1], $result[1]);
+        $this->assertSame($a['countries'][2], $result[2]);
+        unset($result);
+        $m->unload();
+
+        $m->scope()->clear();
+        $m->addCondition('code', [11, 12]);
+        $result = $m->action('select')->get();
+        $this->assertSame(2, count($result));
+        $this->assertSame($a['countries'][1], $result[1]);
+        $this->assertSame($a['countries'][2], $result[2]);
+        unset($result);
+        $m->unload();
+
+        $m->scope()->clear();
+        $m->addCondition('code', 'IN', []);
+        $result = $m->action('select')->get();
+        $this->assertSame(0, count($result));
+        unset($result);
+        $m->unload();
+
+        $m->scope()->clear();
+        $m->addCondition('code', 'NOT IN', [11, 12, 13, 14, 15, 16, 17]);
+        $result = $m->action('select')->get();
+        $this->assertSame(2, count($result));
+        $this->assertSame($a['countries'][8], $result[8]);
+        $this->assertSame($a['countries'][9], $result[9]);
+        unset($result);
+        $m->unload();
+
+        $m->scope()->clear();
+        $m->addCondition('code', '!=', [11, 12, 13, 14, 15, 16, 17]);
+        $result = $m->action('select')->get();
+        $this->assertSame(2, count($result));
+        $this->assertSame($a['countries'][8], $result[8]);
+        $this->assertSame($a['countries'][9], $result[9]);
         unset($result);
         $m->unload();
     }
 
+    public function testAggregates()
+    {
+        $a = ['invoices' => [
+            1 => ['id' => 1, 'number' => 'ABC9', 'items' => 11, 'active' => 1],
+            2 => ['id' => 2, 'number' => 'ABC8', 'items' => 12, 'active' => 0],
+            3 => ['id' => 3, 'items' => 13, 'active' => 1],
+            4 => ['id' => 4, 'number' => 'ABC6', 'items' => 14, 'active' => 0],
+            5 => ['id' => 5, 'number' => 'ABC5', 'items' => 15, 'active' => 0],
+            6 => ['id' => 6, 'number' => 'ABC4', 'items' => 16, 'active' => 1],
+            7 => ['id' => 7, 'number' => 'ABC3', 'items' => 17, 'active' => 0],
+            8 => ['id' => 8, 'number' => 'ABC2', 'items' => 18, 'active' => 1],
+            9 => ['id' => 9, 'items' => 19, 'active' => 1],
+            10 => ['id' => 10, 'items' => 0, 'active' => 1],
+            11 => ['id' => 11, 'items' => null, 'active' => 1],
+        ]];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p, 'invoices');
+        $m->addField('items', ['type' => 'integer']);
+
+        $this->assertSame(13.5, $m->action('fx', ['avg', 'items'])->getOne());
+        $this->assertSame(12.272727272727273, $m->action('fx0', ['avg', 'items'])->getOne());
+        $this->assertSame(0, $m->action('fx', ['min', 'items'])->getOne());
+        $this->assertSame(19, $m->action('fx', ['max', 'items'])->getOne());
+        $this->assertSame(135, $m->action('fx', ['sum', 'items'])->getOne());
+    }
+
+    public function testExists()
+    {
+        $a = ['invoices' => [
+            1 => ['id' => 1, 'number' => 'ABC9', 'items' => 11, 'active' => 1],
+        ]];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p, 'invoices');
+        $m->addField('items', ['type' => 'integer']);
+
+        $this->assertSame(1, $m->action('exists')->getOne());
+
+        $m->delete(1);
+
+        $this->assertSame(0, $m->action('exists')->getOne());
+    }
+
     /**
      * Returns exported data, but will use get() instead of export().
-     *
-     * @param \atk4\data\Model $m
-     * @param array            $fields
-     *
-     * @return array
      */
-    protected function _getRows(\atk4\data\Model $m, $fields = [])
+    protected function _getRows(Model $m, array $fields = []): array
     {
         $d = [];
         foreach ($m as $junk) {
@@ -440,15 +655,15 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('f3');
         $m->setOrder('f1');
         $d = $this->_getRows($m, ['f1']);
-        $this->assertEquals([
-            ['f1'=>'A'],
-            ['f1'=> 'A'],
-            ['f1'=> 'C'],
-            ['f1'=> 'D'],
-            ['f1'=> 'D'],
-            ['f1'=> 'E'],
+        $this->assertSame([
+            ['f1' => 'A'],
+            ['f1' => 'A'],
+            ['f1' => 'C'],
+            ['f1' => 'D'],
+            ['f1' => 'D'],
+            ['f1' => 'E'],
         ], $d);
-        $this->assertEquals($d, array_values($m->export(['f1']))); // array_values to get rid of keys
+        $this->assertSame($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
         // order by one field descending
         $p = new Persistence\Array_($a);
@@ -456,17 +671,17 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('f1');
         $m->addField('f2');
         $m->addField('f3');
-        $m->setOrder('f1', true);
+        $m->setOrder('f1', 'desc');
         $d = $this->_getRows($m, ['f1']);
-        $this->assertEquals([
-            ['f1'=>'E'],
-            ['f1'=> 'D'],
-            ['f1'=> 'D'],
-            ['f1'=> 'C'],
-            ['f1'=> 'A'],
-            ['f1'=> 'A'],
+        $this->assertSame([
+            ['f1' => 'E'],
+            ['f1' => 'D'],
+            ['f1' => 'D'],
+            ['f1' => 'C'],
+            ['f1' => 'A'],
+            ['f1' => 'A'],
         ], $d);
-        $this->assertEquals($d, array_values($m->export(['f1']))); // array_values to get rid of keys
+        $this->assertSame($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
         // order by two fields ascending
         $p = new Persistence\Array_($a);
@@ -475,18 +690,18 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('f2');
         $m->addField('f3');
 
-        $m->setOrder('f1', true);
-        $m->setOrder('f2', true);
+        $m->setOrder('f1', 'desc');
+        $m->setOrder('f2', 'desc');
         $d = $this->_getRows($m, ['f1', 'f2', 'id']);
         $this->assertEquals([
-            ['f1'=>'E', 'f2'=>'A', 'id'=>5],
-            ['f1'=> 'D', 'f2'=>'C', 'id'=>3],
-            ['f1'=> 'D', 'f2'=>'A', 'id'=>2],
-            ['f1'=> 'C', 'f2'=>'A', 'id'=>6],
-            ['f1'=> 'A', 'f2'=>'C', 'id'=>4],
-            ['f1'=> 'A', 'f2'=>'B', 'id'=>1],
+            ['f1' => 'E', 'f2' => 'A', 'id' => 5],
+            ['f1' => 'D', 'f2' => 'C', 'id' => 3],
+            ['f1' => 'D', 'f2' => 'A', 'id' => 2],
+            ['f1' => 'C', 'f2' => 'A', 'id' => 6],
+            ['f1' => 'A', 'f2' => 'C', 'id' => 4],
+            ['f1' => 'A', 'f2' => 'B', 'id' => 1],
         ], $d);
-        $this->assertEquals($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
+        $this->assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }
 
     /**
@@ -506,19 +721,19 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m = new Model($p);
         $m->addField('f1');
 
-        $this->assertEquals(4, $m->action('count')->getOne());
+        $this->assertSame(4, $m->action('count')->getOne());
 
         $m->setLimit(3);
-        $this->assertEquals(3, $m->action('count')->getOne());
-        $this->assertEquals([
+        $this->assertSame(3, $m->action('count')->getOne());
+        $this->assertSame([
             ['f1' => 'A'],
             ['f1' => 'D'],
             ['f1' => 'E'],
         ], array_values($m->export()));
 
         $m->setLimit(2, 1);
-        $this->assertEquals(2, $m->action('count')->getOne());
-        $this->assertEquals([
+        $this->assertSame(2, $m->action('count')->getOne());
+        $this->assertSame([
             ['f1' => 'D'],
             ['f1' => 'E'],
         ], array_values($m->export()));
@@ -526,7 +741,7 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         // well, this is strange, that you can actually change limit on-the-fly and then previous
         // limit is not taken into account, but most likely you will never set it multiple times
         $m->setLimit(3);
-        $this->assertEquals(3, $m->action('count')->getOne());
+        $this->assertSame(3, $m->action('count')->getOne());
     }
 
     /**
@@ -546,100 +761,61 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertEquals(4, $m->action('count')->getOne());
-        $this->assertEquals($a['data'], $m->export());
+        $this->assertSame(4, $m->action('count')->getOne());
+        $this->assertSame(['data' => $a], $this->getInternalPersistenceData($p));
 
         $m->addCondition('name', 'Sarah');
-        $this->assertEquals(3, $m->action('count')->getOne());
+        $this->assertSame(3, $m->action('count')->getOne());
 
         $m->addCondition('surname', 'Smith');
-        $this->assertEquals(1, $m->action('count')->getOne());
-        $this->assertEquals([4=>['name'=>'Sarah', 'surname'=>'Smith']], $m->export());
-        $this->assertEquals([4=>['name'=>'Sarah', 'surname'=>'Smith']], $m->action('select')->get());
+        $this->assertSame(1, $m->action('count')->getOne());
+        $this->assertSame([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->export());
+        $this->assertSame([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->action('select')->get());
 
         $m->addCondition('surname', 'Siiiith');
-        $this->assertEquals(0, $m->action('count')->getOne());
+        $this->assertSame(0, $m->action('count')->getOne());
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testUnsupportedAction()
     {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
+        $this->expectException(Exception::class);
         $m->action('foo');
     }
 
-    /**
-     * @expectedException Exception
-     */
-    public function testBadActionArgs()
+    public function testUnsupportedAggregate()
     {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
-        $m->action('select', 'foo'); // args should be array
+
+        $this->expectException(Exception::class);
+        $m->action('fx', ['UNSUPPORTED', 'name']);
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testUnsupportedCondition1()
     {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
         $m->addCondition('name');
+        $this->expectException(Exception::class);
         $m->export();
     }
 
-    /**
-     * unsupported method.
-     *
-     * @expectedException Exception
-     */
     public function testUnsupportedCondition2()
     {
-        $a = [1=>['name'=>'John']];
-        $p = new Persistence\Array_($a);
-        $m = new Model($p);
-        $m->addField('name');
-        $m->addCondition('name', '<>', 'John');
-        $m->export();
-    }
-
-    /**
-     * unsupported format - 4th param.
-     *
-     * @expectedException Exception
-     */
-    public function testUnsupportedCondition3()
-    {
-        $a = [1=>['name'=>'John']];
-        $p = new Persistence\Array_($a);
-        $m = new Model($p);
-        $m->addField('name');
-        $m->addCondition('name', 'like', '%o%', 'CASE_INSENSITIVE');
-        $m->export();
-    }
-
-    /**
-     * unsupported format - param[0] not Field::class.
-     *
-     * @expectedException Exception
-     */
-    public function testUnsupportedCondition5()
-    {
-        $a = [1=>['name'=>'John']];
+        $a = [1 => ['name' => 'John']];
         $p = new Persistence\Array_($a);
         $m = new Model($p);
         $m->addField('name');
         $m->addCondition(new Model(), 'like', '%o%');
+        $this->expectException(Exception::class);
         $m->export();
     }
 
@@ -650,10 +826,10 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     {
         $a = [
             'user' => [
-                1 => ['name' => 'John', 'surname' => 'Smith', 'country_id'=>1],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id'=>2],
+                1 => ['name' => 'John', 'surname' => 'Smith', 'country_id' => 1],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id' => 2],
             ],
-            'country'=> [
+            'country' => [
                 1 => ['name' => 'Latvia'],
                 2 => ['name' => 'UK'],
             ],
@@ -672,10 +848,10 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $user->hasOne('country_id', $country);
 
         $user->load(1);
-        $this->assertEquals('Latvia', $user->ref('country_id')['name']);
+        $this->assertSame('Latvia', $user->ref('country_id')->get('name'));
 
         $user->load(2);
-        $this->assertEquals('UK', $user->ref('country_id')['name']);
+        $this->assertSame('UK', $user->ref('country_id')->get('name'));
     }
 
     /**
@@ -685,11 +861,11 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
     {
         $a = [
             'user' => [
-                1 => ['name' => 'John', 'surname' => 'Smith', 'country_id'=>1],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id'=>2],
-                3 => ['name' => 'Janis', 'surname' => 'Berzins', 'country_id'=>1],
+                1 => ['name' => 'John', 'surname' => 'Smith', 'country_id' => 1],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id' => 2],
+                3 => ['name' => 'Janis', 'surname' => 'Berzins', 'country_id' => 1],
             ],
-            'country'=> [
+            'country' => [
                 1 => ['name' => 'Latvia'],
                 2 => ['name' => 'UK'],
             ],
@@ -709,9 +885,9 @@ class PersistentArrayTest extends \atk4\core\PHPUnit_AgileTestCase
         $user->hasOne('country_id', $country);
 
         $country->load(1);
-        $this->assertEquals(2, $country->ref('Users')->action('count')->getOne());
+        $this->assertSame(2, $country->ref('Users')->action('count')->getOne());
 
         $country->load(2);
-        $this->assertEquals(1, $country->ref('Users')->action('count')->getOne());
+        $this->assertSame(1, $country->ref('Users')->action('count')->getOne());
     }
 }

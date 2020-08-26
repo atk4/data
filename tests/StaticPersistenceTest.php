@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
+class StaticPersistenceTest extends AtkPhpunit\TestCase
 {
     /**
      * Test constructor.
@@ -20,12 +23,12 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
         // default title field
         $m = new Model($p);
         $m->load(1);
-        $this->assertEquals('world', $m['name']);
+        $this->assertSame('world', $m->get('name'));
 
         // custom title field and try loading from same static twice
         $m = new Model($p); //, ['title_field' => 'foo']);
         $m->load(1);
-        $this->assertEquals('world', $m['name']); // still 'name' here not 'foo'
+        $this->assertSame('world', $m->get('name')); // still 'name' here not 'foo'
     }
 
     public function testArrayOfArrays()
@@ -35,39 +38,39 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
         $m->load(1);
 
-        $this->assertEquals('world', $m['name']);
-        $this->assertEquals('xy', $m['field1']);
-        $this->assertEquals(false, $m['field2']);
+        $this->assertSame('world', $m->get('name'));
+        $this->assertSame('xy', $m->get('field1'));
+        $this->assertFalse($m->get('field2'));
     }
 
     public function testArrayOfHashes()
     {
-        $p = new Persistence\Static_([['foo'=>'hello'], ['foo'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello'], ['foo' => 'world']]);
         $m = new Model($p);
 
         $m->load(1);
 
-        $this->assertEquals('world', $m['foo']);
+        $this->assertSame('world', $m->get('foo'));
     }
 
-    public function testIDArg()
+    public function testIdArg()
     {
-        $p = new Persistence\Static_([['id'=>20, 'foo'=>'hello'], ['id'=>21, 'foo'=>'world']]);
+        $p = new Persistence\Static_([['id' => 20, 'foo' => 'hello'], ['id' => 21, 'foo' => 'world']]);
         $m = new Model($p);
 
         $m->load(21);
 
-        $this->assertEquals('world', $m['foo']);
+        $this->assertSame('world', $m->get('foo'));
     }
 
-    public function testIDKey()
+    public function testIdKey()
     {
-        $p = new Persistence\Static_([20=>['foo'=>'hello'], 21=>['foo'=>'world']]);
+        $p = new Persistence\Static_([20 => ['foo' => 'hello'], 21 => ['foo' => 'world']]);
         $m = new Model($p);
 
         $m->load(21);
 
-        $this->assertEquals('world', $m['foo']);
+        $this->assertSame('world', $m->get('foo'));
     }
 
     public function testEmpty()
@@ -82,51 +85,51 @@ class StaticPersistenceTest extends \atk4\core\PHPUnit_AgileTestCase
 
     public function testCustomField()
     {
-        $p = new Persistence\Static_([['foo'=>'hello'], ['foo'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello'], ['foo' => 'world']]);
         $m = new StaticPersistenceModel($p);
 
-        $this->assertEquals('custom field', $m->getField('foo')->caption);
+        $this->assertSame('custom field', $m->getField('foo')->caption);
 
-        $p = new Persistence\Static_([['foo'=>'hello', 'bar'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'bar' => 'world']]);
         $m = new StaticPersistenceModel($p);
-        $this->assertEquals('foo', $m->title_field);
+        $this->assertSame('foo', $m->title_field);
     }
 
     public function testTitleOrName()
     {
-        $p = new Persistence\Static_([['foo'=>'hello', 'bar'=>'world']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'bar' => 'world']]);
         $m = new Model($p);
-        $this->assertEquals('foo', $m->title_field);
+        $this->assertSame('foo', $m->title_field);
 
-        $p = new Persistence\Static_([['foo'=>'hello', 'name'=>'x']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'name' => 'x']]);
         $m = new Model($p);
-        $this->assertEquals('name', $m->title_field);
+        $this->assertSame('name', $m->title_field);
 
-        $p = new Persistence\Static_([['foo'=>'hello', 'title'=>'x']]);
+        $p = new Persistence\Static_([['foo' => 'hello', 'title' => 'x']]);
         $m = new Model($p);
-        $this->assertEquals('title', $m->title_field);
+        $this->assertSame('title', $m->title_field);
     }
 
     public function testFieldTypes()
     {
         $p = new Persistence\Static_([[
-            'name'        => 'hello',
-            'test_int'    => 123,
-            'test_float'  => 123.45,
-            'test_date'   => new \DateTime(),
-            'test_array'  => ['a', 'b', 'c'],
+            'name' => 'hello',
+            'test_int' => 123,
+            'test_float' => 123.45,
+            'test_date' => new \DateTime(),
+            'test_array' => ['a', 'b', 'c'],
             'test_object' => new \DateInterval('P1Y'),
-            'test_str_1'  => 'abc',
-            'test_str_2'  => '123',
-            'test_str_3'  => '123.45',
+            'test_str_1' => 'abc',
+            'test_str_2' => '123',
+            'test_str_3' => '123.45',
         ]]);
         $m = new Model($p);
 
-        $this->assertEquals('integer', $m->getField('test_int')->type);
-        $this->assertEquals('float', $m->getField('test_float')->type);
-        $this->assertEquals('datetime', $m->getField('test_date')->type);
-        $this->assertEquals('array', $m->getField('test_array')->type);
-        $this->assertEquals('object', $m->getField('test_object')->type);
+        $this->assertSame('integer', $m->getField('test_int')->type);
+        $this->assertSame('float', $m->getField('test_float')->type);
+        $this->assertSame('datetime', $m->getField('test_date')->type);
+        $this->assertSame('array', $m->getField('test_array')->type);
+        $this->assertSame('object', $m->getField('test_object')->type);
 
         // string is default type, so it is null
         $this->assertNull($m->getField('name')->type);
@@ -140,10 +143,10 @@ class StaticPersistenceModel extends Model
 {
     public $title_field = 'foo';
 
-    public function init()
+    protected function init(): void
     {
         parent::init();
 
-        $this->addField('foo', ['caption'=>'custom field']);
+        $this->addField('foo', ['caption' => 'custom field']);
     }
 }

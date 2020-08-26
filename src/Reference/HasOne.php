@@ -1,10 +1,9 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+declare(strict_types=1);
 
 namespace atk4\data\Reference;
 
-use atk4\core\Exception;
 use atk4\data\Field;
 use atk4\data\Join;
 use atk4\data\Model;
@@ -24,7 +23,7 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $type = null;
+    public $type;
 
     /**
      * Is it system field?
@@ -39,14 +38,14 @@ class HasOne extends Reference
      *
      * @var Join|null
      */
-    protected $join = null;
+    protected $join;
 
     /**
      * Default value of field.
      *
      * @var mixed
      */
-    public $default = null;
+    public $default;
 
     /**
      * Setting this to true will never actually store
@@ -73,7 +72,7 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $caption = null;
+    public $caption;
 
     /**
      * Array with UI flags like editable, visible and hidden.
@@ -104,27 +103,27 @@ class HasOne extends Reference
      *
      * Value can be array [$typecast_save_callback, $typecast_load_callback].
      *
-     * @var null|bool|array
+     * @var bool|array|null
      */
-    public $typecast = null;
+    public $typecast;
 
     /**
      * Should we use serialization when saving/loading data to/from persistence.
      *
      * Value can be array [$encode_callback, $decode_callback].
      *
-     * @var null|bool|array|string
+     * @var bool|array|string|null
      */
-    public $serialize = null;
+    public $serialize;
 
     /**
      * Persisting format for type = 'date', 'datetime', 'time' fields.
      *
-     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
+     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.
      *
      * @var string
      */
-    public $persist_format = null;
+    public $persist_format;
 
     /**
      * Persisting timezone for type = 'date', 'datetime', 'time' fields.
@@ -140,7 +139,7 @@ class HasOne extends Reference
      *
      * For example, 'DateTime', 'Carbon' etc.
      *
-     * @param string
+     * @var string
      */
     public $dateTimeClass = 'DateTime';
 
@@ -149,17 +148,15 @@ class HasOne extends Reference
      *
      * For example, 'DateTimeZone', 'Carbon' etc.
      *
-     * @param string
+     * @var string
      */
     public $dateTimeZoneClass = 'DateTimeZone';
 
     /**
-     * Reference_One will also add a field corresponding
+     * Reference\HasOne will also add a field corresponding
      * to 'our_field' unless it exists of course.
-     *
-     * @throws Exception
      */
-    public function init()
+    protected function init(): void
     {
         parent::init();
 
@@ -167,24 +164,26 @@ class HasOne extends Reference
             $this->our_field = $this->link;
         }
 
-        if (!$this->owner->hasField($this->our_field)) {
-            $this->owner->addField($this->our_field, [
-                'type'              => $this->type,
-                'reference'         => $this,
-                'system'            => $this->system,
-                'join'              => $this->join,
-                'default'           => $this->default,
-                'never_persist'     => $this->never_persist,
-                'read_only'         => $this->read_only,
-                'caption'           => $this->caption,
-                'ui'                => $this->ui,
-                'mandatory'         => $this->mandatory,
-                'required'          => $this->required,
-                'typecast'          => $this->typecast,
-                'serialize'         => $this->serialize,
-                'persist_format'    => $this->persist_format,
-                'persist_timezone'  => $this->persist_timezone,
-                'dateTimeClass'     => $this->dateTimeClass,
+        $ourModel = $this->getOurModel();
+
+        if (!$ourModel->hasField($this->our_field)) {
+            $ourModel->addField($this->our_field, [
+                'type' => $this->type,
+                'reference' => $this,
+                'system' => $this->system,
+                'join' => $this->join,
+                'default' => $this->default,
+                'never_persist' => $this->never_persist,
+                'read_only' => $this->read_only,
+                'caption' => $this->caption,
+                'ui' => $this->ui,
+                'mandatory' => $this->mandatory,
+                'required' => $this->required,
+                'typecast' => $this->typecast,
+                'serialize' => $this->serialize,
+                'persist_format' => $this->persist_format,
+                'persist_timezone' => $this->persist_timezone,
+                'dateTimeClass' => $this->dateTimeClass,
                 'dateTimeZoneClass' => $this->dateTimeZoneClass,
             ]);
         }
@@ -192,59 +191,51 @@ class HasOne extends Reference
 
     /**
      * Returns our field or id field.
-     *
-     * @throws Exception
-     *
-     * @return Field
      */
-    protected function referenceOurValue() : Field
+    protected function referenceOurValue(): Field
     {
-        $this->owner->persistence_data['use_table_prefixes'] = true;
+        $this->getOurModel()->persistence_data['use_table_prefixes'] = true;
 
-        return $this->owner->getField($this->our_field);
+        return $this->getOurField();
     }
 
     /**
-     * If owner model is loaded, then return referenced model with respective record loaded.
+     * If our model is loaded, then return their model with respective record loaded.
      *
-     * If owner model is not loaded, then return referenced model with condition set.
-     * This can happen in case of deep traversal $m->ref('Many')->ref('one_id'), for example.
-     *
-     * @param array $defaults Properties
-     *
-     * @throws Exception
-     * @throws \atk4\data\Exception
-     *
-     * @return Model
+     * If our model is not loaded, then return their model with condition set.
+     * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
      */
-    public function ref($defaults = []) : Model
+    public function ref(array $defaults = []): Model
     {
-        $m = $this->getModel($defaults);
+        $theirModel = $this->getTheirModel($defaults);
 
         // add hook to set our_field = null when record of referenced model is deleted
-        $m->addHook('afterDelete', function ($m) {
-            $this->owner[$this->our_field] = null;
+        $theirModel->onHook(Model::HOOK_AFTER_DELETE, function ($theirModel) {
+            $this->getOurField()->setNull();
         });
 
-        // if owner model is loaded, then try to load referenced model
-        if ($this->their_field) {
-            if ($this->owner[$this->our_field]) {
-                $m->tryLoadBy($this->their_field, $this->owner[$this->our_field]);
+        if ($ourValue = $this->getOurFieldValue()) {
+            // if our model is loaded, then try to load referenced model
+            if ($this->their_field) {
+                $theirModel->tryLoadBy($this->their_field, $ourValue);
+            } else {
+                $theirModel->tryLoad($ourValue);
+            }
+        }
+
+        // their model will be reloaded after saving our model to reflect changes in referenced fields
+        $theirModel->reload_after_save = false;
+
+        $theirModel->onHook(Model::HOOK_AFTER_SAVE, function ($theirModel) {
+            $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->id;
+
+            if ($this->getOurFieldValue() !== $theirValue) {
+                $this->getOurField()->set($theirValue)->owner->save();
             }
 
-            return
-                $m->addHook('afterSave', function ($m) {
-                    $this->owner[$this->our_field] = $m[$this->their_field];
-                });
-        }
+            $theirModel->reload();
+        });
 
-        if ($this->owner[$this->our_field]) {
-            $m->tryLoad($this->owner[$this->our_field]);
-        }
-
-        return
-            $m->addHook('afterSave', function ($m) {
-                $this->owner[$this->our_field] = $m->id;
-            });
+        return $theirModel;
     }
 }

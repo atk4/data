@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests\Model;
 
 class Client extends User
 {
-    public function init()
+    protected function init(): void
     {
         parent::init();
 

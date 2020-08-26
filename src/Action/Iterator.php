@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Action;
 
-use Guzzle\Iterator\FilterIterator;
+use atk4\data\Exception;
+use atk4\data\Field;
+use atk4\data\Model;
 
 /**
  * Class Array_ is returned by $model->action(). Compatible with DSQL to a certain point as it implements
@@ -17,8 +21,6 @@ class Iterator
 
     /**
      * Iterator constructor.
-     *
-     * @param array $data
      */
     public function __construct(array $data)
     {
@@ -33,64 +35,173 @@ class Iterator
      *
      * @return $this
      */
-    public function where($field, $value)
+    public function filter(Model\Scope\AbstractScope $condition)
     {
-        $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
-
-            // skip row. does not have field at all
-            if (!isset($row[$field])) {
-                return false;
-            }
-
-            // has row and it matches
-            if ($row[$field] == $value) {
-                return true;
-            }
-
-            return false;
-        });
+        if (!$condition->isEmpty()) {
+            $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($condition) {
+                return $this->match($row, $condition);
+            });
+        }
 
         return $this;
     }
 
     /**
-     * Applies FilterIterator condition imitating the sql LIKE operator - $field LIKE %$value% | $value% | %$value.
+     * Calculates SUM|AVG|MIN|MAX aggragate values for $field.
      *
+     * @param string $fx
      * @param string $field
-     * @param string $value
+     * @param bool   $coalesce
      *
-     * @return $this
+     * @return \atk4\data\Action\Iterator
      */
-    public function like($field, $value)
+    public function aggregate($fx, $field, $coalesce = false)
     {
-        $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($field, $value) {
+        $result = 0;
+        $column = array_column($this->get(), $field);
 
-            // skip row. does not have field at all
-            if (!isset($row[$field])) {
-                return false;
-            }
+        switch (strtoupper($fx)) {
+            case 'SUM':
+                $result = array_sum($column);
 
-            $clean_value = trim(trim($value), '%');
-            // the row field exists check the position of th "%"(s)
-            switch ($value) {
-                // case "%str%"
-                case substr($value, -1, 1) == '%' && substr($value, 0, 1) == '%':
-                    return strpos($row[$field], $clean_value) !== false;
-                    break;
-                // case "str%"
-                case substr($value, -1, 1) == '%':
-                    return substr($row[$field], 0, strlen($clean_value)) === $clean_value;
-                    break;
-                // case "%str"
-                case substr($value, 0, 1) == '%':
-                    return substr($row[$field], -strlen($clean_value)) === $clean_value;
-                    break;
-            }
+            break;
+            case 'AVG':
+                $column = $coalesce ? $column : array_filter($column, function ($value) {
+                    return $value !== null;
+                });
 
-            return false;
-        });
+                $result = array_sum($column) / count($column);
+
+            break;
+            case 'MAX':
+                $result = max($column);
+
+            break;
+            case 'MIN':
+                $result = min($column);
+
+            break;
+            default:
+                throw (new Exception('Persistence\Array_ driver action unsupported format'))
+                    ->addMoreInfo('action', $fx);
+        }
+
+        $this->generator = new \ArrayIterator([[$result]]);
 
         return $this;
+    }
+
+    /**
+     * Checks if $row matches $condition.
+     *
+     * @return bool
+     */
+    protected function match(array $row, Model\Scope\AbstractScope $condition)
+    {
+        $match = false;
+
+        // simple condition
+        if ($condition instanceof Model\Scope\Condition) {
+            $args = $condition->toQueryArguments();
+
+            $field = $args[0];
+            $operator = $args[1] ?? null;
+            $value = $args[2] ?? null;
+            if (count($args) == 2) {
+                $value = $operator;
+
+                $operator = '=';
+            }
+
+            if (!is_a($field, Field::class)) {
+                throw (new Exception('Persistence\Array_ driver condition unsupported format'))
+                    ->addMoreInfo('reason', 'Unsupported object instance ' . get_class($field))
+                    ->addMoreInfo('condition', $condition);
+            }
+
+            $match = $this->evaluateIf($row[$field->short_name] ?? null, $operator, $value);
+        }
+
+        // nested conditions
+        if ($condition instanceof Model\Scope) {
+            $matches = [];
+
+            foreach ($condition->getNestedConditions() as $nestedCondition) {
+                $matches[] = $subMatch = (bool) $this->match($row, $nestedCondition);
+
+                // do not check all conditions if any match required
+                if ($condition->isOr() && $subMatch) {
+                    break;
+                }
+            }
+
+            // any matches && all matches the same (if all required)
+            $match = array_filter($matches) && ($condition->isAnd() ? count(array_unique($matches)) === 1 : true);
+        }
+
+        return $match;
+    }
+
+    protected function evaluateIf($v1, $operator, $v2): bool
+    {
+        switch (strtoupper((string) $operator)) {
+            case '=':
+                $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
+
+            break;
+            case '>':
+                $result = $v1 > $v2;
+
+            break;
+            case '>=':
+                $result = $v1 >= $v2;
+
+            break;
+            case '<':
+                $result = $v1 < $v2;
+
+            break;
+            case '<=':
+                $result = $v1 <= $v2;
+
+            break;
+            case '!=':
+            case '<>':
+                $result = !$this->evaluateIf($v1, '=', $v2);
+
+            break;
+            case 'LIKE':
+                $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
+
+                $result = (bool) preg_match('/^' . $pattern . '$/', (string) $v1);
+
+            break;
+            case 'NOT LIKE':
+                $result = !$this->evaluateIf($v1, 'LIKE', $v2);
+
+            break;
+            case 'IN':
+                $result = is_array($v2) ? in_array($v1, $v2, true) : $this->evaluateIf($v1, '=', $v2);
+
+            break;
+            case 'NOT IN':
+                $result = !$this->evaluateIf($v1, 'IN', $v2);
+
+            break;
+            case 'REGEXP':
+                $result = (bool) preg_match('/' . $v2 . '/', $v1);
+
+            break;
+            case 'NOT REGEXP':
+                $result = !$this->evaluateIf($v1, 'REGEXP', $v2);
+
+            break;
+            default:
+                throw (new Exception('Unsupported operator'))
+                    ->addMoreInfo('operator', $operator);
+        }
+
+        return $result;
     }
 
     /**
@@ -106,15 +217,14 @@ class Iterator
 
         // prepare arguments for array_multisort()
         $args = [];
-        foreach ($fields as list($field, $desc)) {
+        foreach ($fields as [$field, $direction]) {
             $args[] = array_column($data, $field);
-            $args[] = $desc ? SORT_DESC : SORT_ASC;
-            //$args[] = SORT_STRING; // SORT_STRING | SORT_NUMERIC | SORT_REGULAR
+            $args[] = strtolower($direction) === 'desc' ? SORT_DESC : SORT_ASC;
         }
         $args[] = &$data;
 
         // call sorting
-        call_user_func_array('array_multisort', $args);
+        array_multisort(...$args);
 
         // put data back in generator
         $this->generator = new \ArrayIterator(array_pop($args));
@@ -125,14 +235,11 @@ class Iterator
     /**
      * Limit Iterator.
      *
-     * @param int $cnt
-     * @param int $shift
-     *
      * @return $this
      */
-    public function limit($cnt, $shift = 0)
+    public function limit(int $limit = null, int $offset = 0)
     {
-        $data = array_slice($this->get(), $shift, $cnt, true);
+        $data = array_slice($this->get(), $offset, $limit, true);
 
         // put data back in generator
         $this->generator = new \ArrayIterator($data);
@@ -153,21 +260,29 @@ class Iterator
     }
 
     /**
-     * Return all data inside array.
+     * Checks if iterator has any rows.
      *
-     * @return array
+     * @return $this
      */
-    public function get()
+    public function exists()
+    {
+        $this->generator = new \ArrayIterator([[$this->generator->valid() ? 1 : 0]]);
+
+        return $this;
+    }
+
+    /**
+     * Return all data inside array.
+     */
+    public function get(): array
     {
         return iterator_to_array($this->generator, true);
     }
 
     /**
      * Return one row of data.
-     *
-     * @return array
      */
-    public function getRow()
+    public function getRow(): ?array
     {
         $row = $this->generator->current();
         $this->generator->next();
@@ -184,6 +299,6 @@ class Iterator
     {
         $data = $this->getRow();
 
-        return array_shift($data);
+        return reset($data);
     }
 }

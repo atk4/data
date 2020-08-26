@@ -28,7 +28,7 @@ We also allow use of custom Field implementation::
 A properly implemented type will still be able to offer some means to present
 it in human-readable format, however in some cases, if you plan on using ATK UI,
 you would have to create a custom decorators/FormField to properly read and
-present your type value. See :php:attr:`\atk4\ui\Field::ui`.
+present your type value. See :php:attr:`\\atk4\\ui\\Field::ui`.
 
 Persistence mechanics and Serialization
 =======================================
@@ -112,9 +112,9 @@ Additionally there is a support for
 All measurements are implemented with :php:class:`Units` and can be further extended::
 
     $model->addField('speed', ['Units', 'postfix'=>'/s', 'scale'=>['m'=>1, 'km'=>1000]]);
-    $model['speed'] = '30km/s';
+    $model->set('speed', '30km/s');
 
-    echo $model['speed']; // 30000
+    echo $model->get('speed'); // 30000
     echo $model->getField('speed')->format(); // 30km/s
     echo $model->getField('speed')->format('m'); // 30000m/s
 

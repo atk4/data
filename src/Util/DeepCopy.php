@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\Util;
 
-use atk4\core\Exception;
 use atk4\data\Model;
 use atk4\data\Reference\HasMany;
 use atk4\data\Reference\HasOne;
@@ -21,13 +22,16 @@ class DeepCopy
 {
     use \atk4\core\DebugTrait;
 
+    /** @const string */
+    public const HOOK_AFTER_COPY = self::class . '@afterCopy';
+
     /**
-     * @var \atk4\data\Model from which we want to copy records.
+     * @var Model from which we want to copy records
      */
     protected $source;
 
     /**
-     * @var \atk4\data\Model in which we want to copy records into.
+     * @var Model in which we want to copy records into
      */
     protected $destination;
 
@@ -59,8 +63,6 @@ class DeepCopy
     /**
      * Set model from which to copy records.
      *
-     * @param Model $source
-     *
      * @return $this
      */
     public function from(Model $source)
@@ -72,8 +74,6 @@ class DeepCopy
 
     /**
      * Set model in which to copy records into.
-     *
-     * @param Model $destination
      *
      * @return $this
      */
@@ -91,8 +91,6 @@ class DeepCopy
     /**
      * Set references to copy.
      *
-     * @param array $references
-     *
      * @return $this
      */
     public function with(array $references)
@@ -106,8 +104,6 @@ class DeepCopy
      * Specifies which fields shouldn't be copied. May also contain arrays
      * for related entries.
      * ->excluding(['name', 'address_id'=>['city']]);.
-     *
-     * @param array $exclusions
      *
      * @return $this
      */
@@ -134,11 +130,9 @@ class DeepCopy
      *          }]
      *  );
      *
-     * @param array $transforms
-     *
      * @return $this
      */
-    public function transformData($transforms)
+    public function transformData(array $transforms)
     {
         $this->transforms = $transforms;
 
@@ -147,15 +141,11 @@ class DeepCopy
 
     /**
      * Will extract non-numeric keys from the array.
-     *
-     * @param $array
-     *
-     * @return array
      */
-    protected function extractKeys($array): array
+    protected function extractKeys(array $array): array
     {
         $result = [];
-        foreach ($array as $key=>$val) {
+        foreach ($array as $key => $val) {
             if (is_int($key)) {
                 $result[$val] = [];
             } else {
@@ -168,60 +158,49 @@ class DeepCopy
 
     /**
      * Copy records.
-     *
-     * @throws DeepCopyException
-     * @throws Exception
-     *
-     * @return Model Destination model
      */
-    public function copy()
+    public function copy(): Model
     {
         return $this->_copy(
-                    $this->source,
-                    $this->destination,
-                    $this->references,
-                    $this->exclusions,
-                    $this->transforms
-            )->reload();
+            $this->source,
+            $this->destination,
+            $this->references,
+            $this->exclusions,
+            $this->transforms
+        )->reload();
     }
 
     /**
      * Internal method for copying records.
      *
-     * @param Model $source
-     * @param Model $destination
-     * @param array $references
-     * @param array $exclusions  of fields to exclude
-     * @param array $transforms  callbacks for data transforming
-     *
-     * @throws DeepCopyException
-     * @throws Exception
+     * @param array $exclusions fields to exclude
+     * @param array $transforms callbacks for data transforming
      *
      * @return Model Destination model
      */
-    protected function _copy(Model $source, Model $destination, array $references, array $exclusions, array $transforms)
+    protected function _copy(Model $source, Model $destination, array $references, array $exclusions, array $transforms): Model
     {
         try {
             // Perhaps source was already copied, then simply load destination model and return
             if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->id])) {
-                $this->debug('Skipping '.get_class($source));
+                $this->debug('Skipping ' . get_class($source));
 
                 $destination->load($this->mapping[$source->table][$source->id]);
             } else {
-                $this->debug('Copying '.get_class($source));
+                $this->debug('Copying ' . get_class($source));
 
                 $data = $source->get();
 
                 // exclude not needed field values
-                // @see excluding()
+                // see self::excluding()
                 foreach ($this->extractKeys($exclusions) as $key => $val) {
                     unset($data[$key]);
                 }
 
                 // do data transformation from source to destination
-                // @see transformData()
-                if (isset($transforms[0]) && is_callable($transforms[0])) {
-                    $data = call_user_func($transforms[0], $data);
+                // see self::transformData()
+                if (isset($transforms[0]) && $transforms[0] instanceof \Closure) {
+                    $data = $transforms[0]($data);
                 }
 
                 // TODO add a way here to look for duplicates based on unique fields
@@ -232,53 +211,51 @@ class DeepCopy
 
                 // Copy fields as they are
                 foreach ($data as $key => $val) {
-                    if (
-                        ($field = $destination->hasField($key)) &&
-                        $field->isEditable()
-                    ) {
+                    if ($destination->hasField($key) && $destination->getField($key)->isEditable()) {
                         $destination->set($key, $val);
                     }
                 }
             }
-            $destination->hook('afterCopy', [$source]);
+            $destination->hook(self::HOOK_AFTER_COPY, [$source]);
 
             // Look for hasOne references that needs to be mapped. Make sure records can be mapped, or copy them
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
-                $this->debug("Considering $ref_key");
+                $this->debug("Considering {$ref_key}");
 
-                if (($ref = $source->hasRef($ref_key)) && $ref instanceof HasOne) {
-                    $this->debug("Proceeding with $ref_key");
+                if ($source->hasRef($ref_key) && ($ref = $source->getRef($ref_key)) instanceof HasOne) {
+                    $this->debug("Proceeding with {$ref_key}");
 
                     // load destination model through $source
                     $source_table = $ref->refModel()->table;
 
                     if (
                         isset($this->mapping[$source_table]) &&
-                        array_key_exists($source[$ref_key], $this->mapping[$source_table])
+                        array_key_exists($source->get($ref_key), $this->mapping[$source_table])
                     ) {
                         // no need to deep copy, simply alter ID
-                        $destination[$ref_key] = $this->mapping[$source_table][$source[$ref_key]];
-                        $this->debug(' already copied '.$source[$ref_key].' as '.$destination[$ref_key]);
+                        $destination->set($ref_key, $this->mapping[$source_table][$source->get($ref_key)]);
+                        $this->debug(' already copied ' . $source->get($ref_key) . ' as ' . $destination->get($ref_key));
                     } else {
                         // hasOne points to null!
-                        $this->debug('Value is '.$source[$ref_key]);
-                        if (!$source[$ref_key]) {
-                            $destination[$ref_key] = $source[$ref_key];
+                        $this->debug('Value is ' . $source->get($ref_key));
+                        if (!$source->get($ref_key)) {
+                            $destination->set($ref_key, $source->get($ref_key));
+
                             continue;
                         }
 
                         // pointing to non-existent record. Would need to copy
                         try {
-                            $destination[$ref_key] = $this->_copy(
+                            $destination->set($ref_key, $this->_copy(
                                 $source->ref($ref_key),
                                 $destination->refModel($ref_key),
                                 $ref_val,
                                 $exclusions[$ref_key] ?? [],
                                 $transforms[$ref_key] ?? []
-                            )->id;
-                            $this->debug(' ... mapped into '.$destination[$ref_key]);
+                            )->id);
+                            $this->debug(' ... mapped into ' . $destination->get($ref_key));
                         } catch (DeepCopyException $e) {
-                            $this->debug('escalating a problem from '.$ref_key);
+                            $this->debug('escalating a problem from ' . $ref_key);
 
                             throw $e->addDepth($ref_key);
                         }
@@ -291,13 +268,12 @@ class DeepCopy
 
             // Store mapping
             $this->mapping[$source->table][$source->id] = $destination->id;
-            $this->debug(' .. copied '.get_class($source).' '.$source->id.' '.$destination->id);
+            $this->debug(' .. copied ' . get_class($source) . ' ' . $source->id . ' ' . $destination->id);
 
             // Next look for hasMany relationships and copy those too
 
             foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
-                if (($ref = $source->hasRef($ref_key)) && $ref instanceof HasMany) {
-
+                if ($source->hasRef($ref_key) && ($ref = $source->getRef($ref_key)) instanceof HasMany) {
                     // No mapping, will always copy
                     foreach ($source->ref($ref_key) as $ref_model) {
                         $this->_copy(
@@ -317,15 +293,13 @@ class DeepCopy
         } catch (\atk4\core\Exception $e) {
             $this->debug('noticed a problem');
 
-            throw new DeepCopyException([
-                'Problem cloning model',
-                'source'          => $source,
-                'source_info'     => $source->__debugInfo(),
-                'source_data'     => $source->get(),
-                'destination'     => $destination,
-                'destination_info'=> $destination->__debugInfo(),
-                'depth'           => $e->getParams()['field'] ?? '?',
-                ], null, $e);
+            throw (new DeepCopyException('Problem cloning model', 0, $e))
+                ->addMoreInfo('source', $source)
+                ->addMoreInfo('source_info', $source->__debugInfo())
+                ->addMoreInfo('source_data', $source->get())
+                ->addMoreInfo('destination', $destination)
+                ->addMoreInfo('destination_info', $destination->__debugInfo())
+                ->addMoreInfo('depth', $e->getParams()['field'] ?? '?');
         }
     }
 }

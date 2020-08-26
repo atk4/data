@@ -14,7 +14,7 @@ operation. Here is the sequence and sample::
     // instructs AD that we will be using it for staring dates
     // through 'DateTime' class.
 
-    $m['birthday'] = 'Jan 1 1960';
+    $m->set('birthday', 'Jan 1 1960');
     // If non-compatible value is provided, it will be converted
     // into a proper date through Normalization process. After
     // this line value of 'birthday' field will be DateTime.
@@ -53,8 +53,8 @@ Here is another example with booleans::
         'enum' => ['No', 'Yes']
     ]);
 
-    $m['is_married'] = 'Yes';  // normalizes into true
-    $m['is_married'] = true;   // better way because no need to normalize
+    $m->set('is_married', 'Yes');  // normalizes into true
+    $m->set('is_married', true);   // better way because no need to normalize
 
     $m->save();   // stores as "Yes" because of type-casting
 
@@ -63,8 +63,8 @@ Value types
 
 Any type can have a value of `null`::
 
-    $m['is_married'] = null;
-    if (!$m['is_married']) {
+    $m->set('is_married', null);
+    if (!$m->get('is_married')) {
         // either null or false
     }
 
@@ -74,11 +74,11 @@ to normalize value::
     $m->addField('age', ['type'=>'integer']);
     $m->addField('name', ['type'=>'string']);
 
-    $m['age'] = '49.80';
-    $m['name'] = '       John';
+    $m->set('age', '49.80');
+    $m->set('name', '       John');
 
-    echo $m['age']; // 49 - normalization cast value to integer
-    echo $m['name']; // 'John' - normalization trims value
+    echo $m->get('age'); // 49 - normalization cast value to integer
+    echo $m->get('name'); // 'John' - normalization trims value
 
 Undefined type
 --------------
@@ -133,7 +133,7 @@ You can also use callbacks for typecasting.
 
     // encrypt data if SQL persistence
     $encrypt = function ($value, $field, $persistence) {
-        if ($persistence instanceof \atk4\data\Persistence\SQL) {
+        if ($persistence instanceof \atk4\data\Persistence\Sql) {
             return mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $field->key, $value);
         }
         return $value;
@@ -141,7 +141,7 @@ You can also use callbacks for typecasting.
 
     // decrypt data if SQL persistence
     $decrypt = function ($value, $field, $persistence) {
-        if ($persistence instanceof \atk4\data\Persistence\SQL) {
+        if ($persistence instanceof \atk4\data\Persistence\Sql) {
             return mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $field->key, $value);
         }
         return $value;
@@ -194,7 +194,7 @@ specifying our callbacks for converting::
     }
 
     $money_decode = function($x) {
-        list($amount, $currency) = explode(' ', $x);
+        list($amount, $currency) = explode(' ', $x, 2);
         return new MyMoney($amount, $currency);
     }
 

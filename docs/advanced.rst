@@ -17,7 +17,7 @@ fields. The pattern suggest you should add a new table "transaction_transfer" an
 store extra fields there. In your code::
 
     class Transaction_Transfer extends Transaction {
-        function init() {
+        function init(): void {
             parent::init();
             $j = $this->join('transaction_transfer.transaction_id');
             $j->addField('destination_account');
@@ -77,7 +77,7 @@ Another scenario which could benefit by type substitution would be::
 ATK Data allow class substitution during load and iteration by breaking "afterLoad"
 hook. Place the following inside Transaction::init()::
 
-    $this->addHook('afterLoad', function ($m) {
+    $this->onHook(Model::HOOK_AFTER_LOAD, function ($m) {
         if (get_class($this) != $m->getClassName()) {
             $cl = '\\'.$this->getClassName();
             $cl = new $cl($this->persistence);
@@ -94,11 +94,11 @@ of the record. Finally to help with performance, you can implement a switch::
 
     ...
 
-    function init() {
+    function init(): void {
         ..
 
         if ($this->typeSubstitution) {
-            $this->addHook('afterLoad',
+            $this->onHook(Model::HOOK_AFTER_LOAD,
                 ..........
             )
         }
@@ -148,14 +148,14 @@ $owner, and $app values (due to AppScopeTrait) as well as execute init() method,
 which I want to define like this::
 
 
-    public function init() {
+    protected function init(): void {
         $this->_init();
 
         if(isset($this->owner->no_audit)){
             return;
         }
 
-        $this->owner->addField('created_dts', ['type'=>'datetime', 'default'=>date('Y-m-d H:i:s')]);
+        $this->owner->addField('created_dts', ['type'=>'datetime', 'default'=>new \DateTime()]);
 
         $this->owner->hasOne('created_by_user_id', 'User');
         if(isset($this->app->user) and $this->app->user->loaded()) {
@@ -166,11 +166,11 @@ which I want to define like this::
 
         $this->owner->addField('updated_dts', ['type'=>'datetime']);
 
-        $this->owner->addHook('beforeUpdate', function($m, $data) {
+        $this->owner->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
             if(isset($this->app->user) and $this->app->user->loaded()) {
                 $data['updated_by'] = $this->app->user->id;
             }
-            $data['updated_dts'] = date('Y-m-d H:i:s');
+            $data['updated_dts'] = new \DateTime();
         });
     }
 
@@ -220,7 +220,7 @@ Start by creating a class::
         }
         use \atk4\core\TrackableTrait;
 
-        function init() {
+        function init(): void {
             $this->_init();
 
             if(isset($this->owner->no_soft_delete)){
@@ -231,16 +231,16 @@ Start by creating a class::
 
             if (isset($this->owner->deleted_only)) {
                 $this->owner->addCondition('is_deleted', true);
-                $this->owner->addMethod('restore', $this);
-            }else{
+                $this->owner->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
+            } else {
                 $this->owner->addCondition('is_deleted', false);
-                $this->owner->addMethod('softDelete', $this);
+                $this->owner->addMethod('softDelete', \Closure::fromCallable([$this, 'softDelete']));
             }
         }
 
         function softDelete($m) {
             if (!$m->loaded()) {
-                throw new \atk4\core\Exception(['Model must be loaded before soft-deleting', 'model'=>$m]);
+                throw (new \atk4\core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
 
             $id = $m->id;
@@ -259,7 +259,7 @@ Start by creating a class::
 
         function restore($m) {
             if (!$m->loaded()) {
-                throw new \atk4\core\Exception(['Model must be loaded before restoring', 'model'=>$m]);
+                throw (new \atk4\core\Exception(['Model must be loaded before restoring'))->addMoreInfo('model', $m);
             }
 
             $id = $m->id;
@@ -329,7 +329,7 @@ before and just slightly modifying it::
         }
         use \atk4\core\TrackableTrait;
 
-        function init() {
+        function init(): void {
             $this->_init();
 
             if(isset($this->owner->no_soft_delete)){
@@ -340,16 +340,16 @@ before and just slightly modifying it::
 
             if (isset($this->owner->deleted_only)) {
                 $this->owner->addCondition('is_deleted', true);
-                $this->owner->addMethod('restore', $this);
+                $this->owner->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
             } else {
                 $this->owner->addCondition('is_deleted', false);
-                $this->owner->addHook('beforeDelete', [$this, 'softDelete'], null, 100);
+                $this->owner->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'softDelete']), null, 100);
             }
         }
 
         function softDelete($m) {
             if (!$m->loaded()) {
-                throw new \atk4\core\Exception(['Model must be loaded before soft-deleting', 'model'=>$m]);
+                throw (new \atk4\core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
 
             $id = $m->id;
@@ -359,14 +359,14 @@ before and just slightly modifying it::
             $m->save(['is_deleted'=>true])->unload();
             $m->reload_after_save = $rs;
 
-            $m->hook('afterDelete', [$id]);
+            $m->hook(Model::HOOK_AFTER_DELETE, [$id]);
 
             $m->breakHook(false); // this will cancel original delete()
         }
 
         function restore($m) {
             if (!$m->loaded()) {
-                throw new \atk4\core\Exception(['Model must be loaded before restoring', 'model'=>$m]);
+                throw (new \atk4\core\Exception('Model must be loaded before restoring'))->addMoreInfo('model', $m);
             }
 
             $id = $m->id;
@@ -417,7 +417,7 @@ inside your model are unique::
 
         protected $fields = null;
 
-        function init() {
+        function init(): void {
             $this->_init();
 
             // by default make 'name' unique
@@ -425,7 +425,7 @@ inside your model are unique::
                 $this->fields = [$this->owner->title_field];
             }
 
-            $this->owner->addHook('beforeSave', $this);
+            $this->owner->onHook(Model::HOOK_BEFORE_SAVE, \Closure::fromCallable([$this, 'beforeSave']));
         }
 
         function beforeSave($m)
@@ -434,10 +434,12 @@ inside your model are unique::
                 if ($m->dirty[$field]) {
                     $mm = clone $m;
                     $mm->addCondition($mm->id_field != $this->id);
-                    $mm->tryLoadBy($field, $m[$field]);
+                    $mm->tryLoadBy($field, $m->get($field));
 
                     if ($mm->loaded()) {
-                        throw new \atk4\core\Exception(['Duplicate record exists', 'field'=>$field, 'value'=>$m[$field]]);
+                        throw (new \atk4\core\Exception('Duplicate record exists'))
+                            ->addMoreInfo('field', $field)
+                            ->addMoreInfo('value', $m->get($field));
                     }
                 }
             }
@@ -447,6 +449,33 @@ inside your model are unique::
 As expected - when you add a new model the new values are checked against
 existing records. You can also slightly modify the logic to make addCondition
 additive if you are verifying for the combination of matched fields.
+
+Using WITH cursors
+==================
+
+Many SQL database engines support defining WITH cursors to use in select, update
+and even delete statements.
+
+.. php:method:: addWith(Model $model, string $alias, array $fields, bool $recursive = false)
+
+    Agile toolkit data models also support these cursors. Usage is like this::
+
+    $invoices = new Invoice();
+
+    $contacts = new Contact();
+    $contacts->addWith($invoices, 'inv', ['contact_id'=>'cid', 'ref_no', 'total_net'=>'invoiced'], false);
+    $contacts->join('inv.cid');
+
+.. code-block:: sql
+
+    with
+        `inv` (`cid`, `ref_no`, `total_net`) as (select `contact_id`, `ref_no`, `total_net` from `invoice`)
+    select
+        *
+    from `contact`
+        join `inv` on `inv`.`cid`=`contact`.`id`
+
+.. note:: Supported starting from MySQL 8.x. MariaDB supported it earlier.
 
 Creating Many to Many relationship
 ==================================
@@ -465,7 +494,7 @@ Create new Model::
 
     class Model_InvoicePayment extends \atk4\data\Model {
         public $table='invoice_payment';
-        function init()
+        function init(): void
         {
             parent::init();
             $this->hasOne('invoice_id', 'Model_Invoice');
@@ -488,11 +517,11 @@ Next we need to define reference. Inside Model_Invoice add::
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field'=>'invoice_id']);
 
-    $this->addHook('beforeDelete',function($m){
+    $this->onHook(Model::HOOK_BEFORE_DELETE, function($m){
         $m->ref('InvoicePayment')->action('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment
-        // $m->ref('InvoicePayment')->each('delete');
+        // $payment = $m->ref('InvoicePayment'); $payment->each(function () use ($payment) { $payment->delete(); });
     });
 
 You'll have to do a similar change inside Payment model. The code for '$j->'
@@ -507,7 +536,7 @@ we cannot close amount that is bigger than invoice's total::
 
     $i->ref('Payment')->insert([
         'amount'=>$paid,
-        'amount_closed'=> min($paid, $i['total']),
+        'amount_closed'=> min($paid, $i->get('total')),
         'payment_code'=>'XYZ'
     ]);
 
@@ -536,10 +565,10 @@ payment towards a most suitable invoice::
         // Prioritize older invoices
         $invoices->setOrder('date');
 
-        while($this['amount_due'] > 0) {
+        while($this->get('amount_due') > 0) {
 
             // See if any invoices match by 'reference';
-            $invoices->tryLoadBy('reference', $this['reference']);
+            $invoices->tryLoadBy('reference', $this->get('reference'));
 
             if (!$invoices->loaded()) {
 
@@ -554,7 +583,7 @@ payment towards a most suitable invoice::
             }
 
             // How much we can allocate to this invoice
-            $alloc = min($this['amount_due'], $invoices['amount_due'])
+            $alloc = min($this->get('amount_due'), $invoices->get('amount_due'))
             $this->ref('InvoicePayment')->insert(['amount_closed'=>$alloc, 'invoice_id'=>$invoices->id]);
 
             // Reload ourselves to refresh amount_due
@@ -579,7 +608,7 @@ name, not only category_id. First, let me illustrate how can I do that with
 category_id::
 
     class Model_Invoice extends \atk4\data\Model {
-        function init() {
+        function init(): void {
 
             parent::init();
 
@@ -623,23 +652,23 @@ Here is how to add them. First you need to create fields::
 I have declared those fields with never_persist so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
-    $this->addHook('beforeSave', function($m) {
-        if(isset($m['client_code']) && !isset($m['client_id'])) {
+    $this->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
+        if($m->_isset($m['client_code') && !$m->_isset($m['client_id')) {
             $cl = $this->refModel('client_id');
-            $cl->addCondition('code',$m['client_code']);
-            $m['client_id'] = $cl->action('field',['id']);
+            $cl->addCondition('code',$m->get('client_code'));
+            $m->set('client_id', $cl->action('field',['id']));
         }
 
-        if(isset($m['client_name']) && !isset($m['client_id'])) {
+        if($m->_isset('client_name') && !$m->_isset('client_id')) {
             $cl = $this->refModel('client_id');
-            $cl->addCondition('name', 'like', $m['client_name']);
-            $m['client_id'] = $cl->action('field',['id']);
+            $cl->addCondition('name', 'like', $m->get('client_name'));
+            $m->set('client_id', $cl->action('field',['id']));
         }
 
-        if(isset($m['category']) && !isset($m['category_id'])) {
+        if($m->_isset('category') && !$m->_isset('category_id')) {
             $c = $this->refModel('category_id');
-            $c->addCondition($c->title_field, 'like', $m['category']);
-            $m['category_id'] = $c->action('field',['id']);
+            $c->addCondition($c->title_field, 'like', $m->get('category'));
+            $m->set('category_id', $c->action('field',['id']));
         }
     });
 
@@ -655,22 +684,22 @@ Fallback to default value
 You might wonder, with the lookup like that, how the default values will work?
 What if the user-specified entry is not found? Lets look at the code::
 
-    if(isset($m['category']) && !isset($m['category_id'])) {
+    if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
-        $c->addCondition($c->title_field, 'like', $m['category']);
-        $m['category_id'] = $c->action('field',['id']);
+        $c->addCondition($c->title_field, 'like', $m->get('category'));
+        $m->set('category_id', $c->action('field',['id']));
     }
 
 So if category with a name is not found, then sub-query will return "NULL".
 If you wish to use a different value instead, you can create an expression::
 
-    if(isset($m['category']) && !isset($m['category_id'])) {
+    if($m->_isset('category') && !$m->_isset('category_id')) {
         $c = $this->refModel('category_id');
-        $c->addCondition($c->title_field, 'like', $m['category']);
-        $m['category_id'] = $this->expr('coalesce([],[])',[
+        $c->addCondition($c->title_field, 'like', $m->get('category'));
+        $m->set('category_id', $this->expr('coalesce([],[])',[
             $c->action('field',['id']),
             $m->getField('category_id')->default
-        ]);
+        ]));
     }
 
 The beautiful thing about this approach is that default can also be defined
@@ -712,13 +741,13 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->addHook('afterSave', function($m, $is_update){
-        if(isset($m['payment'])) {
-            $m->ref('Payment')->insert($m['payment']);
+    $this->onHook(Model::HOOK_AFTER_SAVE, function($m, $is_update){
+        if($m->_isset('payment')) {
+            $m->ref('Payment')->insert($m->get('payment'));
         }
 
-        if(isset($m['lines'])) {
-            $m->ref('Line')->import($m['lines']);
+        if($m->_isset('lines')) {
+            $m->ref('Line')->import($m->get('lines'));
         }
     });
 
@@ -727,7 +756,9 @@ further manipulation, you can reload a clone::
 
     $mm = clone $m;
     $mm->reload();
-    if ($mm['amount_due'] == 0) $mm->save(['status'=>'paid']);
+    if ($mm->get('amount_due') == 0) {
+        $mm->save(['status'=>'paid']);
+    }
 
 Related Record Conditioning
 ===========================
@@ -773,16 +804,16 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
     /// how to use
 
     $m = new Model_Invoice($db);
-    $m['client_id'] = 123;
+    $m->set('client_id', 123);
 
-    $m['payment_invoice_id'] = $m->ref('payment_invoice_id')->tryLoadAny()->id;
+    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->id);
 
 In this case the payment_invoice_id will be set to ID of any payment by client
 123. There also may be some better uses::
 
     $cl->ref('Invoice')->each(function($m) {
 
-        $m['payment_invoice_id'] = $m->ref('payment_invoice_id')->tryLoadAny()->id;
+        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->id);
         $m->save();
 
     });

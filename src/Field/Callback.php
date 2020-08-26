@@ -1,10 +1,11 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+declare(strict_types=1);
 
 namespace atk4\data\Field;
 
 use atk4\core\InitializerTrait;
+use atk4\data\Model;
 
 /**
  * Evaluate php expression after load.
@@ -18,9 +19,9 @@ class Callback extends \atk4\data\Field
     /**
      * Method to execute for evaluation.
      *
-     * @var mixed
+     * @var \Closure
      */
-    public $expr = null;
+    public $expr;
 
     /**
      * Expressions are always read_only.
@@ -39,12 +40,14 @@ class Callback extends \atk4\data\Field
     /**
      * Initialization.
      */
-    public function init()
+    protected function init(): void
     {
         $this->_init();
 
-        $this->owner->addHook('afterLoad', function ($m) {
-            $m->data[$this->short_name] = call_user_func($this->expr, $m);
+        $this->ui['table']['sortable'] = false;
+
+        $this->owner->onHook(Model::HOOK_AFTER_LOAD, function (Model $model) {
+            $model->data[$this->short_name] = ($this->expr)($model);
         });
     }
 }

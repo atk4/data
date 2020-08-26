@@ -22,19 +22,21 @@ object you can load/unload individual records (See Single record Operations belo
    $m = new User($db);
 
    $m->load(3);
-   $m['note'] = 'just updating';
+   $m->set('note', 'just updating');
    $m->save();
    $m->unload();
 
    $m->load(8);
    ....
 
-and even perform operations on multiple records (See Multiple record Operations below)::
+and even perform operations on multiple records (See `Persistence Actions` below)::
 
    $m = new User($db);
    $m->addCondition('expired', true);
 
-   $m->deleteAll();
+   $m->action('delete')->execute(); // performs mass delete, hooks are not executed
+   
+   $m->each(function () use ($m) { $m->delete(); }); // deletes each record, hooks are executed
 
 When data is loaded from associated Persistence, it is automatically converted into
 a native PHP type (such as DateTime object) through a process called Typecasting. Various
@@ -63,7 +65,7 @@ Model class can be seen as a "gateway" between your code and many other features
 For example - you may define fields and relations for the model::
 
    $model->addField('age', ['type'=>'number']);
-   $model->hasMany('Children', Person::class);
+   $model->hasMany('Children', ['model' => [Person::class]]);
 
 Methods `addField` and `hasMany` will ultimatelly create and link model with a corresponding
 `Field` object and `Reference` object. Those classes contain the logic, but in 95% of the use-cases,
@@ -100,7 +102,7 @@ implementations. Still - Model will be a good place to deposit some meta-informa
    $model->addField('age', ['ui'=>['caption'=>'Put your age here']]);
 
 Model and Field class will simply store the "ui" property which may (or may not) be used by ATK UI
-component or some add-on. 
+component or some add-on.
 
 
 Domain vs Persistence
@@ -125,7 +127,7 @@ used by persistence. (Name of property is decided to avoid beginner confusion)
 
 Good naming for a Model
 -----------------------
-Some parts of this documentation were created years ago and may use class notation: `Model_User`. 
+Some parts of this documentation were created years ago and may use class notation: `Model_User`.
 We actually recommend you to use namespaces instead::
 
    namespace yourapp\Model;
@@ -133,12 +135,12 @@ We actually recommend you to use namespaces instead::
    use \atk4\data\Model;
 
    class User extends Model {
-      function init() {
+      function init(): void {
          parent::init();
 
          $this->addField('name');
 
-         $this->hasMany('Invoices', Invoice::class); 
+         $this->hasMany('Invoices', ['model' => [Invoice::class]]);
       }
    }
 
@@ -159,7 +161,7 @@ Persistence object. It is commonly used to declare fields, conditions, relations
 
     class Model_User extends atk4\data\Model
     {
-        function init() {
+        function init(): void {
             parent::init();
 
             $this->addField('name');
@@ -169,15 +171,15 @@ Persistence object. It is commonly used to declare fields, conditions, relations
 
 You may safely rely on `$this->persistence` property to make choices::
 
-   if ($this->persistence instanceof \atk4\data\Persistence\SQL) {
+   if ($this->persistence instanceof \atk4\data\Persistence\Sql) {
 
       // Calculating on SQL server is more efficient!!
       $this->addExpression('total', '[amount] + [vat]');
    } else {
 
       // Fallback
-      $this->addCalculatedField('total', function($m) { 
-         return $m['amount'] + $m['vat']; 
+      $this->addCalculatedField('total', function($m) {
+         return $m->get('amount') + $m->get('vat');
       } );
    }
 
@@ -185,7 +187,7 @@ To invoke code from `init()` methods of ALL models (for example soft-delete logi
 you use Persistence's "afterAdd" hook. This will not affect ALL models but just models
 which are associated with said persistence::
 
-   $db->addHook('afterAdd', function($p, $m) use($acl) {
+   $db->onHook(Persistence::HOOK_AFTER_ADD, function($p, $m) use($acl) {
 
       $fields = $m->getFields();
 
@@ -208,21 +210,20 @@ performance. In ATK Data this is not an issue, because "Model" is re-usable::
 
    foreach(new User($db) as $user) {
 
-      var_dump($user->getField['name']);
       // will be the same object every time!!
+      var_dump($user->getField['name']);
 
-
-      var_dump($user)
       // this is also the same object every time!!
+      var_dump($user)
 
    }
 
 Instead, Field handles many very valuable operations which would otherwise fall on the
 shoulders of developer (Read more here :php:class:`Field`)
 
-.. php:method:: addField($name, $defaults)
+.. php:method:: addField($name, $seed)
 
-Creates a new field objects inside your model (by default the class is 'Field').
+Creates a new field object inside your model (by default the class is 'Field').
 The fields are implemented on top of Containers from Agile Core.
 
 Second argument to addField() will contain a seed for the Field class::
@@ -234,13 +235,28 @@ the type::
 
    $field = $this->addField('is_married', ['type'=>'boolean']);
 
-   // $field type is Field\Boolean
+   // $field class now will be Field\Boolean
 
 You may also specify your own Field implementation::
 
    $field = $this->addField('amount_and_currency', new MyAmountCurrencyField());
 
 Read more about :php:class:`Field`
+
+.. php:method:: addFields(array $fields, $defaults = [])
+
+Creates multiple field objects in one method call. See multiple syntax examples::
+
+    $m->addFields(['name'], ['default' => 'anonymous']);
+
+    $m->addFields([
+        'last_name',
+        'login' => ['default' => 'unknown'],
+        'salary' => ['type'=>'money', CustomField::class, 'default' => 100],
+        ['tax', CustomField::class, 'type'=>'money', 'default' => 20],
+        'vat' => new CustomField(['type'=>'money', 'default' => 15]),
+    ]);
+
 
 Read-only Fields
 ^^^^^^^^^^^^^^^^
@@ -293,11 +309,11 @@ This can also be useful for calculating relative times::
    class MyModel extends Model {
       use HumanTiming; // See https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
 
-      function init() {
+      function init(): void {
          parent::init();
 
          $this->addCalculatedField('event_ts_human_friendly', function($m) {
-            return $this->humanTiming($m['event_ts']);
+            return $this->humanTiming($m->get('event_ts'));
          });
 
       }
@@ -323,7 +339,7 @@ a user invokable actions::
 
    class User extends Model {
 
-      function init() {
+      function init(): void {
 
          parent::init();
 
@@ -331,7 +347,7 @@ a user invokable actions::
          $this->addField('email');
          $this->addField('password', ['type'=>'password']);
 
-         $this->addAction('send_new_password');
+         $this->addUserAction('send_new_password');
 
       }
 
@@ -341,7 +357,7 @@ a user invokable actions::
 
          $this->save(['password'=> .. ]);
 
-         return 'generated and sent password to '.$m['name'];
+         return 'generated and sent password to '.$m->get('name');
       }
    }
 
@@ -350,13 +366,13 @@ With a method alone, you can generate and send passwords::
    $user->load(3);
    $user->send_new_password();
 
-but using `$this->addAction()` exposes that method to the ATK UI wigets,
-so if your admin is using `CRUD`, a new button will be available allowing
+but using `$this->addUserAction()` exposes that method to the ATK UI wigets,
+so if your admin is using `Crud`, a new button will be available allowing
 passwords to be generated and sent to the users::
 
-   $app->add('CRUD')->setModel(new User($app->db));
+   Crud::addTo($app)->setModel(new User($app->db));
 
-Read more about :php:class:`UserAction`
+Read more about :php:class:`Model\UserAction`
 
 Hooks
 -----
@@ -375,18 +391,18 @@ a hook::
 
    $this->addField('name');
 
-   $this->addHook('validate', function($m) {
-      if ($m['name'] == 'C#') {
+   $this->onHook(Model::HOOK_VALIDATE, function($m) {
+      if ($m->get('name') === 'C#') {
          return ['name'=>'No sharp objects are allowed'];
       }
    });
 
 Now if you attempt to save object, you will receive :php:class:`ValidationException`::
 
-   $model['name'] = 'Swift';
+   $model->set('name', 'Swift');
    $model->saveAndUnload();      // all good
 
-   $model['name'] = 'C#';
+   $model->set('name', 'C#');
    $model->saveAndUnload();      // exception here
 
 
@@ -400,13 +416,13 @@ Inheritance
 -----------
 ATK Data models are really good for structuring hierarchically. Here is example::
 
-   class VIPUser extends User {
-      function init() {
+   class VipUser extends User {
+      function init(): void {
          parent::init();
 
          $this->addCondition('purchases', '>', 1000);
 
-         $this->addAction('send_gift');
+         $this->addUserAction('send_gift');
       }
 
       function send_gift() {
@@ -421,13 +437,13 @@ action - `send_gift`.
 There are some advanced techniques like "SubTypes" or class substitution,
 for example, this hook may be placed in the "User" class init()::
 
-   $this->addHook('afterLoad', function($m) {
-      if ($m['purchases'] > 1000) {
-         $this->breakHook($this->asModel(VIPUser::class);
+   $this->onHook(Model::HOOK_AFTER_LOAD, function($m) {
+      if ($m->get('purchases') > 1000) {
+         $this->breakHook($this->asModel(VipUser::class);
       }
    });
 
-See also :php:class:`Field\SubTypeSwitch`
+See also :php:class:`Field\\SubTypeSwitch`
 
 
 Associating Model with Database
@@ -453,9 +469,9 @@ of static persistence::
    $m = new Model(new Persistence\Static_(['john', 'peter', 'steve']);
 
    $m->load(1);
-   echo $m['name'];  // peter
+   echo $m->get('name');  // peter
 
-See :php:class:`Persistence\Static_`
+See :php:class:`Persistence\\Static_`
 
 .. php:attr:: persistence
 
@@ -485,7 +501,7 @@ to another.
 .. php:method:: asModel($class, $options = [])
 
 Casts current model into another class. The new model class should be compatible
-with $this - you can do `$user->asModel(VIPUser::class)` but converting `$user`
+with $this - you can do `$user->asModel(VipUser::class)` but converting `$user`
 into `Invoice::class` is a bad idea.
 
 Although class is switched, the new model will retain current record data, replace all
@@ -501,7 +517,7 @@ Populating Data
 
         $m_x = $m;
         $m_x->unload();
-        $m_x->set($row);
+        $m_x->setMulti($row);
         $m_x->save();
         return $m_x;
 
@@ -557,26 +573,36 @@ property:
 Model allows you to work with the data of single a record directly. You should
 use the following syntax when accessing fields of an active record::
 
-    $m['name'] = 'John';
-    $m['surname'] = 'Peter';
+    $m->set('name', 'John');
+    $m->set('surname', 'Peter');
+    // or
+    $m->setMulti(['name' => 'John', 'surname' => 'Peter']);
 
 When you modify active record, it keeps the original value in the $dirty array:
 
-.. php:method:: set
+.. php:method:: set($field, $value)
 
     Set field to a specified value. The original value will be stored in
-    $dirty property. If you pass non-array, then the value will be assigned
-    to the :ref:`title_field`.
+    $dirty property.
 
-.. php:method:: unset
+.. php:method:: setMulti($fields)
+
+    Set multiple field values.
+
+.. php:method:: setNull($field)
+
+    Set value of a specified field to NULL, temporarily ignoring normalization routine.
+    Only use this if you intend to set a correct value shortly after.
+
+.. php:method:: unset($field)
 
     Restore field value to it's original::
 
-        $m['name'] = 'John';
-        echo $m['name']; // John
+        $m->set('name', 'John');
+        echo $m->get('name'); // John
 
-        unset($m['name']);
-        echo $m['name']; // Original value is shown
+        $m->_unset('name');
+        echo $m->get('name'); // Original value is shown
 
     This will restore original value of the field.
 
@@ -593,9 +619,9 @@ When you modify active record, it keeps the original value in the $dirty array:
 
     Return true if field contains unsaved changes (dirty)::
 
-        isset($m['name']); // returns false
-        $m['name'] = 'Other Name';
-        isset($m['name']); // returns true
+        $m->_isset('name'); // returns false
+        $m->set('name', 'Other Name');
+        $m->_isset('name'); // returns true
 
 
 .. php:method:: isDirty
@@ -603,7 +629,7 @@ When you modify active record, it keeps the original value in the $dirty array:
     Return true if one or multiple fields contain unsaved changes (dirty)::
 
         if ($m->isDirty(['name','surname'])) {
-           $m['full_name'] = $m['name'].' '.$m['surname'];
+           $m->set('full_name', $m->get('name').' '.$m->get('surname'));
         }
 
     When the code above is placed in beforeSave hook, it will only be executed
@@ -617,15 +643,11 @@ When you modify active record, it keeps the original value in the $dirty array:
 
 .. php:method:: hasField($field)
 
-    Finds a field with a corresponding name. Returns false if field not found. Similar
-    to hasElement() but with extra checks to make sure it's certainly a field you are
-    getting.
+    Returns true if a field with a corresponding name exists.
 
 .. php:method:: getField($field)
 
-    Finds a field with a corresponding name. Throws exception if field not found. Similar
-    to getElement() but with extra checks to make sure it's certainly a field you are
-    getting.
+    Finds a field with a corresponding name. Throws exception if field not found.
 
 
 Full example::
@@ -635,30 +657,30 @@ Full example::
     // Fields can be added after model is created
     $m->addField('salary', ['default'=>1000]);
 
-    echo isset($m['salary']);   // false
-    echo $m['salary'];          // 1000
+    echo $m->_isset('salary');  // false
+    echo $m->get('salary');          // 1000
 
     // Next we load record from $db
     $m->load(1);
 
-    echo $m['salary'];          // 2000 (from db)
-    echo isset($m['salary']);   // false, was not changed
+    echo $m->get('salary');          // 2000 (from db)
+    echo $m->_isset('salary');  // false, was not changed
 
-    $m['salary'] = 3000;
+    $m->set('salary', 3000);
 
-    echo $m['salary'];          // 3000 (changed)
-    echo isset($m['salary']);   // true
+    echo $m->get('salary');          // 3000 (changed)
+    echo $m->_isset('salary');  // true
 
-    unset($m['salary']);        // return to original value
+    $m->_unset('salary');        // return to original value
 
-    echo $m['salary'];          // 2000
-    echo isset($m['salary']);   // false
+    echo $m->get('salary');          // 2000
+    echo $m->_isset('salary');  // false
 
-    $m['salary'] = 3000;
+    $m->set('salary', 3000);
     $m->save();
 
-    echo $m['salary'];          // 3000 (now in db)
-    echo isset($m['salary']);   // false
+    echo $m->get('salary');          // 3000 (now in db)
+    echo $m->_isset('salary');  // false
 
 .. php:method:: protected normalizeFieldName
 
@@ -690,7 +712,7 @@ ID Field
 
 .. tip:: You can change ID value of the current ID field by calling::
 
-        $m['id'] = $new_id;
+        $m->set('id', $new_id);
         $m->save();
 
     This will update existing record with new $id. If you want to save your
@@ -723,6 +745,10 @@ Title Field
 .. php:method:: public getTitle
 
     Return title field value of currently loaded record.
+
+.. php:method:: public getTitles
+
+    Returns array of title field values of all model records in format [id => title].
 
 .. _caption:
 
@@ -763,4 +789,9 @@ Setting limit and sort order
 
     Keep in mind - `true` means `desc`, desc means descending. Otherwise it will be ascending order by default.
 
+    You can also use \atk4\dsql\Expression or array of expressions instead of field name here.
+    Or even mix them together::
 
+        $m->setOrder($m->expr('[net]*[vat]'));
+        $m->setOrder([$m->expr('[net]*[vat]'), $m->expr('[closing]-[opening]')]);
+        $m->setOrder(['net', $m->expr('[net]*[vat]', 'ref_no')]);

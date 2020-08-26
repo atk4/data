@@ -1,11 +1,10 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+declare(strict_types=1);
 
 namespace atk4\data\Persistence;
 
 use atk4\data\Field;
-use atk4\data\Persistence;
 
 /**
  * Array persistence which will always typecast all values to strings.
@@ -15,7 +14,6 @@ class ArrayOfStrings extends Array_
     /**
      * Typecast all values to strings when saving.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed
@@ -28,7 +26,6 @@ class ArrayOfStrings extends Array_
     /**
      * Typecast all values from string to correct ones while loading.
      *
-     * @param Field $f
      * @param mixed $value
      *
      * @return mixed

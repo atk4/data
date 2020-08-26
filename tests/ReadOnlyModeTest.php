@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -10,11 +13,11 @@ use atk4\data\Persistence;
  *
  * Tests cases when model have to work with data that does not have ID field
  */
-class ReadOnlyModeTest extends \atk4\schema\PHPUnit_SchemaTestCase
+class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
 {
     public $m;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $a = [
@@ -22,10 +25,10 @@ class ReadOnlyModeTest extends \atk4\schema\PHPUnit_SchemaTestCase
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ], ];
-        $this->setDB($a);
+        $this->setDb($a);
 
-        $db = new Persistence\SQL($this->db->connection);
-        $this->m = new Model($db, ['user', 'read_only'=>true]);
+        $db = new Persistence\Sql($this->db->connection);
+        $this->m = new Model($db, ['user', 'read_only' => true]);
 
         $this->m->addFields(['name', 'gender']);
     }
@@ -36,17 +39,13 @@ class ReadOnlyModeTest extends \atk4\schema\PHPUnit_SchemaTestCase
     public function testBasic()
     {
         $this->m->tryLoadAny();
-        $this->assertEquals('John', $this->m['name']);
+        $this->assertSame('John', $this->m->get('name'));
 
-        $this->m->setOrder('name desc');
+        $this->m->setOrder('name', 'desc');
         $this->m->tryLoadAny();
-        $this->assertEquals('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m->get('name'));
 
-        $n = [];
-        foreach ($this->m as $row) {
-            $n[] = $row['name'];
-        }
-        $this->assertEquals(['Sue', 'John'], $n);
+        $this->assertEquals([1 => 'John', 2 => 'Sue'], $this->m->getTitles());
     }
 
     /**
@@ -55,38 +54,36 @@ class ReadOnlyModeTest extends \atk4\schema\PHPUnit_SchemaTestCase
     public function testLoad()
     {
         $this->m->load(1);
+        $this->assertTrue($this->m->loaded());
     }
 
     /**
      * Model cannot be saved.
-     *
-     * @expectedException Exception
      */
     public function testLoadSave()
     {
         $this->m->load(1);
-        $this->m['name'] = 'X';
+        $this->m->set('name', 'X');
+        $this->expectException(Exception::class);
         $this->m->save();
     }
 
     /**
      * Insert should fail too.
-     *
-     * @expectedException Exception
      */
     public function testInsert()
     {
-        $this->m->insert(['name'=>'Joe']);
+        $this->expectException(Exception::class);
+        $this->m->insert(['name' => 'Joe']);
     }
 
     /**
      * Different attempt that should also fail.
-     *
-     * @expectedException Exception
      */
     public function testSave1()
     {
         $this->m->tryLoadAny();
+        $this->expectException(Exception::class);
         $this->m->saveAndUnload();
     }
 
@@ -96,21 +93,19 @@ class ReadOnlyModeTest extends \atk4\schema\PHPUnit_SchemaTestCase
     public function testLoadBy()
     {
         $this->m->loadBy('name', 'Sue');
-        $this->assertEquals('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m->get('name'));
     }
 
     public function testLoadCondition()
     {
         $this->m->addCondition('name', 'Sue');
         $this->m->loadAny();
-        $this->assertEquals('Sue', $this->m['name']);
+        $this->assertSame('Sue', $this->m->get('name'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testFailDelete1()
     {
+        $this->expectException(Exception::class);
         $this->m->delete(1);
     }
 }

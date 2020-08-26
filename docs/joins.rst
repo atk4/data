@@ -1,7 +1,11 @@
 
-================================
-Model from multiple joined table
-================================
+.. _Joins:
+
+.. php:namespace:: atk4\data\Model
+
+=================================
+Model from multiple joined tables
+=================================
 
 .. php:class:: Join
 
@@ -39,7 +43,7 @@ If driver is unable to query both tables simultaneously, then it will load one
 record first, then load other record and will collect fields together::
 
     $user_data = $user->find($id);
-    $contact_data = $contact->find($user_data['contact_id']);
+    $contact_data = $contact->find($user_data->get('contact_id'));
 
 When saving the record, Joins will automatically record data correctly:
 
@@ -246,13 +250,13 @@ Joins are implemented like this:
   value of the foreign field will be set to null.
 
 
-.. php:class:: Join\SQL
+.. php:class:: Join\Sql
 
 SQL-specific joins
 ==================
 
 When your model is associated with SQL-capable driver, then instead of using
-'Join' class, the 'Join\SQL' is used instead. This class is designed to improve
+`Join` class, the `Join\\Sql` is used instead. This class is designed to improve
 loading technique, because SQL vendors can query multiple tables simultaneously.
 
 Vendors that cannot do JOINs will have to implement compatibility by pulling
@@ -272,7 +276,7 @@ Implementation Details
 Specifying complex ON logic
 ---------------------------
 
-When you're dealing with SQL drivers, you can specify dsql\Expression for your
+When you're dealing with SQL drivers, you can specify `\\atk4\\dsql\\Expression` for your
 "on" clause::
 
     $stats = $user->join('stats', [
@@ -284,7 +288,7 @@ You can also specify ``'on'=>false`` then the ON clause will not be used at all
 and you'll have to add additional where() condition yourself.
 
 ``foreign_alias`` can be specified and will be used as table alias and prefix
-for all fields. It will default to ``"_".$foreign_table[0]``. Agile Data will
+for all fields. It will default to ``"_".$foreign_table->get(0)``. Agile Data will
 also resolve situations when multiple tables have same first character so the
 prefixes will be named '_c' ,'_c_2', '_c_3' etc.
 

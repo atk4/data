@@ -31,13 +31,6 @@ can set and read value of that field::
 
     echo $model->get('name');  // john
 
-Agile Data supports and prefers a ArrayAccess format of interacting with fields::
-
-    $model->addField('age');
-    $model['age'] = 29;
-
-    echo $model['age'];
-
 Just like you can reuse :php:class:`Model` to access multiple data records,
 :php:class:`Field` object will be reused also.
 
@@ -61,9 +54,9 @@ Field Type
 Probably a most useful quality of Field is that it has a clear type::
 
     $model->addField('age', ['type'=>'integer']);
-    $model['age'] = "123";
+    $model->set('age', "123");
 
-    var_dump($model['age']);   // int(123)
+    var_dump($model->get('age'));   // int(123)
 
 Agile Data defines some basic types to make sure that values:
 
@@ -74,7 +67,7 @@ Agile Data defines some basic types to make sure that values:
 A good example would be a `date` type::
 
     $model->addField('birth', ['type' => 'date']);
-    $model['birth'] = DateTime::createFromFormat('m/d/Y', '1/10/2014');
+    $model->set('birth', DateTime::createFromFormat('m/d/Y', '1/10/2014'));
 
     $model->save();
 
@@ -88,7 +81,7 @@ Conversions between types is what we call :ref:`Typecasting` and there is a
 documentation section dedicated to it.
 
 Finally, because Field is a class, it can be further extended. For some
-interesting examples, check out :php:class:`Field\Password`. I'll explain how to
+interesting examples, check out :php:class:`Field\\Password`. I'll explain how to
 create your own field classes and where they can be beneficial.
 
 Valid types are: string, integer, boolean, datetime, date, time.
@@ -123,7 +116,7 @@ with Agile UI form, it will be displayed as radio button or a drop-down::
     // Agile UI code:
     $app = new \atk4\ui\App('my app');
     $app->initLayout('Centered');
-    $app->add('Form')->setModel($model);
+    Form::addTo($app)->setModel($model);
 
 You will also not be able to set value which is not one of the `enum` values
 even if you don't use UI.
@@ -150,16 +143,14 @@ for these values.
 
 .. php:attr:: mandatory
 
-Set this to true if field value must not be NULL. You can set the NULL value to
-the field, but you won't be able to save it.
-
+Set this to true if field value must not be NULL. Attempting to set field
+value to "NULL" will result in exception.
 Example::
 
-    $model['age'] = 0;
+    $model->set('age', 0);
     $model->save();
 
-    $model['age'] = null;
-    $model->save();  // exception
+    $model->set('age', null);  // exception
 
 
 .. php:attr:: required
@@ -174,17 +165,15 @@ Some examples that are not allowed are:
 
 Example::
 
-    $model['age'] = 0;
-    $model->save();  // exception
+    $model->set('age', 0); // exception
 
-    $model['age'] = null;
-    $model->save();  // exception
+    $model->set('age', null); // exception
 
 
 .. php:attr:: read_only
 
 Modifying field that is read-only through set() methods (or array access) will
-result in exception. :php:class:`Field_SQL_Expression` is read-only by default.
+result in exception. :php:class:`FieldSqlExpression` is read-only by default.
 
 .. php:attr:: actual
 
@@ -226,6 +215,26 @@ if user should be allowed to edit this field.
 
 Set the value of the field. Same as $model->set($field_name, $value);
 
+.. php:method:: setNull
+
+Set field value to NULL. This will bypass "mandatory" and "required" checks and
+should only be used if you are planning to set a different value to the field
+before executing save().
+
+If you do not set non-null value to a mandatory field, save() will fail with
+exception.
+
+Example::
+
+    $model['age'] = 0;
+    $model->save();
+
+    $model->getField('age')->setNull(); // no exception
+    $model->save(); // still getting exception here
+
+
+See also :php:method:`Model::setNull`.
+
 .. php:method:: get
 
 Get the value of the field. Same as $model->get($field_name, $value);
@@ -265,13 +274,13 @@ Password (after 1.5.0 release)
 
 .. php:class:: Password
 
-Field\Password is a class that implements proper handling of data passwords.
+`Field\\Password` is a class that implements proper handling of data passwords.
 Without this class your password will be stored **unencrypted**.
 Here is how to use it properly::
 
-    $user->addField('mypass', ['Password']);
+    $user->addField('mypass', [\atk4\ui\FormField\Password::class]);
 
-    $user['mypass'] = 'secret';
+    $user->set('mypass', 'secret');
     $user->save();
 
 Password is automatically hashed with `password_encrypt` before storing. If you
@@ -294,6 +303,7 @@ stored. Final example::
             throw new Exception('Old password is incorrect');
         }
 
-        $this['password'] = $new_pass;
+        $this->set('password', $new_pass);
         $this->save();
     }
+

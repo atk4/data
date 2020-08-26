@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace atk4\data\tests;
 
+use atk4\core\AtkPhpunit;
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
-class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
+class ReferenceTest extends AtkPhpunit\TestCase
 {
     public function testBasicReferences()
     {
@@ -20,11 +24,11 @@ class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->hasMany('Orders', $order);
+        $user->hasMany('Orders', [$order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders');
 
-        $this->assertEquals(20, $o['amount']);
-        $this->assertEquals(1, $o['user_id']);
+        $this->assertSame(20, $o->get('amount'));
+        $this->assertSame(1, $o->get('user_id'));
 
         $user->hasMany('BigOrders', function () {
             $m = new Model();
@@ -34,7 +38,27 @@ class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
             return $m;
         });
 
-        $this->assertEquals(100, $user->ref('BigOrders')['amount']);
+        $this->assertSame(100, $user->ref('BigOrders')->get('amount'));
+    }
+
+    /**
+     * Test caption of referenced model.
+     */
+    public function testModelCaption()
+    {
+        $user = new Model(['table' => 'user']);
+        $user->addField('name');
+        $user->id = 1;
+
+        $order = new Model();
+        $order->addField('amount', ['default' => 20]);
+        $order->addField('user_id');
+
+        $user->hasMany('Orders', [$order, 'caption' => 'My Orders']);
+
+        // test caption of containsOne reference
+        $this->assertSame('My Orders', $user->refModel('Orders')->getModelCaption());
+        $this->assertSame('My Orders', $user->ref('Orders')->getModelCaption());
     }
 
     public function testModelProperty()
@@ -42,14 +66,11 @@ class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
         $db = new Persistence();
         $user = new Model($db, ['table' => 'user']);
         $user->id = 1;
-        $user->hasOne('order_id', ['model' => ['atk4/data/Model', 'table' => 'order']]);
+        $user->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
         $o = $user->ref('order_id');
-        $this->assertEquals('order', $o->table);
+        $this->assertSame('order', $o->table);
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testRefName1()
     {
         $user = new Model(['table' => 'user']);
@@ -57,46 +78,42 @@ class ReferenceTest extends \atk4\core\PHPUnit_AgileTestCase
         $order->addField('user_id');
 
         $user->hasMany('Orders', $order);
+        $this->expectException(Exception::class);
         $user->hasMany('Orders', $order);
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testRefName2()
     {
         $order = new Model(['table' => 'order']);
         $user = new Model(['table' => 'user']);
 
         $user->hasOne('user_id', $user);
+        $this->expectException(Exception::class);
         $user->hasOne('user_id', $user);
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testRefName3()
     {
         $db = new Persistence();
         $order = new Model($db, ['table' => 'order']);
         $order->addRef('archive', function ($m) {
-            return $m->newInstance(null, ['table' => $m->table.'_archive']);
+            return $m->newInstance(null, ['table' => $m->table . '_archive']);
         });
+        $this->expectException(Exception::class);
         $order->addRef('archive', function ($m) {
-            return $m->newInstance(null, ['table' => $m->table.'_archive']);
+            return $m->newInstance(null, ['table' => $m->table . '_archive']);
         });
     }
 
     public function testCustomRef()
     {
-        $a = [];
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_();
 
         $m = new Model($p, ['table' => 'user']);
         $m->addRef('archive', function ($m) {
-            return $m->newInstance(null, ['table' => $m->table.'_archive']);
+            return $m->newInstance(null, ['table' => $m->table . '_archive']);
         });
 
-        $this->assertEquals('user_archive', $m->ref('archive')->table);
+        $this->assertSame('user_archive', $m->ref('archive')->table);
     }
 }

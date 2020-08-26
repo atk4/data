@@ -1,6 +1,6 @@
 <?php
 
-// vim:ts=4:sw=4:et:fdm=marker:fdl=0
+declare(strict_types=1);
 
 namespace atk4\data\Field;
 
@@ -37,12 +37,12 @@ class Boolean extends \atk4\data\Field
      *
      * @var array
      */
-    public $enum = null;
+    public $enum;
 
     /**
      * Constructor.
      */
-    public function init()
+    protected function init(): void
     {
         $this->_init();
 
@@ -58,25 +58,18 @@ class Boolean extends \atk4\data\Field
      * Normalize value to boolean value.
      *
      * @param mixed $value
-     *
-     * @throws ValidationException
-     *
-     * @return bool
      */
-    public function normalize($value)
+    public function normalize($value): ?bool
     {
-        if (is_null($value) || $value === '') {
-            return;
-        }
-        if (is_bool($value)) {
+        if ($value === null || $value === '') {
+            return null;
+        } elseif (is_bool($value)) {
             return $value;
         }
 
         if ($value === $this->valueTrue) {
             return true;
-        }
-
-        if ($value === $this->valueFalse) {
+        } elseif ($value === $this->valueFalse) {
             return false;
         }
 
@@ -91,10 +84,8 @@ class Boolean extends \atk4\data\Field
      * Casts field value to string.
      *
      * @param mixed $value Optional value
-     *
-     * @return string
      */
-    public function toString($value = null)
+    public function toString($value = null): string
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
 
@@ -106,7 +97,7 @@ class Boolean extends \atk4\data\Field
      *
      * @param mixed $value
      */
-    public function validate($value)
+    public function validate($value): void
     {
         // if value required, then only valueTrue is allowed
         if ($this->required && $value !== $this->valueTrue) {
