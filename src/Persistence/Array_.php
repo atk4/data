@@ -121,11 +121,8 @@ class Array_ extends Persistence
 
     /**
      * Tries to load first available record and return data record.
-     * Doesn't throw exception if model can't be loaded or there are no data records.
-     *
-     * @param mixed $table
      */
-    public function tryLoadAny(Model $model, string $table = null): ?array
+    public function loadAny(Model $model, string $table = null): ?array
     {
         $table = $table ?? $model->table;
 
@@ -140,6 +137,20 @@ class Array_ extends Persistence
         $model->id = $id;
 
         return $row;
+    }
+
+    /**
+     * Tries to load first available record and return data record.
+     * Doesn't throw exception if model can't be loaded or there are no data records
+     */
+    public function tryLoadAny(Model $model, string $table = null): ?array
+    {
+        try {
+            return $this->loadAny($model, $table);
+        }
+        catch(Exception $e) {
+            return null;
+        }
     }
 
     /**
