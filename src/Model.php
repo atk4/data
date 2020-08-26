@@ -358,7 +358,7 @@ class Model implements \IteratorAggregate
     /**
      * Extend this method to define fields of your choice.
      */
-    public function init(): void
+    protected function init(): void
     {
         $this->_init();
 

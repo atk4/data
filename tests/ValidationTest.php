@@ -11,7 +11,7 @@ use atk4\data\ValidationException;
 
 class MyValidationModel extends Model
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -35,7 +35,7 @@ class MyValidationModel extends Model
 
 class BadValidationModel extends Model
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
