@@ -13,13 +13,12 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 {
     public function testBasic()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
@@ -53,15 +52,14 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testNull()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
                 3 => ['id' => 3, 'name' => 'Null1', 'gender' => null],
                 4 => ['id' => 4, 'name' => 'Null2', 'gender' => null],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
@@ -81,13 +79,12 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testOperations()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
@@ -128,13 +125,12 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testExpressions1()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender']);
@@ -161,13 +157,12 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testExpressions2()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender', 'surname']);
@@ -212,7 +207,7 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'gender' => 'F', 'contact_id' => 2],
@@ -221,8 +216,7 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'contact_phone' => '+123 smiths'],
                 2 => ['id' => 2, 'contact_phone' => '+321 sues'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addFields(['name', 'gender', 'surname']);
@@ -264,14 +258,13 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testArrayCondition()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Johhny'],
                 3 => ['id' => 3, 'name' => 'Mary'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -296,13 +289,12 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testDateCondition()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
                 2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -314,13 +306,12 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testDateCondition2()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
                 2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -337,13 +328,12 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testDateConditionFailure()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'date' => '1981-12-08'],
                 2 => ['id' => 2, 'name' => 'Sue', 'date' => '1982-12-08'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -358,14 +348,13 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testOrConditions()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
                 3 => ['id' => 3, 'name' => 'Joe'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
 
@@ -389,14 +378,13 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testLoadBy()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
                 2 => ['id' => 2, 'name' => 'Peter'],
                 3 => ['id' => 3, 'name' => 'Joe'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
 
@@ -416,14 +404,13 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testLikeCondition()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'active' => 1, 'created' => '2020-01-01 15:00:30'],
                 2 => ['id' => 2, 'name' => 'Peter', 'active' => 0, 'created' => '2019-05-20 12:13:14'],
                 3 => ['id' => 3, 'name' => 'Joe', 'active' => 1, 'created' => '2019-07-15 09:55:05'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $u = new Model($this->db, 'user');
         $u->addField('name', ['type' => 'string']);

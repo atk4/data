@@ -39,7 +39,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 {
     public function testType()
     {
-        $a = [
+        $dbData = [
             'types' => [
                 [
                     'string' => 'foo',
@@ -54,7 +54,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 ],
             ],
         ];
-        $this->setDb($a);
+        $this->setDb($dbData);
 
         date_default_timezone_set('Asia/Seoul');
 
@@ -84,7 +84,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $m->duplicate()->save();
 
-        $a = [
+        $dbData = [
             'types' => [
                 1 => [
                     'id' => '1',
@@ -112,7 +112,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 ],
             ],
         ];
-        $this->assertEquals($a, $this->getDb());
+        $this->assertEquals($dbData, $this->getDb());
 
         [$first, $duplicate] = $m->export();
 
@@ -128,7 +128,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $a = [
+        $dbData = [
             'types' => [
                 1 => $row = [
                     'id' => 1,
@@ -146,7 +146,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 ],
             ],
         ];
-        $this->setDb($a);
+        $this->setDb($dbData);
 
         date_default_timezone_set('Asia/Seoul');
 
@@ -196,11 +196,11 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame([], $m->dirty);
 
         $m->save();
-        $this->assertEquals($a, $this->getDb());
+        $this->assertEquals($dbData, $this->getDb());
 
         $m->duplicate()->save();
 
-        $a['types'][2] = [
+        $dbData['types'][2] = [
             'id' => 2,
             'string' => '',
             'notype' => '',
@@ -215,7 +215,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
             'object' => null,
         ];
 
-        $this->assertEquals($a, $this->getDb());
+        $this->assertEquals($dbData, $this->getDb());
     }
 
     public function testTypecastNull()
@@ -224,12 +224,12 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
             $this->markTestIncomplete('This test is not supported on PostgreSQL');
         }
 
-        $a = [
+        $dbData = [
             'test' => [
                 1 => $row = ['id' => '1', 'a' => 1, 'b' => '', 'c' => null],
             ],
         ];
-        $this->setDb($a);
+        $this->setDb($dbData);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'test']);
@@ -241,16 +241,16 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $m->setMulti($row);
         $m->save();
 
-        $a['test'][2] = array_merge(['id' => '2'], $row);
+        $dbData['test'][2] = array_merge(['id' => '2'], $row);
 
-        $this->assertEquals($a, $this->getDb());
+        $this->assertEquals($dbData, $this->getDb());
     }
 
     public function testTypeCustom1()
     {
-        $a = [
+        $dbData = [
             'types' => [
-                [
+                $row = [
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.235689',
                     'time' => '12:00:50.235689',
@@ -263,7 +263,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 ],
             ],
         ];
-        $this->setDb($a);
+        $this->setDb($dbData);
         $db = new Persistence\Sql($this->db->connection);
 
         date_default_timezone_set('Asia/Seoul');
@@ -299,35 +299,22 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
         $m->duplicate()->save()->delete(1);
 
-        $a = [
-            'types' => [
-                2 => [
-                    'id' => '2',
-                    'date' => '2013-02-20',
-                    'datetime' => '2013-02-20 20:00:12.235689',
-                    'time' => '12:00:50.235689',
-                    'b1' => 'Y',
-                    'b2' => 'N',
-                    'integer' => '2940',
-                    'money' => '8.2', // here it will loose last zero and that's as expected
-                    'float' => '8.202343',
-                    'rot13' => 'uryyb jbeyq', // str_rot13(hello world)
-                ],
-            ],
-        ];
-        $this->assertEquals($a, $this->getDb());
+        unset($dbData['types'][0]);
+        $row['money'] = '8.2'; // here it will loose last zero and that's as expected
+        $dbData['types'][2] = array_merge(['id' => '2'], $row);
+
+        $this->assertEquals($dbData, $this->getDb());
     }
 
     public function testTryLoad()
     {
-        $a = [
+        $this->setDb([
             'types' => [
                 [
                     'date' => '2013-02-20',
                 ],
             ],
-        ];
-        $this->setDb($a);
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
@@ -341,14 +328,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
     public function testTryLoadAny()
     {
-        $a = [
+        $this->setDb([
             'types' => [
                 [
                     'date' => '2013-02-20',
                 ],
             ],
-        ];
-        $this->setDb($a);
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
@@ -362,14 +348,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
     public function testTryLoadBy()
     {
-        $a = [
+        $this->setDb([
             'types' => [
                 [
                     'date' => '2013-02-20',
                 ],
             ],
-        ];
-        $this->setDb($a);
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
@@ -383,14 +368,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
     public function testLoadBy()
     {
-        $a = [
+        $this->setDb([
             'types' => [
                 [
                     'date' => '2013-02-20',
                 ],
             ],
-        ];
-        $this->setDb($a);
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
@@ -461,14 +445,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
     {
         $sql_time = '2016-10-25 11:44:08';
 
-        $a = [
+        $this->setDb([
             'types' => [
                 [
                     'date' => $sql_time,
                 ],
             ],
-        ];
-        $this->setDb($a);
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
@@ -483,14 +466,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
     {
         $sql_time = '20blah16-10-25 11:44:08';
 
-        $a = [
+        $this->setDb([
             'types' => [
                 [
                     'date' => $sql_time,
                 ],
             ],
-        ];
-        $this->setDb($a);
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
@@ -503,14 +485,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
     {
         $sql_time = '2016-10-25 11:44:08';
 
-        $a = [
+        $this->setDb([
             'types' => [
                 [
                     'date' => $sql_time,
                 ],
             ],
-        ];
-        $this->setDb($a);
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
@@ -523,14 +504,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
     public function testTimestampSave()
     {
-        $a = [
+        $this->setDb([
             'types' => [
                 [
                     'date' => '',
                 ],
             ],
-        ];
-        $this->setDb($a);
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
@@ -587,14 +567,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $sql_time = '11:44:08';
         $sql_time_new = '12:34:56';
 
-        $a = [
+        $this->setDb([
             'types' => [
                 [
                     'date' => $sql_time,
                 ],
             ],
-        ];
-        $this->setDb($a);
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
@@ -616,14 +595,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $sql_time = '11:44:08';
         $sql_time_new = '12:34:56';
 
-        $a = [
+        $this->setDb([
             'types' => [
                 [
                     'date' => null,
                 ],
             ],
-        ];
-        $this->setDb($a);
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);

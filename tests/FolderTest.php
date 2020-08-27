@@ -33,7 +33,7 @@ class FolderTest extends \atk4\schema\PhpunitTestCase
 {
     public function testRate()
     {
-        $a = [
+        $this->setDb([
             'folder' => [
                 ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'Desktop'],
                 ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Documents'],
@@ -44,8 +44,7 @@ class FolderTest extends \atk4\schema\PhpunitTestCase
                 ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'Agile Toolkit'],
                 ['parent_id' => 4, 'is_deleted' => 1, 'name' => 'test-project'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $f = new Folder($db);

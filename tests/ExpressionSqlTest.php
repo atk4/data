@@ -23,13 +23,12 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testBasic()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10, 'total_vat' => 1.23],
                 ['total_net' => 20, 'total_vat' => 2.46],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
@@ -65,13 +64,12 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testBasicCallback()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10, 'total_vat' => 1.23],
                 ['total_net' => 20, 'total_vat' => 2.46],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
@@ -97,13 +95,12 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testQuery()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10, 'total_vat' => 1.23],
                 ['total_net' => 20, 'total_vat' => 2.46],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
@@ -131,13 +128,12 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testExpressions()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'cached_name' => 'John Smith'],
                 2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'cached_name' => 'ERROR'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'user');
@@ -171,12 +167,12 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testReloading()
     {
-        $a = [
+        $dbData = [
             'math' => [
                 ['a' => 2, 'b' => 2],
             ],
         ];
-        $this->setDb($a);
+        $this->setDb($dbData);
 
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'math');
@@ -192,7 +188,7 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals(9, $m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
 
-        $this->setDb($a);
+        $this->setDb($dbData);
         $m = new Model($db, ['math', 'reload_after_save' => false]);
         $m->addFields(['a', 'b']);
 
