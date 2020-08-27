@@ -74,21 +74,21 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u->set('name', 'John');
-        $m_u->set('contact_phone', '+123');
+        $m_u2 = clone $m_u;
+        $m_u2->set('name', 'John');
+        $m_u2->set('contact_phone', '+123');
 
-        $m_u->save();
-
-        $m_u->unload();
+        $m_u2->save();
 
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $this->getDb('user,contact'));
 
-        $m_u->set('name', 'Joe');
-        $m_u->set('contact_phone', '+321');
-        $m_u->save();
+        $m_u2 = clone $m_u;
+        $m_u2->set('name', 'Joe');
+        $m_u2->set('contact_phone', '+321');
+        $m_u2->save();
 
         $this->assertEquals([
             'user' => [
@@ -116,19 +116,20 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $j = $m_u->join('contact.test_id');
         $j->addFields(['contact_phone']);
 
-        $m_u->set('name', 'John');
-        $m_u->set('contact_phone', '+123');
-
-        $m_u->save();
+        $m_u2 = clone $m_u;
+        $m_u2->set('name', 'John');
+        $m_u2->set('contact_phone', '+123');
+        $m_u2->save();
 
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
         ], $this->getDb('user,contact'));
 
-        $m_u->unload();
-        $m_u->set('name', 'Peter');
-        $m_u->save();
+        $m_u2->unload();
+        $m_u2 = clone $m_u;
+        $m_u2->set('name', 'Peter');
+        $m_u2->save();
         $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -140,10 +141,12 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         ], $this->getDb('user,contact'));
 
         $this->db->connection->dsql()->table('contact')->where('id', 2)->delete();
-        $m_u->unload();
-        $m_u->set('name', 'Sue');
-        $m_u->set('contact_phone', '+444');
-        $m_u->save();
+
+        $m_u2->unload();
+        $m_u2 = clone $m_u;
+        $m_u2->set('name', 'Sue');
+        $m_u2->set('contact_phone', '+444');
+        $m_u2->save();
         $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -206,21 +209,20 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u->load(1);
-
+        $m_u2 = (clone $m_u)->load(1);
         $this->assertEquals([
             'name' => 'John', 'contact_id' => 1, 'contact_phone' => '+123', 'id' => 1,
-        ], $m_u->get());
+        ], $m_u2->get());
 
-        $m_u->load(3);
+        $m_u2 = (clone $m_u)->load(3);
         $this->assertEquals([
             'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321', 'id' => 3,
-        ], $m_u->get());
+        ], $m_u2->get());
 
-        $m_u->tryLoad(4);
+        $m_u2 = (clone $m_u)->tryLoad(4);
         $this->assertEquals([
             'name' => null, 'contact_id' => null, 'contact_phone' => null, 'id' => null,
-        ], $m_u->get());
+        ], $m_u2->get());
     }
 
     public function testJoinUpdate()
@@ -247,10 +249,10 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u->load(1);
-        $m_u->set('name', 'John 2');
-        $m_u->set('contact_phone', '+555');
-        $m_u->save();
+        $m_u2 = (clone $m_u)->load(1);
+        $m_u2->set('name', 'John 2');
+        $m_u2->set('contact_phone', '+555');
+        $m_u2->save();
 
         $this->assertEquals(
             [
@@ -266,12 +268,12 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
             $this->getDb()
         );
 
-        $m_u->load(1);
-        $m_u->set('name', 'XX');
-        $m_u->set('contact_phone', '+999');
-        $m_u->load(3);
-        $m_u->set('name', 'XX');
-        $m_u->save();
+        $m_u2 = (clone $m_u)->load(1);
+        $m_u2->set('name', 'XX');
+        $m_u2->set('contact_phone', '+999');
+        $m_u2 = (clone $m_u)->load(3);
+        $m_u2->set('name', 'XX');
+        $m_u2->save();
 
         $this->assertEquals(
             [
@@ -287,8 +289,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
             $this->getDb()
         );
 
-        $m_u->set('contact_phone', '+999');
-        $m_u->save();
+        $m_u2->set('contact_phone', '+999');
+        $m_u2->save();
 
         $this->assertEquals(
             [
@@ -304,10 +306,10 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
             $this->getDb()
         );
 
-        $m_u->tryLoad(4);
-        $m_u->set('name', 'YYY');
-        $m_u->set('contact_phone', '+777');
-        $m_u->save();
+        $m_u2 = (clone $m_u)->tryLoad(4);
+        $m_u2->set('name', 'YYY');
+        $m_u2->set('contact_phone', '+777');
+        $m_u2->save();
 
         $this->assertEquals(
             [
