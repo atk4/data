@@ -291,12 +291,11 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     public function testPersist()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $dbData = [
+        $this->setDb($dbData = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
             ],
-        ];
-        $this->setDb($dbData);
+        ]);
 
         $m = new Model($db, 'item');
         $m->addField('name', ['never_persist' => true]);

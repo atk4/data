@@ -69,11 +69,11 @@ class SerializeTest extends \atk4\schema\PhpunitTestCase
         $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
 
         // recursive array - json can't encode that
-        $a = [];
-        $a[] = &$a;
+        $dbData = [];
+        $dbData[] = &$dbData;
 
         $this->expectException(Exception::class);
-        $db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $a]]);
+        $db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
     }
 
     /*

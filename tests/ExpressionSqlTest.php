@@ -167,12 +167,11 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testReloading()
     {
-        $dbData = [
+        $this->setDb($dbData = [
             'math' => [
                 ['a' => 2, 'b' => 2],
             ],
-        ];
-        $this->setDb($dbData);
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'math');

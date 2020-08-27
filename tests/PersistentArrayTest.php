@@ -26,14 +26,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testLoadArray()
     {
-        $a = [
+        $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Model($p, 'user');
         $m->addField('name');
         $m->addField('surname');
@@ -61,14 +59,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testSaveAs()
     {
-        $a = [
+        $p = new Persistence\Array_([
             'person' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
 
         $m = new Male($p);
         $m->load(1);
@@ -85,14 +81,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testSaveAndUnload()
     {
-        $a = [
+        $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Male($p, 'user');
 
         $m->load(1);
@@ -115,14 +109,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testUpdateArray()
     {
-        $a = [
+        $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Model($p, 'user');
         $m->addField('name');
         $m->addField('surname');
@@ -159,14 +151,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testInsert()
     {
-        $a = [
+        $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Model($p, 'user');
         $m->addField('name');
         $m->addField('surname');
@@ -186,14 +176,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testIterator()
     {
-        $a = [
+        $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Model($p, 'user');
         $m->addField('name');
         $m->addField('surname');
@@ -212,12 +200,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testShortFormat()
     {
-        $a = [
+        $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -272,12 +258,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testExport()
     {
-        $a = [
+        $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -298,12 +282,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testActionCount()
     {
-        $a = [
+        $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -316,12 +298,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testActionField()
     {
-        $a = [
+        $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -342,7 +322,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testLike()
     {
-        $a = ['countries' => [
+        $dbData = ['countries' => [
             1 => ['id' => 1, 'name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
             2 => ['id' => 2, 'name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
             3 => ['id' => 3, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
@@ -355,7 +335,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             10 => ['id' => 10, 'code' => null, 'country' => 'Germany', 'active' => 1],
         ]];
 
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_($dbData);
         $m = new Model($p, 'countries');
         $m->addField('code', ['type' => 'integer']);
         $m->addField('country');
@@ -373,9 +353,9 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('country', 'LIKE', 'La%');
         $result = $m->action('select')->get();
         $this->assertSame(3, count($result));
-        $this->assertSame($a['countries'][3], $result[3]);
-        $this->assertSame($a['countries'][7], $result[7]);
-        $this->assertSame($a['countries'][9], $result[9]);
+        $this->assertSame($dbData['countries'][3], $result[3]);
+        $this->assertSame($dbData['countries'][7], $result[7]);
+        $this->assertSame($dbData['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
@@ -384,12 +364,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('country', 'NOT LIKE', 'La%');
         $result = $m->action('select')->get();
         $this->assertSame(7, count($m->export()));
-        $this->assertSame($a['countries'][1], $result[1]);
-        $this->assertSame($a['countries'][2], $result[2]);
-        $this->assertSame($a['countries'][4], $result[4]);
-        $this->assertSame($a['countries'][5], $result[5]);
-        $this->assertSame($a['countries'][6], $result[6]);
-        $this->assertSame($a['countries'][8], $result[8]);
+        $this->assertSame($dbData['countries'][1], $result[1]);
+        $this->assertSame($dbData['countries'][2], $result[2]);
+        $this->assertSame($dbData['countries'][4], $result[4]);
+        $this->assertSame($dbData['countries'][5], $result[5]);
+        $this->assertSame($dbData['countries'][6], $result[6]);
+        $this->assertSame($dbData['countries'][8], $result[8]);
         unset($result);
 
         // case : %str
@@ -397,10 +377,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('country', 'LIKE', '%ia');
         $result = $m->action('select')->get();
         $this->assertSame(4, count($result));
-        $this->assertSame($a['countries'][3], $result[3]);
-        $this->assertSame($a['countries'][7], $result[7]);
-        $this->assertSame($a['countries'][8], $result[8]);
-        $this->assertSame($a['countries'][9], $result[9]);
+        $this->assertSame($dbData['countries'][3], $result[3]);
+        $this->assertSame($dbData['countries'][7], $result[7]);
+        $this->assertSame($dbData['countries'][8], $result[8]);
+        $this->assertSame($dbData['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
@@ -409,13 +389,13 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('country', 'LIKE', '%a%');
         $result = $m->action('select')->get();
         $this->assertSame(8, count($result));
-        $this->assertSame($a['countries'][1], $result[1]);
-        $this->assertSame($a['countries'][2], $result[2]);
-        $this->assertSame($a['countries'][3], $result[3]);
-        $this->assertSame($a['countries'][6], $result[6]);
-        $this->assertSame($a['countries'][7], $result[7]);
-        $this->assertSame($a['countries'][8], $result[8]);
-        $this->assertSame($a['countries'][9], $result[9]);
+        $this->assertSame($dbData['countries'][1], $result[1]);
+        $this->assertSame($dbData['countries'][2], $result[2]);
+        $this->assertSame($dbData['countries'][3], $result[3]);
+        $this->assertSame($dbData['countries'][6], $result[6]);
+        $this->assertSame($dbData['countries'][7], $result[7]);
+        $this->assertSame($dbData['countries'][8], $result[8]);
+        $this->assertSame($dbData['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
@@ -459,7 +439,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testConditions()
     {
-        $a = ['countries' => [
+        $dbData = ['countries' => [
             1 => ['id' => 1, 'name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
             2 => ['id' => 2, 'name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
             3 => ['id' => 3, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
@@ -471,7 +451,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             9 => ['id' => 9, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
         ]];
 
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_($dbData);
         $m = new Model($p, 'countries');
         $m->addField('code', ['type' => 'integer']);
         $m->addField('country');
@@ -489,11 +469,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('country', 'REGEXP', 'Ireland|UK');
         $result = $m->action('select')->get();
         $this->assertSame(5, count($result));
-        $this->assertSame($a['countries'][1], $result[1]);
-        $this->assertSame($a['countries'][2], $result[2]);
-        $this->assertSame($a['countries'][4], $result[4]);
-        $this->assertSame($a['countries'][5], $result[5]);
-        $this->assertSame($a['countries'][6], $result[6]);
+        $this->assertSame($dbData['countries'][1], $result[1]);
+        $this->assertSame($dbData['countries'][2], $result[2]);
+        $this->assertSame($dbData['countries'][4], $result[4]);
+        $this->assertSame($dbData['countries'][5], $result[5]);
+        $this->assertSame($dbData['countries'][6], $result[6]);
         unset($result);
         $m->unload();
 
@@ -501,7 +481,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('country', 'NOT REGEXP', 'Ireland|UK|Latvia');
         $result = $m->action('select')->get();
         $this->assertSame(1, count($result));
-        $this->assertSame($a['countries'][8], $result[8]);
+        $this->assertSame($dbData['countries'][8], $result[8]);
         unset($result);
         $m->unload();
 
@@ -509,7 +489,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('code', '>', 18);
         $result = $m->action('select')->get();
         $this->assertSame(1, count($result));
-        $this->assertSame($a['countries'][9], $result[9]);
+        $this->assertSame($dbData['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
@@ -517,8 +497,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('code', '>=', 18);
         $result = $m->action('select')->get();
         $this->assertSame(2, count($result));
-        $this->assertSame($a['countries'][8], $result[8]);
-        $this->assertSame($a['countries'][9], $result[9]);
+        $this->assertSame($dbData['countries'][8], $result[8]);
+        $this->assertSame($dbData['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
@@ -526,7 +506,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('code', '<', 12);
         $result = $m->action('select')->get();
         $this->assertSame(1, count($result));
-        $this->assertSame($a['countries'][1], $result[1]);
+        $this->assertSame($dbData['countries'][1], $result[1]);
         unset($result);
         $m->unload();
 
@@ -534,8 +514,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('code', '<=', 12);
         $result = $m->action('select')->get();
         $this->assertSame(2, count($result));
-        $this->assertSame($a['countries'][1], $result[1]);
-        $this->assertSame($a['countries'][2], $result[2]);
+        $this->assertSame($dbData['countries'][1], $result[1]);
+        $this->assertSame($dbData['countries'][2], $result[2]);
         unset($result);
         $m->unload();
 
@@ -543,8 +523,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('code', [11, 12]);
         $result = $m->action('select')->get();
         $this->assertSame(2, count($result));
-        $this->assertSame($a['countries'][1], $result[1]);
-        $this->assertSame($a['countries'][2], $result[2]);
+        $this->assertSame($dbData['countries'][1], $result[1]);
+        $this->assertSame($dbData['countries'][2], $result[2]);
         unset($result);
         $m->unload();
 
@@ -559,8 +539,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('code', 'NOT IN', [11, 12, 13, 14, 15, 16, 17]);
         $result = $m->action('select')->get();
         $this->assertSame(2, count($result));
-        $this->assertSame($a['countries'][8], $result[8]);
-        $this->assertSame($a['countries'][9], $result[9]);
+        $this->assertSame($dbData['countries'][8], $result[8]);
+        $this->assertSame($dbData['countries'][9], $result[9]);
         unset($result);
         $m->unload();
 
@@ -568,15 +548,15 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('code', '!=', [11, 12, 13, 14, 15, 16, 17]);
         $result = $m->action('select')->get();
         $this->assertSame(2, count($result));
-        $this->assertSame($a['countries'][8], $result[8]);
-        $this->assertSame($a['countries'][9], $result[9]);
+        $this->assertSame($dbData['countries'][8], $result[8]);
+        $this->assertSame($dbData['countries'][9], $result[9]);
         unset($result);
         $m->unload();
     }
 
     public function testAggregates()
     {
-        $a = ['invoices' => [
+        $p = new Persistence\Array_(['invoices' => [
             1 => ['id' => 1, 'number' => 'ABC9', 'items' => 11, 'active' => 1],
             2 => ['id' => 2, 'number' => 'ABC8', 'items' => 12, 'active' => 0],
             3 => ['id' => 3, 'items' => 13, 'active' => 1],
@@ -588,9 +568,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             9 => ['id' => 9, 'items' => 19, 'active' => 1],
             10 => ['id' => 10, 'items' => 0, 'active' => 1],
             11 => ['id' => 11, 'items' => null, 'active' => 1],
-        ]];
-
-        $p = new Persistence\Array_($a);
+        ]]);
         $m = new Model($p, 'invoices');
         $m->addField('items', ['type' => 'integer']);
 
@@ -603,11 +581,9 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testExists()
     {
-        $a = ['invoices' => [
+        $p = new Persistence\Array_(['invoices' => [
             1 => ['id' => 1, 'number' => 'ABC9', 'items' => 11, 'active' => 1],
-        ]];
-
-        $p = new Persistence\Array_($a);
+        ]]);
         $m = new Model($p, 'invoices');
         $m->addField('items', ['type' => 'integer']);
 
@@ -638,7 +614,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testOrder()
     {
-        $a = [
+        $dbData = [
             ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
             ['id' => 2, 'f1' => 'D', 'f2' => 'A'],
             ['id' => 3, 'f1' => 'D', 'f2' => 'C'],
@@ -648,7 +624,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         ];
 
         // order by one field ascending
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_($dbData);
         $m = new Model($p);
         $m->addField('f1');
         $m->addField('f2');
@@ -666,7 +642,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
         // order by one field descending
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_($dbData);
         $m = new Model($p);
         $m->addField('f1');
         $m->addField('f2');
@@ -684,7 +660,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($d, array_values($m->export(['f1']))); // array_values to get rid of keys
 
         // order by two fields ascending
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_($dbData);
         $m = new Model($p);
         $m->addField('f1');
         $m->addField('f2');
@@ -709,15 +685,13 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testLimit()
     {
-        $a = [
+        // order by one field ascending
+        $p = new Persistence\Array_([
             ['f1' => 'A'],
             ['f1' => 'D'],
             ['f1' => 'E'],
             ['f1' => 'C'],
-        ];
-
-        // order by one field ascending
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Model($p);
         $m->addField('f1');
 
@@ -749,20 +723,18 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testCondition()
     {
-        $a = [
+        $p = new Persistence\Array_($dbData = [
             1 => ['name' => 'John', 'surname' => 'Smith'],
             2 => ['name' => 'Sarah', 'surname' => 'QQ'],
             3 => ['name' => 'Sarah', 'surname' => 'XX'],
             4 => ['name' => 'Sarah', 'surname' => 'Smith'],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
 
         $this->assertSame(4, $m->action('count')->getOne());
-        $this->assertSame(['data' => $a], $this->getInternalPersistenceData($p));
+        $this->assertSame(['data' => $dbData], $this->getInternalPersistenceData($p));
 
         $m->addCondition('name', 'Sarah');
         $this->assertSame(3, $m->action('count')->getOne());
@@ -778,8 +750,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testUnsupportedAction()
     {
-        $a = [1 => ['name' => 'John']];
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
         $this->expectException(Exception::class);
@@ -788,8 +759,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testUnsupportedAggregate()
     {
-        $a = [1 => ['name' => 'John']];
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
 
@@ -799,8 +769,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testUnsupportedCondition1()
     {
-        $a = [1 => ['name' => 'John']];
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
         $m->addCondition('name');
@@ -810,8 +779,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
     public function testUnsupportedCondition2()
     {
-        $a = [1 => ['name' => 'John']];
-        $p = new Persistence\Array_($a);
+        $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
         $m->addCondition(new Model(), 'like', '%o%');
@@ -824,7 +792,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testHasOne()
     {
-        $a = [
+        $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'country_id' => 1],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id' => 2],
@@ -833,9 +801,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 1 => ['name' => 'Latvia'],
                 2 => ['name' => 'UK'],
             ],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
 
         $user = new Model($p, 'user');
         $user->addField('name');
@@ -859,7 +825,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
      */
     public function testHasMany()
     {
-        $a = [
+        $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith', 'country_id' => 1],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'country_id' => 2],
@@ -869,9 +835,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 1 => ['name' => 'Latvia'],
                 2 => ['name' => 'UK'],
             ],
-        ];
-
-        $p = new Persistence\Array_($a);
+        ]);
 
         $country = new Model($p, 'country');
         $country->addField('name');
