@@ -431,21 +431,21 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $j_country = $j_contact->join('country');
         $j_country->addField('country_name', ['actual' => 'name']);
 
-        $m_u->load(10);
-        $m_u->delete();
+        $m_u2 = (clone $m_u)->load(10);
+        $m_u2->delete();
 
-        $m_u->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u->id);
-        $m_u->set('country_name', 'USA');
-        $m_u->save();
+        $m_u2 = (clone $m_u)->loadBy('country_name', 'US');
+        $this->assertEquals(30, $m_u2->id);
+        $m_u2->set('country_name', 'USA');
+        $m_u2->save();
 
-        $m_u->tryLoad(40);
-        $this->assertFalse($m_u->loaded());
+        $m_u2 = (clone $m_u)->tryLoad(40);
+        $this->assertFalse($m_u2->loaded());
 
-        $this->assertSame($m_u->getField('country_id')->join, $m_u->getField('contact_phone')->join);
+        $this->assertSame($m_u2->getField('country_id')->join, $m_u2->getField('contact_phone')->join);
 
-        $m_u->unload();
-        $m_u->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
+        $m_u2->unload();
+        (clone $m_u)->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
         $this->assertEquals(
             [
@@ -496,8 +496,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $c = $j->join('country');
         $c->addFields([['country_name', ['actual' => 'name']]]);
 
-        $m_u->load(10);
-        $m_u->delete();
+        $m_u2 = (clone $m_u)->load(10);
+        $m_u2->delete();
 
         $m_u->loadBy('country_name', 'US');
         $this->assertEquals(30, $m_u->id);
