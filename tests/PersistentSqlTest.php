@@ -20,7 +20,8 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($this->db, 'user');
@@ -192,7 +193,8 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($this->db, 'user');

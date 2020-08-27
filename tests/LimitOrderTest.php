@@ -19,7 +19,8 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
@@ -42,7 +43,8 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 10, 'total_vat' => 5], // total_gross 15
                 ['total_net' => 10, 'total_vat' => 4], // total_gross 14
                 ['total_net' => 15, 'total_vat' => 4], // total_gross 19
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $ii = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
@@ -93,7 +95,8 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
                 ['net' => 10, 'vat' => 5],
                 ['net' => 10, 'vat' => 4],
                 ['net' => 15, 'vat' => 4],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $ii = (new Model($this->db, 'invoice'))->addFields(['net', 'vat']);
@@ -137,7 +140,8 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
                 ['code' => 'A', 'net' => 10, 'vat' => 5],
                 ['code' => 'B', 'net' => 10, 'vat' => 4],
                 ['code' => 'C', 'net' => 15, 'vat' => 4],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         // order by expression field
@@ -202,7 +206,8 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'invoice' => [
                 ['net' => 10],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['net']);
@@ -218,7 +223,8 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);

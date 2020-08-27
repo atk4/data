@@ -77,7 +77,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             'rate' => [
                 ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],
                 ['dat' => '12/12/12', 'bid' => 8.3, 'ask' => 9.2],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -91,7 +92,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'user' => [
                 '_' => ['name' => 'John', 'salary' => 29],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -108,7 +110,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 2 => ['id' => 2, 'name' => 'Steve', 'salary' => 30],
                 3 => ['id' => 3, 'name' => 'Sue', 'salary' => 10],
                 4 => ['id' => 4, 'name' => 'John', 'salary' => 40],
-            ], ], $this->getDb());
+            ],
+        ], $this->getDb());
     }
 
     public function testAddFields()
@@ -120,7 +123,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'user' => [
                 1 => ['name' => 'John', 'login' => 'john@example.com'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -135,7 +139,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'login' => 'john@example.com'],
                 2 => ['id' => 2, 'name' => 'Peter', 'login' => 'unknown'],
                 3 => ['id' => 3, 'name' => 'unknown', 'login' => 'unknown'],
-            ], ], $this->getDb());
+            ],
+        ], $this->getDb());
     }
 
     public function testAddFields2()
@@ -147,7 +152,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'user' => [
                 1 => ['name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -186,7 +192,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => '1'],
                 2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => '1'],
                 3 => ['id' => 3, 'name' => 'Smith', 'parent_item_id' => '2'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model_Item($db, 'item');
@@ -266,7 +273,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 ['name' => 'John'],
                 ['name' => 'Sue'],
                 ['name' => 'Smith'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($db, 'item');
@@ -290,7 +298,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m->set('name', 'Peter');
@@ -313,7 +322,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 ['name' => 'John'],
                 ['name' => 'Sue'],
                 ['name' => 'Smith'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($db, 'user');
@@ -396,7 +406,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => '1'],
                 2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => '1'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model_Item($db, 'item');
@@ -438,7 +449,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 2 => ['code' => 10, 'name' => 'John'],
                 5 => ['code' => 20, 'name' => 'Sarah'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         // model without id field

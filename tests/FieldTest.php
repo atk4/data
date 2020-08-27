@@ -92,7 +92,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($db, 'user');
@@ -108,7 +109,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($db, 'user');
@@ -124,7 +126,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($db, 'user');
@@ -145,7 +148,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($db, 'user');
@@ -156,7 +160,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
                 2 => ['id' => 2, 'name' => 'NoName', 'surname' => 'qq'],
-            ], ];
+            ],
+        ];
         $this->assertEquals($a, $this->getDb());
     }
 
@@ -294,7 +299,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($db, 'item');
@@ -411,7 +417,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($db, 'user');
@@ -428,7 +435,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
                 2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
-            ], ];
+            ],
+        ];
         $this->assertEquals($a, $this->getDb());
 
         $m->set('first_name', 'Scott');
@@ -438,7 +446,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 1 => ['id' => 1, 'name' => 'Scott', 'surname' => 'Smith'],
                 2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
-            ], ];
+            ],
+        ];
         $this->assertEquals($a, $this->getDb());
     }
 
@@ -448,7 +457,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'invoice' => [
                 1 => ['id' => 1, 'net' => 100, 'vat' => 21],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($db, 'invoice');
@@ -486,7 +496,8 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'secret' => 'Smith'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $encrypt = function ($value, $field, $persistence) {

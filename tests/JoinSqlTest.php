@@ -64,7 +64,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 '_' => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
             ], 'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123'],
-            ], ];
+            ],
+        ];
 
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, 'user');
@@ -109,7 +110,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 '_' => ['id' => 1, 'name' => 'John'],
             ], 'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
-            ], ];
+            ],
+        ];
 
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, 'user');
@@ -169,7 +171,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 '_' => ['id' => 1, 'name' => 'John', 'test_id' => 0],
             ], 'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123'],
-            ], ];
+            ],
+        ];
 
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, 'user');
@@ -200,7 +203,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ];
+            ],
+        ];
 
         $this->setDb($a);
 
@@ -241,7 +245,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ];
+            ],
+        ];
 
         $this->setDb($a);
 
@@ -266,7 +271,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 ], 'contact' => [
                     1 => ['id' => 1, 'contact_phone' => '+555'],
                     2 => ['id' => 2, 'contact_phone' => '+321'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
 
@@ -286,7 +292,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 ], 'contact' => [
                     1 => ['id' => 1, 'contact_phone' => '+555'],
                     2 => ['id' => 2, 'contact_phone' => '+321'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
 
@@ -302,7 +309,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 ], 'contact' => [
                     1 => ['id' => 1, 'contact_phone' => '+555'],
                     2 => ['id' => 2, 'contact_phone' => '+999'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
 
@@ -322,7 +330,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                     1 => ['id' => 1, 'contact_phone' => '+555'],
                     2 => ['id' => 2, 'contact_phone' => '+999'],
                     3 => ['id' => 3, 'contact_phone' => '+777'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
     }
@@ -339,7 +348,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -361,7 +371,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 ], 'contact' => [
                     2 => ['id' => 2, 'contact_phone' => '+999'],
                     3 => ['id' => 3, 'contact_phone' => '+777'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
     }
@@ -373,7 +384,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 '_' => ['id' => 1, 'name' => 'John'],
             ], 'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
-            ], ];
+            ],
+        ];
 
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, 'user');
@@ -418,7 +430,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -461,7 +474,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                     2 => ['id' => 2, 'name' => 'USA'],
                     3 => ['id' => 3, 'name' => 'India'],
                     4 => ['id' => 4, 'name' => 'LV'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
     }
@@ -482,7 +496,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -512,7 +527,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 ], 'country' => [
                     2 => ['id' => 2, 'name' => 'US'],
                     3 => ['id' => 3, 'name' => 'India'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
     }
@@ -540,7 +556,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 40 => ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
                 41 => ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
                 42 => ['id' => 42, 'contact_id' => 11, 'address' => 'jane@foo.net'],
-            ], ];
+            ],
+        ];
 
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb($a);

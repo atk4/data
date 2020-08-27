@@ -91,7 +91,8 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -135,7 +136,8 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -179,7 +181,8 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);

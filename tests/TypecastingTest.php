@@ -110,7 +110,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                     'float' => '8.202343',
                     'array' => '[1,2,3]',
                 ],
-            ], ];
+            ],
+        ];
         $this->assertEquals($a, $this->getDb());
 
         [$first, $duplicate] = $m->export();
@@ -324,7 +325,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 [
                     'date' => '2013-02-20',
                 ],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
         $db = new Persistence\Sql($this->db->connection);
 
@@ -344,7 +346,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 [
                     'date' => '2013-02-20',
                 ],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
         $db = new Persistence\Sql($this->db->connection);
 
@@ -364,7 +367,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 [
                     'date' => '2013-02-20',
                 ],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
         $db = new Persistence\Sql($this->db->connection);
 
@@ -462,7 +466,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 [
                     'date' => $sql_time,
                 ],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
         $db = new Persistence\Sql($this->db->connection);
 
@@ -483,7 +488,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 [
                     'date' => $sql_time,
                 ],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
         $db = new Persistence\Sql($this->db->connection);
 
@@ -502,7 +508,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 [
                     'date' => $sql_time,
                 ],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
         $db = new Persistence\Sql($this->db->connection);
 
@@ -521,7 +528,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 [
                     'date' => '',
                 ],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
         $db = new Persistence\Sql($this->db->connection);
 
@@ -584,7 +592,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 [
                     'date' => $sql_time,
                 ],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
         $db = new Persistence\Sql($this->db->connection);
 
@@ -612,7 +621,8 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
                 [
                     'date' => null,
                 ],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
         $db = new Persistence\Sql($this->db->connection);
 

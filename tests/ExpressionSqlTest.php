@@ -27,7 +27,8 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
             'invoice' => [
                 ['total_net' => 10, 'total_vat' => 1.23],
                 ['total_net' => 20, 'total_vat' => 2.46],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -68,7 +69,8 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
             'invoice' => [
                 ['total_net' => 10, 'total_vat' => 1.23],
                 ['total_net' => 20, 'total_vat' => 2.46],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -99,7 +101,8 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
             'invoice' => [
                 ['total_net' => 10, 'total_vat' => 1.23],
                 ['total_net' => 20, 'total_vat' => 2.46],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -132,7 +135,8 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'cached_name' => 'John Smith'],
                 2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'cached_name' => 'ERROR'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);
@@ -170,7 +174,8 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         $a = [
             'math' => [
                 ['a' => 2, 'b' => 2],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);

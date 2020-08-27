@@ -218,7 +218,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ];
+            ],
+        ];
         $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
@@ -253,7 +254,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ];
+            ],
+        ];
         $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
@@ -324,7 +326,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ];
+            ],
+        ];
         $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
@@ -357,7 +360,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ], 'contact' => [
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ];
+            ],
+        ];
         $db = new Persistence\Array_($a);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');

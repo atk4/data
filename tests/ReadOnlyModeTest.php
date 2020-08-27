@@ -24,7 +24,8 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $db = new Persistence\Sql($this->db->connection);

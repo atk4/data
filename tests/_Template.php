@@ -21,7 +21,8 @@ class _Template extends \atk4\schema\PhpunitTestCase
                 ['name' => 'John'],
                 ['name' => 'Sue'],
                 ['name' => 'Smith'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $m = new Model($db, 'item');

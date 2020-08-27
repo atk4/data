@@ -28,7 +28,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
                 ['amount' => '5', 'user_id' => 1],
                 ['amount' => '3', 'user_id' => 1],
                 ['amount' => '8', 'user_id' => 3],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
@@ -89,7 +90,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
                 ['currency' => 'EUR', 'name' => 'Euro'],
                 ['currency' => 'USD', 'name' => 'Dollar'],
                 ['currency' => 'GBP', 'name' => 'Pound'],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name', 'currency']);
@@ -137,7 +139,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
                 ['amount' => '5', 'user_id' => 1],
                 ['amount' => '3', 'user_id' => 1],
                 ['amount' => '8', 'user_id' => 3],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
@@ -177,7 +180,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
                 ['amount' => '5', 'user_id' => 1],
                 ['amount' => '3', 'user_id' => 1],
                 ['amount' => '8', 'user_id' => 3],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name', ['date', 'type' => 'date']]);
@@ -217,7 +221,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => ($n = 100), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 2],
                 ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
                 ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
-            ], ];
+            ],
+        ];
 
         $this->setDb($a);
 
@@ -248,7 +253,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
                 ['total_net' => ($n = 100), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 2],
                 ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
                 ['total_net' => ($n = 25), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1)), 'invoice_id' => 3],
-            ], ];
+            ],
+        ];
 
         $this->setDb($a);
 
@@ -311,7 +317,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
                 ['name' => 'Pork',   'code' => 'GHI', 'list_id' => 1],
                 ['name' => 'Chicken', 'code' => null,  'list_id' => 1],
                 ['name' => 'Pear',   'code' => null,  'list_id' => 3],
-            ], ];
+            ],
+        ];
 
         $this->setDb($a);
 
@@ -418,7 +425,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
                 ['address' => 'Sue contact'],
                 ['address' => 'John contact'],
                 ['address' => 'Joe contact'],
-            ], ];
+            ],
+        ];
 
         $this->setDb($a);
 
@@ -503,7 +511,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
             ], 'order' => [
                 ['amount' => '20', 'user_id' => 1],
                 ['amount' => '15', 'user_id' => 2],
-            ], ];
+            ],
+        ];
         $this->setDb($a);
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
@@ -542,7 +551,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'user_id' => 1],
                 2 => ['id' => 2, 'user_id' => 2],
                 3 => ['id' => 3, 'user_id' => 1],
-            ], ];
+            ],
+        ];
 
         // restore DB
         $this->setDb($a);
