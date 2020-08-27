@@ -214,6 +214,14 @@ class Model implements \IteratorAggregate
     public $id;
 
     /**
+     * Once set, Model behaves like an entity and loading a different ID
+     * will result in an error.
+     *
+     * @var mixed
+     */
+    private $entityId;
+
+    /**
      * While in most cases your id field will be called 'id', sometimes
      * you would want to use a different one or maybe don't create field
      * at all.
@@ -407,6 +415,40 @@ class Model implements \IteratorAggregate
             'system' => true, // don't show by default
             'args' => ['intent' => 'string'],
         ]);
+
+        $this->initEntityHooks();
+    }
+
+    private function initEntityHooks(): void
+    {
+        if (!$this->id_field) {
+            return;
+        }
+
+        $this->onHook(self::HOOK_AFTER_LOAD, function (self $model) {
+            if ($model->id === null) { // allow unload
+                return;
+            }
+
+            if ($model->entityId === null) {
+                $model->entityId = $model->id;
+            } else {
+                if ($model->entityId !== $model->id) {
+                    $newId = $model->id;
+                    $model->unload(); // data for different ID were loaded, make sure to discard them
+
+                    throw new Exception('Model is loaded as an entity, ID ('
+                        . $model->entityId . ') can not be changed to a different one ('
+                        . $newId . ')');
+                }
+            }
+        }, [], -10);
+
+        $this->onHook(self::HOOK_BEFORE_UPDATE, function (self $model) {
+            if ($model->id !== null) {
+                $model->entityId = $model->id; // allow ID update
+            }
+        });
     }
 
     /**
@@ -1461,7 +1503,7 @@ class Model implements \IteratorAggregate
             if ($is_update) {
                 $data = [];
                 $dirty_join = false;
-                foreach ($this->dirty as $name => $junk) {
+                foreach ($this->dirty as $name => $ignore) {
                     if (!$this->hasField($name)) {
                         continue;
                     }
@@ -1716,9 +1758,11 @@ class Model implements \IteratorAggregate
     public function getIterator(): iterable
     {
         foreach ($this->rawIterator() as $data) {
-            $this->data = $this->persistence->typecastLoadRow($this, $data);
+            $thisCloned = clone $this;
+
+            $thisCloned->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $this->id = $data[$this->id_field] ?? null;
+                $thisCloned->id = $data[$this->id_field] ?? null;
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
@@ -1730,7 +1774,7 @@ class Model implements \IteratorAggregate
             // you can also use breakHook() with specific object which will then be returned
             // as a next iterator value
 
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
+            $ret = $thisCloned->hook(self::HOOK_AFTER_LOAD);
 
             if ($ret === false) {
                 continue;
@@ -1744,9 +1788,9 @@ class Model implements \IteratorAggregate
                 }
             } else {
                 if ($this->id_field) {
-                    yield $this->id => $this;
+                    yield $thisCloned->id => $thisCloned;
                 } else {
-                    yield $this;
+                    yield $thisCloned;
                 }
             }
         }
