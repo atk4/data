@@ -15,13 +15,13 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
     public function testAtomicOperations()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'item' => [
                 ['name' => 'John'],
                 ['name' => 'Sue'],
                 ['name' => 'Smith'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($db, 'item');
         $m->addField('name');
@@ -55,11 +55,11 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
     {
         $self = $this;
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'item' => [
                 ['name' => 'John'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         // test insert
         $m = new Model($db, 'item');
@@ -82,11 +82,11 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
     {
         $self = $this;
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'item' => [
                 ['name' => 'John'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         // test insert
         $m = new Model($db, 'item');
@@ -109,11 +109,11 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
     {
         $self = $this;
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'item' => [
                 ['name' => 'John'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         // test insert
         $m = new Model($db, 'item');

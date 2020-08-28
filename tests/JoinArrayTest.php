@@ -21,8 +21,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
     public function testDirection()
     {
-        $a = ['user' => [], 'contact' => []];
-        $db = new Persistence\Array_($a);
+        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m = new Model($db, 'user');
 
         $j = $m->join('contact');
@@ -53,8 +52,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
     public function testJoinException()
     {
-        $a = ['user' => [], 'contact' => []];
-        $db = new Persistence\Array_($a);
+        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m = new Model($db, 'user');
 
         $this->expectException(Exception::class);
@@ -63,8 +61,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
     public function testJoinSaving1()
     {
-        $a = ['user' => [], 'contact' => []];
-        $db = new Persistence\Array_($a);
+        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -114,8 +111,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
     public function testJoinSaving2()
     {
-        $a = ['user' => [], 'contact' => []];
-        $db = new Persistence\Array_($a);
+        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, 'user');
         $m_u->addField('name');
         $j = $m_u->join('contact.test_id');
@@ -166,8 +162,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
     public function testJoinSaving3()
     {
-        $a = ['user' => [], 'contact' => []];
-        $db = new Persistence\Array_($a);
+        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, 'user');
         $m_u->addField('name');
         $j = $m_u->join('contact', 'test_id');
@@ -184,33 +179,30 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    /*
-    public function testJoinSaving4()
+    /*public function testJoinSaving4()
     {
-        $a = ['user'=>[], 'contact'=>[]];
-        $db = new Persistence\Array_($a);
+        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, 'user');
         $m_u->addField('name');
         $m_u->addField('code');
-        $j = $m_u->join('contact.code','code');
+        $j = $m_u->join('contact.code', 'code');
         $j->addField('contact_phone');
 
-        $m_u->get('name')='John';
-        $m_u->get('code')='C28';
-        $m_u->get('contact_phone')='+123';
+        $m_u->get('name') = 'John';
+        $m_u->get('code') = 'C28';
+        $m_u->get('contact_phone') = '+123';
 
         $m_u->save();
 
         $this->assertEquals([
-            'user'=>[1=>['id'=>1, 'code'=>'C28', 'name'=>'John']],
-            'contact'=>[1=>['id'=>1, 'code'=>'C28', 'contact_phone'=>'+123']]
+            'user' => [1 => ['id' => 1, 'code' => 'C28', 'name' => 'John']],
+            'contact' => [1 => ['id' => 1, 'code' => 'C28', 'contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
-    }
-     */
+    }*/
 
     public function testJoinLoading()
     {
-        $a = [
+        $db = new Persistence\Array_([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -218,8 +210,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ];
-        $db = new Persistence\Array_($a);
+            ],
+        ]);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -245,7 +237,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
     public function testJoinUpdate()
     {
-        $a = [
+        $db = new Persistence\Array_([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -253,8 +245,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ];
-        $db = new Persistence\Array_($a);
+            ],
+        ]);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -314,7 +306,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
     public function testJoinDelete()
     {
-        $a = [
+        $db = new Persistence\Array_([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -324,8 +316,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ];
-        $db = new Persistence\Array_($a);
+            ],
+        ]);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -349,7 +341,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
     public function testLoadMissing()
     {
-        $a = [
+        $db = new Persistence\Array_([
             'user' => [
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
                 3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
@@ -357,8 +349,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ], 'contact' => [
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ];
-        $db = new Persistence\Array_($a);
+            ],
+        ]);
         $m_u = new Model($db, 'user');
         $m_u->addField('contact_id');
         $m_u->addField('name');

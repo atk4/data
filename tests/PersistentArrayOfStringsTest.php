@@ -18,11 +18,9 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
      */
     public function testTypecasting()
     {
-        $a = [
+        $p = new Persistence\ArrayOfStrings([
             'user' => [],
-        ];
-
-        $p = new Persistence\ArrayOfStrings($a);
+        ]);
         $m = new Model($p, 'user');
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);

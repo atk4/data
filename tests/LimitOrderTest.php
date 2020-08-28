@@ -14,13 +14,13 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 {
     public function testBasic()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
@@ -37,13 +37,13 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
     public function testReverse()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10, 'total_vat' => 5], // total_gross 15
                 ['total_net' => 10, 'total_vat' => 4], // total_gross 14
                 ['total_net' => 15, 'total_vat' => 4], // total_gross 19
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $ii = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
@@ -88,13 +88,13 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
     public function testArrayParameters()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['net' => 10, 'vat' => 5],
                 ['net' => 10, 'vat' => 4],
                 ['net' => 15, 'vat' => 4],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $ii = (new Model($this->db, 'invoice'))->addFields(['net', 'vat']);
         $ii->getField($ii->id_field)->system = false;
@@ -132,13 +132,13 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
     public function testOrderByExpressions()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['code' => 'A', 'net' => 10, 'vat' => 5],
                 ['code' => 'B', 'net' => 10, 'vat' => 4],
                 ['code' => 'C', 'net' => 15, 'vat' => 4],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         // order by expression field
         $i = (new Model($this->db, 'invoice'))->addFields(['code', 'net', 'vat']);
@@ -199,11 +199,11 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
      */
     public function testExceptionUnsupportedOrderParam()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['net' => 10],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['net']);
         $i->setOrder(new \DateTime());
@@ -213,13 +213,13 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
     public function testLimit()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');

@@ -89,11 +89,11 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     public function testMandatory2()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($db, 'user');
         $m->addField('name', ['mandatory' => true]);
@@ -105,11 +105,11 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     public function testRequired2()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($db, 'user');
         $m->addField('name', ['required' => true]);
@@ -121,11 +121,11 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     public function testMandatory3()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($db, 'user');
         $m->addField('name', ['mandatory' => true]);
@@ -142,22 +142,22 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         }
 
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($db, 'user');
         $m->addField('name', ['mandatory' => true, 'default' => 'NoName']);
         $m->addField('surname');
         $m->insert(['surname' => 'qq']);
-        $a = [
+        $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
                 2 => ['id' => 2, 'name' => 'NoName', 'surname' => 'qq'],
-            ], ];
-        $this->assertEquals($a, $this->getDb());
+            ],
+        ], $this->getDb());
     }
 
     public function testCaption()
@@ -291,11 +291,11 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     public function testPersist()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb($dbData = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($db, 'item');
         $m->addField('name', ['never_persist' => true]);
@@ -308,15 +308,15 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->set('name', 'Bill');
         $m->set('surname', 'Stalker');
         $m->save();
-        $this->assertEquals($a, $this->getDb());
+        $this->assertEquals($dbData, $this->getDb());
 
         $m->reload();
         $this->assertSame('Smith', $m->get('surname'));
         $m->getField('surname')->never_save = false;
         $m->set('surname', 'Stalker');
         $m->save();
-        $a['item'][1]['surname'] = 'Stalker';
-        $this->assertEquals($a, $this->getDb());
+        $dbData['item'][1]['surname'] = 'Stalker';
+        $this->assertEquals($dbData, $this->getDb());
 
         $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
             if ($m->isDirty('name')) {
@@ -331,16 +331,16 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $m->set('name', 'X');
         $m->save();
 
-        $a['item'][1]['surname'] = 'X';
+        $dbData['item'][1]['surname'] = 'X';
 
-        $this->assertEquals($a, $this->getDb());
+        $this->assertEquals($dbData, $this->getDb());
         $this->assertNull($m->get('name'));
         $this->assertSame('X', $m->get('surname'));
 
         $m->set('surname', 'Y');
         $m->save();
 
-        $this->assertEquals($a, $this->getDb());
+        $this->assertEquals($dbData, $this->getDb());
         $this->assertSame('Y', $m->get('name'));
         $this->assertSame('X', $m->get('surname'));
     }
@@ -352,7 +352,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         }
 
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
             ],
@@ -361,8 +361,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
                 2 => ['id' => 2, 'name' => 'Programmer'],
                 3 => ['id' => 3, 'name' => 'Sales'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $c = new Model($db, 'category');
         $c->addField('name');
@@ -379,7 +378,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
 
         $m->insert(['name' => 'Peter', 'category' => 'Sales']);
 
-        $a = [
+        $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
                 2 => ['id' => 2, 'name' => 'Peter', 'surname' => null, 'category_id' => 3],
@@ -389,8 +388,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
                 2 => ['id' => 2, 'name' => 'Programmer'],
                 3 => ['id' => 3, 'name' => 'Sales'],
             ],
-        ];
-        $this->assertEquals($a, $this->getDb());
+        ], $this->getDb());
     }
 
     public function testNonExisitngField()
@@ -408,11 +406,11 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         }
 
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($db, 'user');
         $m->addField('first_name', ['actual' => 'name']);
@@ -424,32 +422,32 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $d = $m->export();
         $this->assertSame('John', $d[0]['first_name']);
 
-        $a = [
+        $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
                 2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
-            ], ];
-        $this->assertEquals($a, $this->getDb());
+            ],
+        ], $this->getDb());
 
         $m->set('first_name', 'Scott');
         $m->save();
 
-        $a = [
+        $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'Scott', 'surname' => 'Smith'],
                 2 => ['id' => 2, 'name' => 'Peter', 'surname' => 'qq'],
-            ], ];
-        $this->assertEquals($a, $this->getDb());
+            ],
+        ], $this->getDb());
     }
 
     public function testCalculatedField()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'invoice' => [
                 1 => ['id' => 1, 'net' => 100, 'vat' => 21],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($db, 'invoice');
         $m->addField('net', ['type' => 'money']);
@@ -483,11 +481,11 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
     public function testEncryptedField()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'secret' => 'Smith'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $encrypt = function ($value, $field, $persistence) {
             if (!$persistence instanceof Persistence\Sql) {
@@ -527,9 +525,9 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         ]);
         $m->save(['name' => 'John', 'secret' => 'i am a woman']);
 
-        $a = $this->getDb();
-        $this->assertNotNull($a['user'][1]['secret']);
-        $this->assertNotSame('i am a woman', $a['user'][1]['secret']);
+        $dbData = $this->getDb();
+        $this->assertNotNull($dbData['user'][1]['secret']);
+        $this->assertNotSame('i am a woman', $dbData['user'][1]['secret']);
 
         $m->unload()->load(1);
         $this->assertSame('i am a woman', $m->get('secret'));
