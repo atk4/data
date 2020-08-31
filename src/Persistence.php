@@ -28,13 +28,8 @@ class Persistence
      * Connects database.
      *
      * @param string $dsn      Format as PDO DSN or use "mysql://user:pass@host/db;option=blah", leaving user and password arguments = null
-     * @param string $user
-     * @param string $password
-     * @param array  $args
-     *
-     * @return Persistence
      */
-    public static function connect($dsn, $user = null, $password = null, $args = [])
+    public static function connect(string $dsn, string $user = null, string $password = null, array $args = []): Persistence
     {
         // Process DSN string
         $dsn = \atk4\dsql\Connection::normalizeDsn($dsn, $user, $password);
