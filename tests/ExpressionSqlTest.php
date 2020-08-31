@@ -193,11 +193,11 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
         $m->addExpression('sum', '[a] + [b]');
 
-        $m->load(1);
-        $this->assertEquals(4, $m->get('sum'));
+        $mm = (clone $m)->load(1);
+        $this->assertEquals(4, $mm->get('sum'));
 
-        $m->save(['a' => 3]);
-        $this->assertEquals(4, $m->get('sum'));
+        $mm->save(['a' => 3]);
+        $this->assertEquals(4, $mm->get('sum'));
 
         $this->assertNull($m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
     }

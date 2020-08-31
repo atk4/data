@@ -421,11 +421,7 @@ class Model implements \IteratorAggregate
 
     private function initEntityHooks(): void
     {
-        if (!$this->id_field) {
-            return;
-        }
-
-        $this->onHook(self::HOOK_AFTER_LOAD, function (self $model) {
+        $checkFx = function (self $model) {
             if ($model->id === null) { // allow unload
                 return;
             }
@@ -442,13 +438,18 @@ class Model implements \IteratorAggregate
                         . $newId . ')');
                 }
             }
-        }, [], -10);
+        };
 
-        $this->onHook(self::HOOK_BEFORE_UPDATE, function (self $model) {
-            if ($model->id !== null) {
-                $model->entityId = $model->id; // allow ID update
-            }
-        });
+        $this->onHook(self::HOOK_BEFORE_LOAD, $checkFx, [], 10);
+        $this->onHook(self::HOOK_AFTER_LOAD, $checkFx, [], -10);
+        $this->onHook(self::HOOK_BEFORE_INSERT, $checkFx, [], 10);
+        $this->onHook(self::HOOK_AFTER_INSERT, $checkFx, [], -10);
+        $this->onHook(self::HOOK_BEFORE_UPDATE, $checkFx, [], 10);
+        $this->onHook(self::HOOK_AFTER_UPDATE, $checkFx, [], -10);
+        $this->onHook(self::HOOK_BEFORE_DELETE, $checkFx, [], 10);
+        $this->onHook(self::HOOK_AFTER_DELETE, $checkFx, [], -10);
+        $this->onHook(self::HOOK_BEFORE_SAVE, $checkFx, [], 10);
+        $this->onHook(self::HOOK_AFTER_SAVE, $checkFx, [], -10);
     }
 
     /**
@@ -1648,10 +1649,11 @@ class Model implements \IteratorAggregate
      */
     public function insert(array $row)
     {
-        $m = clone $this;
-        $this->_rawInsert($m, $row);
+        $model = clone $this;
+        $model->entityId = null;
+        $this->_rawInsert($model, $row);
 
-        return $m->id;
+        return $model->id;
     }
 
     /**
@@ -1664,9 +1666,8 @@ class Model implements \IteratorAggregate
      */
     public function import(array $rows)
     {
-        $m = clone $this;
         foreach ($rows as $row) {
-            $this->_rawInsert($m, $row);
+            $this->insert($row);
         }
 
         return $this;
