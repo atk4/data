@@ -384,8 +384,9 @@ class Csv extends Persistence
     {
         $data = [];
 
-        foreach ($model as $junk) {
-            $data[] = $fields !== null ? array_intersect_key($model->get(), array_flip($fields)) : $model->get();
+        foreach ($model as $row) {
+            $rowData = $row->get();
+            $data[] = $fields !== null ? array_intersect_key($rowData, array_flip($fields)) : $rowData;
         }
 
         // need to close file otherwise file pointer is at the end of file

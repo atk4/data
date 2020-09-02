@@ -79,13 +79,15 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
         // create accounts and payments
         $a = new Account($this->db);
 
-        $a->save(['name' => 'AIB']);
-        $a->ref('Payment')->save(['amount' => 10]);
-        $a->ref('Payment')->save(['amount' => 20]);
-        $a->unload();
+        $aa = clone $a;
+        $aa->save(['name' => 'AIB']);
+        $aa->ref('Payment')->save(['amount' => 10]);
+        $aa->ref('Payment')->save(['amount' => 20]);
+        $aa->unload();
 
-        $a->save(['name' => 'BOI']);
-        $a->ref('Payment')->save(['amount' => 30]);
+        $aa = clone $a;
+        $aa->save(['name' => 'BOI']);
+        $aa->ref('Payment')->save(['amount' => 30]);
         $a->unload();
 
         // create payment without link to account

@@ -177,10 +177,10 @@ class LookupSqlTest extends \atk4\schema\PhpunitTestCase
         $results = [];
 
         // should be OK, will set country name, rest of fields will be null
-        $c->saveAndUnload(['name' => 'Canada']);
+        (clone $c)->saveAndUnload(['name' => 'Canada']);
 
         // adds another country, but with more fields
-        $c->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
+        (clone $c)->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
 
         // setting field prior will affect save()
         $c->set('is_eu', true);
