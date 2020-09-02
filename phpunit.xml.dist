@@ -1,21 +1,21 @@
 <phpunit colors="true" bootstrap="vendor/autoload.php" printerClass="atk4\core\AtkPhpunit\ResultPrinter">
-  <php>
-    <var name="DB_DSN" value="sqlite::memory:" />
-    <var name="DB_USER" value="" />
-    <var name="DB_PASSWD" value="" />
-    <var name="DB_DBNAME" value="" />
-  </php>
-  <testsuites>
-    <testsuite name="tests">
-      <directory>tests</directory>
-    </testsuite>
-  </testsuites>
-  <coverage processUncoveredFiles="true">
-    <include>
-      <directory suffix=".php">src</directory>
-    </include>
-    <report>
-      <php outputFile="build/logs/clover.cov" />
-    </report>
-  </coverage>
+    <php>
+        <var name="DB_DSN" value="sqlite::memory:" />
+        <var name="DB_USER" value="" />
+        <var name="DB_PASSWD" value="" />
+        <var name="DB_DBNAME" value="" />
+    </php>
+    <testsuites>
+        <testsuite name="tests">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+        <report>
+            <php outputFile="build/logs/clover.cov" />
+        </report>
+    </coverage>
 </phpunit>
