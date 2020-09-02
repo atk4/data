@@ -1202,10 +1202,11 @@ class Model implements \IteratorAggregate
         try {
             $this->reload_after_save = false;
             $this->save($data);
-            $this->unload();
         } finally {
             $this->reload_after_save = $reloadAfterSaveBackup;
         }
+
+        $this->unload();
 
         return $this;
     }
@@ -1602,45 +1603,44 @@ class Model implements \IteratorAggregate
      */
     protected function _rawInsert(self $m, array $row)
     {
+        $m->unload();
+
+        // Find any row values that do not correspond to fields, and they may correspond to
+        // references instead
+        $refs = [];
+        foreach ($row as $key => $value) {
+            // and we only support array values
+            if (!is_array($value)) {
+                continue;
+            }
+
+            // and reference must exist with same name
+            if (!$this->hasRef($key)) {
+                continue;
+            }
+
+            // Then we move value for later
+            $refs[$key] = $value;
+            unset($row[$key]);
+        }
+
+        // save data fields
         $reloadAfterSaveBackup = $m->reload_after_save;
         try {
             $m->reload_after_save = false;
-
-            $m->unload();
-
-            // Find any row values that do not correspond to fields, and they may correspond to
-            // references instead
-            $refs = [];
-            foreach ($row as $key => $value) {
-                // and we only support array values
-                if (!is_array($value)) {
-                    continue;
-                }
-
-                // and reference must exist with same name
-                if (!$this->hasRef($key)) {
-                    continue;
-                }
-
-                // Then we move value for later
-                $refs[$key] = $value;
-                unset($row[$key]);
-            }
-
-            // save data fields
             $m->save($row);
-
-            // store id value
-            if ($this->id_field) {
-                $m->data[$m->id_field] = $m->id;
-            }
-
-            // if there was referenced data, then import it
-            foreach ($refs as $key => $value) {
-                $m->ref($key)->import($value);
-            }
         } finally {
             $m->reload_after_save = $reloadAfterSaveBackup;
+        }
+
+        // store id value
+        if ($this->id_field) {
+            $m->data[$m->id_field] = $m->id;
+        }
+
+        // if there was referenced data, then import it
+        foreach ($refs as $key => $value) {
+            $m->ref($key)->import($value);
         }
     }
 
