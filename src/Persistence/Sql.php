@@ -791,7 +791,6 @@ class Sql extends Persistence
         $insert->set($this->typecastSaveRow($model, $data));
 
         $st = null;
-
         try {
             $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
             $st = $insert->execute();
@@ -863,7 +862,6 @@ class Sql extends Persistence
         $update->where($model->getField($model->id_field), $id);
 
         $st = null;
-
         try {
             $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
             if ($data) {

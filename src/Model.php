@@ -772,7 +772,6 @@ class Model implements \IteratorAggregate
         $hookIndex = $this->onHook(self::HOOK_NORMALIZE, function () {
             throw new \atk4\core\HookBreaker(false);
         }, [], PHP_INT_MIN);
-
         try {
             return $this->set($field, null);
         } finally {
@@ -1200,7 +1199,6 @@ class Model implements \IteratorAggregate
     public function saveAndUnload(array $data = [])
     {
         $reloadAfterSaveBackup = $this->reload_after_save;
-
         try {
             $this->reload_after_save = false;
             $this->save($data);
@@ -1412,7 +1410,6 @@ class Model implements \IteratorAggregate
         $scopeBak = $this->scope;
         $systemBak = $field->system;
         $defaultBak = $field->default;
-
         try {
             // add condition to cloned scope and try to load record
             $this->scope = clone $this->scope;
@@ -1441,7 +1438,6 @@ class Model implements \IteratorAggregate
         $scopeBak = $this->scope;
         $systemBak = $field->system;
         $defaultBak = $field->default;
-
         try {
             // add condition to cloned scope and try to load record
             $this->scope = clone $this->scope;
@@ -1607,7 +1603,6 @@ class Model implements \IteratorAggregate
     protected function _rawInsert(self $m, array $row)
     {
         $reloadAfterSaveBackup = $m->reload_after_save;
-
         try {
             $m->reload_after_save = false;
 
