@@ -6,7 +6,7 @@ namespace atk4\data\tests\Model\Smbo;
 
 class Payment extends Document
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 

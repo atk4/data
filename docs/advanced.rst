@@ -148,7 +148,7 @@ $owner, and $app values (due to AppScopeTrait) as well as execute init() method,
 which I want to define like this::
 
 
-    public function init(): void {
+    protected function init(): void {
         $this->_init();
 
         if(isset($this->owner->no_audit)){

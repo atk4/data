@@ -213,6 +213,14 @@ class Model implements \IteratorAggregate
     public $id;
 
     /**
+     * Once set, Model behaves like an entity and loading a different ID
+     * will result in an error.
+     *
+     * @var mixed
+     */
+    private $entityId;
+
+    /**
      * While in most cases your id field will be called 'id', sometimes
      * you would want to use a different one or maybe don't create field
      * at all.
@@ -357,7 +365,7 @@ class Model implements \IteratorAggregate
     /**
      * Extend this method to define fields of your choice.
      */
-    public function init(): void
+    protected function init(): void
     {
         $this->_init();
 
@@ -406,6 +414,41 @@ class Model implements \IteratorAggregate
             'system' => true, // don't show by default
             'args' => ['intent' => 'string'],
         ]);
+
+        $this->initEntityHooks();
+    }
+
+    private function initEntityHooks(): void
+    {
+        $checkFx = function (self $model) {
+            if ($model->id === null) { // allow unload
+                return;
+            }
+
+            if ($model->entityId === null) {
+                $model->entityId = $model->id;
+            } else {
+                if ($model->entityId !== $model->id) {
+                    $newId = $model->id;
+                    $model->unload(); // data for different ID were loaded, make sure to discard them
+
+                    throw new Exception('Model is loaded as an entity, ID ('
+                        . $model->entityId . ') can not be changed to a different one ('
+                        . $newId . ')');
+                }
+            }
+        };
+
+        $this->onHook(self::HOOK_BEFORE_LOAD, $checkFx, [], 10);
+        $this->onHook(self::HOOK_AFTER_LOAD, $checkFx, [], -10);
+        $this->onHook(self::HOOK_BEFORE_INSERT, $checkFx, [], 10);
+        $this->onHook(self::HOOK_AFTER_INSERT, $checkFx, [], -10);
+        $this->onHook(self::HOOK_BEFORE_UPDATE, $checkFx, [], 10);
+        $this->onHook(self::HOOK_AFTER_UPDATE, $checkFx, [], -10);
+        $this->onHook(self::HOOK_BEFORE_DELETE, $checkFx, [], 10);
+        $this->onHook(self::HOOK_AFTER_DELETE, $checkFx, [], -10);
+        $this->onHook(self::HOOK_BEFORE_SAVE, $checkFx, [], 10);
+        $this->onHook(self::HOOK_AFTER_SAVE, $checkFx, [], -10);
     }
 
     /**
@@ -473,10 +516,7 @@ class Model implements \IteratorAggregate
             $this->_default_seed_addField
         );
 
-        /** @var Field $field */
-        $field = $this->factory($seed);
-
-        return $field;
+        return Field::fromSeed($seed);
     }
 
     protected $typeToFieldSeed = [
@@ -972,55 +1012,48 @@ class Model implements \IteratorAggregate
     /**
      * Set order for model records. Multiple calls.
      *
-     * @param mixed     $field
-     * @param bool|null $desc
+     * @param string|array $field
+     * @param string       $direction "asc" or "desc"
      *
      * @return $this
      */
-    public function setOrder($field, $desc = null)
+    public function setOrder($field, string $direction = 'asc')
     {
-        // fields passed as CSV string
-        if (is_string($field) && strpos($field, ',') !== false) {
-            $field = explode(',', $field);
-        }
-
         // fields passed as array
         if (is_array($field)) {
-            if ($desc !== null) {
+            if (func_num_args() > 1) {
                 throw (new Exception('If first argument is array, second argument must not be used'))
                     ->addMoreInfo('arg1', $field)
-                    ->addMoreInfo('arg2', $desc);
+                    ->addMoreInfo('arg2', $direction);
             }
 
-            foreach (array_reverse($field) as $key => $o) {
+            foreach (array_reverse($field) as $key => $direction) {
                 if (is_int($key)) {
-                    if (is_array($o)) {
-                        // format [field,order]
-                        $this->setOrder(...$o);
+                    if (is_array($direction)) {
+                        // format [field, direction]
+                        $this->setOrder(...$direction);
                     } else {
-                        // format "field order"
-                        $this->setOrder($o);
+                        // format "field"
+                        $this->setOrder($direction);
                     }
                 } else {
-                    // format "field"=>order
-                    $this->setOrder($key, $o);
+                    // format "field" => direction
+                    $this->setOrder($key, $direction);
                 }
             }
 
             return $this;
         }
 
-        // extract sort order from field name string
-        if ($desc === null && is_string($field)) {
-            // no realistic workaround in PHP for 2nd argument being null
-            $field = trim($field);
-            if (strpos($field, ' ') !== false) {
-                [$field, $desc] = array_map('trim', explode(' ', $field, 2));
-            }
+        $direction = strtolower($direction);
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            throw (new Exception('Invalid order direction, direction can be only "asc" or "desc"'))
+                ->addMoreInfo('field', $field)
+                ->addMoreInfo('direction', $direction);
         }
 
         // finally set order
-        $this->order[] = [$field, $desc];
+        $this->order[] = [$field, $direction];
 
         return $this;
     }
@@ -1165,7 +1198,7 @@ class Model implements \IteratorAggregate
      */
     public function newInstance(string $class = null, array $options = [])
     {
-        $model = $this->factory([$class ?? static::class], $options);
+        $model = (self::class)::fromSeed([$class ?? static::class], $options);
 
         if ($this->persistence) {
             return $this->persistence->add($model);
@@ -1424,7 +1457,7 @@ class Model implements \IteratorAggregate
             if ($is_update) {
                 $data = [];
                 $dirty_join = false;
-                foreach ($this->dirty as $name => $junk) {
+                foreach ($this->dirty as $name => $ignore) {
                     if (!$this->hasField($name)) {
                         continue;
                     }
@@ -1569,10 +1602,11 @@ class Model implements \IteratorAggregate
      */
     public function insert(array $row)
     {
-        $m = clone $this;
-        $this->_rawInsert($m, $row);
+        $model = clone $this;
+        $model->entityId = null;
+        $this->_rawInsert($model, $row);
 
-        return $m->id;
+        return $model->id;
     }
 
     /**
@@ -1585,9 +1619,8 @@ class Model implements \IteratorAggregate
      */
     public function import(array $rows)
     {
-        $m = clone $this;
         foreach ($rows as $row) {
-            $this->_rawInsert($m, $row);
+            $this->insert($row);
         }
 
         return $this;
@@ -1687,9 +1720,11 @@ class Model implements \IteratorAggregate
     public function getIterator(): iterable
     {
         foreach ($this->toQuery() as $data) {
-            $this->data = $this->persistence->typecastLoadRow($this, $data);
+            $thisCloned = clone $this;
+
+            $thisCloned->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $this->id = $data[$this->id_field] ?? null;
+                $thisCloned->id = $data[$this->id_field] ?? null;
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
@@ -1701,14 +1736,14 @@ class Model implements \IteratorAggregate
             // you can also use breakHook() with specific object which will then be returned
             // as a next iterator value
 
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
+            $ret = $thisCloned->hook(self::HOOK_AFTER_LOAD);
 
             if ($ret === false) {
                 continue;
             }
 
             if (!is_object($ret)) {
-                $ret = $this;
+                $ret = $thisCloned;
             }
 
             if ($ret->id_field) {
@@ -1874,9 +1909,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        $c = $this->_default_seed_addExpression;
-
-        $field = $this->factory($c, $expression);
+        $field = Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);
 

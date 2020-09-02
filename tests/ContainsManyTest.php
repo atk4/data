@@ -24,7 +24,7 @@ class Invoice2 extends Model
     public $table = 'invoice';
     public $title_field = 'ref_no';
 
-    public function init(): void
+    protected function init(): void
     {
         parent:: init();
 
@@ -61,7 +61,7 @@ class Invoice2 extends Model
  */
 class Line2 extends Model
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -96,7 +96,7 @@ class VatRate2 extends Model
 {
     public $table = 'vat_rate';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -110,7 +110,7 @@ class VatRate2 extends Model
  */
 class Discount2 extends Model
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -247,9 +247,9 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         }
 
         // add some discounts
-        $l->load(1)->ref('discounts')->insert(['id' => 1, 'percent' => 5, 'valid_till' => new \DateTime('2019-07-15')]);
-        $l->load(1)->ref('discounts')->insert(['id' => 2, 'percent' => 10, 'valid_till' => new \DateTime('2019-07-30')]);
-        $l->load(2)->ref('discounts')->insert(['id' => 1, 'percent' => 20, 'valid_till' => new \DateTime('2019-12-31')]);
+        (clone $l)->load(1)->ref('discounts')->insert(['id' => 1, 'percent' => 5, 'valid_till' => new \DateTime('2019-07-15')]);
+        (clone $l)->load(1)->ref('discounts')->insert(['id' => 2, 'percent' => 10, 'valid_till' => new \DateTime('2019-07-30')]);
+        (clone $l)->load(2)->ref('discounts')->insert(['id' => 1, 'percent' => 20, 'valid_till' => new \DateTime('2019-12-31')]);
 
         // reload invoice to be sure all is saved and to recalculate all fields
         $i->reload();

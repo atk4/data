@@ -10,7 +10,7 @@ class Transfer extends Payment
 
     public $other_leg_creation;
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 

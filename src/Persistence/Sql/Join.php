@@ -56,7 +56,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
     /**
      * This method is to figure out stuff.
      */
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 

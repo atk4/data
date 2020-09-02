@@ -92,9 +92,9 @@ class IteratorQuery extends AbstractQuery
 
             // prepare arguments for array_multisort()
             $args = [];
-            foreach ($this->order as [$field, $desc]) {
+            foreach ($this->order as [$field, $order]) {
                 $args[] = array_column($data, $field);
-                $args[] = $desc ? SORT_DESC : SORT_ASC;
+                $args[] = $order === 'desc' ? SORT_DESC : SORT_ASC;
             }
             $args[] = &$data;
 

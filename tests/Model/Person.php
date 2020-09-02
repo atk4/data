@@ -10,7 +10,7 @@ class Person extends Model
 {
     public $table = 'person';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
         $this->addField('name');

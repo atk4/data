@@ -6,7 +6,7 @@ namespace atk4\data\tests\Model;
 
 class Client extends User
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 

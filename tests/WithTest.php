@@ -15,7 +15,7 @@ class WithTest extends \atk4\schema\PhpunitTestCase
 {
     public function testWith()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 10 => ['id' => 10, 'name' => 'John', 'salary' => 2500],
                 20 => ['id' => 20, 'name' => 'Peter', 'salary' => 4000],
@@ -23,8 +23,8 @@ class WithTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'net' => 500, 'user_id' => 10],
                 2 => ['id' => 2, 'net' => 200, 'user_id' => 20],
                 3 => ['id' => 3, 'net' => 100, 'user_id' => 20],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         // setup models

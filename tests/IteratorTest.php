@@ -86,13 +86,13 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
 
     public function testBasic()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
@@ -130,13 +130,13 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
 
     public function testRawQuery()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
@@ -174,13 +174,13 @@ class IteratorTest extends \atk4\schema\PhpunitTestCase
 
     public function testBasicId()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);

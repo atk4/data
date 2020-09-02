@@ -20,12 +20,13 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $a = [
+
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $this->m = new Model($db, ['user', 'id_field' => false]);
@@ -41,7 +42,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
         $this->m->tryLoadAny();
         $this->assertSame('John', $this->m->get('name'));
 
-        $this->m->setOrder('name desc');
+        $this->m->setOrder('name', 'desc');
         $this->m->tryLoadAny();
         $this->assertSame('Sue', $this->m->get('name'));
 

@@ -16,100 +16,99 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testLoadArray()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('surname');
 
-        $m->load(1);
-        $this->assertSame('John', $m->get('name'));
+        $mm = (clone $m)->load(1);
+        $this->assertSame('John', $mm->get('name'));
 
-        $m->load(2);
-        $this->assertSame('Jones', $m->get('surname'));
-        $m->set('surname', 'Smith');
-        $m->save();
+        $mm = (clone $m)->load(2);
+        $this->assertSame('Jones', $mm->get('surname'));
+        $mm->set('surname', 'Smith');
+        $mm->save();
 
-        $m->load(1);
-        $this->assertSame('John', $m->get('name'));
+        $mm = (clone $m)->load(1);
+        $this->assertSame('John', $mm->get('name'));
 
-        $m->load(2);
-        $this->assertSame('Smith', $m->get('surname'));
+        $mm = (clone $m)->load(2);
+        $this->assertSame('Smith', $mm->get('surname'));
     }
 
     public function testPersistenceInsert()
     {
-        $a = [
+        $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
 
-        $this->setDb($a);
+        $this->setDb($dbData);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('surname');
 
         $ids = [];
-        foreach ($a['user'] as $id => $row) {
+        foreach ($dbData['user'] as $id => $row) {
             $ids[] = $this->db->insert($m, $row);
         }
 
-        $m->load($ids[0]);
-        $this->assertSame('John', $m->get('name'));
+        $mm = (clone $m)->load($ids[0]);
+        $this->assertSame('John', $mm->get('name'));
 
-        $m->load($ids[1]);
-        $this->assertSame('Jones', $m->get('surname'));
-        $m->set('surname', 'Smith');
-        $m->save();
+        $mm = (clone $m)->load($ids[1]);
+        $this->assertSame('Jones', $mm->get('surname'));
+        $mm->set('surname', 'Smith');
+        $mm->save();
 
-        $m->load($ids[0]);
-        $this->assertSame('John', $m->get('name'));
+        $mm = (clone $m)->load($ids[0]);
+        $this->assertSame('John', $mm->get('name'));
 
-        $m->load($ids[1]);
-        $this->assertSame('Smith', $m->get('surname'));
+        $mm = (clone $m)->load($ids[1]);
+        $this->assertSame('Smith', $mm->get('surname'));
     }
 
     public function testModelInsert()
     {
-        $a = [
+        $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
-        $this->setDb($a);
+        $this->setDb($dbData);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('surname');
 
         $ms = [];
-        foreach ($a['user'] as $id => $row) {
+        foreach ($dbData['user'] as $id => $row) {
             $ms[] = $m->insert($row);
         }
 
-        $this->assertSame('John', $m->load($ms[0])->get('name'));
+        $this->assertSame('John', (clone $m)->load($ms[0])->get('name'));
 
-        $this->assertSame('Jones', $m->load($ms[1])->get('surname'));
+        $this->assertSame('Jones', (clone $m)->load($ms[1])->get('surname'));
     }
 
     public function testModelSaveNoReload()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
-        ];
-        $this->setDb($a);
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -127,13 +126,13 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testModelInsertRows()
     {
-        $a = [
+        $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
-        $this->setDb($a, false); // create empty table
+        $this->setDb($dbData, false); // create empty table
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
@@ -141,7 +140,7 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals(0, $m->toQuery()->exists()->getOne());
 
-        $m->import($a['user']); // import data
+        $m->import($dbData['user']); // import data
 
         $this->assertEquals(1, $m->toQuery()->exists()->getOne());
 
@@ -150,20 +149,20 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testPersistenceDelete()
     {
-        $a = [
+        $dbData = [
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ];
-        $this->setDb($a);
+        $this->setDb($dbData);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addField('surname');
 
         $ids = [];
-        foreach ($a['user'] as $id => $row) {
+        foreach ($dbData['user'] as $id => $row) {
             $ids[] = $this->db->insert($m, $row);
         }
         $this->assertFalse($m->loaded());
@@ -188,12 +187,12 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testExport()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($this->db, 'user');
         $m->addField('name');

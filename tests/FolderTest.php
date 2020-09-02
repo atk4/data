@@ -10,7 +10,7 @@ class Folder extends \atk4\data\Model
 {
     public $table = 'folder';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
         $this->addField('name');
@@ -33,7 +33,7 @@ class FolderTest extends \atk4\schema\PhpunitTestCase
 {
     public function testRate()
     {
-        $a = [
+        $this->setDb([
             'folder' => [
                 ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'Desktop'],
                 ['parent_id' => 1, 'is_deleted' => 0, 'name' => 'My Documents'],
@@ -43,8 +43,8 @@ class FolderTest extends \atk4\schema\PhpunitTestCase
                 ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'DSQL'],
                 ['parent_id' => 4, 'is_deleted' => 0, 'name' => 'Agile Toolkit'],
                 ['parent_id' => 4, 'is_deleted' => 1, 'name' => 'test-project'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $f = new Folder($db);

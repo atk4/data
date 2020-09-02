@@ -54,7 +54,7 @@ class FieldSqlExpression extends FieldSql
     /**
      * Initialization.
      */
-    public function init(): void
+    protected function init(): void
     {
         $this->_init();
 
