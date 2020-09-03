@@ -1,21 +1,21 @@
-<phpunit colors="true" bootstrap="vendor/autoload.php" printerClass="atk4\core\AtkPhpunit\ResultPrinter">
+<phpunit bootstrap="vendor/autoload.php" printerClass="atk4\core\AtkPhpunit\ResultPrinter" colors="true">
     <php>
         <var name="DB_DSN" value="pgsql:dbname=atk4_test__data;host=postgres" />
         <var name="DB_USER" value="atk4_test" />
         <var name="DB_PASSWD" value="atk4_pass" />
         <var name="DB_DBNAME" value="atk4_test__data" />
     </php>
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">src</directory>
-        </whitelist>
-    </filter>
     <testsuites>
         <testsuite name="tests">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
-    <logging>
-        <log type="coverage-php" target="build/logs/clover-pgsql.cov"/>
-    </logging>
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+        <report>
+            <php outputFile="build/logs/clover-pgsql.cov" />
+        </report>
+    </coverage>
 </phpunit>
