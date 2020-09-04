@@ -815,7 +815,9 @@ class Model implements \IteratorAggregate
 
         $this->checkOnlyFieldsField($field);
 
-        if (array_key_exists($field, $this->data)) {
+        if ($field === $this->id_field) {
+            return $this->id;
+        } elseif (array_key_exists($field, $this->data)) {
             return $this->data[$field];
         }
 
