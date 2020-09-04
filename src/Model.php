@@ -771,7 +771,6 @@ class Model implements \IteratorAggregate
         $hookIndex = $this->onHook(self::HOOK_NORMALIZE, function () {
             throw new \atk4\core\HookBreaker(false);
         }, [], PHP_INT_MIN);
-
         try {
             return $this->set($field, null);
         } finally {
@@ -1158,13 +1157,15 @@ class Model implements \IteratorAggregate
      */
     public function saveAndUnload(array $data = [])
     {
-        $ras = $this->reload_after_save;
-        $this->reload_after_save = false;
-        $this->save($data);
-        $this->unload();
+        $reloadAfterSaveBackup = $this->reload_after_save;
+        try {
+            $this->reload_after_save = false;
+            $this->save($data);
+        } finally {
+            $this->reload_after_save = $reloadAfterSaveBackup;
+        }
 
-        // restore original value
-        $this->reload_after_save = $ras;
+        $this->unload();
 
         return $this;
     }
@@ -1359,7 +1360,6 @@ class Model implements \IteratorAggregate
         $scopeBak = $this->scope;
         $systemBak = $field->system;
         $defaultBak = $field->default;
-
         try {
             // add condition to cloned scope and try to load record
             $this->scope = clone $this->scope;
@@ -1388,7 +1388,6 @@ class Model implements \IteratorAggregate
         $scopeBak = $this->scope;
         $systemBak = $field->system;
         $defaultBak = $field->default;
-
         try {
             // add condition to cloned scope and try to load record
             $this->scope = clone $this->scope;
@@ -1557,7 +1556,6 @@ class Model implements \IteratorAggregate
      */
     protected function _rawInsert(self $m, array $row)
     {
-        $m->reload_after_save = false;
         $m->unload();
 
         // Find any row values that do not correspond to fields, and they may correspond to
@@ -1580,7 +1578,13 @@ class Model implements \IteratorAggregate
         }
 
         // save data fields
-        $m->save($row);
+        $reloadAfterSaveBackup = $m->reload_after_save;
+        try {
+            $m->reload_after_save = false;
+            $m->save($row);
+        } finally {
+            $m->reload_after_save = $reloadAfterSaveBackup;
+        }
 
         // store id value
         if ($this->id_field) {

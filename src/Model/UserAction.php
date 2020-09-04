@@ -111,7 +111,6 @@ class UserAction
     public function execute(...$args)
     {
         // todo - ACL tests must allow
-
         try {
             $this->validateBeforeExecute();
 

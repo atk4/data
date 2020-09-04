@@ -413,7 +413,6 @@ class Field implements Expressionable
     public function toString($value = null): string
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
-
         try {
             switch ($this->type) {
                 case 'boolean':
