@@ -278,7 +278,7 @@ class Array_ extends Persistence
             }, $data);
         }
 
-        return new \atk4\data\Action\Iterator($data, $model->id_field);
+        return new \atk4\data\Action\Iterator($data);
     }
 
     /**
@@ -348,7 +348,6 @@ class Array_ extends Persistence
                 $action = $this->initAction($model, [$field]);
                 $this->applyScope($model, $action);
                 $this->setLimitOrder($model, $action);
-                $action->id_key = null;
 
                 // get first record
                 if ($row = $action->getRow()) {
