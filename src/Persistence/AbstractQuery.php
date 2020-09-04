@@ -10,10 +10,10 @@ use atk4\data\Persistence;
 
 abstract class AbstractQuery implements \IteratorAggregate
 {
-    public const MODE_SELECT = 'SELECT';
-    public const MODE_UPDATE = 'UPDATE';
-    public const MODE_INSERT = 'INSERT';
-    public const MODE_DELETE = 'DELETE';
+    public const MODE_SELECT = 'select';
+    public const MODE_UPDATE = 'update';
+    public const MODE_INSERT = 'insert';
+    public const MODE_DELETE = 'delete';
 
     /** @var Model */
     protected $model;
@@ -185,7 +185,7 @@ abstract class AbstractQuery implements \IteratorAggregate
         if ($this->mode !== self::MODE_SELECT) {
             $this->setMode(self::MODE_SELECT);
 
-            $this->hookOnModel('INIT', [$this, $type]);
+            $this->hookOnModel('init', [$this, $type]);
         }
     }
 
@@ -264,11 +264,11 @@ abstract class AbstractQuery implements \IteratorAggregate
         return $this->executeQueryWithDebug(function () {
             $this->withMode();
 
-            $this->hookOnModel('BEFORE', [$this]);
+            $this->hookOnModel('before', [$this]);
 
             $result = $this->doExecute();
 
-            $this->hookOnModel('AFTER', [$this, $result]);
+            $this->hookOnModel('after', [$this, $result]);
 
             return $result;
         });
@@ -278,7 +278,7 @@ abstract class AbstractQuery implements \IteratorAggregate
 
     protected function hookOnModel(string $stage, array $args = []): void
     {
-        $hookSpotConst = get_class($this->persistence) . '::HOOK_' . $stage . '_' . $this->getMode() . '_QUERY';
+        $hookSpotConst = get_class($this->persistence) . '::' . strtoupper('HOOK_' . $stage . '_' . $this->getMode() . '_QUERY');
         if (defined($hookSpotConst)) {
             $this->model->hook(constant($hookSpotConst), $args);
         }
