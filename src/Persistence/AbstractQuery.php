@@ -106,9 +106,9 @@ abstract class AbstractQuery implements \IteratorAggregate
         $this->initOrder();
         $this->initDelete();
 
-        $this->hookInitSelect(__FUNCTION__);
-
         $this->setMode(self::MODE_DELETE);
+
+        $this->hookInitSelect(__FUNCTION__);
 
         return $this;
     }
@@ -183,7 +183,9 @@ abstract class AbstractQuery implements \IteratorAggregate
     protected function hookInitSelect($type): void
     {
         if ($this->mode !== self::MODE_SELECT) {
-            $this->setMode(self::MODE_SELECT);
+            if (!$this->mode) {
+                $this->setMode(self::MODE_SELECT);
+            }
 
             $this->hookOnModel('init', [$this, $type]);
         }
@@ -191,6 +193,12 @@ abstract class AbstractQuery implements \IteratorAggregate
 
     protected function setMode($mode): self
     {
+        if ($this->mode) {
+            throw (new Exception('Mode of query cannot be modified'))
+                ->addMoreInfo('existing_mode', $this->mode)
+                ->addMoreInfo('attempted_mode', $mode);
+        }
+
         $this->mode = $mode;
 
         return $this;

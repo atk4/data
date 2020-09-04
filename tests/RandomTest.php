@@ -541,6 +541,17 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             $d->toQuery()->select()->render()
         );
     }
+
+    public function testExceptionOnQueryModeModification()
+    {
+        $d = new Model($this->db, 'db2.doc');
+        $d->addField('name');
+
+        $query = $d->toQuery()->select();
+
+        $this->expectException(Exception::class);
+        $query->delete();
+    }
 }
 
 class CustomField extends \atk4\data\Field
