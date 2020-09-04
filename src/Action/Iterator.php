@@ -20,11 +20,17 @@ class Iterator
     public $generator;
 
     /**
+     * @var string|null
+     */
+    public $id_key;
+
+    /**
      * Iterator constructor.
      */
-    public function __construct(array $data)
+    public function __construct(array $data, string $id_key = null)
     {
         $this->generator = new \ArrayIterator($data);
+        $this->id_key = $id_key;
     }
 
     /**
@@ -87,6 +93,7 @@ class Iterator
         }
 
         $this->generator = new \ArrayIterator([[$result]]);
+        $this->id_key = null;
 
         return $this;
     }
@@ -255,6 +262,7 @@ class Iterator
     public function count()
     {
         $this->generator = new \ArrayIterator([[iterator_count($this->generator)]]);
+        $this->id_key = null;
 
         return $this;
     }
@@ -267,8 +275,16 @@ class Iterator
     public function exists()
     {
         $this->generator = new \ArrayIterator([[$this->generator->valid() ? 1 : 0]]);
+        $this->id_key = null;
 
         return $this;
+    }
+
+    private function addIdToData(array &$data, $id): void
+    {
+        if ($this->id_key !== null) {
+            $data[$this->id_key] = $id;
+        }
     }
 
     /**
@@ -276,7 +292,12 @@ class Iterator
      */
     public function get(): array
     {
-        return iterator_to_array($this->generator, true);
+        $dataArr = iterator_to_array($this->generator, true);
+        array_walk($dataArr, function ($row, $id) {
+            $this->addIdToData($row, $id);
+        });
+
+        return $dataArr;
     }
 
     /**
@@ -286,6 +307,7 @@ class Iterator
     {
         $row = $this->generator->current();
         $this->generator->next();
+        $this->addIdToData($row, $this->generator->key());
 
         return $row;
     }
