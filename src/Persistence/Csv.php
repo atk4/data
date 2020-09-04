@@ -258,7 +258,7 @@ class Csv extends Persistence
         }
 
         $data = $this->typecastLoadRow($model, $data);
-        $data['id'] = $this->line;
+        $data[$model->id_field] = $this->line;
 
         return $data;
     }
