@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Util;
+namespace atk4\data\Exception;
 
-class DeepCopyException extends \atk4\data\Exception
+class DeepCopyFailed extends \atk4\data\Exception
 {
     public function addDepth(string $prefix)
     {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace atk4\data\tests;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Util\DeepCopy;
-use atk4\data\Util\DeepCopyException;
 
 class DcClient extends Model
 {
@@ -294,7 +294,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 
         $dc = new DeepCopy();
 
-        $this->expectException(DeepCopyException::class);
+        $this->expectException(Exception\DeepCopyFailed::class);
 
         try {
             $invoice = $dc
@@ -303,7 +303,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
                 ->to($invoice)
                 ->with(['Lines', 'Lines2'])
                 ->copy();
-        } catch (DeepCopyException $e) {
+        } catch (Exception\DeepCopyFailed $e) {
             $this->assertSame('no ref', $e->getPrevious()->getMessage());
 
             throw $e;
@@ -335,7 +335,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
 
         $dc = new DeepCopy();
 
-        $this->expectException(DeepCopyException::class);
+        $this->expectException(Exception\DeepCopyFailed::class);
 
         try {
             $invoice = $dc
@@ -344,7 +344,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
                 ->to($invoice)
                 ->with(['Lines'])
                 ->copy();
-        } catch (\atk4\data\Util\DeepCopyException $e) {
+        } catch (Exception\DeepCopyFailed $e) {
             $this->assertSame('Mandatory field value cannot be null', $e->getPrevious()->getMessage());
 
             throw $e;

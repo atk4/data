@@ -1267,7 +1267,7 @@ class Model implements \IteratorAggregate
     {
         try {
             return $this->load($id);
-        } catch (RecordNotFoundException $e) {
+        } catch (Exception\RecordNotFound $e) {
         }
 
         return $this;
@@ -1293,7 +1293,7 @@ class Model implements \IteratorAggregate
     {
         try {
             return $this->load();
-        } catch (RecordNotFoundException $e) {
+        } catch (Exception\RecordNotFound $e) {
         }
 
         return $this;
@@ -1338,7 +1338,7 @@ class Model implements \IteratorAggregate
         }
 
         if (!$this->data) {
-            throw (new RecordNotFoundException())
+            throw (new Exception\RecordNotFound())
                 ->setRecordParameters($this, $id);
         }
 
@@ -1951,25 +1951,4 @@ class Model implements \IteratorAggregate
     }
 
     // }}}
-}
-
-class RecordNotFoundException extends Exception
-{
-    public function __construct(string $message = '', int $code = 0, \Throwable $previous = null)
-    {
-        parent::__construct($message ?: 'Record not found', $code ?: 404, $previous);
-    }
-
-    public function setRecordParameters(Model $model, $id = null)
-    {
-        $this
-            ->addMoreInfo('model', $model)
-            ->addMoreInfo('scope', $model->scope()->toWords());
-
-        if ($id !== null) {
-            $this->addMoreInfo('id', $id);
-        }
-
-        return $this;
-    }
 }
