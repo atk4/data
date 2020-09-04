@@ -21,7 +21,7 @@ class Query extends Persistence\IteratorQuery
 
             $header = $this->persistence->getFileHeader();
 
-            return new Persistence\ArrayCallbackIterator($iterator, function ($row, $id) use ($header, $keys) {
+            return new \atk4\data\Util\ArrayCallbackIterator($iterator, function ($row, $id) use ($header, $keys) {
                 if (!$row) {
                     return [];
                 }
