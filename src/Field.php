@@ -489,7 +489,12 @@ class Field implements Expressionable
      */
     public function compare($value): bool
     {
-        return $this->get() == $value;
+        if ($this->owner->persistence === null) {
+            return (string) $this->normalize($this->get()) === (string) $this->normalize($value);
+        }
+
+        return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $this->get()])[$this->short_name]
+            === (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->short_name];
     }
 
     /**
