@@ -46,7 +46,7 @@ class IteratorQuery extends AbstractQuery
             $this->fx = function (\Iterator $iterator) {
                 $keys = array_flip((array) $this->fields);
 
-                return new ArrayCallbackIterator($iterator, function ($row) use ($keys) {
+                return new \atk4\data\Util\ArrayCallbackIterator($iterator, function ($row) use ($keys) {
                     return array_intersect_key($row, $keys);
                 });
             };
@@ -375,21 +375,5 @@ class IteratorQuery extends AbstractQuery
         return array_merge([
             'fields' => $this->fields,
         ], parent::getDebug());
-    }
-}
-
-class ArrayCallbackIterator extends \IteratorIterator
-{
-    private $fx;
-
-    public function __construct(\Traversable $iterator, $fx)
-    {
-        parent::__construct($iterator);
-        $this->fx = $fx;
-    }
-
-    public function current()
-    {
-        return ($this->fx)(parent::current(), $this->key());
     }
 }
