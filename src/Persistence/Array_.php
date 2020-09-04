@@ -82,6 +82,16 @@ class Array_ extends Persistence
         return $model;
     }
 
+    private function addIdToRow(Model $model, array &$data, $id): void
+    {
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->actual ?? $idField->short_name;
+
+            $data[$idColumnName] = $id;
+        }
+    }
+
     /**
      * Loads model and returns data record.
      *
@@ -116,7 +126,10 @@ class Array_ extends Persistence
             return null;
         }
 
-        return $this->typecastLoadRow($model, $this->data[$table][$id]);
+        $row = $this->data[$table][$id];
+        $this->addIdToRow($model, $row, $id);
+
+        return $this->typecastLoadRow($model, $row);
     }
 
     /**
@@ -271,6 +284,9 @@ class Array_ extends Persistence
     public function initAction(Model $model, array $fields = null): \atk4\data\Action\Iterator
     {
         $data = $this->data[$model->table];
+        array_walk($data, function ($row, $id) use($model) {
+            $this->addIdToRow($model, $row, $id);
+        });
 
         if ($fields !== null) {
             $data = array_map(function ($row) use ($model, $fields) {
