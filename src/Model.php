@@ -824,7 +824,7 @@ class Model implements \IteratorAggregate
 
     private function assertHasIdField(): void
     {
-        if (!is_string($this->id_field) || !$this->hasField($this->id_field)) {
+        if (!is_string($this->id_field) /*|| !$this->hasField($this->id_field)*/) {
             throw new Exception('ID field is not defined');
         }
     }
@@ -1110,7 +1110,7 @@ class Model implements \IteratorAggregate
      */
     public function loaded(): bool
     {
-        return $this->id_field && $this->id !== null;
+        return $this->id_field && $this->getId() !== null;
     }
 
     /**
