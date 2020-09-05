@@ -376,6 +376,8 @@ class Model implements \IteratorAggregate
             return; // don't declare actions for model without id_field
         }
 
+        $this->initEntityHooks();
+
         if ($this->read_only) {
             return; // don't declare action for read-only model
         }
@@ -415,8 +417,6 @@ class Model implements \IteratorAggregate
             'system' => true, // don't show by default
             'args' => ['intent' => 'string'],
         ]);
-
-        $this->initEntityHooks();
     }
 
     private function initEntityHooks(): void
