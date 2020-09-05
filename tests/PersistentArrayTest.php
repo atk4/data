@@ -615,12 +615,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     public function testOrder()
     {
         $dbData = [
-            ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
-            ['id' => 2, 'f1' => 'D', 'f2' => 'A'],
-            ['id' => 3, 'f1' => 'D', 'f2' => 'C'],
-            ['id' => 4, 'f1' => 'A', 'f2' => 'C'],
-            ['id' => 5, 'f1' => 'E', 'f2' => 'A'],
-            ['id' => 6, 'f1' => 'C', 'f2' => 'A'],
+            1 => ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
+            2 => ['id' => 2, 'f1' => 'D', 'f2' => 'A'],
+            3 => ['id' => 3, 'f1' => 'D', 'f2' => 'C'],
+            4 => ['id' => 4, 'f1' => 'A', 'f2' => 'C'],
+            5 => ['id' => 5, 'f1' => 'E', 'f2' => 'A'],
+            6 => ['id' => 6, 'f1' => 'C', 'f2' => 'A'],
         ];
 
         // order by one field ascending
