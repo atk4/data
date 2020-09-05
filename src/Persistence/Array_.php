@@ -48,12 +48,12 @@ class Array_ extends Persistence
         return $rows;
     }
 
-    private function assertNoIdMismatch($rowId, $id): void
+    private function assertNoIdMismatch($idFromRow, $id): void
     {
-        if ($rowId !== null && (is_int($rowId) ? (string) $rowId : $rowId) !== (is_int($id) ? (string) $id : $id)) {
+        if ($idFromRow !== null && (is_int($idFromRow) ? (string) $idFromRow : $idFromRow) !== (is_int($id) ? (string) $id : $id)) {
             throw (new Exception('Row constains ID column, but it does not match the row ID'))
                 ->addMoreInfo('idFromKey', $id)
-                ->addMoreInfo('idFromData', $rowId);
+                ->addMoreInfo('idFromData', $idFromRow);
         }
     }
 
