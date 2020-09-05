@@ -216,7 +216,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $this->saveRow($model, array_merge($this->data[$table][$id] ?? [], $data), is_int($id) ? (string) $id : $id);
+        $this->saveRow($model, array_merge($this->data[$table][$id] ?? [], $data), $id);
 
         return $id;
     }
