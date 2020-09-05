@@ -134,15 +134,4 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
         $this->expectException(Exception::class);
         $this->m->delete();
     }
-
-    /**
-     * Additional checks are done if ID is manually set.
-     */
-    public function testFailUpdate()
-    {
-        $this->m->id = 1;
-        $this->m->set('name', 'foo');
-        $this->expectException(Exception::class);
-        $this->m->saveAndUnload();
-    }
 }
