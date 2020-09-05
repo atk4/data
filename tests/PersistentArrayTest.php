@@ -74,7 +74,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertEquals([
             'person' => [
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
-                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F', 'id' => 3],
+                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
             ],
         ], $this->getInternalPersistenceData($p));
     }
