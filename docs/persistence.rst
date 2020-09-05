@@ -117,7 +117,7 @@ However if you change the ID for record that was loaded, then your database
 record will also have its ID changed. Here is example::
 
     $m->load(123);
-    $m->set($m->id_field, 321);
+    $m->setId(321);
     $m->save();
 
 After this your database won't have a record with ID 123 anymore.
