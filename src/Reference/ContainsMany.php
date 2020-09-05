@@ -37,7 +37,7 @@ class ContainsMany extends ContainsOne
         // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $theirModel->onHook($spot, function ($theirModel) {
-                $rows = $theirModel->persistence->getRawDataByTable($this->getTheirModel(), $this->table_alias);
+                $rows = $theirModel->persistence->getRawDataByTable($theirModel, $this->table_alias);
                 $this->getOurModel()->save([
                     $this->getOurFieldName() => $rows ?: null,
                 ]);

@@ -175,7 +175,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         // let's test how it all looks in persistence without typecasting
         $exp_addr = $i->export(null, null, false)[0]['addr'];
         $this->assertSame(
-            '{"id":1,"country_id":"2","address":"bar","built_date":"2019-01-01T00:00:00+00:00","tags":"[\"foo\",\"bar\"]","door_code":"{\"id\":1,\"code\":\"DEF\",\"valid_till\":\"2019-07-01T00:00:00+00:00\"}"}',
+            '{"country_id":"2","address":"bar","built_date":"2019-01-01T00:00:00+00:00","tags":"[\"foo\",\"bar\"]","door_code":"{\"code\":\"DEF\",\"valid_till\":\"2019-07-01T00:00:00+00:00\"}"}',
             $exp_addr
         );
 
