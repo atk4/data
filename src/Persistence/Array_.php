@@ -51,7 +51,9 @@ class Array_ extends Persistence
     private function assertNoIdMismatch($rowId, $id): void
     {
         if ($rowId !== null && (is_int($rowId) ? (string) $rowId : $rowId) !== (is_int($id) ? (string) $id : $id)) {
-            throw new Exception('Row constains ID column, but it does not match the row ID');
+            throw (new Exception('Row constains ID column, but it does not match the row ID'))
+                ->addMoreInfo('idFromKey', $id)
+                ->addMoreInfo('idFromData', $rowId);
         }
     }
 
