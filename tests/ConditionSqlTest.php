@@ -429,6 +429,10 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testLikeCondition()
     {
+        if ($this->driverType === 'pgsql') {
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        }
+
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'active' => 1, 'created' => '2020-01-01 15:00:30'],
