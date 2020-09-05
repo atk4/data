@@ -57,7 +57,7 @@ class Array_ extends Persistence
         }
     }
 
-    private function saveRow(Model $model, array $row, $id): void
+    private function saveRow(Model $model, array $row, $id, string $table): void
     {
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
@@ -68,7 +68,7 @@ class Array_ extends Persistence
             }
         }
 
-        $this->data[$model->table][$id] = $row;
+        $this->data[$table][$id] = $row;
     }
 
     private function addIdToLoadRow(Model $model, array &$row, $id): void
@@ -200,7 +200,7 @@ class Array_ extends Persistence
 
         $id = $this->generateNewId($model, $table);
 
-        $this->saveRow($model, $data, $id);
+        $this->saveRow($model, $data, $id, $table);
 
         return $id;
     }
@@ -218,7 +218,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $this->saveRow($model, array_merge($this->data[$table][$id] ?? [], $data), $id);
+        $this->saveRow($model, array_merge($this->data[$table][$id] ?? [], $data), $id, $table);
 
         return $id;
     }
