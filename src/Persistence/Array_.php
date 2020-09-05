@@ -37,9 +37,15 @@ class Array_ extends Persistence
      *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsMany.php#L66
      *             remove once fixed/no longer needed
      */
-    public function getRawDataByTable(string $table): array
+    public function getRawDataByTable(Model $model, string $table): array
     {
-        return $this->data[$table];
+        $rows = [];
+        foreach ($this->data[$table] as $id => $row) {
+            $this->addIdToLoadRow($model, $row, $id);
+            $rows[$id] = $row;
+        }
+
+        return $rows;
     }
 
     private function assertNoIdMismatch($rowId, $id): void
