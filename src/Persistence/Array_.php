@@ -42,6 +42,40 @@ class Array_ extends Persistence
         return $this->data[$table];
     }
 
+    private function assertNoIdMismatch($rowId, $id): void
+    {
+        if ($rowId !== null && (is_int($rowId) ? (string) $rowId : $rowId) !== (is_int($id) ? (string) $id : $id)) {
+            throw new Exception('Row constains ID column, but it does not match the row ID');
+        }
+    }
+
+    private function saveRow(Model $model, array $row, $id): void
+    {
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->actual ?? $idField->short_name;
+            if (array_key_exists($idColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$idColumnName], $id);
+                unset($row[$idColumnName]);
+            }
+        }
+
+        $this->data[$model->table][$id] = $row;
+    }
+
+    private function addIdToLoadRow(Model $model, array &$row, $id): void
+    {
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->actual ?? $idField->short_name;
+            if (array_key_exists($idColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$idColumnName], $id);
+            }
+
+            $row = [$idColumnName => $id] + $row;
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -82,16 +116,6 @@ class Array_ extends Persistence
         return $model;
     }
 
-    private function addIdToRow(Model $model, array &$data, $id): void
-    {
-        if ($model->id_field) {
-            $idField = $model->getField($model->id_field);
-            $idColumnName = $idField->actual ?? $idField->short_name;
-
-            $data[$idColumnName] = $id;
-        }
-    }
-
     /**
      * Loads model and returns data record.
      *
@@ -127,7 +151,7 @@ class Array_ extends Persistence
         }
 
         $row = $this->data[$table][$id];
-        $this->addIdToRow($model, $row, $id);
+        $this->addIdToLoadRow($model, $row, $id);
 
         return $this->typecastLoadRow($model, $row);
     }
@@ -167,10 +191,8 @@ class Array_ extends Persistence
         $data = $this->typecastSaveRow($model, $data);
 
         $id = $this->generateNewId($model, $table);
-        if ($model->id_field) {
-            $data[$model->id_field] = $id;
-        }
-        $this->data[$table][$id] = $data;
+
+        $this->saveRow($model, $data, $id);
 
         return $id;
     }
@@ -188,7 +210,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $this->data[$table][$id] = array_merge($this->data[$table][$id] ?? [], $data);
+        $this->saveRow($model, array_merge($this->data[$table][$id] ?? [], $data), is_int($id) ? (string) $id : $id);
 
         return $id;
     }
@@ -208,11 +230,9 @@ class Array_ extends Persistence
     /**
      * Generates new record ID.
      *
-     * @param Model $model
-     *
      * @return string
      */
-    public function generateNewId($model, string $table = null)
+    public function generateNewId(Model $model, string $table = null)
     {
         $table = $table ?? $model->table;
 
@@ -234,14 +254,15 @@ class Array_ extends Persistence
                     ->addMoreInfo('type', $type);
         }
 
-        return $this->lastInsertIds[$table] = $this->lastInsertIds['$'] = $id;
+        $this->lastInsertIds[$table] = $id;
+        $this->lastInsertIds['$'] = $id;
+
+        return $id;
     }
 
     /**
      * Last ID inserted.
      * Last inserted ID for any table is stored under '$' key.
-     *
-     * @param Model $model
      *
      * @return mixed
      */
@@ -285,7 +306,7 @@ class Array_ extends Persistence
     {
         $data = $this->data[$model->table];
         array_walk($data, function ($row, $id) use($model) {
-            $this->addIdToRow($model, $row, $id);
+            $this->addIdToLoadRow($model, $row, $id);
         });
 
         if ($fields !== null) {

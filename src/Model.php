@@ -429,13 +429,13 @@ class Model implements \IteratorAggregate
             if ($model->entityId === null) {
                 $model->entityId = $model->id;
             } else {
-                if ($model->entityId !== $model->id) {
+                if (!$model->compare($this->id_field, $model->entityId)) {
                     $newId = $model->id;
                     $model->unload(); // data for different ID were loaded, make sure to discard them
 
-                    throw new Exception('Model is loaded as an entity, ID ('
-                        . $model->entityId . ') can not be changed to a different one ('
-                        . $newId . ')');
+                    throw (new Exception('Model is loaded as an entity, ID can not be changed to a different one'))
+                        ->addMoreInfo('entityId', $model->entityId)
+                        ->addMoreInfo('newId', $newId);
                 }
             }
         };

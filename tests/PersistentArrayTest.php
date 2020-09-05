@@ -144,7 +144,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             'user' => [
                 1 => ['name' => 'Peter', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'QQ'],
-                3 => ['name' => 'Foo', 'surname' => 'Bar', 'id' => 3],
+                3 => ['name' => 'Foo', 'surname' => 'Bar'],
             ],
         ], $this->getInternalPersistenceData($p));
     }
@@ -167,7 +167,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-                3 => ['name' => 'Foo', 'surname' => 'Bar', 'id' => 3],
+                3 => ['name' => 'Foo', 'surname' => 'Bar'],
             ],
         ], $this->getInternalPersistenceData($p));
 
