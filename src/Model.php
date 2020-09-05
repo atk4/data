@@ -429,13 +429,13 @@ class Model implements \IteratorAggregate
             if ($model->entityId === null) {
                 $model->entityId = $model->id;
             } else {
-                if ($model->entityId !== $model->id) {
+                if (!$model->compare($this->id_field, $model->entityId)) {
                     $newId = $model->id;
                     $model->unload(); // data for different ID were loaded, make sure to discard them
 
-                    throw new Exception('Model is loaded as an entity, ID ('
-                        . $model->entityId . ') can not be changed to a different one ('
-                        . $newId . ')');
+                    throw (new Exception('Model is loaded as an entity, ID can not be changed to a different one'))
+                        ->addMoreInfo('entityId', $model->entityId)
+                        ->addMoreInfo('newId', $newId);
                 }
             }
         };
@@ -806,16 +806,8 @@ class Model implements \IteratorAggregate
         if ($field === null) {
             // Collect list of eligible fields
             $data = [];
-            if ($this->only_fields) {
-                // collect data for actual fields
-                foreach ($this->only_fields as $field) {
-                    $data[$field] = $this->get($field);
-                }
-            } else {
-                // get all fields
-                foreach ($this->getFields() as $field => $f) {
-                    $data[$field] = $this->get($field);
-                }
+            foreach ($this->only_fields ?: array_keys($this->getFields()) as $field) {
+                $data[$field] = $this->get($field);
             }
 
             return $data;
@@ -1220,7 +1212,7 @@ class Model implements \IteratorAggregate
         $m = $this->newInstance($class, $options);
 
         foreach ($this->data as $field => $value) {
-            if ($value !== null && $value !== $this->getField($field)->default) {
+            if ($value !== null && $value !== $this->getField($field)->default && $field !== $this->id_field) {
                 // Copying only non-default value
                 $m->set($field, $value);
             }

@@ -74,8 +74,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u2->save();
 
         $this->assertEquals([
-            'user' => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
-            'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
+            'user' => [1 => ['name' => 'John', 'contact_id' => 1]],
+            'contact' => [1 => ['contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
 
         $m_u2->unload();
@@ -86,10 +86,10 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
         $this->assertEquals([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                1 => ['name' => 'John', 'contact_id' => 1],
+                2 => ['name' => 'Peter', 'contact_id' => 1],
             ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+123'],
+                1 => ['contact_phone' => '+123'],
             ],
         ], $this->getInternalPersistenceData($db));
 
@@ -101,12 +101,12 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
         $this->assertEquals([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
+                1 => ['name' => 'John', 'contact_id' => 1],
+                2 => ['name' => 'Peter', 'contact_id' => 1],
+                3 => ['name' => 'Joe', 'contact_id' => 2],
             ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+123'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                1 => ['contact_phone' => '+123'],
+                2 => ['contact_phone' => '+321'],
             ],
         ], $this->getInternalPersistenceData($db));
     }
@@ -125,8 +125,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u2->save();
 
         $this->assertEquals([
-            'user' => [1 => ['id' => 1, 'name' => 'John']],
-            'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
+            'user' => [1 => ['name' => 'John']],
+            'contact' => [1 => ['test_id' => 1, 'contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
 
         $m_u2->unload();
@@ -135,11 +135,11 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u2->save();
         $this->assertEquals([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
+                1 => ['name' => 'John'],
+                2 => ['name' => 'Peter'],
             ], 'contact' => [
-                1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123'],
-                2 => ['id' => 2, 'test_id' => 2, 'contact_phone' => null],
+                1 => ['test_id' => 1, 'contact_phone' => '+123'],
+                2 => ['test_id' => 2, 'contact_phone' => null],
             ],
         ], $this->getInternalPersistenceData($db));
 
@@ -154,12 +154,12 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u2->save();
         $this->assertEquals([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John'],
-                2 => ['id' => 2, 'name' => 'Peter'],
-                3 => ['id' => 3, 'name' => 'Sue'],
+                1 => ['name' => 'John'],
+                2 => ['name' => 'Peter'],
+                3 => ['name' => 'Sue'],
             ], 'contact' => [
-                1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123'],
-                2 => ['id' => 2, 'test_id' => 3, 'contact_phone' => '+444'],
+                1 => ['test_id' => 1, 'contact_phone' => '+123'],
+                2 => ['test_id' => 3, 'contact_phone' => '+444'],
             ],
         ], $this->getInternalPersistenceData($db));
     }
@@ -178,8 +178,8 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u->save();
 
         $this->assertEquals([
-            'user' => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
-            'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
+            'user' => [1 => ['test_id' => 1, 'name' => 'John']],
+            'contact' => [1 => ['contact_phone' => '+123']],
         ], $this->getInternalPersistenceData($db));
     }
 
@@ -263,11 +263,11 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
         $this->assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                1 => ['name' => 'John 2', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
                 3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
             ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
+                1 => ['contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ],
         ], $this->getInternalPersistenceData($db));
@@ -279,12 +279,12 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
         $this->assertSame([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                1 => ['name' => 'John 2', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
+                3 => ['name' => 'XX', 'contact_id' => 2],
             ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+999'],
+                1 => ['contact_phone' => '+555'],
+                2 => ['contact_phone' => '+999'],
             ],
         ], $this->getInternalPersistenceData($db));
 
@@ -295,14 +295,14 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
         $this->assertEquals([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
+                1 => ['name' => 'John 2', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                3 => ['name' => 'XX', 'contact_id' => 2],
+                4 => ['name' => 'YYY', 'contact_id' => 3],
             ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
+                1 => ['contact_phone' => '+555'],
+                2 => ['contact_phone' => '+999'],
+                3 => ['contact_phone' => '+777'],
             ],
         ], $this->getInternalPersistenceData($db));
     }

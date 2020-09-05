@@ -37,9 +37,51 @@ class Array_ extends Persistence
      *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsMany.php#L66
      *             remove once fixed/no longer needed
      */
-    public function getRawDataByTable(string $table): array
+    public function getRawDataByTable(Model $model, string $table): array
     {
-        return $this->data[$table];
+        $rows = [];
+        foreach ($this->data[$table] as $id => $row) {
+            $this->addIdToLoadRow($model, $row, $id);
+            $rows[$id] = $row;
+        }
+
+        return $rows;
+    }
+
+    private function assertNoIdMismatch($idFromRow, $id): void
+    {
+        if ($idFromRow !== null && (is_int($idFromRow) ? (string) $idFromRow : $idFromRow) !== (is_int($id) ? (string) $id : $id)) {
+            throw (new Exception('Row constains ID column, but it does not match the row ID'))
+                ->addMoreInfo('idFromKey', $id)
+                ->addMoreInfo('idFromData', $idFromRow);
+        }
+    }
+
+    private function saveRow(Model $model, array $row, $id, string $table): void
+    {
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->actual ?? $idField->short_name;
+            if (array_key_exists($idColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$idColumnName], $id);
+                unset($row[$idColumnName]);
+            }
+        }
+
+        $this->data[$table][$id] = $row;
+    }
+
+    private function addIdToLoadRow(Model $model, array &$row, $id): void
+    {
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->actual ?? $idField->short_name;
+            if (array_key_exists($idColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$idColumnName], $id);
+            }
+
+            $row = [$idColumnName => $id] + $row;
+        }
     }
 
     /**
@@ -116,7 +158,10 @@ class Array_ extends Persistence
             return null;
         }
 
-        return $this->typecastLoadRow($model, $this->data[$table][$id]);
+        $row = $this->data[$table][$id];
+        $this->addIdToLoadRow($model, $row, $id);
+
+        return $this->typecastLoadRow($model, $row);
     }
 
     /**
@@ -154,10 +199,8 @@ class Array_ extends Persistence
         $data = $this->typecastSaveRow($model, $data);
 
         $id = $this->generateNewId($model, $table);
-        if ($model->id_field) {
-            $data[$model->id_field] = $id;
-        }
-        $this->data[$table][$id] = $data;
+
+        $this->saveRow($model, $data, $id, $table);
 
         return $id;
     }
@@ -175,7 +218,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $this->data[$table][$id] = array_merge($this->data[$table][$id] ?? [], $data);
+        $this->saveRow($model, array_merge($this->data[$table][$id] ?? [], $data), $id, $table);
 
         return $id;
     }
@@ -195,11 +238,9 @@ class Array_ extends Persistence
     /**
      * Generates new record ID.
      *
-     * @param Model $model
-     *
      * @return string
      */
-    public function generateNewId($model, string $table = null)
+    public function generateNewId(Model $model, string $table = null)
     {
         $table = $table ?? $model->table;
 
@@ -221,14 +262,15 @@ class Array_ extends Persistence
                     ->addMoreInfo('type', $type);
         }
 
-        return $this->lastInsertIds[$table] = $this->lastInsertIds['$'] = $id;
+        $this->lastInsertIds[$table] = $id;
+        $this->lastInsertIds['$'] = $id;
+
+        return $id;
     }
 
     /**
      * Last ID inserted.
      * Last inserted ID for any table is stored under '$' key.
-     *
-     * @param Model $model
      *
      * @return mixed
      */
@@ -271,6 +313,9 @@ class Array_ extends Persistence
     public function initAction(Model $model, array $fields = null): \atk4\data\Action\Iterator
     {
         $data = $this->data[$model->table];
+        array_walk($data, function ($row, $id) use ($model) {
+            $this->addIdToLoadRow($model, $row, $id);
+        });
 
         if ($fields !== null) {
             $data = array_map(function ($row) use ($model, $fields) {
