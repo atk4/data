@@ -355,6 +355,9 @@ class Model implements \IteratorAggregate
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
         $this->_cloneCollection('userActions');
+
+        // check for clone errors immediately, otherwise not strictly needed
+        $this->_rebindHooksIfCloned();
     }
 
     /**
