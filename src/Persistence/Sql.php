@@ -804,6 +804,8 @@ class Sql extends Persistence
 
         if ($model->id_field && isset($data[$model->id_field])) {
             $id = $data[$model->id_field];
+
+            $this->syncIdSequence($model);
         } else {
             $id = $model->persistence->lastInsertId($model);
         }
@@ -951,21 +953,35 @@ class Sql extends Persistence
         return $expression->expr($mask, $prop);
     }
 
-    /**
-     * Last ID inserted.
-     *
-     * @return mixed
-     */
-    public function lastInsertId(Model $model)
+    private function getIdSequenceName(Model $model): ?string
     {
-        $seq = $model->sequence ?: null;
+        $sequenceName = $model->sequence ?: null;
 
-        // PostgreSQL PDO always requires sequence name in lastInsertId method as parameter
-        // So let's use its default one if no specific is set
-        if ($this->connection instanceof \atk4\dsql\Postgresql\Connection && $seq === null) {
-            $seq = $model->table . '_' . $model->id_field . '_seq';
+        if ($sequenceName === null) {
+            // PostgreSQL uses sequence internally for PK autoincrement,
+            // use default name if not set explicitly
+            if ($this->connection instanceof \atk4\dsql\Postgresql\Connection) {
+                $sequenceName = $model->table . '_' . $model->id_field . '_seq';
+            }
         }
 
-        return $this->connection->lastInsertId($seq);
+        return $sequenceName;
+    }
+
+    public function lastInsertId(Model $model): string
+    {
+        return $this->connection->lastInsertId($this->getIdSequenceName($model));
+    }
+
+    protected function syncIdSequence(Model $model): void
+    {
+        // PostgreSQL sequence must be manually synchronized if a row with explicit ID was inserted
+        if ($this->connection instanceof \atk4\dsql\Postgresql\Connection) {
+            $this->connection->expr(
+                // @TODO soft-escape
+                'select setval(pg_get_serial_sequence([], []), coalesce(max(' . $model->id_field . '), 0) + 1, false) from "' . $model->table . '"',
+                [$model->table, $model->id_field]
+            )->execute();
+        }
     }
 }
