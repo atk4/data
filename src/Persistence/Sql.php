@@ -802,7 +802,11 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        $id = $model->persistence->lastInsertId($model);
+        if ($model->id_field && isset($data[$model->id_field])) {
+            $id = $data[$model->id_field];
+        } else {
+            $id = $model->persistence->lastInsertId($model);
+        }
 
         $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
 
