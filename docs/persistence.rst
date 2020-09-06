@@ -57,7 +57,7 @@ There are several ways to link your model up with the persistence::
 
         $m->load(10);
         $m->set('name', 'John');
-        $$m->save();
+        $m->save();
 
     You can pass argument to save() to set() and save()::
 
