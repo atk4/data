@@ -299,6 +299,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testOtherAggregates()
     {
+        if ($this->driverType === 'pgsql') {
+            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        }
+
         $vat = 0.23;
 
         $this->setDb([
