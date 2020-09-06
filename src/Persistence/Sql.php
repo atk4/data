@@ -802,9 +802,11 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
+        $id = $model->persistence->lastInsertId($model);
+
         $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
 
-        return $model->persistence->lastInsertId($model);
+        return $id;
     }
 
     /**
