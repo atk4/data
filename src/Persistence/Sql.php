@@ -807,7 +807,7 @@ class Sql extends Persistence
 
             $this->syncIdSequence($model);
         } else {
-            $id = $model->persistence->lastInsertId($model);
+            $id = $this->lastInsertId($model);
         }
 
         $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
