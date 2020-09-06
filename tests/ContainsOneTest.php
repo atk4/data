@@ -173,7 +173,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('United Kingdom', $c->get('name'));
 
         // let's test how it all looks in persistence without typecasting
-        $exp_addr = $i->export(null, null, false)[0]['addr'];
+        $exp_addr = $i->setOrder('id')->export(null, null, false)[0]['addr'];
         $this->assertSame(
             '{"country_id":"2","address":"bar","built_date":"2019-01-01T00:00:00+00:00","tags":"[\"foo\",\"bar\"]","door_code":"{\"code\":\"DEF\",\"valid_till\":\"2019-07-01T00:00:00+00:00\"}"}',
             $exp_addr
