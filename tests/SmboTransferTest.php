@@ -34,7 +34,7 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
             ->field('contact_from_id')
             ->field('contact_to_id')
             ->field('doc_type')
-            ->field('amount', ['type' => 'decimal(8,2)'])
+            ->field('amount', ['type' => 'float'])
             ->create();
 
         $x = clone $s;
@@ -44,7 +44,7 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
             ->field('account_id', ['type' => 'integer'])
             ->field('cheque_no')
             //->field('misc_payment', ['type' => 'enum(\'N\',\'Y\')'])
-            ->field('misc_payment', ['type' => 'varchar(2)'])
+            ->field('misc_payment')
             ->field('transfer_document_id')
             ->create();
     }
