@@ -776,10 +776,8 @@ class Sql extends Persistence
 
     /**
      * Inserts record in database and returns new record ID.
-     *
-     * @return mixed
      */
-    public function insert(Model $model, array $data)
+    public function insert(Model $model, array $data): string
     {
         $insert = $model->action('insert');
 
@@ -804,7 +802,7 @@ class Sql extends Persistence
         }
 
         if ($model->id_field && isset($data[$model->id_field])) {
-            $id = $data[$model->id_field];
+            $id = (string) $data[$model->id_field];
 
             $this->syncIdSequence($model);
         } else {
