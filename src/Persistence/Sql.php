@@ -783,9 +783,10 @@ class Sql extends Persistence
     {
         $insert = $model->action('insert');
 
-        // don't set id field at all if it's NULL
-        if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
+        if ($model->id_field && !isset($data[$model->id_field])) {
             unset($data[$model->id_field]);
+
+            $this->syncIdSequence($model);
         }
 
         $insert->set($this->typecastSaveRow($model, $data));
