@@ -977,9 +977,8 @@ class Sql extends Persistence
         // PostgreSQL sequence must be manually synchronized if a row with explicit ID was inserted
         if ($this->connection instanceof \atk4\dsql\Postgresql\Connection) {
             $this->connection->expr(
-                // @TODO soft-escape
-                'select setval(pg_get_serial_sequence([], []), coalesce(max(' . $model->id_field . '), 0) + 1, false) from "' . $model->table . '"',
-                [$model->table, $model->id_field]
+                'select setval([], coalesce(max({}), 0) + 1, false) from {}',
+                [$this->getIdSequenceName($model), $model->id_field, $model->table]
             )->execute();
         }
     }
