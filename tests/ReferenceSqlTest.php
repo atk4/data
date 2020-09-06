@@ -300,7 +300,7 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
     public function testOtherAggregates()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('PostgreSQL does not support "SUM(variable)" syntax');
         }
 
         $vat = 0.23;
