@@ -347,7 +347,7 @@ before and just slightly modifying it::
             }
         }
 
-        function softDelete($m) {
+        function softDelete(Model $m) {
             if (!$m->loaded()) {
                 throw (new \atk4\core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
@@ -428,7 +428,7 @@ inside your model are unique::
             $this->owner->onHook(Model::HOOK_BEFORE_SAVE, \Closure::fromCallable([$this, 'beforeSave']));
         }
 
-        function beforeSave($m)
+        function beforeSave(Model $m)
         {
             foreach ($this->fields as $field) {
                 if ($m->dirty[$field]) {
