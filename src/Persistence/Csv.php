@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
-use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -84,7 +83,7 @@ class Csv extends Persistence
      *
      * @var array
      */
-    public $header = [];
+    public $header;
 
     public function __construct(string $file, array $defaults = [])
     {
@@ -92,9 +91,6 @@ class Csv extends Persistence
         $this->setDefaults($defaults);
     }
 
-    /**
-     * Destructor. close files correctly.
-     */
     public function __destruct()
     {
         $this->closeFile();
@@ -128,6 +124,7 @@ class Csv extends Persistence
         if ($this->handle) {
             fclose($this->handle);
             $this->handle = null;
+            $this->header = null;
         }
     }
 
