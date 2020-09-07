@@ -387,7 +387,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $j = $m_u->join('contact.test_id');
         $j->addField('contact_phone');
 
-        $m_u->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
+        $m_u->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
             if ($m->get('contact_phone') !== '+123') {
                 $m->set('contact_phone', '+123');
                 $m->save();

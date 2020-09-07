@@ -1775,7 +1775,7 @@ class Model implements \IteratorAggregate
 
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:
-            // $model->onHook(self::HOOK_AFTER_LOAD, function ($m) {
+            // $model->onHook(self::HOOK_AFTER_LOAD, static function ($m) {
             //     if ($m->get('date') < $m->date_from) $m->breakHook(false);
             // })
 

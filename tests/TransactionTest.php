@@ -27,7 +27,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
         $m->addField('name');
         $m->load(2);
 
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
+        $m->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
             throw new \Exception('Awful thing happened');
         });
         $m->set('name', 'XXX');
@@ -39,7 +39,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
 
-        $m->onHook(Model::HOOK_AFTER_DELETE, function ($m) {
+        $m->onHook(Model::HOOK_AFTER_DELETE, static function ($m) {
             throw new \Exception('Awful thing happened');
         });
 
