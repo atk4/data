@@ -174,7 +174,7 @@ class Array_ extends Persistence
     {
         $table = $table ?? $model->table;
 
-        if (!$this->data[$table]) {
+        if (!isset($this->data[$table]) || empty($this->data[$table])) {
             return null;
         }
 
