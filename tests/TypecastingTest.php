@@ -124,10 +124,6 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
     public function testEmptyValues()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
         $dbData = [
             'types' => [
                 1 => $row = [
@@ -220,10 +216,6 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
 
     public function testTypecastNull()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
         $dbData = [
             'test' => [
                 1 => $row = ['id' => '1', 'a' => 1, 'b' => '', 'c' => null],

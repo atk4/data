@@ -776,16 +776,15 @@ class Sql extends Persistence
 
     /**
      * Inserts record in database and returns new record ID.
-     *
-     * @return mixed
      */
-    public function insert(Model $model, array $data)
+    public function insert(Model $model, array $data): string
     {
         $insert = $model->action('insert');
 
-        // don't set id field at all if it's NULL
-        if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
+        if ($model->id_field && !isset($data[$model->id_field])) {
             unset($data[$model->id_field]);
+
+            $this->syncIdSequence($model);
         }
 
         $insert->set($this->typecastSaveRow($model, $data));
@@ -802,9 +801,17 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
+        if ($model->id_field && isset($data[$model->id_field])) {
+            $id = (string) $data[$model->id_field];
+
+            $this->syncIdSequence($model);
+        } else {
+            $id = $this->lastInsertId($model);
+        }
+
         $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
 
-        return $model->persistence->lastInsertId($model);
+        return $id;
     }
 
     /**
@@ -945,21 +952,34 @@ class Sql extends Persistence
         return $expression->expr($mask, $prop);
     }
 
-    /**
-     * Last ID inserted.
-     *
-     * @return mixed
-     */
-    public function lastInsertId(Model $model)
+    private function getIdSequenceName(Model $model): ?string
     {
-        $seq = $model->sequence ?: null;
+        $sequenceName = $model->sequence ?: null;
 
-        // PostgreSQL PDO always requires sequence name in lastInsertId method as parameter
-        // So let's use its default one if no specific is set
-        if ($this->connection instanceof \atk4\dsql\Postgresql\Connection && $seq === null) {
-            $seq = $model->table . '_' . $model->id_field . '_seq';
+        if ($sequenceName === null) {
+            // PostgreSQL uses sequence internally for PK autoincrement,
+            // use default name if not set explicitly
+            if ($this->connection instanceof \atk4\dsql\Postgresql\Connection) {
+                $sequenceName = $model->table . '_' . $model->id_field . '_seq';
+            }
         }
 
-        return $this->connection->lastInsertId($seq);
+        return $sequenceName;
+    }
+
+    public function lastInsertId(Model $model): string
+    {
+        return $this->connection->lastInsertId($this->getIdSequenceName($model));
+    }
+
+    protected function syncIdSequence(Model $model): void
+    {
+        // PostgreSQL sequence must be manually synchronized if a row with explicit ID was inserted
+        if ($this->connection instanceof \atk4\dsql\Postgresql\Connection) {
+            $this->connection->expr(
+                'select setval([], coalesce(max({}), 0) + 1, false) from {}',
+                [$this->getIdSequenceName($model), $model->id_field, $model->table]
+            )->execute();
+        }
     }
 }

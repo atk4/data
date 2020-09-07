@@ -56,7 +56,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
     public function testJoinSaving1()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
         $db = new Persistence\Sql($this->db->connection);
@@ -162,7 +162,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
     public function testJoinSaving3()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
         $db = new Persistence\Sql($this->db->connection);
@@ -228,7 +228,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
     public function testJoinUpdate()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
         $this->setDb([
@@ -402,7 +402,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
     public function testDoubleJoin()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
         $this->setDb([

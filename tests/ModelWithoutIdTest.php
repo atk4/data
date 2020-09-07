@@ -66,7 +66,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
     public function testInsert()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('PostgreSQL requires PK unspecified to use autoincrement');
         }
 
         $this->m->insert(['name' => 'Joe']);
@@ -79,7 +79,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
     public function testSave1()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('PostgreSQL requires PK unspecified to use autoincrement');
         }
 
         $this->m->tryLoadAny();
@@ -94,7 +94,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
     public function testSave2()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('PostgreSQL requires PK unspecified to use autoincrement');
         }
 
         $this->m->tryLoadAny();
