@@ -653,7 +653,7 @@ I have declared those fields with never_persist so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
     $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
-        if($this->_isset($this['client_code') && !$this->_isset($this['client_id')) {
+        if($this->_isset('client_code') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
             $cl->addCondition('code',$this->get('client_code'));
             $this->set('client_id', $cl->action('field',['id']));
