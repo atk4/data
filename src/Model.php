@@ -1477,7 +1477,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Model is not associated with any database');
         }
 
-        if ($this->read_only) {
+        if ($this->read_only && $to_persistence === $this->persistence) {
             throw new Exception('Model is read-only and cannot be saved');
         }
 
