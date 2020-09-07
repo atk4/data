@@ -40,7 +40,9 @@ class Static_ extends Array_
         // chomp off first row, we will use it to deduct fields
         $row1 = reset($data);
 
-        $this->onHookMethod(self::HOOK_AFTER_ADD, 'afterAdd');
+        $this->onHookShort(self::HOOK_AFTER_ADD, function (...$args) {
+            $this->afterAdd(...$args);
+        });
 
         if (!is_array($row1)) {
             // convert array of strings into array of hashes
