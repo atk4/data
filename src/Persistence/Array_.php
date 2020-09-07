@@ -145,6 +145,21 @@ class Array_ extends Persistence
     }
 
     /**
+     * Tries to load first available record and return data record.
+     */
+    public function loadAny(Model $model, string $table = null): ?array
+    {
+        $row = $this->tryLoadAny($model, $table);
+        if ($row === null) {
+            throw (new Exception('No matching records were found', 404))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('scope', $model->scope()->toWords());
+        }
+
+        return $row;
+    }
+
+    /**
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
      *
