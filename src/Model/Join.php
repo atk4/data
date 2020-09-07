@@ -148,6 +148,21 @@ class Join
         }
     }
 
+    protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name;
+
+        return $this->owner->onHookDynamic(
+            $spot,
+            static function (Model $owner) use ($name) {
+                return $owner->getElement($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
+    }
+
     /**
      * Will use either foreign_alias or create #join_<table>.
      */

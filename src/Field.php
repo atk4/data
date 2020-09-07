@@ -223,6 +223,21 @@ class Field implements Expressionable
         }
     }
 
+    protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name;
+
+        return $this->owner->onHookDynamic(
+            $spot,
+            static function (Model $owner) use ($name) {
+                return $owner->getField($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
+    }
+
     /**
      * Depending on the type of a current field, this will perform
      * some normalization for strict types. This method must also make
