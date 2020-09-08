@@ -44,7 +44,7 @@ class Address1 extends Model
     {
         parent::init();
 
-        $this->hasOne('country_id', ['model' => [Country1::class]]);
+        $this->hasOne('country_id', ['model' => [Country1::class], 'type' => 'integer']);
 
         $this->addField('address');
         $this->addField('built_date', ['type' => 'datetime']);
@@ -142,7 +142,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $a->setMulti($row = ['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01 UTC'), 'tags' => ['foo', 'bar'], 'door_code' => null]);
+        $a->setMulti($row = ['id' => 1, 'country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01 UTC'), 'tags' => ['foo', 'bar'], 'door_code' => null]);
         $a->save();
 
         // now reload invoice and see if it is saved
@@ -156,7 +156,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // now add nested containsOne - DoorCode
         $c = $i->ref('addr')->ref('door_code');
-        $c->setMulti($row = ['code' => 'ABC', 'valid_till' => new \DateTime('2019-07-01 UTC')]);
+        $c->setMulti($row = ['id' => 1, 'code' => 'ABC', 'valid_till' => new \DateTime('2019-07-01 UTC')]);
         $c->save();
         $this->assertEquals($row, $i->ref('addr')->ref('door_code')->get());
 
@@ -175,7 +175,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         // let's test how it all looks in persistence without typecasting
         $exp_addr = $i->setOrder('id')->export(null, null, false)[0]['addr'];
         $this->assertSame(
-            '{"country_id":"2","address":"bar","built_date":"2019-01-01T00:00:00+00:00","tags":"[\"foo\",\"bar\"]","door_code":"{\"code\":\"DEF\",\"valid_till\":\"2019-07-01T00:00:00+00:00\"}"}',
+            '{"id":1,"country_id":"2","address":"bar","built_date":"2019-01-01T00:00:00+00:00","tags":"[\"foo\",\"bar\"]","door_code":"{\"id\":1,\"code\":\"DEF\",\"valid_till\":\"2019-07-01T00:00:00+00:00\"}"}',
             $exp_addr
         );
 
@@ -202,7 +202,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // with address
         $a = $i->ref('addr');
-        $a->setMulti($row = ['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01'), 'tags' => [], 'door_code' => null]);
+        $a->setMulti($row = ['id' => 1, 'country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01'), 'tags' => [], 'door_code' => null]);
         $a->save();
 
         // now let's add one more field in address model and save
@@ -210,7 +210,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         $a->set('post_index', 'LV-1234');
         $a->save();
 
-        $this->assertSame(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
+        $this->assertEquals(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
 
         // now this one is a bit tricky
         // each time you call ref() it returns you new model object so it will not have post_index field

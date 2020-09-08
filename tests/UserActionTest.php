@@ -205,21 +205,15 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
     public function testFields()
     {
-        try {
-            $client = new UaClient($this->pers);
-            $a = $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
+        $client = new UaClient($this->pers);
+        $a = $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
 
-            $client->load(1);
+        $client->load(1);
 
-            $this->assertNotSame('Peter', $client->get('name'));
-            $client->set('name', 'Peter');
-            $a->execute();
-            $this->assertSame('Peter', $client->get('name'));
-        } catch (Exception $e) {
-            echo $e->getColorfulText();
-
-            throw $e;
-        }
+        $this->assertNotSame('Peter', $client->get('name'));
+        $client->set('name', 'Peter');
+        $a->execute();
+        $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testFieldsTooDirty1()

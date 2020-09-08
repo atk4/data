@@ -18,6 +18,8 @@ use atk4\dsql\Query;
  * Data model class.
  *
  * @property Field[]|Reference[] $elements
+ * @property mixed               $id       Contains ID of the current record. If the value is null then the record
+ *                                         is considered to be new.
  */
 class Model implements \IteratorAggregate
 {
@@ -206,14 +208,6 @@ class Model implements \IteratorAggregate
     public $read_only = false;
 
     /**
-     * Contains ID of the current record. If the value is null then the record
-     * is considered to be new.
-     *
-     * @var mixed
-     */
-    public $id;
-
-    /**
      * Once set, Model behaves like an entity and loading a different ID
      * will result in an error.
      *
@@ -376,6 +370,8 @@ class Model implements \IteratorAggregate
             return; // don't declare actions for model without id_field
         }
 
+        $this->initEntityHooks();
+
         if ($this->read_only) {
             return; // don't declare action for read-only model
         }
@@ -415,22 +411,20 @@ class Model implements \IteratorAggregate
             'system' => true, // don't show by default
             'args' => ['intent' => 'string'],
         ]);
-
-        $this->initEntityHooks();
     }
 
     private function initEntityHooks(): void
     {
         $checkFx = function (self $model) {
-            if ($model->id === null) { // allow unload
+            if ($model->getId() === null) { // allow unload
                 return;
             }
 
             if ($model->entityId === null) {
-                $model->entityId = $model->id;
+                $model->entityId = $model->getId();
             } else {
                 if (!$model->compare($this->id_field, $model->entityId)) {
-                    $newId = $model->id;
+                    $newId = $model->getId();
                     $model->unload(); // data for different ID were loaded, make sure to discard them
 
                     throw (new Exception('Model is loaded as an entity, ID can not be changed to a different one'))
@@ -822,6 +816,47 @@ class Model implements \IteratorAggregate
         return $this->getField($field)->default;
     }
 
+    private function assertHasIdField(): void
+    {
+        if (!is_string($this->id_field) || !$this->hasField($this->id_field)) {
+            throw new Exception('ID field is not defined');
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        $this->assertHasIdField();
+
+        return $this->get($this->id_field);
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function setId($value)
+    {
+        $this->assertHasIdField();
+
+        // first set ID is entity ID
+        if ($this->entityId === null && $value !== null) {
+            $this->entityId = $value;
+        }
+
+        // TODO make sure ID is in the data
+        $this->data[$this->id_field] = $value;
+
+        if ($value === null) {
+            return $this->setNull($this->id_field);
+        }
+
+        return $this->set($this->id_field, $value);
+    }
+
     /**
      * Return (possibly localized) $model->caption.
      * If caption is not set, then generate it from model class name.
@@ -840,11 +875,11 @@ class Model implements \IteratorAggregate
      */
     public function getTitle()
     {
-        if (!$this->title_field) {
-            return $this->id;
+        if ($this->title_field && $this->hasField($this->title_field)) {
+            return $this->getField($this->title_field)->get();
         }
 
-        return $this->hasField($this->title_field) ? $this->getField($this->title_field)->get() : $this->id;
+        return $this->getId();
     }
 
     /**
@@ -1064,6 +1099,75 @@ class Model implements \IteratorAggregate
 
     // }}}
 
+    // {{{ BC implementation of Model::id property using magic methods.
+
+    /**
+     * Prevent accessing private properties like "entityId" from outside.
+     */
+    private function assertMagicProperty(string $name)
+    {
+        if (property_exists($this, $name)) {
+            throw (new Exception('Property is not magic'))
+                ->addMoreInfo('name', $name);
+        }
+    }
+
+    public function __isset(string $name): bool
+    {
+        $this->assertMagicProperty($name);
+
+        if ($name === 'id') {
+            return $this->getId() !== null;
+        }
+
+        return isset($this->{$name});
+    }
+
+    /**
+     * @return mixed
+     */
+    public function &__get(string $name)
+    {
+        $this->assertMagicProperty($name);
+
+        if ($name === 'id') {
+            $value = $this->getId();
+
+            return $value;
+        }
+
+        return $this->{$name};
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function __set(string $name, $value): void
+    {
+        $this->assertMagicProperty($name);
+
+        if ($name === 'id') {
+            $this->setId($value);
+
+            return;
+        }
+
+        $this->{$name} = $value;
+    }
+
+    public function __unset(string $name): void
+    {
+        $this->assertMagicProperty($name);
+
+        if ($name === 'id') {
+            throw new Exception('ID property can not be unset');
+        }
+
+        unset($this->{$name});
+    }
+
+    // }}}
+
     // {{{ Persistence-related logic
 
     /**
@@ -1071,7 +1175,7 @@ class Model implements \IteratorAggregate
      */
     public function loaded(): bool
     {
-        return $this->id !== null;
+        return $this->id_field && $this->getId() !== null && $this->entityId !== null;
     }
 
     /**
@@ -1082,7 +1186,9 @@ class Model implements \IteratorAggregate
     public function unload()
     {
         $this->hook(self::HOOK_BEFORE_UNLOAD);
-        $this->id = null;
+        if ($this->id_field) {
+            $this->id = null;
+        }
         $this->data = [];
         $this->dirty = [];
         $this->hook(self::HOOK_AFTER_UNLOAD);
@@ -1157,7 +1263,7 @@ class Model implements \IteratorAggregate
         $this->id = null;
 
         if ($this->id_field) {
-            $this->set($this->id_field, $new_id);
+            $this->setId($new_id);
         }
 
         return $this;
@@ -1264,13 +1370,7 @@ class Model implements \IteratorAggregate
         $model = new $class($persistence, $this->table);
 
         if ($this->id_field) {
-            if ($id === true) {
-                $model->id = $this->id;
-                $model->set($model->id_field, $this->get($this->id_field));
-            } elseif ($id) {
-                $model->id = null; // record shouldn't exist yet
-                $model->set($model->id_field, $id);
-            }
+            $model->setId($id === true ? $this->get($this->id_field) : $id);
         }
 
         // include any fields defined inline
@@ -1554,18 +1654,15 @@ class Model implements \IteratorAggregate
                 }
 
                 // Collect all data of a new record
-                $this->id = $to_persistence->insert($this, $data);
+                $id = $to_persistence->insert($this, $data);
 
                 if (!$this->id_field) {
-                    // Model inserted without any ID fields. Theoretically
-                    // we should ignore $this->id even if it was returned.
-                    $this->id = null;
                     $this->hook(self::HOOK_AFTER_INSERT, [null]);
 
                     $this->dirty = [];
-                } elseif ($this->id) {
-                    $this->set($this->id_field, $this->id);
-                    $this->hook(self::HOOK_AFTER_INSERT, [$this->id]);
+                } else {
+                    $this->setId($id);
+                    $this->hook(self::HOOK_AFTER_INSERT, [$this->getId()]);
 
                     if ($this->reload_after_save !== false) {
                         $d = $this->dirty;
@@ -1649,7 +1746,7 @@ class Model implements \IteratorAggregate
         $model->entityId = null;
         $this->_rawInsert($model, $row);
 
-        return $model->id;
+        return $this->id_field ? $model->id : null;
     }
 
     /**
@@ -1953,7 +2050,7 @@ class Model implements \IteratorAggregate
     public function __debugInfo(): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->id_field ? $this->id : 'no id field',
             'scope' => $this->scope()->toWords(),
         ];
     }

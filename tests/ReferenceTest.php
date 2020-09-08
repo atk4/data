@@ -17,10 +17,12 @@ class ReferenceTest extends AtkPhpunit\TestCase
     public function testBasicReferences()
     {
         $user = new Model(['table' => 'user']);
+        $user->addField('id');
         $user->addField('name');
         $user->id = 1;
 
         $order = new Model();
+        $order->addField('id');
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
@@ -47,10 +49,12 @@ class ReferenceTest extends AtkPhpunit\TestCase
     public function testModelCaption()
     {
         $user = new Model(['table' => 'user']);
+        $user->addField('id');
         $user->addField('name');
         $user->id = 1;
 
         $order = new Model();
+        $order->addField('id');
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
