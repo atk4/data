@@ -1307,11 +1307,9 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function load($id = null, Persistence $persistence = null)
+    public function load($id = null)
     {
-        $persistence = $persistence ?? $this->persistence;
-
-        $this->checkPersistence('getRow', $persistence);
+        $this->checkPersistence('getRow');
 
         if ($this->loaded()) {
             $this->unload();
@@ -1321,7 +1319,7 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        $this->data = $persistence->getRow($this, $id);
+        $this->data = $this->persistence->getRow($this, $id);
 
         if ($this->data) {
             if ($this->id_field) {
@@ -1406,17 +1404,15 @@ class Model implements \IteratorAggregate
      *
      * @param string $method
      */
-    public function checkPersistence(string $method = null, Persistence $persistence = null)
+    public function checkPersistence(string $method = null)
     {
-        $persistence = $persistence ?? $this->persistence;
-
-        if (!$persistence) {
+        if (!$this->persistence) {
             throw new Exception('Model is not associated with any persistence');
         }
 
-        if ($method && !$persistence->hasMethod($method)) {
+        if ($method && !$this->persistence->hasMethod($method)) {
             throw (new Exception('Method is not supported by persistence'))
-                ->addMoreInfo('persistence', get_class($persistence))
+                ->addMoreInfo('persistence', get_class($this->persistence))
                 ->addMoreInfo('method', $method);
         }
     }
