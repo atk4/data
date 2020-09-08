@@ -491,7 +491,7 @@ This results in an instance of Model_Country with Active Record set to the
 country of user john::
 
     $cc->loaded();
-    $cc->id;
+    $cc->getId();
     $cc->get();
 
 Implementation of References

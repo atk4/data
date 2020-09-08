@@ -439,7 +439,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $m_u2->delete();
 
         $m_u2 = $make_m_u_fx()->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u2->id);
+        $this->assertEquals(30, $m_u2->getId());
         $m_u2->set('country_name', 'USA');
         $m_u2->save();
 
@@ -508,7 +508,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $m_u2->delete();
 
         $m_u2 = $make_m_u_fx()->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u2->id);
+        $this->assertEquals(30, $m_u2->getId());
 
         $this->assertEquals(
             [

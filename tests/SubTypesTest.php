@@ -53,8 +53,8 @@ class StAccount extends Model
     public function transferTo(self $account, $amount)
     {
         $out = $this->ref('Transactions:TransferOut')->save(['amount' => $amount]);
-        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->id]);
-        $out->set('link_id', $in->id);
+        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->getId()]);
+        $out->set('link_id', $in->getId());
         $out->save();
     }
 }

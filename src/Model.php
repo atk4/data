@@ -1153,7 +1153,7 @@ class Model implements \IteratorAggregate
         }
 
         $this->data = $from_persistence->load($this, $id);
-        if ($this->id === null) {
+        if ($this->getId() === null) { // TODO what is the usecase?
             $this->setId($id);
         }
 
@@ -1174,7 +1174,7 @@ class Model implements \IteratorAggregate
      */
     public function reload()
     {
-        $id = $this->id;
+        $id = $this->getId();
         $this->unload();
 
         return $this->load($id);
@@ -1557,7 +1557,7 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                $to_persistence->update($this, $this->id, $data);
+                $to_persistence->update($this, $this->getId(), $data);
 
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             } else {
@@ -1859,7 +1859,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Model is read-only and cannot be deleted');
         }
 
-        if ($id == $this->id) {
+        if ($id == $this->getId()) {
             $id = null;
         }
 
@@ -1870,11 +1870,11 @@ class Model implements \IteratorAggregate
 
                 return $this;
             } elseif ($this->loaded()) {
-                if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->id]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->getId()]) === false) {
                     return $this;
                 }
-                $this->persistence->delete($this, $this->id);
-                $this->hook(self::HOOK_AFTER_DELETE, [$this->id]);
+                $this->persistence->delete($this, $this->getId());
+                $this->hook(self::HOOK_AFTER_DELETE, [$this->getId()]);
                 $this->unload();
 
                 return $this;
@@ -1981,7 +1981,7 @@ class Model implements \IteratorAggregate
     public function __debugInfo(): array
     {
         return [
-            'id' => $this->id_field ? $this->id : 'no id field',
+            'id' => $this->id_field ? $this->getId() : 'no id field',
             'scope' => $this->scope()->toWords(),
         ];
     }

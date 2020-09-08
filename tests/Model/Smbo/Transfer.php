@@ -48,7 +48,7 @@ class Transfer extends Payment
 
                 $m2->reload_after_save = false; // avoid check
 
-                $m->set('transfer_document_id', $m2->save()->id);
+                $m->set('transfer_document_id', $m2->save()->getId());
             }
         });
 

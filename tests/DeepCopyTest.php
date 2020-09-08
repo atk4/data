@@ -176,7 +176,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         // price now will be with VAT
         $this->assertSame('q1', $invoice->get('ref'));
         $this->assertEquals(108.90, $invoice->get('total'));
-        $this->assertEquals(1, $invoice->id);
+        $this->assertEquals(1, $invoice->getId());
 
         // Note that we did not specify that 'client_id' should be copied, so same value here
         $this->assertSame($quote->get('client_id'), $invoice->get('client_id'));
@@ -201,7 +201,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
             ->copy();
 
         // Invoice copy receives a new ID
-        $this->assertNotSame($invoice->id, $invoice_copy->id);
+        $this->assertNotSame($invoice->getId(), $invoice_copy->getId());
         $this->assertSame('q1_copy', $invoice_copy->get('ref'));
 
         // ..however the due amount is the same - 5
@@ -238,7 +238,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
             ->copy();
 
         // New client receives new ID, but also will have all the relevant records copied
-        $this->assertEquals(3, $client3->id);
+        $this->assertEquals(3, $client3->getId());
 
         // We should have one of each records for this new client
         $this->assertEquals(1, $client3->ref('Invoices')->action('count')->getOne());
