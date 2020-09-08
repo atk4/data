@@ -842,19 +842,18 @@ class Model implements \IteratorAggregate
     {
         $this->assertHasIdField();
 
-        // first set ID is entity ID
-        if ($this->entityId === null && $value !== null) {
-            $this->entityId = $value;
-        }
-
-        // TODO make sure ID is in the data
-        $this->data[$this->id_field] = $value;
-
         if ($value === null) {
-            return $this->setNull($this->id_field);
+            $this->setNull($this->id_field);
+        } else {
+            $this->set($this->id_field, $value);
         }
 
-        return $this->set($this->id_field, $value);
+        // set entity ID to the first set ID
+        if ($this->entityId === null) {
+            $this->entityId = $this->getId();
+        }
+
+        return $this;
     }
 
     /**
@@ -1117,10 +1116,10 @@ class Model implements \IteratorAggregate
     public function unload()
     {
         $this->hook(self::HOOK_BEFORE_UNLOAD);
+        $this->data = [];
         if ($this->id_field) {
             $this->setId(null);
         }
-        $this->data = [];
         $this->dirty = [];
         $this->hook(self::HOOK_AFTER_UNLOAD);
 
@@ -1136,11 +1135,12 @@ class Model implements \IteratorAggregate
      */
     public function load($id, Persistence $from_persistence = null)
     {
-        if (!$from_persistence) {
-            $from_persistence = $this->persistence;
+        // deprecated, remove on 2020-03
+        if (func_num_args() > 1) {
+            throw new Exception('Model::load() with 2nd param $from_persistence is no longer supported');
         }
 
-        if (!$from_persistence) {
+        if (!$this->persistence) {
             throw new Exception('Model is not associated with any database');
         }
 
@@ -1152,7 +1152,7 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        $this->data = $from_persistence->load($this, $id);
+        $this->data = $this->persistence->load($this, $id);
         if ($this->getId() === null) { // TODO what is the usecase?
             $this->setId($id);
         }
@@ -1367,19 +1367,16 @@ class Model implements \IteratorAggregate
         }
 
         $this->data = $this->persistence->loadAny($this);
-        if ($this->data) {
-            if ($this->id_field) {
-                $this->setId($this->data[$this->id_field]);
-            }
 
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                return $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret;
-            }
-        } else {
-            $this->unload();
+        if ($this->id_field) {
+            $this->setId($this->data[$this->id_field]);
+        }
+
+        $ret = $this->hook(self::HOOK_AFTER_LOAD);
+        if ($ret === false) {
+            return $this->unload();
+        } elseif (is_object($ret)) {
+            return $ret;
         }
 
         return $this;
