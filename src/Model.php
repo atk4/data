@@ -418,35 +418,35 @@ class Model implements \IteratorAggregate
 
     private function initEntityHooks(): void
     {
-        $checkFx = function (self $model) {
-            if ($model->getId() === null) { // allow unload
+        $checkFx = function () {
+            if ($this->getId() === null) { // allow unload
                 return;
             }
 
-            if ($model->entityId === null) {
-                $model->entityId = $model->getId();
+            if ($this->entityId === null) {
+                $this->entityId = $this->getId();
             } else {
-                if (!$model->compare($this->id_field, $model->entityId)) {
-                    $newId = $model->getId();
-                    $model->unload(); // data for different ID were loaded, make sure to discard them
+                if (!$this->compare($this->id_field, $this->entityId)) {
+                    $newId = $this->getId();
+                    $this->unload(); // data for different ID were loaded, make sure to discard them
 
                     throw (new Exception('Model is loaded as an entity, ID can not be changed to a different one'))
-                        ->addMoreInfo('entityId', $model->entityId)
+                        ->addMoreInfo('entityId', $this->entityId)
                         ->addMoreInfo('newId', $newId);
                 }
             }
         };
 
-        $this->onHook(self::HOOK_BEFORE_LOAD, $checkFx, [], 10);
-        $this->onHook(self::HOOK_AFTER_LOAD, $checkFx, [], -10);
-        $this->onHook(self::HOOK_BEFORE_INSERT, $checkFx, [], 10);
-        $this->onHook(self::HOOK_AFTER_INSERT, $checkFx, [], -10);
-        $this->onHook(self::HOOK_BEFORE_UPDATE, $checkFx, [], 10);
-        $this->onHook(self::HOOK_AFTER_UPDATE, $checkFx, [], -10);
-        $this->onHook(self::HOOK_BEFORE_DELETE, $checkFx, [], 10);
-        $this->onHook(self::HOOK_AFTER_DELETE, $checkFx, [], -10);
-        $this->onHook(self::HOOK_BEFORE_SAVE, $checkFx, [], 10);
-        $this->onHook(self::HOOK_AFTER_SAVE, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_LOAD, $checkFx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_LOAD, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_INSERT, $checkFx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_INSERT, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_UPDATE, $checkFx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_UPDATE, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_DELETE, $checkFx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_DELETE, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_SAVE, $checkFx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_SAVE, $checkFx, [], -10);
     }
 
     /**
@@ -761,7 +761,7 @@ class Model implements \IteratorAggregate
     public function setNull(string $field)
     {
         // set temporary hook to disable any normalization (null validation)
-        $hookIndex = $this->onHook(self::HOOK_NORMALIZE, function () {
+        $hookIndex = $this->onHookShort(self::HOOK_NORMALIZE, static function () {
             throw new \atk4\core\HookBreaker(false);
         }, [], PHP_INT_MIN);
         try {

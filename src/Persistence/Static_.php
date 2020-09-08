@@ -40,7 +40,7 @@ class Static_ extends Array_
         // chomp off first row, we will use it to deduct fields
         $row1 = reset($data);
 
-        $this->onHook(self::HOOK_AFTER_ADD, \Closure::fromCallable([$this, 'afterAdd']));
+        $this->onHookMethod(self::HOOK_AFTER_ADD, 'afterAdd');
 
         if (!is_array($row1)) {
             // convert array of strings into array of hashes
@@ -130,14 +130,13 @@ class Static_ extends Array_
 
     /**
      * Automatically adds missing model fields.
-     * Called from AfterAdd hook.
      *
-     * @param Static_ $persistence
+     * Called by HOOK_AFTER_ADD hook.
      */
-    public function afterAdd(self $persistence, Model $model)
+    public function afterAdd(Model $model)
     {
-        if ($persistence->titleForModel) {
-            $model->title_field = $persistence->titleForModel;
+        if ($this->titleForModel) {
+            $model->title_field = $this->titleForModel;
         }
 
         foreach ($this->fieldsForModel as $field => $def) {
