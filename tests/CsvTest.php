@@ -159,7 +159,7 @@ class CsvTest extends AtkPhpunit\TestCase
         $m = new Person($p);
 
         $m2 = $m->withPersistence($p2);
-        $m2->reload_after_save = false;
+        $m2->reload_after_save = false; // TODO should be not needed after https://github.com/atk4/data/pull/690 is merged
 
         foreach ($m as $row) {
             (clone $m2)->save($row->get());
