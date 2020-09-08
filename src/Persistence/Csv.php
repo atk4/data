@@ -42,22 +42,6 @@ class Csv extends Persistence
     public $line = 0;
 
     /**
-     * File handle, when the $file is opened.
-     *
-     * @var resource
-     */
-    public $handle;
-
-    /**
-     * Mode of operation. 'r' for reading and 'w' for writing.
-     * If you manually set this operation, it will be used
-     * for file opening.
-     *
-     * @var string
-     */
-    public $mode;
-
-    /**
      * Delimiter in CSV file.
      *
      * @var string
@@ -77,13 +61,6 @@ class Csv extends Persistence
      * @var string
      */
     public $escape_char = '\\';
-
-    /**
-     * Array of field names.
-     *
-     * @var array
-     */
-    public $header = [];
 
     /**
      * File access object.
