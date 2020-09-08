@@ -1981,7 +1981,7 @@ class Model implements \IteratorAggregate
     public function __debugInfo(): array
     {
         return [
-            'id' => $this->id_field ? $this->getId() : 'no id field',
+            'id' => $this->id_field && $this->hasField('id') ? $this->getId() : 'no id field',
             'scope' => $this->scope()->toWords(),
         ];
     }
