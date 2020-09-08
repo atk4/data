@@ -612,7 +612,7 @@ class Sql extends Persistence
                 $this->setLimitOrder($model, $query);
 
                 if ($model->loaded()) {
-                    $query->where($model->id_field, $model->id);
+                    $query->where($model->id_field, $model->getId());
                 }
 
                 return $query;

@@ -233,7 +233,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
 
-        $id = $this->reverse ? $model->id : $model->get($this->master_field);
+        $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
 
         $query->where($this->foreign_field, $id)->update();
     }

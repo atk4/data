@@ -1205,7 +1205,7 @@ class Model implements \IteratorAggregate
      * model class. This is similar to:.
      *
      * $m2 = $m->newInstance($class);
-     * $m2->load($m->id);
+     * $m2->load($m->getId());
      * $m2->set($m->get());
      * $m2->save();
      *
@@ -1655,7 +1655,7 @@ class Model implements \IteratorAggregate
 
         // store id value
         if ($this->id_field) {
-            $m->data[$m->id_field] = $m->id;
+            $m->data[$m->id_field] = $m->getId();
         }
 
         // if there was referenced data, then import it
@@ -1677,7 +1677,7 @@ class Model implements \IteratorAggregate
         $model->entityId = null;
         $this->_rawInsert($model, $row);
 
-        return $this->id_field ? $model->id : null;
+        return $this->id_field ? $model->getId() : null;
     }
 
     /**

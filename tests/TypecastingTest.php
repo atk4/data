@@ -280,7 +280,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $mm = (clone $m)->load(1);
 
         $this->assertSame('hello world', $mm->get('rot13'));
-        $this->assertSame(1, (int) $mm->id);
+        $this->assertSame(1, (int) $mm->getId());
         $this->assertSame(1, (int) $mm->get('id'));
         $this->assertSame('2013-02-21 05:00:12.235689', (string) $mm->get('datetime'));
         $this->assertSame('2013-02-20', (string) $mm->get('date'));

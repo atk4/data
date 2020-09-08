@@ -81,7 +81,7 @@ hook. Place the following inside Transaction::init()::
         if (get_class($this) != $m->getClassName()) {
             $cl = '\\'.$this->getClassName();
             $cl = new $cl($this->persistence);
-            $cl->load($m->id);
+            $cl->load($m->getId());
 
             $this->breakHook($cl);
         }
@@ -243,7 +243,7 @@ Start by creating a class::
                 throw (new \atk4\core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
 
-            $id = $m->id;
+            $id = $m->getId();
             if ($m->hook('beforeSoftDelete') === false) {
                 return $m;
             }
@@ -262,7 +262,7 @@ Start by creating a class::
                 throw (new \atk4\core\Exception(['Model must be loaded before restoring'))->addMoreInfo('model', $m);
             }
 
-            $id = $m->id;
+            $id = $m->getId();
             if ($m->hook('beforeRestore') === false) {
                 return $m;
             }
@@ -352,7 +352,7 @@ before and just slightly modifying it::
                 throw (new \atk4\core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
 
-            $id = $m->id;
+            $id = $m->getId();
 
             $rs = $m->reload_after_save;
             $m->reload_after_save = false;
@@ -369,7 +369,7 @@ before and just slightly modifying it::
                 throw (new \atk4\core\Exception('Model must be loaded before restoring'))->addMoreInfo('model', $m);
             }
 
-            $id = $m->id;
+            $id = $m->getId();
             if ($m->hook('beforeRestore') === false) {
                 return $m;
             }
