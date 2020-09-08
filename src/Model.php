@@ -847,11 +847,8 @@ class Model implements \IteratorAggregate
             $this->entityId = $value;
         }
 
-        // TODO - fix read only set and dirty issues related with set() below
+        // TODO make sure ID is in the data
         $this->data[$this->id_field] = $value;
-
-        return $this;
-        // TODO - fix read only set and dirty issues related with set() below
 
         if ($value === null) {
             return $this->setNull($this->id_field);
