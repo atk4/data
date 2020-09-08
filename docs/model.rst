@@ -718,7 +718,7 @@ ID Field
     This will update existing record with new $id. If you want to save your
     current field over another existing record then::
 
-        $m->id = $new_id;
+        $m->setId($new_id);
         $m->save();
 
     You must remember that only dirty fields are saved, though. (We might add

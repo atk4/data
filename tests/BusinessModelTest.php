@@ -140,7 +140,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertNotNull($m->getField('id'));
 
         $m->set('id', 20);
-        $this->assertEquals(20, $m->id);
+        $this->assertEquals(20, $m->getId());
     }
      */
 

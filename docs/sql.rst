@@ -349,7 +349,7 @@ You should be familiar with http://dsql.readthedocs.io/en/develop/expressions.ht
 In short this should allow you to build and execute any SQL statement::
 
     $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
-        $this->app->system->id,
+        $this->app->system->getId(),
         $this->app->system['contractor_id']
     ])->execute();
 
@@ -487,7 +487,7 @@ procedure inside Model::init() then set $table property to a temporary table::
             parent::init();
 
             $q = $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
-                $this->app->system->id,
+                $this->app->system->getId(),
                 $this->app->system['contractor_id']
             ])->execute();
 

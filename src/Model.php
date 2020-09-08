@@ -1098,75 +1098,6 @@ class Model implements \IteratorAggregate
 
     // }}}
 
-    // {{{ BC implementation of Model::id property using magic methods.
-
-    /**
-     * Prevent accessing private properties like "entityId" from outside.
-     */
-    private function assertMagicProperty(string $name)
-    {
-        if (property_exists($this, $name)) {
-            throw (new Exception('Property is not magic'))
-                ->addMoreInfo('name', $name);
-        }
-    }
-
-    public function __isset(string $name): bool
-    {
-        $this->assertMagicProperty($name);
-
-        if ($name === 'id') {
-            return $this->getId() !== null;
-        }
-
-        return isset($this->{$name});
-    }
-
-    /**
-     * @return mixed
-     */
-    public function &__get(string $name)
-    {
-        $this->assertMagicProperty($name);
-
-        if ($name === 'id') {
-            $value = $this->getId();
-
-            return $value;
-        }
-
-        return $this->{$name};
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function __set(string $name, $value): void
-    {
-        $this->assertMagicProperty($name);
-
-        if ($name === 'id') {
-            $this->setId($value);
-
-            return;
-        }
-
-        $this->{$name} = $value;
-    }
-
-    public function __unset(string $name): void
-    {
-        $this->assertMagicProperty($name);
-
-        if ($name === 'id') {
-            throw new Exception('ID property can not be unset');
-        }
-
-        unset($this->{$name});
-    }
-
-    // }}}
-
     // {{{ Persistence-related logic
 
     /**
@@ -1187,7 +1118,7 @@ class Model implements \IteratorAggregate
         $this->hook(self::HOOK_BEFORE_UNLOAD);
         $this->data = [];
         if ($this->id_field) {
-            $this->id = null;
+            $this->setId(null);
         }
         $this->dirty = [];
         $this->hook(self::HOOK_AFTER_UNLOAD);
@@ -1222,8 +1153,8 @@ class Model implements \IteratorAggregate
         }
 
         $this->data = $this->persistence->load($this, $id);
-        if ($this->id === null) {
-            $this->id = $id;
+        if ($this->getId() === null) { // TODO what is the usecase?
+            $this->setId($id);
         }
 
         $ret = $this->hook(self::HOOK_AFTER_LOAD);
@@ -1243,7 +1174,7 @@ class Model implements \IteratorAggregate
      */
     public function reload()
     {
-        $id = $this->id;
+        $id = $this->getId();
         $this->unload();
 
         return $this->load($id);
@@ -1260,7 +1191,7 @@ class Model implements \IteratorAggregate
      */
     public function duplicate($new_id = null)
     {
-        $this->id = null;
+        $this->setId(null);
 
         if ($this->id_field) {
             $this->setId($new_id);
@@ -1274,7 +1205,7 @@ class Model implements \IteratorAggregate
      * model class. This is similar to:.
      *
      * $m2 = $m->newInstance($class);
-     * $m2->load($m->id);
+     * $m2->load($m->getId());
      * $m2->set($m->get());
      * $m2->save();
      *
@@ -1407,7 +1338,7 @@ class Model implements \IteratorAggregate
 
         $this->data = $this->persistence->tryLoad($this, $id);
         if ($this->data) {
-            $this->id = $id;
+            $this->setId($id);
 
             $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
@@ -1438,7 +1369,7 @@ class Model implements \IteratorAggregate
         $this->data = $this->persistence->loadAny($this);
 
         if ($this->id_field) {
-            $this->id = $this->data[$this->id_field];
+            $this->setId($this->data[$this->id_field]);
         }
 
         $ret = $this->hook(self::HOOK_AFTER_LOAD);
@@ -1469,7 +1400,7 @@ class Model implements \IteratorAggregate
         if ($this->data) {
             if ($this->id_field) {
                 if (isset($this->data[$this->id_field])) {
-                    $this->id = $this->data[$this->id_field];
+                    $this->setId($this->data[$this->id_field]);
                 }
             }
 
@@ -1623,7 +1554,7 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                $to_persistence->update($this, $this->id, $data);
+                $to_persistence->update($this, $this->getId(), $data);
 
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             } else {
@@ -1721,7 +1652,7 @@ class Model implements \IteratorAggregate
 
         // store id value
         if ($this->id_field) {
-            $m->data[$m->id_field] = $m->id;
+            $m->data[$m->id_field] = $m->getId();
         }
 
         // if there was referenced data, then import it
@@ -1743,7 +1674,7 @@ class Model implements \IteratorAggregate
         $model->entityId = null;
         $this->_rawInsert($model, $row);
 
-        return $this->id_field ? $model->id : null;
+        return $this->id_field ? $model->getId() : null;
     }
 
     /**
@@ -1853,7 +1784,7 @@ class Model implements \IteratorAggregate
 
             $thisCloned->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $thisCloned->id = $data[$this->id_field] ?? null;
+                $thisCloned->setId($data[$this->id_field] ?? null);
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
@@ -1873,13 +1804,13 @@ class Model implements \IteratorAggregate
 
             if (is_object($ret)) {
                 if ($ret->id_field) {
-                    yield $ret->id => $ret;
+                    yield $ret->getId() => $ret;
                 } else {
                     yield $ret;
                 }
             } else {
                 if ($this->id_field) {
-                    yield $thisCloned->id => $thisCloned;
+                    yield $thisCloned->getId() => $thisCloned;
                 } else {
                     yield $thisCloned;
                 }
@@ -1925,7 +1856,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Model is read-only and cannot be deleted');
         }
 
-        if ($id == $this->id) {
+        if ($id == $this->getId()) {
             $id = null;
         }
 
@@ -1936,11 +1867,11 @@ class Model implements \IteratorAggregate
 
                 return $this;
             } elseif ($this->loaded()) {
-                if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->id]) === false) {
+                if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->getId()]) === false) {
                     return $this;
                 }
-                $this->persistence->delete($this, $this->id);
-                $this->hook(self::HOOK_AFTER_DELETE, [$this->id]);
+                $this->persistence->delete($this, $this->getId());
+                $this->hook(self::HOOK_AFTER_DELETE, [$this->getId()]);
                 $this->unload();
 
                 return $this;
@@ -2047,7 +1978,7 @@ class Model implements \IteratorAggregate
     public function __debugInfo(): array
     {
         return [
-            'id' => $this->id_field ? $this->id : 'no id field',
+            'id' => $this->id_field && $this->hasField('id') ? $this->getId() : 'no id field',
             'scope' => $this->scope()->toWords(),
         ];
     }

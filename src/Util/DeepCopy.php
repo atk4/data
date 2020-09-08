@@ -182,10 +182,10 @@ class DeepCopy
     {
         try {
             // Perhaps source was already copied, then simply load destination model and return
-            if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->id])) {
+            if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->getId()])) {
                 $this->debug('Skipping ' . get_class($source));
 
-                $destination->load($this->mapping[$source->table][$source->id]);
+                $destination->load($this->mapping[$source->table][$source->getId()]);
             } else {
                 $this->debug('Copying ' . get_class($source));
 
@@ -246,13 +246,16 @@ class DeepCopy
 
                         // pointing to non-existent record. Would need to copy
                         try {
-                            $destination->set($ref_key, $this->_copy(
-                                $source->ref($ref_key),
-                                $destination->refModel($ref_key),
-                                $ref_val,
-                                $exclusions[$ref_key] ?? [],
-                                $transforms[$ref_key] ?? []
-                            )->id);
+                            $destination->set(
+                                $ref_key,
+                                $this->_copy(
+                                    $source->ref($ref_key),
+                                    $destination->refModel($ref_key),
+                                    $ref_val,
+                                    $exclusions[$ref_key] ?? [],
+                                    $transforms[$ref_key] ?? []
+                                )->getId()
+                            );
                             $this->debug(' ... mapped into ' . $destination->get($ref_key));
                         } catch (DeepCopyException $e) {
                             $this->debug('escalating a problem from ' . $ref_key);
@@ -267,8 +270,8 @@ class DeepCopy
             $destination->save();
 
             // Store mapping
-            $this->mapping[$source->table][$source->id] = $destination->id;
-            $this->debug(' .. copied ' . get_class($source) . ' ' . $source->id . ' ' . $destination->id);
+            $this->mapping[$source->table][$source->getId()] = $destination->getId();
+            $this->debug(' .. copied ' . get_class($source) . ' ' . $source->getId() . ' ' . $destination->getId());
 
             // Next look for hasMany relationships and copy those too
 

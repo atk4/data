@@ -26,7 +26,7 @@ class HasMany extends Reference
         if ($ourModel->loaded()) {
             return $this->our_field
                 ? $ourModel->get($this->our_field)
-                : $ourModel->id;
+                : $ourModel->getId();
         }
 
         // create expression based on existing conditions

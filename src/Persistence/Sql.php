@@ -612,7 +612,7 @@ class Sql extends Persistence
                 $this->setLimitOrder($model, $query);
 
                 if ($model->loaded()) {
-                    $query->where($model->id_field, $model->id);
+                    $query->where($model->id_field, $model->getId());
                 }
 
                 return $query;
@@ -878,7 +878,7 @@ class Sql extends Persistence
 
         if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
             // ID was changed
-            $model->id = $data[$model->id_field];
+            $model->setId($data[$model->id_field]);
         }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);

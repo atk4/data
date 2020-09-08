@@ -497,7 +497,7 @@ Start by creating a beforeSave handler for Order::
             if (
                 $m->newInstance()
                     ->addCondition('client_id', $m->get('client_id')) // same client
-                    ->addCondition($m->id_field, '!=', $m->id)   // has another order
+                    ->addCondition($m->id_field, '!=', $m->getId())   // has another order
                     ->tryLoadBy('ref', $m->get('ref'))                // with same ref
                     ->loaded()
             ) {
@@ -553,7 +553,7 @@ The other, more appropriate option is to re-use a vanilla Order record::
         $this->save(); // just to be sure, no dirty stuff is left over
 
         $archive = $this->newInstance();
-        $archive->load($this->id);
+        $archive->load($this->getId());
         $archive->set('is_archived', true);
 
         $this->unload(); // active record is no longer accessible
@@ -781,7 +781,7 @@ some other database (for archive purposes) you can implement it like this::
         $arc = $this->withPersistence($m->app->archive_db, false);
 
         // add some audit fields
-        $arc->addField('original_id')->set($this->id);
+        $arc->addField('original_id')->set($this->getId());
         $arc->addField('saved_by')->set($this->app->user);
 
         $arc->saveAndUnload();

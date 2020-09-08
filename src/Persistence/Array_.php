@@ -182,7 +182,7 @@ class Array_ extends Persistence
         $id = key($this->data[$table]);
 
         $row = $this->load($model, $id, $table);
-        $model->id = $id;
+        $model->setId($id);
 
         return $row;
     }

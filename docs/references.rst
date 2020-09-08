@@ -455,7 +455,7 @@ No condition will be applied by default so it's all up to you::
         $m->addField('original_id', ['type' => 'int']);
 
         if ($m->loaded)) {
-            $archive->addCondition('original_id', $m->id);
+            $archive->addCondition('original_id', $m->getId());
             // only show record of currently loaded record
         }
     });

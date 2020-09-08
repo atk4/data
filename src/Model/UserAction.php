@@ -165,7 +165,7 @@ class UserAction
             case self::APPLIES_TO_NO_RECORDS:
                 if ($this->owner->loaded()) {
                     throw (new Exception('This user action can be executed on non-existing record only.'))
-                        ->addMoreInfo('id', $this->owner->id);
+                        ->addMoreInfo('id', $this->owner->getId());
                 }
 
                 break;
