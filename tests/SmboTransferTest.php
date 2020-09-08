@@ -152,7 +152,7 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
         $company->ref('Nominal')->insertSubNominal('Sales', 'Discounted');
 
         // Insert our second invoice using set referencing
-        $company->ref('Client')->id($agile_id)->refSet('Invoice')->insertInvoice([
+        $company->ref('Client')->load($agile_id)->refSet('Invoice')->insertInvoice([
             'lines' => [
                 [
                     'item_id'   => $john->ref('Product')->insert('Cat Food'),
