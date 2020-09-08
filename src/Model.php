@@ -1185,10 +1185,10 @@ class Model implements \IteratorAggregate
     public function unload()
     {
         $this->hook(self::HOOK_BEFORE_UNLOAD);
+        $this->data = [];
         if ($this->id_field) {
             $this->id = null;
         }
-        $this->data = [];
         $this->dirty = [];
         $this->hook(self::HOOK_AFTER_UNLOAD);
 
@@ -1436,19 +1436,16 @@ class Model implements \IteratorAggregate
         }
 
         $this->data = $this->persistence->loadAny($this);
-        if ($this->data) {
-            if ($this->id_field) {
-                $this->id = $this->data[$this->id_field];
-            }
 
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                return $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret;
-            }
-        } else {
-            $this->unload();
+        if ($this->id_field) {
+            $this->id = $this->data[$this->id_field];
+        }
+
+        $ret = $this->hook(self::HOOK_AFTER_LOAD);
+        if ($ret === false) {
+            return $this->unload();
+        } elseif (is_object($ret)) {
+            return $ret;
         }
 
         return $this;
