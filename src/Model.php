@@ -842,19 +842,18 @@ class Model implements \IteratorAggregate
     {
         $this->assertHasIdField();
 
-        // first set ID is entity ID
-        if ($this->entityId === null && $value !== null) {
-            $this->entityId = $value;
-        }
-
-        // TODO make sure ID is in the data
-        $this->data[$this->id_field] = $value;
-
         if ($value === null) {
-            return $this->setNull($this->id_field);
+            $this->setNull($this->id_field);
+        } else {
+            $this->set($this->id_field, $value);
         }
 
-        return $this->set($this->id_field, $value);
+        // set entity ID to the first set ID
+        if ($this->entityId === null) {
+            $this->entityId = $this->getId();
+        }
+
+        return $this;
     }
 
     /**
@@ -1186,10 +1185,10 @@ class Model implements \IteratorAggregate
     public function unload()
     {
         $this->hook(self::HOOK_BEFORE_UNLOAD);
+        $this->data = [];
         if ($this->id_field) {
             $this->id = null;
         }
-        $this->data = [];
         $this->dirty = [];
         $this->hook(self::HOOK_AFTER_UNLOAD);
 
@@ -1437,19 +1436,16 @@ class Model implements \IteratorAggregate
         }
 
         $this->data = $this->persistence->loadAny($this);
-        if ($this->data) {
-            if ($this->id_field) {
-                $this->id = $this->data[$this->id_field];
-            }
 
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                return $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret;
-            }
-        } else {
-            $this->unload();
+        if ($this->id_field) {
+            $this->id = $this->data[$this->id_field];
+        }
+
+        $ret = $this->hook(self::HOOK_AFTER_LOAD);
+        if ($ret === false) {
+            return $this->unload();
+        } elseif (is_object($ret)) {
+            return $ret;
         }
 
         return $this;
