@@ -696,7 +696,7 @@ class Sql extends Persistence
                 ->addMoreInfo('data', $data);
         }
 
-        $model->id = $data[$model->id_field];
+        $model->setId($data[$model->id_field]);
 
         return $data;
     }
@@ -746,7 +746,7 @@ class Sql extends Persistence
         if ($model->id_field) {
             // If id_field is not set, model will be read-only
             if (isset($data[$model->id_field])) {
-                $model->id = $data[$model->id_field];
+                $model->setId($data[$model->id_field]);
             } else {
                 throw (new Exception('Model uses "id_field" but it was not available in the database'))
                     ->addMoreInfo('model', $model)
@@ -884,7 +884,7 @@ class Sql extends Persistence
 
         if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
             // ID was changed
-            $model->id = $data[$model->id_field];
+            $model->setId($data[$model->id_field]);
         }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);

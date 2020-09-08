@@ -1118,7 +1118,7 @@ class Model implements \IteratorAggregate
     {
         $this->hook(self::HOOK_BEFORE_UNLOAD);
         if ($this->id_field) {
-            $this->id = null;
+            $this->setId(null);
         }
         $this->data = [];
         $this->dirty = [];
@@ -1154,7 +1154,7 @@ class Model implements \IteratorAggregate
 
         $this->data = $from_persistence->load($this, $id);
         if ($this->id === null) {
-            $this->id = $id;
+            $this->setId($id);
         }
 
         $ret = $this->hook(self::HOOK_AFTER_LOAD);
@@ -1191,7 +1191,7 @@ class Model implements \IteratorAggregate
      */
     public function duplicate($new_id = null)
     {
-        $this->id = null;
+        $this->setId(null);
 
         if ($this->id_field) {
             $this->setId($new_id);
@@ -1338,7 +1338,7 @@ class Model implements \IteratorAggregate
 
         $this->data = $this->persistence->tryLoad($this, $id);
         if ($this->data) {
-            $this->id = $id;
+            $this->setId($id);
 
             $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
@@ -1369,7 +1369,7 @@ class Model implements \IteratorAggregate
         $this->data = $this->persistence->loadAny($this);
         if ($this->data) {
             if ($this->id_field) {
-                $this->id = $this->data[$this->id_field];
+                $this->setId($this->data[$this->id_field]);
             }
 
             $ret = $this->hook(self::HOOK_AFTER_LOAD);
@@ -1403,7 +1403,7 @@ class Model implements \IteratorAggregate
         if ($this->data) {
             if ($this->id_field) {
                 if (isset($this->data[$this->id_field])) {
-                    $this->id = $this->data[$this->id_field];
+                    $this->setId($this->data[$this->id_field]);
                 }
             }
 
@@ -1787,7 +1787,7 @@ class Model implements \IteratorAggregate
 
             $thisCloned->data = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
-                $thisCloned->id = $data[$this->id_field] ?? null;
+                $thisCloned->setId($data[$this->id_field] ?? null);
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
@@ -1807,13 +1807,13 @@ class Model implements \IteratorAggregate
 
             if (is_object($ret)) {
                 if ($ret->id_field) {
-                    yield $ret->id => $ret;
+                    yield $ret->getId() => $ret;
                 } else {
                     yield $ret;
                 }
             } else {
                 if ($this->id_field) {
-                    yield $thisCloned->id => $thisCloned;
+                    yield $thisCloned->getId() => $thisCloned;
                 } else {
                     yield $thisCloned;
                 }

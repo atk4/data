@@ -65,7 +65,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
     {
         $this->expectException(Exception::class);
         $this->expectErrorMessage('ID field is not defined');
-        $this->m->id = 1;
+        $this->m->setId(1);
     }
 
     public function testFail1()

@@ -215,7 +215,7 @@ the database. Here is how you can implement this functionality::
         $data = $m->app->cacheFetch($m->table, $id);
         if ($data) {
             $m->data = $data;
-            $m->id = $id;
+            $m->setId($id);
             $m->breakHook(false);
         }
     });
