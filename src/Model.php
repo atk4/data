@@ -1205,11 +1205,12 @@ class Model implements \IteratorAggregate
      */
     public function load($id, Persistence $from_persistence = null)
     {
-        if (!$from_persistence) {
-            $from_persistence = $this->persistence;
+        // deprecated, remove on 2020-03
+        if (func_num_args() > 1) {
+            throw new Exception('Model::load() with 2nd param $from_persistence is no longer supported');
         }
 
-        if (!$from_persistence) {
+        if (!$this->persistence) {
             throw new Exception('Model is not associated with any database');
         }
 
@@ -1221,7 +1222,7 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        $this->data = $from_persistence->load($this, $id);
+        $this->data = $this->persistence->load($this, $id);
         if ($this->id === null) {
             $this->id = $id;
         }
