@@ -851,11 +851,10 @@ class Model implements \IteratorAggregate
     {
         $this->assertHasIdField();
 
-//        if ($value === null) {
-//            return $this->setNull($this->id_field);
-//        } else {
-//            return $this->set($this->id_field, $value);
-//        }
+        // first set ID is entity ID
+        if ($this->entityId === null && $value !== null) {
+            $this->entityId = $value;
+        }
 
         $this->id = $value;
         $this->set($this->id_field, $this->id);
