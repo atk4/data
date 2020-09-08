@@ -18,6 +18,8 @@ use atk4\dsql\Query;
  * Data model class.
  *
  * @property Field[]|Reference[] $elements
+ * @property mixed               $id       Contains ID of the current record. If the value is null then the record
+ *                                         is considered to be new.
  */
 class Model implements \IteratorAggregate
 {
@@ -824,7 +826,7 @@ class Model implements \IteratorAggregate
 
     private function assertHasIdField(): void
     {
-        if (!is_string($this->id_field) /*|| !$this->hasField($this->id_field)*/) {
+        if (!is_string($this->id_field) || !$this->hasField($this->id_field)) {
             throw new Exception('ID field is not defined');
         }
     }
@@ -1099,6 +1101,56 @@ class Model implements \IteratorAggregate
         $this->limit = [$count, $offset];
 
         return $this;
+    }
+
+    // }}}
+
+    // {{{ BC implementation of Model::id property using magic methods.
+
+    public function __isset(string $name): bool
+    {
+        if ($name === 'id') {
+            return $this->getId() !== null;
+        }
+
+        return isset($this->{$name});
+    }
+
+    /**
+     * @return mixed
+     */
+    public function &__get(string $name)
+    {
+        if ($name === 'id') {
+            $value = $this->getId();
+
+            return $value;
+        }
+
+        return $this->{$name};
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function __set(string $name, $value): void
+    {
+        if ($name === 'id') {
+            $this->setId($value);
+
+            return;
+        }
+
+        $this->{$name} = $value;
+    }
+
+    public function __unset(string $name): void
+    {
+        if ($name === 'id') {
+            throw new Exception('ID property can not be unset');
+        }
+
+        unset($this->{$name});
     }
 
     // }}}
@@ -1681,7 +1733,7 @@ class Model implements \IteratorAggregate
         $model->entityId = null;
         $this->_rawInsert($model, $row);
 
-        return $model->id;
+        return $this->id_field ? $model->id : null;
     }
 
     /**

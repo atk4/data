@@ -87,10 +87,8 @@ class ContainsOne extends Reference
         $ourModel = $this->getOurModel();
 
         // get model
-        // will not use ID field
         $theirModel = $this->getTheirModel(array_merge($defaults, [
             'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
-            // 'id_field' => false,
             'table' => $this->table_alias,
         ]));
 
