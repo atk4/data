@@ -7,7 +7,7 @@ namespace atk4\data\tests;
 use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\data\tests\Model\Person as Person;
+use atk4\data\tests\Model\Person;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -67,6 +67,8 @@ class CsvTest extends AtkPhpunit\TestCase
         foreach ($data as $row) {
             fputcsv($this->file, $row);
         }
+
+        ftruncate($this->file2, 0);
     }
 
     protected function getDb(): array
