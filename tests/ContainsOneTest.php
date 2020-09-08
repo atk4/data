@@ -142,7 +142,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $a->setMulti($row = ['country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01 UTC'), 'tags' => ['foo', 'bar'], 'door_code' => null, 'id' => 1]);
+        $a->setMulti($row = ['id' => 1, 'country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01 UTC'), 'tags' => ['foo', 'bar'], 'door_code' => null]);
         $a->save();
 
         // now reload invoice and see if it is saved
@@ -156,7 +156,7 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
 
         // now add nested containsOne - DoorCode
         $c = $i->ref('addr')->ref('door_code');
-        $c->setMulti($row = ['code' => 'ABC', 'valid_till' => new \DateTime('2019-07-01 UTC'), 'id' => 1]);
+        $c->setMulti($row = ['id' => 1, 'code' => 'ABC', 'valid_till' => new \DateTime('2019-07-01 UTC')]);
         $c->save();
         $this->assertEquals($row, $i->ref('addr')->ref('door_code')->get());
 

@@ -208,14 +208,6 @@ class Model implements \IteratorAggregate
     public $read_only = false;
 
     /**
-     * Contains ID of the current record. If the value is null then the record
-     * is considered to be new.
-     *
-     * @var mixed
-     */
-    public $id;
-
-    /**
      * Once set, Model behaves like an entity and loading a different ID
      * will result in an error.
      *
@@ -838,8 +830,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertHasIdField();
 
-//        return $this->get($this->id_field);
-        return $this->id;
+        return $this->get($this->id_field);
     }
 
     /**
@@ -856,10 +847,17 @@ class Model implements \IteratorAggregate
             $this->entityId = $value;
         }
 
-        $this->id = $value;
-        $this->set($this->id_field, $this->id);
+        // TODO - fix read only set and dirty issues related with set() below
+        $this->data[$this->id_field] = $value;
 
         return $this;
+        // TODO - fix read only set and dirty issues related with set() below
+
+        if ($value === null) {
+            return $this->setNull($this->id_field);
+        }
+
+        return $this->set($this->id_field, $value);
     }
 
     /**
@@ -1106,8 +1104,21 @@ class Model implements \IteratorAggregate
 
     // {{{ BC implementation of Model::id property using magic methods.
 
+    /**
+     * Prevent accessing private properties like "entityId" from outside.
+     */
+    private function assertMagicProperty(string $name)
+    {
+        if (property_exists($this, $name)) {
+            throw (new Exception('Property is not magic'))
+                ->addMoreInfo('name', $name);
+        }
+    }
+
     public function __isset(string $name): bool
     {
+        $this->assertMagicProperty($name);
+
         if ($name === 'id') {
             return $this->getId() !== null;
         }
@@ -1120,6 +1131,8 @@ class Model implements \IteratorAggregate
      */
     public function &__get(string $name)
     {
+        $this->assertMagicProperty($name);
+
         if ($name === 'id') {
             $value = $this->getId();
 
@@ -1134,6 +1147,8 @@ class Model implements \IteratorAggregate
      */
     public function __set(string $name, $value): void
     {
+        $this->assertMagicProperty($name);
+
         if ($name === 'id') {
             $this->setId($value);
 
@@ -1145,6 +1160,8 @@ class Model implements \IteratorAggregate
 
     public function __unset(string $name): void
     {
+        $this->assertMagicProperty($name);
+
         if ($name === 'id') {
             throw new Exception('ID property can not be unset');
         }
@@ -1161,7 +1178,7 @@ class Model implements \IteratorAggregate
      */
     public function loaded(): bool
     {
-        return $this->id_field && $this->getId() !== null;
+        return $this->id_field && $this->getId() !== null && $this->entityId !== null;
     }
 
     /**
@@ -2036,7 +2053,7 @@ class Model implements \IteratorAggregate
     public function __debugInfo(): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->id_field ? $this->id : 'no id field',
             'scope' => $this->scope()->toWords(),
         ];
     }
