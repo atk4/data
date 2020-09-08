@@ -842,19 +842,18 @@ class Model implements \IteratorAggregate
     {
         $this->assertHasIdField();
 
-        // first set ID is entity ID
-        if ($this->entityId === null && $value !== null) {
-            $this->entityId = $value;
-        }
-
-        // TODO make sure ID is in the data
-        $this->data[$this->id_field] = $value;
-
         if ($value === null) {
-            return $this->setNull($this->id_field);
+            $this->setNull($this->id_field);
+        } else {
+            $this->set($this->id_field, $value);
         }
 
-        return $this->set($this->id_field, $value);
+        // set entity ID to the first set ID
+        if ($this->entityId === null) {
+            $this->entityId = $this->getId();
+        }
+
+        return $this;
     }
 
     /**
