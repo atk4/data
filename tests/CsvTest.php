@@ -159,9 +159,10 @@ class CsvTest extends AtkPhpunit\TestCase
         $m = new Person($p);
 
         $m2 = $m->withPersistence($p2);
+        $m2->reload_after_save = false;
 
         foreach ($m as $row) {
-            $m2->save($row->get());
+            (clone $m2)->save($row->get());
         }
 
         fseek($this->file, 0);
