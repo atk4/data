@@ -696,8 +696,6 @@ class Sql extends Persistence
                 ->addMoreInfo('data', $data);
         }
 
-        $model->id = $data[$model->id_field];
-
         return $data;
     }
 
@@ -743,16 +741,12 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->id_field) {
-            // If id_field is not set, model will be read-only
-            if (isset($data[$model->id_field])) {
-                $model->id = $data[$model->id_field];
-            } else {
-                throw (new Exception('Model uses "id_field" but it was not available in the database'))
-                    ->addMoreInfo('model', $model)
-                    ->addMoreInfo('id_field', $model->id_field)
-                    ->addMoreInfo('data', $data);
-            }
+        // if id_field is not set, model will be read-only
+        if ($model->id_field && !isset($data[$model->id_field])) {
+            throw (new Exception('Model uses "id_field" but it was not available in the database'))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('id_field', $model->id_field)
+                ->addMoreInfo('data', $data);
         }
 
         return $data;
