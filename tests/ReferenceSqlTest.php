@@ -54,6 +54,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
         $oo = $u->unload()->addCondition('id', '>', '1')->ref('Orders');
 
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
+
         $e = $this->getEscapeChar();
         $this->assertSame(
             str_replace('"', $e, 'select "id","amount","user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)'),
@@ -66,6 +70,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testLink()
     {
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
+
         $u = (new Model($this->db, 'user'))->addFields(['name']);
         $o = (new Model($this->db, 'order'))->addFields(['amount', 'user_id']);
 
@@ -108,6 +116,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testLink2()
     {
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
+
         $u = (new Model($this->db, 'user'))->addFields(['name', 'currency_code']);
         $c = (new Model($this->db, 'currency'))->addFields(['code', 'name']);
 
@@ -153,6 +165,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $o->unload();
         $o->addCondition('amount', '>', 6);
         $o->addCondition('amount', '<', 9);
+
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
 
         $e = $this->getEscapeChar();
         $this->assertSame(
@@ -205,6 +221,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testRelatedExpression()
     {
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
+
         $vat = 0.23;
 
         $this->setDb([
