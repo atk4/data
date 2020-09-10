@@ -321,6 +321,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
     {
         if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('PostgreSQL does not support "SUM(variable)" syntax');
+        } elseif ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL does not support "LENGTH(variable)" function');
         }
 
         $vat = 0.23;
