@@ -341,10 +341,6 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $m->addCondition('date', new \DateTime('08-12-1982'));
         $m->loadAny();
         $this->assertSame('Sue', $m->get('name'));
-
-        $m->addCondition([['date', new \DateTime('08-12-1982')]]);
-        $m->loadAny();
-        $this->assertSame('Sue', $m->get('name'));
     }
 
     public function testDateConditionFailure()
