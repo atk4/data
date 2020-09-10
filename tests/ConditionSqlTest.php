@@ -364,9 +364,6 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 
-    /**
-     * Tests OR conditions.
-     */
     public function testOrConditions()
     {
         $this->setDb([
@@ -379,17 +376,17 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
 
-        $u->addCondition([
+        $u->addCondition(Model\Scope::createOr(
             ['name', 'John'],
             ['name', 'Peter'],
-        ]);
+        ));
 
         $this->assertEquals(2, $u->action('count')->getOne());
 
-        $u->addCondition([
+        $u->addCondition(Model\Scope::createOr(
             ['name', 'Peter'],
             ['name', 'Joe'],
-        ]);
+        ));
         $this->assertEquals(1, $u->action('count')->getOne());
     }
 
