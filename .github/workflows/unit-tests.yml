@@ -35,6 +35,11 @@ jobs:
           POSTGRES_PASSWORD: atk4_pass
           POSTGRES_DB: atk4_test__data
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      mssql:
+        image: mcr.microsoft.com/mssql/server
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: atk4_pass
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -68,6 +73,10 @@ jobs:
           if [ "${{ matrix.php }}" == "8.0" ]; then composer config platform.php 7.4.5 ; fi
           composer install --no-suggest --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
+          # debug, remove before merge
+          rm -r vendor/atk4/dsql && git clone https://github.com/atk4/dsql.git -b add_mssql_testing vendor/atk4/dsql
+          rm -r vendor/atk4/schema && git clone https://github.com/atk4/schema.git -b add_mssql_support vendor/atk4/schema
+
       - name: Init
         run: |
           mkdir -p build/logs
@@ -83,6 +92,15 @@ jobs:
       - name: "Run tests: PostgreSQL (only for Phpunit)"
         if: matrix.type == 'Phpunit'
         run: "vendor/bin/phpunit --configuration phpunit-pgsql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
+
+      - name: "Run tests: MSSQL (for PHP < 8.0) (only for Phpunit)"
+        if: matrix.type == 'Phpunit' && matrix.php != '8.0'
+        run: "vendor/bin/phpunit --configuration phpunit-mssql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
+
+      - name: "Run tests: MSSQL (for PHP = 8.0, allowed to fail) (only for Phpunit)"
+        if: matrix.type == 'Phpunit' && matrix.php == '8.0'
+        continue-on-error: true
+        run: "vendor/bin/phpunit --configuration phpunit-mssql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: Lint / check syntax (only for CodingStyle)
         if: matrix.type == 'CodingStyle'
