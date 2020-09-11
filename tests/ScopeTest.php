@@ -175,7 +175,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $country->addCondition('Users/#', '>', 0);
 
-        $this->assertEquals('Country that has reference Users where any referenced record exists', $country->scope()->toWords());
+        $this->assertEquals('Country that has reference Users where number of records is greater than \'0\'', $country->scope()->toWords());
     }
 
     public function testContitionUnsupportedToWords()

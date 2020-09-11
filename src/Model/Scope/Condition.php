@@ -299,11 +299,10 @@ class Condition extends AbstractScope
 
                 if ($field === '#') {
                     $words[] = $this->operator ? 'number of records' : 'any referenced record exists';
-                    $field = null;
                 }
             }
 
-            if ($field !== null) {
+            if ($model->hasField($field)) {
                 $field = $model->getField($field);
             }
         }
@@ -361,7 +360,9 @@ class Condition extends AbstractScope
                 }
             }
 
-            $field = $model->getField($field);
+            if ($model->hasField($field)) {
+                $field = $model->getField($field);
+            }
         }
 
         // use the referenced model title if such exists
