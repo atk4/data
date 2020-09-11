@@ -73,10 +73,6 @@ jobs:
           if [ "${{ matrix.php }}" == "8.0" ]; then composer config platform.php 7.4.5 ; fi
           composer install --no-suggest --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
-          # debug, remove before merge
-          rm -r vendor/atk4/dsql && git clone https://github.com/atk4/dsql.git -b add_mssql_testing vendor/atk4/dsql
-          rm -r vendor/atk4/schema && git clone https://github.com/atk4/schema.git -b add_mssql_support vendor/atk4/schema
-
       - name: Init
         run: |
           mkdir -p build/logs
