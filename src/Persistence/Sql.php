@@ -412,21 +412,34 @@ class Sql extends Persistence
         return $expression->expr($mask, $prop);
     }
 
-    /**
-     * Last ID inserted.
-     *
-     * @return mixed
-     */
-    public function lastInsertId(Model $model)
+    public function lastInsertId(Model $model): string
     {
-        $seq = $model->sequence ?: null;
+        return $this->connection->lastInsertId($this->getIdSequenceName($model));
+    }
 
-        // PostgreSQL PDO always requires sequence name in lastInsertId method as parameter
-        // So let's use its default one if no specific is set
-        if ($this->connection instanceof \atk4\dsql\Postgresql\Connection && $seq === null) {
-            $seq = $model->table . '_' . $model->id_field . '_seq';
+    protected function syncIdSequence(Model $model): void
+    {
+        // PostgreSQL sequence must be manually synchronized if a row with explicit ID was inserted
+        if ($this->connection instanceof \atk4\dsql\Postgresql\Connection) {
+            $this->connection->expr(
+                'select setval([], coalesce(max({}), 0) + 1, false) from {}',
+                [$this->getIdSequenceName($model), $model->id_field, $model->table]
+            )->execute();
+        }
+    }
+
+    private function getIdSequenceName(Model $model): ?string
+    {
+        $sequenceName = $model->sequence ?: null;
+
+        if ($sequenceName === null) {
+            // PostgreSQL uses sequence internally for PK autoincrement,
+            // use default name if not set explicitly
+            if ($this->connection instanceof \atk4\dsql\Postgresql\Connection) {
+                $sequenceName = $model->table . '_' . $model->id_field . '_seq';
+            }
         }
 
-        return $this->connection->lastInsertId($seq);
+        return $sequenceName;
     }
 }

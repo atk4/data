@@ -161,7 +161,7 @@ abstract class AbstractQuery implements \IteratorAggregate
         $this->initField(...func_get_args());
 
         if ($this->model->loaded()) {
-            $this->whereId($this->model->id);
+            $this->whereId($this->model->getId());
         }
 
         $this->hookInitSelect(__FUNCTION__);
@@ -221,7 +221,9 @@ abstract class AbstractQuery implements \IteratorAggregate
                 ->addMoreInfo('id', $id);
         }
 
-        return $this->where($this->model->getField($this->model->id_field), $id);
+        $idField = $this->model->getField($this->model->id_field);
+
+        return $this->where($idField, $idField->normalize($id));
     }
 
     abstract protected function initWhere(): void;

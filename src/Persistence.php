@@ -178,15 +178,25 @@ class Persistence
     public function insert(Model $model, array $data)
     {
         // don't set id field at all if it's NULL
-        if ($model->id_field && array_key_exists($model->id_field, $data) && $data[$model->id_field] === null) {
+        if ($model->id_field && !isset($data[$model->id_field])) {
             unset($data[$model->id_field]);
+
+            $this->syncIdSequence($model);
         }
 
         $data = $this->typecastSaveRow($model, $data);
 
         $this->query($model)->insert($data)->execute();
 
-        return $this->lastInsertId($model);
+        if ($model->id_field && isset($data[$model->id_field])) {
+            $id = (string) $data[$model->id_field];
+
+            $this->syncIdSequence($model);
+        } else {
+            $id = $this->lastInsertId($model);
+        }
+
+        return $id;
     }
 
     /**
@@ -227,6 +237,14 @@ class Persistence
     public function delete(Model $model, $id)
     {
         $this->query($model)->whereId($id)->delete()->execute();
+    }
+
+    public function lastInsertId(Model $model): string
+    {
+    }
+
+    protected function syncIdSequence(Model $model): void
+    {
     }
 
     /**

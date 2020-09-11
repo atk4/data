@@ -56,7 +56,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
     public function testJoinSaving1()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
         $db = new Persistence\Sql($this->db->connection);
@@ -162,7 +162,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
     public function testJoinSaving3()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
         $db = new Persistence\Sql($this->db->connection);
@@ -228,7 +228,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
     public function testJoinUpdate()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
         $this->setDb([
@@ -402,7 +402,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
     public function testDoubleJoin()
     {
         if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
         $this->setDb([
@@ -439,7 +439,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $m_u2->delete();
 
         $m_u2 = $make_m_u_fx()->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u2->id);
+        $this->assertEquals(30, $m_u2->getId());
         $m_u2->set('country_name', 'USA');
         $m_u2->save();
 
@@ -508,7 +508,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $m_u2->delete();
 
         $m_u2 = $make_m_u_fx()->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u2->id);
+        $this->assertEquals(30, $m_u2->getId());
 
         $this->assertEquals(
             [

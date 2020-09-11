@@ -25,7 +25,7 @@ class Transfer extends Payment
 
         $this->onHook(self::HOOK_BEFORE_SAVE, function ($m) {
             // only for new records and when destination_account_id is set
-            if ($m->get('destination_account_id') && !$m->id) {
+            if ($m->get('destination_account_id') && !$m->getId()) {
                 // In this section we test if "clone" works ok
 
                 $this->other_leg_creation = $m2 = clone $m;
@@ -48,13 +48,13 @@ class Transfer extends Payment
 
                 $m2->reload_after_save = false; // avoid check
 
-                $m->set('transfer_document_id', $m2->save()->id);
+                $m->set('transfer_document_id', $m2->save()->getId());
             }
         });
 
         $this->onHook(self::HOOK_AFTER_SAVE, function ($m) {
             if ($m->other_leg_creation) {
-                $m->other_leg_creation->set('transfer_document_id', $m->id)->save();
+                $m->other_leg_creation->set('transfer_document_id', $m->getId())->save();
             }
             $m->other_leg_creation = null;
         });

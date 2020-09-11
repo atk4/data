@@ -242,7 +242,7 @@ Joins are implemented like this:
   table by default driver
 - join will add either `beforeInsert` or `afterInsert` hook inside your model.
   When save is executed, it will execute additional query to update foreign table.
-- while $model->id stores the ID of the main table active record, $join->id
+- while $model->getId() stores the ID of the main table active record, $join->id
   stores ID of the foreign record and will be used when updating.
 - option 'delete_behaviour' is 'cascade' for strong joins and 'ignore' for weak
   joins, but you can set some other value. If you use "setnull" value and you

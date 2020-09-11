@@ -7,61 +7,60 @@ namespace atk4\data\tests;
 use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\data\tests\Model\Person as Person;
+use atk4\data\tests\Model\Person;
 
 /**
  * @coversDefaultClass \atk4\data\Model
  */
 class CsvTest extends AtkPhpunit\TestCase
 {
+    /** @var \SplFileObject */
     protected $file;
+
+    /** @var \SplFileObject */
     protected $file2;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        // better to skip this test on Windows, prevent permissions issues
-        // see also https://github.com/atk4/data/issues/271
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $this->markTestSkipped('Skip on Windows');
-        }
-
-        $this->file = sys_get_temp_dir() . '/atk4_test__data__a.csv';
-        $this->file2 = sys_get_temp_dir() . '/atk4_test__data__b.csv';
+        $this->file = $this->makeCsvFileObject();
+        $this->file2 = $this->makeCsvFileObject();
     }
 
-    protected function tearDown(): void
+    protected function makeCsvFileObject()
     {
-        parent::tearDown();
+        $fileObject = new \SplFileObject('php://memory', 'w+');
 
-        if (file_exists($this->file)) {
-            unlink($this->file);
-        }
-        if (file_exists($this->file2)) {
-            unlink($this->file2);
-        }
+        $fileObject->setFlags(
+            \SplFileObject::READ_CSV |
+            \SplFileObject::SKIP_EMPTY |
+            \SplFileObject::DROP_NEW_LINE |
+            \SplFileObject::READ_AHEAD
+        );
+
+        return $fileObject;
     }
 
     protected function setDb($data): void
     {
-        $f = fopen($this->file, 'w');
-        fputcsv($f, array_keys(reset($data)));
+        $this->file->ftruncate(0);
+        $this->file->fputcsv(array_keys(reset($data)));
         foreach ($data as $row) {
-            fputcsv($f, $row);
+            $this->file->fputcsv($row);
         }
-        fclose($f);
+
+        $this->file2->ftruncate(0);
     }
 
     protected function getDb(): array
     {
-        $f = fopen($this->file, 'r');
-        $keys = fgetcsv($f);
+        $this->file->fseek(0);
+        $keys = $this->file->fgetcsv();
         $data = [];
-        while ($row = fgetcsv($f)) {
+        while ($row = $this->file->fgetcsv()) {
             $data[] = array_combine($keys, $row);
         }
-        fclose($f);
 
         return $data;
     }
@@ -139,12 +138,14 @@ class CsvTest extends AtkPhpunit\TestCase
         $m2 = $m->withPersistence($p2);
 
         foreach ($m as $row) {
-            $m2->save($row->get());
+            (clone $m2)->save($row->get());
         }
 
+        $this->file->fseek(0);
+        $this->file2->fseek(0);
         $this->assertSame(
-            file_get_contents($this->file),
-            file_get_contents($this->file2)
+            $this->file->fread(5000),
+            $this->file2->fread(5000)
         );
     }
 
@@ -165,13 +166,13 @@ class CsvTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $this->assertSame([
-            1 => ['name' => 'John', 'surname' => 'Smith', 'id' => 1],
-            2 => ['name' => 'Sarah', 'surname' => 'Jones', 'id' => 2],
+            ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
         $this->assertSame([
-            1 => ['surname' => 'Smith'],
-            2 => ['surname' => 'Jones'],
+            ['surname' => 'Smith'],
+            ['surname' => 'Jones'],
         ], $m->export(['surname']));
     }
 }

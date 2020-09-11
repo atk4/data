@@ -227,10 +227,6 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testExpressionJoin()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'gender' => 'M', 'contact_id' => 1],
@@ -269,7 +265,7 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertFalse($mm->loaded());
 
         $mm = clone $m;
-        $mm->addCondition($mm->expr('"+123 smiths" = [contact_phone]'));
+        $mm->addCondition($mm->expr('\'+123 smiths\' = [contact_phone]'));
         $mmm = (clone $mm)->tryLoad(1);
         $this->assertSame('John', $mmm->get('name'));
         $this->assertSame('+123 smiths', $mmm->get('contact_phone'));
@@ -429,6 +425,10 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testLikeCondition()
     {
+        if ($this->driverType === 'pgsql') {
+            $this->markTestIncomplete('PostgreSQL does not support "column LIKE variable" syntax');
+        }
+
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'active' => 1, 'created' => '2020-01-01 15:00:30'],

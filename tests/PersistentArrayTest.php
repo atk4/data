@@ -74,7 +74,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertEquals([
             'person' => [
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
-                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F', 'id' => 3],
+                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
             ],
         ], $this->getInternalPersistenceData($p));
     }
@@ -144,7 +144,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             'user' => [
                 1 => ['name' => 'Peter', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'QQ'],
-                3 => ['name' => 'Foo', 'surname' => 'Bar', 'id' => 3],
+                3 => ['name' => 'Foo', 'surname' => 'Bar'],
             ],
         ], $this->getInternalPersistenceData($p));
     }
@@ -167,11 +167,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
-                3 => ['name' => 'Foo', 'surname' => 'Bar', 'id' => 3],
+                3 => ['name' => 'Foo', 'surname' => 'Bar'],
             ],
         ], $this->getInternalPersistenceData($p));
 
-        $this->assertSame(3, $p->lastInsertID());
+        $this->assertSame('3', $p->lastInsertID($m));
     }
 
     public function testIterator()
@@ -267,8 +267,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $this->assertSame([
-            1 => ['name' => 'John', 'surname' => 'Smith'],
-            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            2 => ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
         $this->assertSame([
@@ -310,11 +310,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         // use alias as array key if it is set
         $q = $m->toQuery()->field('name', 'first_name');
-        $this->assertSame(['id' => 1, 'first_name' => 'John'], $q->getOne());
+        $this->assertSame(['first_name' => 'John'], $q->getOne());
 
         // if alias is not set, then use field name as key
         $q = $m->toQuery()->field('name');
-        $this->assertSame(['name' => 'John', 'id' => 1], $q->getOne());
+        $this->assertSame(['name' => 'John'], $q->getOne());
     }
 
     /**
@@ -615,12 +615,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     public function testOrder()
     {
         $dbData = [
-            ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
-            ['id' => 2, 'f1' => 'D', 'f2' => 'A'],
-            ['id' => 3, 'f1' => 'D', 'f2' => 'C'],
-            ['id' => 4, 'f1' => 'A', 'f2' => 'C'],
-            ['id' => 5, 'f1' => 'E', 'f2' => 'A'],
-            ['id' => 6, 'f1' => 'C', 'f2' => 'A'],
+            1 => ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
+            2 => ['id' => 2, 'f1' => 'D', 'f2' => 'A'],
+            3 => ['id' => 3, 'f1' => 'D', 'f2' => 'C'],
+            4 => ['id' => 4, 'f1' => 'A', 'f2' => 'C'],
+            5 => ['id' => 5, 'f1' => 'E', 'f2' => 'A'],
+            6 => ['id' => 6, 'f1' => 'C', 'f2' => 'A'],
         ];
 
         // order by one field ascending
@@ -703,14 +703,14 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ['f1' => 'A'],
             ['f1' => 'D'],
             ['f1' => 'E'],
-        ], array_values($m->export()));
+        ], array_values($m->export(['f1'])));
 
         $m->setLimit(2, 1);
         $this->assertSame(2, $m->getCount());
         $this->assertSame([
             ['f1' => 'D'],
             ['f1' => 'E'],
-        ], array_values($m->export()));
+        ], array_values($m->export(['f1'])));
 
         // well, this is strange, that you can actually change limit on-the-fly and then previous
         // limit is not taken into account, but most likely you will never set it multiple times
@@ -741,8 +741,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $m->addCondition('surname', 'Smith');
         $this->assertSame(1, $m->getCount());
-        $this->assertSame([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->export());
-        $this->assertSame([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->toQuery()->get());
+        $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->export());
+        $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->toQuery()->get());
 
         $m->addCondition('surname', 'Siiiith');
         $this->assertSame(0, $m->getCount());

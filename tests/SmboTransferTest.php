@@ -34,7 +34,7 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
             ->field('contact_from_id')
             ->field('contact_to_id')
             ->field('doc_type')
-            ->field('amount', ['type' => 'decimal(8,2)'])
+            ->field('amount', ['type' => 'float'])
             ->create();
 
         $x = clone $s;
@@ -44,7 +44,7 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
             ->field('account_id', ['type' => 'integer'])
             ->field('cheque_no')
             //->field('misc_payment', ['type' => 'enum(\'N\',\'Y\')'])
-            ->field('misc_payment', ['type' => 'varchar(2)'])
+            ->field('misc_payment')
             ->field('transfer_document_id')
             ->create();
     }
@@ -69,8 +69,8 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
             return $e1['id'] < $e2['id'] ? -1 : 1;
         });
         $this->assertSame([
-            ['id' => '1', 'transfer_document_id' => '2'],
-            ['id' => '2', 'transfer_document_id' => '1'],
+            ['id' => 1, 'transfer_document_id' => '2'],
+            ['id' => 2, 'transfer_document_id' => '1'],
         ], $data);
     }
 
@@ -152,7 +152,7 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
         $company->ref('Nominal')->insertSubNominal('Sales', 'Discounted');
 
         // Insert our second invoice using set referencing
-        $company->ref('Client')->id($agile_id)->refSet('Invoice')->insertInvoice([
+        $company->ref('Client')->load($agile_id)->refSet('Invoice')->insertInvoice([
             'lines' => [
                 [
                     'item_id'   => $john->ref('Product')->insert('Cat Food'),

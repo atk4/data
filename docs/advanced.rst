@@ -81,7 +81,7 @@ hook. Place the following inside Transaction::init()::
         if (get_class($this) != $m->getClassName()) {
             $cl = '\\'.$this->getClassName();
             $cl = new $cl($this->persistence);
-            $cl->load($m->id);
+            $cl->load($m->getId());
 
             $this->breakHook($cl);
         }
@@ -159,7 +159,7 @@ which I want to define like this::
 
         $this->owner->hasOne('created_by_user_id', 'User');
         if(isset($this->app->user) and $this->app->user->loaded()) {
-            $this->owner->getField('created_by_user_id')->default = $this->app->user->id;
+            $this->owner->getField('created_by_user_id')->default = $this->app->user->getId();
         }
 
         $this->owner->hasOne('updated_by_user_id', 'User');
@@ -168,7 +168,7 @@ which I want to define like this::
 
         $this->owner->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
             if(isset($this->app->user) and $this->app->user->loaded()) {
-                $data['updated_by'] = $this->app->user->id;
+                $data['updated_by'] = $this->app->user->getId();
             }
             $data['updated_dts'] = new \DateTime();
         });
@@ -243,7 +243,7 @@ Start by creating a class::
                 throw (new \atk4\core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
 
-            $id = $m->id;
+            $id = $m->getId();
             if ($m->hook('beforeSoftDelete') === false) {
                 return $m;
             }
@@ -262,7 +262,7 @@ Start by creating a class::
                 throw (new \atk4\core\Exception(['Model must be loaded before restoring'))->addMoreInfo('model', $m);
             }
 
-            $id = $m->id;
+            $id = $m->getId();
             if ($m->hook('beforeRestore') === false) {
                 return $m;
             }
@@ -352,7 +352,7 @@ before and just slightly modifying it::
                 throw (new \atk4\core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
 
-            $id = $m->id;
+            $id = $m->getId();
 
             $rs = $m->reload_after_save;
             $m->reload_after_save = false;
@@ -369,7 +369,7 @@ before and just slightly modifying it::
                 throw (new \atk4\core\Exception('Model must be loaded before restoring'))->addMoreInfo('model', $m);
             }
 
-            $id = $m->id;
+            $id = $m->getId();
             if ($m->hook('beforeRestore') === false) {
                 return $m;
             }
@@ -584,7 +584,7 @@ payment towards a most suitable invoice::
 
             // How much we can allocate to this invoice
             $alloc = min($this->get('amount_due'), $invoices->get('amount_due'))
-            $this->ref('InvoicePayment')->insert(['amount_closed'=>$alloc, 'invoice_id'=>$invoices->id]);
+            $this->ref('InvoicePayment')->insert(['amount_closed'=>$alloc, 'invoice_id'=>$invoices->getId()]);
 
             // Reload ourselves to refresh amount_due
             $this->reload();
@@ -629,8 +629,8 @@ API call) this approach will require us to perform 2 extra queries::
     $m = new Model_Invoice($db);
     $m->insert([
         'total'=>20,
-        'client_id'=>$m->ref('client_id')->loadBy('code', $client_code)->id,
-        'category_id'=>$m->ref('category_id')->loadBy('name', $category)->id,
+        'client_id'=>$m->ref('client_id')->loadBy('code', $client_code)->getId(),
+        'category_id'=>$m->ref('category_id')->loadBy('name', $category)->getId(),
     ]);
 
 The ideal way would be to create some "non-persistable" fields that can be used
@@ -806,14 +806,14 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
     $m = new Model_Invoice($db);
     $m->set('client_id', 123);
 
-    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->id);
+    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->getId());
 
 In this case the payment_invoice_id will be set to ID of any payment by client
 123. There also may be some better uses::
 
     $cl->ref('Invoice')->each(function($m) {
 
-        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->id);
+        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->getId());
         $m->save();
 
     });

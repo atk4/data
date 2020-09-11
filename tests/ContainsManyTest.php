@@ -267,7 +267,7 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->get('discounts_total_sum')); // =20.88
 
         // let's test how it all looks in persistence without typecasting
-        $exp_lines = $i->export(null, null, false)[0]['lines'];
+        $exp_lines = $i->setOrder('id')->export(null, null, false)[0]['lines'];
         $this->assertSame(
             json_encode([
                 '1' => [

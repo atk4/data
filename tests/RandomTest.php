@@ -114,10 +114,6 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testAddFields()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
         $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'login' => 'john@example.com'],
@@ -142,10 +138,6 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testAddFields2()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
         $this->setDb([
             'user' => [
                 1 => ['name' => 'John', 'last_name' => null, 'login' => null, 'salary' => null, 'tax' => null, 'vat' => null],
@@ -178,33 +170,25 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testSameTable()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
-                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => '1'],
-                2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => '1'],
-                3 => ['id' => 3, 'name' => 'Smith', 'parent_item_id' => '2'],
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
+                2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => 1],
+                3 => ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2],
             ],
         ]);
 
         $m = new Model_Item($db, 'item');
 
         $this->assertSame(
-            ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
     }
 
     public function testSameTable2()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
@@ -213,26 +197,22 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 3 => ['id' => 3, 'name' => 'Smith'],
             ],
             'item2' => [
-                1 => ['id' => 1, 'item_id' => 1, 'parent_item_id' => '1'],
-                2 => ['id' => 2, 'item_id' => 2, 'parent_item_id' => '1'],
-                3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => '2'],
+                1 => ['id' => 1, 'item_id' => 1, 'parent_item_id' => 1],
+                2 => ['id' => 2, 'item_id' => 2, 'parent_item_id' => 1],
+                3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => 2],
             ],
         ]);
 
         $m = new Model_Item2($db, 'item');
 
         $this->assertSame(
-            ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
     }
 
     public function testSameTable3()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
@@ -241,16 +221,16 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
                 3 => ['id' => 3, 'name' => 'Smith', 'age' => 24],
             ],
             'item2' => [
-                1 => ['id' => 1, 'item_id' => 1, 'parent_item_id' => '1'],
-                2 => ['id' => 2, 'item_id' => 2, 'parent_item_id' => '1'],
-                3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => '2'],
+                1 => ['id' => 1, 'item_id' => 1, 'parent_item_id' => 1],
+                2 => ['id' => 2, 'item_id' => 2, 'parent_item_id' => 1],
+                3 => ['id' => 3, 'item_id' => 3, 'parent_item_id' => 2],
             ],
         ]);
 
         $m = new Model_Item3($db, 'item');
 
         $this->assertEquals(
-            ['id' => '2', 'name' => 'Sue', 'parent_item_id' => '1', 'parent_item' => 'John', 'age' => '20', 'child_age' => 24],
+            ['id' => '2', 'name' => 'Sue', 'parent_item_id' => 1, 'parent_item' => 'John', 'age' => '20', 'child_age' => 24],
             $m->load(2)->get()
         );
 
@@ -326,7 +306,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         $m->onHook(Model::HOOK_BEFORE_LOAD, function ($m, $id) {
             $m->data = ['name' => 'rec #' . $id];
-            $m->id = $id;
+            $m->setId($id);
             $m->breakHook(false);
         });
 
@@ -387,15 +367,11 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testGetTitle()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
-        }
-
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
-                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => '1'],
-                2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => '1'],
+                1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
+                2 => ['id' => 2, 'name' => 'Sue', 'parent_item_id' => 1],
             ],
         ]);
 

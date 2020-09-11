@@ -31,7 +31,7 @@ class IteratorQuery extends AbstractQuery
     {
         parent::__construct($model, $persistence);
 
-        $this->iterator = $this->persistence->getRawDataIterator($model->table);
+        $this->iterator = $this->persistence->getRawDataIterator($model);
 
         $this->fx = function (\Iterator $iterator) {
             return $iterator;
@@ -43,12 +43,12 @@ class IteratorQuery extends AbstractQuery
         if ($fields) {
             $this->fields = $fields;
 
-            $this->fx = function (\Iterator $iterator) {
-                $keys = array_flip((array) $this->fields);
+            $keys = array_flip((array) $this->fields);
 
-                return new \atk4\data\Util\ArrayCallbackIterator($iterator, function ($row) use ($keys) {
-                    return array_intersect_key($row, $keys);
-                });
+            $this->fx = function (\Iterator $iterator) use ($keys) {
+                foreach ($iterator as $id => $row) {
+                    yield $id => array_intersect_key($row, $keys);
+                }
             };
         }
     }
@@ -179,19 +179,7 @@ class IteratorQuery extends AbstractQuery
 
         $iterator->rewind();
 
-        return $this->getRowWithId($iterator->current(), $this->iterator->key());
-    }
-
-    protected function getRowWithId($row, $id)
-    {
-        if ($row && $this->model->id_field && !isset($row[$this->model->id_field])) {
-            $field = $this->model->getField($this->model->id_field);
-
-            // typecastSave value so we can use strict comparison
-            $row[$this->model->id_field] = $this->persistence->typecastSaveField($field, $id);
-        }
-
-        return $row;
+        return $iterator->current();
     }
 
     /**
@@ -255,7 +243,7 @@ class IteratorQuery extends AbstractQuery
     {
         if (!$this->scope->isEmpty()) {
             $this->iterator = new \CallbackFilterIterator($this->iterator, function ($row, $id) {
-                return $this->match($this->getRowWithId($row, $id), $this->scope);
+                return $this->match($row, $this->scope);
             });
         }
     }
@@ -286,7 +274,7 @@ class IteratorQuery extends AbstractQuery
                     ->addMoreInfo('condition', $condition);
             }
 
-            $match = $this->evaluateIf($row[$field->short_name] ?? null, $operator, $value);
+            $match = $this->evaluateIf($row[$field->actual ?? $field->short_name] ?? null, $operator, $value);
         }
 
         // nested conditions

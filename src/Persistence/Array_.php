@@ -31,22 +31,29 @@ class Array_ extends Persistence
      */
     protected $lastInsertIds = [];
 
-    public function getRawDataIterator($table): \Iterator
+    public function getRawDataIterator(Model $model): \Iterator
     {
-        return new \ArrayIterator($this->data[$table]);
+        return (function ($iterator) use ($model) {
+            foreach ($iterator as $id => $row) {
+                yield $id => $this->getRowWithId($model, $row, $id);
+            }
+        })(new \ArrayIterator($this->data[$model->table]));
     }
 
-    public function setRawData(Model $model, $data, $id = null)
+    public function setRawData(Model $model, array $row, $id = null)
     {
-        if ($id === null) {
-            $id = $this->generateNewId($model);
+        $row = $this->getRowWithId($model, $row, $id);
 
-            if ($model->id_field) {
-                $data[$model->id_field] = $this->typecastSaveField($model->getField($model->id_field), $id);
-            }
+        $id = $id ?? $this->lastInsertId($model);
+
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->actual ?? $idField->short_name;
+
+            unset($row[$idColumnName]);
         }
 
-        $this->data[$model->table][$id] = $data;
+        $this->data[$model->table][$id] = $row; //array_intersect_key($row, $rowWithId);
 
         return $id;
     }
@@ -54,6 +61,37 @@ class Array_ extends Persistence
     public function unsetRawData(string $table, $id)
     {
         unset($this->data[$table][$id]);
+    }
+
+    private function getRowWithId(Model $model, array $row, $id = null)
+    {
+        if ($id === null) {
+            $id = $this->generateNewId($model);
+        }
+
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->actual ?? $idField->short_name;
+
+            if (array_key_exists($idColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$idColumnName], $id);
+                unset($row[$idColumnName]);
+            }
+
+            // typecastSave value so we can use strict comparison
+            $row = [$idColumnName => $this->typecastSaveField($idField, $id)] + $row;
+        }
+
+        return $row;
+    }
+
+    private function assertNoIdMismatch($idFromRow, $id): void
+    {
+        if ($idFromRow !== null && (is_int($idFromRow) ? (string) $idFromRow : $idFromRow) !== (is_int($id) ? (string) $id : $id)) {
+            throw (new Exception('Row constains ID column, but it does not match the row ID'))
+                ->addMoreInfo('idFromKey', $id)
+                ->addMoreInfo('idFromData', $idFromRow);
+        }
     }
 
     /**
@@ -99,11 +137,9 @@ class Array_ extends Persistence
     /**
      * Generates new record ID.
      *
-     * @param Model $model
-     *
      * @return string
      */
-    public function generateNewId($model, string $table = null)
+    public function generateNewId(Model $model, string $table = null)
     {
         $table = $table ?? $model->table;
 
@@ -125,24 +161,14 @@ class Array_ extends Persistence
                     ->addMoreInfo('type', $type);
         }
 
-        return $this->lastInsertIds[$table] = $this->lastInsertIds['$'] = $id;
+        $this->lastInsertIds[$table] = $id;
+
+        return $id;
     }
 
-    /**
-     * Last ID inserted.
-     * Last inserted ID for any table is stored under '$' key.
-     *
-     * @param Model $model
-     *
-     * @return mixed
-     */
-    public function lastInsertId(Model $model = null)
+    public function lastInsertId(Model $model): string
     {
-        if ($model) {
-            return $this->lastInsertIds[$model->table] ?? null;
-        }
-
-        return $this->lastInsertIds['$'] ?? null;
+        return (string) ($this->lastInsertIds[$model->table] ?? '');
     }
 
     public function query(Model $model): AbstractQuery
