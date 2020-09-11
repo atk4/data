@@ -980,13 +980,6 @@ class Model implements \IteratorAggregate
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        // legacy OR support before Scope was introduced
-        if (func_num_args() === 1 && is_array($field) && count($field) === 1 && is_array(reset($field))) {
-            $this->scope()->addCondition(Model\Scope\RootScope::createOr(reset($field)));
-
-            return $this;
-        }
-
         $this->scope()->addCondition(...func_get_args());
 
         return $this;
