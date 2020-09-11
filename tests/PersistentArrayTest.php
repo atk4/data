@@ -772,9 +772,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
-        $m->addCondition('name');
         $this->expectException(Exception::class);
-        $m->export();
+        $m->addCondition('name');
     }
 
     public function testUnsupportedCondition2()
@@ -782,9 +781,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
-        $m->addCondition(new Model(), 'like', '%o%');
         $this->expectException(Exception::class);
-        $m->export();
+        $m->addCondition(new Model(), 'like', '%o%');
     }
 
     /**

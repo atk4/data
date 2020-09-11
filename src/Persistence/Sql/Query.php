@@ -180,13 +180,6 @@ class Query extends Persistence\AbstractQuery implements Expressionable
         $this->dsql->reset('field')->field($field, $alias);
     }
 
-    public function where($fieldName, $operator = null, $value = null): Persistence\AbstractQuery
-    {
-        $this->fillWhere($this->dsql, new Model\Scope\Condition(...func_get_args()));
-
-        return $this;
-    }
-
     protected function initOrder(): void
     {
         $this->dsql->reset('order');

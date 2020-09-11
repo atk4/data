@@ -341,10 +341,6 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $m->addCondition('date', new \DateTime('08-12-1982'));
         $m->loadAny();
         $this->assertSame('Sue', $m->get('name'));
-
-        $m->addCondition([['date', new \DateTime('08-12-1982')]]);
-        $m->loadAny();
-        $this->assertSame('Sue', $m->get('name'));
     }
 
     public function testDateConditionFailure()
@@ -364,9 +360,6 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 
-    /**
-     * Tests OR conditions.
-     */
     public function testOrConditions()
     {
         $this->setDb([
@@ -379,17 +372,17 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
 
         $u = (new Model($this->db, 'user'))->addFields(['name']);
 
-        $u->addCondition([
+        $u->addCondition(Model\Scope::createOr(
             ['name', 'John'],
             ['name', 'Peter'],
-        ]);
+        ));
 
         $this->assertEquals(2, $u->getCount());
 
-        $u->addCondition([
+        $u->addCondition(Model\Scope::createOr(
             ['name', 'Peter'],
             ['name', 'Joe'],
-        ]);
+        ));
         $this->assertEquals(1, $u->getCount());
     }
 
