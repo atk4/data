@@ -55,7 +55,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinSaving1()
     {
-        if ($this->driverType === 'pgsql') {
+        if ($this->driverType === 'pgsql' || $this->driverType === 'sqlsrv') {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
@@ -161,7 +161,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinSaving3()
     {
-        if ($this->driverType === 'pgsql') {
+        if ($this->driverType === 'pgsql' || $this->driverType === 'sqlsrv') {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
@@ -227,7 +227,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinUpdate()
     {
-        if ($this->driverType === 'pgsql') {
+        if ($this->driverType === 'pgsql' || $this->driverType === 'sqlsrv') {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
@@ -401,7 +401,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testDoubleJoin()
     {
-        if ($this->driverType === 'pgsql') {
+        if ($this->driverType === 'pgsql' || $this->driverType === 'sqlsrv') {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
