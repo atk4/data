@@ -15,6 +15,10 @@ class WithTest extends \atk4\schema\PhpunitTestCase
 {
     public function testWith()
     {
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('TODO - add WITH support for MSSQL');
+        }
+
         $this->setDb([
             'user' => [
                 10 => ['id' => 10, 'name' => 'John', 'salary' => 2500],

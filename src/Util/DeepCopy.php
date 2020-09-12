@@ -162,13 +162,15 @@ class DeepCopy
      */
     public function copy(): Model
     {
-        return $this->_copy(
-            $this->source,
-            $this->destination,
-            $this->references,
-            $this->exclusions,
-            $this->transforms
-        )->reload();
+        return $this->destination->atomic(function () {
+            return $this->_copy(
+                $this->source,
+                $this->destination,
+                $this->references,
+                $this->exclusions,
+                $this->transforms
+            )->reload();
+        });
     }
 
     /**

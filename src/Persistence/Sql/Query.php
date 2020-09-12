@@ -144,7 +144,16 @@ class Query extends Persistence\AbstractQuery implements Expressionable
     {
         $newDsql = $this->dsql->dsql();
 
-        $this->dsql = $newDsql->mode('select')->option('exists')->field($this->dsql);
+        // MSSQL does not support EXISTS everywhere, so wrap in SELECT
+        // @todo: move this to connection specific class
+        if ($this->persistence->connection instanceof \atk4\dsql\Mssql\Connection) {
+            $this->dsql = $newDsql->expr(
+                '(select case when exists[] then 1 else 0 end)',
+                [$this->dsql]
+            );
+        } else {
+            $this->dsql = $newDsql->mode('select')->option('exists')->field($this->dsql);
+        }
     }
 
     protected function initCount($alias = null): void

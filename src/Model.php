@@ -1548,11 +1548,11 @@ class Model implements \IteratorAggregate
                 }
             }
 
-            $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
-
             if ($this->loaded()) {
                 $this->dirty = $this->_dirty_after_reload;
             }
+
+            $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
 
             return $this;
         }, $to_persistence);

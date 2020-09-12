@@ -65,6 +65,7 @@ class Persistence
 
                 // no break
             case 'pgsql':
+            case 'sqlsrv':
             case 'dumper':
             case 'counter':
             case 'sqlite':

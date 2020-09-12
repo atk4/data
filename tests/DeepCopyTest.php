@@ -255,6 +255,10 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(1, $client3->ref('Quotes')->getCount());
         $this->assertEquals(1, $client3->ref('Payments')->getCount());
 
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('TODO - MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery.');
+        }
+
         // We created invoice for 90 for client1, so after copying it should still be 90
         $this->assertEquals(90, $client3->ref('Quotes')->getSum('total'));
 
