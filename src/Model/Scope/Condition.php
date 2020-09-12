@@ -104,7 +104,7 @@ class Condition extends AbstractScope
             throw new Exception('Only Scope can contain another conditions');
         } elseif ($key instanceof Field) { // for BC
             $key = $key->short_name;
-        } elseif (!is_string($key) && !($key instanceof Expression)) {
+        } elseif (!is_string($key) && !($key instanceof Expression) && !($key instanceof Expressionable)) {
             throw new Exception('Field must be a string or an instance of Expression');
         }
 
@@ -126,7 +126,7 @@ class Condition extends AbstractScope
 
         if ($operator === null) {
             // at least MSSQL database always requires an operator
-            if (!($key instanceof Expression)) {
+            if (!($key instanceof Expression) && !($key instanceof Expressionable)) {
                 throw new Exception('Operator must be specified');
             }
         } else {
