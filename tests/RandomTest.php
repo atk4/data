@@ -499,6 +499,10 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testTableNameDots()
     {
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
+
         $d = new Model($this->db, 'db2.doc');
         $d->addField('name');
 
