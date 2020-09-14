@@ -835,12 +835,12 @@ class Sql extends Persistence
     /**
      * Prepare iterator.
      */
-    public function prepareIterator(Model $model): \PDOStatement
+    public function prepareIterator(Model $model): iterable
     {
         try {
             $export = $model->action('select');
 
-            return $export->execute();
+            return $export->getIterator();
         } catch (\PDOException $e) {
             throw (new Exception('Unable to execute iteration query', 0, $e))
                 ->addMoreInfo('query', $export->getDebugQuery())
