@@ -359,8 +359,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(2, $ll->get('items_name')); // 2 not-null values
         $this->assertEquals(1, $ll->get('items_code')); // only 1 not-null value
         $this->assertEquals(2, $ll->get('items_star')); // 2 rows in total
-        $this->assertSame('Pork::Chicken', $ll->get('items_c:'));
-        $this->assertSame('Pork-Chicken', $ll->get('items_c-'));
+        $this->assertSame($ll->get('items_c:') === 'Pork::Chicken' ? 'Pork::Chicken' : 'Chicken::Pork', $ll->get('items_c:'));
+        $this->assertSame($ll->get('items_c-') === 'Pork-Chicken' ? 'Pork-Chicken' : 'Chicken-Pork', $ll->get('items_c-'));
         $this->assertEquals(strlen('Chicken') + strlen('Pork'), $ll->get('len'));
         $this->assertEquals(strlen('Chicken') + strlen('Pork'), $ll->get('len2'));
         $this->assertEquals(10, $ll->get('chicken5'));
