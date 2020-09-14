@@ -40,6 +40,10 @@ jobs:
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: atk4_pass
+      oracle:
+        image: wnameless/oracle-xe-11g-r2
+        env:
+          ORACLE_ALLOW_REMOTE: true
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -97,6 +101,10 @@ jobs:
         if: matrix.type == 'Phpunit' && matrix.php == '8.0'
         continue-on-error: true
         run: "vendor/bin/phpunit --configuration phpunit-mssql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
+
+      - name: "Run tests: Oracle (only for Phpunit)"
+        if: matrix.type == 'Phpunit'
+        run: "vendor/bin/phpunit --configuration phpunit-oracle.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: Lint / check syntax (only for CodingStyle)
         if: matrix.type == 'CodingStyle'
