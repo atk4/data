@@ -13,7 +13,7 @@ jobs:
     name: Unit
     runs-on: ubuntu-latest
     container:
-      image: atk4/image:${{ matrix.php }} # https://github.com/atk4/image
+      image: vorismi/imagewithpr9:${{ matrix.php }}
     strategy:
       fail-fast: false
       matrix:
