@@ -592,15 +592,7 @@ class Sql extends Persistence
                 $this->initQueryConditions($model, $query);
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
 
-                // MSSQL and Oracle do not support EXISTS everywhere, so wrap in CASE
-                if ($this->connection instanceof \atk4\dsql\Mssql\Connection
-                    || $this->connection instanceof \atk4\dsql\Oracle\Connection) {
-                    return $this->dsql()->mode('select')->field(
-                        $this->dsql()->expr('case when exists[] then 1 else 0 end', [$query])
-                    );
-                }
-
-                return $this->dsql()->mode('select')->option('exists')->field($query);
+                return $query->exists();
             case 'field':
                 if (!isset($args[0])) {
                     throw (new Exception('This action requires one argument with field name'))
