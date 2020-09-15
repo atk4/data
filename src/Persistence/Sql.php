@@ -827,12 +827,12 @@ class Sql extends Persistence
     /**
      * Prepare iterator.
      */
-    public function prepareIterator(Model $model): \PDOStatement
+    public function prepareIterator(Model $model): iterable
     {
         try {
             $export = $model->action('select');
 
-            return $export->execute();
+            return $export->getIterator();
         } catch (\PDOException $e) {
             throw (new Exception('Unable to execute iteration query', 0, $e))
                 ->addMoreInfo('query', $export->getDebugQuery())
@@ -963,6 +963,19 @@ class Sql extends Persistence
 
     public function lastInsertId(Model $model): string
     {
+        // TODO: Oracle does not support lastInsertId(), only for testing
+        // as this does not support concurrent inserts
+        if ($this->connection instanceof \atk4\dsql\Oracle\Connection) {
+            if ($model->id_field === false) {
+                return ''; // TODO code should never call lastInsertId() if id field is not defined
+            }
+
+            $query = $this->connection->dsql()->table($model->table);
+            $query->field($query->expr('max({id_col})', ['id_col' => $model->id_field]), 'max_id');
+
+            return $query->getOne();
+        }
+
         return $this->connection->lastInsertId($this->getIdSequenceName($model));
     }
 

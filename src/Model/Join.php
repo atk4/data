@@ -9,6 +9,7 @@ use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
 use atk4\data\Exception;
 use atk4\data\Model;
+use atk4\data\Persistence;
 use atk4\data\Reference;
 
 /**
@@ -36,7 +37,7 @@ class Join
      * If $persistence is set, then it's used for loading
      * and storing the values, instead $owner->persistence.
      *
-     * @var \atk4\data\Persistence
+     * @var Persistence|Persistence\Sql
      */
     protected $persistence;
 
