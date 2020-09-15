@@ -107,7 +107,7 @@ class Iterator
             $field = $args[0];
             $operator = $args[1] ?? null;
             $value = $args[2] ?? null;
-            if (count($args) == 2) {
+            if (count($args) === 2) {
                 $value = $operator;
 
                 $operator = '=';

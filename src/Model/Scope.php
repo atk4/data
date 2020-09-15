@@ -165,7 +165,7 @@ class Scope extends Scope\AbstractScope
      */
     public function negate()
     {
-        $this->junction = $this->junction == self::OR ? self::AND : self::OR;
+        $this->junction = $this->junction === self::OR ? self::AND : self::OR;
 
         foreach ($this->elements as $nestedCondition) {
             $nestedCondition->negate();

@@ -416,7 +416,7 @@ class Array_ extends Persistence
                 $this->applyScope($model, $action);
                 $this->setLimitOrder($model, $action);
 
-                return $action->aggregate($fx, $field, $type == 'fx0');
+                return $action->aggregate($fx, $field, $type === 'fx0');
             default:
                 throw (new Exception('Unsupported action mode'))
                     ->addMoreInfo('type', $type);

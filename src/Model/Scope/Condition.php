@@ -108,7 +108,7 @@ class Condition extends AbstractScope
             throw new Exception('Field must be a string or an instance of Expression');
         }
 
-        if (func_num_args() == 1 && is_bool($key)) {
+        if (func_num_args() === 1 && is_bool($key)) {
             if ($key) {
                 return;
             }
@@ -116,7 +116,7 @@ class Condition extends AbstractScope
             $key = new Expression('false');
         }
 
-        if (func_num_args() == 2) {
+        if (func_num_args() === 2) {
             $value = $operator;
             $operator = self::OPERATOR_EQUALS;
         }

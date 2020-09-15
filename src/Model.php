@@ -696,7 +696,7 @@ class Model implements \IteratorAggregate
 
         $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
 
-        if (gettype($value) == gettype($current_value) && $value == $current_value) {
+        if (gettype($value) === gettype($current_value) && $value == $current_value) {
             // do nothing, value unchanged
             return $this;
         }
@@ -744,7 +744,7 @@ class Model implements \IteratorAggregate
         }
 
         if (array_key_exists($field, $this->dirty) && (
-            gettype($this->dirty[$field]) == gettype($value) && $this->dirty[$field] == $value
+            gettype($this->dirty[$field]) === gettype($value) && $this->dirty[$field] == $value
         )) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
