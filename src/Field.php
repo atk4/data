@@ -483,18 +483,27 @@ class Field implements Expressionable
     }
 
     /**
-     * This method can be extended. See Model::compare for use examples.
+     * Compare new value of the field with existing one without retrieving.
+     * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
+     *  - comparing values that can't be received - passwords, encrypted data
+     *  - comparing images
+     *  - if get() is expensive (e.g. retrieve object).
      *
      * @param mixed $value
+     * @param mixed|void $value2
      */
-    public function compare($value): bool
+    public function compare($value, $value2 = null): bool
     {
-        if ($this->owner->persistence === null) {
-            return (string) $this->normalize($this->get()) === (string) $this->normalize($value);
+        if (func_num_args() === 1) {
+            $value2 = $this->get();
         }
 
-        return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $this->get()])[$this->short_name]
-            === (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->short_name];
+        if ($this->owner->persistence === null) {
+            return (string) $this->normalize($value) === (string) $this->normalize($value2);
+        }
+
+        return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->short_name]
+            === (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value2])[$this->short_name];
     }
 
     /**
