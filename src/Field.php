@@ -498,6 +498,9 @@ class Field implements Expressionable
             $value2 = $this->get();
         }
 
+        // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
+        // compare if typecasted values are the same using strict comparison (===) or nor
+
         if ($value === null xor $value2 === null) {
             return false;
         }
