@@ -102,8 +102,8 @@ jobs:
         continue-on-error: true
         run: "vendor/bin/phpunit --configuration phpunit-mssql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
-      - name: "Run tests: Oracle (only for Phpunit)"
-        if: matrix.type == 'Phpunit'
+      - name: "Run tests: Oracle (for PHP < 8.0) (only for Phpunit)"
+        if: matrix.type == 'Phpunit' && matrix.php != '8.0'
         run: "vendor/bin/phpunit --configuration phpunit-oracle.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: Lint / check syntax (only for CodingStyle)
