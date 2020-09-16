@@ -500,30 +500,26 @@ class Field implements Expressionable
 
         // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
         // compare if typecasted values are the same using strict comparison (===) or nor
+        $typecastFunc = function ($v) {
+            if ($this->owner->persistence === null) {
+                $v = $this->normalize($v);
 
-        if ($value === null xor $value2 === null) {
-            return false;
-        }
+                // without persistence, we can not do a lot with non-scalar types, but as DateTime
+                // is used often, fix the compare for them
+                // TODO probably create and use a default persistence
+                if (is_scalar($v)) {
+                    return (string) $v;
+                } elseif ($v instanceof \DateTimeInterface) {
+                    return $v->getTimestamp() . '.' . $v->format('u');
+                }
 
-        if ($this->owner->persistence === null) {
-            $value = $this->normalize($value);
-            $value2 = $this->normalize($value2);
-
-            // without persistence, we can not do a lot with non-scalar types, but as DateTime
-            // is used often, fix the compare for them
-            // TODO probably create and use a default persistence
-            if ($value instanceof \DateTimeInterface) {
-                $value = $value->getTimestamp() . '.' . $value->format('u');
-            }
-            if ($value2 instanceof \DateTimeInterface) {
-                $value2 = $value2->getTimestamp() . '.' . $value2->format('u');
+                return serialize($v);
             }
 
-            return (string) $value === (string) $value2;
-        }
+            return $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $v])[$this->actual ?? $this->short_name];
+        };
 
-        return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->actual ?? $this->short_name]
-            === (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value2])[$this->actual ?? $this->short_name];
+        return $typecastFunc($value) === $typecastFunc($value2);
     }
 
     /**
