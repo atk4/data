@@ -1849,7 +1849,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Model is read-only and cannot be deleted');
         }
 
-        if ($id == $this->getId()) {
+        if ($this->compare($this->id_field, $id)) {
             $id = null;
         }
 
