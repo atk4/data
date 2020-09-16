@@ -489,7 +489,7 @@ class Field implements Expressionable
      *  - comparing images
      *  - if get() is expensive (e.g. retrieve object).
      *
-     * @param mixed $value
+     * @param mixed      $value
      * @param mixed|void $value2
      */
     public function compare($value, $value2 = null): bool
@@ -498,8 +498,25 @@ class Field implements Expressionable
             $value2 = $this->get();
         }
 
+        if ($value === null xor $value2 === null) {
+            return false;
+        }
+
         if ($this->owner->persistence === null) {
-            return (string) $this->normalize($value) === (string) $this->normalize($value2);
+            $value = $this->normalize($value);
+            $value2 = $this->normalize($value2);
+
+            // without persistence, we can not do a lot with non-scalar types, but as DateTime
+            // is used often, fix the compare for them
+            // TODO probably create and use a default persistence
+            if ($value instanceof \DateTimeInterface) {
+                $value = $value->getTimestamp() . '.' . $value->format('u');
+            }
+            if ($value2 instanceof \DateTimeInterface) {
+                $value2 = $value2->getTimestamp() . '.' . $value2->format('u');
+            }
+
+            return (string) $value === (string) $value2;
         }
 
         return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->short_name]
