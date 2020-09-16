@@ -236,7 +236,7 @@ class Field implements Expressionable
     public function normalize($value)
     {
         try {
-            if (!$this->owner->strict_types) {
+            if (!$this->owner->strict_types || $this->owner->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
             }
 
@@ -483,18 +483,47 @@ class Field implements Expressionable
     }
 
     /**
-     * This method can be extended. See Model::compare for use examples.
+     * Compare new value of the field with existing one without retrieving.
+     * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
+     *  - comparing values that can't be received - passwords, encrypted data
+     *  - comparing images
+     *  - if get() is expensive (e.g. retrieve object).
      *
-     * @param mixed $value
+     * @param mixed      $value
+     * @param mixed|void $value2
      */
-    public function compare($value): bool
+    public function compare($value, $value2 = null): bool
     {
-        if ($this->owner->persistence === null) {
-            return (string) $this->normalize($this->get()) === (string) $this->normalize($value);
+        if (func_num_args() === 1) {
+            $value2 = $this->get();
         }
 
-        return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $this->get()])[$this->short_name]
-            === (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->short_name];
+        // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
+        // compare if typecasted values are the same using strict comparison (===) or nor
+
+        if ($value === null xor $value2 === null) {
+            return false;
+        }
+
+        if ($this->owner->persistence === null) {
+            $value = $this->normalize($value);
+            $value2 = $this->normalize($value2);
+
+            // without persistence, we can not do a lot with non-scalar types, but as DateTime
+            // is used often, fix the compare for them
+            // TODO probably create and use a default persistence
+            if ($value instanceof \DateTimeInterface) {
+                $value = $value->getTimestamp() . '.' . $value->format('u');
+            }
+            if ($value2 instanceof \DateTimeInterface) {
+                $value2 = $value2->getTimestamp() . '.' . $value2->format('u');
+            }
+
+            return (string) $value === (string) $value2;
+        }
+
+        return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->actual ?? $this->short_name]
+            === (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value2])[$this->actual ?? $this->short_name];
     }
 
     /**
