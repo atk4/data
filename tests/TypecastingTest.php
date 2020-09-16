@@ -549,13 +549,13 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame([], $m->dirty);
 
         $m->set('i', '1');
-        $this->assertSame(1, $m->dirty['i']);
+        $this->assertSame([], $m->dirty);
 
         $m->set('i', '2');
-        $this->assertSame(1, $m->dirty['i']);
+        $this->assertSame(['i' => 1], $m->dirty);
 
         $m->set('i', '1');
-        $this->assertSame(1, $m->dirty['i']);
+        $this->assertSame([], $m->dirty);
 
         $m->set('i', 1);
         $this->assertSame([], $m->dirty);
