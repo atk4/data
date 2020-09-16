@@ -135,7 +135,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
 
     public function testFailDelete1()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\TypeError::class);
         $this->m->delete(4);
     }
 }
