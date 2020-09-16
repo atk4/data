@@ -680,9 +680,7 @@ class Model implements \IteratorAggregate
         $f = $this->getField($field);
 
         try {
-            if ($this->hook(self::HOOK_NORMALIZE, [$f, $value]) !== false) {
-                $value = $f->normalize($value);
-            }
+            $value = $f->normalize($value);
         } catch (Exception $e) {
             $e->addMoreInfo('field', $field);
             $e->addMoreInfo('value', $value);
@@ -691,12 +689,11 @@ class Model implements \IteratorAggregate
             throw $e;
         }
 
-        $original_value = array_key_exists($field, $this->dirty) ? $this->dirty[$field] : $f->default;
-
-        $current_value = array_key_exists($field, $this->data) ? $this->data[$field] : $original_value;
-
-        if (gettype($value) == gettype($current_value) && $value == $current_value) {
-            // do nothing, value unchanged
+        // do nothing when value has not changed
+        $currentValue = array_key_exists($field, $this->data)
+            ? $this->data[$field]
+            : (array_key_exists($field, $this->dirty) ? $this->dirty[$field] : $f->default);
+        if ($f->compare($value, $currentValue)) {
             return $this;
         }
 
@@ -742,9 +739,7 @@ class Model implements \IteratorAggregate
             }
         }
 
-        if (array_key_exists($field, $this->dirty) && (
-            gettype($this->dirty[$field]) == gettype($value) && $this->dirty[$field] == $value
-        )) {
+        if (array_key_exists($field, $this->dirty) && $f->compare($this->dirty[$field], $value)) {
             unset($this->dirty[$field]);
         } elseif (!array_key_exists($field, $this->dirty)) {
             $this->dirty[$field] = array_key_exists($field, $this->data) ? $this->data[$field] : $f->default;
@@ -893,12 +888,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Compare new value of the field with existing one without retrieving.
-     * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
-     *  - comparing values that can't be received - passwords, encrypted data
-     *  - comparing images
-     *  - if get() is expensive (e.g. retrieve object).
-     *
      * @param mixed $value
      */
     public function compare(string $name, $value): bool
@@ -1798,7 +1787,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Model is read-only and cannot be deleted');
         }
 
-        if ($id == $this->getId()) {
+        if ($this->compare($this->id_field, $id)) {
             $id = null;
         }
 

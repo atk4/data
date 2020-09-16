@@ -359,8 +359,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(2, $ll->get('items_name')); // 2 not-null values
         $this->assertEquals(1, $ll->get('items_code')); // only 1 not-null value
         $this->assertEquals(2, $ll->get('items_star')); // 2 rows in total
-        $this->assertSame('Pork::Chicken', $ll->get('items_c:'));
-        $this->assertSame('Pork-Chicken', $ll->get('items_c-'));
+        $this->assertSame($ll->get('items_c:') === 'Pork::Chicken' ? 'Pork::Chicken' : 'Chicken::Pork', $ll->get('items_c:'));
+        $this->assertSame($ll->get('items_c-') === 'Pork-Chicken' ? 'Pork-Chicken' : 'Chicken-Pork', $ll->get('items_c-'));
         $this->assertEquals(strlen('Chicken') + strlen('Pork'), $ll->get('len'));
         $this->assertEquals(strlen('Chicken') + strlen('Pork'), $ll->get('len2'));
         $this->assertEquals(10, $ll->get('chicken5'));
@@ -403,31 +403,32 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $order = new Model($this->db, 'order');
         $order->addField('company_id');
         $order->addField('description');
-        $order->addField('amount', ['default' => 20]);
+        $order->addField('amount', ['default' => 20, 'type' => 'float']);
 
         $company->hasMany('Orders', [$order]);
 
         $user->load(1);
 
         $firstUserOrders = $user->ref('Company')->ref('Orders');
+        $firstUserOrders->setOrder('id');
 
         $this->assertEquals([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $firstUserOrders->export());
 
         $user->unload();
 
         $this->assertEquals([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $firstUserOrders->export());
 
         $this->assertEquals([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
-            ['id' => '2', 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
-        ], $user->ref('Company')->ref('Orders')->export());
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => '2', 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10.0],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+        ], $user->ref('Company')->ref('Orders')->setOrder('id')->export());
     }
 
     public function testReferenceHook()

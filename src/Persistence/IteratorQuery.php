@@ -262,7 +262,7 @@ class IteratorQuery extends AbstractQuery
             $field = $args[0];
             $operator = $args[1] ?? null;
             $value = $args[2] ?? null;
-            if (count($args) == 2) {
+            if (count($args) === 2) {
                 $value = $operator;
 
                 $operator = Condition::OPERATOR_EQUALS;

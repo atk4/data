@@ -149,7 +149,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->toWords($user));
 
-        if ($this->driverType == 'sqlite') {
+        if ($this->driverType === 'sqlite') {
             $condition = new Condition('name', $user->expr('[surname]'));
 
             $this->assertEquals('Name is equal to expression \'"user"."surname"\'', $condition->toWords($user));
@@ -378,7 +378,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $user->scope()->add($condition);
 
         foreach ($user as $u) {
-            $this->assertTrue($u->get('name') == 'Alain' && $u->get('country_code') == 'FR');
+            $this->assertTrue($u->get('name') === 'Alain' && $u->get('country_code') === 'FR');
         }
     }
 
