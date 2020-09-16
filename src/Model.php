@@ -681,9 +681,7 @@ class Model implements \IteratorAggregate
         $f = $this->getField($field);
 
         try {
-            if ($this->hook(self::HOOK_NORMALIZE, [$f, $value]) !== false) {
-                $value = $f->normalize($value);
-            }
+            $value = $f->normalize($value);
         } catch (Exception $e) {
             $e->addMoreInfo('field', $field);
             $e->addMoreInfo('value', $value);

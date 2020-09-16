@@ -236,7 +236,7 @@ class Field implements Expressionable
     public function normalize($value)
     {
         try {
-            if (!$this->owner->strict_types) {
+            if (!$this->owner->strict_types || $this->owner->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
             }
 
