@@ -74,15 +74,15 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertSame([], $m->dirty);
 
         $m->set('name', '5');
-        $this->assertSame(['name' => 5], $m->dirty);
+        $this->assertSame([], $m->dirty);
 
         $m->set('name', '6');
         $this->assertSame(['name' => 5], $m->dirty);
         $m->set('name', '5');
-        $this->assertSame(['name' => 5], $m->dirty);
+        $this->assertSame([], $m->dirty);
 
         $m->set('name', '5.0');
-        $this->assertSame(['name' => 5], $m->dirty);
+        $this->assertSame(['name' => '5'], $m->dirty);
 
         $m->dirty = [];
         $m->data = ['name' => ''];
@@ -91,17 +91,17 @@ class BusinessModelTest extends AtkPhpunit\TestCase
 
         $m->data = ['name' => '5'];
         $m->set('name', 5);
-        $this->assertSame(['name' => '5'], $m->dirty);
+        $this->assertSame([], $m->dirty);
         $m->set('name', 6);
         $this->assertSame(['name' => '5'], $m->dirty);
         $m->set('name', 5);
-        $this->assertSame(['name' => '5'], $m->dirty);
+        $this->assertSame([], $m->dirty);
         $m->set('name', '5');
         $this->assertSame([], $m->dirty);
 
         $m->data = ['name' => 4.28];
         $m->set('name', '4.28');
-        $this->assertSame(['name' => 4.28], $m->dirty);
+        $this->assertSame([], $m->dirty);
         $m->set('name', '5.28');
         $this->assertSame(['name' => 4.28], $m->dirty);
         $m->set('name', 4.28);
