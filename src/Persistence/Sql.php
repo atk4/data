@@ -482,9 +482,9 @@ class Sql extends Persistence
                 break;
             case 'boolean':
                 if (is_array($field->enum ?? null)) {
-                    if (isset($field->enum[0]) && $v == $field->enum[0]) {
+                    if (isset($field->enum[0]) && $v === $field->enum[0]) {
                         $v = false;
-                    } elseif (isset($field->enum[1]) && $v == $field->enum[1]) {
+                    } elseif (isset($field->enum[1]) && $v === $field->enum[1]) {
                         $v = true;
                     } else {
                         $v = null;
