@@ -61,7 +61,7 @@ class Array_ extends Persistence
     {
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
-            $idColumnName = $idField->actual ?? $idField->short_name;
+            $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$idColumnName], $id);
                 unset($row[$idColumnName]);
@@ -75,7 +75,7 @@ class Array_ extends Persistence
     {
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
-            $idColumnName = $idField->actual ?? $idField->short_name;
+            $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$idColumnName], $id);
             }
