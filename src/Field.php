@@ -522,8 +522,13 @@ class Field implements Expressionable
             return (string) $value === (string) $value2;
         }
 
-        return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->actual ?? $this->short_name]
-            === (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value2])[$this->actual ?? $this->short_name];
+        return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->getPersistenceName()]
+                === (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value2])[$this->getPersistenceName()];
+    }
+
+    public function getPersistenceName(): string
+    {
+        return $this->actual ?? $this->short_name;
     }
 
     /**
