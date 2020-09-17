@@ -211,7 +211,7 @@ class Join
             }
         }
 
-        $this->owner->onHook(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+        $this->onHookToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
     }
 
     /**

@@ -77,7 +77,7 @@ class Field implements Expressionable
     /**
      * Join object.
      *
-     * @var Join|null
+     * @var Model\Join|null
      */
     public $join;
 

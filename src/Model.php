@@ -356,6 +356,13 @@ class Model implements \IteratorAggregate
         $this->_cloneCollection('fields');
         $this->_cloneCollection('userActions');
 
+        // update links with newly cloned joins
+        foreach ($this->fields as $field) {
+            if ($field->join !== null) {
+                $field->join = $this->getElement($field->join->short_name);
+            }
+        }
+
         // check for clone errors immediately, otherwise not strictly needed
         $this->_rebindHooksIfCloned();
     }

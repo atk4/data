@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace atk4\data\Reference;
 
 use atk4\data\Field;
-use atk4\data\Join;
 use atk4\data\Model;
 use atk4\data\Reference;
 
@@ -36,7 +35,7 @@ class HasOne extends Reference
     /**
      * Points to the join if we are part of one.
      *
-     * @var Join|null
+     * @var Model\Join|null
      */
     protected $join;
 
