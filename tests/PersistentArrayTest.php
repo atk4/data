@@ -694,7 +694,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->export();
     }
 
-    public function testImport()
+    public function testImportAndAutoincrement()
     {
         $p = new Persistence\Array_([]);
         $m = new Model($p);
@@ -707,31 +707,31 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame(2, $m->action('count')->getOne());
 
         $m->import([
-            ['f1' => 'C'], // id will be 3
-            ['f1' => 'D'], // id will be 4
+            ['f1' => 'C'],
+            ['f1' => 'D'],
         ]);
         $this->assertSame(4, $m->action('count')->getOne());
 
         $m->import([
-            ['id' => 6, 'f1' => 'E'], // id should be 6 not 5 as per sequence
-            ['id' => 7, 'f1' => 'F'], // id should be 7 not 6 as per sequence
+            ['id' => 6, 'f1' => 'E'],
+            ['id' => 7, 'f1' => 'F'],
         ]);
         $this->assertSame(6, $m->action('count')->getOne());
 
         $m->import([
-            ['f1' => 'G'], // id will be 8
-            ['f1' => 'H'], // id will be 9
+            ['f1' => 'G'],
+            ['f1' => 'H'],
         ]);
         $this->assertSame(8, $m->action('count')->getOne());
 
         $m->import([
-            ['id' => 99, 'f1' => 'I'], // id will be 99
-            ['id' => 20, 'f1' => 'J'], // id will be 20
+            ['id' => 99, 'f1' => 'I'],
+            ['id' => 20, 'f1' => 'J'],
         ]);
         $this->assertSame(10, $m->action('count')->getOne());
 
         $m->import([
-            ['f1' => 'K'], // id will be 100 (max + 1)
+            ['f1' => 'K'],
         ]);
         $this->assertSame(11, $m->action('count')->getOne());
 
@@ -740,7 +740,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             2 => ['id' => 2, 'f1' => 'B'],
             3 => ['id' => 3, 'f1' => 'C'],
             4 => ['id' => 4, 'f1' => 'D'],
-            // we skipped id=5
             6 => ['id' => 6, 'f1' => 'E'],
             7 => ['id' => 7, 'f1' => 'F'],
             8 => ['id' => 8, 'f1' => 'G'],
