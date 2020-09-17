@@ -33,6 +33,8 @@ class Scope extends Scope\AbstractScope
      */
     public function __construct(array $nestedConditions = [], string $junction = self::AND)
     {
+        parent::__construct();
+
         if (!in_array($junction, [self::OR, self::AND], true)) {
             throw (new Exception('Using invalid CompondCondition junction'))
                 ->addMoreInfo('junction', $junction);
@@ -56,11 +58,8 @@ class Scope extends Scope\AbstractScope
 
     public function __clone()
     {
-        foreach ($this->elements as $k => $nestedCondition) {
-            $this->elements[$k] = clone $nestedCondition;
-            $this->elements[$k]->owner = $this;
-            $this->elements[$k]->short_name = $nestedCondition->short_name;
-        }
+        parent::__clone();
+
         $this->owner = null;
         $this->short_name = null;
     }

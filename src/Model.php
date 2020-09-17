@@ -38,6 +38,9 @@ class Model implements \IteratorAggregate
     use Model\ReferencesTrait;
     use Model\JoinsTrait;
     use Model\UserActionsTrait;
+    use SuperCloneTrait {
+        __clone as superclone__clone;
+    }
 
     /** @const string */
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
@@ -324,6 +327,8 @@ class Model implements \IteratorAggregate
      */
     public function __construct($persistence = null, $defaults = [])
     {
+        $this->saveThisBackup();
+
         $this->scope = \Closure::bind(function () {
             return new Model\Scope\RootScope();
         }, null, Model\Scope\RootScope::class)();
@@ -349,22 +354,13 @@ class Model implements \IteratorAggregate
         }
     }
 
-    /**
-     * Clones model object.
-     */
     public function __clone()
     {
-        $this->scope = (clone $this->scope)->setModel($this);
-        $this->_cloneCollection('elements');
-        $this->_cloneCollection('fields');
-        $this->_cloneCollection('userActions');
+        $this->superclone__clone();
 
-        // update links with newly cloned joins
-        foreach ($this->fields as $field) {
-            if ($field->join !== null) {
-                $field->join = $this->getElement($field->join->short_name);
-            }
-        }
+        // TODO should not be needed with super clone
+        // but there is owner and name unset...
+//        $this->scope = $this->scope->setModel($this);
 
         // check for clone errors immediately, otherwise not strictly needed
         $this->_rebindHooksIfCloned();

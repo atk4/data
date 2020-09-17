@@ -100,6 +100,8 @@ class Condition extends AbstractScope
 
     public function __construct($key, $operator = null, $value = null)
     {
+        parent::__construct();
+
         if ($key instanceof AbstractScope) {
             throw new Exception('Only Scope can contain another conditions');
         } elseif ($key instanceof Field) { // for BC

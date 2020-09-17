@@ -8,6 +8,7 @@ use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
 use atk4\data\Exception;
 use atk4\data\Model;
+use atk4\data\SuperCloneTrait;
 
 /**
  * @property Scope $owner
@@ -18,6 +19,12 @@ abstract class AbstractScope
         init as _init;
     }
     use TrackableTrait;
+    use SuperCloneTrait;
+
+    public function __construct()
+    {
+        $this->saveThisBackup();
+    }
 
     /**
      * Method is executed when the scope is added to parent scope using Scope::add

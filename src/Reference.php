@@ -21,6 +21,7 @@ class Reference
     use \atk4\core\TrackableTrait;
     use \atk4\core\DiContainerTrait;
     use \atk4\core\FactoryTrait;
+    use SuperCloneTrait;
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -81,6 +82,8 @@ class Reference
      */
     public function __construct($link)
     {
+        $this->saveThisBackup();
+
         $this->link = $link;
     }
 

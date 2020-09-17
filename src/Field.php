@@ -21,6 +21,7 @@ class Field implements Expressionable
     use TrackableTrait;
     use DiContainerTrait;
     use ReadableCaptionTrait;
+    use SuperCloneTrait;
 
     // {{{ Properties
 
@@ -214,6 +215,8 @@ class Field implements Expressionable
      */
     public function __construct(array $defaults = [])
     {
+        $this->saveThisBackup();
+
         foreach ($defaults as $key => $val) {
             if (is_array($val)) {
                 $this->{$key} = array_merge(is_array($this->{$key} ?? null) ? $this->{$key} : [], $val);

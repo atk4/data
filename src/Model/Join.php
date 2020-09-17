@@ -11,6 +11,7 @@ use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 use atk4\data\Reference;
+use atk4\data\SuperCloneTrait;
 
 /**
  * Proivides generic functionality for joining data.
@@ -24,6 +25,7 @@ class Join
         init as _init;
     }
     use DiContainerTrait;
+    use SuperCloneTrait;
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
@@ -143,6 +145,8 @@ class Join
      */
     public function __construct($foreign_table = null)
     {
+        $this->saveThisBackup();
+
         if ($foreign_table !== null) {
             $this->foreign_table = $foreign_table;
         }
@@ -151,6 +155,13 @@ class Join
     protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->short_name; // use static function to allow this object to be GCed
+
+        if ($this !== (static function (Model $owner) use ($name) {
+                return $owner->getElement($name);
+            })($this->owner)) {
+            // never reached with the wole test suite
+            throw new \Error('not the same');
+        }
 
         return $this->owner->onHookDynamic(
             $spot,
