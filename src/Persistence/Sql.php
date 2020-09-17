@@ -927,19 +927,19 @@ class Sql extends Persistence
                 $field->join
                     ? ($field->join->foreign_alias ?: $field->join->short_name)
                     : ($field->owner->table_alias ?: $field->owner->table),
-                $field->actual ?: $field->short_name,
+                $field->getPersistenceName(),
             ];
         } else {
             // references set flag use_table_prefixes, so no need to check them here
             $mask = '{}';
             $prop = [
-                $field->actual ?: $field->short_name,
+                $field->getPersistenceName(),
             ];
         }
 
         // If our Model has expr() method (inherited from Persistence\Sql) then use it
         if ($field->owner->hasMethod('expr')) {
-            $field->owner->expr($mask, $prop);
+            return $field->owner->expr($mask, $prop);
         }
 
         // Otherwise call method from expression

@@ -527,6 +527,11 @@ class Field implements Expressionable
         return $typecastFunc($value) === $typecastFunc($value2);
     }
 
+    public function getPersistenceName(): string
+    {
+        return $this->actual ?? $this->short_name;
+    }
+
     /**
      * Should this field use alias?
      */
