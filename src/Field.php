@@ -521,7 +521,7 @@ class Field implements Expressionable
                 return serialize($v);
             }
 
-            return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $v])[$this->actual ?? $this->short_name];
+            return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $v])[$this->getPersistenceName()];
         };
 
         return $typecastFunc($value) === $typecastFunc($value2);
