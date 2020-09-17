@@ -541,7 +541,7 @@ class Model implements \IteratorAggregate
                 continue;
             }
 
-            $seed = array_merge($defaults, (array) $field);
+            $seed = is_object($field) ? $field : array_merge($defaults, (array) $field);
 
             $this->addField($name, $seed);
         }
