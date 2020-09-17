@@ -267,8 +267,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $this->assertSame([
-            1 => ['name' => 'John', 'surname' => 'Smith'],
-            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            2 => ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
         $this->assertSame([
@@ -687,10 +687,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     {
         // order by one field ascending
         $p = new Persistence\Array_([
-            ['f1' => 'A'],
-            ['f1' => 'D'],
-            ['f1' => 'E'],
-            ['f1' => 'C'],
+            0 => ['f1' => 'A'],
+            1 => ['f1' => 'D'],
+            2 => ['f1' => 'E'],
+            3 => ['f1' => 'C'],
         ]);
         $m = new Model($p);
         $m->addField('f1');
@@ -700,16 +700,16 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->setLimit(3);
         $this->assertSame(3, $m->action('count')->getOne());
         $this->assertSame([
-            ['f1' => 'A'],
-            ['f1' => 'D'],
-            ['f1' => 'E'],
+            ['id' => 0, 'f1' => 'A'],
+            ['id' => 1, 'f1' => 'D'],
+            ['id' => 2, 'f1' => 'E'],
         ], array_values($m->export()));
 
         $m->setLimit(2, 1);
         $this->assertSame(2, $m->action('count')->getOne());
         $this->assertSame([
-            ['f1' => 'D'],
-            ['f1' => 'E'],
+            ['id' => 1, 'f1' => 'D'],
+            ['id' => 2, 'f1' => 'E'],
         ], array_values($m->export()));
 
         // well, this is strange, that you can actually change limit on-the-fly and then previous
@@ -741,8 +741,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $m->addCondition('surname', 'Smith');
         $this->assertSame(1, $m->action('count')->getOne());
-        $this->assertSame([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->export());
-        $this->assertSame([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->action('select')->get());
+        $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->export());
+        $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->action('select')->get());
 
         $m->addCondition('surname', 'Siiiith');
         $this->assertSame(0, $m->action('count')->getOne());

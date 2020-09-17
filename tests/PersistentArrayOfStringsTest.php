@@ -54,6 +54,7 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
         // no typecasting option set in export()
         $data = $m->export(null, null, false);
         $this->assertSame([1 => [
+            'id' => 1,
             'string' => 'TwoLines',
             'text' => "Two\nLines",
             'integer' => '123',
