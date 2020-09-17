@@ -313,7 +313,7 @@ class Array_ extends Persistence
     public function initAction(Model $model, array $fields = null): \atk4\data\Action\Iterator
     {
         $data = $this->data[$model->table];
-        array_walk($data, function ($row, $id) use ($model) {
+        array_walk($data, function (&$row, $id) use ($model) {
             $this->addIdToLoadRow($model, $row, $id);
         });
 
