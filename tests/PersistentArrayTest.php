@@ -724,6 +724,17 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         ]);
         $this->assertSame(8, $m->action('count')->getOne());
 
+        $m->import([
+            ['id' => 99, 'f1' => 'I'], // id will be 99
+            ['id' => 20, 'f1' => 'J'], // id will be 20
+        ]);
+        $this->assertSame(10, $m->action('count')->getOne());
+
+        $m->import([
+            ['f1' => 'K'], // id will be 100 (max + 1)
+        ]);
+        $this->assertSame(11, $m->action('count')->getOne());
+
         $this->assertSame([
             1 => ['id' => 1, 'f1' => 'A'],
             2 => ['id' => 2, 'f1' => 'B'],
@@ -734,6 +745,9 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             7 => ['id' => 7, 'f1' => 'F'],
             8 => ['id' => 8, 'f1' => 'G'],
             9 => ['id' => 9, 'f1' => 'H'],
+            99 => ['id' => 99, 'f1' => 'I'],
+            20 => ['id' => 20, 'f1' => 'J'],
+            100 => ['id' => 100, 'f1' => 'K'],
         ], $m->export());
     }
 
