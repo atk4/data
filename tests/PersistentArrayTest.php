@@ -680,6 +680,63 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }
 
+    public function testNoKeyException()
+    {
+        $p = new Persistence\Array_([
+            ['id' => 3, 'f1' => 'A'],
+            ['id' => 5, 'f1' => 'D'],
+        ]);
+        $m = new Model($p);
+        $m->addField('f1');
+
+        // array keys do not match id field value
+        $this->expectException(Exception::class);
+        $m->export();
+    }
+
+    public function testImport()
+    {
+        $p = new Persistence\Array_([]);
+        $m = new Model($p);
+        $m->addField('f1');
+
+        $m->import([
+            ['id' => 1, 'f1' => 'A'],
+            ['id' => 2, 'f1' => 'B'],
+        ]);
+        $this->assertSame(2, $m->action('count')->getOne());
+
+        $m->import([
+            ['f1' => 'C'], // id will be 3
+            ['f1' => 'D'], // id will be 4
+        ]);
+        $this->assertSame(4, $m->action('count')->getOne());
+
+        $m->import([
+            ['id' => 6, 'f1' => 'E'], // id should be 6 not 5 as per sequence
+            ['id' => 7, 'f1' => 'F'], // id should be 7 not 6 as per sequence
+        ]);
+        $this->assertSame(6, $m->action('count')->getOne());
+
+        $m->import([
+            ['f1' => 'G'], // id will be 8
+            ['f1' => 'H'], // id will be 9
+        ]);
+        $this->assertSame(8, $m->action('count')->getOne());
+
+        $this->assertSame([
+            1 => ['id' => 1, 'f1' => 'A'],
+            2 => ['id' => 2, 'f1' => 'B'],
+            3 => ['id' => 3, 'f1' => 'C'],
+            4 => ['id' => 4, 'f1' => 'D'],
+            // we skipped id=5
+            6 => ['id' => 6, 'f1' => 'E'],
+            7 => ['id' => 7, 'f1' => 'F'],
+            8 => ['id' => 8, 'f1' => 'G'],
+            9 => ['id' => 9, 'f1' => 'H'],
+        ], $m->export());
+    }
+
     /**
      * Test Model->setLimit().
      */
@@ -687,10 +744,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     {
         // order by one field ascending
         $p = new Persistence\Array_([
-            0 => ['f1' => 'A'],
-            1 => ['f1' => 'D'],
-            2 => ['f1' => 'E'],
-            3 => ['f1' => 'C'],
+            ['f1' => 'A'],
+            ['f1' => 'D'],
+            ['f1' => 'E'],
+            ['f1' => 'C'],
         ]);
         $m = new Model($p);
         $m->addField('f1');

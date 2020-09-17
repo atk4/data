@@ -198,7 +198,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $id = $this->generateNewId($model, $table);
+        $id = $data[$model->id_field] ?? $this->generateNewId($model, $table);
 
         $this->saveRow($model, $data, $id, $table);
 
