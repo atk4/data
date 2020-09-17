@@ -501,6 +501,11 @@ class Field implements Expressionable
         // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
         // compare if typecasted values are the same using strict comparison (===) or nor
         $typecastFunc = function ($v) {
+            // do not typecast null values, because that implies calling normalize() which tries to validate that value can't be null in case field value is required
+            if ($v === null) {
+                return $v;
+            }
+
             if ($this->owner->persistence === null) {
                 $v = $this->normalize($v);
 
@@ -516,7 +521,7 @@ class Field implements Expressionable
                 return serialize($v);
             }
 
-            return $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $v])[$this->actual ?? $this->short_name];
+            return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $v])[$this->actual ?? $this->short_name];
         };
 
         return $typecastFunc($value) === $typecastFunc($value2);
