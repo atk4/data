@@ -298,6 +298,9 @@ class Model implements \IteratorAggregate
      */
     public $contained_in_root_model;
 
+    /** @var Reference Only for Reference class */
+    public $ownerReference;
+
     // }}}
 
     // {{{ Basic Functionality, field definition, set() and get()
@@ -355,6 +358,16 @@ class Model implements \IteratorAggregate
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
         $this->_cloneCollection('userActions');
+
+        // update links with newly cloned joins
+        foreach ($this->fields as $field) {
+            if ($field->join !== null) {
+                $field->join = $this->getElement($field->join->short_name);
+            }
+        }
+
+        // check for clone errors immediately, otherwise not strictly needed
+        $this->_rebindHooksIfCloned();
     }
 
     /**
@@ -415,35 +428,35 @@ class Model implements \IteratorAggregate
 
     private function initEntityHooks(): void
     {
-        $checkFx = function (self $model) {
-            if ($model->getId() === null) { // allow unload
+        $checkFx = function () {
+            if ($this->getId() === null) { // allow unload
                 return;
             }
 
-            if ($model->entityId === null) {
-                $model->entityId = $model->getId();
+            if ($this->entityId === null) {
+                $this->entityId = $this->getId();
             } else {
-                if (!$model->compare($this->id_field, $model->entityId)) {
-                    $newId = $model->getId();
-                    $model->unload(); // data for different ID were loaded, make sure to discard them
+                if (!$this->compare($this->id_field, $this->entityId)) {
+                    $newId = $this->getId();
+                    $this->unload(); // data for different ID were loaded, make sure to discard them
 
                     throw (new Exception('Model is loaded as an entity, ID can not be changed to a different one'))
-                        ->addMoreInfo('entityId', $model->entityId)
+                        ->addMoreInfo('entityId', $this->entityId)
                         ->addMoreInfo('newId', $newId);
                 }
             }
         };
 
-        $this->onHook(self::HOOK_BEFORE_LOAD, $checkFx, [], 10);
-        $this->onHook(self::HOOK_AFTER_LOAD, $checkFx, [], -10);
-        $this->onHook(self::HOOK_BEFORE_INSERT, $checkFx, [], 10);
-        $this->onHook(self::HOOK_AFTER_INSERT, $checkFx, [], -10);
-        $this->onHook(self::HOOK_BEFORE_UPDATE, $checkFx, [], 10);
-        $this->onHook(self::HOOK_AFTER_UPDATE, $checkFx, [], -10);
-        $this->onHook(self::HOOK_BEFORE_DELETE, $checkFx, [], 10);
-        $this->onHook(self::HOOK_AFTER_DELETE, $checkFx, [], -10);
-        $this->onHook(self::HOOK_BEFORE_SAVE, $checkFx, [], 10);
-        $this->onHook(self::HOOK_AFTER_SAVE, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_LOAD, $checkFx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_LOAD, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_INSERT, $checkFx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_INSERT, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_UPDATE, $checkFx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_UPDATE, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_DELETE, $checkFx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_DELETE, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_SAVE, $checkFx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_SAVE, $checkFx, [], -10);
     }
 
     /**
@@ -758,7 +771,7 @@ class Model implements \IteratorAggregate
     public function setNull(string $field)
     {
         // set temporary hook to disable any normalization (null validation)
-        $hookIndex = $this->onHook(self::HOOK_NORMALIZE, function () {
+        $hookIndex = $this->onHookShort(self::HOOK_NORMALIZE, static function () {
             throw new \atk4\core\HookBreaker(false);
         }, [], PHP_INT_MIN);
         try {
@@ -1772,7 +1785,7 @@ class Model implements \IteratorAggregate
 
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:
-            // $model->onHook(self::HOOK_AFTER_LOAD, function ($m) {
+            // $model->onHook(self::HOOK_AFTER_LOAD, static function ($m) {
             //     if ($m->get('date') < $m->date_from) $m->breakHook(false);
             // })
 

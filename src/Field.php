@@ -77,7 +77,7 @@ class Field implements Expressionable
     /**
      * Join object.
      *
-     * @var Join|null
+     * @var Model\Join|null
      */
     public $join;
 
@@ -221,6 +221,21 @@ class Field implements Expressionable
                 $this->{$key} = $val;
             }
         }
+    }
+
+    protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $this->owner->onHookDynamic(
+            $spot,
+            static function (Model $owner) use ($name) {
+                return $owner->getField($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
     }
 
     /**

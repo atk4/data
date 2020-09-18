@@ -111,7 +111,7 @@ class ValidationTests extends AtkPhpunit\TestCase
 
     public function testValidateHook()
     {
-        $this->m->onHook(Model::HOOK_VALIDATE, function ($m) {
+        $this->m->onHook(Model::HOOK_VALIDATE, static function ($m) {
             if ($m->get('name') === 'C#') {
                 return ['name' => 'No sharp objects allowed'];
             }
