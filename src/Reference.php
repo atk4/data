@@ -84,6 +84,38 @@ class Reference
         $this->link = $link;
     }
 
+    protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $model->onHookDynamic(
+            $spot,
+            static function (Model $model) use ($name) {
+                return $model->getElement($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
+    }
+
+    protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        // TODO is this even safe? is model guaranteed to be always unique here? (eg. always cloned?)
+        $model->ownerReference = $this;
+        $getThisFx = static function (Model $model) {
+            return $model->ownerReference;
+        };
+
+        return $model->onHookDynamic(
+            $spot,
+            $getThisFx,
+            $fx,
+            $args,
+            $priority
+        );
+    }
+
     /**
      * Initialization.
      */
@@ -134,23 +166,21 @@ class Reference
                 // if model is set, then use clone of this model
                 $theirModel = clone $this->model;
             }
-
-            return $this->addToPersistence($theirModel, $defaults);
-        }
-
-        // add model from seed
-        if (is_array($this->model)) {
-            $modelDefaults = $this->model;
-            $theirModelSeed = [$modelDefaults[0]];
-
-            unset($modelDefaults[0]);
-
-            $defaults = array_merge($modelDefaults, $defaults);
         } else {
-            $theirModelSeed = [$this->model];
-        }
+            // add model from seed
+            if (is_array($this->model)) {
+                $modelDefaults = $this->model;
+                $theirModelSeed = [$modelDefaults[0]];
 
-        $theirModel = $this->factory($theirModelSeed, $defaults);
+                unset($modelDefaults[0]);
+
+                $defaults = array_merge($modelDefaults, $defaults);
+            } else {
+                $theirModelSeed = [$this->model];
+            }
+
+            $theirModel = $this->factory($theirModelSeed, $defaults);
+        }
 
         return $this->addToPersistence($theirModel, $defaults);
     }
