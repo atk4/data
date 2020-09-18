@@ -954,6 +954,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
         $m->tryLoadAny();
-        $this->assertSame(2, $m->id);
+        $this->assertSame(2, $m->getId());
     }
 }
