@@ -922,4 +922,38 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $cc = (clone $country)->load(2);
         $this->assertSame(1, $cc->ref('Users')->action('count')->getOne());
     }
+
+    public function testLoadAnyThrowsExceptionOnRecordNotFound()
+    {
+        $p = new Persistence\Array_();
+        $m = new Model($p);
+        $m->addField('name');
+        $this->expectExceptionCode(404);
+        $m->loadAny();
+    }
+
+    public function testTryLoadAnyNotThrowsExceptionOnRecordNotFound()
+    {
+        $p = new Persistence\Array_();
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+        $m->tryLoadAny();
+        $this->assertFalse($m->loaded());
+    }
+
+    public function testTryLoadAnyReturnsFirstRecord()
+    {
+        $a = [
+            2 => ['name' => 'John', 'surname' => 'Smith'],
+            3 => ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+        $m->tryLoadAny();
+        $this->assertSame(2, $m->getId());
+    }
 }
