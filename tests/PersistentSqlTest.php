@@ -69,7 +69,7 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
-
+exit;
         $mm = (clone $m)->load($ids[0]);
         $this->assertSame('John', $mm->get('name'));
 

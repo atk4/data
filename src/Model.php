@@ -1511,7 +1511,8 @@ class Model implements \IteratorAggregate
             if ($this->hook(self::HOOK_BEFORE_SAVE, [$is_update]) === false) {
                 return $this;
             }
-
+            var_dump($this);
+            var_dump($this->entityId);
             if ($is_update) {
                 $data = [];
                 $dirty_join = false;
