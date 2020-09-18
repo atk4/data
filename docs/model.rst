@@ -391,8 +391,8 @@ a hook::
 
    $this->addField('name');
 
-   $this->onHook(Model::HOOK_VALIDATE, function($m) {
-      if ($m->get('name') === 'C#') {
+   $this->onHookShort(Model::HOOK_VALIDATE, function() {
+      if ($this->get('name') === 'C#') {
          return ['name'=>'No sharp objects are allowed'];
       }
    });
@@ -437,8 +437,8 @@ action - `send_gift`.
 There are some advanced techniques like "SubTypes" or class substitution,
 for example, this hook may be placed in the "User" class init()::
 
-   $this->onHook(Model::HOOK_AFTER_LOAD, function($m) {
-      if ($m->get('purchases') > 1000) {
+   $this->onHookShort(Model::HOOK_AFTER_LOAD, function() {
+      if ($this->get('purchases') > 1000) {
          $this->breakHook($this->asModel(VipUser::class);
       }
    });
@@ -718,7 +718,7 @@ ID Field
     This will update existing record with new $id. If you want to save your
     current field over another existing record then::
 
-        $m->id = $new_id;
+        $m->setId($new_id);
         $m->save();
 
     You must remember that only dirty fields are saved, though. (We might add

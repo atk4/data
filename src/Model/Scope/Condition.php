@@ -102,9 +102,13 @@ class Condition extends AbstractScope
     {
         if ($key instanceof AbstractScope) {
             throw new Exception('Only Scope can contain another conditions');
+        } elseif ($key instanceof Field) { // for BC
+            $key = $key->short_name;
+        } elseif (!is_string($key) && !($key instanceof Expression) && !($key instanceof Expressionable)) {
+            throw new Exception('Field must be a string or an instance of Expression');
         }
 
-        if (func_num_args() == 1 && is_bool($key)) {
+        if (func_num_args() === 1 && is_bool($key)) {
             if ($key) {
                 return;
             }
@@ -112,7 +116,7 @@ class Condition extends AbstractScope
             $key = new Expression('false');
         }
 
-        if (func_num_args() == 2) {
+        if (func_num_args() === 2) {
             $value = $operator;
             $operator = self::OPERATOR_EQUALS;
         }
@@ -120,7 +124,12 @@ class Condition extends AbstractScope
         $this->key = $key;
         $this->value = $value;
 
-        if ($operator !== null) {
+        if ($operator === null) {
+            // at least MSSQL database always requires an operator
+            if (!($key instanceof Expression) && !($key instanceof Expressionable)) {
+                throw new Exception('Operator must be specified');
+            }
+        } else {
             $this->operator = strtoupper((string) $operator);
 
             if (!array_key_exists($this->operator, self::$operators)) {
@@ -200,8 +209,8 @@ class Condition extends AbstractScope
                         } else {
                             $refModel->addCondition($field, $operator, $value);
                             $field = $refModel->action('exists');
-                            $operator = null;
-                            $value = null;
+                            $operator = '>';
+                            $value = 0;
                         }
                     }
                 } else {
@@ -290,11 +299,10 @@ class Condition extends AbstractScope
 
                 if ($field === '#') {
                     $words[] = $this->operator ? 'number of records' : 'any referenced record exists';
-                    $field = null;
                 }
             }
 
-            if ($field !== null) {
+            if ($model->hasField($field)) {
                 $field = $model->getField($field);
             }
         }
@@ -352,7 +360,9 @@ class Condition extends AbstractScope
                 }
             }
 
-            $field = $model->getField($field);
+            if ($model->hasField($field)) {
+                $field = $model->getField($field);
+            }
         }
 
         // use the referenced model title if such exists

@@ -39,12 +39,12 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
      */
     public function testBasic()
     {
-        $this->m->tryLoadAny();
-        $this->assertSame('John', $this->m->get('name'));
+        $mm = (clone $this->m)->tryLoadAny();
+        $this->assertSame('John', $mm->get('name'));
 
         $this->m->setOrder('name', 'desc');
-        $this->m->tryLoadAny();
-        $this->assertSame('Sue', $this->m->get('name'));
+        $mm = (clone $this->m)->tryLoadAny();
+        $this->assertSame('Sue', $mm->get('name'));
 
         $this->assertEquals([1 => 'John', 2 => 'Sue'], $this->m->getTitles());
     }

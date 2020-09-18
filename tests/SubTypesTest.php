@@ -53,8 +53,8 @@ class StAccount extends Model
     public function transferTo(self $account, $amount)
     {
         $out = $this->ref('Transactions:TransferOut')->save(['amount' => $amount]);
-        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->id]);
-        $out->set('link_id', $in->id);
+        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->getId()]);
+        $out->set('link_id', $in->getId());
         $out->save();
     }
 }
@@ -76,11 +76,11 @@ class StGenericTransaction extends Model
         }
         $this->addField('amount', ['type' => 'money']);
 
-        $this->onHook(Model::HOOK_AFTER_LOAD, function (self $m) {
-            if (static::class !== $m->getClassName()) {
-                $cl = $m->getClassName();
-                $cl = new $cl($m->persistence);
-                $cl->load($m->id);
+        $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
+            if (static::class !== $this->getClassName()) {
+                $cl = $this->getClassName();
+                $cl = new $cl($this->persistence);
+                $cl->load($this->getId());
 
                 $this->breakHook($cl);
             }

@@ -49,9 +49,23 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
         $n = [];
         foreach ($this->m as $row) {
             $n[] = $row->get('name');
-            $this->assertNull($row->id);
         }
         $this->assertSame(['Sue', 'John'], $n);
+    }
+
+    public function testGetIdException()
+    {
+        $this->m->loadAny();
+        $this->expectException(Exception::class);
+        $this->expectErrorMessage('ID field is not defined');
+        $this->m->dummy = $this->m->getId();
+    }
+
+    public function testSetIdException()
+    {
+        $this->expectException(Exception::class);
+        $this->expectErrorMessage('ID field is not defined');
+        $this->m->setId(1);
     }
 
     public function testFail1()
@@ -121,28 +135,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
 
     public function testFailDelete1()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\TypeError::class);
         $this->m->delete(4);
-    }
-
-    /**
-     * Additional checks are done if ID is manually set.
-     */
-    public function testFailDelete2()
-    {
-        $this->m->id = 4;
-        $this->expectException(Exception::class);
-        $this->m->delete();
-    }
-
-    /**
-     * Additional checks are done if ID is manually set.
-     */
-    public function testFailUpdate()
-    {
-        $this->m->id = 1;
-        $this->m->set('name', 'foo');
-        $this->expectException(Exception::class);
-        $this->m->saveAndUnload();
     }
 }

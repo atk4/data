@@ -28,7 +28,7 @@ class _Template extends \atk4\schema\PhpunitTestCase
         $m->addField('name');
         $m->load(2);
 
-        $this->assertNotNull($m->id);
+        $this->assertNotNull($m->getId());
 
         $this->assertSame($a, $this->getDb());
     }

@@ -87,16 +87,14 @@ class ContainsOne extends Reference
         $ourModel = $this->getOurModel();
 
         // get model
-        // will not use ID field
         $theirModel = $this->getTheirModel(array_merge($defaults, [
             'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
-            'id_field' => false,
             'table' => $this->table_alias,
         ]));
 
         // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $theirModel->onHook($spot, function ($theirModel) {
+            $this->onHookToTheirModel($theirModel, $spot, function ($theirModel) {
                 $row = $theirModel->persistence->getRawDataByTable($theirModel, $this->table_alias);
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
                 $this->getOurModel()->save([$this->getOurFieldName() => $row]);

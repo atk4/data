@@ -50,6 +50,7 @@ class Persistence
 
                 // no break
             case 'pgsql':
+            case 'sqlsrv':
             case 'dumper':
             case 'counter':
             case 'sqlite':
@@ -136,27 +137,24 @@ class Persistence
      *     'is_married'=>1
      *   ]
      */
-    public function typecastSaveRow(Model $m, array $row): array
+    public function typecastSaveRow(Model $model, array $row): array
     {
         $result = [];
-        foreach ($row as $key => $value) {
+        foreach ($row as $fieldName => $value) {
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
-            if (!$m->hasField($key)) {
-                $result[$key] = $value;
+            if (!$model->hasField($fieldName)) {
+                $result[$fieldName] = $value;
 
                 continue;
             }
 
             // Look up field object
-            $f = $m->getField($key);
-
-            // Figure out the name of the destination field
-            $field = isset($f->actual) && $f->actual ? $f->actual : $key;
+            $field = $model->getField($fieldName);
 
             // check null values for mandatory fields
-            if ($value === null && $f->mandatory) {
-                throw new ValidationException([$key => 'Mandatory field value cannot be null']);
+            if ($value === null && $field->mandatory) {
+                throw new ValidationException([$fieldName => 'Mandatory field value cannot be null']);
             }
 
             // Expression and null cannot be converted.
@@ -165,23 +163,23 @@ class Persistence
                 $value instanceof \atk4\dsql\Expressionable ||
                 $value === null
             ) {
-                $result[$field] = $value;
+                $result[$field->getPersistenceName()] = $value;
 
                 continue;
             }
 
             // typecast if we explicitly want that or there is not serialization enabled
-            if ($f->typecast || ($f->typecast === null && $f->serialize === null)) {
-                $value = $this->typecastSaveField($f, $value);
+            if ($field->typecast || ($field->typecast === null && $field->serialize === null)) {
+                $value = $this->typecastSaveField($field, $value);
             }
 
             // serialize if we explicitly want that
-            if ($f->serialize) {
-                $value = $this->serializeSaveField($f, $value);
+            if ($field->serialize) {
+                $value = $this->serializeSaveField($field, $value);
             }
 
             // store converted value
-            $result[$field] = $value;
+            $result[$field->getPersistenceName()] = $value;
         }
 
         return $result;
@@ -195,40 +193,40 @@ class Persistence
      * may be "aliased" from SQL persistences or mapped depending on persistence
      * driver.
      */
-    public function typecastLoadRow(Model $m, array $row): array
+    public function typecastLoadRow(Model $model, array $row): array
     {
         $result = [];
-        foreach ($row as $key => $value) {
+        foreach ($row as $fieldName => $value) {
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
-            if (!$m->hasField($key)) {
-                $result[$key] = $value;
+            if (!$model->hasField($fieldName)) {
+                $result[$fieldName] = $value;
 
                 continue;
             }
 
             // Look up field object
-            $f = $m->getField($key);
+            $field = $model->getField($fieldName);
 
             // ignore null values
             if ($value === null) {
-                $result[$key] = $value;
+                $result[$fieldName] = $value;
 
                 continue;
             }
 
             // serialize if we explicitly want that
-            if ($f->serialize) {
-                $value = $this->serializeLoadField($f, $value);
+            if ($field->serialize) {
+                $value = $this->serializeLoadField($field, $value);
             }
 
             // typecast if we explicitly want that or there is not serialization enabled
-            if ($f->typecast || ($f->typecast === null && $f->serialize === null)) {
-                $value = $this->typecastLoadField($f, $value);
+            if ($field->typecast || ($field->typecast === null && $field->serialize === null)) {
+                $value = $this->typecastLoadField($field, $value);
             }
 
             // store converted value
-            $result[$key] = $value;
+            $result[$fieldName] = $value;
         }
 
         return $result;
@@ -336,7 +334,7 @@ class Persistence
     {
         try {
             // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[0]) && ($t = $f->typecast[0]) instanceof \Closure) {
+            if (is_array($f->serialize) && isset($f->serialize[0]) && ($t = $f->serialize[0]) instanceof \Closure) {
                 return $t($f, $value, $this);
             }
 
@@ -360,7 +358,7 @@ class Persistence
     {
         try {
             // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[1]) && ($t = $f->typecast[1]) instanceof \Closure) {
+            if (is_array($f->serialize) && isset($f->serialize[1]) && ($t = $f->serialize[1]) instanceof \Closure) {
                 return $t($f, $value, $this);
             }
 

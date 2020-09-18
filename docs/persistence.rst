@@ -117,7 +117,7 @@ However if you change the ID for record that was loaded, then your database
 record will also have its ID changed. Here is example::
 
     $m->load(123);
-    $m->set($m->id_field, 321);
+    $m->setId(321);
     $m->save();
 
 After this your database won't have a record with ID 123 anymore.
@@ -491,14 +491,14 @@ this ref, how do you do it?
 
 Start by creating a beforeSave handler for Order::
 
-    $this->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
+    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
         if ($this->isDirty('ref')) {
 
             if (
-                $m->newInstance()
-                    ->addCondition('client_id', $m->get('client_id')) // same client
-                    ->addCondition($m->id_field, '!=', $m->id)   // has another order
-                    ->tryLoadBy('ref', $m->get('ref'))                // with same ref
+                $this->newInstance()
+                    ->addCondition('client_id', $this->get('client_id'))  // same client
+                    ->addCondition($this->id_field, '!=', $this->getId()) // has another order
+                    ->tryLoadBy('ref', $this->get('ref'))                 // with same ref
                     ->loaded()
             ) {
                 throw (new Exception('Order with ref already exists for this client'))
@@ -507,8 +507,6 @@ Start by creating a beforeSave handler for Order::
             }
         }
     });
-
-.. important:: Always use $m, don't use $this, or cloning models will glitch.
 
 So to review, we used newInstance() to create new copy of a current model. It
 is important to note that newInstance() is using get_class($this) to determine
@@ -553,7 +551,7 @@ The other, more appropriate option is to re-use a vanilla Order record::
         $this->save(); // just to be sure, no dirty stuff is left over
 
         $archive = $this->newInstance();
-        $archive->load($this->id);
+        $archive->load($this->getId());
         $archive->set('is_archived', true);
 
         $this->unload(); // active record is no longer accessible
@@ -781,7 +779,7 @@ some other database (for archive purposes) you can implement it like this::
         $arc = $this->withPersistence($m->app->archive_db, false);
 
         // add some audit fields
-        $arc->addField('original_id')->set($this->id);
+        $arc->addField('original_id')->set($this->getId());
         $arc->addField('saved_by')->set($this->app->user);
 
         $arc->saveAndUnload();

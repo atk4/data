@@ -54,6 +54,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
         $oo = $u->unload()->addCondition('id', '>', '1')->ref('Orders');
 
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
+
         $e = $this->getEscapeChar();
         $this->assertSame(
             str_replace('"', $e, 'select "id","amount","user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)'),
@@ -66,6 +70,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testLink()
     {
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
+
         $u = (new Model($this->db, 'user'))->addFields(['name']);
         $o = (new Model($this->db, 'order'))->addFields(['amount', 'user_id']);
 
@@ -108,6 +116,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testLink2()
     {
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
+
         $u = (new Model($this->db, 'user'))->addFields(['name', 'currency_code']);
         $c = (new Model($this->db, 'currency'))->addFields(['code', 'name']);
 
@@ -153,6 +165,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $o->unload();
         $o->addCondition('amount', '>', 6);
         $o->addCondition('amount', '<', 9);
+
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
 
         $e = $this->getEscapeChar();
         $this->assertSame(
@@ -205,6 +221,10 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testRelatedExpression()
     {
+        if ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
+        }
+
         $vat = 0.23;
 
         $this->setDb([
@@ -301,6 +321,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
     {
         if ($this->driverType === 'pgsql') {
             $this->markTestIncomplete('PostgreSQL does not support "SUM(variable)" syntax');
+        } elseif ($this->driverType === 'sqlsrv') {
+            $this->markTestIncomplete('MSSQL does not support "LENGTH(variable)" function');
         }
 
         $vat = 0.23;
@@ -337,8 +359,8 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(2, $ll->get('items_name')); // 2 not-null values
         $this->assertEquals(1, $ll->get('items_code')); // only 1 not-null value
         $this->assertEquals(2, $ll->get('items_star')); // 2 rows in total
-        $this->assertSame('Pork::Chicken', $ll->get('items_c:'));
-        $this->assertSame('Pork-Chicken', $ll->get('items_c-'));
+        $this->assertSame($ll->get('items_c:') === 'Pork::Chicken' ? 'Pork::Chicken' : 'Chicken::Pork', $ll->get('items_c:'));
+        $this->assertSame($ll->get('items_c-') === 'Pork-Chicken' ? 'Pork-Chicken' : 'Chicken-Pork', $ll->get('items_c-'));
         $this->assertEquals(strlen('Chicken') + strlen('Pork'), $ll->get('len'));
         $this->assertEquals(strlen('Chicken') + strlen('Pork'), $ll->get('len2'));
         $this->assertEquals(10, $ll->get('chicken5'));
@@ -381,31 +403,32 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $order = new Model($this->db, 'order');
         $order->addField('company_id');
         $order->addField('description');
-        $order->addField('amount', ['default' => 20]);
+        $order->addField('amount', ['default' => 20, 'type' => 'float']);
 
         $company->hasMany('Orders', [$order]);
 
         $user->load(1);
 
         $firstUserOrders = $user->ref('Company')->ref('Orders');
+        $firstUserOrders->setOrder('id');
 
         $this->assertEquals([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $firstUserOrders->export());
 
         $user->unload();
 
         $this->assertEquals([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $firstUserOrders->export());
 
         $this->assertEquals([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50],
-            ['id' => '2', 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15],
-        ], $user->ref('Company')->ref('Orders')->export());
+            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => '2', 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10.0],
+            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+        ], $user->ref('Company')->ref('Orders')->setOrder('id')->export());
     }
 
     public function testReferenceHook()

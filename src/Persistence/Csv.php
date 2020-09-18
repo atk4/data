@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace atk4\data\Persistence;
 
 use atk4\data\Exception;
-use atk4\data\Field;
 use atk4\data\Model;
 use atk4\data\Persistence;
 
@@ -84,7 +83,7 @@ class Csv extends Persistence
      *
      * @var array
      */
-    public $header = [];
+    public $header;
 
     public function __construct(string $file, array $defaults = [])
     {
@@ -92,9 +91,6 @@ class Csv extends Persistence
         $this->setDefaults($defaults);
     }
 
-    /**
-     * Destructor. close files correctly.
-     */
     public function __destruct()
     {
         $this->closeFile();
@@ -128,6 +124,7 @@ class Csv extends Persistence
         if ($this->handle) {
             fclose($this->handle);
             $this->handle = null;
+            $this->header = null;
         }
     }
 
@@ -181,7 +178,7 @@ class Csv extends Persistence
 
         $header = [];
         foreach ($model->getFields() as $name => $field) {
-            if ($name === $model->id_field) {
+            if ($model->id_field && $name === $model->id_field) {
                 continue;
             }
 
@@ -211,15 +208,18 @@ class Csv extends Persistence
     public function typecastLoadRow(Model $model, array $row): array
     {
         $id = null;
-        if (isset($row[$model->id_field])) {
-            // temporary remove id field
-            $id = $row[$model->id_field];
-            unset($row[$model->id_field]);
-        } else {
-            $id = null;
+        if ($model->id_field) {
+            if (isset($row[$model->id_field])) {
+                // temporary remove id field
+                $id = $row[$model->id_field];
+                unset($row[$model->id_field]);
+            } else {
+                $id = null;
+            }
         }
+
         $row = array_combine($this->header, $row);
-        if (isset($id)) {
+        if ($model->id_field && isset($id)) {
             $row[$model->id_field] = $id;
         }
 
@@ -258,7 +258,9 @@ class Csv extends Persistence
         }
 
         $data = $this->typecastLoadRow($model, $data);
-        $data[$model->id_field] = $this->line;
+        if ($model->id_field) {
+            $data[$model->id_field] = $this->line;
+        }
 
         return $data;
     }
@@ -284,7 +286,9 @@ class Csv extends Persistence
                 break;
             }
             $data = $this->typecastLoadRow($model, $data);
-            $data[$model->id_field] = $this->line;
+            if ($model->id_field) {
+                $data[$model->id_field] = $this->line;
+            }
 
             yield $data;
         }
@@ -329,6 +333,10 @@ class Csv extends Persistence
         }
 
         $this->putLine($line);
+
+        if ($model->id_field) {
+            return $data[$model->id_field];
+        }
     }
 
     /**

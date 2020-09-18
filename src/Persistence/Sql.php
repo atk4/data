@@ -177,9 +177,15 @@ class Sql extends Persistence
      */
     protected function initPersistence(Model $model): void
     {
-        $model->addMethod('expr', \Closure::fromCallable([$this, 'expr']));
-        $model->addMethod('dsql', \Closure::fromCallable([$this, 'dsql']));
-        $model->addMethod('exprNow', \Closure::fromCallable([$this, 'exprNow']));
+        $model->addMethod('expr', static function (Model $m, ...$args) {
+            return $m->persistence->expr($m, ...$args);
+        });
+        $model->addMethod('dsql', static function (Model $m, ...$args) {
+            return $m->persistence->dsql($m, ...$args);
+        });
+        $model->addMethod('exprNow', static function (Model $m, ...$args) {
+            return $m->persistence->exprNow($m, ...$args);
+        });
     }
 
     /**
@@ -482,9 +488,9 @@ class Sql extends Persistence
                 break;
             case 'boolean':
                 if (is_array($field->enum ?? null)) {
-                    if (isset($field->enum[0]) && $v == $field->enum[0]) {
+                    if (isset($field->enum[0]) && $v === $field->enum[0]) {
                         $v = false;
-                    } elseif (isset($field->enum[1]) && $v == $field->enum[1]) {
+                    } elseif (isset($field->enum[1]) && $v === $field->enum[1]) {
                         $v = true;
                     } else {
                         $v = null;
@@ -592,7 +598,7 @@ class Sql extends Persistence
                 $this->initQueryConditions($model, $query);
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
 
-                return $this->dsql()->mode('select')->option('exists')->field($query);
+                return $query->exists();
             case 'field':
                 if (!isset($args[0])) {
                     throw (new Exception('This action requires one argument with field name'))
@@ -612,7 +618,7 @@ class Sql extends Persistence
                 $this->setLimitOrder($model, $query);
 
                 if ($model->loaded()) {
-                    $query->where($model->id_field, $model->id);
+                    $query->where($model->id_field, $model->getId());
                 }
 
                 return $query;
@@ -696,8 +702,6 @@ class Sql extends Persistence
                 ->addMoreInfo('data', $data);
         }
 
-        $model->id = $data[$model->id_field];
-
         return $data;
     }
 
@@ -743,16 +747,12 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->id_field) {
-            // If id_field is not set, model will be read-only
-            if (isset($data[$model->id_field])) {
-                $model->id = $data[$model->id_field];
-            } else {
-                throw (new Exception('Model uses "id_field" but it was not available in the database'))
-                    ->addMoreInfo('model', $model)
-                    ->addMoreInfo('id_field', $model->id_field)
-                    ->addMoreInfo('data', $data);
-            }
+        // if id_field is not set, model will be read-only
+        if ($model->id_field && !isset($data[$model->id_field])) {
+            throw (new Exception('Model uses "id_field" but it was not available in the database'))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('id_field', $model->id_field)
+                ->addMoreInfo('data', $data);
         }
 
         return $data;
@@ -833,12 +833,12 @@ class Sql extends Persistence
     /**
      * Prepare iterator.
      */
-    public function prepareIterator(Model $model): \PDOStatement
+    public function prepareIterator(Model $model): iterable
     {
         try {
             $export = $model->action('select');
 
-            return $export->execute();
+            return $export->getIterator();
         } catch (\PDOException $e) {
             throw (new Exception('Unable to execute iteration query', 0, $e))
                 ->addMoreInfo('query', $export->getDebugQuery())
@@ -884,7 +884,7 @@ class Sql extends Persistence
 
         if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
             // ID was changed
-            $model->id = $data[$model->id_field];
+            $model->setId($data[$model->id_field]);
         }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
@@ -933,19 +933,19 @@ class Sql extends Persistence
                 $field->join
                     ? ($field->join->foreign_alias ?: $field->join->short_name)
                     : ($field->owner->table_alias ?: $field->owner->table),
-                $field->actual ?: $field->short_name,
+                $field->getPersistenceName(),
             ];
         } else {
             // references set flag use_table_prefixes, so no need to check them here
             $mask = '{}';
             $prop = [
-                $field->actual ?: $field->short_name,
+                $field->getPersistenceName(),
             ];
         }
 
         // If our Model has expr() method (inherited from Persistence\Sql) then use it
         if ($field->owner->hasMethod('expr')) {
-            $field->owner->expr($mask, $prop);
+            return $field->owner->expr($mask, $prop);
         }
 
         // Otherwise call method from expression
@@ -969,6 +969,19 @@ class Sql extends Persistence
 
     public function lastInsertId(Model $model): string
     {
+        // TODO: Oracle does not support lastInsertId(), only for testing
+        // as this does not support concurrent inserts
+        if ($this->connection instanceof \atk4\dsql\Oracle\Connection) {
+            if ($model->id_field === false) {
+                return ''; // TODO code should never call lastInsertId() if id field is not defined
+            }
+
+            $query = $this->connection->dsql()->table($model->table);
+            $query->field($query->expr('max({id_col})', ['id_col' => $model->id_field]), 'max_id');
+
+            return $query->getOne();
+        }
+
         return $this->connection->lastInsertId($this->getIdSequenceName($model));
     }
 

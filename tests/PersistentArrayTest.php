@@ -267,8 +267,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $this->assertSame([
-            1 => ['name' => 'John', 'surname' => 'Smith'],
-            2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
+            2 => ['id' => 2, 'name' => 'Sarah', 'surname' => 'Jones'],
         ], $m->export());
 
         $this->assertSame([
@@ -680,6 +680,76 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }
 
+    public function testNoKeyException()
+    {
+        $p = new Persistence\Array_([
+            ['id' => 3, 'f1' => 'A'],
+            ['id' => 5, 'f1' => 'D'],
+        ]);
+        $m = new Model($p);
+        $m->addField('f1');
+
+        // array keys do not match id field value
+        $this->expectException(Exception::class);
+        $m->export();
+    }
+
+    public function testImportAndAutoincrement()
+    {
+        $p = new Persistence\Array_([]);
+        $m = new Model($p);
+        $m->addField('f1');
+
+        $m->import([
+            ['id' => 1, 'f1' => 'A'],
+            ['id' => 2, 'f1' => 'B'],
+        ]);
+        $this->assertSame(2, $m->action('count')->getOne());
+
+        $m->import([
+            ['f1' => 'C'],
+            ['f1' => 'D'],
+        ]);
+        $this->assertSame(4, $m->action('count')->getOne());
+
+        $m->import([
+            ['id' => 6, 'f1' => 'E'],
+            ['id' => 7, 'f1' => 'F'],
+        ]);
+        $this->assertSame(6, $m->action('count')->getOne());
+
+        $m->import([
+            ['f1' => 'G'],
+            ['f1' => 'H'],
+        ]);
+        $this->assertSame(8, $m->action('count')->getOne());
+
+        $m->import([
+            ['id' => 99, 'f1' => 'I'],
+            ['id' => 20, 'f1' => 'J'],
+        ]);
+        $this->assertSame(10, $m->action('count')->getOne());
+
+        $m->import([
+            ['f1' => 'K'],
+        ]);
+        $this->assertSame(11, $m->action('count')->getOne());
+
+        $this->assertSame([
+            1 => ['id' => 1, 'f1' => 'A'],
+            2 => ['id' => 2, 'f1' => 'B'],
+            3 => ['id' => 3, 'f1' => 'C'],
+            4 => ['id' => 4, 'f1' => 'D'],
+            6 => ['id' => 6, 'f1' => 'E'],
+            7 => ['id' => 7, 'f1' => 'F'],
+            8 => ['id' => 8, 'f1' => 'G'],
+            9 => ['id' => 9, 'f1' => 'H'],
+            99 => ['id' => 99, 'f1' => 'I'],
+            20 => ['id' => 20, 'f1' => 'J'],
+            100 => ['id' => 100, 'f1' => 'K'],
+        ], $m->export());
+    }
+
     /**
      * Test Model->setLimit().
      */
@@ -700,16 +770,16 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->setLimit(3);
         $this->assertSame(3, $m->action('count')->getOne());
         $this->assertSame([
-            ['f1' => 'A'],
-            ['f1' => 'D'],
-            ['f1' => 'E'],
+            ['id' => 0, 'f1' => 'A'],
+            ['id' => 1, 'f1' => 'D'],
+            ['id' => 2, 'f1' => 'E'],
         ], array_values($m->export()));
 
         $m->setLimit(2, 1);
         $this->assertSame(2, $m->action('count')->getOne());
         $this->assertSame([
-            ['f1' => 'D'],
-            ['f1' => 'E'],
+            ['id' => 1, 'f1' => 'D'],
+            ['id' => 2, 'f1' => 'E'],
         ], array_values($m->export()));
 
         // well, this is strange, that you can actually change limit on-the-fly and then previous
@@ -741,8 +811,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $m->addCondition('surname', 'Smith');
         $this->assertSame(1, $m->action('count')->getOne());
-        $this->assertSame([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->export());
-        $this->assertSame([4 => ['name' => 'Sarah', 'surname' => 'Smith']], $m->action('select')->get());
+        $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->export());
+        $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->action('select')->get());
 
         $m->addCondition('surname', 'Siiiith');
         $this->assertSame(0, $m->action('count')->getOne());
@@ -772,9 +842,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
-        $m->addCondition('name');
         $this->expectException(Exception::class);
-        $m->export();
+        $m->addCondition('name');
     }
 
     public function testUnsupportedCondition2()
@@ -782,9 +851,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
         $m->addField('name');
-        $m->addCondition(new Model(), 'like', '%o%');
         $this->expectException(Exception::class);
-        $m->export();
+        $m->addCondition(new Model(), 'like', '%o%');
     }
 
     /**

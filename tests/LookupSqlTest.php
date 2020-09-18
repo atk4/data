@@ -104,30 +104,30 @@ class LFriend extends Model
 
         // add or remove reverse friendships
         /*
-        $this->onHook(self::HOOK_AFTER_INSERT, function($m) {
-            if ($m->skip_reverse) {
+        $this->onHookShort(self::HOOK_AFTER_INSERT, function() {
+            if ($this->skip_reverse) {
                 return;
             }
 
-            $c = clone $m;
+            $c = clone $this;
             $c->skip_reverse = true;
             $this->insert([
-                'user_id'=>$m->get('friend_id'),
-                'friend_id'=>$m->get('user_id')
+                'user_id'=>$this->get('friend_id'),
+                'friend_id'=>$this->get('user_id')
             ]);
         });
 
-        $this->onHook(Model::HOOK_BEFORE_DELETE, function($m) {
-            if ($m->skip_reverse) {
+        $this->onHookShort(Model::HOOK_BEFORE_DELETE, function() {
+            if ($this->skip_reverse) {
                 return;
             }
 
-            $c = clone $m;
+            $c = clone $this;
             $c->skip_reverse = true;
 
             $c->loadBy([
-                'user_id'=>$m->get('friend_id'),
-                'friend_id'=>$m->get('user_id')
+                'user_id'=>$this->get('friend_id'),
+                'friend_id'=>$this->get('user_id')
             ])->delete();
 
 

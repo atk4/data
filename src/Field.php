@@ -77,7 +77,7 @@ class Field implements Expressionable
     /**
      * Join object.
      *
-     * @var Join|null
+     * @var Model\Join|null
      */
     public $join;
 
@@ -223,6 +223,21 @@ class Field implements Expressionable
         }
     }
 
+    protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $this->owner->onHookDynamic(
+            $spot,
+            static function (Model $owner) use ($name) {
+                return $owner->getField($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
+    }
+
     /**
      * Depending on the type of a current field, this will perform
      * some normalization for strict types. This method must also make
@@ -236,7 +251,7 @@ class Field implements Expressionable
     public function normalize($value)
     {
         try {
-            if (!$this->owner->strict_types) {
+            if (!$this->owner->strict_types || $this->owner->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
             }
 
@@ -483,18 +498,53 @@ class Field implements Expressionable
     }
 
     /**
-     * This method can be extended. See Model::compare for use examples.
+     * Compare new value of the field with existing one without retrieving.
+     * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
+     *  - comparing values that can't be received - passwords, encrypted data
+     *  - comparing images
+     *  - if get() is expensive (e.g. retrieve object).
      *
-     * @param mixed $value
+     * @param mixed      $value
+     * @param mixed|void $value2
      */
-    public function compare($value): bool
+    public function compare($value, $value2 = null): bool
     {
-        if ($this->owner->persistence === null) {
-            return (string) $this->normalize($this->get()) === (string) $this->normalize($value);
+        if (func_num_args() === 1) {
+            $value2 = $this->get();
         }
 
-        return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $this->get()])[$this->short_name]
-            === (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->short_name];
+        // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
+        // compare if typecasted values are the same using strict comparison (===) or nor
+        $typecastFunc = function ($v) {
+            // do not typecast null values, because that implies calling normalize() which tries to validate that value can't be null in case field value is required
+            if ($v === null) {
+                return $v;
+            }
+
+            if ($this->owner->persistence === null) {
+                $v = $this->normalize($v);
+
+                // without persistence, we can not do a lot with non-scalar types, but as DateTime
+                // is used often, fix the compare for them
+                // TODO probably create and use a default persistence
+                if (is_scalar($v)) {
+                    return (string) $v;
+                } elseif ($v instanceof \DateTimeInterface) {
+                    return $v->getTimestamp() . '.' . $v->format('u');
+                }
+
+                return serialize($v);
+            }
+
+            return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $v])[$this->getPersistenceName()];
+        };
+
+        return $typecastFunc($value) === $typecastFunc($value2);
+    }
+
+    public function getPersistenceName(): string
+    {
+        return $this->actual ?? $this->short_name;
     }
 
     /**

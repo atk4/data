@@ -141,6 +141,8 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
         if ($this->driverType === 'sqlite') {
             $m->addExpression('full_name', '[name] || " " || [surname]');
+        } elseif ($this->driverType === 'oci') {
+            $m->addExpression('full_name', '[name] || \' \' || [surname]');
         } else {
             $m->addExpression('full_name', 'CONCAT([name], \' \', [surname])');
         }
@@ -150,6 +152,11 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         if ($this->driverType === 'sqlite') {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where ("name" || " " || "surname") != "cached_name"',
+                $m->action('select')->render()
+            );
+        } elseif ($this->driverType === 'oci') {
+            $this->assertSame(
+                'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where ("name" || \' \' || "surname") != "cached_name"',
                 $m->action('select')->render()
             );
         } elseif ($this->driverType === 'mysql') {

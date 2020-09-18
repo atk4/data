@@ -149,7 +149,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->toWords($user));
 
-        if ($this->driverType == 'sqlite') {
+        if ($this->driverType === 'sqlite') {
             $condition = new Condition('name', $user->expr('[surname]'));
 
             $this->assertEquals('Name is equal to expression \'"user"."surname"\'', $condition->toWords($user));
@@ -173,9 +173,9 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $country = clone $this->country;
 
-        $country->addCondition('Users/#');
+        $country->addCondition('Users/#', '>', 0);
 
-        $this->assertEquals('Country that has reference Users where any referenced record exists', $country->scope()->toWords());
+        $this->assertEquals('Country that has reference Users where number of records is greater than \'0\'', $country->scope()->toWords());
     }
 
     public function testContitionUnsupportedToWords()
@@ -263,7 +263,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $country = clone $this->country;
 
         // countries with users that have any tickets
-        $country->addCondition('Users/Tickets/#');
+        $country->addCondition('Users/Tickets/#', '>', 0);
 
         $this->assertEquals(3, $country->action('count')->getOne());
 
@@ -378,7 +378,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $user->scope()->add($condition);
 
         foreach ($user as $u) {
-            $this->assertTrue($u->get('name') == 'Alain' && $u->get('country_code') == 'FR');
+            $this->assertTrue($u->get('name') === 'Alain' && $u->get('country_code') === 'FR');
         }
     }
 

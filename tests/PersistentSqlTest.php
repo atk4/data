@@ -119,9 +119,9 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
         $m->save(['name' => 'Jane', 'surname' => 'Doe']);
         $this->assertSame('Jane', $m->get('name'));
         $this->assertSame('Doe', $m->get('surname'));
-        $this->assertEquals(3, $m->id);
+        $this->assertEquals(3, $m->getId());
         // id field value is set with new id value even if reload_after_save = false
-        $this->assertEquals(3, $m->get($m->id_field));
+        $this->assertEquals(3, $m->getId());
     }
 
     public function testModelInsertRows()

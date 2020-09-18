@@ -61,7 +61,7 @@ class Array_ extends Persistence
     {
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
-            $idColumnName = $idField->actual ?? $idField->short_name;
+            $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$idColumnName], $id);
                 unset($row[$idColumnName]);
@@ -75,7 +75,7 @@ class Array_ extends Persistence
     {
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
-            $idColumnName = $idField->actual ?? $idField->short_name;
+            $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$idColumnName], $id);
             }
@@ -197,7 +197,7 @@ class Array_ extends Persistence
         $id = key($this->data[$table]);
 
         $row = $this->load($model, $id, $table);
-        $model->id = $id;
+        $model->setId($id);
 
         return $row;
     }
@@ -213,7 +213,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $id = $this->generateNewId($model, $table);
+        $id = $data[$model->id_field] ?? $this->generateNewId($model, $table);
 
         $this->saveRow($model, $data, $id, $table);
 
@@ -328,7 +328,7 @@ class Array_ extends Persistence
     public function initAction(Model $model, array $fields = null): \atk4\data\Action\Iterator
     {
         $data = $this->data[$model->table];
-        array_walk($data, function ($row, $id) use ($model) {
+        array_walk($data, function (&$row, $id) use ($model) {
             $this->addIdToLoadRow($model, $row, $id);
         });
 
@@ -431,7 +431,7 @@ class Array_ extends Persistence
                 $this->applyScope($model, $action);
                 $this->setLimitOrder($model, $action);
 
-                return $action->aggregate($fx, $field, $type == 'fx0');
+                return $action->aggregate($fx, $field, $type === 'fx0');
             default:
                 throw (new Exception('Unsupported action mode'))
                     ->addMoreInfo('type', $type);

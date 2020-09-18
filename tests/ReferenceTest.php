@@ -17,10 +17,12 @@ class ReferenceTest extends AtkPhpunit\TestCase
     public function testBasicReferences()
     {
         $user = new Model(['table' => 'user']);
+        $user->addField('id');
         $user->addField('name');
-        $user->id = 1;
+        $user->setId(1);
 
         $order = new Model();
+        $order->addField('id');
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
@@ -47,10 +49,12 @@ class ReferenceTest extends AtkPhpunit\TestCase
     public function testModelCaption()
     {
         $user = new Model(['table' => 'user']);
+        $user->addField('id');
         $user->addField('name');
-        $user->id = 1;
+        $user->setId(1);
 
         $order = new Model();
+        $order->addField('id');
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
@@ -65,7 +69,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
     {
         $db = new Persistence();
         $user = new Model($db, ['table' => 'user']);
-        $user->id = 1;
+        $user->setId(1);
         $user->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
         $o = $user->ref('order_id');
         $this->assertSame('order', $o->table);
