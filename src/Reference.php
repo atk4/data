@@ -101,7 +101,9 @@ class Reference
 
     protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        // TODO is this even safe? is model guaranteed to be always unique here? (eg. always cloned?)
+        if ($model->ownerReference !== null && $model->ownerReference !== $this) {
+            throw new Exception('Model owner reference unexpectedly already set');
+        }
         $model->ownerReference = $this;
         $getThisFx = static function (Model $model) {
             return $model->ownerReference;
@@ -152,6 +154,8 @@ class Reference
     /**
      * Returns destination model that is linked through this reference. Will apply
      * necessary conditions.
+     *
+     * IMPORTANT: the returned model must be a fresh clone or freshly built from a seed
      */
     public function getTheirModel(array $defaults = []): Model
     {

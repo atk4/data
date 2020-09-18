@@ -298,6 +298,9 @@ class Model implements \IteratorAggregate
      */
     public $contained_in_root_model;
 
+    /** @var Reference Only for Reference class */
+    public $ownerReference;
+
     // }}}
 
     // {{{ Basic Functionality, field definition, set() and get()
