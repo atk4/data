@@ -1115,9 +1115,9 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function load($id, Persistence $from_persistence = null)
+    public function load($id)
     {
-        // deprecated, remove on 2020-03
+        // deprecated, remove on 2021-03
         if (func_num_args() > 1) {
             throw new Exception('Model::load() with 2nd param $from_persistence is no longer supported');
         }
@@ -1477,14 +1477,15 @@ class Model implements \IteratorAggregate
      */
     public $_dirty_after_reload = [];
 
-    public function save(array $data = [], Persistence $to_persistence = null)
+    public function save(array $data = [])
     {
-        if (!$to_persistence) {
-            $to_persistence = $this->persistence;
+        // deprecated, remove on 2021-03
+        if (func_num_args() > 1) {
+            throw new Exception('Model::save() with 2nd param $to_persistence is no longer supported');
         }
 
-        if (!$to_persistence) {
-            throw new Exception('Model is not associated with any database');
+        if (!$this->persistence) {
+            throw new Exception('Model is not associated with any persistence');
         }
 
         if ($this->read_only) {
@@ -1493,7 +1494,7 @@ class Model implements \IteratorAggregate
 
         $this->setMulti($data);
 
-        return $this->atomic(function () use ($to_persistence) {
+        return $this->atomic(function () {
             if (($errors = $this->validate('save')) !== []) {
                 throw new ValidationException($errors, $this);
             }
@@ -1536,7 +1537,7 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                $to_persistence->update($this, $this->getId(), $data);
+                $this->persistence->update($this, $this->getId(), $data);
 
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             } else {
@@ -1564,7 +1565,7 @@ class Model implements \IteratorAggregate
                 }
 
                 // Collect all data of a new record
-                $id = $to_persistence->insert($this, $data);
+                $id = $this->persistence->insert($this, $data);
 
                 if (!$this->id_field) {
                     $this->hook(self::HOOK_AFTER_INSERT, [null]);
@@ -1591,7 +1592,7 @@ class Model implements \IteratorAggregate
             $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
 
             return $this;
-        }, $to_persistence);
+        });
     }
 
     /**
@@ -1870,14 +1871,15 @@ class Model implements \IteratorAggregate
      *
      * @return mixed
      */
-    public function atomic(\Closure $fx, Persistence $persistence = null)
+    public function atomic(\Closure $fx)
     {
-        if ($persistence === null) {
-            $persistence = $this->persistence;
+        // deprecated, remove on 2021-03
+        if (func_num_args() > 1) {
+            throw new Exception('Model::atomic() with 2nd param $persistence is no longer supported');
         }
 
         try {
-            return $persistence->atomic($fx);
+            return $this->persistence->atomic($fx);
         } catch (\Exception $e) {
             if ($this->hook(self::HOOK_ROLLBACK, [$this, $e]) !== false) {
                 throw $e;
