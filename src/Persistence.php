@@ -110,7 +110,7 @@ class Persistence
 
     public function getDatabasePlatform(): Platforms\AbstractPlatform
     {
-        return new Platforms\SqlitePlatform();
+        return new Persistence\NosqlPlatform();
     }
 
     /**
