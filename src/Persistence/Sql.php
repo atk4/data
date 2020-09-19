@@ -12,10 +12,8 @@ use atk4\data\Persistence;
 use atk4\dsql\Connection;
 use atk4\dsql\Expression;
 use atk4\dsql\Query;
+use Doctrine\DBAL\Platforms;
 
-/**
- * Persistence\Sql class.
- */
 class Sql extends Persistence
 {
     /** @const string */
@@ -131,6 +129,11 @@ class Sql extends Persistence
     public function atomic(\Closure $fx)
     {
         return $this->connection->atomic($fx);
+    }
+
+    public function getDatabasePlatform(): Platforms\AbstractPlatform
+    {
+        return $this->connection->getDatabasePlatform();
     }
 
     /**
