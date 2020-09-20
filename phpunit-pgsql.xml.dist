@@ -10,6 +10,9 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <listeners>
+        <listener class="JohnKary\PHPUnit\Listener\SpeedTrapListener" />
+    </listeners>
     <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">src</directory>
