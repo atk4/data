@@ -136,7 +136,7 @@ jobs:
       - name: Install PHP dependencies
         run: |
           if [ "${{ matrix.type }}" != "Phpunit" ] && [ "${{ matrix.type }}" != "Phpunit Burn" ]; then composer remove --no-interaction --no-update phpunit/phpunit johnkary/phpunit-speedtrap phpunit/dbunit phpunit/phpcov --dev ; fi
-          if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer --dev ; fi
+          if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer --dev && composer --no-update  --no-suggest --ansi --prefer-dist --no-interaction --no-progress require jdorn/sql-formatter ; fi
           if [ "${{ matrix.php }}" == "8.0" ]; then composer config platform.php 7.4.5 ; fi
           composer install --no-suggest --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
           if [ "${{ matrix.type }}" == "Phpunit Burn" ]; then sed -i 's/ *public function runBare(): void/public function runBare(): void { gc_collect_cycles(); $mem = memory_get_usage(); for ($i = 0; $i < '"$(if [ \"$GITHUB_EVENT_NAME\" == \"schedule\" ]; then echo 500; else echo 10; fi)"'; ++$i) { $this->_runBare(); } gc_collect_cycles(); $mem2 = memory_get_usage(); if ($mem2 - 500 * 1024 > $mem) { $this->onNotSuccessfulTest(new AssertionFailedError("Memory leak detected! (" . round($mem \/ (2 ** 20), 3) . " + " . round(($mem2 - $mem) \/ (2 ** 20), 3) . " MB, " . $i . " iterations)")); } }\nprivate function _runBare(): void/' vendor/phpunit/phpunit/src/Framework/TestCase.php && cat vendor/phpunit/phpunit/src/Framework/TestCase.php | grep '_runBare(' ; fi
