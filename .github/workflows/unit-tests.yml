@@ -158,16 +158,16 @@ jobs:
         run: "vendor/bin/phpunit --configuration phpunit-pgsql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: MSSQL (for PHP < 8.0) (only for Phpunit)"
-        if: matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn' && matrix.php != '8.0'
+        if: (matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn') && matrix.php != '8.0'
         run: "vendor/bin/phpunit --configuration phpunit-mssql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: MSSQL (for PHP = 8.0, allowed to fail) (only for Phpunit)"
-        if: matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn' && matrix.php == '8.0'
+        if: (matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn') && matrix.php == '8.0'
         continue-on-error: true
         run: "vendor/bin/phpunit --configuration phpunit-mssql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: Oracle (for PHP < 8.0) (only for Phpunit)"
-        if: matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn' && matrix.php != '8.0'
+        if: (matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn') && matrix.php != '8.0'
         run: "vendor/bin/phpunit --configuration phpunit-oracle.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: Upload coverage logs 1/2 (only for "latest" Phpunit)
