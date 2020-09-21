@@ -38,9 +38,20 @@ class Iterator
     public function filter(Model\Scope\AbstractScope $condition)
     {
         if (!$condition->isEmpty()) {
-            $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($condition) {
-                return $this->match($row, $condition);
-            });
+            // bug in php, see:
+            // https://github.com/atk4/data/pull/735
+            // https://bugs.php.net/bug.php?id=80125
+//            $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($condition) {
+//                return $this->match($row, $condition);
+//            });
+            // remove code below once fixed
+            $data = [];
+            foreach ($this->generator as $k => $row) {
+                if ($this->match($row, $condition)) {
+                    $data[$k] = $row;
+                }
+            }
+            $this->generator = new \ArrayIterator($data);
         }
 
         return $this;
