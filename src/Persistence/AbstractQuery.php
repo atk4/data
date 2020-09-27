@@ -35,9 +35,9 @@ abstract class AbstractQuery implements \IteratorAggregate
 
     public function __construct(Model $model, Persistence $persistence = null)
     {
-        $this->model = clone $model;
+        $this->model = $model;
 
-        $this->scope = $this->model->scope();
+        $this->scope = clone $this->model->scope();
 
         $this->order = $model->order;
 

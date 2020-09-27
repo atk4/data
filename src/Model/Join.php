@@ -148,6 +148,21 @@ class Join
         }
     }
 
+    protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $this->owner->onHookDynamic(
+            $spot,
+            static function (Model $owner) use ($name) {
+                return $owner->getElement($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
+    }
+
     /**
      * Will use either foreign_alias or create #join_<table>.
      */
@@ -196,7 +211,7 @@ class Join
             }
         }
 
-        $this->owner->onHook(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+        $this->onHookToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
     }
 
     /**

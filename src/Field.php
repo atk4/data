@@ -77,7 +77,7 @@ class Field implements Expressionable
     /**
      * Join object.
      *
-     * @var Join|null
+     * @var Model\Join|null
      */
     public $join;
 
@@ -221,6 +221,21 @@ class Field implements Expressionable
                 $this->{$key} = $val;
             }
         }
+    }
+
+    protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $this->owner->onHookDynamic(
+            $spot,
+            static function (Model $owner) use ($name) {
+                return $owner->getField($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
     }
 
     /**
@@ -500,30 +515,36 @@ class Field implements Expressionable
 
         // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
         // compare if typecasted values are the same using strict comparison (===) or nor
-
-        if ($value === null xor $value2 === null) {
-            return false;
-        }
-
-        if ($this->owner->persistence === null) {
-            $value = $this->normalize($value);
-            $value2 = $this->normalize($value2);
-
-            // without persistence, we can not do a lot with non-scalar types, but as DateTime
-            // is used often, fix the compare for them
-            // TODO probably create and use a default persistence
-            if ($value instanceof \DateTimeInterface) {
-                $value = $value->getTimestamp() . '.' . $value->format('u');
-            }
-            if ($value2 instanceof \DateTimeInterface) {
-                $value2 = $value2->getTimestamp() . '.' . $value2->format('u');
+        $typecastFunc = function ($v) {
+            // do not typecast null values, because that implies calling normalize() which tries to validate that value can't be null in case field value is required
+            if ($v === null) {
+                return $v;
             }
 
-            return (string) $value === (string) $value2;
-        }
+            if ($this->owner->persistence === null) {
+                // without persistence, we can not do a lot with non-scalar types, but as DateTime
+                // is used often, fix the compare for them
+                // TODO probably create and use a default persistence
+                $persistenceValue = $this->normalize($v);
+            } else {
+                $persistenceValue = $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $v])[$this->getPersistenceName()];
+            }
 
-        return (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value])[$this->actual ?? $this->short_name]
-            === (string) $this->owner->persistence->typecastSaveRow($this->owner, [$this->short_name => $value2])[$this->actual ?? $this->short_name];
+            if (is_scalar($persistenceValue)) {
+                return (string) $persistenceValue;
+            } elseif ($persistenceValue instanceof \DateTimeInterface) {
+                return $persistenceValue->getTimestamp() . '.' . $persistenceValue->format('u');
+            }
+
+            return $persistenceValue;
+        };
+
+        return $typecastFunc($value) === $typecastFunc($value2);
+    }
+
+    public function getPersistenceName(): string
+    {
+        return $this->actual ?? $this->short_name;
     }
 
     /**

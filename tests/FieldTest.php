@@ -314,7 +314,7 @@ class FieldTest extends \atk4\schema\PhpunitTestCase
         $dbData['item'][1]['surname'] = 'Stalker';
         $this->assertEquals($dbData, $this->getDb());
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, function ($m) {
+        $m->onHook(Model::HOOK_BEFORE_SAVE, static function ($m) {
             if ($m->isDirty('name')) {
                 $m->set('surname', $m->get('name'));
                 $m->_unset('name');

@@ -9,6 +9,69 @@ on:
     - cron: '0 * * * *'
 
 jobs:
+  smoke-test:
+    name: Smoke
+    runs-on: ubuntu-latest
+    container:
+      image: atk4/image:${{ matrix.php }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['latest']
+        type: ['Phpunit']
+        include:
+          - php: 'latest'
+            type: 'CodingStyle'
+    env:
+      LOG_COVERAGE: ""
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure PHP
+        run: |
+          if [ -z "$LOG_COVERAGE" ]; then rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ; fi
+          php --version
+
+      # trick composer that this is a "atk4/data:develop" dependency to install atk4/schema
+      - name: Rename HEAD to develop for Composer
+        run: git switch -C develop HEAD
+
+      - name: Setup cache 1/2
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Setup cache 2/2
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-smoke-${{ matrix.php }}-${{ matrix.type }}-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install PHP dependencies
+        run: |
+          if [ "${{ matrix.type }}" != "Phpunit" ]; then composer remove --no-interaction --no-update phpunit/phpunit johnkary/phpunit-speedtrap phpunit/dbunit phpunit/phpcov --dev ; fi
+          if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer --dev && composer --no-interaction --no-update require jdorn/sql-formatter ; fi
+          composer install --no-suggest --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Init
+        run: |
+          mkdir -p build/logs
+
+      - name: "Run tests: SQLite (only for Phpunit)"
+        if: matrix.type == 'Phpunit'
+        run: "vendor/bin/phpunit \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
+
+      - name: Lint / check syntax (only for CodingStyle)
+        if: matrix.type == 'CodingStyle'
+        run: find . \( -type d \( -path './vendor/*' \) \) -prune -o ! -type d -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Check Coding Style (only for CodingStyle)
+        if: matrix.type == 'CodingStyle'
+        run: vendor/bin/php-cs-fixer fix --dry-run --using-cache=no --diff --diff-format=udiff --verbose --show-progress=dots
+
   unit-test:
     name: Unit
     runs-on: ubuntu-latest
@@ -21,7 +84,7 @@ jobs:
         type: ['Phpunit']
         include:
           - php: 'latest'
-            type: 'CodingStyle'
+            type: 'Phpunit Burn'
     env:
       LOG_COVERAGE: "${{ fromJSON('{true: \"1\", false: \"\"}')[matrix.php == 'latest' && matrix.type == 'Phpunit' && (github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')))] }}"
     services:
@@ -72,47 +135,40 @@ jobs:
 
       - name: Install PHP dependencies
         run: |
-          if [ "${{ matrix.type }}" != "Phpunit" ]; then composer remove --no-interaction --no-update phpunit/phpunit phpunit/dbunit phpunit/phpcov --dev ; fi
-          if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer --dev ; fi
+          if [ "${{ matrix.type }}" != "Phpunit" ] && [ "${{ matrix.type }}" != "Phpunit Burn" ]; then composer remove --no-interaction --no-update phpunit/phpunit johnkary/phpunit-speedtrap phpunit/dbunit phpunit/phpcov --dev ; fi
+          if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer --dev && composer --no-update  --no-suggest --ansi --prefer-dist --no-interaction --no-progress require jdorn/sql-formatter ; fi
           if [ "${{ matrix.php }}" == "8.0" ]; then composer config platform.php 7.4.5 ; fi
           composer install --no-suggest --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+          if [ "${{ matrix.type }}" == "Phpunit Burn" ]; then sed -i 's/ *public function runBare(): void/public function runBare(): void { gc_collect_cycles(); $mem0 = memory_get_usage(); for ($i = 0; $i < '"$(if [ \"$GITHUB_EVENT_NAME\" == \"schedule\" ]; then echo 200; else echo 10; fi)"'; ++$i) { $this->_runBare(); if ($i === 0) { gc_collect_cycles(); $mem1 = memory_get_usage(); } elseif (($i % 25) === 0) { gc_collect_cycles(); } } gc_collect_cycles(); $mem2 = memory_get_usage(); if ($mem2 - 1536 * 1024 > $mem0 || $mem2 - 128 * 1024 > $mem1) { $this->onNotSuccessfulTest(new AssertionFailedError("Memory leak detected! (" . round($mem0 \/ (1024 * 1024), 3) . " + " . round(($mem1 - $mem0) \/ (1024 * 1024), 3) . " + " . round(($mem2 - $mem1) \/ (1024 * 1024), 3) . " MB, " . $i . " iterations)")); } } private function _runBare(): void/' vendor/phpunit/phpunit/src/Framework/TestCase.php && cat vendor/phpunit/phpunit/src/Framework/TestCase.php | grep '_runBare(' ; fi
 
       - name: Init
         run: |
           mkdir -p build/logs
 
       - name: "Run tests: SQLite (only for Phpunit)"
-        if: matrix.type == 'Phpunit'
+        if: matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn'
         run: "vendor/bin/phpunit \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: MySQL (only for Phpunit)"
-        if: matrix.type == 'Phpunit'
+        if: matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn'
         run: "vendor/bin/phpunit --configuration phpunit-mysql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: PostgreSQL (only for Phpunit)"
-        if: matrix.type == 'Phpunit'
+        if: matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn'
         run: "vendor/bin/phpunit --configuration phpunit-pgsql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: MSSQL (for PHP < 8.0) (only for Phpunit)"
-        if: matrix.type == 'Phpunit' && matrix.php != '8.0'
+        if: (matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn') && matrix.php != '8.0'
         run: "vendor/bin/phpunit --configuration phpunit-mssql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: MSSQL (for PHP = 8.0, allowed to fail) (only for Phpunit)"
-        if: matrix.type == 'Phpunit' && matrix.php == '8.0'
+        if: (matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn') && matrix.php == '8.0'
         continue-on-error: true
         run: "vendor/bin/phpunit --configuration phpunit-mssql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: Oracle (for PHP < 8.0) (only for Phpunit)"
-        if: matrix.type == 'Phpunit' && matrix.php != '8.0'
+        if: (matrix.type == 'Phpunit' || matrix.type == 'Phpunit Burn') && matrix.php != '8.0'
         run: "vendor/bin/phpunit --configuration phpunit-oracle.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
-
-      - name: Lint / check syntax (only for CodingStyle)
-        if: matrix.type == 'CodingStyle'
-        run: find . \( -type d \( -path './vendor/*' \) \) -prune -o ! -type d -name '*.php' -print0 | xargs -0 -n1 php -l
-
-      - name: Check Coding Style (only for CodingStyle)
-        if: matrix.type == 'CodingStyle'
-        run: vendor/bin/php-cs-fixer fix --dry-run --using-cache=no --diff --diff-format=udiff --verbose --show-progress=dots
 
       - name: Upload coverage logs 1/2 (only for "latest" Phpunit)
         if: env.LOG_COVERAGE

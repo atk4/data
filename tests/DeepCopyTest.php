@@ -48,9 +48,9 @@ class DcInvoice extends Model
 
         $this->addField('is_paid', ['type' => 'boolean', 'default' => false]);
 
-        $this->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m, $s) {
+        $this->onHookShort(DeepCopy::HOOK_AFTER_COPY, function ($s) {
             if (get_class($s) === static::class) {
-                $m->set('ref', $m->get('ref') . '_copy');
+                $this->set('ref', $this->get('ref') . '_copy');
             }
         });
     }
@@ -287,7 +287,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $quote->loadAny();
 
         $invoice = new DcInvoice();
-        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m) {
+        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function ($m) {
             if (!$m->get('ref')) {
                 throw new \atk4\core\Exception('no ref');
             }
@@ -328,7 +328,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $quote->loadAny();
 
         $invoice = new DcInvoice();
-        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, function ($m) {
+        $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function ($m) {
             if (!$m->get('ref')) {
                 throw new \atk4\core\Exception('no ref');
             }

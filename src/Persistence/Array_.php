@@ -48,7 +48,7 @@ class Array_ extends Persistence
 
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
-            $idColumnName = $idField->actual ?? $idField->short_name;
+            $idColumnName = $idField->getPersistenceName();
 
             unset($row[$idColumnName]);
         }
@@ -71,7 +71,7 @@ class Array_ extends Persistence
 
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
-            $idColumnName = $idField->actual ?? $idField->short_name;
+            $idColumnName = $idField->getPersistenceName();
 
             if (array_key_exists($idColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$idColumnName], $id);
@@ -132,6 +132,21 @@ class Array_ extends Persistence
         }
 
         return $model;
+    }
+
+    /**
+     * Tries to load first available record and return data record.
+     */
+    public function loadAny(Model $model, string $table = null): ?array
+    {
+        $row = $this->tryLoadAny($model, $table);
+        if ($row === null) {
+            throw (new Exception('No matching records were found', 404))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('scope', $model->scope()->toWords());
+        }
+
+        return $row;
     }
 
     /**

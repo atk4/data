@@ -77,11 +77,11 @@ Another scenario which could benefit by type substitution would be::
 ATK Data allow class substitution during load and iteration by breaking "afterLoad"
 hook. Place the following inside Transaction::init()::
 
-    $this->onHook(Model::HOOK_AFTER_LOAD, function ($m) {
-        if (get_class($this) != $m->getClassName()) {
+    $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
+        if (get_class($this) != $this->getClassName()) {
             $cl = '\\'.$this->getClassName();
             $cl = new $cl($this->persistence);
-            $cl->load($m->getId());
+            $cl->load($this->getId());
 
             $this->breakHook($cl);
         }
@@ -347,7 +347,7 @@ before and just slightly modifying it::
             }
         }
 
-        function softDelete($m) {
+        function softDelete(Model $m) {
             if (!$m->loaded()) {
                 throw (new \atk4\core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
@@ -428,7 +428,7 @@ inside your model are unique::
             $this->owner->onHook(Model::HOOK_BEFORE_SAVE, \Closure::fromCallable([$this, 'beforeSave']));
         }
 
-        function beforeSave($m)
+        function beforeSave(Model $m)
         {
             foreach ($this->fields as $field) {
                 if ($m->dirty[$field]) {
@@ -517,11 +517,11 @@ Next we need to define reference. Inside Model_Invoice add::
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field'=>'invoice_id']);
 
-    $this->onHook(Model::HOOK_BEFORE_DELETE, function($m){
-        $m->ref('InvoicePayment')->toQuery()->delete()->execute();
+    $this->onHookShort(Model::HOOK_BEFORE_DELETE, function(){
+        $this->ref('InvoicePayment')->toQuery()->delete()->execute();
 
         // If you have important per-row hooks in InvoicePayment
-        // $payment = $m->ref('InvoicePayment'); $payment->each(function () use ($payment) { $payment->delete(); });
+        // $payment = $this->ref('InvoicePayment'); $payment->each(function () use ($payment) { $payment->delete(); });
     });
 
 You'll have to do a similar change inside Payment model. The code for '$j->'
@@ -652,23 +652,23 @@ Here is how to add them. First you need to create fields::
 I have declared those fields with never_persist so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
 
-    $this->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
-        if($m->_isset($m['client_code') && !$m->_isset($m['client_id')) {
+    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
+        if($this->_isset('client_code') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
-            $cl->addCondition('code',$m->get('client_code'));
-            $m->set('client_id', $cl->toQuery->field('id'));
+            $cl->addCondition('code',$this->get('client_code'));
+            $this->set('client_id', $cl->toQuery->field('id'));
         }
 
-        if($m->_isset('client_name') && !$m->_isset('client_id')) {
+        if($this->_isset('client_name') && !$this->_isset('client_id')) {
             $cl = $this->refModel('client_id');
-            $cl->addCondition('name', 'like', $m->get('client_name'));
-            $m->set('client_id', $cl->toQuery->field('id'));
+            $cl->addCondition('name', 'like', $this->get('client_name'));
+            $this->set('client_id', $cl->toQuery->field('id'));
         }
 
-        if($m->_isset('category') && !$m->_isset('category_id')) {
+        if($this->_isset('category') && !$this->_isset('category_id')) {
             $c = $this->refModel('category_id');
-            $c->addCondition($c->title_field, 'like', $m->get('category'));
-            $m->set('category_id', $c->toQuery->field('id'));
+            $c->addCondition($c->title_field, 'like', $this->get('category'));
+            $this->set('category_id', $c->toQuery->field('id'));
         }
     });
 
@@ -741,13 +741,13 @@ section. Add this into your Invoice Model::
 Next both payment and lines need to be added after invoice is actually created,
 so::
 
-    $this->onHook(Model::HOOK_AFTER_SAVE, function($m, $is_update){
-        if($m->_isset('payment')) {
-            $m->ref('Payment')->insert($m->get('payment'));
+    $this->onHookShort(Model::HOOK_AFTER_SAVE, function($is_update){
+        if($this->_isset('payment')) {
+            $this->ref('Payment')->insert($this->get('payment'));
         }
 
-        if($m->_isset('lines')) {
-            $m->ref('Line')->import($m->get('lines'));
+        if($this->_isset('lines')) {
+            $this->ref('Line')->import($this->get('lines'));
         }
     });
 

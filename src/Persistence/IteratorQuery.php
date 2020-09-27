@@ -56,7 +56,7 @@ class IteratorQuery extends AbstractQuery
     protected function initInsert(array $data): void
     {
         $this->fx = function (\Iterator $iterator) use ($data) {
-            return $this->persistence->setRawData($this->model, $data);
+            return $this->persistence->setRawData($this->model, $data, $data[$this->model->id_field] ?? null);
         };
     }
 
@@ -64,7 +64,7 @@ class IteratorQuery extends AbstractQuery
     {
         $this->fx = function (\Iterator $iterator) use ($data) {
             foreach ($iterator as $id => $row) {
-                $this->persistence->setRawData($this->model, array_merge($row, $data), $id);
+                $this->persistence->setRawData($this->model, array_merge($row, $data), $data[$this->model->id_field] ?? $id);
             }
         };
     }

@@ -64,7 +64,7 @@ class HasOneSql extends HasOne
         ));
 
         // Will try to execute last
-        $ourModel->onHook(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($ourFieldName, $theirFieldName) {
+        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($ourFieldName, $theirFieldName) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
             if ($ourModel->isDirty($ourFieldName) && !$ourModel->isDirty($this->our_field)) {
@@ -205,7 +205,7 @@ class HasOneSql extends HasOne
         ));
 
         // Will try to execute last
-        $ourModel->onHook(Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName) {
+        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
             if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {

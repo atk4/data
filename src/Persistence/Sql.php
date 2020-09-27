@@ -166,9 +166,15 @@ class Sql extends Persistence
     {
         parent::initPersistence($model);
 
-        $model->addMethod('expr', \Closure::fromCallable([$this, 'expr']));
-        $model->addMethod('dsql', \Closure::fromCallable([$this, 'dsql']));
-        $model->addMethod('exprNow', \Closure::fromCallable([$this, 'exprNow']));
+        $model->addMethod('expr', static function (Model $m, ...$args) {
+            return $m->persistence->expr($m, ...$args);
+        });
+        $model->addMethod('dsql', static function (Model $m, ...$args) {
+            return $m->persistence->dsql($m, ...$args);
+        });
+        $model->addMethod('exprNow', static function (Model $m, ...$args) {
+            return $m->persistence->exprNow($m, ...$args);
+        });
     }
 
     /**
@@ -393,13 +399,13 @@ class Sql extends Persistence
                 $field->join
                     ? ($field->join->foreign_alias ?: $field->join->short_name)
                     : ($field->owner->table_alias ?: $field->owner->table),
-                $field->actual ?: $field->short_name,
+                $field->getPersistenceName(),
             ];
         } else {
             // references set flag use_table_prefixes, so no need to check them here
             $mask = '{}';
             $prop = [
-                $field->actual ?: $field->short_name,
+                $field->getPersistenceName(),
             ];
         }
 

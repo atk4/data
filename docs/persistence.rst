@@ -491,14 +491,14 @@ this ref, how do you do it?
 
 Start by creating a beforeSave handler for Order::
 
-    $this->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
+    $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
         if ($this->isDirty('ref')) {
 
             if (
-                $m->newInstance()
-                    ->addCondition('client_id', $m->get('client_id')) // same client
-                    ->addCondition($m->id_field, '!=', $m->getId())   // has another order
-                    ->tryLoadBy('ref', $m->get('ref'))                // with same ref
+                $this->newInstance()
+                    ->addCondition('client_id', $this->get('client_id'))  // same client
+                    ->addCondition($this->id_field, '!=', $this->getId()) // has another order
+                    ->tryLoadBy('ref', $this->get('ref'))                 // with same ref
                     ->loaded()
             ) {
                 throw (new Exception('Order with ref already exists for this client'))
@@ -507,8 +507,6 @@ Start by creating a beforeSave handler for Order::
             }
         }
     });
-
-.. important:: Always use $m, don't use $this, or cloning models will glitch.
 
 So to review, we used newInstance() to create new copy of a current model. It
 is important to note that newInstance() is using get_class($this) to determine

@@ -680,6 +680,76 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }
 
+    public function testNoKeyException()
+    {
+        $p = new Persistence\Array_([
+            ['id' => 3, 'f1' => 'A'],
+            ['id' => 5, 'f1' => 'D'],
+        ]);
+        $m = new Model($p);
+        $m->addField('f1');
+
+        // array keys do not match id field value
+        $this->expectException(Exception::class);
+        $m->export();
+    }
+
+    public function testImportAndAutoincrement()
+    {
+        $p = new Persistence\Array_([]);
+        $m = new Model($p);
+        $m->addField('f1');
+
+        $m->import([
+            ['id' => 1, 'f1' => 'A'],
+            ['id' => 2, 'f1' => 'B'],
+        ]);
+        $this->assertSame(2, $m->getCount());
+
+        $m->import([
+            ['f1' => 'C'],
+            ['f1' => 'D'],
+        ]);
+        $this->assertSame(4, $m->getCount());
+
+        $m->import([
+            ['id' => 6, 'f1' => 'E'],
+            ['id' => 7, 'f1' => 'F'],
+        ]);
+        $this->assertSame(6, $m->getCount());
+
+        $m->import([
+            ['f1' => 'G'],
+            ['f1' => 'H'],
+        ]);
+        $this->assertSame(8, $m->getCount());
+
+        $m->import([
+            ['id' => 99, 'f1' => 'I'],
+            ['id' => 20, 'f1' => 'J'],
+        ]);
+        $this->assertSame(10, $m->getCount());
+
+        $m->import([
+            ['f1' => 'K'],
+        ]);
+        $this->assertSame(11, $m->getCount());
+
+        $this->assertSame([
+            1 => ['id' => 1, 'f1' => 'A'],
+            2 => ['id' => 2, 'f1' => 'B'],
+            3 => ['id' => 3, 'f1' => 'C'],
+            4 => ['id' => 4, 'f1' => 'D'],
+            6 => ['id' => 6, 'f1' => 'E'],
+            7 => ['id' => 7, 'f1' => 'F'],
+            8 => ['id' => 8, 'f1' => 'G'],
+            9 => ['id' => 9, 'f1' => 'H'],
+            99 => ['id' => 99, 'f1' => 'I'],
+            20 => ['id' => 20, 'f1' => 'J'],
+            100 => ['id' => 100, 'f1' => 'K'],
+        ], $m->export());
+    }
+
     /**
      * Test Model->setLimit().
      */
@@ -851,5 +921,39 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $cc = (clone $country)->load(2);
         $this->assertSame(1, $cc->ref('Users')->getCount());
+    }
+
+    public function testLoadAnyThrowsExceptionOnRecordNotFound()
+    {
+        $p = new Persistence\Array_();
+        $m = new Model($p);
+        $m->addField('name');
+        $this->expectExceptionCode(404);
+        $m->loadAny();
+    }
+
+    public function testTryLoadAnyNotThrowsExceptionOnRecordNotFound()
+    {
+        $p = new Persistence\Array_();
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+        $m->tryLoadAny();
+        $this->assertFalse($m->loaded());
+    }
+
+    public function testTryLoadAnyReturnsFirstRecord()
+    {
+        $a = [
+            2 => ['name' => 'John', 'surname' => 'Smith'],
+            3 => ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
+
+        $p = new Persistence\Array_($a);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+        $m->tryLoadAny();
+        $this->assertSame(2, $m->getId());
     }
 }
