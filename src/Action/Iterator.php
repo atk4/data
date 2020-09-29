@@ -17,7 +17,7 @@ class Iterator
     /**
      * @var \ArrayIterator
      */
-    private $generator;
+    public $generator;
 
     /**
      * Iterator constructor.
@@ -52,6 +52,7 @@ class Iterator
                 $this->generator = new \CallbackFilterIterator($this->generator, static function (array $row) use ($filterFxWeakRef) {
                     return $filterFxWeakRef->get()($row);
                 });
+                $this->generator->filterFx = $filterFx; // prevent filter function to be GCed
             } else {
                 $this->generator = new \CallbackFilterIterator($this->generator, $filterFx);
             }
