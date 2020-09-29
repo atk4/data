@@ -115,8 +115,6 @@ class CsvTest extends AtkPhpunit\TestCase
 
         $this->assertSame('John', $m->get('name'));
         $this->assertSame('Smith', $m->get('surname'));
-
-        $mm = clone $m; // TODO for some reasons, this fixes memory leaking testing
     }
 
     public function testLoadAnyException()
