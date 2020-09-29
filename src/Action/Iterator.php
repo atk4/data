@@ -49,7 +49,7 @@ class Iterator
             };
             if (PHP_MAJOR_VERSION >= 8 || PHP_MINOR_VERSION >= 4) {
                 $filterFxWeakRef = \WeakReference::create($filterFx);
-                $this->generator = new \CallbackFilterIterator($this->generator, static function(array $row) use ($filterFxWeakRef) {
+                $this->generator = new \CallbackFilterIterator($this->generator, static function (array $row) use ($filterFxWeakRef) {
                     return $filterFxWeakRef->get()($row);
                 });
                 $this->generator->filterFx = $filterFx; // prevent filter function to be GCed
