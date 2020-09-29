@@ -38,20 +38,24 @@ class Iterator
     public function filter(Model\Scope\AbstractScope $condition)
     {
         if (!$condition->isEmpty()) {
-            // bug in php, see:
-            // https://github.com/atk4/data/pull/735
+            // CallbackFilterIterator with circular reference (bound function) is not GCed,
+            // because of specific php implementation of SPL iterator, see:
             // https://bugs.php.net/bug.php?id=80125
-//            $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($condition) {
-//                return $this->match($row, $condition);
-//            });
-            // remove code below once fixed
-            $data = [];
-            foreach ($this->generator as $k => $row) {
-                if ($this->match($row, $condition)) {
-                    $data[$k] = $row;
-                }
+            // and related
+            // https://bugs.php.net/bug.php?id=65387
+            // fix it using WeakReference (for PHP 7.4 and later, for PHP 7.3, won't fix - remove code below once no longer supported)
+            $filterFx = function ($row) use ($condition) {
+                return $this->match($row, $condition);
+            };
+            if (PHP_MAJOR_VERSION >= 8 || PHP_MINOR_VERSION >= 4) {
+                $filterFxWeakRef = \WeakReference::create($filterFx);
+                $this->generator = new \CallbackFilterIterator($this->generator, static function (array $row) use ($filterFxWeakRef) {
+                    return $filterFxWeakRef->get()($row);
+                });
+                $this->generator->filterFx = $filterFx; // prevent filter function to be GCed
+            } else {
+                $this->generator = new \CallbackFilterIterator($this->generator, $filterFx);
             }
-            $this->generator = new \ArrayIterator($data);
         }
 
         return $this;
