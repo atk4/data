@@ -43,7 +43,7 @@ class Iterator
             // https://bugs.php.net/bug.php?id=80125
             // and related
             // https://bugs.php.net/bug.php?id=65387
-            // fix it using WeakReference (for PHP 7.4 and later, for PHP 7.3, won't fix)
+            // fix it using WeakReference (for PHP 7.4 and later, for PHP 7.3, won't fix - remove code below once no longer supported)
             $filterFx = function ($row) use ($condition) {
                 return $this->match($row, $condition);
             };
