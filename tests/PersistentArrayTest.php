@@ -232,6 +232,52 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->expectException(Exception::class);
         $m->tryLoad(1);
     }
+    
+    /**
+     * different to other field types, date, time and datetime fields return an
+     * object, not a scalar value to work with. Make sure Array persistence handles them correctly.
+     */
+    public function testDateTimeFields() {
+        $p = new Persistence\Array_();
+        $m = new Model($p);
+        $m->addField('date', ['type' => 'date']);
+        $m->addField('time', ['type' => 'time']);
+        $m->addField('datetime', ['type' => 'datetime']);
+        $m->save();
+
+        //try setting DateTime Object
+        $dateTime = \DateTime::createFromFormat('Y-m-d H:i:s', '2020-01-01 11:11:11');
+        $m->set('date', $dateTime);
+        $m->set('time', $dateTime);
+        $m->set('datetime', $dateTime);
+        $m->save();
+
+        self::assertInstanceOf(
+            \DateTime::class,
+            $m->get('date')
+        );
+        self::assertInstanceOf(
+            \DateTime::class,
+            $m->get('time')
+        );
+        self::assertInstanceOf(
+            \DateTime::class,
+            $m->get('datetime')
+        );
+
+        self::assertEquals(
+            '2020-01-01',
+            $m->get('date')->format('Y-m-d')
+        );
+        self::assertEquals(
+            '11:11:11',
+            $m->get('time')->format('H:i:s')
+        );
+        self::assertEquals(
+            '2020-01-01 11:11:11',
+            $m->get('date')->format('Y-m-d H:i:s')
+        );
+    }
 
     /**
      * Some persistences don't support loadAny() method.
