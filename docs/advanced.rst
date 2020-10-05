@@ -158,8 +158,8 @@ which I want to define like this::
         $this->owner->addField('created_dts', ['type'=>'datetime', 'default'=>new \DateTime()]);
 
         $this->owner->hasOne('created_by_user_id', 'User');
-        if(isset($this->app->user) and $this->app->user->loaded()) {
-            $this->owner->getField('created_by_user_id')->default = $this->app->user->getId();
+        if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
+            $this->owner->getField('created_by_user_id')->default = $this->getApp()->user->getId();
         }
 
         $this->owner->hasOne('updated_by_user_id', 'User');
@@ -167,8 +167,8 @@ which I want to define like this::
         $this->owner->addField('updated_dts', ['type'=>'datetime']);
 
         $this->owner->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
-            if(isset($this->app->user) and $this->app->user->loaded()) {
-                $data['updated_by'] = $this->app->user->getId();
+            if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
+                $data['updated_by'] = $this->getApp()->user->getId();
             }
             $data['updated_dts'] = new \DateTime();
         });
