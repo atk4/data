@@ -138,7 +138,7 @@ class Reference
 
     public function getOurModel(): Model
     {
-        return $this->owner;
+        return $this->getOwner();
     }
 
     /**
