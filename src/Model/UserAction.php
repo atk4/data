@@ -116,11 +116,11 @@ class UserAction
 
             $run = function () use ($args) {
                 if ($this->callback === null) {
-                    $fx = [$this->owner, $this->short_name];
+                    $fx = [$this->getOwner(), $this->short_name];
                 } elseif (is_string($this->callback)) {
-                    $fx = [$this->owner, $this->callback];
+                    $fx = [$this->getOwner(), $this->callback];
                 } else {
-                    array_unshift($args, $this->owner);
+                    array_unshift($args, $this->getOwner());
                     $fx = $this->callback;
                 }
 
@@ -128,7 +128,7 @@ class UserAction
             };
 
             if ($this->atomic) {
-                return $this->owner->atomic($run);
+                return $this->getOwner()->atomic($run);
             }
 
             return $run();
@@ -147,12 +147,12 @@ class UserAction
 
         // Verify that model fields wouldn't be too dirty
         if (is_array($this->fields)) {
-            $tooDirty = array_diff(array_keys($this->owner->dirty), $this->fields);
+            $tooDirty = array_diff(array_keys($this->getOwner()->dirty), $this->fields);
 
             if ($tooDirty) {
                 throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action.'))
                     ->addMoreInfo('too_dirty', $tooDirty)
-                    ->addMoreInfo('dirty', array_keys($this->owner->dirty))
+                    ->addMoreInfo('dirty', array_keys($this->getOwner()->dirty))
                     ->addMoreInfo('permitted', $this->fields);
             }
         } elseif (!is_bool($this->fields)) {
@@ -163,14 +163,14 @@ class UserAction
         // Verify some records scope cases
         switch ($this->appliesTo) {
             case self::APPLIES_TO_NO_RECORDS:
-                if ($this->owner->loaded()) {
+                if ($this->getOwner()->loaded()) {
                     throw (new Exception('This user action can be executed on non-existing record only.'))
-                        ->addMoreInfo('id', $this->owner->getId());
+                        ->addMoreInfo('id', $this->getOwner()->getId());
                 }
 
                 break;
             case self::APPLIES_TO_SINGLE_RECORD:
-                if (!$this->owner->loaded()) {
+                if (!$this->getOwner()->loaded()) {
                     throw new Exception('This user action requires you to load existing record first.');
                 }
 
@@ -190,9 +190,9 @@ class UserAction
         if ($this->preview === null) {
             throw new Exception('You must specify preview callback explicitly');
         } elseif (is_string($this->preview)) {
-            $fx = \Closure::fromCallable([$this->owner, $this->preview]);
+            $fx = \Closure::fromCallable([$this->getOwner(), $this->preview]);
         } else {
-            array_unshift($args, $this->owner);
+            array_unshift($args, $this->getOwner());
             $fx = $this->preview;
         }
 
@@ -219,7 +219,7 @@ class UserAction
         }
 
         if ($confirmation === true) {
-            $confirmation = 'Are you sure you wish to ' . $this->caption . ' ' . $this->owner->getTitle() . '?';
+            $confirmation = 'Are you sure you wish to ' . $this->caption . ' ' . $this->getOwner()->getTitle() . '?';
         }
 
         return $confirmation;
@@ -230,6 +230,6 @@ class UserAction
      */
     public function getModel(): Model
     {
-        return $this->owner;
+        return $this->getOwner();
     }
 }

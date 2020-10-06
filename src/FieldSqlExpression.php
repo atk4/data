@@ -57,8 +57,8 @@ class FieldSqlExpression extends FieldSql
     {
         $this->_init();
 
-        if ($this->owner->reload_after_save === null) {
-            $this->owner->reload_after_save = true;
+        if ($this->getOwner()->reload_after_save === null) {
+            $this->getOwner()->reload_after_save = true;
         }
 
         if ($this->concat) {
@@ -92,13 +92,13 @@ class FieldSqlExpression extends FieldSql
     {
         $expr = $this->expr;
         if ($expr instanceof \Closure) {
-            $expr = $expr($this->owner, $expression);
+            $expr = $expr($this->getOwner(), $expression);
         }
 
         if (is_string($expr)) {
             // If our Model has expr() method (inherited from Persistence\Sql) then use it
-            if ($this->owner->hasMethod('expr')) {
-                return $this->owner->expr('([])', [$this->owner->expr($expr)]);
+            if ($this->getOwner()->hasMethod('expr')) {
+                return $this->getOwner()->expr('([])', [$this->getOwner()->expr($expr)]);
             }
 
             // Otherwise call it from expression itself
