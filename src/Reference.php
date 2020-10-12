@@ -11,7 +11,7 @@ namespace atk4\data;
  *
  * It's possible to extend the basic reference with more meaningful references.
  *
- * @property Model $owner definition of our model
+ * @method Model getOwner() our model
  */
 class Reference
 {

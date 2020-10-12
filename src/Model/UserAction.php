@@ -17,7 +17,7 @@ use atk4\data\Model;
  *
  * UserAction must NOT rely on any specific UI implementation.
  *
- * @property Model $owner
+ * @method Model getOwner()
  */
 class UserAction
 {
