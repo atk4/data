@@ -15,7 +15,7 @@ use atk4\data\Reference;
 /**
  * Proivides generic functionality for joining data.
  *
- * @property Model $owner
+ * @method Model getOwner()
  */
 class Join
 {
