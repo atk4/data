@@ -49,7 +49,9 @@
     "phpunit/phpcov": "*",
     "phpunit/phpunit": ">=9.0"
   },
-  "replace": {},
+  "replace": {
+    "atk4/data": "self.version"
+  },
   "autoload": {
     "psr-4": {
       "atk4\\data\\": "src/"
