@@ -40,11 +40,11 @@
   "require": {
     "php": ">=7.3.0",
     "ext-intl": "*",
-    "atk4/core": "^2.3.0",
-    "atk4/dsql": "^2.3.0"
+    "atk4/core": "~2.3.0",
+    "atk4/dsql": "~2.3.0"
   },
   "require-dev": {
-    "atk4/schema": "^2.3.0",
+    "atk4/schema": "~2.3.0",
     "friendsofphp/php-cs-fixer": "^2.16",
     "johnkary/phpunit-speedtrap": "^3.2",
     "phpunit/phpcov": "*",
