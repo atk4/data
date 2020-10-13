@@ -32,6 +32,7 @@
       "homepage": "https://mvorisek.cz/"
     }
   ],
+  "version": "2.3.1",
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
@@ -49,9 +50,6 @@
     "johnkary/phpunit-speedtrap": "^3.2",
     "phpunit/phpcov": "*",
     "phpunit/phpunit": ">=9.0"
-  },
-  "replace": {
-    "atk4/data": "self.version"
   },
   "autoload": {
     "psr-4": {
