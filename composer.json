@@ -32,6 +32,7 @@
       "homepage": "https://mvorisek.cz/"
     }
   ],
+  "version": "2.2.2",
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
@@ -48,9 +49,6 @@
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpunit/phpcov": "*",
     "phpunit/phpunit": ">=9.0"
-  },
-  "replace": {
-    "atk4/data": "self.version"
   },
   "autoload": {
     "psr-4": {
