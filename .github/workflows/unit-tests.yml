@@ -33,10 +33,6 @@ jobs:
           if [ -z "$LOG_COVERAGE" ]; then rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ; fi
           php --version
 
-      # trick composer that this is a "atk4/data:develop" dependency to install atk4/schema
-      - name: Rename HEAD to develop for Composer
-        run: git switch -C develop HEAD
-
       - name: Setup cache 1/2
         id: composer-cache
         run: |
@@ -115,10 +111,6 @@ jobs:
         run: |
           if [ -z "$LOG_COVERAGE" ]; then rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ; fi
           php --version
-
-      # trick composer that this is a "atk4/data:develop" dependency to install atk4/schema
-      - name: Rename HEAD to develop for Composer
-        run: git switch -C develop HEAD
 
       - name: Setup cache 1/2
         id: composer-cache
