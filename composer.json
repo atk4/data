@@ -32,7 +32,7 @@
       "homepage": "https://mvorisek.cz/"
     }
   ],
-  "version": "2.2.2",
+  "version": "2.2.1",
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
