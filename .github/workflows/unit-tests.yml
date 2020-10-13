@@ -6,7 +6,7 @@ on:
   push:
     branches: '**'
   schedule:
-    - cron: '0 0/2 * * *'
+    - cron: '0 * * * *'
 
 jobs:
   smoke-test:
@@ -32,10 +32,6 @@ jobs:
         run: |
           if [ -z "$LOG_COVERAGE" ]; then rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ; fi
           php --version
-
-      # trick composer that this is a "atk4/data:develop" dependency to install atk4/schema
-      - name: Rename HEAD to develop for Composer
-        run: git switch -C develop HEAD
 
       - name: Setup cache 1/2
         id: composer-cache
@@ -116,10 +112,6 @@ jobs:
           if [ -z "$LOG_COVERAGE" ]; then rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ; fi
           php --version
 
-      # trick composer that this is a "atk4/data:develop" dependency to install atk4/schema
-      - name: Rename HEAD to develop for Composer
-        run: git switch -C develop HEAD
-
       - name: Setup cache 1/2
         id: composer-cache
         run: |
@@ -139,7 +131,7 @@ jobs:
           if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer --dev && composer --no-update  --no-suggest --ansi --prefer-dist --no-interaction --no-progress require jdorn/sql-formatter ; fi
           if [ "${{ matrix.php }}" == "8.0" ]; then composer config platform.php 7.4.5 ; fi
           composer install --no-suggest --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
-          if [ "${{ matrix.type }}" == "Phpunit Burn" ]; then sed -i 's/ *public function runBare(): void/public function runBare(): void { gc_collect_cycles(); $mem0 = memory_get_usage(); for ($i = 0; $i < '"$(if [ \"$GITHUB_EVENT_NAME\" == \"schedule\" ]; then echo 30; else echo 5; fi)"'; ++$i) { $this->_runBare(); gc_collect_cycles(); if ($i === 0) { $mem1 = memory_get_usage(); } } $mem2 = memory_get_usage(); if ($mem2 - 1536 * 1024 > $mem0 || $mem2 - 128 * 1024 > $mem1) { $this->onNotSuccessfulTest(new AssertionFailedError("Memory leak detected! (" . round($mem0 \/ (1024 * 1024), 3) . " + " . round(($mem1 - $mem0) \/ (1024 * 1024), 3) . " + " . round(($mem2 - $mem1) \/ (1024 * 1024), 3) . " MB, " . $i . " iterations)")); } } private function _runBare(): void/' vendor/phpunit/phpunit/src/Framework/TestCase.php && cat vendor/phpunit/phpunit/src/Framework/TestCase.php | grep '_runBare(' ; fi
+          if [ "${{ matrix.type }}" == "Phpunit Burn" ]; then sed -i 's/ *public function runBare(): void/public function runBare(): void { gc_collect_cycles(); $mem0 = memory_get_usage(); for ($i = 0; $i < '"$(if [ \"$GITHUB_EVENT_NAME\" == \"schedule\" ]; then echo 20; else echo 5; fi)"'; ++$i) { $this->_runBare(); gc_collect_cycles(); if ($i === 0) { $mem1 = memory_get_usage(); } } $mem2 = memory_get_usage(); if ($mem2 - 1536 * 1024 > $mem0 || $mem2 - 128 * 1024 > $mem1) { $this->onNotSuccessfulTest(new AssertionFailedError("Memory leak detected! (" . round($mem0 \/ (1024 * 1024), 3) . " + " . round(($mem1 - $mem0) \/ (1024 * 1024), 3) . " + " . round(($mem2 - $mem1) \/ (1024 * 1024), 3) . " MB, " . $i . " iterations)")); } } private function _runBare(): void/' vendor/phpunit/phpunit/src/Framework/TestCase.php && cat vendor/phpunit/phpunit/src/Framework/TestCase.php | grep '_runBare(' ; fi
 
       - name: Init
         run: |
