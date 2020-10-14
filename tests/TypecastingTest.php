@@ -7,6 +7,7 @@ namespace atk4\data\tests;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 
 class MyDate extends \DateTime
 {
@@ -126,7 +127,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
     {
         // Oracle always converts empty string to null
         // see https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
-        $emptyStringValue = $this->driverType === 'oci' ? null : '';
+        $emptyStringValue = $this->getDatabasePlatform() instanceof OraclePlatform ? null : '';
 
         $dbData = [
             'types' => [
@@ -193,7 +194,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertNull($mm->get('float'));
         $this->assertNull($mm->get('array'));
         $this->assertNull($mm->get('object'));
-        if ($this->driverType !== 'oci') { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
+        if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
             $this->assertSame([], $mm->dirty);
         }
 
