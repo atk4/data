@@ -293,7 +293,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
         $user->addCondition('Tickets/user/country_id/Users/#', '>=', 2);
         $user->addCondition('Tickets/user/country_id/Users/country_id/Users/#', '>', 1);
-        if (! $this->getDatabasePlatform() instanceof SqlitePlatform) {
+        if (!$this->getDatabasePlatform() instanceof SqlitePlatform) {
             // not supported because of limitation/issue in Sqlite, the generated query fails
             // with error: "parser stack overflow"
             $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true

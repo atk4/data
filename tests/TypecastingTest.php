@@ -194,7 +194,7 @@ class TypecastingTest extends \atk4\schema\PhpunitTestCase
         $this->assertNull($mm->get('float'));
         $this->assertNull($mm->get('array'));
         $this->assertNull($mm->get('object'));
-        if (! $this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
+        if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
             $this->assertSame([], $mm->dirty);
         }
 
