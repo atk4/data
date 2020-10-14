@@ -6,6 +6,9 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence;
+use Doctrine\DBAL\Platforms\MySqlPlatform;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -34,7 +37,7 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
-        if ($this->driverType === 'sqlite') {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()
@@ -51,7 +54,7 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
         $i->addExpression('double_total_gross', '[total_gross]*2');
 
-        if ($this->driverType === 'sqlite') {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertEquals(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross",(("total_net"+"total_vat")*2) "double_total_gross" from "invoice"',
                 $i->action('select')->render()
@@ -77,7 +80,7 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
             return '[total_net]+[total_vat]';
         });
 
-        if ($this->driverType === 'sqlite') {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()
@@ -106,7 +109,7 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('sum_net', $i->action('fx', ['sum', 'total_net']));
 
-        if ($this->driverType === 'sqlite') {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","total_net","total_vat",(select sum("total_net") from "invoice") "sum_net" from "invoice"',
                 $i->action('select')->render()
@@ -139,9 +142,9 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($db, 'user');
         $m->addFields(['name', 'surname', 'cached_name']);
 
-        if ($this->driverType === 'sqlite') {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $m->addExpression('full_name', '[name] || " " || [surname]');
-        } elseif ($this->driverType === 'oci') {
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $m->addExpression('full_name', '[name] || \' \' || [surname]');
         } else {
             $m->addExpression('full_name', 'CONCAT([name], \' \', [surname])');
@@ -149,17 +152,17 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
-        if ($this->driverType === 'sqlite') {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where ("name" || " " || "surname") != "cached_name"',
                 $m->action('select')->render()
             );
-        } elseif ($this->driverType === 'oci') {
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where ("name" || \' \' || "surname") != "cached_name"',
                 $m->action('select')->render()
             );
-        } elseif ($this->driverType === 'mysql') {
+        } elseif ($this->getDatabasePlatform() instanceof MySqlPlatform) {
             $this->assertSame(
                 'select `id`,`name`,`surname`,`cached_name`,(CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where (CONCAT(`name`, \' \', `surname`)) != `cached_name`',
                 $m->action('select')->render()

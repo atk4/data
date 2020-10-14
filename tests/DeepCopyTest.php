@@ -7,6 +7,7 @@ namespace atk4\data\tests;
 use atk4\data\Model;
 use atk4\data\Util\DeepCopy;
 use atk4\data\Util\DeepCopyException;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class DcClient extends Model
 {
@@ -245,7 +246,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(1, $client3->ref('Quotes')->action('count')->getOne());
         $this->assertEquals(1, $client3->ref('Payments')->action('count')->getOne());
 
-        if ($this->driverType === 'sqlsrv') {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('TODO - MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery.');
         }
 

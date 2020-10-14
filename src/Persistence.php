@@ -21,9 +21,6 @@ class Persistence
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
-    /** @var string Connection driver name, for example, mysql, pgsql, oci etc. */
-    public $driverType;
-
     /**
      * Connects database.
      *
@@ -32,12 +29,10 @@ class Persistence
      */
     public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
     {
-        // Process DSN string
+        // parse DSN string
         $dsn = \atk4\dsql\Connection::normalizeDsn($dsn, $user, $password);
 
-        $driverType = strtolower($args['driver']/*BC compatibility*/ ?? $args['driverType'] ?? $dsn['driverType']);
-
-        switch ($driverType) {
+        switch ($dsn['driverType']) {
             case 'mysql':
             case 'oci':
             case 'oci12':
@@ -51,11 +46,8 @@ class Persistence
                 // no break
             case 'pgsql':
             case 'sqlsrv':
-            case 'dumper':
-            case 'counter':
             case 'sqlite':
                 $db = new \atk4\data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
-                $db->driverType = $driverType;
 
                 return $db;
             default:
