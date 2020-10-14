@@ -32,7 +32,7 @@ class Persistence
         // parse DSN string
         $dsn = \atk4\dsql\Connection::normalizeDsn($dsn, $user, $password);
 
-        switch ($dsn['driverType']) {
+        switch ($dsn['driverSchema']) {
             case 'mysql':
             case 'oci':
             case 'oci12':
