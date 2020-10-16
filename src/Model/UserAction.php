@@ -33,15 +33,6 @@ class UserAction
     public const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
     public const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
 
-    // deprecated constants - will be removed in dec-2020
-    public const NO_RECORDS = self::APPLIES_TO_NO_RECORDS;
-    public const SINGLE_RECORD = self::APPLIES_TO_SINGLE_RECORD;
-    public const MULTIPLE_RECORDS = self::APPLIES_TO_MULTIPLE_RECORDS;
-    public const ALL_RECORDS = self::APPLIES_TO_ALL_RECORDS;
-
-    /** @deprecated use appliesTo instead - will be removed in dec-2020 */
-    public $scope;
-
     /** @var string by default - action is for a single-record */
     public $appliesTo = self::APPLIES_TO_SINGLE_RECORD;
 
@@ -93,12 +84,6 @@ class UserAction
     protected function init(): void
     {
         $this->init_();
-
-        if ($this->scope) {
-            'trigger_error'('Property UserAction::$scope is deprecated. Use Model::$appliesTo instead', E_USER_DEPRECATED);
-
-            $this->appliesTo = $this->scope;
-        }
     }
 
     /**

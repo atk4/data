@@ -142,16 +142,6 @@ class Reference
     }
 
     /**
-     * @deprecated use getTheirModel instead - will be removed in dec-2020
-     */
-    public function getModel(array $defaults = []): Model
-    {
-        'trigger_error'('Method Reference::getModel is deprecated. Use Reference::getTheirModel instead', E_USER_DEPRECATED);
-
-        return $this->getTheirModel($defaults);
-    }
-
-    /**
      * Returns destination model that is linked through this reference. Will apply
      * necessary conditions.
      *
