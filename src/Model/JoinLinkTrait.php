@@ -9,23 +9,23 @@ trait JoinLinkTrait
     /**
      * The short name of the join link.
      *
-     * @var string
+     * @var string|null
      */
-    protected $join;
+    protected $joinName;
 
     public function getJoin(): Join
     {
-        return $this->getOwner()->getElement($this->join);
+        return $this->getOwner()->getElement($this->joinName);
     }
 
     public function hasJoin(): bool
     {
-        return $this->join !== null;
+        return $this->joinName !== null;
     }
 
     public function setJoin(Join $join): self
     {
-        $this->join = $join->short_name;
+        $this->joinName = $join->short_name;
 
         return $this;
     }

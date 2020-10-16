@@ -13,7 +13,7 @@ use atk4\data\Persistence;
 use atk4\data\Reference;
 
 /**
- * Proivides generic functionality for joining data.
+ * Provides generic functionality for joining data.
  *
  * @method Model getOwner()
  */
@@ -223,7 +223,7 @@ class Join
         if ($seed && !is_array($seed)) {
             $seed = [$seed];
         }
-        $seed['join'] = $this->short_name;
+        $seed['joinName'] = $this->short_name;
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
@@ -276,7 +276,7 @@ class Join
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
         }
-        $defaults['join'] = $this->short_name;
+        $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->join($foreign_table, $defaults);
     }
@@ -286,14 +286,14 @@ class Join
      *
      * @param array $defaults
      *
-     * @return Join
+     * @return static
      */
     public function leftJoin(string $foreign_table, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
         }
-        $defaults['join'] = $this->short_name;
+        $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->leftJoin($foreign_table, $defaults);
     }
@@ -310,7 +310,7 @@ class Join
     /*
     public function weakJoin($defaults = [])
     {
-        $defaults['join'] = $this->short_name;
+        $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->weakJoin($defaults);
     }

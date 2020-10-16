@@ -650,7 +650,7 @@ class Field implements Expressionable
         ];
 
         foreach ([
-            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'join',
+            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
         ] as $key) {
             if (isset($this->{$key})) {
                 $arr[$key] = $this->{$key};

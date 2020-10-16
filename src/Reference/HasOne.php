@@ -170,7 +170,7 @@ class HasOne extends Reference
                 'type' => $this->type,
                 'reference' => $this,
                 'system' => $this->system,
-                'join' => $this->join,
+                'joinName' => $this->join,
                 'default' => $this->default,
                 'never_persist' => $this->never_persist,
                 'read_only' => $this->read_only,
