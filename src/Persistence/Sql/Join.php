@@ -109,7 +109,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
      */
     public function dsql(): Query
     {
-        $dsql = $this->getOwner()->persistence->initQuery($this->getOwner());
+        $dsql = $this->getPersistence()->initQuery($this->getOwner());
 
         return $dsql->reset('table')->table($this->foreign_table, $this->foreign_alias);
     }
@@ -187,11 +187,11 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
 
         $query = $this->dsql();
         $query->mode('insert');
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+        $query->set($this->getPersistence()->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
         $query->set($this->foreign_field, null);
         $query->insert();
-        $this->id = $model->persistence->lastInsertId($model);
+        $this->id = $this->getPersistence()->lastInsertId($model);
 
         if ($this->hasJoin()) {
             $this->getJoin()->set($this->master_field, $this->id);
@@ -212,11 +212,11 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         }
 
         $query = $this->dsql();
-        $query->set($this->getOwner()->persistence->typecastSaveRow($this->getOwner(), $this->save_buffer));
+        $query->set($this->getPersistence()->typecastSaveRow($this->getOwner(), $this->save_buffer));
         $this->save_buffer = [];
         $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
         $query->insert();
-        $this->id = $this->getOwner()->persistence->lastInsertId($this->getOwner());
+        $this->id = $this->getPersistence()->lastInsertId($this->getOwner());
     }
 
     /**
@@ -234,7 +234,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
 
         $model = $this->getOwner();
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+        $query->set($this->getPersistence()->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
 
         $id = $this->reverse ? $model->getId() : $model->get($this->master_field);

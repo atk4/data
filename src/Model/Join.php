@@ -158,6 +158,14 @@ class Join
     }
 
     /**
+     * @return Persistence|Persistence\Sql
+     */
+    protected function getPersistence()
+    {
+        return $this->persistence ?? $this->getOwner()->persistence;
+    }
+
+    /**
      * Will use either foreign_alias or create #join_<table>.
      */
     public function getDesiredName(): string

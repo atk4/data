@@ -51,7 +51,7 @@ class Join extends Model\Join
         }
 
         try {
-            $data = $model->persistence->load($model, $this->id, $this->foreign_table);
+            $data = $this->getPersistence()->load($model, $this->id, $this->foreign_table);
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
                 ->addMoreInfo('table', $this->foreign_table)
@@ -75,11 +75,7 @@ class Join extends Model\Join
             return;
         }
 
-        // Figure out where are we going to save data
-        $persistence = $this->persistence ?:
-            $this->getOwner()->persistence;
-
-        $this->id = $persistence->insert(
+        $this->id = $this->getPersistence()->insert(
             $this->getOwner(),
             $this->save_buffer,
             $this->foreign_table
@@ -103,9 +99,7 @@ class Join extends Model\Join
 
         $this->save_buffer[$this->foreign_field] = $this->hasJoin() ? $this->getJoin()->id : $id;
 
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
-
-        $this->id = $persistence->insert(
+        $this->id = $this->getPersistence()->insert(
             $this->getOwner(),
             $this->save_buffer,
             $this->foreign_table
@@ -121,9 +115,7 @@ class Join extends Model\Join
             return;
         }
 
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
-
-        $this->id = $persistence->update(
+        $this->id = $this->getPersistence()->update(
             $this->getOwner(),
             $this->id,
             $this->save_buffer,
