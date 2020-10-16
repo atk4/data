@@ -39,10 +39,8 @@ class Join extends Model\Join
 
     /**
      * Called from afterLoad hook.
-     *
-     * @param Model $model
      */
-    public function afterLoad($model): void
+    public function afterLoad(Model $model): void
     {
         // we need to collect ID
         $this->id = $model->data[$this->master_field];
@@ -62,10 +60,8 @@ class Join extends Model\Join
 
     /**
      * Called from beforeInsert hook.
-     *
-     * @param Model $model
      */
-    public function beforeInsert($model, array &$data): void
+    public function beforeInsert(Model $model, array &$data): void
     {
         if ($this->weak) {
             return;
@@ -95,10 +91,9 @@ class Join extends Model\Join
     /**
      * Called from afterInsert hook.
      *
-     * @param Model $model
      * @param mixed $id
      */
-    public function afterInsert($model, $id): void
+    public function afterInsert(Model $model, $id): void
     {
         if ($this->weak) {
             return;
@@ -117,10 +112,8 @@ class Join extends Model\Join
 
     /**
      * Called from beforeUpdate hook.
-     *
-     * @param Model $model
      */
-    public function beforeUpdate($model, array &$data): void
+    public function beforeUpdate(Model $model, array &$data): void
     {
         if ($this->weak) {
             return;
