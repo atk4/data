@@ -20,7 +20,7 @@ trait JoinLinkTrait
 
     public function hasJoin(): bool
     {
-        return $this->join && $this->getOwner()->hasElement($this->join);
+        return $this->join !== null;
     }
 
     public function setJoin(Join $join): self
