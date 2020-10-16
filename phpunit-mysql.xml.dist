@@ -8,11 +8,16 @@
     <testsuites>
         <testsuite name="tests">
             <directory>tests</directory>
+            <directory>tests-schema</directory>
         </testsuite>
     </testsuites>
+    <listeners>
+        <listener class="JohnKary\PHPUnit\Listener\SpeedTrapListener" />
+    </listeners>
     <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">src</directory>
+            <directory suffix=".php">src-schema</directory>
         </include>
         <report>
             <php outputFile="build/logs/clover-mysql.cov" />

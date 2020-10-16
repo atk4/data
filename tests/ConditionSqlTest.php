@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace atk4\data\tests;
 
 use atk4\data\Model;
+use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -36,7 +38,7 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $mm->tryLoad(2);
         $this->assertNull($mm->get('name'));
 
-        if ($this->driverType === 'sqlite') {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","name","gender" from "user" where "gender" = :a',
                 $mm->action('select')->render()
@@ -418,7 +420,7 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testLikeCondition()
     {
-        if ($this->driverType === 'pgsql') {
+        if ($this->getDatabasePlatform() instanceof PostgreSqlPlatform) {
             $this->markTestIncomplete('PostgreSQL does not support "column LIKE variable" syntax');
         }
 

@@ -212,7 +212,7 @@ Suppose you want to check 'memcache' before actually loading the record from
 the database. Here is how you can implement this functionality::
 
     $m->onHook(Model::HOOK_BEFORE_LOAD, function($m, $id) {
-        $data = $m->app->cacheFetch($m->table, $id);
+        $data = $m->getApp()->cacheFetch($m->table, $id);
         if ($data) {
             $m->data = $data;
             $m->setId($id);

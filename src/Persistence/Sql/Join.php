@@ -42,8 +42,8 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
     {
         /*
         // If our Model has expr() method (inherited from Persistence\Sql) then use it
-        if ($this->owner->hasMethod('expr')) {
-            return $this->owner->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
+        if ($this->getOwner()->hasMethod('expr')) {
+            return $this->getOwner()->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
         }
 
         // Otherwise call it from expression itself
@@ -51,7 +51,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         */
 
         // Romans: Join\Sql shouldn't even be called if expr is undefined. I think we should leave it here to produce error.
-        return $this->owner->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
+        return $this->getOwner()->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
     }
 
     /**
@@ -61,7 +61,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
     {
         parent::init();
 
-        $this->owner->persistence_data['use_table_prefixes'] = true;
+        $this->getOwner()->persistence_data['use_table_prefixes'] = true;
 
         // If kind is not specified, figure out join type
         if (!isset($this->kind)) {
@@ -70,7 +70,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
 
         // Our short name will be unique
         if (!$this->foreign_alias) {
-            $this->foreign_alias = ($this->owner->table_alias ?: '') . $this->short_name;
+            $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
         $this->onHookToOwner(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
@@ -88,11 +88,11 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
             // If string specified here does not point to an existing model field
             // a new basic field is inserted and marked hidden.
             if (is_string($this->master_field)) {
-                if (!$this->owner->hasField($this->master_field)) {
+                if (!$this->getOwner()->hasField($this->master_field)) {
                     if ($this->join) {
                         $f = $this->join->addField($this->master_field, ['system' => true, 'read_only' => true]);
                     } else {
-                        $f = $this->owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
+                        $f = $this->getOwner()->addField($this->master_field, ['system' => true, 'read_only' => true]);
                     }
                     $this->master_field = $f->short_name;
                 }
@@ -110,7 +110,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
      */
     public function dsql(): Query
     {
-        $dsql = $this->owner->persistence->initQuery($this->owner);
+        $dsql = $this->getOwner()->persistence->initQuery($this->getOwner());
 
         return $dsql->reset('table')->table($this->foreign_table, $this->foreign_alias);
     }
@@ -147,7 +147,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         if ($this->reverse) {
             $query->field([$this->short_name => ($this->join ?:
                 (
-                    ($this->owner->table_alias ?: $this->owner->table)
+                    ($this->getOwner()->table_alias ?: $this->getOwner()->table)
                     .'.'.$this->master_field)
             )]);
         } else {
@@ -188,7 +188,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         $this->save_buffer = [];
         $query->set($this->foreign_field, null);
         $query->insert();
-        $this->id = $this->owner->persistence->lastInsertId($this->owner);
+        $this->id = $this->getOwner()->persistence->lastInsertId($this->getOwner());
 
         if ($this->join) {
             $this->join->set($this->master_field, $this->id);

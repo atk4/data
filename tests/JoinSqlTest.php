@@ -7,6 +7,9 @@ namespace atk4\data\tests;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -55,7 +58,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinSaving1()
     {
-        if ($this->driverType === 'pgsql' || $this->driverType === 'sqlsrv' || $this->driverType === 'oci') {
+        if ($this->getDatabasePlatform() instanceof PostgreSqlPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
@@ -142,7 +145,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
         $this->db->connection->dsql()->table('contact')->where('id', 2)->delete();
 
-        if ($this->driverType === 'oci') { // TODO
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) { // TODO
             $this->markTestIncomplete('TODO - for some reasons, result below has one different key');
         }
 
@@ -165,7 +168,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinSaving3()
     {
-        if ($this->driverType === 'pgsql' || $this->driverType === 'sqlsrv' || $this->driverType === 'oci') {
+        if ($this->getDatabasePlatform() instanceof PostgreSqlPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
@@ -231,7 +234,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinUpdate()
     {
-        if ($this->driverType === 'pgsql' || $this->driverType === 'sqlsrv' || $this->driverType === 'oci') {
+        if ($this->getDatabasePlatform() instanceof PostgreSqlPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
@@ -405,7 +408,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testDoubleJoin()
     {
-        if ($this->driverType === 'pgsql' || $this->driverType === 'sqlsrv' || $this->driverType === 'oci') {
+        if ($this->getDatabasePlatform() instanceof PostgreSqlPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 

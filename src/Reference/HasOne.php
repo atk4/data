@@ -229,7 +229,7 @@ class HasOne extends Reference
             $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->getId();
 
             if ($this->getOurFieldValue() !== $theirValue) {
-                $this->getOurField()->set($theirValue)->owner->save();
+                $this->getOurField()->set($theirValue)->getOwner()->save();
             }
 
             $theirModel->reload();

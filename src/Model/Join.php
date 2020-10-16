@@ -15,7 +15,7 @@ use atk4\data\Reference;
 /**
  * Proivides generic functionality for joining data.
  *
- * @property Model $owner
+ * @method Model getOwner()
  */
 class Join
 {
@@ -152,7 +152,7 @@ class Join
     {
         $name = $this->short_name; // use static function to allow this object to be GCed
 
-        return $this->owner->onHookDynamic(
+        return $this->getOwner()->onHookDynamic(
             $spot,
             static function (Model $owner) use ($name) {
                 return $owner->getElement($name);
@@ -186,9 +186,9 @@ class Join
                     // both master and foreign fields are set
 
                     // master_field exists, no we will use that
-                    // if (!is_object($this->master_field) && !$this->owner->hasField($this->master_field)) {
+                    // if (!is_object($this->master_field) && !$this->getOwner()->hasField($this->master_field)) {
                     throw (new Exception('You are trying to link tables on non-id fields. This is not implemented yet'))
-                        ->addMoreInfo('condition', $this->owner->table . '.' . $this->master_field . ' = ' . $this->foreign_table);
+                        ->addMoreInfo('condition', $this->getOwner()->table . '.' . $this->master_field . ' = ' . $this->foreign_table);
                     // } $this->reverse = 'link';
                 }
             }
@@ -201,7 +201,7 @@ class Join
             }
         } else {
             $this->reverse = false;
-            $id_field = $this->owner->id_field ?: 'id';
+            $id_field = $this->getOwner()->id_field ?: 'id';
             if (!$this->master_field) {
                 $this->master_field = $this->foreign_table . '_' . $id_field;
             }
@@ -231,7 +231,7 @@ class Join
         }
         $seed['join'] = $this;
 
-        return $this->owner->addField($this->prefix . $name, $seed);
+        return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
 
     /**
@@ -267,7 +267,7 @@ class Join
 
         $defaults['join'] = $this;
 
-        return $this->owner->add($object, $defaults);
+        return $this->getOwner()->add($object, $defaults);
     }
 
     /**
@@ -284,7 +284,7 @@ class Join
         }
         $defaults['join'] = $this;
 
-        return $this->owner->join($foreign_table, $defaults);
+        return $this->getOwner()->join($foreign_table, $defaults);
     }
 
     /**
@@ -301,7 +301,7 @@ class Join
         }
         $defaults['join'] = $this;
 
-        return $this->owner->leftJoin($foreign_table, $defaults);
+        return $this->getOwner()->leftJoin($foreign_table, $defaults);
     }
 
     /**
@@ -318,7 +318,7 @@ class Join
     {
         $defaults['join'] = $this;
 
-        return $this->owner->weakJoin($defaults);
+        return $this->getOwner()->weakJoin($defaults);
     }
     */
 
@@ -338,7 +338,7 @@ class Join
 
         $defaults['join'] = $this;
 
-        return $this->owner->hasOne($link, $defaults);
+        return $this->getOwner()->hasOne($link, $defaults);
     }
 
     /**
@@ -357,10 +357,10 @@ class Join
 
         $defaults = array_merge([
             'our_field' => $this->id_field,
-            'their_field' => $this->owner->table . '_' . $this->id_field,
+            'their_field' => $this->getOwner()->table . '_' . $this->id_field,
         ], $defaults);
 
-        return $this->owner->hasMany($link, $defaults);
+        return $this->getOwner()->hasMany($link, $defaults);
     }
 
     /**
@@ -450,7 +450,7 @@ class Join
     public function weakJoinModel($model, $fields = [])
     {
         if (!is_object($model)) {
-            $model = $this->owner->connection->add($model);
+            $model = $this->getOwner()->connection->add($model);
         }
         $j = $this->join($model->table);
 
