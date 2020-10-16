@@ -449,9 +449,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $m_u2 = (clone $m_u)->tryLoad(40);
         $this->assertFalse($m_u2->loaded());
 
-        $this->assertSame($m_u2->getField('country_id')->join, $m_u2->getField('contact_phone')->join);
+        $this->assertSame($m_u2->getField('country_id')->getJoin(), $m_u2->getField('contact_phone')->getJoin());
 
-        $m_u2->unload();
         (clone $m_u)->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
         $this->assertEquals(
@@ -507,7 +506,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $m_u2->delete();
 
         $m_u->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u2->getId());
+        $this->assertEquals(30, $m_u->getId());
 
         $this->assertEquals(
             [

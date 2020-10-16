@@ -89,12 +89,11 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
             // a new basic field is inserted and marked hidden.
             if (is_string($this->master_field)) {
                 if (!$this->getOwner()->hasField($this->master_field)) {
-                    if ($this->join) {
-                        $f = $this->join->addField($this->master_field, ['system' => true, 'read_only' => true]);
-                    } else {
-                        $f = $this->getOwner()->addField($this->master_field, ['system' => true, 'read_only' => true]);
-                    }
-                    $this->master_field = $f->short_name;
+                    $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
+
+                    $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
+
+                    $this->master_field = $field->short_name;
                 }
             }
 
@@ -188,10 +187,10 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         $this->save_buffer = [];
         $query->set($this->foreign_field, null);
         $query->insert();
-        $this->id = $this->getOwner()->persistence->lastInsertId($this->getOwner());
+        $this->id = $model->persistence->lastInsertId($model);
 
-        if ($this->join) {
-            $this->join->set($this->master_field, $this->id);
+        if ($this->hasJoin()) {
+            $this->getJoin()->set($this->master_field, $this->id);
         } else {
             $data[$this->master_field] = $this->id;
         }
@@ -211,9 +210,9 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         $query = $this->dsql();
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
-        $query->set($this->foreign_field, $this->join->id ?? $id);
+        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
         $query->insert();
-        $this->id = $model->persistence->lastInsertId($this->owner);
+        $this->id = $model->persistence->lastInsertId($model);
     }
 
     /**

@@ -24,6 +24,7 @@ class Join
         init as _init;
     }
     use DiContainerTrait;
+    use JoinLinkTrait;
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
@@ -130,13 +131,6 @@ class Join
     protected $save_buffer = [];
 
     /**
-     * When join is done on another join.
-     *
-     * @var Join
-     */
-    protected $join;
-
-    /**
      * Default constructor. Will copy argument into properties.
      *
      * @param array $defaults
@@ -229,7 +223,7 @@ class Join
         if ($seed && !is_array($seed)) {
             $seed = [$seed];
         }
-        $seed['join'] = $this;
+        $seed['join'] = $this->short_name;
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
@@ -265,7 +259,7 @@ class Join
             $defaults = ['name' => $defaults];
         }
 
-        $defaults['join'] = $this;
+        $defaults['join'] = $this->short_name;
 
         return $this->getOwner()->add($object, $defaults);
     }
@@ -282,7 +276,7 @@ class Join
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
         }
-        $defaults['join'] = $this;
+        $defaults['join'] = $this->short_name;
 
         return $this->getOwner()->join($foreign_table, $defaults);
     }
@@ -299,7 +293,7 @@ class Join
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
         }
-        $defaults['join'] = $this;
+        $defaults['join'] = $this->short_name;
 
         return $this->getOwner()->leftJoin($foreign_table, $defaults);
     }
@@ -316,7 +310,7 @@ class Join
     /*
     public function weakJoin($defaults = [])
     {
-        $defaults['join'] = $this;
+        $defaults['join'] = $this->short_name;
 
         return $this->getOwner()->weakJoin($defaults);
     }
@@ -336,7 +330,7 @@ class Join
             $defaults = ['model' => $defaults ?: 'Model_' . $link];
         }
 
-        $defaults['join'] = $this;
+        $defaults['join'] = $this->short_name;
 
         return $this->getOwner()->hasOne($link, $defaults);
     }

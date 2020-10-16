@@ -21,6 +21,7 @@ class Field implements Expressionable
     use TrackableTrait;
     use DiContainerTrait;
     use ReadableCaptionTrait;
+    use Model\JoinLinkTrait;
 
     // {{{ Properties
 
@@ -73,13 +74,6 @@ class Field implements Expressionable
      * @var string|null
      */
     public $actual;
-
-    /**
-     * Join object.
-     *
-     * @var Model\Join|null
-     */
-    public $join;
 
     /**
      * Is it system field?

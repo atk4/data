@@ -930,8 +930,8 @@ class Sql extends Persistence
         if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {
             $mask = '{{}}.{}';
             $prop = [
-                $field->join
-                    ? ($field->join->foreign_alias ?: $field->join->short_name)
+                $field->hasJoin()
+                    ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->short_name)
                     : ($field->getOwner()->table_alias ?: $field->getOwner()->table),
                 $field->getPersistenceName(),
             ];
