@@ -101,14 +101,6 @@ abstract class Migration extends Expression
     ];
 
     /**
-     * @deprecated use Migration::of instead
-     */
-    public static function getMigration($source, $params = []): self
-    {
-        return self::of($source, $params);
-    }
-
-    /**
      * Factory method to get correct Migration subclass object depending on connection given.
      *
      * @param Connection|Persistence|Model $source
@@ -361,14 +353,6 @@ abstract class Migration extends Expression
         $this->mode('rename')->execute();
 
         return $this;
-    }
-
-    /**
-     * @deprecated use Migration::run instead
-     */
-    public function migrate(): string
-    {
-        return $this->run();
     }
 
     /**
