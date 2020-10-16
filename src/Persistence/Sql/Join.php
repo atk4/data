@@ -136,7 +136,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
             $this->getOwner()->expr('{{}}.{} = {}', [
                 ($this->foreign_alias ?: $this->foreign_table),
                 $this->foreign_field,
-                $model->getField($this->master_field),
+                $this->getOwner()->getField($this->master_field),
             ]),
             $this->kind,
             $this->foreign_alias
@@ -216,7 +216,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         $this->save_buffer = [];
         $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
         $query->insert();
-        $this->id = $model->persistence->lastInsertId($model);
+        $this->id = $this->getOwner()->persistence->lastInsertId($this->getOwner());
     }
 
     /**
@@ -253,7 +253,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
             return;
         }
 
-        $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
+        $id = $this->reverse ? $this->getOwner()->getId() : $this->getOwner()->get($this->master_field);
 
         $this->dsql()->where($this->foreign_field, $id)->delete();
     }
