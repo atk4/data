@@ -73,14 +73,14 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
             $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
-        $this->onHookToOwner(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
+        $this->onHookShortToOwner(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->onHookToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
-            $this->onHookToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookToOwner(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
-            $this->onHookToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookShortToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         } else {
             // Master field indicates ID of the joined item. In the past it had to be
             // defined as a physical field in the main table. Now it is a model field
@@ -98,10 +98,10 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
                 }
             }
 
-            $this->onHookToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
-            $this->onHookToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookToOwner(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-            $this->onHookToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookShortToOwner(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 
@@ -118,13 +118,13 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
     /**
      * Before query is executed, this method will be called.
      */
-    public function initSelectQuery(Model $model, Query $query): void
+    public function initSelectQuery(Query $query): void
     {
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
             $query->join(
                 $this->foreign_table,
-                $this->on instanceof \atk4\dsql\Expression ? $this->on : $model->expr($this->on),
+                $this->on instanceof \atk4\dsql\Expression ? $this->on : $this->getOwner()->expr($this->on),
                 $this->kind,
                 $this->foreign_alias
             );
@@ -134,7 +134,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
 
         $query->join(
             $this->foreign_table,
-            $model->expr('{{}}.{} = {}', [
+            $this->getOwner()->expr('{{}}.{} = {}', [
                 ($this->foreign_alias ?: $this->foreign_table),
                 $this->foreign_field,
                 $this->getOwner()->getField($this->master_field),
@@ -159,8 +159,10 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
     /**
      * Called from afterLoad hook.
      */
-    public function afterLoad(Model $model): void
+    public function afterLoad(): void
     {
+        $model = $this->getOwner();
+
         // we need to collect ID
         if (isset($model->data[$this->short_name])) {
             $this->id = $model->data[$this->short_name];
@@ -171,11 +173,13 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
     /**
      * Called from beforeInsert hook.
      */
-    public function beforeInsert(Model $model, array &$data): void
+    public function beforeInsert(array &$data): void
     {
         if ($this->weak) {
             return;
         }
+
+        $model = $this->getOwner();
 
         // The value for the master_field is set, so we are going to use existing record anyway
         if ($model->hasField($this->master_field) && $model->get($this->master_field)) {
@@ -202,14 +206,14 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
      *
      * @param mixed $id
      */
-    public function afterInsert(Model $model, $id): void
+    public function afterInsert($id): void
     {
         if ($this->weak) {
             return;
         }
 
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+        $query->set($this->getOwner()->persistence->typecastSaveRow($this->getOwner(), $this->save_buffer));
         $this->save_buffer = [];
         $query->set($this->foreign_field, $this->join->id ?? $id);
         $query->insert();
@@ -219,7 +223,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
     /**
      * Called from beforeUpdate hook.
      */
-    public function beforeUpdate(Model $model, array &$data): void
+    public function beforeUpdate(array &$data): void
     {
         if ($this->weak) {
             return;
@@ -229,6 +233,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
             return;
         }
 
+        $model = $this->getOwner();
         $query = $this->dsql();
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
@@ -243,7 +248,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
      *
      * @param mixed $id
      */
-    public function doDelete(Model $model, $id): void
+    public function doDelete($id): void
     {
         if ($this->weak) {
             return;

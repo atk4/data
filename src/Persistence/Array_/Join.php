@@ -26,24 +26,24 @@ class Join extends Model\Join
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->onHookToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
-            $this->onHookToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
-            $this->onHookToOwner(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->onHookShortToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
         } else {
-            $this->onHookToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']));
-            $this->onHookToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookToOwner(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-            $this->onHookToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']));
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookShortToOwner(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 
     /**
      * Called from afterLoad hook.
-     *
-     * @param Model $model
      */
-    public function afterLoad($model): void
+    public function afterLoad(): void
     {
+        $model = $this->getOwner();
+
         // we need to collect ID
         $this->id = $model->data[$this->master_field];
         if (!$this->id) {
@@ -62,16 +62,14 @@ class Join extends Model\Join
 
     /**
      * Called from beforeInsert hook.
-     *
-     * @param Model $model
      */
-    public function beforeInsert($model, array &$data): void
+    public function beforeInsert(array &$data): void
     {
         if ($this->weak) {
             return;
         }
 
-        if ($model->hasField($this->master_field) && $model->get($this->master_field)) {
+        if ($this->getOwner()->hasField($this->master_field) && $this->getOwner()->get($this->master_field)) {
             // The value for the master_field is set,
             // we are going to use existing record.
             return;
@@ -82,7 +80,7 @@ class Join extends Model\Join
             $this->getOwner()->persistence;
 
         $this->id = $persistence->insert(
-            $model,
+            $this->getOwner(),
             $this->save_buffer,
             $this->foreign_table
         );
@@ -95,10 +93,9 @@ class Join extends Model\Join
     /**
      * Called from afterInsert hook.
      *
-     * @param Model $model
      * @param mixed $id
      */
-    public function afterInsert($model, $id): void
+    public function afterInsert($id): void
     {
         if ($this->weak) {
             return;
@@ -109,7 +106,7 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->insert(
-            $model,
+            $this->getOwner(),
             $this->save_buffer,
             $this->foreign_table
         );
@@ -117,10 +114,8 @@ class Join extends Model\Join
 
     /**
      * Called from beforeUpdate hook.
-     *
-     * @param Model $model
      */
-    public function beforeUpdate($model, array &$data): void
+    public function beforeUpdate(array &$data): void
     {
         if ($this->weak) {
             return;
@@ -129,7 +124,7 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->update(
-            $model,
+            $this->getOwner(),
             $this->id,
             $this->save_buffer,
             $this->foreign_table
@@ -139,10 +134,9 @@ class Join extends Model\Join
     /**
      * Called from beforeDelete and afterDelete hooks.
      *
-     * @param Model $model
      * @param mixed $id
      */
-    public function doDelete($model, $id): void
+    public function doDelete($id): void
     {
         if ($this->weak) {
             return;
@@ -151,7 +145,7 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $persistence->delete(
-            $model,
+            $this->getOwner(),
             $this->id,
             $this->foreign_table
         );
