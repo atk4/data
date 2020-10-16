@@ -1570,7 +1570,7 @@ class Model implements \IteratorAggregate
                 if ($this->hook(self::HOOK_BEFORE_INSERT, [&$data]) === false) {
                     return $this;
                 }
-                var_dump($data);
+
                 // Collect all data of a new record
                 $id = $this->persistence->insert($this, $data);
 
@@ -1581,7 +1581,7 @@ class Model implements \IteratorAggregate
                 } else {
                     $this->setId($id);
                     $this->hook(self::HOOK_AFTER_INSERT, [$this->getId()]);
-                    var_dump(static::class, $this->getId());
+
                     if ($this->reload_after_save !== false) {
                         $d = $this->dirty;
                         $this->dirty = [];
