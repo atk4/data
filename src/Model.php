@@ -12,6 +12,7 @@ use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\ReadableCaptionTrait;
+use atk4\data\Model\Join;
 use atk4\dsql\Query;
 
 /**
@@ -358,13 +359,6 @@ class Model implements \IteratorAggregate
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
         $this->_cloneCollection('userActions');
-
-        // update links with newly cloned joins
-        foreach ($this->fields as $field) {
-            if ($field->join !== null) {
-                $field->join = $this->getElement($field->join->short_name);
-            }
-        }
 
         // check for clone errors immediately, otherwise not strictly needed
         $this->_rebindHooksIfCloned();
@@ -1532,10 +1526,10 @@ class Model implements \IteratorAggregate
                     // get the value of the field
                     $value = $this->get($name);
 
-                    if (isset($field->join)) {
+                    if ($field->hasJoin()) {
                         $dirty_join = true;
                         // storing into a different table join
-                        $field->join->set($name, $value);
+                        $field->getJoin()->set($name, $value);
                     } else {
                         $data[$name] = $value;
                     }
@@ -1565,9 +1559,9 @@ class Model implements \IteratorAggregate
                         continue;
                     }
 
-                    if (isset($field->join)) {
+                    if ($field->hasJoin()) {
                         // storing into a different table join
-                        $field->join->set($name, $value);
+                        $field->getJoin()->set($name, $value);
                     } else {
                         $data[$name] = $value;
                     }

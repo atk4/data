@@ -21,6 +21,7 @@ class Field implements Expressionable
     use TrackableTrait;
     use DiContainerTrait;
     use ReadableCaptionTrait;
+    use Model\JoinLinkTrait;
 
     // {{{ Properties
 
@@ -73,13 +74,6 @@ class Field implements Expressionable
      * @var string|null
      */
     public $actual;
-
-    /**
-     * Join object.
-     *
-     * @var Model\Join|null
-     */
-    public $join;
 
     /**
      * Is it system field?
@@ -656,7 +650,7 @@ class Field implements Expressionable
         ];
 
         foreach ([
-            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'join',
+            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
         ] as $key) {
             if (isset($this->{$key})) {
                 $arr[$key] = $this->{$key};

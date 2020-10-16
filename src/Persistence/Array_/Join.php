@@ -101,7 +101,7 @@ class Join extends Model\Join
             return;
         }
 
-        $this->save_buffer[$this->foreign_field] = isset($this->join) ? $this->join->id : $id;
+        $this->save_buffer[$this->foreign_field] = $this->hasJoin() ? $this->getJoin()->id : $id;
 
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
