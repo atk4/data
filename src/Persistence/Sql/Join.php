@@ -146,7 +146,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         if ($this->reverse) {
             $query->field([$this->short_name => ($this->join ?:
                 (
-                    ($this->getOwner()->table_alias ?: $this->getOwner()->table)
+                    ($model->table_alias ?: $model->table)
                     .'.'.$this->master_field)
             )]);
         } else {
