@@ -90,7 +90,7 @@ class Field implements Expressionable
 //            // POC only - we still need to solve unsigned, not null, see how Doctrine handle Type options
 //            // then all code below should not be needed
 //            $platform = new \Doctrine\DBAL\Platforms\MySqlPlatform(); // should be provided by a Persistence (and DSQL Connection)
-//            $type = $this->getTypeObject();
+            $type = $this->getTypeObject();
 //
 //            return $type->convertToPHPValue($type->convertToDatabaseValue($value, $platform));
 
