@@ -89,12 +89,11 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
             // a new basic field is inserted and marked hidden.
             if (is_string($this->master_field)) {
                 if (!$this->getOwner()->hasField($this->master_field)) {
-                    if ($this->join) {
-                        $f = $this->join->addField($this->master_field, ['system' => true, 'read_only' => true]);
-                    } else {
-                        $f = $this->getOwner()->addField($this->master_field, ['system' => true, 'read_only' => true]);
-                    }
-                    $this->master_field = $f->short_name;
+                    $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
+
+                    $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
+
+                    $this->master_field = $field->short_name;
                 }
             }
 
@@ -137,7 +136,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
             $model->expr('{{}}.{} = {}', [
                 ($this->foreign_alias ?: $this->foreign_table),
                 $this->foreign_field,
-                $this->getOwner()->getField($this->master_field),
+                $model->getField($this->master_field),
             ]),
             $this->kind,
             $this->foreign_alias
@@ -147,7 +146,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         if ($this->reverse) {
             $query->field([$this->short_name => ($this->join ?:
                 (
-                    ($this->getOwner()->table_alias ?: $this->getOwner()->table)
+                    ($model->table_alias ?: $model->table)
                     .'.'.$this->master_field)
             )]);
         } else {
@@ -188,10 +187,10 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         $this->save_buffer = [];
         $query->set($this->foreign_field, null);
         $query->insert();
-        $this->id = $this->getOwner()->persistence->lastInsertId($this->getOwner());
+        $this->id = $model->persistence->lastInsertId($model);
 
-        if ($this->join) {
-            $this->join->set($this->master_field, $this->id);
+        if ($this->hasJoin()) {
+            $this->getJoin()->set($this->master_field, $this->id);
         } else {
             $data[$this->master_field] = $this->id;
         }
@@ -211,9 +210,9 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
         $query = $this->dsql();
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
-        $query->set($this->foreign_field, $this->join->id ?? $id);
+        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
         $query->insert();
-        $this->id = $this->getOwner()->persistence->lastInsertId($this->getOwner());
+        $this->id = $model->persistence->lastInsertId($model);
     }
 
     /**
@@ -249,7 +248,7 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
             return;
         }
 
-        $id = $this->reverse ? $this->getOwner()->getId() : $this->getOwner()->get($this->master_field);
+        $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
 
         $this->dsql()->where($this->foreign_field, $id)->delete();
     }

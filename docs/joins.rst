@@ -238,7 +238,7 @@ Implementation Detail
 
 Joins are implemented like this:
 
-- all the fields that has 'join' property set will not be saved into default
+- all the fields that has 'joinName' property set will not be saved into default
   table by default driver
 - join will add either `beforeInsert` or `afterInsert` hook inside your model.
   When save is executed, it will execute additional query to update foreign table.
@@ -267,7 +267,7 @@ Implementation Details
 
 - although some SQL vendors allow update .. join .. syntax, this will not be
   used. That is done to ensure better compatibility.
-- when field has the 'join' option set, trying to convert this field into
+- when field has the 'joinName' option set, trying to convert this field into
   expression will prefix the field properly with the foreign table alias.
 - join will be added in all queries
 - strong join can potentially reduce your data-set as it exclude table rows

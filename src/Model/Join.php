@@ -13,7 +13,7 @@ use atk4\data\Persistence;
 use atk4\data\Reference;
 
 /**
- * Proivides generic functionality for joining data.
+ * Provides generic functionality for joining data.
  *
  * @method Model getOwner()
  */
@@ -24,6 +24,7 @@ class Join
         init as _init;
     }
     use DiContainerTrait;
+    use JoinLinkTrait;
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
@@ -130,13 +131,6 @@ class Join
     protected $save_buffer = [];
 
     /**
-     * When join is done on another join.
-     *
-     * @var Join
-     */
-    protected $join;
-
-    /**
      * Default constructor. Will copy argument into properties.
      *
      * @param array $defaults
@@ -229,7 +223,7 @@ class Join
         if ($seed && !is_array($seed)) {
             $seed = [$seed];
         }
-        $seed['join'] = $this;
+        $seed['joinName'] = $this->short_name;
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
@@ -257,20 +251,6 @@ class Join
     }
 
     /**
-     * Adds any object to owner model.
-     */
-    public function add(object $object, array $defaults = []): object
-    {
-        if (!is_array($defaults)) {
-            $defaults = ['name' => $defaults];
-        }
-
-        $defaults['join'] = $this;
-
-        return $this->getOwner()->add($object, $defaults);
-    }
-
-    /**
      * Another join will be attached to a current join.
      *
      * @param array $defaults
@@ -282,7 +262,7 @@ class Join
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
         }
-        $defaults['join'] = $this;
+        $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->join($foreign_table, $defaults);
     }
@@ -292,14 +272,14 @@ class Join
      *
      * @param array $defaults
      *
-     * @return Join
+     * @return static
      */
     public function leftJoin(string $foreign_table, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
         }
-        $defaults['join'] = $this;
+        $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->leftJoin($foreign_table, $defaults);
     }
@@ -316,7 +296,7 @@ class Join
     /*
     public function weakJoin($defaults = [])
     {
-        $defaults['join'] = $this;
+        $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->weakJoin($defaults);
     }
@@ -336,7 +316,7 @@ class Join
             $defaults = ['model' => $defaults ?: 'Model_' . $link];
         }
 
-        $defaults['join'] = $this;
+        $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->hasOne($link, $defaults);
     }

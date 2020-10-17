@@ -430,33 +430,28 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $make_m_u_fx = function () use ($db) {
-            $m_u = new Model($db, 'user');
-            $m_u->addField('contact_id');
-            $m_u->addField('name');
-            $j_contact = $m_u->join('contact');
-            $j_contact->addField('contact_phone');
-            $j_country = $j_contact->join('country');
-            $j_country->addField('country_name', ['actual' => 'name']);
+        $m_u = new Model($db, 'user');
+        $m_u->addField('contact_id');
+        $m_u->addField('name');
+        $j_contact = $m_u->join('contact');
+        $j_contact->addField('contact_phone');
+        $j_country = $j_contact->join('country');
+        $j_country->addField('country_name', ['actual' => 'name']);
 
-            return $m_u;
-        };
-
-        $m_u2 = $make_m_u_fx()->load(10);
+        $m_u2 = (clone $m_u)->load(10);
         $m_u2->delete();
 
-        $m_u2 = $make_m_u_fx()->loadBy('country_name', 'US');
+        $m_u2 = (clone $m_u)->loadBy('country_name', 'US');
         $this->assertEquals(30, $m_u2->getId());
         $m_u2->set('country_name', 'USA');
         $m_u2->save();
 
-        $m_u2 = $make_m_u_fx()->tryLoad(40);
+        $m_u2 = (clone $m_u)->tryLoad(40);
         $this->assertFalse($m_u2->loaded());
 
-        $this->assertSame($m_u2->getField('country_id')->join, $m_u2->getField('contact_phone')->join);
+        $this->assertSame($m_u2->getField('country_id')->getJoin(), $m_u2->getField('contact_phone')->getJoin());
 
-        $m_u2->unload();
-        $make_m_u_fx()->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
+        (clone $m_u)->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
         $this->assertEquals(
             [
@@ -499,23 +494,19 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $make_m_u_fx = function () use ($db) {
-            $m_u = new Model($db, 'user');
-            $m_u->addField('contact_id');
-            $m_u->addField('name');
-            $j = $m_u->join('contact');
-            $j->addField('contact_phone');
-            $c = $j->join('country');
-            $c->addFields([['country_name', ['actual' => 'name']]]);
+        $m_u = new Model($db, 'user');
+        $m_u->addField('contact_id');
+        $m_u->addField('name');
+        $j = $m_u->join('contact');
+        $j->addField('contact_phone');
+        $c = $j->join('country');
+        $c->addFields([['country_name', ['actual' => 'name']]]);
 
-            return $m_u;
-        };
-
-        $m_u2 = $make_m_u_fx()->load(10);
+        $m_u2 = (clone $m_u)->load(10);
         $m_u2->delete();
 
-        $m_u2 = $make_m_u_fx()->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u2->getId());
+        $m_u->loadBy('country_name', 'US');
+        $this->assertEquals(30, $m_u->getId());
 
         $this->assertEquals(
             [
