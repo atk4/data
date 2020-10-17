@@ -201,7 +201,7 @@ class HasOne extends Reference
      */
     public function ref(array $defaults = []): Model
     {
-        $theirModel = $this->getTheirModel($defaults);
+        $theirModel = $this->createTheirModel($defaults);
 
         // add hook to set our_field = null when record of referenced model is deleted
         $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function ($theirModel) {
