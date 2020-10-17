@@ -259,7 +259,9 @@ class Join
             $defaults = ['name' => $defaults];
         }
 
-        $defaults['join'] = $this->short_name;
+        if (property_exists($object, 'joinName')) {
+            $defaults['joinName'] = $this->short_name;
+        }
 
         return $this->getOwner()->add($object, $defaults);
     }
