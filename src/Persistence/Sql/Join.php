@@ -211,12 +211,14 @@ class Join extends Model\Join implements \atk4\dsql\Expressionable
             return;
         }
 
+        $model = $this->getOwner();
+
         $query = $this->dsql();
-        $query->set($this->getOwner()->persistence->typecastSaveRow($this->getOwner(), $this->save_buffer));
+        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
         $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
         $query->insert();
-        $this->id = $this->getOwner()->persistence->lastInsertId($this->getOwner());
+        $this->id = $model->persistence->lastInsertId($model);
     }
 
     /**
