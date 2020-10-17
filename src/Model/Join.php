@@ -330,7 +330,7 @@ class Join
             $defaults = ['model' => $defaults ?: 'Model_' . $link];
         }
 
-        $defaults['join'] = $this->short_name;
+        $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->hasOne($link, $defaults);
     }
