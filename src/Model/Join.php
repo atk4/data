@@ -251,20 +251,6 @@ class Join
     }
 
     /**
-     * Adds any object to owner model.
-     */
-    public function add(object $object, array $defaults = []): object
-    {
-        if (!is_array($defaults)) {
-            $defaults = ['name' => $defaults];
-        }
-
-        $defaults['join'] = $this->short_name;
-
-        return $this->getOwner()->add($object, $defaults);
-    }
-
-    /**
      * Another join will be attached to a current join.
      *
      * @param array $defaults
@@ -330,7 +316,7 @@ class Join
             $defaults = ['model' => $defaults ?: 'Model_' . $link];
         }
 
-        $defaults['join'] = $this->short_name;
+        $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->hasOne($link, $defaults);
     }

@@ -43,11 +43,15 @@ class Iterator
             // https://bugs.php.net/bug.php?id=80125
             // and related
             // https://bugs.php.net/bug.php?id=65387
-            // fix it using WeakReference (for PHP 7.4 and later, for PHP 7.3, won't fix - remove code below once no longer supported)
+            // - PHP 7.3 - impossible to fix easily
+            // - PHP 7.4 - fix it using WeakReference
+            // - PHP 8.0 - fixed in php, see:
+            // https://github.com/php/php-src/commit/afab9eb48c883766b7870f76f2e2b0a4bd575786
+            // remove the if below once PHP 7.3 and 7.4 is no longer supported
             $filterFx = function ($row) use ($condition) {
                 return $this->match($row, $condition);
             };
-            if (PHP_MAJOR_VERSION >= 8 || PHP_MINOR_VERSION >= 4) {
+            if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 4) {
                 $filterFxWeakRef = \WeakReference::create($filterFx);
                 $this->generator = new \CallbackFilterIterator($this->generator, static function (array $row) use ($filterFxWeakRef) {
                     return $filterFxWeakRef->get()($row);

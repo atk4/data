@@ -13,6 +13,8 @@ use atk4\data\Reference;
  */
 class HasOne extends Reference
 {
+    use Model\JoinLinkTrait;
+
     /**
      * Field type.
      *
@@ -31,13 +33,6 @@ class HasOne extends Reference
      * @var bool
      */
     public $system = false;
-
-    /**
-     * Points to the join if we are part of one.
-     *
-     * @var Model\Join|null
-     */
-    protected $join;
 
     /**
      * Default value of field.
@@ -140,7 +135,7 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $dateTimeClass = 'DateTime';
+    public $dateTimeClass = \DateTime::class;
 
     /**
      * Timezone class used for type = 'data', 'datetime', 'time' fields.
@@ -149,7 +144,7 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $dateTimeZoneClass = 'DateTimeZone';
+    public $dateTimeZoneClass = \DateTimeZone::class;
 
     /**
      * Reference\HasOne will also add a field corresponding
@@ -170,7 +165,7 @@ class HasOne extends Reference
                 'type' => $this->type,
                 'reference' => $this,
                 'system' => $this->system,
-                'joinName' => $this->join,
+                'joinName' => $this->joinName,
                 'default' => $this->default,
                 'never_persist' => $this->never_persist,
                 'read_only' => $this->read_only,
