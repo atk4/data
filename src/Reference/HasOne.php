@@ -135,7 +135,7 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $dateTimeClass = 'DateTime';
+    public $dateTimeClass = \DateTime::class;
 
     /**
      * Timezone class used for type = 'data', 'datetime', 'time' fields.
@@ -144,7 +144,7 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $dateTimeZoneClass = 'DateTimeZone';
+    public $dateTimeZoneClass = \DateTimeZone::class;
 
     /**
      * Reference\HasOne will also add a field corresponding
