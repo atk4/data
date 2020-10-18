@@ -17,13 +17,13 @@ class PhpunitTestCaseTest extends PhpunitTestCase
             ],
         ]);
 
-        $q2 = $this->getDb('user');
+        $q2 = $this->getDb(['user']);
 
         $this->setDb($q2);
-        $q3 = $this->getDb('user');
+        $q3 = $this->getDb(['user']);
 
         $this->assertSame($q2, $q3);
 
-        $this->assertSame($q, $this->getDb('user', true));
+        $this->assertSame($q, $this->getDb(['user'], true));
     }
 }
