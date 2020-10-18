@@ -7,7 +7,7 @@ namespace atk4\data\Persistence;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Platforms;
 
-class NosqlPlatform extends Platforms\AbstractPlatform
+class GenericPlatform extends Platforms\AbstractPlatform
 {
     private function createNotSupportedException(): DBALException
     {
@@ -16,7 +16,7 @@ class NosqlPlatform extends Platforms\AbstractPlatform
 
     public function getName(): string
     {
-        return 'nosql';
+        return 'atk4_data_generic';
     }
 
     protected function initializeDoctrineTypeMappings(): void
