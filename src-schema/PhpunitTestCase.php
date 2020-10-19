@@ -54,7 +54,7 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
         }
 
         // reset DB autoincrement to 1, tests rely on it
-        if ($this->getDatabasePlatform() instanceof MySqlPlatform) {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->db->connection->expr('SET @@auto_increment_offset=1, @@auto_increment_increment=1')->execute();
         }
     }
