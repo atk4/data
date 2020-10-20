@@ -62,6 +62,9 @@
     "phpunit/phpcov": "*",
     "phpunit/phpunit": ">=9.0"
   },
+  "conflict": {
+    "atk4/schema": "*"
+  },
   "autoload": {
     "psr-4": {
       "atk4\\data\\": "src/",
