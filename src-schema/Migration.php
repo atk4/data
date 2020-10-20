@@ -80,19 +80,29 @@ class Migration
             $this->connection->expr(
                 <<<'EOT'
                     begin
-                        execute immediate 'create or replace trigger {table_ai_trigger_before}
-                            before insert on {table}
-                            for each row
-                            when (new."id" is null)
-                        declare
-                            last_id {table}."id"%type;
-                        begin
-                            select nvl(max("id"), 0) into last_id from {table};
-                            :new."id" := last_id + 1;
-                        end;';
+                        execute immediate [];
                     end;
                     EOT,
-                ['table' => $this->table->getName(), 'table_ai_trigger_before' => $this->table->getName() . '_ai_trigger_before']
+                [
+                    $this->connection->expr(
+                        <<<'EOT'
+                            create or replace trigger {table_ai_trigger_before}
+                                before insert on {table}
+                                for each row
+                                when (new."id" is null)
+                            declare
+                                last_id {table}."id"%type;
+                            begin
+                                select nvl(max("id"), 0) into last_id from {table};
+                                :new."id" := last_id + 1;
+                            end;
+                            EOT,
+                        [
+                            'table' => $this->table->getName(),
+                            'table_ai_trigger_before' => $this->table->getName() . '_ai_trigger_before',
+                        ]
+                    )->render(),
+                ]
             )->execute();
         }
 
@@ -107,7 +117,7 @@ class Migration
             $this->connection->expr(
                 <<<'EOT'
                     begin
-                        execute immediate 'drop trigger {table_ai_trigger_before}';
+                        execute immediate [];
                     exception
                         when others then
                             if sqlcode != -4080 then
@@ -115,7 +125,14 @@ class Migration
                             end if;
                     end;
                     EOT,
-                ['table_ai_trigger_before' => $this->table->getName() . '_ai_trigger_before']
+                [
+                    $this->connection->expr(
+                        'drop trigger {table_ai_trigger_before}',
+                        [
+                            'table_ai_trigger_before' => $this->table->getName() . '_ai_trigger_before',
+                        ]
+                    )->render(),
+                ]
             )->execute();
         }
 
