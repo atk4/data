@@ -101,11 +101,6 @@ class Migration
 
     public function drop(): self
     {
-        try {
-            $this->getSchemaManager()->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
-        } catch (\Doctrine\DBAL\DBALException $e) {
-        }
-
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
             // drop trigger if exists
             // see https://stackoverflow.com/questions/1799128/oracle-if-table-exists
@@ -122,6 +117,11 @@ class Migration
                     EOT,
                 ['table_ai_trigger_before' => $this->table->getName() . '_ai_trigger_before']
             )->execute();
+        }
+
+        try {
+            $this->getSchemaManager()->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
+        } catch (\Doctrine\DBAL\DBALException $e) {
         }
 
         return $this;
