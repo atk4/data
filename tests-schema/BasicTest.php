@@ -26,6 +26,8 @@ class BasicTest extends PhpunitTestCase
             ->field('dt', ['type' => 'date'])
             ->field('dttm', ['type' => 'datetime'])
             ->field('fl', ['type' => 'float'])
+//            ->field('mn', ['type' => 'money'])
+//            ->field('en', ['type' => 'enum'])
             ->create();
     }
 
@@ -47,6 +49,8 @@ class BasicTest extends PhpunitTestCase
             ->field('dt', ['type' => 'date'])
             ->field('dttm', ['type' => 'datetime'])
             ->field('fl', ['type' => 'float'])
+//            ->field('mn', ['type' => 'money'])
+//            ->field('en', ['type' => 'enum'])
             ->create();
 
         $this->getMigrator()->table('user')->drop();
