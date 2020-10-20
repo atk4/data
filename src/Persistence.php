@@ -257,7 +257,7 @@ class Persistence
             return $this->_typecastSaveField($f, $value);
         } catch (\Exception $e) {
             throw (new Exception('Unable to typecast field value on save', 0, $e))
-                ->addMoreInfo('field', $f->name);
+                ->addMoreInfo('field', $f->short_name);
         }
     }
 
@@ -292,7 +292,7 @@ class Persistence
             return $this->_typecastLoadField($f, $value);
         } catch (\Exception $e) {
             throw (new Exception('Unable to typecast field value on load', 0, $e))
-                ->addMoreInfo('field', $f->name);
+                ->addMoreInfo('field', $f->short_name);
         }
     }
 
@@ -342,7 +342,7 @@ class Persistence
             return $this->_serializeSaveField($f, $value);
         } catch (\Exception $e) {
             throw (new Exception('Unable to serialize field value on save', 0, $e))
-                ->addMoreInfo('field', $f->name);
+                ->addMoreInfo('field', $f->short_name);
         }
     }
 
@@ -366,7 +366,7 @@ class Persistence
             return $this->_serializeLoadField($f, $value);
         } catch (\Exception $e) {
             throw (new Exception('Unable to serialize field value on load', 0, $e))
-                ->addMoreInfo('field', $f->name);
+                ->addMoreInfo('field', $f->short_name);
         }
     }
 
