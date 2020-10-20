@@ -6,6 +6,7 @@ namespace atk4\data\tests;
 
 use atk4\data\Exception;
 use atk4\data\Model;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 
 /**
  * Model structure:.
@@ -265,6 +266,10 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
 
         // do we also correctly calculate discounts from nested containsMany?
         $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->get('discounts_total_sum')); // =20.88
+
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $this->markTestIncomplete('TODO - fix CLOB support on Oracle');
+        }
 
         // let's test how it all looks in persistence without typecasting
         $exp_lines = $i->setOrder('id')->export(null, null, false)[0]['lines'];

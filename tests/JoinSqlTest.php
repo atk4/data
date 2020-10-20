@@ -8,7 +8,7 @@ use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
@@ -58,7 +58,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinSaving1()
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSqlPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
@@ -86,7 +86,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
 
         $m_u2 = clone $m_u;
         $m_u2->set('name', 'Joe');
@@ -101,7 +101,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
     }
 
     public function testJoinSaving2()
@@ -127,7 +127,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
 
         $m_u2->unload();
         $m_u2 = clone $m_u;
@@ -141,7 +141,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'test_id' => 2, 'contact_phone' => null],
             ],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
 
         $this->db->connection->dsql()->table('contact')->where('id', 2)->delete();
 
@@ -163,12 +163,12 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123'],
                 3 => ['id' => 3, 'test_id' => 3, 'contact_phone' => '+444'],
             ],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
     }
 
     public function testJoinSaving3()
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSqlPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
@@ -194,7 +194,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
     }
 
     public function testJoinLoading()
@@ -234,7 +234,7 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinUpdate()
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSqlPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
@@ -403,12 +403,12 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
     }
 
     public function testDoubleJoin()
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSqlPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 

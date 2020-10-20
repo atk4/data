@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
-/**
- * Persistence class.
- */
+use Doctrine\DBAL\Platforms;
+
 class Persistence
 {
     use \atk4\core\ContainerTrait {
@@ -107,6 +106,11 @@ class Persistence
     public function atomic(\Closure $fx)
     {
         return $fx();
+    }
+
+    public function getDatabasePlatform(): Platforms\AbstractPlatform
+    {
+        return new Persistence\GenericPlatform();
     }
 
     /**

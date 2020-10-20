@@ -104,7 +104,7 @@ class LFriend extends Model
 
         // add or remove reverse friendships
         /*
-        $this->onHookShort(self::HOOK_AFTER_INSERT, function() {
+        $this->onHookShort(self::HOOK_AFTER_INSERT, function () {
             if ($this->skip_reverse) {
                 return;
             }
@@ -112,12 +112,12 @@ class LFriend extends Model
             $c = clone $this;
             $c->skip_reverse = true;
             $this->insert([
-                'user_id'=>$this->get('friend_id'),
-                'friend_id'=>$this->get('user_id')
+                'user_id' => $this->get('friend_id'),
+                'friend_id' => $this->get('user_id'),
             ]);
         });
 
-        $this->onHookShort(Model::HOOK_BEFORE_DELETE, function() {
+        $this->onHookShort(Model::HOOK_BEFORE_DELETE, function () {
             if ($this->skip_reverse) {
                 return;
             }
@@ -126,11 +126,9 @@ class LFriend extends Model
             $c->skip_reverse = true;
 
             $c->loadBy([
-                'user_id'=>$this->get('friend_id'),
-                'friend_id'=>$this->get('user_id')
+                'user_id' => $this->get('friend_id'),
+                'friend_id' => $this->get('user_id'),
             ])->delete();
-
-
         });
          */
     }
@@ -143,20 +141,6 @@ class LFriend extends Model
  */
 class LookupSqlTest extends \atk4\schema\PhpunitTestCase
 {
-    public function varexport($expression, $return = false)
-    {
-        $export = var_export($expression, true);
-        $export = preg_replace('/^([ ]*)(.*)/m', '$1$1$2', $export);
-        $array = preg_split("/\r\n|\n|\r/", $export);
-        $array = preg_replace(['/\\s*array\\s\\($/', '/\\)(,)?$/', '/\\s=>\\s$/'], [null, ']$1', ' => ['], $array);
-        $export = implode(PHP_EOL, array_filter(['['] + $array));
-        if ((bool) $return) {
-            return $export;
-        }
-
-        echo $export;
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -241,7 +225,7 @@ class LookupSqlTest extends \atk4\schema\PhpunitTestCase
                     'is_eu' => '0',
                 ],
             ],
-        ], $this->getDb('country'));
+        ], $this->getDb(['country']));
     }
 
     public function testImportInternationalUsers()
@@ -254,7 +238,6 @@ class LookupSqlTest extends \atk4\schema\PhpunitTestCase
         // Both lines will work quite similar
         $c->insert(['name' => 'Latvia', 'Users' => [['name' => 'imants'], ['name' => 'juris']]]);
 
-        //$this->varexport($this->getDb(['country','user']));
         $this->assertSame([
             'country' => [
                 1 => [
@@ -320,7 +303,6 @@ class LookupSqlTest extends \atk4\schema\PhpunitTestCase
             //'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
         ]);
 
-        //$this->varexport($this->getDb(['country','user']));
         $this->assertSame([
             'country' => [
                 1 => [
@@ -380,16 +362,16 @@ class LookupSqlTest extends \atk4\schema\PhpunitTestCase
         $c = new LCountry($this->db);
 
         // Specifying hasMany here will perform input
-        $c->insert(['Canada', 'Users'=>['Alain', ['Duncan', 'is_vip'=>true]]]);
+        $c->insert(['Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
         // Inserting Users into Latvia can also specify Friends. In this case Friend name will be looked up
-        $c->insert(['Latvia', 'Users'=>['Imants', ['Juris', 'friend_names'=>'Alain,Imants']]]);
+        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain,Imants']]]);
 
         // Inserting This time explicitly specify friend attributes
-        $c->insert(['UK', 'Users'=>[
-            ['Romans', 'Friends'=>[
-                ['friend_id'=>1],
-                ['friend_name'=> 'Juris'],
+        $c->insert(['UK', 'Users' => [
+            ['Romans', 'Friends' => [
+                ['friend_id' => 1],
+                ['friend_name' => 'Juris'],
                 'Alain',
             ]],
         ]]);

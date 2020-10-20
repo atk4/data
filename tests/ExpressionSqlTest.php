@@ -6,7 +6,7 @@ namespace atk4\data\tests;
 
 use atk4\data\Model;
 use atk4\data\Persistence;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
@@ -162,7 +162,7 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
                 'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where ("name" || \' \' || "surname") != "cached_name"',
                 $m->action('select')->render()
             );
-        } elseif ($this->getDatabasePlatform() instanceof MySqlPlatform) {
+        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(
                 'select `id`,`name`,`surname`,`cached_name`,(CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where (CONCAT(`name`, \' \', `surname`)) != `cached_name`',
                 $m->action('select')->render()

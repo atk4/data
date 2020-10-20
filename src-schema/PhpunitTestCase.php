@@ -8,8 +8,9 @@ use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
 use atk4\dsql\Connection;
+use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 // NOTE: This class should stay here in this namespace because other repos rely on it. For example, atk4\data tests
 class PhpunitTestCase extends AtkPhpunit\TestCase
@@ -20,11 +21,8 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
     /** @var array Array of database table names */
     public $tables;
 
-    /** @var bool Debug mode enabled/disabled. In debug mode will use Dumper persistence */
+    /** @var bool Debug mode enabled/disabled. In debug mode SQL queries are dumped. */
     public $debug = false;
-
-    /** @var string DSN string */
-    protected $dsn;
 
     /**
      * Setup test database.
@@ -34,14 +32,29 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
         parent::setUp();
 
         // establish connection
-        $this->dsn = ($this->debug ? ('dumper:') : '') . ($GLOBALS['DB_DSN'] ?? 'sqlite::memory:');
+        $dsn = $GLOBALS['DB_DSN'] ?? 'sqlite::memory:';
         $user = $GLOBALS['DB_USER'] ?? null;
         $pass = $GLOBALS['DB_PASSWD'] ?? null;
 
-        $this->db = Persistence::connect($this->dsn, $user, $pass);
+        $this->db = Persistence::connect($dsn, $user, $pass);
+        if ($this->debug) {
+            // TODO fix that this work also when Expression::execute is called
+            $this->db->connection->connection()->getConfiguration()->setSQLLogger(
+                new class() implements SQLLogger {
+                    public function startQuery($sql, $params = null, $types = null): void
+                    {
+                        echo "\n" . $sql . "\n";
+                    }
+
+                    public function stopQuery(): void
+                    {
+                    }
+                }
+            );
+        }
 
         // reset DB autoincrement to 1, tests rely on it
-        if ($this->getDatabasePlatform() instanceof MySqlPlatform) {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->db->connection->expr('SET @@auto_increment_offset=1, @@auto_increment_increment=1')->execute();
         }
     }
@@ -58,83 +71,71 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
         return $this->db->connection->getDatabasePlatform();
     }
 
+    public function getSchemaManager(): AbstractSchemaManager
+    {
+        return $this->db->connection->connection()->getSchemaManager();
+    }
+
     /**
      * Create and return appropriate Migration object.
-     *
-     * @param Connection|Persistence|Model $m
-     *
-     * @return Migration
      */
-    public function getMigrator($model = null)
+    public function getMigrator(Model $model = null): Migration
     {
-        return \atk4\schema\Migration::of($model ?: $this->db);
+        return new \atk4\schema\Migration($model ?: $this->db);
     }
 
     /**
      * Use this method to clean up tables after you have created them,
      * so that your database would be ready for the next test.
-     *
-     * @param string $table Table name
      */
-    public function dropTable($table)
+    public function dropTableIfExists(string $tableName)
     {
-        $this->getMigrator()->table($table)->drop();
+        // we can not use SchemaManager::dropTable directly because of
+        // our custom Oracle sequence for PK/AI
+        $this->getMigrator()->table($tableName)->drop();
     }
 
     /**
      * Sets database into a specific test.
-     *
-     * @param array $db_data
-     * @param bool  $import_data Should we import data of just create table
      */
-    public function setDb($db_data, $import_data = true)
+    public function setDb(array $dbData, bool $importData = true)
     {
-        $this->tables = array_keys($db_data);
+        $this->tables = array_keys($dbData);
 
         // create tables
-        foreach ($db_data as $table => $data) {
-            $migrator = $this->getMigrator();
+        foreach ($dbData as $tableName => $data) {
+            $this->dropTableIfExists($tableName);
 
-            // drop table
-            $migrator->table($table)->drop();
-
-            // create table and fields from first row of data
             $first_row = current($data);
             if ($first_row) {
+                $migrator = $this->getMigrator()->table($tableName);
+
+                $migrator->id('id');
+
                 foreach ($first_row as $field => $row) {
                     if ($field === 'id') {
-                        $migrator->id('id');
-
                         continue;
                     }
 
                     if (is_int($row)) {
-                        $migrator->field($field, ['type' => 'integer']);
-
-                        continue;
+                        $fieldType = 'integer';
                     } elseif (is_float($row)) {
-                        $migrator->field($field, ['type' => 'float']);
-
-                        continue;
-                    } elseif ($row instanceof \DateTime) {
-                        $migrator->field($field, ['type' => 'datetime']);
-
-                        continue;
+                        $fieldType = 'float';
+                    } elseif ($row instanceof \DateTimeInterface) {
+                        $fieldType = 'datetime';
+                    } else {
+                        $fieldType = 'string';
                     }
 
-                    $migrator->field($field);
+                    $migrator->field($field, ['type' => $fieldType]);
                 }
-            }
 
-            if (!isset($first_row['id'])) {
-                $migrator->id();
+                $migrator->create();
             }
-
-            $migrator->create();
 
             // import data
-            if ($import_data) {
-                $has_id = (bool) key($data);
+            if ($importData) {
+                $hasId = (bool) key($data);
 
                 foreach ($data as $id => $row) {
                     $query = $this->db->dsql();
@@ -142,10 +143,10 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
                         continue;
                     }
 
-                    $query->table($table);
+                    $query->table($tableName);
                     $query->set($row);
 
-                    if (!isset($row['id']) && $has_id) {
+                    if (!isset($row['id']) && $hasId) {
                         $query->set('id', $id);
                     }
 
@@ -157,22 +158,16 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
 
     /**
      * Return database data.
-     *
-     * @param array $tables Array of tables
-     *
-     * @return array
      */
-    public function getDb($tables = null, bool $no_id = false)
+    public function getDb(array $tableNames = null, bool $noId = false): array
     {
-        $tables = $tables ?: $this->tables;
-
-        if (is_string($tables)) {
-            $tables = array_map('trim', explode(',', $tables));
+        if ($tableNames === null) {
+            $tableNames = $this->tables;
         }
 
         $ret = [];
 
-        foreach ($tables as $table) {
+        foreach ($tableNames as $table) {
             $data2 = [];
 
             $s = $this->db->dsql();
@@ -185,7 +180,7 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
                     }
                 }
 
-                if ($no_id) {
+                if ($noId) {
                     unset($row['id']);
                     $data2[] = $row;
                 } else {
