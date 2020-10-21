@@ -6,7 +6,6 @@ namespace atk4\data;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
-use Doctrine\DBAL\Types\Types;
 
 // TODO for types to DBAL migration, might be removed later
 
@@ -19,7 +18,7 @@ class AtkTypeMoney extends Type
 
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
-        return Type::getType(Types::FLOAT)->getSQLDeclaration($fieldDeclaration, $platform);
+        return Type::getType(Type::FLOAT)->getSQLDeclaration($fieldDeclaration, $platform);
     }
 }
 
@@ -32,7 +31,7 @@ class AtkTypePassword extends Type
 
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
-        return Type::getType(Types::STRING)->getSQLDeclaration($fieldDeclaration, $platform);
+        return Type::getType(Type::STRING)->getSQLDeclaration($fieldDeclaration, $platform);
     }
 }
 
