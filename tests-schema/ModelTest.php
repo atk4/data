@@ -108,7 +108,7 @@ class ModelTest extends PhpunitTestCase
         $this->assertSame(
             [
                 'name',
-                // TODO 'password',
+                'password',
                 'is_admin',
                 'notes',
                 'main_role_id', // our_field here not role_id (reference name)
@@ -127,7 +127,7 @@ class TestUser extends \atk4\data\Model
         parent::init();
 
         $this->addField('name');
-        // TODO $this->addField('password', ['type' => 'password']);
+        $this->addField('password', ['type' => 'password']);
         $this->addField('is_admin', ['type' => 'boolean']);
         $this->addField('notes', ['type' => 'text']);
 
