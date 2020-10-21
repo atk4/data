@@ -147,6 +147,8 @@ class Migration
             $this->drop();
         } catch (\Doctrine\DBAL\DBALException $e) {
         }
+
+        return $this;
     }
 
     public function field(string $fieldName, $options = []): self
