@@ -69,7 +69,10 @@
     "psr-4": {
       "atk4\\data\\": "src/",
       "atk4\\schema\\": "src-schema/"
-    }
+    },
+    "files": [
+        "bootstrap-atk-types.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {
