@@ -144,11 +144,11 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigrator(new DcClient($this->db))->drop()->create();
-        $this->getMigrator(new DcInvoice($this->db))->drop()->create();
-        $this->getMigrator(new DcQuote($this->db))->drop()->create();
-        $this->getMigrator(new DcInvoiceLine($this->db))->drop()->create();
-        $this->getMigrator(new DcPayment($this->db))->drop()->create();
+        $this->getMigrator(new DcClient($this->db))->dropIfExists()->create();
+        $this->getMigrator(new DcInvoice($this->db))->dropIfExists()->create();
+        $this->getMigrator(new DcQuote($this->db))->dropIfExists()->create();
+        $this->getMigrator(new DcInvoiceLine($this->db))->dropIfExists()->create();
+        $this->getMigrator(new DcPayment($this->db))->dropIfExists()->create();
     }
 
     public function testBasic()

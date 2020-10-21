@@ -142,8 +142,8 @@ class SubTypesTest extends \atk4\schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigrator(new StAccount($this->db))->drop()->create();
-        $this->getMigrator(new StTransaction_TransferOut($this->db))->drop()->create();
+        $this->getMigrator(new StAccount($this->db))->dropIfExists()->create();
+        $this->getMigrator(new StTransaction_TransferOut($this->db))->dropIfExists()->create();
     }
 
     public function testBasic()

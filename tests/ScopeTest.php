@@ -83,7 +83,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->country = new SCountry($this->db);
 
-        $this->getMigrator($this->country)->drop()->create();
+        $this->getMigrator($this->country)->dropIfExists()->create();
 
         // Specifying hasMany here will perform input
         $this->country->import([
@@ -98,7 +98,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->user = new SUser($this->db);
 
-        $this->getMigrator($this->user)->drop()->create();
+        $this->getMigrator($this->user)->dropIfExists()->create();
 
         $this->user->import([
             ['name' => 'John', 'surname' => 'Smith', 'country_code' => 'CA'],
@@ -110,7 +110,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->ticket = new STicket($this->db);
 
-        $this->getMigrator($this->ticket)->drop()->create();
+        $this->getMigrator($this->ticket)->dropIfExists()->create();
 
         $this->ticket->import([
             ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],

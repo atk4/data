@@ -135,8 +135,8 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our models
-        $this->getMigrator(new VatRate2($this->db))->drop()->create();
-        $this->getMigrator(new Invoice2($this->db))->drop()->create();
+        $this->getMigrator(new VatRate2($this->db))->dropIfExists()->create();
+        $this->getMigrator(new Invoice2($this->db))->dropIfExists()->create();
 
         // fill in some default values
         $m = new VatRate2($this->db);
