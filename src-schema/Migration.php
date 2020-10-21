@@ -136,8 +136,15 @@ class Migration
             )->execute();
         }
 
+        $this->getSchemaManager()->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
+
+        return $this;
+    }
+
+    public function dropIfExists(): self
+    {
         try {
-            $this->getSchemaManager()->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
+            $this->drop();
         } catch (\Doctrine\DBAL\DBALException $e) {
         }
 

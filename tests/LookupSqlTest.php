@@ -146,9 +146,9 @@ class LookupSqlTest extends \atk4\schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigrator(new LCountry($this->db))->drop()->create();
-        $this->getMigrator(new LUser($this->db))->drop()->create();
-        $this->getMigrator(new LFriend($this->db))->drop()->create();
+        $this->getMigrator(new LCountry($this->db))->dropIfExists()->create();
+        $this->getMigrator(new LUser($this->db))->dropIfExists()->create();
+        $this->getMigrator(new LFriend($this->db))->dropIfExists()->create();
     }
 
     /**

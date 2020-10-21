@@ -92,7 +92,7 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
     {
         // we can not use SchemaManager::dropTable directly because of
         // our custom Oracle sequence for PK/AI
-        $this->getMigrator()->table($tableName)->drop();
+        $this->getMigrator()->table($tableName)->dropIfExists();
     }
 
     /**
