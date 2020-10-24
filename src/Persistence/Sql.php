@@ -10,6 +10,7 @@ use atk4\data\FieldSqlExpression;
 use atk4\data\Model;
 use atk4\data\Persistence;
 use atk4\dsql\Connection;
+use atk4\dsql\Exception as DsqlException;
 use atk4\dsql\Expression;
 use atk4\dsql\Query;
 use Doctrine\DBAL\Platforms;
@@ -689,7 +690,7 @@ class Sql extends Persistence
                 return null;
             }
             $data = $this->typecastLoadRow($model, $dataRaw);
-        } catch (\PDOException $e) {
+        } catch (DsqlException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
                 ->addMoreInfo('query', $query->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
@@ -742,7 +743,7 @@ class Sql extends Persistence
                 return null;
             }
             $data = $this->typecastLoadRow($model, $dataRaw);
-        } catch (\PDOException $e) {
+        } catch (DsqlException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
                 ->addMoreInfo('query', $load->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
@@ -796,7 +797,7 @@ class Sql extends Persistence
         try {
             $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
             $st = $insert->execute();
-        } catch (\PDOException $e) {
+        } catch (DsqlException $e) {
             throw (new Exception('Unable to execute insert query', 0, $e))
                 ->addMoreInfo('query', $insert->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
@@ -842,7 +843,7 @@ class Sql extends Persistence
             $export = $model->action('select');
 
             return $export->getIterator();
-        } catch (\PDOException $e) {
+        } catch (DsqlException $e) {
             throw (new Exception('Unable to execute iteration query', 0, $e))
                 ->addMoreInfo('query', $export->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
@@ -877,7 +878,7 @@ class Sql extends Persistence
             if ($data) {
                 $st = $update->execute();
             }
-        } catch (\PDOException $e) {
+        } catch (DsqlException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
                 ->addMoreInfo('query', $update->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
@@ -919,7 +920,7 @@ class Sql extends Persistence
 
         try {
             $delete->execute();
-        } catch (\PDOException $e) {
+        } catch (DsqlException $e) {
             throw (new Exception('Unable to delete due to query error', 0, $e))
                 ->addMoreInfo('query', $delete->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
