@@ -48,9 +48,9 @@ trait ReferencesTrait
     public $_default_seed_containsMany = [Reference\ContainsMany::class];
 
     /**
-     * @param Object|array   $className Either an object or an array as seed.
+     * @param object|array   $className Either an object or an array as seed
      * @param string         $link
-     * @param array|\Closure $defaults  Properties which we will pass to Reference object constructor.
+     * @param array|\Closure $defaults  Properties which we will pass to Reference object constructor
      */
     protected function _hasReference($className, $link, $defaults = []): Reference
     {
