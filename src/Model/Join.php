@@ -130,11 +130,6 @@ class Join
      */
     protected $save_buffer = [];
 
-    /**
-     * Default constructor. Will copy argument into properties.
-     *
-     * @param array $defaults
-     */
     public function __construct($foreign_table = null)
     {
         if ($foreign_table !== null) {
