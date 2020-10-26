@@ -15,44 +15,44 @@ trait ReferencesTrait
     /**
      * The seed used by addRef() method.
      *
-     * @var string|array
+     * @var string|array|object
      */
     public $_default_seed_addRef = [Reference::class];
 
     /**
      * The seed used by hasOne() method.
      *
-     * @var string|array
+     * @var string|array|object
      */
     public $_default_seed_hasOne = [Reference\HasOne::class];
 
     /**
      * The seed used by hasMany() method.
      *
-     * @var string|array
+     * @var string|array|object
      */
     public $_default_seed_hasMany = [Reference\HasMany::class];
 
     /**
      * The seed used by containsOne() method.
      *
-     * @var string|array
+     * @var string|array|object
      */
     public $_default_seed_containsOne = [Reference\ContainsOne::class];
 
     /**
      * The seed used by containsMany() method.
      *
-     * @var string
+     * @var string|array|object
      */
     public $_default_seed_containsMany = [Reference\ContainsMany::class];
 
     /**
-     * @param object|array   $className Either an object or an array as seed
-     * @param string         $link
-     * @param array|\Closure $defaults  Properties which we will pass to Reference object constructor
+     * @param array|string|object $seed      The first element specifies a class name, other elements are seed
+     * @param string              $link
+     * @param array|\Closure      $defaults  Properties which we will pass to Reference object constructor
      */
-    protected function _hasReference($className, $link, $defaults = []): Reference
+    protected function _hasReference($seed, $link, $defaults = []): Reference
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_' . $link];
@@ -63,7 +63,7 @@ trait ReferencesTrait
 
         $defaults[0] = $link;
 
-        $reference = Reference::fromSeed($className, $defaults);
+        $reference = Reference::fromSeed($seed, $defaults);
 
         // if reference with such name already exists, then throw exception
         if ($this->hasElement($name = $reference->getDesiredName())) {
