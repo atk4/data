@@ -13,6 +13,7 @@ use atk4\data\Reference\HasOne;
 use atk4\dsql\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 
@@ -167,8 +168,14 @@ class Migration
             $column->setNotnull(false);
         }
 
-        if ($column->getType() === 'integer' && $refType !== self::REF_TYPE_NONE) {
+        if ($column->getType()->getName() === 'integer' && $refType !== self::REF_TYPE_NONE) {
             $column->setUnsigned(true);
+        }
+
+        if (in_array($column->getType()->getName(), ['string', 'text'], true)) {
+            if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+                $column->setPlatformOption('collation', 'NOCASE');
+            }
         }
 
         if ($refType === self::REF_TYPE_PRIMARY) {

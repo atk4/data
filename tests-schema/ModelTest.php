@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\schema\tests;
 
+use atk4\data\Model;
 use atk4\schema\PhpunitTestCase;
 
 class ModelTest extends PhpunitTestCase
@@ -115,6 +116,36 @@ class ModelTest extends PhpunitTestCase
             ],
             array_keys($user_model->getFields())
         );
+    }
+
+    public function testStringFieldCaseInsensitive()
+    {
+        $this->dropTableIfExists('user');
+
+        $this->getMigrator()->table('user')->id()
+            ->field('string')
+            ->field('text', ['type' => 'text'])
+            ->field('blob', ['type' => 'blob'])
+            ->create();
+
+        $model = new Model($this->db, 'user');
+        $model->addField('string');
+        $model->addField('text');
+        $model->addField('blob');
+        $model->setOrder('id');
+        $model->import([
+            ['id' => 1, 'string' => 'MixedCase'],
+            ['id' => 2, 'text' => 'MixedCase'],
+            ['id' => 3, 'blob' => 'MixedCase'],
+        ]);
+
+        $model->addCondition(Model\Scope::createOr(
+            ['string', 'MIXEDcase'],
+            ['text', 'MIXEDcase'],
+            ['blob', 'MIXEDcase'],
+        ));
+
+        $this->assertSame([['id' => '1'], ['id' => '2']], $model->export(['id']));
     }
 }
 
