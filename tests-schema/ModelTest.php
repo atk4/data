@@ -145,7 +145,7 @@ class ModelTest extends PhpunitTestCase
             ['blob', 'MIXEDcase'],
         ));
 
-        $this->assertSame([['id' => 1], ['id' => 2]], $model->export(['id']));
+        $this->assertSame([['id' => '1'], ['id' => '2']], $model->export(['id']));
     }
 }
 
