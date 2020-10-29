@@ -130,11 +130,6 @@ class Join
      */
     protected $save_buffer = [];
 
-    /**
-     * Default constructor. Will copy argument into properties.
-     *
-     * @param array $defaults
-     */
     public function __construct($foreign_table = null)
     {
         if ($foreign_table !== null) {
@@ -305,12 +300,11 @@ class Join
     /**
      * Creates reference based on a field from the join.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Reference\HasOne
      */
-    public function hasOne($link, $defaults = [])
+    public function hasOne(string $link, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_' . $link];
@@ -324,12 +318,11 @@ class Join
     /**
      * Creates reference based on the field from the join.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Reference\HasMany
      */
-    public function hasMany($link, $defaults = [])
+    public function hasMany(string $link, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_' . $link];

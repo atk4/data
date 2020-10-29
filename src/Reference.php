@@ -74,12 +74,7 @@ class Reference
      */
     public $caption;
 
-    /**
-     * Default constructor. Will copy argument into properties.
-     *
-     * @param string $link a short_name component
-     */
-    public function __construct($link)
+    public function __construct(string $link)
     {
         $this->link = $link;
     }
