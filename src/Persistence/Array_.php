@@ -31,21 +31,58 @@ class Array_ extends Persistence
      */
     protected $lastInsertIds = [];
 
-    /**
-     * @deprecated TODO temporary for these:
-     *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsOne.php#L119
-     *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsMany.php#L66
-     *             remove once fixed/no longer needed
-     */
-    public function getRawDataByTable(Model $model, string $table): array
+    public function getRawDataIterator(Model $model): \Iterator
     {
-        $rows = [];
-        foreach ($this->data[$table] as $id => $row) {
-            $this->addIdToLoadRow($model, $row, $id);
-            $rows[$id] = $row;
+        return (function ($iterator) use ($model) {
+            foreach ($iterator as $id => $row) {
+                yield $id => $this->getRowWithId($model, $row, $id);
+            }
+        })(new \ArrayIterator($this->data[$model->table]));
+    }
+
+    public function setRawData(Model $model, array $row, $id = null)
+    {
+        $row = $this->getRowWithId($model, $row, $id);
+
+        $id = $id ?? $this->lastInsertId($model);
+
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->getPersistenceName();
+
+            unset($row[$idColumnName]);
         }
 
-        return $rows;
+        $this->data[$model->table][$id] = $row; //array_intersect_key($row, $rowWithId);
+
+        return $id;
+    }
+
+    public function unsetRawData(string $table, $id)
+    {
+        unset($this->data[$table][$id]);
+    }
+
+    private function getRowWithId(Model $model, array $row, $id = null)
+    {
+        if ($id === null) {
+            $id = $this->generateNewId($model);
+        }
+
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->getPersistenceName();
+
+            if (array_key_exists($idColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$idColumnName], $id);
+                unset($row[$idColumnName]);
+            }
+
+            // typecastSave value so we can use strict comparison
+            $row = [$idColumnName => $this->typecastSaveField($idField, $id)] + $row;
+        }
+
+        return $row;
     }
 
     private function assertNoIdMismatch($idFromRow, $id): void
@@ -54,33 +91,6 @@ class Array_ extends Persistence
             throw (new Exception('Row constains ID column, but it does not match the row ID'))
                 ->addMoreInfo('idFromKey', $id)
                 ->addMoreInfo('idFromData', $idFromRow);
-        }
-    }
-
-    private function saveRow(Model $model, array $row, $id, string $table): void
-    {
-        if ($model->id_field) {
-            $idField = $model->getField($model->id_field);
-            $idColumnName = $idField->getPersistenceName();
-            if (array_key_exists($idColumnName, $row)) {
-                $this->assertNoIdMismatch($row[$idColumnName], $id);
-                unset($row[$idColumnName]);
-            }
-        }
-
-        $this->data[$table][$id] = $row;
-    }
-
-    private function addIdToLoadRow(Model $model, array &$row, $id): void
-    {
-        if ($model->id_field) {
-            $idField = $model->getField($model->id_field);
-            $idColumnName = $idField->getPersistenceName();
-            if (array_key_exists($idColumnName, $row)) {
-                $this->assertNoIdMismatch($row[$idColumnName], $id);
-            }
-
-            $row = [$idColumnName => $id] + $row;
         }
     }
 
@@ -125,26 +135,6 @@ class Array_ extends Persistence
     }
 
     /**
-     * Loads model and returns data record.
-     *
-     * @param mixed $id
-     */
-    public function load(Model $model, $id, string $table = null): array
-    {
-        if (isset($model->table) && !isset($this->data[$model->table])) {
-            throw (new Exception('Table was not found in the array data source'))
-                ->addMoreInfo('table', $model->table);
-        }
-
-        if (!isset($this->data[$table ?? $model->table][$id])) {
-            throw (new Exception('Record with specified ID was not found', 404))
-                ->addMoreInfo('id', $id);
-        }
-
-        return $this->tryLoad($model, $id, $table);
-    }
-
-    /**
      * Tries to load first available record and return data record.
      */
     public function loadAny(Model $model, string $table = null): ?array
@@ -157,97 +147,6 @@ class Array_ extends Persistence
         }
 
         return $row;
-    }
-
-    /**
-     * Tries to load model and return data record.
-     * Doesn't throw exception if model can't be loaded.
-     *
-     * @param mixed $id
-     */
-    public function tryLoad(Model $model, $id, string $table = null): ?array
-    {
-        $table = $table ?? $model->table;
-
-        if (!isset($this->data[$table][$id])) {
-            return null;
-        }
-
-        $row = $this->data[$table][$id];
-        $this->addIdToLoadRow($model, $row, $id);
-
-        return $this->typecastLoadRow($model, $row);
-    }
-
-    /**
-     * Tries to load first available record and return data record.
-     * Doesn't throw exception if model can't be loaded or there are no data records.
-     *
-     * @param mixed $table
-     */
-    public function tryLoadAny(Model $model, string $table = null): ?array
-    {
-        $table = $table ?? $model->table;
-
-        if (!$this->data[$table]) {
-            return null;
-        }
-
-        reset($this->data[$table]);
-        $id = key($this->data[$table]);
-
-        $row = $this->load($model, $id, $table);
-        $model->setId($id);
-
-        return $row;
-    }
-
-    /**
-     * Inserts record in data array and returns new record ID.
-     *
-     * @return mixed
-     */
-    public function insert(Model $model, array $data, string $table = null)
-    {
-        $table = $table ?? $model->table;
-
-        $data = $this->typecastSaveRow($model, $data);
-
-        $id = $data[$model->id_field] ?? $this->generateNewId($model, $table);
-
-        $this->saveRow($model, $data, $id, $table);
-
-        return $id;
-    }
-
-    /**
-     * Updates record in data array and returns record ID.
-     *
-     * @param mixed $id
-     *
-     * @return mixed
-     */
-    public function update(Model $model, $id, array $data, string $table = null)
-    {
-        $table = $table ?? $model->table;
-
-        $data = $this->typecastSaveRow($model, $data);
-
-        $this->saveRow($model, array_merge($this->data[$table][$id] ?? [], $data), $id, $table);
-
-        return $id;
-    }
-
-    /**
-     * Deletes record in data array.
-     *
-     * @param mixed $id
-     */
-    public function delete(Model $model, $id, string $table = null)
-    {
-        $table = $table ?? $model->table;
-
-        unset($this->data[$table][$id]);
     }
 
     /**
@@ -278,163 +177,17 @@ class Array_ extends Persistence
         }
 
         $this->lastInsertIds[$table] = $id;
-        $this->lastInsertIds['$'] = $id;
 
         return $id;
     }
 
-    /**
-     * Last ID inserted.
-     * Last inserted ID for any table is stored under '$' key.
-     *
-     * @return mixed
-     */
-    public function lastInsertId(Model $model = null)
+    public function lastInsertId(Model $model): string
     {
-        if ($model) {
-            return $this->lastInsertIds[$model->table] ?? null;
-        }
-
-        return $this->lastInsertIds['$'] ?? null;
+        return (string) ($this->lastInsertIds[$model->table] ?? '');
     }
 
-    /**
-     * Prepare iterator.
-     */
-    public function prepareIterator(Model $model): iterable
+    public function query(Model $model): AbstractQuery
     {
-        return $model->action('select')->get();
-    }
-
-    /**
-     * Export all DataSet.
-     */
-    public function export(Model $model, array $fields = null, bool $typecast = true): array
-    {
-        $data = $model->action('select', [$fields])->get();
-
-        if ($typecast) {
-            $data = array_map(function ($row) use ($model) {
-                return $this->typecastLoadRow($model, $row);
-            }, $data);
-        }
-
-        return $data;
-    }
-
-    /**
-     * Typecast data and return Iterator of data array.
-     */
-    public function initAction(Model $model, array $fields = null): \atk4\data\Action\Iterator
-    {
-        $data = $this->data[$model->table];
-        array_walk($data, function (&$row, $id) use ($model) {
-            $this->addIdToLoadRow($model, $row, $id);
-        });
-
-        if ($fields !== null) {
-            $data = array_map(function ($row) use ($model, $fields) {
-                return array_intersect_key($row, array_flip($fields));
-            }, $data);
-        }
-
-        return new \atk4\data\Action\Iterator($data);
-    }
-
-    /**
-     * Will set limit defined inside $m onto data.
-     */
-    protected function setLimitOrder(Model $model, \atk4\data\Action\Iterator $action)
-    {
-        // first order by
-        if ($model->order) {
-            $action->order($model->order);
-        }
-
-        // then set limit
-        if ($model->limit && ($model->limit[0] || $model->limit[1])) {
-            $action->limit($model->limit[0] ?? 0, $model->limit[1] ?? 0);
-        }
-    }
-
-    /**
-     * Will apply conditions defined inside $model onto $iterator.
-     *
-     * @return \atk4\data\Action\Iterator|null
-     */
-    public function applyScope(Model $model, \atk4\data\Action\Iterator $iterator)
-    {
-        return $iterator->filter($model->scope());
-    }
-
-    /**
-     * Various actions possible here, mostly for compatibility with SQLs.
-     *
-     * @param string $type
-     * @param array  $args
-     *
-     * @return mixed
-     */
-    public function action(Model $model, $type, $args = [])
-    {
-        $args = (array) $args;
-
-        switch ($type) {
-            case 'select':
-                $action = $this->initAction($model, $args[0] ?? null);
-                $this->applyScope($model, $action);
-                $this->setLimitOrder($model, $action);
-
-                return $action;
-            case 'count':
-                $action = $this->initAction($model, $args[0] ?? null);
-                $this->applyScope($model, $action);
-                $this->setLimitOrder($model, $action);
-
-                return $action->count();
-            case 'exists':
-                $action = $this->initAction($model, $args[0] ?? null);
-                $this->applyScope($model, $action);
-
-                return $action->exists();
-            case 'field':
-                if (!isset($args[0])) {
-                    throw (new Exception('This action requires one argument with field name'))
-                        ->addMoreInfo('action', $type);
-                }
-
-                $field = is_string($args[0]) ? $args[0] : $args[0][0];
-
-                $action = $this->initAction($model, [$field]);
-                $this->applyScope($model, $action);
-                $this->setLimitOrder($model, $action);
-
-                // get first record
-                if ($row = $action->getRow()) {
-                    if (isset($args['alias']) && array_key_exists($field, $row)) {
-                        $row[$args['alias']] = $row[$field];
-                        unset($row[$field]);
-                    }
-                }
-
-                return $row;
-            case 'fx':
-            case 'fx0':
-                if (!isset($args[0], $args[1])) {
-                    throw (new Exception('fx action needs 2 arguments, eg: ["sum", "amount"]'))
-                        ->addMoreInfo('action', $type);
-                }
-
-                [$fx, $field] = $args;
-
-                $action = $this->initAction($model, [$field]);
-                $this->applyScope($model, $action);
-                $this->setLimitOrder($model, $action);
-
-                return $action->aggregate($fx, $field, $type === 'fx0');
-            default:
-                throw (new Exception('Unsupported action mode'))
-                    ->addMoreInfo('type', $type);
-        }
+        return new Array_\Query($model, $this);
     }
 }

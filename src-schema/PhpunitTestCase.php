@@ -171,7 +171,7 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
             $data2 = [];
 
             $s = $this->db->dsql();
-            $data = $s->table($table)->get();
+            $data = $s->table($table)->getRows();
 
             foreach ($data as &$row) {
                 foreach ($row as &$val) {

@@ -6,6 +6,7 @@ namespace atk4\data;
 
 use atk4\core\InitializerTrait;
 use atk4\dsql\Expression;
+use atk4\dsql\Expressionable;
 
 /**
  * Class description?
@@ -93,6 +94,10 @@ class FieldSqlExpression extends FieldSql
         $expr = $this->expr;
         if ($expr instanceof \Closure) {
             $expr = $expr($this->getOwner(), $expression);
+        }
+
+        if ($expr instanceof Expressionable) {
+            $expr = $expr->getDsqlExpression($expression);
         }
 
         if (is_string($expr)) {

@@ -184,25 +184,25 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     }
 
     /*public function testJoinSaving4()
-    {
-        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, 'user');
-        $m_u->addField('name');
-        $m_u->addField('code');
-        $j = $m_u->join('contact.code', 'code');
-        $j->addField('contact_phone');
+     {
+     $db = new Persistence\Array_(['user' => [], 'contact' => []]);
+     $m_u = new Model($db, 'user');
+     $m_u->addField('name');
+     $m_u->addField('code');
+     $j = $m_u->join('contact.code', 'code');
+     $j->addField('contact_phone');
 
-        $m_u->get('name') = 'John';
-        $m_u->get('code') = 'C28';
-        $m_u->get('contact_phone') = '+123';
+     $m_u->get('name') = 'John';
+     $m_u->get('code') = 'C28';
+     $m_u->get('contact_phone') = '+123';
 
-        $m_u->save();
+     $m_u->save();
 
-        $this->assertEquals([
-            'user' => [1 => ['id' => 1, 'code' => 'C28', 'name' => 'John']],
-            'contact' => [1 => ['id' => 1, 'code' => 'C28', 'contact_phone' => '+123']],
-        ], $this->getInternalPersistenceData($db));
-    }*/
+     $this->assertEquals([
+     'user' => [1 => ['id' => 1, 'code' => 'C28', 'name' => 'John']],
+     'contact' => [1 => ['id' => 1, 'code' => 'C28', 'contact_phone' => '+123']],
+     ], $this->getInternalPersistenceData($db));
+     }*/
 
     public function testJoinLoading()
     {
@@ -364,26 +364,26 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     }
 
     /*
-    public function testReverseJoin()
-    {
-        $db = new Persistence\Array_();
-        $m = new Model($db);
-        $m->addField('name');
-    }
+     public function testReverseJoin()
+     {
+     $db = new Persistence\Array_();
+     $m = new Model($db);
+     $m->addField('name');
+     }
 
-    public function testMultipleJoins()
-    {
-    }
+     public function testMultipleJoins()
+     {
+     }
 
-    public function testTrickyCases()
-    {
-        $db = new Persistence\Array_();
-        $m = new Model($db);
+     public function testTrickyCases()
+     {
+     $db = new Persistence\Array_();
+     $m = new Model($db);
 
-        // tricky cases to testt
-        //
-        //$m->join('foo.bar', ['master_field'=>'baz']);
-        // foreign_table = 'foo.bar'
-    }
-    */
+     // tricky cases to testt
+     //
+     //$m->join('foo.bar', ['master_field'=>'baz']);
+     // foreign_table = 'foo.bar'
+     }
+     */
 }

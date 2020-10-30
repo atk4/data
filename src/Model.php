@@ -12,7 +12,6 @@ use atk4\core\FactoryTrait;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\ReadableCaptionTrait;
-use atk4\dsql\Query;
 
 /**
  * Data model class.
@@ -371,7 +370,7 @@ class Model implements \IteratorAggregate
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, ['system' => true]);
+            $this->addField($this->id_field, ['type' => 'integer', 'system' => true]);
         } else {
             return; // don't declare actions for model without id_field
         }
@@ -1115,47 +1114,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Load model.
-     *
-     * @param mixed $id
-     *
-     * @return $this
-     */
-    public function load($id)
-    {
-        // deprecated, remove on 2021-03
-        if (func_num_args() > 1) {
-            throw new Exception('Model::load() with 2nd param $from_persistence is no longer supported');
-        }
-
-        if (!$this->persistence) {
-            throw new Exception('Model is not associated with any database');
-        }
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
-            return $this;
-        }
-
-        $this->data = $this->persistence->load($this, $id);
-        if ($this->getId() === null) { // TODO what is the usecase?
-            $this->setId($id);
-        }
-
-        $ret = $this->hook(self::HOOK_AFTER_LOAD);
-        if ($ret === false) {
-            return $this->unload();
-        } elseif (is_object($ret)) {
-            return $ret;
-        }
-
-        return $this;
-    }
-
-    /**
      * Reload model by taking its current ID.
      *
      * @return $this
@@ -1318,24 +1276,9 @@ class Model implements \IteratorAggregate
      */
     public function tryLoad($id)
     {
-        $this->checkPersistence('tryLoad');
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        $this->data = $this->persistence->tryLoad($this, $id);
-        if ($this->data) {
-            $this->setId($id);
-
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                return $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret;
-            }
-        } else {
-            $this->unload();
+        try {
+            return $this->load($id);
+        } catch (Exception\RecordNotFound $e) {
         }
 
         return $this;
@@ -1348,26 +1291,7 @@ class Model implements \IteratorAggregate
      */
     public function loadAny()
     {
-        $this->checkPersistence('loadAny');
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        $this->data = $this->persistence->loadAny($this);
-
-        if ($this->id_field) {
-            $this->setId($this->data[$this->id_field]);
-        }
-
-        $ret = $this->hook(self::HOOK_AFTER_LOAD);
-        if ($ret === false) {
-            return $this->unload();
-        } elseif (is_object($ret)) {
-            return $ret;
-        }
-
-        return $this;
+        return $this->load();
     }
 
     /**
@@ -1378,13 +1302,35 @@ class Model implements \IteratorAggregate
      */
     public function tryLoadAny()
     {
-        $this->checkPersistence('tryLoadAny');
+        try {
+            return $this->load();
+        } catch (Exception\RecordNotFound $e) {
+        }
+
+        return $this;
+    }
+
+    /**
+     * Load model.
+     *
+     * @param mixed $id
+     *
+     * @return $this
+     */
+    public function load($id = null)
+    {
+        $this->checkPersistence('getRow');
 
         if ($this->loaded()) {
             $this->unload();
         }
 
-        $this->data = $this->persistence->tryLoadAny($this);
+        if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
+            return $this;
+        }
+
+        $this->data = $this->persistence->getRow($this, $id);
+
         if ($this->data) {
             if ($this->id_field) {
                 if (isset($this->data[$this->id_field])) {
@@ -1400,6 +1346,11 @@ class Model implements \IteratorAggregate
             }
         } else {
             $this->unload();
+        }
+
+        if ($this->id_field && !$this->loaded()) {
+            throw (new Exception\RecordNotFound())
+                ->setRecordParameters($this, $id);
         }
 
         return $this;
@@ -1472,7 +1423,9 @@ class Model implements \IteratorAggregate
         }
 
         if ($method && !$this->persistence->hasMethod($method)) {
-            throw new Exception("Persistence does not support {$method} method");
+            throw (new Exception('Method is not supported by persistence'))
+                ->addMoreInfo('persistence', get_class($this->persistence))
+                ->addMoreInfo('method', $method);
         }
     }
 
@@ -1764,13 +1717,21 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * Number of records in current model scope.
+     */
+    public function getCount(): int
+    {
+        return (int) $this->toQuery()->count()->getOne();
+    }
+
+    /**
      * Returns iterator (yield values).
      *
      * @return mixed
      */
     public function getIterator(): iterable
     {
-        foreach ($this->rawIterator() as $data) {
+        foreach ($this->toQuery() as $data) {
             $thisCloned = clone $this;
 
             $thisCloned->data = $this->persistence->typecastLoadRow($this, $data);
@@ -1793,30 +1754,18 @@ class Model implements \IteratorAggregate
                 continue;
             }
 
-            if (is_object($ret)) {
-                if ($ret->id_field) {
-                    yield $ret->getId() => $ret;
-                } else {
-                    yield $ret;
-                }
+            if (!is_object($ret)) {
+                $ret = $thisCloned;
+            }
+
+            if ($ret->id_field) {
+                yield $ret->getId() => $ret;
             } else {
-                if ($this->id_field) {
-                    yield $thisCloned->getId() => $thisCloned;
-                } else {
-                    yield $thisCloned;
-                }
+                yield $ret;
             }
         }
 
         $this->unload();
-    }
-
-    /**
-     * Returns iterator.
-     */
-    public function rawIterator(): iterable
-    {
-        return $this->persistence->prepareIterator($this);
     }
 
     /**
@@ -1897,21 +1846,60 @@ class Model implements \IteratorAggregate
 
     // }}}
 
-    // {{{ Support for actions
+    // {{{ Support for query and expressions
 
     /**
-     * Execute action.
-     *
-     * @param string $mode
-     * @param array  $args
-     *
-     * @return Query
+     * @deprecated use toQuery instead - will be removed in dec-2020
      */
-    public function action($mode, $args = [])
+    public function action($mode, $args = []): Persistence\AbstractQuery
     {
-        $this->checkPersistence('action');
+        'trigger_error'('Method Model::action is deprecated. Use Model::toQuery instead', E_USER_DEPRECATED);
 
-        return $this->persistence->action($this, $mode, $args);
+        $this->checkPersistence('query');
+
+        // start backward compatibility -->
+        switch ($mode) {
+            case 'fx':
+            case 'fx0':
+                [$fx, $field] = $args;
+                $alias = $args['alias'] ?? null;
+                $coalesce = $mode === 'fx0';
+
+                $args = [$fx, $field, $alias, $coalesce];
+                $mode = 'aggregate';
+
+                break;
+            case 'field':
+                $args = [$args[0], $args['alias'] ?? null];
+
+                break;
+            case 'count':
+                $args = [$args['alias'] ?? null];
+
+                break;
+            default:
+                break;
+        }
+        // <-- end backward compatibility
+
+        $query = $this->persistence->query($this);
+
+        if (!method_exists($query, $mode)) {
+            throw (new Exception('Unsupported query mode'))
+                ->addMoreInfo('type', $mode);
+        }
+
+        return $this->toQuery()->{$mode}(...$args);
+    }
+
+    /**
+     * Get query object to perform query on raw persistence data.
+     */
+    public function toQuery(): Persistence\AbstractQuery
+    {
+        $this->checkPersistence('query');
+
+        return $this->persistence->query($this);
     }
 
     // }}}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
+use atk4\data\Persistence\AbstractQuery;
 use Doctrine\DBAL\Platforms;
 
 class Persistence
@@ -16,6 +17,19 @@ class Persistence
     use \atk4\core\DynamicMethodTrait;
     use \atk4\core\NameTrait;
     use \atk4\core\DiContainerTrait;
+
+    /** @const string */
+    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelect';
+    /** @const string */
+    public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsert';
+    /** @const string */
+    public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsert';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdate';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdate';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDelete';
 
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
@@ -63,6 +77,24 @@ class Persistence
     }
 
     /**
+     * Export all DataSet.
+     *
+     * @param bool $typecast Should we typecast exported data
+     */
+    public function export(Model $model, array $fields = null, bool $typecast = true): array
+    {
+        $data = $this->query($model)->select($fields)->get();
+
+        if ($typecast) {
+            $data = array_map(function ($row) use ($model) {
+                return $this->typecastLoadRow($model, $row);
+            }, $data);
+        }
+
+        return $data;
+    }
+
+    /**
      * Associate model with the data driver.
      */
     public function add(Model $m, array $defaults = []): Model
@@ -92,7 +124,11 @@ class Persistence
      * you can define additional methods or store additional data. This method
      * is executed before model's init().
      */
-    protected function initPersistence(Model $m)
+    protected function initPersistence(Model $model)
+    {
+    }
+
+    public function query(Model $model): Persistence\AbstractQuery
     {
     }
 
@@ -106,6 +142,100 @@ class Persistence
     public function atomic(\Closure $fx)
     {
         return $fx();
+    }
+
+    public function getRow(Model $model, $id = null)
+    {
+        $query = $this->query($model);
+
+        if ($id !== null) {
+            $query->whereId($id);
+        }
+
+        $rawData = $query->getRow();
+
+        if ($rawData === null) {
+            return null;
+        }
+
+        return $this->typecastLoadRow($model, $rawData);
+    }
+
+    /**
+     * Inserts record in database and returns new record ID.
+     *
+     * @return mixed
+     */
+    public function insert(Model $model, array $data)
+    {
+        // don't set id field at all if it's NULL
+        if ($model->id_field && !isset($data[$model->id_field])) {
+            unset($data[$model->id_field]);
+
+            $this->syncIdSequence($model);
+        }
+
+        $data = $this->typecastSaveRow($model, $data);
+
+        $this->query($model)->insert($data)->execute();
+
+        if ($model->id_field && isset($data[$model->id_field])) {
+            $id = (string) $data[$model->id_field];
+
+            $this->syncIdSequence($model);
+        } else {
+            $id = $this->lastInsertId($model);
+        }
+
+        return $id;
+    }
+
+    /**
+     * Updates record in database.
+     *
+     * @param mixed $id
+     * @param array $data
+     */
+    public function update(Model $model, $id, $data)
+    {
+        $data = $this->typecastSaveRow($model, $data);
+
+        $model->onHook(self::HOOK_AFTER_UPDATE_QUERY, function (Model $model, AbstractQuery $query, $result) use ($data) {
+            if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
+                // ID was changed
+                $model->id = $data[$model->id_field];
+            }
+        }, [], -1000);
+
+        $result = $this->query($model)->whereId($id)->update($data)->execute();
+
+        // if any rows were updated in database, and we had expressions, reload
+        if ($model->reload_after_save === true && (!$result || $result->rowCount())) {
+            $dirty = $model->dirty;
+            $model->reload();
+            $model->_dirty_after_reload = $model->dirty;
+            $model->dirty = $dirty;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Deletes record from database.
+     *
+     * @param mixed $id
+     */
+    public function delete(Model $model, $id)
+    {
+        $this->query($model)->whereId($id)->delete()->execute();
+    }
+
+    public function lastInsertId(Model $model): string
+    {
+    }
+
+    protected function syncIdSequence(Model $model): void
+    {
     }
 
     public function getDatabasePlatform(): Platforms\AbstractPlatform

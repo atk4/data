@@ -105,7 +105,8 @@ class Condition extends AbstractScope
         } elseif ($key instanceof Field) { // for BC
             $key = $key->short_name;
         } elseif (!is_string($key) && !($key instanceof Expression) && !($key instanceof Expressionable)) {
-            throw new Exception('Field must be a string or an instance of Expression');
+            throw (new Exception('Field must be a string or an instance of Expression or Expressionable'))
+                ->addMoreInfo('key', $key);
         }
 
         if (func_num_args() === 1 && is_bool($key)) {
@@ -205,10 +206,10 @@ class Condition extends AbstractScope
 
                     foreach (array_reverse($refModels) as $refModel) {
                         if ($field === '#') {
-                            $field = $value ? $refModel->action('count') : $refModel->action('exists');
+                            $field = $value ? $refModel->toQuery()->count() : $refModel->toQuery()->exists();
                         } else {
                             $refModel->addCondition($field, $operator, $value);
-                            $field = $refModel->action('exists');
+                            $field = $refModel->toQuery()->exists();
                             $operator = '>';
                             $value = 0;
                         }

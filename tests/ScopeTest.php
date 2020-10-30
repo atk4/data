@@ -217,7 +217,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $user->addCondition('country_id/code', 'LV');
 
-        $this->assertEquals(1, $user->action('count')->getOne());
+        $this->assertEquals(1, $user->getCount());
 
         foreach ($user as $u) {
             $this->assertEquals('LV', $u->get('country_code'));
@@ -228,7 +228,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         // users that have no ticket
         $user->addCondition('Tickets/#', 0);
 
-        $this->assertEquals(1, $user->action('count')->getOne());
+        $this->assertEquals(1, $user->getCount());
 
         foreach ($user as $u) {
             $this->assertTrue(in_array($u->get('name'), ['Alain', 'Aerton', 'Rubens'], true));
@@ -266,7 +266,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         // countries with users that have any tickets
         $country->addCondition('Users/Tickets/#', '>', 0);
 
-        $this->assertEquals(3, $country->action('count')->getOne());
+        $this->assertEquals(3, $country->getCount());
 
         foreach ($country as $c) {
             $this->assertTrue(in_array($c->get('code'), ['LV', 'CA', 'BR'], true));
@@ -277,7 +277,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         // countries with users that have no tickets
         $country->addCondition('Users/Tickets/#', 0);
 
-        $this->assertEquals(1, $country->action('count')->getOne());
+        $this->assertEquals(1, $country->getCount());
 
         foreach ($country as $c) {
             $this->assertTrue(in_array($c->get('code'), ['FR'], true));
@@ -299,7 +299,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
             $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true
         }
 
-        $this->assertEquals(2, $user->action('count')->getOne());
+        $this->assertEquals(2, $user->getCount());
         foreach ($user as $u) {
             $this->assertTrue(in_array($u->get('name'), ['Aerton', 'Rubens'], true));
         }

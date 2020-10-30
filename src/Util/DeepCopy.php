@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\data\Util;
 
+use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Reference\HasMany;
 use atk4\data\Reference\HasOne;
@@ -259,7 +260,7 @@ class DeepCopy
                                 )->getId()
                             );
                             $this->debug(' ... mapped into ' . $destination->get($ref_key));
-                        } catch (DeepCopyException $e) {
+                        } catch (Exception\DeepCopyFailed $e) {
                             $this->debug('escalating a problem from ' . $ref_key);
 
                             throw $e->addDepth($ref_key);
@@ -293,12 +294,12 @@ class DeepCopy
             }
 
             return $destination;
-        } catch (DeepCopyException $e) {
+        } catch (Exception\DeepCopyFailed $e) {
             throw $e;
         } catch (\atk4\core\Exception $e) {
             $this->debug('noticed a problem');
 
-            throw (new DeepCopyException('Problem cloning model', 0, $e))
+            throw (new Exception\DeepCopyFailed('Problem cloning model', 0, $e))
                 ->addMoreInfo('source', $source)
                 ->addMoreInfo('source_info', $source->__debugInfo())
                 ->addMoreInfo('source_data', $source->get())

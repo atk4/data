@@ -14,69 +14,51 @@ use atk4\data\tests\Model\Person;
  */
 class CsvTest extends AtkPhpunit\TestCase
 {
+    /** @var \SplFileObject */
     protected $file;
+
+    /** @var \SplFileObject */
     protected $file2;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->file = fopen('php://memory', 'w+');
-        $this->file2 = fopen('php://memory', 'w+');
+        $this->file = $this->makeCsvFileObject();
+        $this->file2 = $this->makeCsvFileObject();
     }
 
-    protected function tearDown(): void
+    protected function makeCsvFileObject()
     {
-        parent::tearDown();
+        $fileObject = new \SplFileObject('php://memory', 'w+');
 
-        fclose($this->file);
-        fclose($this->file2);
-    }
+        $fileObject->setFlags(
+            \SplFileObject::READ_CSV |
+            \SplFileObject::SKIP_EMPTY |
+            \SplFileObject::DROP_NEW_LINE |
+            \SplFileObject::READ_AHEAD
+        );
 
-    protected function makeCsvPersistence($fileHandle, array $defaults = []): Persistence\Csv
-    {
-        return new class($fileHandle, $defaults) extends Persistence\Csv {
-            private $handleUnloaded;
-
-            public function __construct($fileHandle, $defaults)
-            {
-                parent::__construct('', $defaults);
-                $this->handleUnloaded = $fileHandle;
-            }
-
-            public function openFile(string $mode = 'r'): void
-            {
-                $this->handle = $this->handleUnloaded;
-                fseek($this->handle, 0);
-            }
-
-            public function closeFile(): void
-            {
-                if ($this->handle && get_resource_type($this->handle) === 'stream') {
-                    $this->handle = null;
-                    $this->header = null;
-                }
-            }
-        };
+        return $fileObject;
     }
 
     protected function setDb($data): void
     {
-        ftruncate($this->file, 0);
-        fputcsv($this->file, array_keys(reset($data)));
+        $this->file->ftruncate(0);
+        $this->file->fputcsv(array_keys(reset($data)));
         foreach ($data as $row) {
-            fputcsv($this->file, $row);
+            $this->file->fputcsv($row);
         }
 
-        ftruncate($this->file2, 0);
+        $this->file2->ftruncate(0);
     }
 
     protected function getDb(): array
     {
-        fseek($this->file, 0);
-        $keys = fgetcsv($this->file);
+        $this->file->fseek(0);
+        $keys = $this->file->fgetcsv();
         $data = [];
-        while ($row = fgetcsv($this->file)) {
+        while ($row = $this->file->fgetcsv()) {
             $data[] = array_combine($keys, $row);
         }
 
@@ -107,7 +89,7 @@ class CsvTest extends AtkPhpunit\TestCase
 
         $this->setDb($data);
 
-        $p = $this->makeCsvPersistence($this->file);
+        $p = new Persistence\Csv($this->file);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
@@ -126,22 +108,17 @@ class CsvTest extends AtkPhpunit\TestCase
 
         $this->setDb($data);
 
-        $p = $this->makeCsvPersistence($this->file);
+        $p = new Persistence\Csv($this->file);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
+        $m->load(2);
 
-        $mm = clone $m;
-        $mm->loadAny();
-        $mm = clone $m;
-        $mm->loadAny();
+        $this->assertSame('Sarah', $m->get('name'));
+        $this->assertSame('Jones', $m->get('surname'));
 
-        $this->assertSame('Sarah', $mm->get('name'));
-        $this->assertSame('Jones', $mm->get('surname'));
-
-        $mm = clone $m;
-        $mm->tryLoadAny();
-        $this->assertFalse($mm->loaded());
+        $m->tryLoad(3);
+        $this->assertFalse($m->loaded());
     }
 
     public function testPersistenceCopy()
@@ -153,23 +130,22 @@ class CsvTest extends AtkPhpunit\TestCase
 
         $this->setDb($data);
 
-        $p = $this->makeCsvPersistence($this->file);
-        $p2 = $this->makeCsvPersistence($this->file2);
+        $p = new Persistence\Csv($this->file);
+        $p2 = new Persistence\Csv($this->file2);
 
         $m = new Person($p);
 
         $m2 = $m->withPersistence($p2);
-        $m2->reload_after_save = false; // TODO should be not needed after https://github.com/atk4/data/pull/690 is merged
 
         foreach ($m as $row) {
             (clone $m2)->save($row->get());
         }
 
-        fseek($this->file, 0);
-        fseek($this->file2, 0);
+        $this->file->fseek(0);
+        $this->file2->fseek(0);
         $this->assertSame(
-            stream_get_contents($this->file),
-            stream_get_contents($this->file2)
+            $this->file->fread(5000),
+            $this->file2->fread(5000)
         );
     }
 
@@ -184,7 +160,7 @@ class CsvTest extends AtkPhpunit\TestCase
         ];
         $this->setDb($data);
 
-        $p = $this->makeCsvPersistence($this->file);
+        $p = new Persistence\Csv($this->file);
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');

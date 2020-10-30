@@ -85,7 +85,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
         }
 
         $this->m->insert(['name' => 'Joe']);
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        $this->assertEquals(3, $this->m->getCount());
     }
 
     /**
@@ -100,7 +100,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
         $this->m->tryLoadAny();
         $this->m->saveAndUnload();
 
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        $this->assertEquals(3, $this->m->getCount());
     }
 
     /**
@@ -115,7 +115,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
         $this->m->tryLoadAny();
         $this->m->save();
 
-        $this->assertEquals(3, $this->m->action('count')->getOne());
+        $this->assertEquals(3, $this->m->getCount());
     }
 
     /**

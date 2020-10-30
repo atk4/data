@@ -30,9 +30,7 @@ class HasMany extends Reference
         }
 
         // create expression based on existing conditions
-        return $ourModel->action('field', [
-            $this->getOurFieldName(),
-        ]);
+        return $ourModel->toQuery()->field($this->getOurFieldName());
     }
 
     /**
@@ -102,27 +100,27 @@ class HasMany extends Reference
             $fx = function () use ($defaults, $alias) {
                 $theirModelLinked = $this->refLink();
 
-                return $theirModelLinked->action('field', [$theirModelLinked->expr(
+                return $theirModelLinked->toQuery()->field($theirModelLinked->expr(
                     $defaults['expr'],
                     $defaults['args'] ?? []
-                ), 'alias' => $alias]);
+                ), $alias);
             };
             unset($defaults['args']);
         } elseif (is_object($defaults['aggregate'])) {
             $fx = function () use ($defaults, $alias) {
-                return $this->refLink()->action('field', [$defaults['aggregate'], 'alias' => $alias]);
+                return $this->refLink()->toQuery()->field($defaults['aggregate'], $alias);
             };
         } elseif ($defaults['aggregate'] === 'count' && !isset($defaults['field'])) {
             $fx = function () use ($defaults, $alias) {
-                return $this->refLink()->action('count', ['alias' => $alias]);
+                return $this->refLink()->toQuery()->count($alias);
             };
         } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {
             $fx = function () use ($defaults, $field) {
-                return $this->refLink()->action('fx0', [$defaults['aggregate'], $field]);
+                return $this->refLink()->toQuery()->aggregate($defaults['aggregate'], $field, null, true);
             };
         } else {
             $fx = function () use ($defaults, $field) {
-                return $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
+                return $this->refLink()->toQuery()->aggregate($defaults['aggregate'], $field);
             };
         }
 

@@ -84,7 +84,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Rate($db);
 
-        $this->assertEquals(2, $m->action('count')->getOne());
+        $this->assertEquals(2, $m->getCount());
     }
 
     public function testTitleImport()
@@ -183,7 +183,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m = new Model_Item($db, 'item');
 
         $this->assertSame(
-            ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
     }
@@ -207,7 +207,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $m = new Model_Item2($db, 'item');
 
         $this->assertSame(
-            ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
     }
@@ -235,7 +235,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             $m->load(2)->get()
         );
 
-        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->action('count')->getOne());
+        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->getCount());
         $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 
@@ -519,8 +519,19 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
         $q = str_replace('"', $this->getEscapeChar(), $q);
         $this->assertSame(
             $q,
-            $d->action('select')->render()
+            $d->toQuery()->select()->render()
         );
+    }
+
+    public function testExceptionOnQueryModeModification()
+    {
+        $d = new Model($this->db, 'db2.doc');
+        $d->addField('name');
+
+        $query = $d->toQuery()->select();
+
+        $this->expectException(Exception::class);
+        $query->delete();
     }
 }
 

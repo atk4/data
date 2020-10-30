@@ -516,21 +516,21 @@ class Field implements Expressionable
             }
 
             if ($this->getOwner()->persistence === null) {
-                $v = $this->normalize($v);
-
                 // without persistence, we can not do a lot with non-scalar types, but as DateTime
                 // is used often, fix the compare for them
                 // TODO probably create and use a default persistence
-                if (is_scalar($v)) {
-                    return (string) $v;
-                } elseif ($v instanceof \DateTimeInterface) {
-                    return $v->getTimestamp() . '.' . $v->format('u');
-                }
-
-                return serialize($v);
+                $persistenceValue = $this->normalize($v);
+            } else {
+                $persistenceValue = $this->getOwner()->persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
             }
 
-            return (string) $this->getOwner()->persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
+            if (is_scalar($persistenceValue)) {
+                return (string) $persistenceValue;
+            } elseif ($persistenceValue instanceof \DateTimeInterface) {
+                return $persistenceValue->getTimestamp() . '.' . $persistenceValue->format('u');
+            }
+
+            return $persistenceValue;
         };
 
         return $typecastFunc($value) === $typecastFunc($value2);

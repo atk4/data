@@ -50,13 +50,14 @@ class Join extends Model\Join
             return;
         }
 
-        try {
-            $data = $model->persistence->load($model, $this->id, $this->foreign_table);
-        } catch (Exception $e) {
-            throw (new Exception('Unable to load joined record', $e->getCode(), $e))
+        $data = $this->getPersistence()->getRow($this->getJoinModel(), $this->id);
+
+        if (!$data) {
+            throw (new Exception('Unable to load joined record'))
                 ->addMoreInfo('table', $this->foreign_table)
                 ->addMoreInfo('id', $this->id);
         }
+
         $model->data = array_merge($data, $model->data);
     }
 
@@ -76,13 +77,11 @@ class Join extends Model\Join
         }
 
         // Figure out where are we going to save data
-        $persistence = $this->persistence ?:
-            $this->getOwner()->persistence;
+        $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->insert(
-            $this->getOwner(),
-            $this->save_buffer,
-            $this->foreign_table
+            $this->getJoinModel(),
+            $this->save_buffer
         );
 
         $data[$this->master_field] = $this->id;
@@ -106,9 +105,8 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->insert(
-            $this->getOwner(),
-            $this->save_buffer,
-            $this->foreign_table
+            $this->getJoinModel(),
+            $this->save_buffer
         );
     }
 
@@ -124,10 +122,9 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->update(
-            $this->getOwner(),
+            $this->getJoinModel(),
             $this->id,
-            $this->save_buffer,
-            $this->foreign_table
+            $this->save_buffer
         );
     }
 
@@ -145,11 +142,23 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $persistence->delete(
-            $this->getOwner(),
-            $this->id,
-            $this->foreign_table
+            $this->getJoinModel(),
+            $this->id
         );
 
         $this->id = null;
+    }
+
+    protected function getPersistence()
+    {
+        return $this->persistence ?: $this->getOwner()->persistence;
+    }
+
+    protected function getJoinModel()
+    {
+        $joinModel = clone $this->getOwner();
+        $joinModel->table = $this->foreign_table;
+
+        return $joinModel;
     }
 }

@@ -93,9 +93,9 @@ class ContainsOne extends Reference
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $this->onHookToTheirModel($theirModel, $spot, function ($theirModel) {
-                $row = $theirModel->persistence->getRawDataByTable($theirModel, $this->table_alias);
-                $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
-                $this->getOurModel()->save([$this->getOurFieldName() => $row]);
+                $this->getOurModel()->save([
+                    $this->getOurFieldName() => $theirModel->toQuery()->getRow() ?: null,
+                ]);
             });
         }
 

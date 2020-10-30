@@ -42,7 +42,7 @@ class LocaleTest extends AtkPhpunit\TestCase
             $m->addField('name');
             $m->addField('surname');
             $m->load(4);
-        } catch (Exception $e) {
+        } catch (Exception\RecordNotFound $e) {
             $this->assertStringContainsString('Запись', json_decode($e->getJson(), true)['message']);
 
             return;

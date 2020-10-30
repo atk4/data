@@ -138,13 +138,13 @@ class PersistentSqlTest extends \atk4\schema\PhpunitTestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertEquals(0, $m->action('exists')->getOne());
+        $this->assertEquals(0, $m->toQuery()->exists()->getOne());
 
         $m->import($dbData['user']); // import data
 
-        $this->assertEquals(1, $m->action('exists')->getOne());
+        $this->assertEquals(1, $m->toQuery()->exists()->getOne());
 
-        $this->assertEquals(2, $m->action('count')->getOne());
+        $this->assertEquals(2, $m->getCount());
     }
 
     public function testPersistenceDelete()
