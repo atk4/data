@@ -287,12 +287,12 @@ Your init() method for a Field_Currency might look like this::
 
         $f = $this->short_name; // balance
 
-        $this->owner->addField(
+        $this->getOwner()->addField(
             $f.'_amount',
             ['type' => 'money', 'system' => true]
         );
 
-        $this->owner->hasOne(
+        $this->getOwner()->hasOne(
             $f.'_currency_id',
             [
                 $this->currency_model ?: new Currency(),
@@ -776,11 +776,11 @@ If you wish that every time you save your model the copy is also stored inside
 some other database (for archive purposes) you can implement it like this::
 
     $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
-        $arc = $this->withPersistence($m->app->archive_db, false);
+        $arc = $this->withPersistence($m->getApp()->archive_db, false);
 
         // add some audit fields
         $arc->addField('original_id')->set($this->getId());
-        $arc->addField('saved_by')->set($this->app->user);
+        $arc->addField('saved_by')->set($this->getApp()->user);
 
         $arc->saveAndUnload();
     });

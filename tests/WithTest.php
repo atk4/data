@@ -7,6 +7,7 @@ namespace atk4\data\tests;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -15,7 +16,7 @@ class WithTest extends \atk4\schema\PhpunitTestCase
 {
     public function testWith()
     {
-        if ($this->driverType === 'sqlsrv') {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('TODO - add WITH support for MSSQL');
         }
 

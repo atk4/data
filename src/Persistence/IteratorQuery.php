@@ -242,9 +242,28 @@ class IteratorQuery extends AbstractQuery
     protected function initWhere(): void
     {
         if (!$this->scope->isEmpty()) {
-            $this->iterator = new \CallbackFilterIterator($this->iterator, function ($row, $id) {
+            // CallbackFilterIterator with circular reference (bound function) is not GCed,
+            // because of specific php implementation of SPL iterator, see:
+            // https://bugs.php.net/bug.php?id=80125
+            // and related
+            // https://bugs.php.net/bug.php?id=65387
+            // - PHP 7.3 - impossible to fix easily
+            // - PHP 7.4 - fix it using WeakReference
+            // - PHP 8.0 - fixed in php, see:
+            // https://github.com/php/php-src/commit/afab9eb48c883766b7870f76f2e2b0a4bd575786
+            // remove the if below once PHP 7.3 and 7.4 is no longer supported
+            $filterFx = function ($row) {
                 return $this->match($row, $this->scope);
-            });
+            };
+            if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 4) {
+                $filterFxWeakRef = \WeakReference::create($filterFx);
+                $this->iterator = new \CallbackFilterIterator($this->iterator, static function (array $row) use ($filterFxWeakRef) {
+                    return $filterFxWeakRef->get()($row);
+                });
+                    $this->iterator->filterFx = $filterFx; // prevent filter function to be GCed
+            } else {
+                $this->iterator = new \CallbackFilterIterator($this->iterator, $filterFx);
+            }
         }
     }
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace atk4\data\tests;
 
 use atk4\data\Model;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -54,7 +56,7 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
         $oo = $u->unload()->addCondition('id', '>', '1')->ref('Orders');
 
-        if ($this->driverType === 'sqlsrv') {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('MSSQL uses asymetric escaping character');
         }
 
@@ -70,7 +72,7 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testLink()
     {
-        if ($this->driverType === 'sqlsrv') {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('MSSQL uses asymetric escaping character');
         }
 
@@ -116,7 +118,7 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testLink2()
     {
-        if ($this->driverType === 'sqlsrv') {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('MSSQL uses asymetric escaping character');
         }
 
@@ -166,7 +168,7 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
         $o->addCondition('amount', '>', 6);
         $o->addCondition('amount', '<', 9);
 
-        if ($this->driverType === 'sqlsrv') {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('MSSQL uses asymetric escaping character');
         }
 
@@ -221,7 +223,7 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testRelatedExpression()
     {
-        if ($this->driverType === 'sqlsrv') {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('MSSQL uses asymetric escaping character');
         }
 
@@ -319,9 +321,9 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testOtherAggregates()
     {
-        if ($this->driverType === 'pgsql') {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $this->markTestIncomplete('PostgreSQL does not support "SUM(variable)" syntax');
-        } elseif ($this->driverType === 'sqlsrv') {
+        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('MSSQL does not support "LENGTH(variable)" function');
         }
 

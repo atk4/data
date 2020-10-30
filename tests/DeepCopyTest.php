@@ -7,6 +7,7 @@ namespace atk4\data\tests;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Util\DeepCopy;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class DcClient extends Model
 {
@@ -153,11 +154,11 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigrator(new DcClient($this->db))->drop()->create();
-        $this->getMigrator(new DcInvoice($this->db))->drop()->create();
-        $this->getMigrator(new DcQuote($this->db))->drop()->create();
-        $this->getMigrator(new DcInvoiceLine($this->db))->drop()->create();
-        $this->getMigrator(new DcPayment($this->db))->drop()->create();
+        $this->getMigrator(new DcClient($this->db))->dropIfExists()->create();
+        $this->getMigrator(new DcInvoice($this->db))->dropIfExists()->create();
+        $this->getMigrator(new DcQuote($this->db))->dropIfExists()->create();
+        $this->getMigrator(new DcInvoiceLine($this->db))->dropIfExists()->create();
+        $this->getMigrator(new DcPayment($this->db))->dropIfExists()->create();
     }
 
     public function testBasic()
@@ -255,7 +256,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(1, $client3->ref('Quotes')->getCount());
         $this->assertEquals(1, $client3->ref('Payments')->getCount());
 
-        if ($this->driverType === 'sqlsrv') {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('TODO - MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery.');
         }
 

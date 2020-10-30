@@ -58,12 +58,12 @@ class FieldSqlExpression extends FieldSql
     {
         $this->_init();
 
-        if ($this->owner->reload_after_save === null) {
-            $this->owner->reload_after_save = true;
+        if ($this->getOwner()->reload_after_save === null) {
+            $this->getOwner()->reload_after_save = true;
         }
 
         if ($this->concat) {
-            $this->onHookToOwner(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
+            $this->onHookShortToOwner(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
         }
     }
 
@@ -71,7 +71,7 @@ class FieldSqlExpression extends FieldSql
      * Possibly that user will attempt to insert values here. If that is the case, then
      * we would need to inject it into related hasMany relationship.
      */
-    public function afterSave(Model $model)
+    public function afterSave()
     {
     }
 
@@ -93,7 +93,7 @@ class FieldSqlExpression extends FieldSql
     {
         $expr = $this->expr;
         if ($expr instanceof \Closure) {
-            $expr = $expr($this->owner, $expression);
+            $expr = $expr($this->getOwner(), $expression);
         }
 
         if ($expr instanceof Expressionable) {
@@ -102,8 +102,8 @@ class FieldSqlExpression extends FieldSql
 
         if (is_string($expr)) {
             // If our Model has expr() method (inherited from Persistence\Sql) then use it
-            if ($this->owner->hasMethod('expr')) {
-                return $this->owner->expr('([])', [$this->owner->expr($expr)]);
+            if ($this->getOwner()->hasMethod('expr')) {
+                return $this->getOwner()->expr('([])', [$this->getOwner()->expr($expr)]);
             }
 
             // Otherwise call it from expression itself

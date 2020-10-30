@@ -9,6 +9,7 @@ use atk4\data\Model;
 use atk4\data\Model\Scope;
 use atk4\data\Model\Scope\Condition;
 use atk4\dsql\Expression;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class SCountry extends Model
 {
@@ -82,7 +83,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->country = new SCountry($this->db);
 
-        $this->getMigrator($this->country)->drop()->create();
+        $this->getMigrator($this->country)->dropIfExists()->create();
 
         // Specifying hasMany here will perform input
         $this->country->import([
@@ -97,7 +98,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->user = new SUser($this->db);
 
-        $this->getMigrator($this->user)->drop()->create();
+        $this->getMigrator($this->user)->dropIfExists()->create();
 
         $this->user->import([
             ['name' => 'John', 'surname' => 'Smith', 'country_code' => 'CA'],
@@ -109,7 +110,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->ticket = new STicket($this->db);
 
-        $this->getMigrator($this->ticket)->drop()->create();
+        $this->getMigrator($this->ticket)->dropIfExists()->create();
 
         $this->ticket->import([
             ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],
@@ -149,7 +150,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->toWords($user));
 
-        if ($this->driverType === 'sqlite') {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
 
             $this->assertEquals('Name is equal to expression \'"user"."surname"\'', $condition->toWords($user));
@@ -292,7 +293,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
         $user->addCondition('Tickets/user/country_id/Users/#', '>=', 2);
         $user->addCondition('Tickets/user/country_id/Users/country_id/Users/#', '>', 1);
-        if ($this->driverType !== 'sqlite') {
+        if (!$this->getDatabasePlatform() instanceof SqlitePlatform) {
             // not supported because of limitation/issue in Sqlite, the generated query fails
             // with error: "parser stack overflow"
             $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true

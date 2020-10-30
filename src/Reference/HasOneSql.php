@@ -68,7 +68,7 @@ class HasOneSql extends HasOne
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
             if ($ourModel->isDirty($ourFieldName) && !$ourModel->isDirty($this->our_field)) {
-                $theirModel = $this->getTheirModel();
+                $theirModel = $this->createTheirModel();
 
                 $theirModel->addCondition($theirFieldName, $ourModel->get($ourFieldName));
                 $ourModel->set($this->getOurFieldName(), $theirModel->toQuery()->field($theirModel->id_field));
@@ -123,7 +123,7 @@ class HasOneSql extends HasOne
      */
     public function refLink(array $defaults = []): Model
     {
-        $theirModel = $this->getTheirModel($defaults);
+        $theirModel = $this->createTheirModel($defaults);
 
         $theirModel->addCondition(
             $this->their_field ?: $theirModel->id_field,
@@ -209,7 +209,7 @@ class HasOneSql extends HasOne
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
             if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
-                $theirModel = $this->getTheirModel();
+                $theirModel = $this->createTheirModel();
 
                 $theirModel->addCondition($theirModel->title_field, $ourModel->get($fieldName));
                 $ourModel->set($this->getOurFieldName(), $theirModel->toQuery()->field($theirModel->id_field));

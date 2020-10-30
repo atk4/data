@@ -11,7 +11,7 @@ namespace atk4\data;
  *
  * It's possible to extend the basic reference with more meaningful references.
  *
- * @property Model $owner definition of our model
+ * @method Model getOwner() our model
  */
 class Reference
 {
@@ -138,26 +138,16 @@ class Reference
 
     public function getOurModel(): Model
     {
-        return $this->owner;
+        return $this->getOwner();
     }
 
     /**
-     * @deprecated use getTheirModel instead - will be removed in dec-2020
-     */
-    public function getModel(array $defaults = []): Model
-    {
-        'trigger_error'('Method Reference::getModel is deprecated. Use Reference::getTheirModel instead', E_USER_DEPRECATED);
-
-        return $this->getTheirModel($defaults);
-    }
-
-    /**
-     * Returns destination model that is linked through this reference. Will apply
+     * Create destination model that is linked through this reference. Will apply
      * necessary conditions.
      *
      * IMPORTANT: the returned model must be a fresh clone or freshly built from a seed
      */
-    public function getTheirModel(array $defaults = []): Model
+    public function createTheirModel(array $defaults = []): Model
     {
         // set table_alias
         $defaults['table_alias'] = $defaults['table_alias'] ?? $this->table_alias;
@@ -260,7 +250,7 @@ class Reference
      */
     public function ref(array $defaults = []): Model
     {
-        return $this->getTheirModel($defaults);
+        return $this->createTheirModel($defaults);
     }
 
     /**
@@ -270,7 +260,7 @@ class Reference
      */
     public function refModel(array $defaults = []): Model
     {
-        return $this->getTheirModel($defaults);
+        return $this->createTheirModel($defaults);
     }
 
     // {{{ Debug Methods

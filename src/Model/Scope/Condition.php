@@ -339,7 +339,7 @@ class Condition extends AbstractScope
 
         if (is_object($value)) {
             if ($value instanceof Field) {
-                return $value->owner->getModelCaption() . ' ' . $value->getCaption();
+                return $value->getOwner()->getModelCaption() . ' ' . $value->getCaption();
             }
 
             if ($value instanceof Expression || $value instanceof Expressionable) {
@@ -370,7 +370,7 @@ class Condition extends AbstractScope
         if ($field && ($field->reference ?? false)) {
             // make sure we set the value in the Model parent of the reference
             // it should be same class as $model but $model might be a clone
-            $field->reference->owner->set($field->short_name, $value);
+            $field->reference->getOwner()->set($field->short_name, $value);
 
             $value = $field->reference->ref()->getTitle() ?: $value;
         }

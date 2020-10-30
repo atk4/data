@@ -12,10 +12,8 @@ use atk4\data\Persistence;
 use atk4\dsql\Connection;
 use atk4\dsql\Expression;
 use atk4\dsql\Query;
+use Doctrine\DBAL\Platforms;
 
-/**
- * Persistence\Sql class.
- */
 class Sql extends Persistence
 {
     /**
@@ -118,6 +116,11 @@ class Sql extends Persistence
     public function atomic(\Closure $fx)
     {
         return $this->connection->atomic($fx);
+    }
+
+    public function getDatabasePlatform(): Platforms\AbstractPlatform
+    {
+        return $this->connection->getDatabasePlatform();
     }
 
     /**
@@ -393,12 +396,12 @@ class Sql extends Persistence
 
     public function getFieldSqlExpression(Field $field, Expression $expression)
     {
-        if (isset($field->owner->persistence_data['use_table_prefixes'])) {
+        if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {
             $mask = '{{}}.{}';
             $prop = [
-                $field->join
-                    ? ($field->join->foreign_alias ?: $field->join->short_name)
-                    : ($field->owner->table_alias ?: $field->owner->table),
+                $field->hasJoin()
+                    ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->short_name)
+                    : ($field->getOwner()->table_alias ?: $field->getOwner()->table),
                 $field->getPersistenceName(),
             ];
         } else {
@@ -410,8 +413,8 @@ class Sql extends Persistence
         }
 
         // If our Model has expr() method (inherited from Persistence\Sql) then use it
-        if ($field->owner->hasMethod('expr')) {
-            return $field->owner->expr($mask, $prop);
+        if ($field->getOwner()->hasMethod('expr')) {
+            return $field->getOwner()->expr($mask, $prop);
         }
 
         // Otherwise call method from expression

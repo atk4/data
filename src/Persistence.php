@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace atk4\data;
 
 use atk4\data\Persistence\AbstractQuery;
+use Doctrine\DBAL\Platforms;
 
-/**
- * Persistence class.
- */
 class Persistence
 {
     use \atk4\core\ContainerTrait {
@@ -36,9 +34,6 @@ class Persistence
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
-    /** @var string Connection driver name, for example, mysql, pgsql, oci etc. */
-    public $driverType;
-
     /**
      * Connects database.
      *
@@ -47,12 +42,10 @@ class Persistence
      */
     public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
     {
-        // Process DSN string
+        // parse DSN string
         $dsn = \atk4\dsql\Connection::normalizeDsn($dsn, $user, $password);
 
-        $driverType = strtolower($args['driver']/*BC compatibility*/ ?? $args['driverType'] ?? $dsn['driverType']);
-
-        switch ($driverType) {
+        switch ($dsn['driverSchema']) {
             case 'mysql':
             case 'oci':
             case 'oci12':
@@ -66,11 +59,8 @@ class Persistence
                 // no break
             case 'pgsql':
             case 'sqlsrv':
-            case 'dumper':
-            case 'counter':
             case 'sqlite':
                 $db = new \atk4\data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
-                $db->driverType = $driverType;
 
                 return $db;
             default:
@@ -248,6 +238,11 @@ class Persistence
     {
     }
 
+    public function getDatabasePlatform(): Platforms\AbstractPlatform
+    {
+        return new Persistence\GenericPlatform();
+    }
+
     /**
      * Will convert one row of data from native PHP types into
      * persistence types. This will also take care of the "actual"
@@ -388,7 +383,7 @@ class Persistence
             return $this->_typecastSaveField($f, $value);
         } catch (\Exception $e) {
             throw (new Exception('Unable to typecast field value on save', 0, $e))
-                ->addMoreInfo('field', $f->name);
+                ->addMoreInfo('field', $f->short_name);
         }
     }
 
@@ -423,7 +418,7 @@ class Persistence
             return $this->_typecastLoadField($f, $value);
         } catch (\Exception $e) {
             throw (new Exception('Unable to typecast field value on load', 0, $e))
-                ->addMoreInfo('field', $f->name);
+                ->addMoreInfo('field', $f->short_name);
         }
     }
 
@@ -473,7 +468,7 @@ class Persistence
             return $this->_serializeSaveField($f, $value);
         } catch (\Exception $e) {
             throw (new Exception('Unable to serialize field value on save', 0, $e))
-                ->addMoreInfo('field', $f->name);
+                ->addMoreInfo('field', $f->short_name);
         }
     }
 
@@ -497,7 +492,7 @@ class Persistence
             return $this->_serializeLoadField($f, $value);
         } catch (\Exception $e) {
             throw (new Exception('Unable to serialize field value on load', 0, $e))
-                ->addMoreInfo('field', $f->name);
+                ->addMoreInfo('field', $f->short_name);
         }
     }
 

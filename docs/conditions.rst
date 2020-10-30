@@ -95,10 +95,10 @@ added condition.
 You can, however, add condition that contains multiple clauses joined with OR
 operator::
 
-    $m->addCondition([
+    $m->addCondition(Model\Scope::createOr(
         ['name', 'John'],
-        ['surname', 'Smith']
-    ]);
+        ['surname', 'Smith'],
+    ));
 
 This will add condition that will match against records with either
 name=John OR surname=Smith.

@@ -151,24 +151,24 @@ which I want to define like this::
     protected function init(): void {
         $this->_init();
 
-        if(isset($this->owner->no_audit)){
+        if(isset($this->getOwner()->no_audit)){
             return;
         }
 
-        $this->owner->addField('created_dts', ['type'=>'datetime', 'default'=>new \DateTime()]);
+        $this->getOwner()->addField('created_dts', ['type'=>'datetime', 'default'=>new \DateTime()]);
 
-        $this->owner->hasOne('created_by_user_id', 'User');
-        if(isset($this->app->user) and $this->app->user->loaded()) {
-            $this->owner->getField('created_by_user_id')->default = $this->app->user->getId();
+        $this->getOwner()->hasOne('created_by_user_id', 'User');
+        if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
+            $this->getOwner()->getField('created_by_user_id')->default = $this->getApp()->user->getId();
         }
 
-        $this->owner->hasOne('updated_by_user_id', 'User');
+        $this->getOwner()->hasOne('updated_by_user_id', 'User');
 
-        $this->owner->addField('updated_dts', ['type'=>'datetime']);
+        $this->getOwner()->addField('updated_dts', ['type'=>'datetime']);
 
-        $this->owner->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
-            if(isset($this->app->user) and $this->app->user->loaded()) {
-                $data['updated_by'] = $this->app->user->getId();
+        $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
+            if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
+                $data['updated_by'] = $this->getApp()->user->getId();
             }
             $data['updated_dts'] = new \DateTime();
         });
@@ -223,18 +223,18 @@ Start by creating a class::
         function init(): void {
             $this->_init();
 
-            if(isset($this->owner->no_soft_delete)){
+            if(isset($this->getOwner()->no_soft_delete)){
                 return;
             }
 
-            $this->owner->addField('is_deleted', ['type'=>'boolean']);
+            $this->getOwner()->addField('is_deleted', ['type'=>'boolean']);
 
-            if (isset($this->owner->deleted_only)) {
-                $this->owner->addCondition('is_deleted', true);
-                $this->owner->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
+            if (isset($this->getOwner()->deleted_only)) {
+                $this->getOwner()->addCondition('is_deleted', true);
+                $this->getOwner()->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
             } else {
-                $this->owner->addCondition('is_deleted', false);
-                $this->owner->addMethod('softDelete', \Closure::fromCallable([$this, 'softDelete']));
+                $this->getOwner()->addCondition('is_deleted', false);
+                $this->getOwner()->addMethod('softDelete', \Closure::fromCallable([$this, 'softDelete']));
             }
         }
 
@@ -332,18 +332,18 @@ before and just slightly modifying it::
         function init(): void {
             $this->_init();
 
-            if(isset($this->owner->no_soft_delete)){
+            if(isset($this->getOwner()->no_soft_delete)){
                 return;
             }
 
-            $this->owner->addField('is_deleted', ['type'=>'boolean']);
+            $this->getOwner()->addField('is_deleted', ['type'=>'boolean']);
 
-            if (isset($this->owner->deleted_only)) {
-                $this->owner->addCondition('is_deleted', true);
-                $this->owner->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
+            if (isset($this->getOwner()->deleted_only)) {
+                $this->getOwner()->addCondition('is_deleted', true);
+                $this->getOwner()->addMethod('restore', \Closure::fromCallable([$this, 'restore']));
             } else {
-                $this->owner->addCondition('is_deleted', false);
-                $this->owner->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'softDelete']), null, 100);
+                $this->getOwner()->addCondition('is_deleted', false);
+                $this->getOwner()->onHook(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'softDelete']), null, 100);
             }
         }
 
@@ -422,10 +422,10 @@ inside your model are unique::
 
             // by default make 'name' unique
             if (!$this->fields) {
-                $this->fields = [$this->owner->title_field];
+                $this->fields = [$this->getOwner()->title_field];
             }
 
-            $this->owner->onHook(Model::HOOK_BEFORE_SAVE, \Closure::fromCallable([$this, 'beforeSave']));
+            $this->getOwner()->onHook(Model::HOOK_BEFORE_SAVE, \Closure::fromCallable([$this, 'beforeSave']));
         }
 
         function beforeSave(Model $m)
