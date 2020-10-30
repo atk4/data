@@ -213,7 +213,7 @@ class Query extends Persistence\AbstractQuery implements Expressionable
 
     protected function doGet(): array
     {
-        return $this->dsql->get();
+        return $this->dsql->getRows();
     }
 
     protected function doGetRow(): ?array
