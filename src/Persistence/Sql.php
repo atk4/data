@@ -433,7 +433,7 @@ class Sql extends Persistence
             $query = $this->connection->dsql()->table($model->table);
             $query->field($query->expr('max({id_col})', ['id_col' => $model->id_field]), 'max_id');
 
-            return $query->getOne();
+            return (string) $query->getOne();
         }
 
         return $this->connection->lastInsertId($this->getIdSequenceName($model));

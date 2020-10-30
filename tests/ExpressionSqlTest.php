@@ -160,7 +160,7 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
-                $m->action('select')->render()
+                $m->toQuery()->select()->render()
             );
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(

@@ -208,7 +208,7 @@ class Query extends Persistence\AbstractQuery implements Expressionable
 
     protected function doExecute()
     {
-        return $this->dsql->execute();
+        return $this->dsql->getIterator();
     }
 
     protected function doGet(): array
