@@ -77,13 +77,11 @@ class Join extends Model\Join
         }
 
         // Figure out where are we going to save data
-        $persistence = $this->persistence ?:
-            $this->getOwner()->persistence;
+        $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->insert(
-            $this->getOwner(),
-            $this->save_buffer,
-            $this->foreign_table
+            $this->getJoinModel(),
+            $this->save_buffer
         );
 
         $data[$this->master_field] = $this->id;
@@ -107,9 +105,8 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->insert(
-            $this->getOwner(),
-            $this->save_buffer,
-            $this->foreign_table
+            $this->getJoinModel(),
+            $this->save_buffer
         );
     }
 
@@ -125,10 +122,9 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->update(
-            $this->getOwner(),
+            $this->getJoinModel(),
             $this->id,
-            $this->save_buffer,
-            $this->foreign_table
+            $this->save_buffer
         );
     }
 
@@ -146,9 +142,8 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $persistence->delete(
-            $this->getOwner(),
-            $this->id,
-            $this->foreign_table
+            $this->getJoinModel(),
+            $this->id
         );
 
         $this->id = null;

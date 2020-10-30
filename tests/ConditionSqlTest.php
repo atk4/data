@@ -292,22 +292,22 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', ['John', 'Doe']);
-        $this->assertSame(1, count($m->export()));
+        $this->assertSame(1, $m->getCount());
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', 'in', ['Johhny', 'Doe', 'Mary']);
-        $this->assertSame(2, count($m->export()));
+        $this->assertSame(2, $m->getCount());
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', []); // this should not fail, always should be false
-        $this->assertSame(0, count($m->export()));
+        $this->assertSame(0, $m->getCount());
 
         $m = new Model($this->db, 'user');
         $m->addField('name');
         $m->addCondition('name', 'not in', []); // this should not fail, always should be true
-        $this->assertSame(3, count($m->export()));
+        $this->assertSame(3, $m->getCount());
     }
 
     public function testDateCondition()
@@ -438,18 +438,18 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $u->addField('created', ['type' => 'datetime']);
 
         $t = (clone $u)->addCondition('created', 'like', '%19%');
-        $this->assertSame(2, count($t->export())); // only year 2019 records
+        $this->assertSame(2, $t->getCount()); // only year 2019 records
 
         $t = (clone $u)->addCondition('active', 'like', '%1%');
-        $this->assertSame(2, count($t->export())); // only active records
+        $this->assertSame(2, $t->getCount()); // only active records
 
         $t = (clone $u)->addCondition('active', 'like', '%0%');
-        $this->assertSame(1, count($t->export())); // only inactive records
+        $this->assertSame(1, $t->getCount()); // only inactive records
 
         $t = (clone $u)->addCondition('active', 'like', '%999%');
-        $this->assertSame(0, count($t->export())); // bad value, so it will not match anything
+        $this->assertSame(0, $t->getCount()); // bad value, so it will not match anything
 
         $t = (clone $u)->addCondition('active', 'like', '%ABC%');
-        $this->assertSame(0, count($t->export())); // bad value, so it will not match anything
+        $this->assertSame(0, $t->getCount()); // bad value, so it will not match anything
     }
 }

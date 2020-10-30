@@ -15,44 +15,42 @@ trait ReferencesTrait
     /**
      * The seed used by addRef() method.
      *
-     * @var string|array
+     * @var array
      */
     public $_default_seed_addRef = [Reference::class];
 
     /**
      * The seed used by hasOne() method.
      *
-     * @var string|array
+     * @var array
      */
     public $_default_seed_hasOne = [Reference\HasOne::class];
 
     /**
      * The seed used by hasMany() method.
      *
-     * @var string|array
+     * @var array
      */
     public $_default_seed_hasMany = [Reference\HasMany::class];
 
     /**
      * The seed used by containsOne() method.
      *
-     * @var string|array
+     * @var array
      */
     public $_default_seed_containsOne = [Reference\ContainsOne::class];
 
     /**
      * The seed used by containsMany() method.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_containsMany = [Reference\ContainsMany::class];
 
     /**
-     * @param string         $className Class name
-     * @param string         $link      Link
-     * @param array|\Closure $defaults  Properties which we will pass to Reference object constructor
+     * @param array|\Closure $defaults Properties which we will pass to Reference object constructor
      */
-    protected function _hasReference($className, $link, $defaults = []): Reference
+    protected function _hasReference(array $seed, string $link, $defaults = []): Reference
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_' . $link];
@@ -63,7 +61,7 @@ trait ReferencesTrait
 
         $defaults[0] = $link;
 
-        $reference = Reference::fromSeed($className, $defaults);
+        $reference = Reference::fromSeed($seed, $defaults);
 
         // if reference with such name already exists, then throw exception
         if ($this->hasElement($name = $reference->getDesiredName())) {
@@ -79,10 +77,9 @@ trait ReferencesTrait
     /**
      * Add generic relation. Provide your own call-back that will return the model.
      *
-     * @param string         $link Link
-     * @param array|\Closure $fx   Callback
+     * @param array|\Closure $fx Callback
      */
-    public function addRef($link, $fx): Reference
+    public function addRef(string $link, $fx): Reference
     {
         return $this->_hasReference($this->_default_seed_addRef, $link, $fx);
     }
@@ -90,12 +87,11 @@ trait ReferencesTrait
     /**
      * Add hasOne reference.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Reference\HasOne
      */
-    public function hasOne($link, $defaults = []): Reference
+    public function hasOne(string $link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_hasOne, $link, $defaults);
     }
@@ -103,12 +99,11 @@ trait ReferencesTrait
     /**
      * Add hasMany reference.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Reference\HasMany
      */
-    public function hasMany($link, $defaults = []): Reference
+    public function hasMany(string $link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults);
     }
@@ -116,12 +111,11 @@ trait ReferencesTrait
     /**
      * Add containsOne reference.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Reference\ContainsOne
      */
-    public function containsOne($link, $defaults = []): Reference
+    public function containsOne(string $link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_containsOne, $link, $defaults);
     }
@@ -129,12 +123,11 @@ trait ReferencesTrait
     /**
      * Add containsMany reference.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Reference\ContainsMany
      */
-    public function containsMany($link, $defaults = []): Reference
+    public function containsMany(string $link, $defaults = []): Reference
     {
         return $this->_hasReference($this->_default_seed_containsMany, $link, $defaults);
     }
@@ -142,12 +135,11 @@ trait ReferencesTrait
     /**
      * Traverse to related model.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return \atk4\data\Model
      */
-    public function ref($link, $defaults = []): self
+    public function ref(string $link, $defaults = []): self
     {
         return $this->getRef($link)->ref($defaults);
     }
@@ -155,12 +147,11 @@ trait ReferencesTrait
     /**
      * Return related model.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return \atk4\data\Model
      */
-    public function refModel($link, $defaults = []): self
+    public function refModel(string $link, $defaults = []): self
     {
         return $this->getRef($link)->refModel($defaults);
     }
@@ -168,22 +159,19 @@ trait ReferencesTrait
     /**
      * Returns model that can be used for generating sub-query actions.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return \atk4\data\Model
      */
-    public function refLink($link, $defaults = []): self
+    public function refLink(string $link, $defaults = []): self
     {
         return $this->getRef($link)->refLink($defaults);
     }
 
     /**
      * Returns the reference.
-     *
-     * @param string $link
      */
-    public function getRef($link): Reference
+    public function getRef(string $link): Reference
     {
         return $this->getElement('#ref_' . $link);
     }
@@ -205,10 +193,8 @@ trait ReferencesTrait
 
     /**
      * Returns true if reference exists.
-     *
-     * @param string $link
      */
-    public function hasRef($link): bool
+    public function hasRef(string $link): bool
     {
         return $this->hasElement('#ref_' . $link);
     }

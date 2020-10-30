@@ -1629,9 +1629,11 @@ class Model implements \IteratorAggregate
      */
     public function import(array $rows)
     {
-        foreach ($rows as $row) {
-            $this->insert($row);
-        }
+        $this->atomic(function () use ($rows) {
+            foreach ($rows as $row) {
+                $this->insert($row);
+            }
+        });
 
         return $this;
     }

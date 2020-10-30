@@ -11,7 +11,6 @@ use atk4\dsql\Connection;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Platforms\MySqlPlatform;
 
 // NOTE: This class should stay here in this namespace because other repos rely on it. For example, atk4\data tests
 class PhpunitTestCase extends AtkPhpunit\TestCase
@@ -55,7 +54,7 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
         }
 
         // reset DB autoincrement to 1, tests rely on it
-        if ($this->getDatabasePlatform() instanceof MySqlPlatform) {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->db->connection->expr('SET @@auto_increment_offset=1, @@auto_increment_increment=1')->execute();
         }
     }

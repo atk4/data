@@ -68,19 +68,19 @@ class Sql extends Persistence
      */
     public function __construct($connection, $user = null, $password = null, $args = [])
     {
-        if ($connection instanceof \atk4\dsql\Connection) {
+        if ($connection instanceof Connection) {
             $this->connection = $connection;
 
             return;
         }
 
         if (is_object($connection)) {
-            throw (new Exception('You can only use Persistance_SQL with Connection class from atk4\dsql'))
+            throw (new Exception('You can only use Persistance\Sql with Connection class from atk4\dsql'))
                 ->addMoreInfo('connection', $connection);
         }
 
         // attempt to connect.
-        $this->connection = \atk4\dsql\Connection::connect(
+        $this->connection = Connection::connect(
             $connection,
             $user,
             $password,
