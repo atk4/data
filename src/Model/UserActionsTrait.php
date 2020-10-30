@@ -82,10 +82,12 @@ trait UserActionsTrait
      * Execute specified action with specified arguments.
      *
      * @param string $name UserAction name
+     *
+     * @return mixed
      */
     public function executeUserAction(string $name, ...$args)
     {
-        $this->getUserAction($name)->execute(...$args);
+        return $this->getUserAction($name)->execute(...$args);
     }
 
     /**
