@@ -173,10 +173,6 @@ class ContainsOneTest extends \atk4\schema\PhpunitTestCase
         $c = $i->ref('addr')->ref('country_id');
         $this->assertSame('United Kingdom', $c->get('name'));
 
-        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $this->markTestIncomplete('TODO - fix CLOB support on Oracle');
-        }
-
         // let's test how it all looks in persistence without typecasting
         $exp_addr = $i->setOrder('id')->export(null, null, false)[0]['addr'];
         $this->assertSame(
