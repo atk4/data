@@ -7,7 +7,6 @@ namespace atk4\schema;
 use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\dsql\Connection;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
