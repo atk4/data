@@ -38,12 +38,11 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
 
         $this->db = Persistence::connect($dsn, $user, $pass);
         if ($this->debug) {
-            // TODO fix that this work also when Expression::execute is called
             $this->db->connection->connection()->getConfiguration()->setSQLLogger(
                 new class() implements SQLLogger {
                     public function startQuery($sql, $params = null, $types = null): void
                     {
-                        echo "\n" . $sql . "\n";
+                        echo "\n" . $sql . "\n" . print_r($params, true) . "\n\n";
                     }
 
                     public function stopQuery(): void
