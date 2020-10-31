@@ -38,9 +38,21 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
         $this->db = Persistence::connect($dsn, $user, $pass);
         if ($this->debug) {
             $this->db->connection->connection()->getConfiguration()->setSQLLogger(
-                new class() implements SQLLogger {
+                new class($this) implements SQLLogger {
+                    /** @var PhpunitTestCase */
+                    public $testCase;
+
+                    public function __construct(PhpunitTestCase $testCase)
+                    {
+                        $this->testCase = $testCase;
+                    }
+
                     public function startQuery($sql, $params = null, $types = null): void
                     {
+                        if (!$this->testCase->debug) {
+                            return;
+                        }
+
                         echo "\n" . $sql . "\n" . print_r($params, true) . "\n\n";
                     }
 
