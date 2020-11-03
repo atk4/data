@@ -500,10 +500,6 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
     public function testTableNameDots()
     {
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-            $this->markTestIncomplete('MSSQL uses asymetric escaping character');
-        }
-
         $d = new Model($this->db, 'db2.doc');
         $d->addField('name');
 
@@ -515,10 +511,8 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
 
         $d->addCondition('user', 'Sarah');
 
-        $q = 'select "id","name","user_id",(select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a';
-        $q = str_replace('"', $this->getEscapeChar(), $q);
-        $this->assertSame(
-            $q,
+        $this->assertSameSql(
+            'select "id","name","user_id",(select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a',
             $d->action('select')->render()
         );
     }

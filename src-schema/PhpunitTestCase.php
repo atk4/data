@@ -82,14 +82,31 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
         return $this->db->connection->getDatabasePlatform();
     }
 
-    public function getSchemaManager(): AbstractSchemaManager
+    protected function getSchemaManager(): AbstractSchemaManager
     {
         return $this->db->connection->connection()->getSchemaManager();
     }
 
-    /**
-     * Create and return appropriate Migration object.
-     */
+    private function convertSqlFromSqlite(string $sql): string
+    {
+        return preg_replace_callback('~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"~s',
+            function ($matches) {
+                $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
+                if (substr($matches[0], 0, 1) === '"') {
+                    return $this->getDatabasePlatform()->quoteSingleIdentifier($str);
+                }
+
+                return $this->getDatabasePlatform()->quoteStringLiteral($str);
+            },
+            $sql
+        );
+    }
+
+    protected function assertSameSql(string $expectedSqliteSql, string $actualSql, string $message = ''): void
+    {
+        static::assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
+    }
+
     public function getMigrator(Model $model = null): Migration
     {
         return new \atk4\schema\Migration($model ?: $this->db);
@@ -203,15 +220,5 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
         }
 
         return $ret;
-    }
-
-    /**
-     * Return escape character of current DB connection.
-     *
-     * @return string
-     */
-    public function getEscapeChar()
-    {
-        return $this->getProtected($this->db->dsql(), 'escape_char');
     }
 }
