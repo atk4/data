@@ -7,7 +7,6 @@ namespace atk4\data\tests;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class Model_Rate extends \atk4\data\Model
 {

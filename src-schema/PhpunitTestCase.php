@@ -89,7 +89,8 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
 
     private function convertSqlFromSqlite(string $sql): string
     {
-        return preg_replace_callback('~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"~s',
+        return preg_replace_callback(
+            '~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"~s',
             function ($matches) {
                 $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
                 if (substr($matches[0], 0, 1) === '"') {
@@ -104,7 +105,7 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
 
     protected function assertSameSql(string $expectedSqliteSql, string $actualSql, string $message = ''): void
     {
-        static::assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
+        $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
     public function getMigrator(Model $model = null): Migration
