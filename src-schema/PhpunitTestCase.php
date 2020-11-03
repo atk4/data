@@ -7,7 +7,6 @@ namespace atk4\schema;
 use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\dsql\Connection;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -37,13 +36,30 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
         $pass = $GLOBALS['DB_PASSWD'] ?? null;
 
         $this->db = Persistence::connect($dsn, $user, $pass);
+
+        // reset DB autoincrement to 1, tests rely on it
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $this->db->connection->expr('SET @@auto_increment_offset=1, @@auto_increment_increment=1')->execute();
+        }
+
         if ($this->debug) {
-            // TODO fix that this work also when Expression::execute is called
             $this->db->connection->connection()->getConfiguration()->setSQLLogger(
-                new class() implements SQLLogger {
+                new class($this) implements SQLLogger {
+                    /** @var PhpunitTestCase */
+                    public $testCase;
+
+                    public function __construct(PhpunitTestCase $testCase)
+                    {
+                        $this->testCase = $testCase;
+                    }
+
                     public function startQuery($sql, $params = null, $types = null): void
                     {
-                        echo "\n" . $sql . "\n";
+                        if (!$this->testCase->debug) {
+                            return;
+                        }
+
+                        echo "\n" . $sql . "\n" . print_r($params, true) . "\n\n";
                     }
 
                     public function stopQuery(): void
@@ -51,11 +67,6 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
                     }
                 }
             );
-        }
-
-        // reset DB autoincrement to 1, tests rely on it
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->db->connection->expr('SET @@auto_increment_offset=1, @@auto_increment_increment=1')->execute();
         }
     }
 
