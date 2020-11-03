@@ -81,7 +81,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
     public function testInsert()
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $this->markTestIncomplete('PostgreSQL requires PK unspecified to use autoincrement');
+            $this->markTestIncomplete('PostgreSQL requires ID specified in SQL to use autoincrement');
         }
 
         $this->m->insert(['name' => 'Joe']);
@@ -94,7 +94,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
     public function testSave1()
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $this->markTestIncomplete('PostgreSQL requires PK unspecified to use autoincrement');
+            $this->markTestIncomplete('PostgreSQL requires ID specified in SQL to use autoincrement');
         }
 
         $this->m->tryLoadAny();
@@ -109,7 +109,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
     public function testSave2()
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $this->markTestIncomplete('PostgreSQL requires PK unspecified to use autoincrement');
+            $this->markTestIncomplete('PostgreSQL requires ID specified in SQL to use autoincrement');
         }
 
         $this->m->tryLoadAny();
