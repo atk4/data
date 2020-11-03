@@ -6,7 +6,6 @@ namespace atk4\data\tests;
 
 use atk4\data\Exception;
 use atk4\data\Model;
-use Doctrine\DBAL\Platforms\OraclePlatform;
 
 /**
  * Model structure:.
