@@ -79,9 +79,6 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
      */
     public function testInsert()
     {
-        $this->m->id_field = 'id';
-        $this->m->addField('id');
-
         $this->m->insert(['name' => 'Joe']);
         $this->assertEquals(3, $this->m->action('count')->getOne());
     }
@@ -91,10 +88,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
      */
     public function testSave1()
     {
-        $this->m->id_field = 'id';
-        $this->m->addField('id');
-
-//        $this->m->tryLoadAny();
+        $this->m->tryLoadAny();
         $this->m->saveAndUnload();
 
         $this->assertEquals(3, $this->m->action('count')->getOne());
@@ -105,10 +99,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
      */
     public function testSave2()
     {
-        $this->m->id_field = 'id';
-        $this->m->addField('id');
-
-//        $this->m->tryLoadAny();
+        $this->m->tryLoadAny();
         $this->m->save();
 
         $this->assertEquals(3, $this->m->action('count')->getOne());
