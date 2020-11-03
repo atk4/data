@@ -700,7 +700,7 @@ class Model implements \IteratorAggregate
         $currentValue = array_key_exists($field, $this->data)
             ? $this->data[$field]
             : (array_key_exists($field, $this->dirty) ? $this->dirty[$field] : $f->default);
-        if ($f->compare($value, $currentValue)) {
+        if (!$value instanceof \atk4\dsql\Expression && $f->compare($value, $currentValue)) {
             return $this;
         }
 
