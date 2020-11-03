@@ -139,10 +139,6 @@ class JoinSqlTest extends TestCase
 
         $this->db->connection->dsql()->table('contact')->where('id', 2)->delete();
 
-        if ($this->getDatabasePlatform() instanceof OraclePlatform) { // TODO
-            $this->markTestIncomplete('TODO - for some reasons, result below has one different key');
-        }
-
         $m_u2->unload();
         $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'Sue');
