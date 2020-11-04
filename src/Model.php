@@ -8,7 +8,7 @@ use atk4\core\CollectionTrait;
 use atk4\core\ContainerTrait;
 use atk4\core\DiContainerTrait;
 use atk4\core\DynamicMethodTrait;
-use atk4\core\FactoryTrait;
+use atk4\core\Factory;
 use atk4\core\HookTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\ReadableCaptionTrait;
@@ -32,7 +32,6 @@ class Model implements \IteratorAggregate
         init as _init;
     }
     use DiContainerTrait;
-    use FactoryTrait;
     use CollectionTrait;
     use ReadableCaptionTrait;
     use Model\ReferencesTrait;
@@ -511,7 +510,7 @@ class Model implements \IteratorAggregate
      */
     public function fieldFactory(array $seed = null): Field
     {
-        $seed = $this->mergeSeeds(
+        $seed = Factory::mergeSeeds(
             $seed,
             isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
             $this->_default_seed_addField
