@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
+use atk4\core\Factory;
 use Doctrine\DBAL\Platforms;
 
 class Persistence
@@ -67,7 +68,7 @@ class Persistence
      */
     public function add(Model $m, array $defaults = []): Model
     {
-        $m = $this->factory($m, $defaults);
+        $m = Factory::factory($m, $defaults);
 
         if ($m->persistence) {
             if ($m->persistence === $this) {

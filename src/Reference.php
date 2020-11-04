@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
+use atk4\core\Factory;
+
 /**
  * Reference implements a link between one model and another. The basic components for
  * a reference is ability to generate the destination model, which is returned through
@@ -168,7 +170,7 @@ class Reference
                 $theirModelSeed = [$this->model];
             }
 
-            $theirModel = $this->factory($theirModelSeed, $defaults);
+            $theirModel = Factory::factory($theirModelSeed, $defaults);
         }
 
         return $this->addToPersistence($theirModel, $defaults);

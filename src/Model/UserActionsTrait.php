@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\data\Model;
 
+use atk4\core\Factory;
 use atk4\data\Model;
 
 trait UserActionsTrait
@@ -38,7 +39,7 @@ trait UserActionsTrait
         }
 
         /** @var Model\UserAction $action */
-        $action = $this->factory($this->_default_seed_action, $defaults);
+        $action = Factory::factory($this->_default_seed_action, $defaults);
 
         $this->_addIntoCollection($name, $action, 'userActions');
 
