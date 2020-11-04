@@ -22,7 +22,6 @@ class Reference
     }
     use \atk4\core\TrackableTrait;
     use \atk4\core\DiContainerTrait;
-    use \atk4\core\FactoryTrait;
 
     /**
      * Use this alias for related entity by default. This can help you

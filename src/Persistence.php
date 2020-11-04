@@ -12,7 +12,6 @@ class Persistence
     use \atk4\core\ContainerTrait {
         add as _add;
     }
-    use \atk4\core\FactoryTrait;
     use \atk4\core\HookTrait;
     use \atk4\core\DynamicMethodTrait;
     use \atk4\core\NameTrait;
