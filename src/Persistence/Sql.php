@@ -465,11 +465,6 @@ class Sql extends Persistence
      */
     public function _typecastLoadField(Field $field, $value)
     {
-        // LOB fields return resource stream
-        if (is_resource($value)) {
-            $value = stream_get_contents($value);
-        }
-
         // work only on copied value not real one !!!
         $v = is_object($value) ? clone $value : $value;
 

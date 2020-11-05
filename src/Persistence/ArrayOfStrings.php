@@ -32,11 +32,6 @@ class ArrayOfStrings extends Array_
      */
     public function _typecastLoadField(Field $f, $value)
     {
-        // LOB fields return resource stream
-        if (is_resource($value)) {
-            $value = stream_get_contents($value);
-        }
-
         return $f->normalize($value);
     }
 }
