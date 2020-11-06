@@ -26,12 +26,14 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testBasic()
     {
-        $this->setDb([
-            'invoice' => [
-                ['total_net' => 10, 'total_vat' => 1.23],
-                ['total_net' => 20, 'total_vat' => 2.46],
-            ],
-        ]);
+        $this->setDb(
+            [
+                'invoice' => [
+                    ['total_net' => 10, 'total_vat' => 1.23],
+                    ['total_net' => 20, 'total_vat' => 2.46],
+                ],
+            ]
+        );
 
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
@@ -67,18 +69,23 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testBasicCallback()
     {
-        $this->setDb([
-            'invoice' => [
-                ['total_net' => 10, 'total_vat' => 1.23],
-                ['total_net' => 20, 'total_vat' => 2.46],
-            ],
-        ]);
+        $this->setDb(
+            [
+                'invoice' => [
+                    ['total_net' => 10, 'total_vat' => 1.23],
+                    ['total_net' => 20, 'total_vat' => 2.46],
+                ],
+            ]
+        );
 
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', function ($i, $q) {
-            return '[total_net]+[total_vat]';
-        });
+        $i->addExpression(
+            'total_gross',
+            function ($i, $q) {
+                return '[total_net]+[total_vat]';
+            }
+        );
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
@@ -98,12 +105,14 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testQuery()
     {
-        $this->setDb([
-            'invoice' => [
-                ['total_net' => 10, 'total_vat' => 1.23],
-                ['total_net' => 20, 'total_vat' => 2.46],
-            ],
-        ]);
+        $this->setDb(
+            [
+                'invoice' => [
+                    ['total_net' => 10, 'total_vat' => 1.23],
+                    ['total_net' => 20, 'total_vat' => 2.46],
+                ],
+            ]
+        );
 
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
@@ -131,12 +140,14 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testExpressions()
     {
-        $this->setDb([
-            'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'cached_name' => 'John Smith'],
-                2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'cached_name' => 'ERROR'],
-            ],
-        ]);
+        $this->setDb(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'cached_name' => 'John Smith'],
+                    2 => ['id' => 2, 'name' => 'Sue', 'surname' => 'Sue', 'cached_name' => 'ERROR'],
+                ],
+            ]
+        );
 
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'user');
@@ -177,11 +188,13 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testReloading()
     {
-        $this->setDb($dbData = [
-            'math' => [
-                ['a' => 2, 'b' => 2],
-            ],
-        ]);
+        $this->setDb(
+            $dbData = [
+                'math' => [
+                    ['a' => 2, 'b' => 2],
+                ],
+            ]
+        );
 
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'math');
@@ -238,5 +251,35 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
 
         $q = $m->action('fx0', ['sum', 'x']);
         $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
+    }
+
+    public function testTagsInBracketsCanBeUsedInLiteralSql()
+    {
+        $this->setDb(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'salutation' => 'Mr.'],
+                ],
+            ]
+        );
+        $db = new Persistence\Sql($this->db->connection);
+        $model = new Model($db, 'user');
+        $model->addFields(['name', 'surname']);
+        $model->addExpression(
+            'full_name',
+            $model->action('fx', ['concat', 'name', 'surname'])
+        );
+        $model->addExpression(
+            'some_expression_with_tag',
+            $model->persistence->connection->expr(
+                "CONCAT([salutation], ' ', [full_name])"
+            )
+        );
+
+        $model->load(1);
+        $this->assertEquals(
+            'Mr. John Smith',
+            $model->get('some_expression_with_tag')
+        );
     }
 }
