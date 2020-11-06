@@ -257,29 +257,38 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
     {
         $this->setDb(
             [
-                'user' => [
-                    1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'salutation' => 'Mr.'],
+                'number' => [
+                    1 => ['id' => 1, 'first' => 1, 'second' => 2, 'third' => 3],
+                    2 => ['id' => 2, 'first' => 10, 'second' => 2, 'third' => 3],
                 ],
             ]
         );
         $db = new Persistence\Sql($this->db->connection);
-        $model = new Model($db, 'user');
-        $model->addFields(['name', 'surname']);
+        $model = new Model($db, 'number');
+        $model->addFields(['first', 'second', 'third']);
         $model->addExpression(
-            'full_name',
-            $model->action('fx', ['concat', 'name', 'surname'])
+            'first_plus_second',
+            $model->expr("[first] + [second]")
         );
+        //use expression in expression
         $model->addExpression(
-            'some_expression_with_tag',
-            $model->persistence->connection->expr(
-                "CONCAT([salutation], ' ', [full_name])"
-            )
+            'first_plus_second_plus_third',
+            $model->expr("[first_plus_second] + [third]")
         );
+
+        $conditionsTest = clone $model;
 
         $model->load(1);
         $this->assertEquals(
-            'Mr. John Smith',
-            $model->get('some_expression_with_tag')
+            6,
+            $model->get('first_plus_second_plus_third')
+        );
+
+        //try usage in conditions
+        $conditionsTest->addCondition('first_plus_second_plus_third', '>', 10);
+        $this->assertEquals(
+            1,
+            $conditionsTest->action('count')->getOne()
         );
     }
 }
