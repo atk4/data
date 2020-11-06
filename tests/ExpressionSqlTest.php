@@ -259,7 +259,7 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
             [
                 'number' => [
                     1 => ['id' => 1, 'first' => 1, 'second' => 2, 'third' => 3],
-                    2 => ['id' => 2, 'first' => 10, 'second' => 2, 'third' => 3],
+                    2 => ['id' => 2, 'first' => 5, 'second' => 2, 'third' => 5],
                 ],
             ]
         );
@@ -270,7 +270,7 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
             'first_plus_second',
             $model->expr("[first] + [second]")
         );
-        //use expression in expression
+        //try tag which points to an expression
         $model->addExpression(
             'first_plus_second_plus_third',
             $model->expr("[first_plus_second] + [third]")
@@ -284,8 +284,8 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
             $model->get('first_plus_second_plus_third')
         );
 
-        //try usage in conditions
-        $conditionsTest->addCondition('first_plus_second_plus_third', '>', 10);
+        //try expr in condition
+        $conditionsTest->addCondition($conditionsTest->expr("[first_plus_second] + [third] > 10"));
         $this->assertEquals(
             1,
             $conditionsTest->action('count')->getOne()
