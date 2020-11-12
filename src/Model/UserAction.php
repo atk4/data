@@ -61,7 +61,7 @@ class UserAction
     public $dangerous = false;
 
     /** @var bool|string|\Closure Set this to "true", string or return the value from the callback. Will ask user to confirm. */
-    public $confirmation;
+    public $confirmation = false;
 
     /** @var array UI properties, e,g. 'icon'=>.. , 'warning', etc. UI implementation can interpret or extend. */
     public $ui = [];
@@ -199,7 +199,7 @@ class UserAction
     /**
      * Return confirmation message for action.
      */
-    public function getConfirmation(): ?string
+    public function getConfirmation()
     {
         if ($this->confirmation instanceof \Closure) {
             return call_user_func($this->confirmation, $this);
