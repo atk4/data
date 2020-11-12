@@ -31,6 +31,7 @@ trait UaReminder
 class UaClient extends Model
 {
     use UaReminder;
+    public $caption = 'UaClient';
 
     protected function init(): void
     {
@@ -123,7 +124,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $client->getUserAction('also_backup')->preview = 'backup_clients';
         $this->assertSame('backs up all clients', $client->getUserAction('also_backup')->preview());
 
-        $this->assertSame('Will execute Also Backup', $client->getUserAction('also_backup')->getDescription());
+        $this->assertSame('Also Backup UaClient', $client->getUserAction('also_backup')->getDescription());
     }
 
     public function testPreviewFail()
