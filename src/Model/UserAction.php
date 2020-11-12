@@ -54,14 +54,14 @@ class UserAction
     /** @var string caption to put on the button */
     public $caption;
 
-    /** @var string a longer description of this action */
+    /** @var string|\Closure a longer description of this action. Closure must return string. */
     public $description;
 
     /** @var bool Specifies that the action is dangerous. Should be displayed in red. */
     public $dangerous = false;
 
     /** @var bool|string|\Closure Set this to "true", string or return the value from the callback. Will ask user to confirm. */
-    public $confirmation = false;
+    public $confirmation;
 
     /** @var array UI properties, e,g. 'icon'=>.. , 'warning', etc. UI implementation can interpret or extend. */
     public $ui = [];
@@ -189,25 +189,25 @@ class UserAction
      */
     public function getDescription(): string
     {
-        return $this->description ?? ('Will execute ' . $this->caption);
+        if ($this->description instanceof \Closure) {
+            return call_user_func($this->description, $this);
+        }
+
+        return $this->description ?? ($this->caption . ' ' . $this->getOwner()->getModelCaption());
     }
 
     /**
      * Return confirmation message for action.
      */
-    public function getConfirmation()
+    public function getConfirmation(): ?string
     {
-        $confirmation = $this->confirmation;
-
-        if ($confirmation instanceof \Closure) {
-            $confirmation = $confirmation($this);
+        if ($this->confirmation instanceof \Closure) {
+            return call_user_func($this->confirmation, $this);
+        } elseif ($this->confirmation === true) {
+            return 'Are you sure you wish to execute ' . $this->getCaption() . '?';
         }
 
-        if ($confirmation === true) {
-            $confirmation = 'Are you sure you wish to ' . $this->caption . ' ' . $this->getOwner()->getTitle() . '?';
-        }
-
-        return $confirmation;
+        return $this->confirmation;
     }
 
     /**
@@ -216,5 +216,10 @@ class UserAction
     public function getModel(): Model
     {
         return $this->getOwner();
+    }
+
+    public function getCaption(): string
+    {
+        return $this->caption ?? ucwords(str_replace('_', ' ', $this->short_name));
     }
 }
