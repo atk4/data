@@ -204,7 +204,12 @@ class UserAction
         if ($this->confirmation instanceof \Closure) {
             return call_user_func($this->confirmation, $this);
         } elseif ($this->confirmation === true) {
-            return 'Are you sure you wish to execute ' . $this->getCaption() . '?';
+            $confirmation = 'Are you sure you wish to execute ';
+            $confirmation .= $this->getCaption();
+            $confirmation .= $this->getOwner()->getTitle() ? ' using ' . $this->getOwner()->getTitle() : '';
+            $confirmation .= '?';
+
+            return $confirmation;
         }
 
         return $this->confirmation;
