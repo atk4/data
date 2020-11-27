@@ -80,7 +80,7 @@ class Reference
         $this->link = $link;
     }
 
-    public function getTheirField()
+    public function getTheirFieldName(): string
     {
         return $this->their_field ?? $this->model->id_field;
     }
