@@ -35,10 +35,7 @@ class ContainsOne extends Reference
      *
      * @var array
      */
-    public $ui = [
-        'visible' => false, // not visible in UI Table, Grid and Crud
-        'editable' => true, // but should be editable in UI Form
-    ];
+    public $ui = [];
 
     /**
      * Required! We need table alias for internal use only.
@@ -60,14 +57,18 @@ class ContainsOne extends Reference
         }
 
         $ourModel = $this->getOurModel();
+        $ourField = $this->getOurFieldName();
 
-        if (!$ourModel->hasElement($this->our_field)) {
-            $ourModel->addField($this->our_field, [
+        if (!$ourModel->hasElement($ourField)) {
+            $ourModel->addField($ourField, [
                 'type' => $this->type,
                 'reference' => $this,
                 'system' => $this->system,
                 'caption' => $this->caption, // it's ref models caption, but we can use it here for field too
-                'ui' => $this->ui,
+                'ui' => array_merge_recursive([
+                    'visible' => false, // not visible in UI Table, Grid and Crud
+                    'editable' => true, // but should be editable in UI Form
+                ], $this->ui),
             ]);
         }
     }
