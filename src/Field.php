@@ -210,7 +210,7 @@ class Field implements Expressionable
     {
         foreach ($defaults as $key => $val) {
             if (is_array($val)) {
-                $this->{$key} = array_merge(is_array($this->{$key} ?? null) ? $this->{$key} : [], $val);
+                $this->{$key} = array_merge_recursive(is_array($this->{$key} ?? null) ? $this->{$key} : [], $val);
             } else {
                 $this->{$key} = $val;
             }
