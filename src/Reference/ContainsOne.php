@@ -65,7 +65,7 @@ class ContainsOne extends Reference
                 'reference' => $this,
                 'system' => $this->system,
                 'caption' => $this->caption, // it's ref models caption, but we can use it here for field too
-                'ui' => array_merge_recursive([
+                'ui' => array_replace_recursive([
                     'visible' => false, // not visible in UI Table, Grid and Crud
                     'editable' => true, // but should be editable in UI Form
                 ], $this->ui),
