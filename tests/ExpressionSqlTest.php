@@ -35,15 +35,25 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, 'invoice'));
 
-        $i->addExpression('is_approved', [$i->expr("0"), 'type' => 'integer', 'system' => true]);
-        $i->addExpression('is_sent', [$i->expr("0"), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->addExpression('is_bad', [$i->expr("0"), 'type' => 'integer', 'system' => true]);
+        $i->addExpression('is_worse', [$i->expr("0"), 'type' => 'integer', 'system' => true, 'never_save' => true]);
+        $i->addExpression('is_worst', [$i->expr("0"), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->addExpression('is_good', [$i->expr("1"), 'type' => 'integer', 'system' => true]);
+        $i->addExpression('is_better', [$i->expr("1"), 'type' => 'integer', 'system' => true, 'never_save' => true]);
+        $i->addExpression('is_best', [$i->expr("1"), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
         $i->loadAny();
 
-var_dump($i->get());
-        $this->assertSame(0, $i->get('is_approved'));
-        $this->assertSame(0, $i->get('is_sent'));
+        // normal fields
+        $this->assertSame(0, $i->get('is_bad'));
+        $this->assertSame(1, $i->get('is_good'));
 
+        // never_save - are loaded from DB, but not saved
+        $this->assertSame(0, $i->get('is_worse'));
+        $this->assertSame(1, $i->get('is_better'));
 
+        // never_persist - are not loaded from DB and not saved - as result expressions will not be executed
+        $this->assertNull($i->get('is_worst'));
+        $this->assertNull($i->get('is_best'));
     }
 
     public function testBasic()
