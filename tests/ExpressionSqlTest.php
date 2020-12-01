@@ -24,6 +24,28 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals(5, $m->get('x'));
     }
 
+    public function test408()
+    {
+        $this->setDb([
+            'invoice' => [
+                ['foo' => 'bar'],
+            ],
+        ]);
+
+        $db = new Persistence\Sql($this->db->connection);
+        $i = (new Model($db, 'invoice'));
+
+        $i->addExpression('is_approved', [$i->expr("0"), 'type' => 'integer', 'system' => true]);
+        $i->addExpression('is_sent', [$i->expr("0"), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->loadAny();
+
+var_dump($i->get());
+        $this->assertSame(0, $i->get('is_approved'));
+        $this->assertSame(0, $i->get('is_sent'));
+
+
+    }
+
     public function testBasic()
     {
         $this->setDb([
