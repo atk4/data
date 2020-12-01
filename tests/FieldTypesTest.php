@@ -31,15 +31,23 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class]);
 
+        // null value
+        $m->set('email', null);
+        $m->save();
+        $this->assertNull($m->get('email'));
+var_dump($this->pers->data);
+
+        // normal value
         $m->set('email', 'foo@example.com');
         $m->save();
         $this->assertSame('foo@example.com', $m->get('email'));
 
-        // padding removed
+        // padding, spaceing etc removed
         $m->set('email', " \t " . 'foo@example.com ' . " \n ");
         $m->save();
         $this->assertSame('foo@example.com', $m->get('email'));
 
+        // no domain - go to hell :)
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('does not have domain');
         $m->set('email', 'qq');
