@@ -152,12 +152,9 @@ class Aggregate extends Model
     /**
      * Adds new field into model.
      *
-     * @param string       $name
      * @param array|object $seed
-     *
-     * @return Field
      */
-    public function addField($name, $seed = [])
+    public function addField(string $name, $seed = []): Field
     {
         $seed = is_array($seed) ? $seed : [$seed];
 
@@ -171,7 +168,7 @@ class Aggregate extends Model
 
         if ($this->master_model->hasField($name)) {
             $field = clone $this->master_model->getField($name);
-            $field->owner = null; // will be new owner
+            $field->unsetOwner(); // will be new owner
         } else {
             $field = null;
         }
@@ -220,7 +217,7 @@ class Aggregate extends Model
      *
      * @todo Incorrect implementation
      */
-    public function setLimit($count, $offset = null)
+    public function setLimit(int $count = null, int $offset = 0)
     {
         $this->master_model->setLimit($count, $offset);
 
@@ -237,7 +234,7 @@ class Aggregate extends Model
      *
      * @todo Incorrect implementation
      */
-    public function setOrder($field, $desc = null)
+    public function setOrder($field, string $desc = null)
     {
         $this->master_model->setOrder($field, $desc);
 

@@ -15,19 +15,19 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
     public function testAtomicOperations()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'item' => [
                 ['name' => 'John'],
                 ['name' => 'Sue'],
                 ['name' => 'Smith'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($db, 'item');
         $m->addField('name');
         $m->load(2);
 
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
+        $m->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
             throw new \Exception('Awful thing happened');
         });
         $m->set('name', 'XXX');
@@ -39,7 +39,7 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
 
-        $m->onHook(Model::HOOK_AFTER_DELETE, function ($m) {
+        $m->onHook(Model::HOOK_AFTER_DELETE, static function ($m) {
             throw new \Exception('Awful thing happened');
         });
 
@@ -53,67 +53,64 @@ class TransactionTest extends \atk4\schema\PhpunitTestCase
 
     public function testBeforeSaveHook()
     {
-        $self = $this;
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'item' => [
                 ['name' => 'John'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         // test insert
         $m = new Model($db, 'item');
         $m->addField('name');
-        $m->onHook(Model::HOOK_BEFORE_SAVE, function ($model, $is_update) use ($self) {
-            $self->assertFalse($is_update);
+        $m->onHook(Model::HOOK_BEFORE_SAVE, function ($model, $is_update) {
+            $this->assertFalse($is_update);
         });
         $m->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($db, 'item');
         $m->addField('name');
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) use ($self) {
-            $self->assertTrue($is_update);
+        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
+            $this->assertTrue($is_update);
         });
         $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testAfterSaveHook()
     {
-        $self = $this;
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'item' => [
                 ['name' => 'John'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         // test insert
         $m = new Model($db, 'item');
         $m->addField('name');
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) use ($self) {
-            $self->assertFalse($is_update);
+        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
+            $this->assertFalse($is_update);
         });
         $m->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($db, 'item');
         $m->addField('name');
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) use ($self) {
-            $self->assertTrue($is_update);
+        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
+            $this->assertTrue($is_update);
         });
         $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testOnRollbackHook()
     {
-        $self = $this;
         $db = new Persistence\Sql($this->db->connection);
-        $a = [
+        $this->setDb([
             'item' => [
                 ['name' => 'John'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         // test insert
         $m = new Model($db, 'item');

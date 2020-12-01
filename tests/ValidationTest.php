@@ -11,7 +11,7 @@ use atk4\data\ValidationException;
 
 class MyValidationModel extends Model
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -35,7 +35,7 @@ class MyValidationModel extends Model
 
 class BadValidationModel extends Model
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -111,7 +111,7 @@ class ValidationTests extends AtkPhpunit\TestCase
 
     public function testValidateHook()
     {
-        $this->m->onHook(Model::HOOK_VALIDATE, function ($m) {
+        $this->m->onHook(Model::HOOK_VALIDATE, static function ($m) {
             if ($m->get('name') === 'C#') {
                 return ['name' => 'No sharp objects allowed'];
             }

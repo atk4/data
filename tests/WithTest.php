@@ -7,6 +7,7 @@ namespace atk4\data\tests;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -15,7 +16,11 @@ class WithTest extends \atk4\schema\PhpunitTestCase
 {
     public function testWith()
     {
-        $a = [
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+            $this->markTestIncomplete('TODO - add WITH support for MSSQL');
+        }
+
+        $this->setDb([
             'user' => [
                 10 => ['id' => 10, 'name' => 'John', 'salary' => 2500],
                 20 => ['id' => 20, 'name' => 'Peter', 'salary' => 4000],
@@ -23,8 +28,8 @@ class WithTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'net' => 500, 'user_id' => 10],
                 2 => ['id' => 2, 'net' => 200, 'user_id' => 20],
                 3 => ['id' => 3, 'net' => 100, 'user_id' => 20],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
         $db = new Persistence\Sql($this->db->connection);
 
         // setup models
@@ -44,9 +49,10 @@ class WithTest extends \atk4\schema\PhpunitTestCase
         $j_invoice->addField('invoiced');   // add field from joined cursor
 
         // tests
-        $q = 'with "i" ("user_id","invoiced") as (select "user_id","net" from "invoice" where "net" > :a) select "user"."id","user"."name","user"."salary","_i"."invoiced" from "user" inner join "i" as "_i" on "_i"."user_id" = "user"."id"';
-        $q = str_replace('"', $this->getEscapeChar(), $q);
-        $this->assertSame($q, $m->action('select')->render());
+        $this->assertSameSql(
+            'with "i" ("user_id","invoiced") as (select "user_id","net" from "invoice" where "net" > :a) select "user"."id","user"."name","user"."salary","_i"."invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
+            $m->action('select')->render()
+        );
         $this->assertSame(2, count($m->export()));
     }
 

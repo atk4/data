@@ -9,6 +9,7 @@ use atk4\data\Model;
 use atk4\data\Model\Scope;
 use atk4\data\Model\Scope\Condition;
 use atk4\dsql\Expression;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class SCountry extends Model
 {
@@ -16,7 +17,7 @@ class SCountry extends Model
 
     public $caption = 'Country';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -36,7 +37,7 @@ class SUser extends Model
 
     public $caption = 'User';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -58,7 +59,7 @@ class STicket extends Model
 
     public $caption = 'Ticket';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -82,7 +83,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->country = new SCountry($this->db);
 
-        $this->getMigrator($this->country)->drop()->create();
+        $this->getMigrator($this->country)->dropIfExists()->create();
 
         // Specifying hasMany here will perform input
         $this->country->import([
@@ -97,7 +98,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->user = new SUser($this->db);
 
-        $this->getMigrator($this->user)->drop()->create();
+        $this->getMigrator($this->user)->dropIfExists()->create();
 
         $this->user->import([
             ['name' => 'John', 'surname' => 'Smith', 'country_code' => 'CA'],
@@ -109,7 +110,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->ticket = new STicket($this->db);
 
-        $this->getMigrator($this->ticket)->drop()->create();
+        $this->getMigrator($this->ticket)->dropIfExists()->create();
 
         $this->ticket->import([
             ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],
@@ -149,7 +150,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->toWords($user));
 
-        if ($this->driverType == 'sqlite') {
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
 
             $this->assertEquals('Name is equal to expression \'"user"."surname"\'', $condition->toWords($user));
@@ -173,9 +174,9 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
 
         $country = clone $this->country;
 
-        $country->addCondition('Users/#');
+        $country->addCondition('Users/#', '>', 0);
 
-        $this->assertEquals('Country that has reference Users where any referenced record exists', $country->scope()->toWords());
+        $this->assertEquals('Country that has reference Users where number of records is greater than \'0\'', $country->scope()->toWords());
     }
 
     public function testContitionUnsupportedToWords()
@@ -183,7 +184,6 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition = new Condition('name', 'abc');
 
         $this->expectException(Exception::class);
-
         $condition->toWords();
     }
 
@@ -192,7 +192,6 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $country = clone $this->country;
 
         $this->expectException(Exception::class);
-
         $country->addCondition('name', '==', 'abc');
     }
 
@@ -201,7 +200,6 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $condition = new Condition(new Expression('false'));
 
         $this->expectException(Exception::class);
-
         $condition->negate();
     }
 
@@ -210,7 +208,6 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $country = clone $this->country;
 
         $this->expectException(Exception::class);
-
         $country->scope()->negate();
     }
 
@@ -267,7 +264,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $country = clone $this->country;
 
         // countries with users that have any tickets
-        $country->addCondition('Users/Tickets/#');
+        $country->addCondition('Users/Tickets/#', '>', 0);
 
         $this->assertEquals(3, $country->action('count')->getOne());
 
@@ -296,7 +293,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
         $user->addCondition('Tickets/user/country_id/Users/#', '>=', 2);
         $user->addCondition('Tickets/user/country_id/Users/country_id/Users/#', '>', 1);
-        if ($this->driverType !== 'sqlite') {
+        if (!$this->getDatabasePlatform() instanceof SqlitePlatform) {
             // not supported because of limitation/issue in Sqlite, the generated query fails
             // with error: "parser stack overflow"
             $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true
@@ -382,7 +379,7 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $user->scope()->add($condition);
 
         foreach ($user as $u) {
-            $this->assertTrue($u->get('name') == 'Alain' && $u->get('country_code') == 'FR');
+            $this->assertTrue($u->get('name') === 'Alain' && $u->get('country_code') === 'FR');
         }
     }
 
@@ -440,5 +437,17 @@ class ScopeTest extends \atk4\schema\PhpunitTestCase
         $this->assertTrue($scope->isEmpty());
 
         $this->assertEmpty($scope->toWords($user));
+    }
+
+    public function testInvalid1()
+    {
+        $this->expectException(Exception::class);
+        new Condition('name', '>', ['a', 'b']);
+    }
+
+    public function testInvalid2()
+    {
+        $this->expectException(Exception::class);
+        new Condition('name', ['a', 'b' => ['c']]);
     }
 }

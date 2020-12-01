@@ -8,7 +8,7 @@ class Document extends \atk4\data\Model
 {
     public $table = 'document';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 

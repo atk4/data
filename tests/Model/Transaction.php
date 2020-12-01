@@ -13,7 +13,7 @@ class Transaction extends Union
 
     public $subtractInvoice;
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 

@@ -19,32 +19,27 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
     {
         parent::setUp();
 
-        $s = $this->getMigrator();
-
-        $x = clone $s;
-        $x->table('account')->drop()
+        $this->getMigrator()->table('account')->dropIfExists()
             ->id()
             ->field('name')
             ->create();
 
-        $x = clone $s;
-        $x->table('document')->drop()
+        $this->getMigrator()->table('document')->dropIfExists()
             ->id()
             ->field('reference')
             ->field('contact_from_id')
             ->field('contact_to_id')
             ->field('doc_type')
-            ->field('amount', ['type' => 'decimal(8,2)'])
+            ->field('amount', ['type' => 'float'])
             ->create();
 
-        $x = clone $s;
-        $x->table('payment')->drop()
+        $this->getMigrator()->table('payment')->dropIfExists()
             ->id()
             ->field('document_id', ['type' => 'integer'])
             ->field('account_id', ['type' => 'integer'])
             ->field('cheque_no')
             //->field('misc_payment', ['type' => 'enum(\'N\',\'Y\')'])
-            ->field('misc_payment', ['type' => 'varchar(2)'])
+            ->field('misc_payment')
             ->field('transfer_document_id')
             ->create();
     }
@@ -79,13 +74,15 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
         // create accounts and payments
         $a = new Account($this->db);
 
-        $a->save(['name' => 'AIB']);
-        $a->ref('Payment')->save(['amount' => 10]);
-        $a->ref('Payment')->save(['amount' => 20]);
-        $a->unload();
+        $aa = clone $a;
+        $aa->save(['name' => 'AIB']);
+        $aa->ref('Payment')->save(['amount' => 10]);
+        $aa->ref('Payment')->save(['amount' => 20]);
+        $aa->unload();
 
-        $a->save(['name' => 'BOI']);
-        $a->ref('Payment')->save(['amount' => 30]);
+        $aa = clone $a;
+        $aa->save(['name' => 'BOI']);
+        $aa->ref('Payment')->save(['amount' => 30]);
         $a->unload();
 
         // create payment without link to account
@@ -150,7 +147,7 @@ class SmboTransferTest extends \atk4\schema\PhpunitTestCase
         $company->ref('Nominal')->insertSubNominal('Sales', 'Discounted');
 
         // Insert our second invoice using set referencing
-        $company->ref('Client')->id($agile_id)->refSet('Invoice')->insertInvoice([
+        $company->ref('Client')->load($agile_id)->refSet('Invoice')->insertInvoice([
             'lines' => [
                 [
                     'item_id'   => $john->ref('Product')->insert('Cat Food'),

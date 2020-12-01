@@ -16,19 +16,19 @@ class _Template extends \atk4\schema\PhpunitTestCase
     public function sampleTest()
     {
         $db = new PersistenceSql($this->db->connection);
-        $a = [
+        $this->setDb([
             'item' => [
                 ['name' => 'John'],
                 ['name' => 'Sue'],
                 ['name' => 'Smith'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $m = new Model($db, 'item');
         $m->addField('name');
         $m->load(2);
 
-        $this->assertNotNull($m->id);
+        $this->assertNotNull($m->getId());
 
         $this->assertSame($a, $this->getDb());
     }

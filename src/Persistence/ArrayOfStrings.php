@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace atk4\data\Persistence;
 
 use atk4\data\Field;
-use atk4\data\Persistence;
 
 /**
  * Array persistence which will always typecast all values to strings.
@@ -33,11 +32,6 @@ class ArrayOfStrings extends Array_
      */
     public function _typecastLoadField(Field $f, $value)
     {
-        // LOB fields return resource stream
-        if (is_resource($value)) {
-            $value = stream_get_contents($value);
-        }
-
         return $f->normalize($value);
     }
 }

@@ -127,7 +127,7 @@ class Union extends Model
 
                     $field = $this->getField($fieldName);
 
-                    if ($field->join || $field->never_persist) {
+                    if ($field->hasJoin() || $field->never_persist) {
                         continue;
                     }
 
@@ -187,7 +187,7 @@ class Union extends Model
             }
 
             // subquery should not be wrapped in parenthesis, SQLite is especially picky about that
-            $query->allowToWrapInParenthesis = false;
+            $query->wrapInParentheses = false;
 
             $args[$cnt++] = $query;
         }
@@ -223,7 +223,7 @@ class Union extends Model
             }
 
             // subquery should not be wrapped in parenthesis, SQLite is especially picky about that
-            $query->allowToWrapInParenthesis = false;
+            $query->wrapInParentheses = false;
 
             $args[$cnt++] = $query;
         }

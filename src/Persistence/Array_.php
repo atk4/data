@@ -37,9 +37,51 @@ class Array_ extends Persistence
      *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsMany.php#L66
      *             remove once fixed/no longer needed
      */
-    public function getRawDataByTable(string $table): array
+    public function getRawDataByTable(Model $model, string $table): array
     {
-        return $this->data[$table];
+        $rows = [];
+        foreach ($this->data[$table] as $id => $row) {
+            $this->addIdToLoadRow($model, $row, $id);
+            $rows[$id] = $row;
+        }
+
+        return $rows;
+    }
+
+    private function assertNoIdMismatch($idFromRow, $id): void
+    {
+        if ($idFromRow !== null && (is_int($idFromRow) ? (string) $idFromRow : $idFromRow) !== (is_int($id) ? (string) $id : $id)) {
+            throw (new Exception('Row constains ID column, but it does not match the row ID'))
+                ->addMoreInfo('idFromKey', $id)
+                ->addMoreInfo('idFromData', $idFromRow);
+        }
+    }
+
+    private function saveRow(Model $model, array $row, $id, string $table): void
+    {
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->getPersistenceName();
+            if (array_key_exists($idColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$idColumnName], $id);
+                unset($row[$idColumnName]);
+            }
+        }
+
+        $this->data[$table][$id] = $row;
+    }
+
+    private function addIdToLoadRow(Model $model, array &$row, $id): void
+    {
+        if ($model->id_field) {
+            $idField = $model->getField($model->id_field);
+            $idColumnName = $idField->getPersistenceName();
+            if (array_key_exists($idColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$idColumnName], $id);
+            }
+
+            $row = [$idColumnName => $id] + $row;
+        }
     }
 
     /**
@@ -53,7 +95,7 @@ class Array_ extends Persistence
         }
 
         $defaults = array_merge([
-            '_default_seed_join' => [\atk4\data\Join\Array_::class],
+            '_default_seed_join' => [Array_\Join::class],
         ], $defaults);
 
         $model = parent::add($model, $defaults);
@@ -103,6 +145,21 @@ class Array_ extends Persistence
     }
 
     /**
+     * Tries to load first available record and return data record.
+     */
+    public function loadAny(Model $model, string $table = null): ?array
+    {
+        $row = $this->tryLoadAny($model, $table);
+        if ($row === null) {
+            throw (new Exception('No matching records were found', 404))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('scope', $model->scope()->toWords());
+        }
+
+        return $row;
+    }
+
+    /**
      * Tries to load model and return data record.
      * Doesn't throw exception if model can't be loaded.
      *
@@ -116,7 +173,10 @@ class Array_ extends Persistence
             return null;
         }
 
-        return $this->typecastLoadRow($model, $this->data[$table][$id]);
+        $row = $this->data[$table][$id];
+        $this->addIdToLoadRow($model, $row, $id);
+
+        return $this->typecastLoadRow($model, $row);
     }
 
     /**
@@ -137,7 +197,7 @@ class Array_ extends Persistence
         $id = key($this->data[$table]);
 
         $row = $this->load($model, $id, $table);
-        $model->id = $id;
+        $model->setId($id);
 
         return $row;
     }
@@ -145,21 +205,17 @@ class Array_ extends Persistence
     /**
      * Inserts record in data array and returns new record ID.
      *
-     * @param array $data
-     *
      * @return mixed
      */
-    public function insert(Model $model, $data, string $table = null)
+    public function insert(Model $model, array $data, string $table = null)
     {
         $table = $table ?? $model->table;
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $id = $this->generateNewId($model, $table);
-        if ($model->id_field) {
-            $data[$model->id_field] = $id;
-        }
-        $this->data[$table][$id] = $data;
+        $id = $data[$model->id_field] ?? $this->generateNewId($model, $table);
+
+        $this->saveRow($model, $data, $id, $table);
 
         return $id;
     }
@@ -168,17 +224,16 @@ class Array_ extends Persistence
      * Updates record in data array and returns record ID.
      *
      * @param mixed $id
-     * @param array $data
      *
      * @return mixed
      */
-    public function update(Model $model, $id, $data, string $table = null)
+    public function update(Model $model, $id, array $data, string $table = null)
     {
         $table = $table ?? $model->table;
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $this->data[$table][$id] = array_merge($this->data[$table][$id] ?? [], $data);
+        $this->saveRow($model, array_merge($this->data[$table][$id] ?? [], $data), $id, $table);
 
         return $id;
     }
@@ -198,11 +253,9 @@ class Array_ extends Persistence
     /**
      * Generates new record ID.
      *
-     * @param Model $model
-     *
      * @return string
      */
-    public function generateNewId($model, string $table = null)
+    public function generateNewId(Model $model, string $table = null)
     {
         $table = $table ?? $model->table;
 
@@ -224,14 +277,15 @@ class Array_ extends Persistence
                     ->addMoreInfo('type', $type);
         }
 
-        return $this->lastInsertIds[$table] = $this->lastInsertIds['$'] = $id;
+        $this->lastInsertIds[$table] = $id;
+        $this->lastInsertIds['$'] = $id;
+
+        return $id;
     }
 
     /**
      * Last ID inserted.
      * Last inserted ID for any table is stored under '$' key.
-     *
-     * @param Model $model
      *
      * @return mixed
      */
@@ -254,10 +308,8 @@ class Array_ extends Persistence
 
     /**
      * Export all DataSet.
-     *
-     * @param bool $typecast_data Should we typecast exported data
      */
-    public function export(Model $model, array $fields = null, $typecast = true): array
+    public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
         $data = $model->action('select', [$fields])->get();
 
@@ -272,18 +324,17 @@ class Array_ extends Persistence
 
     /**
      * Typecast data and return Iterator of data array.
-     *
-     * @param array $fields
-     *
-     * @return \atk4\data\Action\Iterator
      */
-    public function initAction(Model $model, $fields = null)
+    public function initAction(Model $model, array $fields = null): \atk4\data\Action\Iterator
     {
         $data = $this->data[$model->table];
+        array_walk($data, function (&$row, $id) use ($model) {
+            $this->addIdToLoadRow($model, $row, $id);
+        });
 
-        if ($keys = array_flip((array) $fields)) {
-            $data = array_map(function ($row) use ($model, $keys) {
-                return array_intersect_key($row, $keys);
+        if ($fields !== null) {
+            $data = array_map(function ($row) use ($model, $fields) {
+                return array_intersect_key($row, array_flip($fields));
             }, $data);
         }
 
@@ -374,13 +425,13 @@ class Array_ extends Persistence
                         ->addMoreInfo('action', $type);
                 }
 
-                $fx = $args[0];
-                $field = $args[1];
-                $action = $this->initAction($model, $field);
+                [$fx, $field] = $args;
+
+                $action = $this->initAction($model, [$field]);
                 $this->applyScope($model, $action);
                 $this->setLimitOrder($model, $action);
 
-                return $action->aggregate($fx, $field, $type == 'fx0');
+                return $action->aggregate($fx, $field, $type === 'fx0');
             default:
                 throw (new Exception('Unsupported action mode'))
                     ->addMoreInfo('type', $type);

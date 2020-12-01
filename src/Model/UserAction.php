@@ -17,7 +17,7 @@ use atk4\data\Model;
  *
  * UserAction must NOT rely on any specific UI implementation.
  *
- * @property Model $owner
+ * @method Model getOwner()
  */
 class UserAction
 {
@@ -33,15 +33,6 @@ class UserAction
     public const APPLIES_TO_MULTIPLE_RECORDS = 'multiple'; // e.g. delete
     public const APPLIES_TO_ALL_RECORDS = 'all'; // e.g. truncate
 
-    // deprecated constants - will be removed in dec-2020
-    public const NO_RECORDS = self::APPLIES_TO_NO_RECORDS;
-    public const SINGLE_RECORD = self::APPLIES_TO_SINGLE_RECORD;
-    public const MULTIPLE_RECORDS = self::APPLIES_TO_MULTIPLE_RECORDS;
-    public const ALL_RECORDS = self::APPLIES_TO_ALL_RECORDS;
-
-    /** @deprecated use appliesTo instead - will be removed in dec-2020 */
-    public $scope;
-
     /** @var string by default - action is for a single-record */
     public $appliesTo = self::APPLIES_TO_SINGLE_RECORD;
 
@@ -54,28 +45,28 @@ class UserAction
     /** @var string How this action interact with record. default = 'read' */
     public $modifier = self::MODIFIER_READ;
 
-    /** @var callable code to execute. By default will call method with same name */
+    /** @var \Closure code to execute. By default will call method with same name */
     public $callback;
 
-    /** @var callable code, identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure code, identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
     /** @var string caption to put on the button */
     public $caption;
 
-    /** @var string a longer description of this action */
+    /** @var string|\Closure a longer description of this action. Closure must return string. */
     public $description;
 
     /** @var bool Specifies that the action is dangerous. Should be displayed in red. */
     public $dangerous = false;
 
-    /** @var bool|string|callable Set this to "true", string or return the value from the callback. Will ask user to confirm. */
+    /** @var bool|string|\Closure Set this to "true", string or return the value from the callback. Will ask user to confirm. */
     public $confirmation = false;
 
     /** @var array UI properties, e,g. 'icon'=>.. , 'warning', etc. UI implementation can interpret or extend. */
     public $ui = [];
 
-    /** @var bool|callable setting this to false will disable action. Callback will be executed with ($m) and must return bool */
+    /** @var bool|\Closure setting this to false will disable action. Callback will be executed with ($m) and must return bool */
     public $enabled = true;
 
     /** @var bool system action will be hidden from UI, but can still be explicitly triggered */
@@ -90,15 +81,9 @@ class UserAction
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
 
-    public function init(): void
+    protected function init(): void
     {
         $this->init_();
-
-        if ($this->scope) {
-            'trigger_error'('Property UserAction::$scope is deprecated. Use Model::$appliesTo instead', E_USER_DEPRECATED);
-
-            $this->appliesTo = $this->scope;
-        }
     }
 
     /**
@@ -111,25 +96,24 @@ class UserAction
     public function execute(...$args)
     {
         // todo - ACL tests must allow
-
         try {
             $this->validateBeforeExecute();
 
             $run = function () use ($args) {
                 if ($this->callback === null) {
-                    $fx = [$this->owner, $this->short_name];
+                    $fx = [$this->getOwner(), $this->short_name];
                 } elseif (is_string($this->callback)) {
-                    $fx = [$this->owner, $this->callback];
+                    $fx = [$this->getOwner(), $this->callback];
                 } else {
-                    array_unshift($args, $this->owner);
+                    array_unshift($args, $this->getOwner());
                     $fx = $this->callback;
                 }
 
-                return call_user_func_array($fx, $args);
+                return $fx(...$args);
             };
 
             if ($this->atomic) {
-                return $this->owner->atomic($run);
+                return $this->getOwner()->atomic($run);
             }
 
             return $run();
@@ -140,20 +124,20 @@ class UserAction
         }
     }
 
-    protected function validateBeforeExecute()
+    protected function validateBeforeExecute(): void
     {
-        if ($this->enabled === false || (is_callable($this->enabled) && call_user_func($this->enabled) === false)) {
+        if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)($this->getOwner()) === false)) {
             throw new Exception('This action is disabled');
         }
 
         // Verify that model fields wouldn't be too dirty
         if (is_array($this->fields)) {
-            $tooDirty = array_diff(array_keys($this->owner->dirty), $this->fields);
+            $tooDirty = array_diff(array_keys($this->getOwner()->dirty), $this->fields);
 
             if ($tooDirty) {
                 throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action.'))
                     ->addMoreInfo('too_dirty', $tooDirty)
-                    ->addMoreInfo('dirty', array_keys($this->owner->dirty))
+                    ->addMoreInfo('dirty', array_keys($this->getOwner()->dirty))
                     ->addMoreInfo('permitted', $this->fields);
             }
         } elseif (!is_bool($this->fields)) {
@@ -164,14 +148,14 @@ class UserAction
         // Verify some records scope cases
         switch ($this->appliesTo) {
             case self::APPLIES_TO_NO_RECORDS:
-                if ($this->owner->loaded()) {
+                if ($this->getOwner()->loaded()) {
                     throw (new Exception('This user action can be executed on non-existing record only.'))
-                        ->addMoreInfo('id', $this->owner->id);
+                        ->addMoreInfo('id', $this->getOwner()->getId());
                 }
 
                 break;
             case self::APPLIES_TO_SINGLE_RECORD:
-                if (!$this->owner->loaded()) {
+                if (!$this->getOwner()->loaded()) {
                     throw new Exception('This user action requires you to load existing record first.');
                 }
 
@@ -191,52 +175,56 @@ class UserAction
         if ($this->preview === null) {
             throw new Exception('You must specify preview callback explicitly');
         } elseif (is_string($this->preview)) {
-            $cb = [$this->owner, $this->preview];
+            $fx = \Closure::fromCallable([$this->getOwner(), $this->preview]);
         } else {
-            array_unshift($args, $this->owner);
-            $cb = $this->preview;
+            array_unshift($args, $this->getOwner());
+            $fx = $this->preview;
         }
 
-        return call_user_func_array($cb, $args);
+        return $fx(...$args);
     }
 
     /**
      * Get description of this current action in a user-understandable language.
-     *
-     * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
-        return $this->description ?? ('Will execute ' . $this->caption);
+        if ($this->description instanceof \Closure) {
+            return call_user_func($this->description, $this);
+        }
+
+        return $this->description ?? $this->getCaption() . ' ' . $this->getOwner()->getModelCaption();
     }
 
     /**
      * Return confirmation message for action.
-     *
-     * @return string
      */
     public function getConfirmation()
     {
-        $confirmation = $this->confirmation;
+        if ($this->confirmation instanceof \Closure) {
+            return call_user_func($this->confirmation, $this);
+        } elseif ($this->confirmation === true) {
+            $confirmation = 'Are you sure you wish to execute ';
+            $confirmation .= $this->getCaption();
+            $confirmation .= $this->getOwner()->getTitle() ? ' using ' . $this->getOwner()->getTitle() : '';
+            $confirmation .= '?';
 
-        if (is_callable($confirmation)) {
-            $confirmation = $confirmation($this);
+            return $confirmation;
         }
 
-        if ($confirmation === true) {
-            $confirmation = 'Are you sure you wish to ' . $this->caption . ' ' . $this->owner->getTitle() . '?';
-        }
-
-        return $confirmation;
+        return $this->confirmation;
     }
 
     /**
      * Return model associate with this action.
-     *
-     * @return Model
      */
-    public function getModel()
+    public function getModel(): Model
     {
-        return $this->owner;
+        return $this->getOwner();
+    }
+
+    public function getCaption(): string
+    {
+        return $this->caption ?? ucwords(str_replace('_', ' ', $this->short_name));
     }
 }

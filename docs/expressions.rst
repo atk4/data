@@ -74,7 +74,7 @@ In this example the query will look like this:
 
     select (1) `id`, (now()) `now` limit 1
 
-so that ``$m->id`` will always be 1 which will make it a model that you can
+so that ``$m->getId()`` will always be 1 which will make it a model that you can
 actually use consistently throughout the system. The real benefit from this
 can be gained when you need to pull various statistical values from your
 database at once::

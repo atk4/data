@@ -7,6 +7,7 @@ namespace atk4\data\tests;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -20,12 +21,13 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $a = [
+
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $this->m = new Model($db, ['user', 'id_field' => false]);
@@ -41,16 +43,30 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
         $this->m->tryLoadAny();
         $this->assertSame('John', $this->m->get('name'));
 
-        $this->m->setOrder('name desc');
+        $this->m->setOrder('name', 'desc');
         $this->m->tryLoadAny();
         $this->assertSame('Sue', $this->m->get('name'));
 
         $n = [];
         foreach ($this->m as $row) {
             $n[] = $row->get('name');
-            $this->assertNull($row->id);
         }
         $this->assertSame(['Sue', 'John'], $n);
+    }
+
+    public function testGetIdException()
+    {
+        $this->m->loadAny();
+        $this->expectException(Exception::class);
+        $this->expectErrorMessage('ID field is not defined');
+        $this->m->dummy = $this->m->getId();
+    }
+
+    public function testSetIdException()
+    {
+        $this->expectException(Exception::class);
+        $this->expectErrorMessage('ID field is not defined');
+        $this->m->setId(1);
     }
 
     public function testFail1()
@@ -64,8 +80,8 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
      */
     public function testInsert()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
         $this->m->insert(['name' => 'Joe']);
@@ -77,8 +93,8 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
      */
     public function testSave1()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
         $this->m->tryLoadAny();
@@ -92,8 +108,8 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
      */
     public function testSave2()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
         $this->m->tryLoadAny();
@@ -120,28 +136,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
 
     public function testFailDelete1()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(\TypeError::class);
         $this->m->delete(4);
-    }
-
-    /**
-     * Additional checks are done if ID is manually set.
-     */
-    public function testFailDelete2()
-    {
-        $this->m->id = 4;
-        $this->expectException(Exception::class);
-        $this->m->delete();
-    }
-
-    /**
-     * Additional checks are done if ID is manually set.
-     */
-    public function testFailUpdate()
-    {
-        $this->m->id = 1;
-        $this->m->set('name', 'foo');
-        $this->expectException(Exception::class);
-        $this->m->saveAndUnload();
     }
 }

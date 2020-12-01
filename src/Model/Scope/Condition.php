@@ -98,20 +98,17 @@ class Condition extends AbstractScope
         ],
     ];
 
-    protected static $skipValueTypecast = [
-        self::OPERATOR_LIKE,
-        self::OPERATOR_NOT_LIKE,
-        self::OPERATOR_REGEXP,
-        self::OPERATOR_NOT_REGEXP,
-    ];
-
     public function __construct($key, $operator = null, $value = null)
     {
         if ($key instanceof AbstractScope) {
             throw new Exception('Only Scope can contain another conditions');
+        } elseif ($key instanceof Field) { // for BC
+            $key = $key->short_name;
+        } elseif (!is_string($key) && !($key instanceof Expression) && !($key instanceof Expressionable)) {
+            throw new Exception('Field must be a string or an instance of Expression');
         }
 
-        if (func_num_args() == 1 && is_bool($key)) {
+        if (func_num_args() === 1 && is_bool($key)) {
             if ($key) {
                 return;
             }
@@ -119,7 +116,7 @@ class Condition extends AbstractScope
             $key = new Expression('false');
         }
 
-        if (func_num_args() == 2) {
+        if (func_num_args() === 2) {
             $value = $operator;
             $operator = self::OPERATOR_EQUALS;
         }
@@ -127,12 +124,35 @@ class Condition extends AbstractScope
         $this->key = $key;
         $this->value = $value;
 
-        if ($operator !== null) {
+        if ($operator === null) {
+            // at least MSSQL database always requires an operator
+            if (!($key instanceof Expression) && !($key instanceof Expressionable)) {
+                throw new Exception('Operator must be specified');
+            }
+        } else {
             $this->operator = strtoupper((string) $operator);
 
             if (!array_key_exists($this->operator, self::$operators)) {
                 throw (new Exception('Operator is not supported'))
                     ->addMoreInfo('operator', $operator);
+            }
+        }
+
+        if (is_array($value)) {
+            if (array_filter($value, 'is_array')) {
+                throw (new Exception('Multi-dimensional array as condition value is not supported'))
+                    ->addMoreInfo('value', $value);
+            }
+
+            if (!in_array($this->operator, [
+                self::OPERATOR_EQUALS,
+                self::OPERATOR_IN,
+                self::OPERATOR_DOESNOT_EQUAL,
+                self::OPERATOR_NOT_IN,
+            ], true)) {
+                throw (new Exception('Operator is not supported for array condition value'))
+                    ->addMoreInfo('operator', $operator)
+                    ->addMoreInfo('value', $value);
             }
         }
     }
@@ -189,8 +209,8 @@ class Condition extends AbstractScope
                         } else {
                             $refModel->addCondition($field, $operator, $value);
                             $field = $refModel->action('exists');
-                            $operator = null;
-                            $value = null;
+                            $operator = '>';
+                            $value = 0;
                         }
                     }
                 } else {
@@ -198,10 +218,9 @@ class Condition extends AbstractScope
                 }
             }
 
-            // @todo: value is array
-            // convert the value using the typecasting of persistence
-            if ($field instanceof Field && $model->persistence && !in_array($operator, self::$skipValueTypecast, true)) {
-                $value = $model->persistence->typecastSaveField($field, $value);
+            // handle the query arguments using field
+            if ($field instanceof Field) {
+                [$field, $operator, $value] = $field->getQueryArguments($operator, $value);
             }
 
             // only expression contained in $field
@@ -280,11 +299,10 @@ class Condition extends AbstractScope
 
                 if ($field === '#') {
                     $words[] = $this->operator ? 'number of records' : 'any referenced record exists';
-                    $field = null;
                 }
             }
 
-            if ($field !== null) {
+            if ($model->hasField($field)) {
                 $field = $model->getField($field);
             }
         }
@@ -320,7 +338,7 @@ class Condition extends AbstractScope
 
         if (is_object($value)) {
             if ($value instanceof Field) {
-                return $value->owner->getModelCaption() . ' ' . $value->getCaption();
+                return $value->getOwner()->getModelCaption() . ' ' . $value->getCaption();
             }
 
             if ($value instanceof Expression || $value instanceof Expressionable) {
@@ -342,14 +360,16 @@ class Condition extends AbstractScope
                 }
             }
 
-            $field = $model->getField($field);
+            if ($model->hasField($field)) {
+                $field = $model->getField($field);
+            }
         }
 
         // use the referenced model title if such exists
         if ($field && ($field->reference ?? false)) {
             // make sure we set the value in the Model parent of the reference
             // it should be same class as $model but $model might be a clone
-            $field->reference->owner->set($field->short_name, $value);
+            $field->reference->getOwner()->set($field->short_name, $value);
 
             $value = $field->reference->ref()->getTitle() ?: $value;
         }

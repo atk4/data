@@ -212,10 +212,10 @@ Suppose you want to check 'memcache' before actually loading the record from
 the database. Here is how you can implement this functionality::
 
     $m->onHook(Model::HOOK_BEFORE_LOAD, function($m, $id) {
-        $data = $m->app->cacheFetch($m->table, $id);
+        $data = $m->getApp()->cacheFetch($m->table, $id);
         if ($data) {
             $m->data = $data;
-            $m->id = $id;
+            $m->setId($id);
             $m->breakHook(false);
         }
     });
@@ -243,8 +243,10 @@ Save information into auditLog about failure:
 
 Upgrade schema:
 
+    use atk4\dsql\Exception as DsqlException;
+
     $m->onHook(Model::HOOK_ROLLBACK, function($m, $exception) { 
-        if ($exception instanceof \PDOException) {
+        if ($exception instanceof DsqlException) {
             $m->schema->upgrade();
             $m->breakHook(false); // exception will not be thrown
         }

@@ -227,7 +227,7 @@ You can load / unload records like this::
     $m->set('email', 'test@example.com');
     $m->save();
 
-You can call `$m->loaded()` to see if there is active record and `$m->id` will
+You can call `$m->loaded()` to see if there is active record and `$m->getId()` will
 store the ID of active record. You can also un-load the record with `$m->unload()`.
 
 By default no records are loaded and if you modify some field and attempt
@@ -311,7 +311,7 @@ later::
 
     $m = new Model_User();
 
-    $db->add($m); // calls $m->init()
+    $db->add($m); // calls $m->invokeInit()
 
 You cannot add conditions just yet, although you can pass in some of the defaults::
 
@@ -491,7 +491,7 @@ This results in an instance of Model_Country with Active Record set to the
 country of user john::
 
     $cc->loaded();
-    $cc->id;
+    $cc->getId();
     $cc->get();
 
 Implementation of References

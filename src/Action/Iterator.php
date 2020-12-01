@@ -38,9 +38,28 @@ class Iterator
     public function filter(Model\Scope\AbstractScope $condition)
     {
         if (!$condition->isEmpty()) {
-            $this->generator = new \CallbackFilterIterator($this->generator, function ($row) use ($condition) {
+            // CallbackFilterIterator with circular reference (bound function) is not GCed,
+            // because of specific php implementation of SPL iterator, see:
+            // https://bugs.php.net/bug.php?id=80125
+            // and related
+            // https://bugs.php.net/bug.php?id=65387
+            // - PHP 7.3 - impossible to fix easily
+            // - PHP 7.4 - fix it using WeakReference
+            // - PHP 8.0 - fixed in php, see:
+            // https://github.com/php/php-src/commit/afab9eb48c883766b7870f76f2e2b0a4bd575786
+            // remove the if below once PHP 7.3 and 7.4 is no longer supported
+            $filterFx = function ($row) use ($condition) {
                 return $this->match($row, $condition);
-            });
+            };
+            if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 4) {
+                $filterFxWeakRef = \WeakReference::create($filterFx);
+                $this->generator = new \CallbackFilterIterator($this->generator, static function (array $row) use ($filterFxWeakRef) {
+                    return $filterFxWeakRef->get()($row);
+                });
+                $this->generator->filterFx = $filterFx; // prevent filter function to be GCed
+            } else {
+                $this->generator = new \CallbackFilterIterator($this->generator, $filterFx);
+            }
         }
 
         return $this;
@@ -107,7 +126,7 @@ class Iterator
             $field = $args[0];
             $operator = $args[1] ?? null;
             $value = $args[2] ?? null;
-            if (count($args) == 2) {
+            if (count($args) === 2) {
                 $value = $operator;
 
                 $operator = '=';
@@ -217,9 +236,9 @@ class Iterator
 
         // prepare arguments for array_multisort()
         $args = [];
-        foreach ($fields as [$field, $desc]) {
+        foreach ($fields as [$field, $direction]) {
             $args[] = array_column($data, $field);
-            $args[] = $desc ? SORT_DESC : SORT_ASC;
+            $args[] = strtolower($direction) === 'desc' ? SORT_DESC : SORT_ASC;
         }
         $args[] = &$data;
 
@@ -235,12 +254,9 @@ class Iterator
     /**
      * Limit Iterator.
      *
-     * @param int $limit
-     * @param int $offset
-     *
      * @return $this
      */
-    public function limit($limit, $offset = 0)
+    public function limit(int $limit = null, int $offset = 0)
     {
         $data = array_slice($this->get(), $offset, $limit, true);
 

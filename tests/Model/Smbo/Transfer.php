@@ -10,7 +10,7 @@ class Transfer extends Payment
 
     public $other_leg_creation;
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -23,12 +23,12 @@ class Transfer extends Payment
 
         $this->addField('destination_account_id', ['never_persist' => true]);
 
-        $this->onHook(self::HOOK_BEFORE_SAVE, function ($m) {
+        $this->onHookShort(self::HOOK_BEFORE_SAVE, function () {
             // only for new records and when destination_account_id is set
-            if ($m->get('destination_account_id') && !$m->id) {
+            if ($this->get('destination_account_id') && !$this->getId()) {
                 // In this section we test if "clone" works ok
 
-                $this->other_leg_creation = $m2 = clone $m;
+                $this->other_leg_creation = $m2 = clone $this;
                 $m2->set('account_id', $m2->get('destination_account_id'));
                 $m2->set('amount', -$m2->get('amount'));
 
@@ -39,24 +39,24 @@ class Transfer extends Payment
                 // If clone is not working, then this is a current work-around
 
                 $this->other_leg_creation = $m2 = new Transfer($this->persistence);
-                $m2->set($m->get());
+                $m2->set($this->get());
                 $m2->unset('destination_account_id');
-                $m2->set('account_id', $m->get('destination_account_id'));
+                $m2->set('account_id', $this->get('destination_account_id'));
                 $m2->set('amount', -$m2->get('amount')); // neagtive amount
 
                 // */
 
                 $m2->reload_after_save = false; // avoid check
 
-                $m->set('transfer_document_id', $m2->save()->id);
+                $this->set('transfer_document_id', $m2->save()->getId());
             }
         });
 
-        $this->onHook(self::HOOK_AFTER_SAVE, function ($m) {
-            if ($m->other_leg_creation) {
-                $m->other_leg_creation->set('transfer_document_id', $m->id)->save();
+        $this->onHookShort(self::HOOK_AFTER_SAVE, function () {
+            if ($this->other_leg_creation) {
+                $this->other_leg_creation->set('transfer_document_id', $this->getId())->save();
             }
-            $m->other_leg_creation = null;
+            $this->other_leg_creation = null;
         });
     }
 }

@@ -2,16 +2,20 @@
 
 declare(strict_types=1);
 
-namespace atk4\data;
+namespace atk4\data\Model;
 
 use atk4\core\DiContainerTrait;
 use atk4\core\InitializerTrait;
 use atk4\core\TrackableTrait;
+use atk4\data\Exception;
+use atk4\data\Model;
+use atk4\data\Persistence;
+use atk4\data\Reference;
 
 /**
- * Class description?
+ * Provides generic functionality for joining data.
  *
- * @property Model $owner
+ * @method Model getOwner()
  */
 class Join
 {
@@ -20,6 +24,7 @@ class Join
         init as _init;
     }
     use DiContainerTrait;
+    use JoinLinkTrait;
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
@@ -33,7 +38,7 @@ class Join
      * If $persistence is set, then it's used for loading
      * and storing the values, instead $owner->persistence.
      *
-     * @var Persistence
+     * @var Persistence|Persistence\Sql
      */
     protected $persistence;
 
@@ -125,23 +130,26 @@ class Join
      */
     protected $save_buffer = [];
 
-    /**
-     * When join is done on another join.
-     *
-     * @var Join
-     */
-    protected $join;
-
-    /**
-     * Default constructor. Will copy argument into properties.
-     *
-     * @param array $defaults
-     */
     public function __construct($foreign_table = null)
     {
-        if (isset($foreign_table)) {
+        if ($foreign_table !== null) {
             $this->foreign_table = $foreign_table;
         }
+    }
+
+    protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $this->getOwner()->onHookDynamicShort(
+            $spot,
+            static function (Model $owner) use ($name) {
+                return $owner->getElement($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
     }
 
     /**
@@ -155,7 +163,7 @@ class Join
     /**
      * Initialization.
      */
-    public function init(): void
+    protected function init(): void
     {
         $this->_init();
 
@@ -167,9 +175,9 @@ class Join
                     // both master and foreign fields are set
 
                     // master_field exists, no we will use that
-                    // if (!is_object($this->master_field) && !$this->owner->hasField($this->master_field)) {
+                    // if (!is_object($this->master_field) && !$this->getOwner()->hasField($this->master_field)) {
                     throw (new Exception('You are trying to link tables on non-id fields. This is not implemented yet'))
-                        ->addMoreInfo('condition', $this->owner->table . '.' . $this->master_field . ' = ' . $this->foreign_table);
+                        ->addMoreInfo('condition', $this->getOwner()->table . '.' . $this->master_field . ' = ' . $this->foreign_table);
                     // } $this->reverse = 'link';
                 }
             }
@@ -182,7 +190,7 @@ class Join
             }
         } else {
             $this->reverse = false;
-            $id_field = $this->owner->id_field ?: 'id';
+            $id_field = $this->getOwner()->id_field ?: 'id';
             if (!$this->master_field) {
                 $this->master_field = $this->foreign_table . '_' . $id_field;
             }
@@ -192,7 +200,7 @@ class Join
             }
         }
 
-        $this->owner->onHook(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+        $this->onHookShortToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
     }
 
     /**
@@ -203,16 +211,16 @@ class Join
      * @param string $name
      * @param array  $seed
      *
-     * @return Field
+     * @return \atk4\data\Field
      */
     public function addField($name, $seed = [])
     {
         if ($seed && !is_array($seed)) {
             $seed = [$seed];
         }
-        $seed['join'] = $this;
+        $seed['joinName'] = $this->short_name;
 
-        return $this->owner->addField($this->prefix . $name, $seed);
+        return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
 
     /**
@@ -238,34 +246,20 @@ class Join
     }
 
     /**
-     * Adds any object to owner model.
-     */
-    public function add(object $object, array $defaults = []): object
-    {
-        if (!is_array($defaults)) {
-            $defaults = ['name' => $defaults];
-        }
-
-        $defaults['join'] = $this;
-
-        return $this->owner->add($object, $defaults);
-    }
-
-    /**
      * Another join will be attached to a current join.
      *
      * @param array $defaults
      *
-     * @return Join
+     * @return static
      */
     public function join(string $foreign_table, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
         }
-        $defaults['join'] = $this;
+        $defaults['joinName'] = $this->short_name;
 
-        return $this->owner->join($foreign_table, $defaults);
+        return $this->getOwner()->join($foreign_table, $defaults);
     }
 
     /**
@@ -273,16 +267,16 @@ class Join
      *
      * @param array $defaults
      *
-     * @return Join
+     * @return static
      */
     public function leftJoin(string $foreign_table, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['master_field' => $defaults];
         }
-        $defaults['join'] = $this;
+        $defaults['joinName'] = $this->short_name;
 
-        return $this->owner->leftJoin($foreign_table, $defaults);
+        return $this->getOwner()->leftJoin($foreign_table, $defaults);
     }
 
     /**
@@ -297,40 +291,38 @@ class Join
     /*
     public function weakJoin($defaults = [])
     {
-        $defaults['join'] = $this;
+        $defaults['joinName'] = $this->short_name;
 
-        return $this->owner->weakJoin($defaults);
+        return $this->getOwner()->weakJoin($defaults);
     }
     */
 
     /**
      * Creates reference based on a field from the join.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Reference\HasOne
      */
-    public function hasOne($link, $defaults = [])
+    public function hasOne(string $link, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_' . $link];
         }
 
-        $defaults['join'] = $this;
+        $defaults['joinName'] = $this->short_name;
 
-        return $this->owner->hasOne($link, $defaults);
+        return $this->getOwner()->hasOne($link, $defaults);
     }
 
     /**
      * Creates reference based on the field from the join.
      *
-     * @param string $link
-     * @param array  $defaults
+     * @param array $defaults
      *
      * @return Reference\HasMany
      */
-    public function hasMany($link, $defaults = [])
+    public function hasMany(string $link, $defaults = [])
     {
         if (!is_array($defaults)) {
             $defaults = ['model' => $defaults ?: 'Model_' . $link];
@@ -338,10 +330,10 @@ class Join
 
         $defaults = array_merge([
             'our_field' => $this->id_field,
-            'their_field' => $this->owner->table . '_' . $this->id_field,
+            'their_field' => $this->getOwner()->table . '_' . $this->id_field,
         ], $defaults);
 
-        return $this->owner->hasMany($link, $defaults);
+        return $this->getOwner()->hasMany($link, $defaults);
     }
 
     /**
@@ -431,7 +423,7 @@ class Join
     public function weakJoinModel($model, $fields = [])
     {
         if (!is_object($model)) {
-            $model = $this->owner->connection->add($model);
+            $model = $this->getOwner()->connection->add($model);
         }
         $j = $this->join($model->table);
 

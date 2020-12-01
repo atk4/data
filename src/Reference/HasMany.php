@@ -26,12 +26,12 @@ class HasMany extends Reference
         if ($ourModel->loaded()) {
             return $this->our_field
                 ? $ourModel->get($this->our_field)
-                : $ourModel->id;
+                : $ourModel->getId();
         }
 
         // create expression based on existing conditions
         return $ourModel->action('field', [
-            $this->our_field ?: $ourModel->id_field,
+            $this->getOurFieldName(),
         ]);
     }
 
@@ -44,19 +44,17 @@ class HasMany extends Reference
 
         $ourModel->persistence_data['use_table_prefixes'] = true;
 
-        return $ourModel->getField($this->our_field ?: $ourModel->id_field);
+        return $this->getOurField();
     }
 
     /**
      * Returns referenced model with condition set.
-     *
-     * @param array $defaults Properties
      */
-    public function ref($defaults = []): Model
+    public function ref(array $defaults = []): Model
     {
         $ourModel = $this->getOurModel();
 
-        return $this->getTheirModel($defaults)->addCondition(
+        return $this->createTheirModel($defaults)->addCondition(
             $this->their_field ?: ($ourModel->table . '_' . $ourModel->id_field),
             $this->getOurValue()
         );
@@ -64,14 +62,12 @@ class HasMany extends Reference
 
     /**
      * Creates model that can be used for generating sub-query actions.
-     *
-     * @param array $defaults Properties
      */
-    public function refLink($defaults = []): Model
+    public function refLink(array $defaults = []): Model
     {
         $ourModel = $this->getOurModel();
 
-        $theirModelLinked = $this->getTheirModel($defaults)->addCondition(
+        $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
             $this->their_field ?: ($ourModel->table . '_' . $ourModel->id_field),
             $this->referenceOurValue()
         );
@@ -82,11 +78,8 @@ class HasMany extends Reference
     /**
      * Adds field as expression to our model.
      * Used in aggregate strategy.
-     *
-     * @param string $fieldName Field name
-     * @param array  $defaults  Properties
      */
-    public function addField($fieldName, $defaults = []): Field
+    public function addField(string $fieldName, array $defaults = []): Field
     {
         if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
             throw (new Exception('Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()'))
@@ -111,7 +104,7 @@ class HasMany extends Reference
 
                 return $theirModelLinked->action('field', [$theirModelLinked->expr(
                     $defaults['expr'],
-                    $defaults['args'] ?? null
+                    $defaults['args'] ?? []
                 ), 'alias' => $alias]);
             };
             unset($defaults['args']);
@@ -141,11 +134,9 @@ class HasMany extends Reference
      *
      * @see addField()
      *
-     * @param array $fields Array of fields
-     *
      * @return $this
      */
-    public function addFields($fields = [])
+    public function addFields(array $fields = [])
     {
         foreach ($fields as $defaults) {
             $fieldName = $defaults[0];

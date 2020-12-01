@@ -14,13 +14,13 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 {
     public function testBasic()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
@@ -37,20 +37,20 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
     public function testReverse()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10, 'total_vat' => 5], // total_gross 15
                 ['total_net' => 10, 'total_vat' => 4], // total_gross 14
                 ['total_net' => 15, 'total_vat' => 4], // total_gross 19
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $ii = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
         $ii->getField($ii->id_field)->system = false;
 
         $i = clone $ii;
-        $i->setOrder('total_net desc, total_gross desc');
+        $i->setOrder(['total_net' => 'desc', 'total_gross' => 'desc']);
         $i->onlyFields(['total_net', 'total_gross']);
         $this->assertEquals([
             ['total_net' => 15, 'total_gross' => 19],
@@ -59,7 +59,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         ], $i->export());
 
         $i = clone $ii;
-        $i->setOrder('total_net desc, total_gross');
+        $i->setOrder(['total_net' => 'desc', 'total_gross']);
         $i->onlyFields(['total_net', 'total_gross']);
         $this->assertEquals([
             ['total_net' => 15, 'total_gross' => 19],
@@ -68,7 +68,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         ], $i->export());
 
         $i = clone $ii;
-        $i->setOrder('total_net desc, total_gross');
+        $i->setOrder(['total_net' => 'desc', 'total_gross']);
         $i->onlyFields(['total_net', 'total_vat']);
         $this->assertEquals([
             ['total_net' => 15, 'total_vat' => 4],
@@ -77,7 +77,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
         ], $i->export());
 
         $i = clone $ii;
-        $i->setOrder('total_gross desc, total_net');
+        $i->setOrder(['total_gross' => 'desc', 'total_net']);
         $i->onlyFields(['total_net', 'total_vat']);
         $this->assertEquals([
             ['total_net' => 15, 'total_vat' => 4],
@@ -88,13 +88,13 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
     public function testArrayParameters()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['net' => 10, 'vat' => 5],
                 ['net' => 10, 'vat' => 4],
                 ['net' => 15, 'vat' => 4],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $ii = (new Model($this->db, 'invoice'))->addFields(['net', 'vat']);
         $ii->getField($ii->id_field)->system = false;
@@ -111,7 +111,7 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
         // pass parameters as array elements [field=>order]
         $i = clone $ii;
-        $i->setOrder(['net' => true, 'vat' => false]);
+        $i->setOrder(['net' => 'desc', 'vat' => 'asc']);
         $i->onlyFields(['net', 'vat']);
         $this->assertEquals([
             ['net' => 15, 'vat' => 4],
@@ -132,13 +132,13 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
     public function testOrderByExpressions()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['code' => 'A', 'net' => 10, 'vat' => 5],
                 ['code' => 'B', 'net' => 10, 'vat' => 4],
                 ['code' => 'C', 'net' => 15, 'vat' => 4],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         // order by expression field
         $i = (new Model($this->db, 'invoice'))->addFields(['code', 'net', 'vat']);
@@ -199,11 +199,11 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
      */
     public function testExceptionUnsupportedOrderParam()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['net' => 10],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['net']);
         $i->setOrder(new \DateTime());
@@ -213,13 +213,13 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
     public function testLimit()
     {
-        $a = [
+        $this->setDb([
             'invoice' => [
                 ['total_net' => 10],
                 ['total_net' => 20],
                 ['total_net' => 15],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
@@ -250,18 +250,6 @@ class LimitOrderTest extends \atk4\schema\PhpunitTestCase
 
         $i = clone $ii;
         $i->setLimit(null, 1);
-        /*
-        This test is incorrect because last number in rendered query is dependent on server.
-        For example, on Imants Win10 64-bit this renders as:
-        select "total_net" from "invoice" order by "total_net" limit 1, 2147483647
-        On Travis server it renders as:
-        select "total_net" from "invoice" order by "total_net" limit 1, 9223372036854775807
-        which still is not equal to max number which SQL server allows - 18446744073709551615
-        $this->assertEquals(
-            'select "total_net" from "invoice" order by "total_net" limit 1, 9223372036854775807',
-            $i->action('select')->render()
-        );
-        */
         $this->assertEquals([
             ['total_net' => 15],
             ['total_net' => 20],

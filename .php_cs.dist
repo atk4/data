@@ -36,6 +36,9 @@ return PhpCsFixer\Config::create()
             'use_escape_sequences_in_strings' => true,
         ],
         'void_return' => false,
+        'blank_line_before_statement' => [
+            'statements' => ['break', 'continue', 'declare', 'return', 'throw', 'exit'],
+        ],
         'combine_consecutive_issets' => false,
         'combine_consecutive_unsets' => false,
         'multiline_whitespace_before_semicolons' => false,
@@ -58,7 +61,6 @@ return PhpCsFixer\Config::create()
         ],
 
         // @TODO fix later
-        'strict_comparison' => false,
         'php_unit_strict' => false,
     ])
     ->setFinder($finder)

@@ -12,60 +12,33 @@ use atk4\data\Persistence;
  */
 class ContainsMany extends ContainsOne
 {
-    /**
-     * Returns default persistence. It will be empty at this point.
-     *
-     * @see ref()
-     *
-     * @param Model $model Referenced model
-     *
-     * @return Persistence|false
-     */
-    protected function getDefaultPersistence($model)
+    protected function getDefaultPersistence(Model $theirModel)
     {
-        $ourModel = $this->getOurModel();
-
-        // model should be loaded
-        /* Imants: it looks that this is not actually required - disabling
-        if (!$ourModel->loaded()) {
-            throw (new Exception('Model should be loaded!'))
-                ->addMoreInfo('model', get_class($ourModel));
-        }
-        */
-
-        // set data source of referenced array persistence
-        $rows = $ourModel->get($this->our_field) ?: [];
-        /*
-        foreach ($rows as $id=>$row) {
-            $rows[$id] = $ourModel->persistence->typecastLoadRow($ourModel, $row); // we need this typecasting because we set persistence data directly
-        }
-        */
-
-        return new Persistence\ArrayOfStrings([$this->table_alias => $rows ?: []]);
+        return new Persistence\ArrayOfStrings([
+            $this->table_alias => $this->getOurFieldValue() ?: [],
+        ]);
     }
 
     /**
      * Returns referenced model.
-     *
-     * @param array $defaults Properties
      */
-    public function ref($defaults = []): Model
+    public function ref(array $defaults = []): Model
     {
         $ourModel = $this->getOurModel();
 
         // get model
-        // will not use ID field (no, sorry, will have to use it)
-        $theirModel = $this->getTheirModel(array_merge($defaults, [
+        $theirModel = $this->createTheirModel(array_merge($defaults, [
             'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
-            //'id_field'              => false,
             'table' => $this->table_alias,
         ]));
 
         // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $theirModel->onHook($spot, function ($theirModel) {
-                $rows = $theirModel->persistence->getRawDataByTable($this->table_alias);
-                $this->getOurModel()->save([$this->our_field => $rows ?: null]);
+            $this->onHookToTheirModel($theirModel, $spot, function ($theirModel) {
+                $rows = $theirModel->persistence->getRawDataByTable($theirModel, $this->table_alias);
+                $this->getOurModel()->save([
+                    $this->getOurFieldName() => $rows ?: null,
+                ]);
             });
         }
 

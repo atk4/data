@@ -7,19 +7,21 @@ namespace atk4\data;
 use atk4\core\DiContainerTrait;
 use atk4\core\ReadableCaptionTrait;
 use atk4\core\TrackableTrait;
+use atk4\data\Model\Scope;
 use atk4\dsql\Expression;
 use atk4\dsql\Expressionable;
 
 /**
  * Class description?
  *
- * @property Model $owner
+ * @method Model getOwner()
  */
 class Field implements Expressionable
 {
     use TrackableTrait;
     use DiContainerTrait;
     use ReadableCaptionTrait;
+    use Model\JoinLinkTrait;
 
     // {{{ Properties
 
@@ -72,13 +74,6 @@ class Field implements Expressionable
      * @var string|null
      */
     public $actual;
-
-    /**
-     * Join object.
-     *
-     * @var Join|null
-     */
-    public $join;
 
     /**
      * Is it system field?
@@ -210,22 +205,31 @@ class Field implements Expressionable
 
     /**
      * Constructor. You can pass field properties as array.
-     *
-     * @param array $defaults
      */
-    public function __construct($defaults = [])
+    public function __construct(array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            throw (new Exception('Field requires array for defaults'))
-                ->addMoreInfo('arg', $defaults);
-        }
         foreach ($defaults as $key => $val) {
             if (is_array($val)) {
-                $this->{$key} = array_merge(isset($this->{$key}) && is_array($this->{$key}) ? $this->{$key} : [], $val);
+                $this->{$key} = array_merge_recursive(is_array($this->{$key} ?? null) ? $this->{$key} : [], $val);
             } else {
                 $this->{$key} = $val;
             }
         }
+    }
+
+    protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $this->getOwner()->onHookDynamicShort(
+            $spot,
+            static function (Model $owner) use ($name) {
+                return $owner->getField($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
     }
 
     /**
@@ -241,7 +245,7 @@ class Field implements Expressionable
     public function normalize($value)
     {
         try {
-            if (!$this->owner->strict_types) {
+            if (!$this->getOwner()->strict_types || $this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
             }
 
@@ -374,8 +378,8 @@ class Field implements Expressionable
 
                 break;
             case 'array':
-                if (is_string($value) && $f->owner && $f->owner->persistence) {
-                    $value = $f->owner->persistence->jsonDecode($f, $value, true);
+                if (is_string($value) && $f->issetOwner() && $f->getOwner()->persistence) {
+                    $value = $f->getOwner()->persistence->jsonDecode($f, $value, true);
                 }
 
                 if (!is_array($value)) {
@@ -384,8 +388,8 @@ class Field implements Expressionable
 
                 break;
             case 'object':
-               if (is_string($value) && $f->owner && $f->owner->persistence) {
-                   $value = $f->owner->persistence->jsonDecode($f, $value, false);
+               if (is_string($value) && $f->issetOwner() && $f->getOwner()->persistence) {
+                   $value = $f->getOwner()->persistence->jsonDecode($f, $value, false);
                }
 
                 if (!is_object($value)) {
@@ -418,7 +422,6 @@ class Field implements Expressionable
     public function toString($value = null): string
     {
         $v = ($value === null ? $this->get() : $this->normalize($value));
-
         try {
             switch ($this->type) {
                 case 'boolean':
@@ -463,7 +466,7 @@ class Field implements Expressionable
      */
     public function get()
     {
-        return $this->owner->get($this->short_name);
+        return $this->getOwner()->get($this->short_name);
     }
 
     /**
@@ -473,7 +476,7 @@ class Field implements Expressionable
      */
     public function set($value): self
     {
-        $this->owner->set($this->short_name, $value);
+        $this->getOwner()->set($this->short_name, $value);
 
         return $this;
     }
@@ -483,19 +486,59 @@ class Field implements Expressionable
      */
     public function setNull(): self
     {
-        $this->owner->setNull($this->short_name);
+        $this->getOwner()->setNull($this->short_name);
 
         return $this;
     }
 
     /**
-     * This method can be extended. See Model::compare for use examples.
+     * Compare new value of the field with existing one without retrieving.
+     * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
+     *  - comparing values that can't be received - passwords, encrypted data
+     *  - comparing images
+     *  - if get() is expensive (e.g. retrieve object).
      *
-     * @param mixed $value
+     * @param mixed      $value
+     * @param mixed|void $value2
      */
-    public function compare($value): bool
+    public function compare($value, $value2 = null): bool
     {
-        return $this->get() == $value;
+        if (func_num_args() === 1) {
+            $value2 = $this->get();
+        }
+
+        // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
+        // compare if typecasted values are the same using strict comparison (===) or nor
+        $typecastFunc = function ($v) {
+            // do not typecast null values, because that implies calling normalize() which tries to validate that value can't be null in case field value is required
+            if ($v === null) {
+                return $v;
+            }
+
+            if ($this->getOwner()->persistence === null) {
+                $v = $this->normalize($v);
+
+                // without persistence, we can not do a lot with non-scalar types, but as DateTime
+                // is used often, fix the compare for them
+                // TODO probably create and use a default persistence
+                if (is_scalar($v)) {
+                    return (string) $v;
+                } elseif ($v instanceof \DateTimeInterface) {
+                    return $v->getTimestamp() . '.' . $v->format('u');
+                }
+
+                return serialize($v);
+            }
+
+            return (string) $this->getOwner()->persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
+        };
+
+        return $typecastFunc($value) === $typecastFunc($value2);
+    }
+
+    public function getPersistenceName(): string
+    {
+        return $this->actual ?? $this->short_name;
     }
 
     /**
@@ -504,6 +547,38 @@ class Field implements Expressionable
     public function useAlias(): bool
     {
         return isset($this->actual);
+    }
+
+    // }}}
+
+    // {{{ Scope condition
+
+    /**
+     * Returns arguments to be used for query on this field based on the condition.
+     *
+     * @param string|null $operator one of Scope\Condition operators
+     * @param mixed       $value    the condition value to be handled
+     */
+    public function getQueryArguments($operator, $value): array
+    {
+        $skipValueTypecast = [
+            Scope\Condition::OPERATOR_LIKE,
+            Scope\Condition::OPERATOR_NOT_LIKE,
+            Scope\Condition::OPERATOR_REGEXP,
+            Scope\Condition::OPERATOR_NOT_REGEXP,
+        ];
+
+        if (!in_array($operator, $skipValueTypecast, true)) {
+            if (is_array($value)) {
+                $value = array_map(function ($option) {
+                    return $this->getOwner()->persistence->typecastSaveField($this, $option);
+                }, $value);
+            } else {
+                $value = $this->getOwner()->persistence->typecastSaveField($this, $value);
+            }
+        }
+
+        return [$this, $operator, $value];
     }
 
     // }}}
@@ -554,12 +629,12 @@ class Field implements Expressionable
      */
     public function getDsqlExpression($expression)
     {
-        if (!$this->owner->persistence || !$this->owner->persistence instanceof Persistence\Sql) {
+        if (!$this->getOwner()->persistence || !$this->getOwner()->persistence instanceof Persistence\Sql) {
             throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
-                ->addMoreInfo('persistence', $this->owner->persistence ?? null);
+                ->addMoreInfo('persistence', $this->getOwner()->persistence ?? null);
         }
 
-        return $this->owner->persistence->getFieldSqlExpression($this, $expression);
+        return $this->getOwner()->persistence->getFieldSqlExpression($this, $expression);
     }
 
     // {{{ Debug Methods
@@ -575,7 +650,7 @@ class Field implements Expressionable
         ];
 
         foreach ([
-            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'join',
+            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
         ] as $key) {
             if (isset($this->{$key})) {
                 $arr[$key] = $this->{$key};

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace atk4\data\Reference;
 
 use atk4\data\Field;
-use atk4\data\Join;
 use atk4\data\Model;
 use atk4\data\Reference;
 
@@ -14,6 +13,8 @@ use atk4\data\Reference;
  */
 class HasOne extends Reference
 {
+    use Model\JoinLinkTrait;
+
     /**
      * Field type.
      *
@@ -32,13 +33,6 @@ class HasOne extends Reference
      * @var bool
      */
     public $system = false;
-
-    /**
-     * Points to the join if we are part of one.
-     *
-     * @var Join|null
-     */
-    protected $join;
 
     /**
      * Default value of field.
@@ -141,7 +135,7 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $dateTimeClass = 'DateTime';
+    public $dateTimeClass = \DateTime::class;
 
     /**
      * Timezone class used for type = 'data', 'datetime', 'time' fields.
@@ -150,13 +144,13 @@ class HasOne extends Reference
      *
      * @var string
      */
-    public $dateTimeZoneClass = 'DateTimeZone';
+    public $dateTimeZoneClass = \DateTimeZone::class;
 
     /**
      * Reference\HasOne will also add a field corresponding
      * to 'our_field' unless it exists of course.
      */
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -171,7 +165,7 @@ class HasOne extends Reference
                 'type' => $this->type,
                 'reference' => $this,
                 'system' => $this->system,
-                'join' => $this->join,
+                'joinName' => $this->joinName,
                 'default' => $this->default,
                 'never_persist' => $this->never_persist,
                 'read_only' => $this->read_only,
@@ -196,7 +190,7 @@ class HasOne extends Reference
     {
         $this->getOurModel()->persistence_data['use_table_prefixes'] = true;
 
-        return $this->getOurModel()->getField($this->our_field);
+        return $this->getOurField();
     }
 
     /**
@@ -204,19 +198,17 @@ class HasOne extends Reference
      *
      * If our model is not loaded, then return their model with condition set.
      * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
-     *
-     * @param array $defaults Properties
      */
-    public function ref($defaults = []): Model
+    public function ref(array $defaults = []): Model
     {
-        $theirModel = $this->getTheirModel($defaults);
+        $theirModel = $this->createTheirModel($defaults);
 
         // add hook to set our_field = null when record of referenced model is deleted
-        $theirModel->onHook(Model::HOOK_AFTER_DELETE, function ($theirModel) {
-            $this->getOurModel()->set($this->our_field, null);
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function ($theirModel) {
+            $this->getOurField()->setNull();
         });
 
-        if ($ourValue = $this->getOurModel()->get($this->our_field)) {
+        if ($ourValue = $this->getOurFieldValue()) {
             // if our model is loaded, then try to load referenced model
             if ($this->their_field) {
                 $theirModel->tryLoadBy($this->their_field, $ourValue);
@@ -225,10 +217,17 @@ class HasOne extends Reference
             }
         }
 
-        $theirModel->onHook(Model::HOOK_AFTER_SAVE, function ($theirModel) {
-            $ourValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->id;
+        // their model will be reloaded after saving our model to reflect changes in referenced fields
+        $theirModel->reload_after_save = false;
 
-            $this->getOurModel()->set($this->our_field, $ourValue);
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function ($theirModel) {
+            $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->getId();
+
+            if ($this->getOurFieldValue() !== $theirValue) {
+                $this->getOurField()->set($theirValue)->getOwner()->save();
+            }
+
+            $theirModel->reload();
         });
 
         return $theirModel;

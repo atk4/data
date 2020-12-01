@@ -20,12 +20,13 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $a = [
+
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'gender' => 'M'],
                 2 => ['id' => 2, 'name' => 'Sue', 'gender' => 'F'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $this->m = new Model($db, ['user', 'read_only' => true]);
@@ -38,12 +39,12 @@ class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
      */
     public function testBasic()
     {
-        $this->m->tryLoadAny();
-        $this->assertSame('John', $this->m->get('name'));
+        $mm = (clone $this->m)->tryLoadAny();
+        $this->assertSame('John', $mm->get('name'));
 
-        $this->m->setOrder('name desc');
-        $this->m->tryLoadAny();
-        $this->assertSame('Sue', $this->m->get('name'));
+        $this->m->setOrder('name', 'desc');
+        $mm = (clone $this->m)->tryLoadAny();
+        $this->assertSame('Sue', $mm->get('name'));
 
         $this->assertEquals([1 => 'John', 2 => 'Sue'], $this->m->getTitles());
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace atk4\data;
 
 use atk4\core\InitializerTrait;
+use atk4\dsql\Expression;
 
 /**
  * Class description?
@@ -18,7 +19,7 @@ class FieldSqlExpression extends FieldSql
     /**
      * Used expression.
      *
-     * @var mixed
+     * @var \Closure|string|Expression
      */
     public $expr;
 
@@ -52,26 +53,24 @@ class FieldSqlExpression extends FieldSql
     /**
      * Initialization.
      */
-    public function init(): void
+    protected function init(): void
     {
         $this->_init();
 
-        if ($this->owner->reload_after_save === null) {
-            $this->owner->reload_after_save = true;
+        if ($this->getOwner()->reload_after_save === null) {
+            $this->getOwner()->reload_after_save = true;
         }
 
         if ($this->concat) {
-            $this->owner->onHook(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
+            $this->onHookShortToOwner(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
         }
     }
 
     /**
      * Possibly that user will attempt to insert values here. If that is the case, then
      * we would need to inject it into related hasMany relationship.
-     *
-     * @param Model $m
      */
-    public function afterSave($m)
+    public function afterSave()
     {
     }
 
@@ -87,21 +86,19 @@ class FieldSqlExpression extends FieldSql
     /**
      * When field is used as expression, this method will be called.
      *
-     * @param \atk4\dsql\Expression $expression
-     *
-     * @return \atk4\dsql\Expression
+     * @param Expression $expression
      */
-    public function getDsqlExpression($expression)
+    public function getDsqlExpression($expression): Expression
     {
         $expr = $this->expr;
-        if (is_callable($expr)) {
-            $expr = $expr($this->owner, $expression);
+        if ($expr instanceof \Closure) {
+            $expr = $expr($this->getOwner(), $expression);
         }
 
         if (is_string($expr)) {
             // If our Model has expr() method (inherited from Persistence\Sql) then use it
-            if ($this->owner->hasMethod('expr')) {
-                return $this->owner->expr('([])', [$this->owner->expr($expr)]);
+            if ($this->getOwner()->hasMethod('expr')) {
+                return $this->getOwner()->expr('([])', [$this->getOwner()->expr($expr)]);
             }
 
             // Otherwise call it from expression itself

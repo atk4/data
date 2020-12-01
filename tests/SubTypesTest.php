@@ -10,7 +10,7 @@ class StAccount extends Model
 {
     public $table = 'account';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -53,8 +53,8 @@ class StAccount extends Model
     public function transferTo(self $account, $amount)
     {
         $out = $this->ref('Transactions:TransferOut')->save(['amount' => $amount]);
-        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->id]);
-        $out->set('link_id', $in->id);
+        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->getId()]);
+        $out->set('link_id', $in->getId());
         $out->save();
     }
 }
@@ -64,7 +64,7 @@ class StGenericTransaction extends Model
     public $table = 'transaction';
     public $type;
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -74,13 +74,13 @@ class StGenericTransaction extends Model
         if ($this->type) {
             $this->addCondition('type', $this->type);
         }
-        $this->addField('amount');
+        $this->addField('amount', ['type' => 'money']);
 
-        $this->onHook(Model::HOOK_AFTER_LOAD, function (self $m) {
-            if (static::class !== $m->getClassName()) {
-                $cl = '\\' . $this->getClassName();
+        $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
+            if (static::class !== $this->getClassName()) {
+                $cl = $this->getClassName();
                 $cl = new $cl($this->persistence);
-                $cl->load($m->id);
+                $cl->load($this->getId());
 
                 $this->breakHook($cl);
             }
@@ -112,7 +112,7 @@ class StTransaction_TransferOut extends StGenericTransaction
 {
     public $type = 'TransferOut';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
         $this->hasOne('link_id', new StTransaction_TransferIn());
@@ -125,7 +125,7 @@ class StTransaction_TransferIn extends StGenericTransaction
 {
     public $type = 'TransferIn';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
         $this->hasOne('link_id', new StTransaction_TransferOut());
@@ -142,8 +142,8 @@ class SubTypesTest extends \atk4\schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigrator(new StAccount($this->db))->drop()->create();
-        $this->getMigrator(new StTransaction_TransferOut($this->db))->drop()->create();
+        $this->getMigrator(new StAccount($this->db))->dropIfExists()->create();
+        $this->getMigrator(new StTransaction_TransferOut($this->db))->dropIfExists()->create();
     }
 
     public function testBasic()

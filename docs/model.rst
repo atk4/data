@@ -36,7 +36,7 @@ and even perform operations on multiple records (See `Persistence Actions` below
 
    $m->action('delete')->execute(); // performs mass delete, hooks are not executed
    
-   $m->each('delete'); // deletes each record, hooks are executed
+   $m->each(function () use ($m) { $m->delete(); }); // deletes each record, hooks are executed
 
 When data is loaded from associated Persistence, it is automatically converted into
 a native PHP type (such as DateTime object) through a process called Typecasting. Various
@@ -391,8 +391,8 @@ a hook::
 
    $this->addField('name');
 
-   $this->onHook(Model::HOOK_VALIDATE, function($m) {
-      if ($m->get('name') === 'C#') {
+   $this->onHookShort(Model::HOOK_VALIDATE, function() {
+      if ($this->get('name') === 'C#') {
          return ['name'=>'No sharp objects are allowed'];
       }
    });
@@ -437,8 +437,8 @@ action - `send_gift`.
 There are some advanced techniques like "SubTypes" or class substitution,
 for example, this hook may be placed in the "User" class init()::
 
-   $this->onHook(Model::HOOK_AFTER_LOAD, function($m) {
-      if ($m->get('purchases') > 1000) {
+   $this->onHookShort(Model::HOOK_AFTER_LOAD, function() {
+      if ($this->get('purchases') > 1000) {
          $this->breakHook($this->asModel(VipUser::class);
       }
    });
@@ -718,7 +718,7 @@ ID Field
     This will update existing record with new $id. If you want to save your
     current field over another existing record then::
 
-        $m->id = $new_id;
+        $m->setId($new_id);
         $m->save();
 
     You must remember that only dirty fields are saved, though. (We might add

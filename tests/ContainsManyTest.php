@@ -24,7 +24,7 @@ class Invoice2 extends Model
     public $table = 'invoice';
     public $title_field = 'ref_no';
 
-    public function init(): void
+    protected function init(): void
     {
         parent:: init();
 
@@ -61,7 +61,7 @@ class Invoice2 extends Model
  */
 class Line2 extends Model
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -96,7 +96,7 @@ class VatRate2 extends Model
 {
     public $table = 'vat_rate';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -110,7 +110,7 @@ class VatRate2 extends Model
  */
 class Discount2 extends Model
 {
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -134,8 +134,8 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our models
-        $this->getMigrator(new VatRate2($this->db))->drop()->create();
-        $this->getMigrator(new Invoice2($this->db))->drop()->create();
+        $this->getMigrator(new VatRate2($this->db))->dropIfExists()->create();
+        $this->getMigrator(new Invoice2($this->db))->dropIfExists()->create();
 
         // fill in some default values
         $m = new VatRate2($this->db);
@@ -247,9 +247,9 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         }
 
         // add some discounts
-        $l->load(1)->ref('discounts')->insert(['id' => 1, 'percent' => 5, 'valid_till' => new \DateTime('2019-07-15')]);
-        $l->load(1)->ref('discounts')->insert(['id' => 2, 'percent' => 10, 'valid_till' => new \DateTime('2019-07-30')]);
-        $l->load(2)->ref('discounts')->insert(['id' => 1, 'percent' => 20, 'valid_till' => new \DateTime('2019-12-31')]);
+        (clone $l)->load(1)->ref('discounts')->insert(['id' => 1, 'percent' => 5, 'valid_till' => new \DateTime('2019-07-15')]);
+        (clone $l)->load(1)->ref('discounts')->insert(['id' => 2, 'percent' => 10, 'valid_till' => new \DateTime('2019-07-30')]);
+        (clone $l)->load(2)->ref('discounts')->insert(['id' => 1, 'percent' => 20, 'valid_till' => new \DateTime('2019-12-31')]);
 
         // reload invoice to be sure all is saved and to recalculate all fields
         $i->reload();
@@ -267,7 +267,7 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->get('discounts_total_sum')); // =20.88
 
         // let's test how it all looks in persistence without typecasting
-        $exp_lines = $i->export(null, null, false)[0]['lines'];
+        $exp_lines = $i->setOrder('id')->export(null, null, false)[0]['lines'];
         $this->assertSame(
             json_encode([
                 '1' => [

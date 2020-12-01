@@ -7,6 +7,9 @@ namespace atk4\data\tests;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -55,41 +58,40 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testJoinSaving1()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
-        $a = [
+        $db = new Persistence\Sql($this->db->connection);
+        $m_u = new Model($db, 'user');
+        $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
             ], 'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123'],
-            ], ];
-
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, 'user');
-        $this->setDb($a);
+            ],
+        ]);
 
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u->set('name', 'John');
-        $m_u->set('contact_phone', '+123');
+        $m_u2 = clone $m_u;
+        $m_u2->set('name', 'John');
+        $m_u2->set('contact_phone', '+123');
 
-        $m_u->save();
-
-        $m_u->unload();
+        $m_u2->save();
 
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1]],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
 
-        $m_u->set('name', 'Joe');
-        $m_u->set('contact_phone', '+321');
-        $m_u->save();
+        $m_u2 = clone $m_u;
+        $m_u2->set('name', 'Joe');
+        $m_u2->set('contact_phone', '+321');
+        $m_u2->save();
 
         $this->assertEquals([
             'user' => [
@@ -99,38 +101,38 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
     }
 
     public function testJoinSaving2()
     {
-        $a = [
+        $db = new Persistence\Sql($this->db->connection);
+        $m_u = new Model($db, 'user');
+        $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
             ], 'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
-            ], ];
-
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, 'user');
-        $this->setDb($a);
+            ],
+        ]);
         $m_u->addField('name');
         $j = $m_u->join('contact.test_id');
         $j->addFields(['contact_phone']);
 
-        $m_u->set('name', 'John');
-        $m_u->set('contact_phone', '+123');
-
-        $m_u->save();
+        $m_u2 = clone $m_u;
+        $m_u2->set('name', 'John');
+        $m_u2->set('contact_phone', '+123');
+        $m_u2->save();
 
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
 
-        $m_u->unload();
-        $m_u->set('name', 'Peter');
-        $m_u->save();
+        $m_u2->unload();
+        $m_u2 = clone $m_u;
+        $m_u2->set('name', 'Peter');
+        $m_u2->save();
         $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -139,13 +141,19 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'test_id' => 2, 'contact_phone' => null],
             ],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
 
         $this->db->connection->dsql()->table('contact')->where('id', 2)->delete();
-        $m_u->unload();
-        $m_u->set('name', 'Sue');
-        $m_u->set('contact_phone', '+444');
-        $m_u->save();
+
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) { // TODO
+            $this->markTestIncomplete('TODO - for some reasons, result below has one different key');
+        }
+
+        $m_u2->unload();
+        $m_u2 = clone $m_u;
+        $m_u2->set('name', 'Sue');
+        $m_u2->set('contact_phone', '+444');
+        $m_u2->save();
         $this->assertEquals([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -155,25 +163,24 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123'],
                 3 => ['id' => 3, 'test_id' => 3, 'contact_phone' => '+444'],
             ],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
     }
 
     public function testJoinSaving3()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
-        $a = [
+        $db = new Persistence\Sql($this->db->connection);
+        $m_u = new Model($db, 'user');
+        $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'test_id' => 0],
             ], 'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123'],
-            ], ];
-
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, 'user');
-        $this->setDb($a);
+            ],
+        ]);
 
         $m_u->addField('name');
         $j = $m_u->join('contact', 'test_id');
@@ -187,12 +194,12 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'test_id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
     }
 
     public function testJoinLoading()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -200,9 +207,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ];
-
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, 'user');
@@ -210,30 +216,29 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u->load(1);
-
+        $m_u2 = (clone $m_u)->load(1);
         $this->assertEquals([
             'name' => 'John', 'contact_id' => 1, 'contact_phone' => '+123', 'id' => 1,
-        ], $m_u->get());
+        ], $m_u2->get());
 
-        $m_u->load(3);
+        $m_u2 = (clone $m_u)->load(3);
         $this->assertEquals([
             'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321', 'id' => 3,
-        ], $m_u->get());
+        ], $m_u2->get());
 
-        $m_u->tryLoad(4);
+        $m_u2 = (clone $m_u)->tryLoad(4);
         $this->assertEquals([
             'name' => null, 'contact_id' => null, 'contact_phone' => null, 'id' => null,
-        ], $m_u->get());
+        ], $m_u2->get());
     }
 
     public function testJoinUpdate()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -241,9 +246,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
             ], 'contact' => [
                 1 => ['id' => 1, 'contact_phone' => '+123'],
                 2 => ['id' => 2, 'contact_phone' => '+321'],
-            ], ];
-
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, 'user');
@@ -252,10 +256,10 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u->load(1);
-        $m_u->set('name', 'John 2');
-        $m_u->set('contact_phone', '+555');
-        $m_u->save();
+        $m_u2 = (clone $m_u)->load(1);
+        $m_u2->set('name', 'John 2');
+        $m_u2->set('contact_phone', '+555');
+        $m_u2->save();
 
         $this->assertEquals(
             [
@@ -266,16 +270,17 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 ], 'contact' => [
                     1 => ['id' => 1, 'contact_phone' => '+555'],
                     2 => ['id' => 2, 'contact_phone' => '+321'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
 
-        $m_u->load(1);
-        $m_u->set('name', 'XX');
-        $m_u->set('contact_phone', '+999');
-        $m_u->load(3);
-        $m_u->set('name', 'XX');
-        $m_u->save();
+        $m_u2 = (clone $m_u)->load(1);
+        $m_u2->set('name', 'XX');
+        $m_u2->set('contact_phone', '+999');
+        $m_u2 = (clone $m_u)->load(3);
+        $m_u2->set('name', 'XX');
+        $m_u2->save();
 
         $this->assertEquals(
             [
@@ -286,12 +291,13 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 ], 'contact' => [
                     1 => ['id' => 1, 'contact_phone' => '+555'],
                     2 => ['id' => 2, 'contact_phone' => '+321'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
 
-        $m_u->set('contact_phone', '+999');
-        $m_u->save();
+        $m_u2->set('contact_phone', '+999');
+        $m_u2->save();
 
         $this->assertEquals(
             [
@@ -302,14 +308,15 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 ], 'contact' => [
                     1 => ['id' => 1, 'contact_phone' => '+555'],
                     2 => ['id' => 2, 'contact_phone' => '+999'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
 
-        $m_u->tryLoad(4);
-        $m_u->set('name', 'YYY');
-        $m_u->set('contact_phone', '+777');
-        $m_u->save();
+        $m_u2 = (clone $m_u)->tryLoad(4);
+        $m_u2->set('name', 'YYY');
+        $m_u2->set('contact_phone', '+777');
+        $m_u2->save();
 
         $this->assertEquals(
             [
@@ -322,14 +329,15 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                     1 => ['id' => 1, 'contact_phone' => '+555'],
                     2 => ['id' => 2, 'contact_phone' => '+999'],
                     3 => ['id' => 3, 'contact_phone' => '+777'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
     }
 
     public function testJoinDelete()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
                 2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
@@ -339,8 +347,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'contact_phone' => '+555'],
                 2 => ['id' => 2, 'contact_phone' => '+999'],
                 3 => ['id' => 3, 'contact_phone' => '+777'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, 'user');
@@ -361,28 +369,28 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 ], 'contact' => [
                     2 => ['id' => 2, 'contact_phone' => '+999'],
                     3 => ['id' => 3, 'contact_phone' => '+777'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
     }
 
     public function testDoubleSaveHook()
     {
-        $a = [
+        $db = new Persistence\Sql($this->db->connection);
+        $m_u = new Model($db, 'user');
+        $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
             ], 'contact' => [
                 '_' => ['id' => 1, 'contact_phone' => '+123', 'test_id' => 0],
-            ], ];
-
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, 'user');
-        $this->setDb($a);
+            ],
+        ]);
         $m_u->addField('name');
         $j = $m_u->join('contact.test_id');
         $j->addField('contact_phone');
 
-        $m_u->onHook(Model::HOOK_AFTER_SAVE, function ($m) {
+        $m_u->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
             if ($m->get('contact_phone') !== '+123') {
                 $m->set('contact_phone', '+123');
                 $m->save();
@@ -395,16 +403,16 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals([
             'user' => [1 => ['id' => 1, 'name' => 'John']],
             'contact' => [1 => ['id' => 1, 'test_id' => 1, 'contact_phone' => '+123']],
-        ], $this->getDb('user,contact'));
+        ], $this->getDb(['user', 'contact']));
     }
 
     public function testDoubleJoin()
     {
-        if ($this->driverType === 'pgsql') {
-            $this->markTestIncomplete('This test is not supported on PostgreSQL');
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+            $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
-        $a = [
+        $this->setDb([
             'user' => [
                 10 => ['id' => 10, 'name' => 'John 2', 'contact_id' => 100],
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
@@ -418,8 +426,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, 'user');
@@ -430,21 +438,20 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $j_country = $j_contact->join('country');
         $j_country->addField('country_name', ['actual' => 'name']);
 
-        $m_u->load(10);
-        $m_u->delete();
+        $m_u2 = (clone $m_u)->load(10);
+        $m_u2->delete();
 
-        $m_u->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u->id);
-        $m_u->set('country_name', 'USA');
-        $m_u->save();
+        $m_u2 = (clone $m_u)->loadBy('country_name', 'US');
+        $this->assertEquals(30, $m_u2->getId());
+        $m_u2->set('country_name', 'USA');
+        $m_u2->save();
 
-        $m_u->tryLoad(40);
-        $this->assertFalse($m_u->loaded());
+        $m_u2 = (clone $m_u)->tryLoad(40);
+        $this->assertFalse($m_u2->loaded());
 
-        $this->assertSame($m_u->getField('country_id')->join, $m_u->getField('contact_phone')->join);
+        $this->assertSame($m_u2->getField('country_id')->getJoin(), $m_u2->getField('contact_phone')->getJoin());
 
-        $m_u->unload();
-        $m_u->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
+        (clone $m_u)->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
         $this->assertEquals(
             [
@@ -461,14 +468,15 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                     2 => ['id' => 2, 'name' => 'USA'],
                     3 => ['id' => 3, 'name' => 'India'],
                     4 => ['id' => 4, 'name' => 'LV'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
     }
 
     public function testDoubleReverseJoin()
     {
-        $a = [
+        $this->setDb([
             'user' => [
                 10 => ['id' => 10, 'name' => 'John 2', 'contact_id' => 100],
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
@@ -482,8 +490,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
-            ], ];
-        $this->setDb($a);
+            ],
+        ]);
 
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, 'user');
@@ -494,11 +502,11 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
         $c = $j->join('country');
         $c->addFields([['country_name', ['actual' => 'name']]]);
 
-        $m_u->load(10);
-        $m_u->delete();
+        $m_u2 = (clone $m_u)->load(10);
+        $m_u2->delete();
 
         $m_u->loadBy('country_name', 'US');
-        $this->assertEquals(30, $m_u->id);
+        $this->assertEquals(30, $m_u->getId());
 
         $this->assertEquals(
             [
@@ -512,7 +520,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 ], 'country' => [
                     2 => ['id' => 2, 'name' => 'US'],
                     3 => ['id' => 3, 'name' => 'India'],
-                ], ],
+                ],
+            ],
             $this->getDb()
         );
     }
@@ -522,7 +531,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
      */
     public function testJoinHasOneHasMany()
     {
-        $a = [
+        $db = new Persistence\Sql($this->db->connection);
+        $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 10],
                 2 => ['id' => 2, 'name' => 'Jane', 'contact_id' => 11],
@@ -540,10 +550,8 @@ class JoinSqlTest extends \atk4\schema\PhpunitTestCase
                 40 => ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
                 41 => ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
                 42 => ['id' => 42, 'contact_id' => 11, 'address' => 'jane@foo.net'],
-            ], ];
-
-        $db = new Persistence\Sql($this->db->connection);
-        $this->setDb($a);
+            ],
+        ]);
 
         // main user model joined to contact table
         $m_u = new Model($db, 'user');

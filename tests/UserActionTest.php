@@ -31,8 +31,9 @@ trait UaReminder
 class UaClient extends Model
 {
     use UaReminder;
+    public $caption = 'UaClient';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
@@ -123,7 +124,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $client->getUserAction('also_backup')->preview = 'backup_clients';
         $this->assertSame('backs up all clients', $client->getUserAction('also_backup')->preview());
 
-        $this->assertSame('Will execute Also Backup', $client->getUserAction('also_backup')->getDescription());
+        $this->assertSame('Also Backup UaClient', $client->getUserAction('also_backup')->getDescription());
     }
 
     public function testPreviewFail()
@@ -205,21 +206,15 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
     public function testFields()
     {
-        try {
-            $client = new UaClient($this->pers);
-            $a = $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
+        $client = new UaClient($this->pers);
+        $a = $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
 
-            $client->load(1);
+        $client->load(1);
 
-            $this->assertNotSame('Peter', $client->get('name'));
-            $client->set('name', 'Peter');
-            $a->execute();
-            $this->assertSame('Peter', $client->get('name'));
-        } catch (Exception $e) {
-            echo $e->getColorfulText();
-
-            throw $e;
-        }
+        $this->assertNotSame('Peter', $client->get('name'));
+        $client->set('name', 'Peter');
+        $a->execute();
+        $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testFieldsTooDirty1()
@@ -260,9 +255,14 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
         $this->assertFalse($action->getConfirmation());
 
         $action->confirmation = true;
-        $this->assertSame('Are you sure you wish to Test John?', $action->getConfirmation());
+        $this->assertSame('Are you sure you wish to execute Test using John?', $action->getConfirmation());
 
         $action->confirmation = 'Are you sure?';
         $this->assertSame('Are you sure?', $action->getConfirmation());
+
+        $action->confirmation = function ($action) {
+            return 'Proceed with Test: ' . $action->getModel()->getTitle();
+        };
+        $this->assertSame('Proceed with Test: John', $action->getConfirmation());
     }
 }

@@ -202,7 +202,7 @@ behavior.
 Code to declare fields::
 
     class Model_Order extends \atk4\data\Model {
-        public function init(): void {
+        protected function init(): void {
             parent::init();
 
             $this->addField('description');
@@ -233,7 +233,7 @@ work from a specific record, but more on that later.
 Code (add inside `init()`)::
 
     class Model_Client extends Model_User {
-        public function init(): void {
+        protected function init(): void {
             parent::init();
 
             $this->hasMany('Order', new Model_Order());
@@ -241,7 +241,7 @@ Code (add inside `init()`)::
     }
 
     class Model_Order extends \atk4\data\Model {
-        public function init(): void {
+        protected function init(): void {
             parent::init();
 
             $this->hasOne('Client', new Model_Client());
@@ -312,7 +312,7 @@ This is, however, a good point for you to write the initial batch of the code.
 Code::
 
     class Model_User extends \atk4\data\Model {
-        public function init(): void {
+        protected function init(): void {
             parent::init();
 
             $this->addField('password');
@@ -332,16 +332,16 @@ Hooks can help you perform operations when object is being persisted::
 
 
     class Model_User extends \atk4\data\Model {
-        public function init(): void {
+        protected function init(): void {
             parent::init();
 
             // addField() declaration
             // addExpression('is_password_expired')
 
-            $this->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
-                if ($m->isDirty('password')) {
-                    $m->set('password', encrypt_password($m->get('password')));
-                    $m->set('password_change_date', $m->expr('now()'));
+            $this->onHookShort(Model::HOOK_BEFORE_SAVE, function() {
+                if ($this->isDirty('password')) {
+                    $this->set('password', encrypt_password($this->get('password')));
+                    $this->set('password_change_date', $this->expr('now()'));
                 }
             });
         }

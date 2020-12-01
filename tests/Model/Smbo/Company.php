@@ -10,7 +10,7 @@ class Company extends Model
 {
     public $table = 'system';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 

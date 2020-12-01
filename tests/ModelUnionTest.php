@@ -66,29 +66,27 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
     {
         $transaction = $this->subtractInvoiceTransaction;
 
-        $e = $this->getEscapeChar();
-        $this->assertSame(str_replace('"', $e, '"amount"'), $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount')])->render());
-        $this->assertSame(str_replace('"', $e, '-"amount"'), $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount', '-[]')])->render());
-        $this->assertSame(str_replace('"', $e, '-NULL'), $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'blah', '-[]')])->render());
+        $this->assertSameSql('"amount"', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount')])->render());
+        $this->assertSameSql('-"amount"', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount', '-[]')])->render());
+        $this->assertSameSql('-NULL', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'blah', '-[]')])->render());
     }
 
     public function testNestedQuery1()
     {
         $transaction = $this->transaction;
 
-        $e = $this->getEscapeChar();
-        $this->assertSame(
-            str_replace('"', $e, '(select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "derivedTable"'),
+        $this->assertSameSql(
+            '(select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "derivedTable"',
             $transaction->getSubQuery(['name'])->render()
         );
 
-        $this->assertSame(
-            str_replace('"', $e, '(select "name" "name","amount" "amount" from "invoice" UNION ALL select "name" "name","amount" "amount" from "payment") "derivedTable"'),
+        $this->assertSameSql(
+            '(select "name" "name","amount" "amount" from "invoice" UNION ALL select "name" "name","amount" "amount" from "payment") "derivedTable"',
             $transaction->getSubQuery(['name', 'amount'])->render()
         );
 
-        $this->assertSame(
-            str_replace('"', $e, '(select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "derivedTable"'),
+        $this->assertSameSql(
+            '(select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "derivedTable"',
             $transaction->getSubQuery(['name'])->render()
         );
     }
@@ -102,9 +100,8 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
         $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
         $transaction->addField('type');
 
-        $e = $this->getEscapeChar();
-        $this->assertSame(
-            str_replace('"', $e, '(select (\'invoice\') "type","amount" "amount" from "invoice" UNION ALL select NULL "type","amount" "amount" from "payment") "derivedTable"'),
+        $this->assertSameSql(
+            '(select (\'invoice\') "type","amount" "amount" from "invoice" UNION ALL select NULL "type","amount" "amount" from "payment") "derivedTable"',
             $transaction->getSubQuery(['type', 'amount'])->render()
         );
     }
@@ -113,31 +110,30 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
     {
         $transaction = $this->transaction;
 
-        $e = $this->getEscapeChar();
-        $this->assertSame(
-            str_replace('"', $e, 'select "name","amount" from (select "name" "name","amount" "amount" from "invoice" UNION ALL select "name" "name","amount" "amount" from "payment") "derivedTable"'),
+        $this->assertSameSql(
+            'select "name","amount" from (select "name" "name","amount" "amount" from "invoice" UNION ALL select "name" "name","amount" "amount" from "payment") "derivedTable"',
             $transaction->action('select')->render()
         );
 
-        $this->assertSame(
-            str_replace('"', $e, 'select "name" from (select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "derivedTable"'),
+        $this->assertSameSql(
+            'select "name" from (select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "derivedTable"',
             $transaction->action('field', ['name'])->render()
         );
 
-        $this->assertSame(
-            str_replace('"', $e, 'select sum("cnt") from (select count(*) "cnt" from "invoice" UNION ALL select count(*) "cnt" from "payment") "derivedTable"'),
+        $this->assertSameSql(
+            'select sum("cnt") from (select count(*) "cnt" from "invoice" UNION ALL select count(*) "cnt" from "payment") "derivedTable"',
             $transaction->action('count')->render()
         );
 
-        $this->assertSame(
-            str_replace('"', $e, 'select sum("val") from (select sum("amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "derivedTable"'),
+        $this->assertSameSql(
+            'select sum("val") from (select sum("amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "derivedTable"',
             $transaction->action('fx', ['sum', 'amount'])->render()
         );
 
         $transaction = $this->subtractInvoiceTransaction;
 
-        $this->assertSame(
-            str_replace('"', $e, 'select sum("val") from (select sum(-"amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "derivedTable"'),
+        $this->assertSameSql(
+            'select sum("val") from (select sum(-"amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "derivedTable"',
             $transaction->action('fx', ['sum', 'amount'])->render()
         );
     }
@@ -155,9 +151,9 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
     public function testSubAction1()
     {
         $transaction = $this->subtractInvoiceTransaction;
-        $e = $this->getEscapeChar();
-        $this->assertSame(
-            str_replace('"', $e, '(select sum(-"amount") from "invoice" UNION ALL select sum("amount") from "payment") "derivedTable"'),
+
+        $this->assertSameSql(
+            '(select sum(-"amount") from "invoice" UNION ALL select sum("amount") from "payment") "derivedTable"',
             $transaction->getSubAction('fx', ['sum', 'amount'])->render()
         );
     }
@@ -223,9 +219,8 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
         $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'money']]);
 
-        $e = $this->getEscapeChar();
-        $this->assertSame(
-            str_replace('"', $e, '(select "name" "name",sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable"'),
+        $this->assertSameSql(
+            '(select "name" "name",sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable"',
             $transaction->getSubQuery(['name', 'amount'])->render()
         );
 
@@ -233,9 +228,8 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
         $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'money']]);
 
-        $e = $this->getEscapeChar();
-        $this->assertSame(
-            str_replace('"', $e, '(select "name" "name",sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable"'),
+        $this->assertSameSql(
+            '(select "name" "name",sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable"',
             $transaction->getSubQuery(['name', 'amount'])->render()
         );
     }
@@ -246,9 +240,8 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
         $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'money']]);
 
-        $e = $this->getEscapeChar();
-        $this->assertSame(
-            str_replace('"', $e, 'select "name",sum("amount") "amount" from (select "name" "name",sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"'),
+        $this->assertSameSql(
+            'select "name",sum("amount") "amount" from (select "name" "name",sum("amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"',
             $transaction->action('select', [['name', 'amount']])->render()
         );
 
@@ -256,9 +249,8 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
         $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'money']]);
 
-        $e = $this->getEscapeChar();
-        $this->assertSame(
-            str_replace('"', $e, 'select "name",sum("amount") "amount" from (select "name" "name",sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"'),
+        $this->assertSameSql(
+            'select "name",sum("amount") "amount" from (select "name" "name",sum(-"amount") "amount" from "invoice" group by "name" UNION ALL select "name" "name",sum("amount") "amount" from "payment" group by "name") "derivedTable" group by "name"',
             $transaction->action('select', [['name', 'amount']])->render()
         );
     }
@@ -332,10 +324,9 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
         $this->assertSame(29.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
-        $e = $this->getEscapeChar();
-        $this->assertSame(
-            str_replace('"', $e, 'select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = :a ' .
-            'UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "derivedTable"'),
+        $this->assertSameSql(
+            'select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = :a ' .
+            'UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "derivedTable"',
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()
         );
 
@@ -346,10 +337,9 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
         $this->assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
         $this->assertSame(-9.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
 
-        $e = $this->getEscapeChar();
-        $this->assertSame(
-            str_replace('"', $e, 'select sum("val") from (select sum(-"amount") "val" from "invoice" where "client_id" = :a ' .
-                'UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "derivedTable"'),
+        $this->assertSameSql(
+            'select sum("val") from (select sum(-"amount") "val" from "invoice" where "client_id" = :a ' .
+                'UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b) "derivedTable"',
             $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()
         );
     }

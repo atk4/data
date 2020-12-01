@@ -58,10 +58,15 @@ class Scope extends Scope\AbstractScope
     {
         foreach ($this->elements as $k => $nestedCondition) {
             $this->elements[$k] = clone $nestedCondition;
-            $this->elements[$k]->owner = $this;
+            if ($this->elements[$k]->issetOwner()) {
+                $this->elements[$k]->unsetOwner();
+            }
+            $this->elements[$k]->setOwner($this);
             $this->elements[$k]->short_name = $nestedCondition->short_name;
         }
-        $this->owner = null;
+        if ($this->issetOwner()) {
+            $this->unsetOwner();
+        }
         $this->short_name = null;
     }
 
@@ -165,7 +170,7 @@ class Scope extends Scope\AbstractScope
      */
     public function negate()
     {
-        $this->junction = $this->junction == self::OR ? self::AND : self::OR;
+        $this->junction = $this->junction === self::OR ? self::AND : self::OR;
 
         foreach ($this->elements as $nestedCondition) {
             $nestedCondition->negate();

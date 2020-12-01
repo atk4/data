@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
+use atk4\core\Factory;
+
 /**
  * Reference implements a link between one model and another. The basic components for
  * a reference is ability to generate the destination model, which is returned through
@@ -11,7 +13,7 @@ namespace atk4\data;
  *
  * It's possible to extend the basic reference with more meaningful references.
  *
- * @property Model $owner definition of our model
+ * @method Model getOwner() our model
  */
 class Reference
 {
@@ -20,7 +22,6 @@ class Reference
     }
     use \atk4\core\TrackableTrait;
     use \atk4\core\DiContainerTrait;
-    use \atk4\core\FactoryTrait;
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -74,20 +75,54 @@ class Reference
      */
     public $caption;
 
-    /**
-     * Default constructor. Will copy argument into properties.
-     *
-     * @param string $link a short_name component
-     */
-    public function __construct($link)
+    public function __construct(string $link)
     {
         $this->link = $link;
+    }
+
+    public function getTheirFieldName(): string
+    {
+        return $this->their_field ?? $this->model->id_field;
+    }
+
+    protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $model->onHookDynamic(
+            $spot,
+            static function (Model $model) use ($name) {
+                return $model->getElement($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
+    }
+
+    protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        if ($model->ownerReference !== null && $model->ownerReference !== $this) {
+            throw new Exception('Model owner reference unexpectedly already set');
+        }
+        $model->ownerReference = $this;
+        $getThisFx = static function (Model $model) {
+            return $model->ownerReference;
+        };
+
+        return $model->onHookDynamic(
+            $spot,
+            $getThisFx,
+            $fx,
+            $args,
+            $priority
+        );
     }
 
     /**
      * Initialization.
      */
-    public function init(): void
+    protected function init(): void
     {
         $this->_init();
 
@@ -104,26 +139,16 @@ class Reference
 
     public function getOurModel(): Model
     {
-        return $this->owner;
+        return $this->getOwner();
     }
 
     /**
-     * @deprecated use getTheirModel instead - will be removed in dec-2020
-     */
-    public function getModel($defaults = []): Model
-    {
-        'trigger_error'('Method Reference::getModel is deprecated. Use Model::getTheirModel instead', E_USER_DEPRECATED);
-
-        return $this->getTheirModel($defaults);
-    }
-
-    /**
-     * Returns destination model that is linked through this reference. Will apply
+     * Create destination model that is linked through this reference. Will apply
      * necessary conditions.
      *
-     * @param array $defaults Properties
+     * IMPORTANT: the returned model must be a fresh clone or freshly built from a seed
      */
-    public function getTheirModel($defaults = []): Model
+    public function createTheirModel(array $defaults = []): Model
     {
         // set table_alias
         $defaults['table_alias'] = $defaults['table_alias'] ?? $this->table_alias;
@@ -136,27 +161,38 @@ class Reference
                 // if model is set, then use clone of this model
                 $theirModel = clone $this->model;
             }
-
-            return $this->addToPersistence($theirModel, $defaults);
-        }
-
-        // add model from seed
-        if (is_array($this->model)) {
-            $modelDefaults = $this->model;
-            $theirModelSeed = [$modelDefaults[0]];
-
-            unset($modelDefaults[0]);
-
-            $defaults = array_merge($modelDefaults, $defaults);
-        } elseif (is_string($this->model)) {
-            $theirModelSeed = [$this->model];
         } else {
-            $theirModelSeed = $this->model;
-        }
+            // add model from seed
+            if (is_array($this->model)) {
+                $modelDefaults = $this->model;
+                $theirModelSeed = [$modelDefaults[0]];
 
-        $theirModel = $this->factory($theirModelSeed, $defaults);
+                unset($modelDefaults[0]);
+
+                $defaults = array_merge($modelDefaults, $defaults);
+            } else {
+                $theirModelSeed = [$this->model];
+            }
+
+            $theirModel = Factory::factory($theirModelSeed, $defaults);
+        }
 
         return $this->addToPersistence($theirModel, $defaults);
+    }
+
+    protected function getOurField(): Field
+    {
+        return $this->getOurModel()->getField($this->getOurFieldName());
+    }
+
+    protected function getOurFieldName(): string
+    {
+        return $this->our_field ?: $this->getOurModel()->id_field;
+    }
+
+    protected function getOurFieldValue()
+    {
+        return $this->getOurField()->get();
     }
 
     protected function initTableAlias(): void
@@ -175,32 +211,27 @@ class Reference
 
     /**
      * Adds model to persistence.
-     *
-     * @param Model $model
-     * @param array $defaults
      */
-    protected function addToPersistence($model, $defaults = []): Model
+    protected function addToPersistence(Model $theirModel, array $defaults = []): Model
     {
-        if (!$model->persistence && $persistence = $this->getDefaultPersistence($model)) {
-            $persistence->add($model, $defaults);
+        if (!$theirModel->persistence && $persistence = $this->getDefaultPersistence($theirModel)) {
+            $persistence->add($theirModel, $defaults);
         }
 
         // set model caption
         if ($this->caption !== null) {
-            $model->caption = $this->caption;
+            $theirModel->caption = $this->caption;
         }
 
-        return $model;
+        return $theirModel;
     }
 
     /**
-     * Returns default persistence.
-     *
-     * @param Model $model Referenced model
+     * Returns default persistence for theirModel.
      *
      * @return Persistence|false
      */
-    protected function getDefaultPersistence($model)
+    protected function getDefaultPersistence(Model $theirModel)
     {
         $ourModel = $this->getOurModel();
 
@@ -217,24 +248,20 @@ class Reference
     /**
      * Returns referenced model without any extra conditions. However other
      * relationship types may override this to imply conditions.
-     *
-     * @param array $defaults Properties
      */
-    public function ref($defaults = []): Model
+    public function ref(array $defaults = []): Model
     {
-        return $this->getTheirModel($defaults);
+        return $this->createTheirModel($defaults);
     }
 
     /**
      * Returns referenced model without any extra conditions. Ever when extended
      * must always respond with Model that does not look into current record
      * or scope.
-     *
-     * @param array $defaults Properties
      */
-    public function refModel($defaults = []): Model
+    public function refModel(array $defaults = []): Model
     {
-        return $this->getTheirModel($defaults);
+        return $this->createTheirModel($defaults);
     }
 
     // {{{ Debug Methods

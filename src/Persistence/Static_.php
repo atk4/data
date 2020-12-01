@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace atk4\data\Persistence;
 
-use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
@@ -27,7 +26,7 @@ class Static_ extends Array_
     /**
      * Populate the following fields for the model.
      *
-     * @var array
+     * @var string[]
      */
     public $fieldsForModel = [];
 
@@ -36,17 +35,14 @@ class Static_ extends Array_
      *
      * @param array $data Static data in one of supported formats
      */
-    public function __construct($data = null)
+    public function __construct(array $data = null)
     {
-        if (!is_array($data)) {
-            throw (new Exception('Static data should be array of strings or array of hashes'))
-                ->addMoreInfo('data', $data);
-        }
-
         // chomp off first row, we will use it to deduct fields
         $row1 = reset($data);
 
-        $this->onHook(self::HOOK_AFTER_ADD, \Closure::fromCallable([$this, 'afterAdd']));
+        $this->onHookShort(self::HOOK_AFTER_ADD, function (...$args) {
+            $this->afterAdd(...$args);
+        });
 
         if (!is_array($row1)) {
             // convert array of strings into array of hashes
@@ -136,14 +132,13 @@ class Static_ extends Array_
 
     /**
      * Automatically adds missing model fields.
-     * Called from AfterAdd hook.
      *
-     * @param Static_ $persistence
+     * Called by HOOK_AFTER_ADD hook.
      */
-    public function afterAdd(self $persistence, Model $model)
+    public function afterAdd(Model $model)
     {
-        if ($persistence->titleForModel) {
-            $model->title_field = $persistence->titleForModel;
+        if ($this->titleForModel) {
+            $model->title_field = $this->titleForModel;
         }
 
         foreach ($this->fieldsForModel as $field => $def) {

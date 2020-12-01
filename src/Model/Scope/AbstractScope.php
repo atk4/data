@@ -10,7 +10,7 @@ use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
- * @property Scope $owner
+ * @method Scope getOwner()
  */
 abstract class AbstractScope
 {
@@ -20,12 +20,11 @@ abstract class AbstractScope
     use TrackableTrait;
 
     /**
-     * Method is executed when the scope is added to parent scope using Scope::add
-     * $this->owner is the Scope object.
+     * Method is executed when the scope is added to parent scope using Scope::add().
      */
-    public function init(): void
+    protected function init(): void
     {
-        if (!$this->owner instanceof self) {
+        if (!$this->getOwner() instanceof self) {
             throw new Exception('Scope can only be added as element to scope');
         }
 
@@ -41,7 +40,7 @@ abstract class AbstractScope
      */
     public function getModel(): ?Model
     {
-        return $this->owner ? $this->owner->getModel() : null;
+        return $this->issetOwner() ? $this->getOwner()->getModel() : null;
     }
 
     /**

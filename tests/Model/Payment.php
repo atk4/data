@@ -10,7 +10,7 @@ class Payment extends Model
 {
     public $table = 'payment';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
         $this->addField('name');

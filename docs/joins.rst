@@ -1,9 +1,11 @@
 
 .. _Joins:
 
-================================
-Model from multiple joined table
-================================
+.. php:namespace:: atk4\data\Model
+
+=================================
+Model from multiple joined tables
+=================================
 
 .. php:class:: Join
 
@@ -236,11 +238,11 @@ Implementation Detail
 
 Joins are implemented like this:
 
-- all the fields that has 'join' property set will not be saved into default
+- all the fields that has 'joinName' property set will not be saved into default
   table by default driver
 - join will add either `beforeInsert` or `afterInsert` hook inside your model.
   When save is executed, it will execute additional query to update foreign table.
-- while $model->id stores the ID of the main table active record, $join->id
+- while $model->getId() stores the ID of the main table active record, $join->id
   stores ID of the foreign record and will be used when updating.
 - option 'delete_behaviour' is 'cascade' for strong joins and 'ignore' for weak
   joins, but you can set some other value. If you use "setnull" value and you
@@ -265,7 +267,7 @@ Implementation Details
 
 - although some SQL vendors allow update .. join .. syntax, this will not be
   used. That is done to ensure better compatibility.
-- when field has the 'join' option set, trying to convert this field into
+- when field has the 'joinName' option set, trying to convert this field into
   expression will prefix the field properly with the foreign table alias.
 - join will be added in all queries
 - strong join can potentially reduce your data-set as it exclude table rows

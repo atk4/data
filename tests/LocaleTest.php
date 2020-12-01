@@ -27,18 +27,17 @@ class LocaleTest extends AtkPhpunit\TestCase
 
     public function testLocaleIntegration()
     {
-        $a = [
+        $trans = Translator::instance();
+        $trans->setDefaultLocale('ru');
+
+        $p = new Persistence\Array_([
             'user' => [
                 1 => ['name' => 'John', 'surname' => 'Smith'],
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
-        ];
-
-        $trans = Translator::instance();
-        $trans->setDefaultLocale('ru');
+        ]);
 
         try {
-            $p = new Persistence\Array_($a);
             $m = new Model($p, 'user');
             $m->addField('name');
             $m->addField('surname');

@@ -143,7 +143,7 @@ class StaticPersistenceModel extends Model
 {
     public $title_field = 'foo';
 
-    public function init(): void
+    protected function init(): void
     {
         parent::init();
 
