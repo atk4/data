@@ -41,7 +41,7 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->save();
         $this->assertSame('foo@example.com', $m->get('email'));
 
-        // padding, spaceing etc removed
+        // padding, spacing etc removed
         $m->set('email', " \t " . 'foo@example.com ' . " \n ");
         $m->save();
         $this->assertSame('foo@example.com', $m->get('email'));
