@@ -241,7 +241,7 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
     }
 
 
-    public function test408()
+    public function testNeverSaveNeverPersist()
     {
         $this->setDb([
             'invoice' => [
