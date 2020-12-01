@@ -52,23 +52,6 @@ class FieldTypesTest extends \atk4\schema\PhpunitTestCase
         $m->set('email', 'qq');
     }
 
-    public function testMultipleEmailFields()
-    {
-        $m = new Model($this->pers);
-        $m->addFields([
-            'my_email' => [Field\Email::class],
-            'client_email' => [Field\Email::class],
-        ]);
-
-        $m->setMulti([
-            'my_email' => 'foo@example.com',
-            'client_email' => 'bar@example.com',
-        ]);
-        $m->save();
-        $this->assertSame('foo@example.com', $m->get('my_email'));
-        $this->assertSame('bar@example.com', $m->get('client_email'));
-    }
-
     public function testEmailMultipleValues()
     {
         $m = new Model($this->pers);
