@@ -9,6 +9,7 @@ use atk4\data\Model;
 use atk4\data\Persistence;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 // NOTE: This class should stay here in this namespace because other repos rely on it. For example, atk4\data tests

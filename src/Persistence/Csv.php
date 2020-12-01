@@ -366,23 +366,7 @@ class Csv extends Persistence
      */
     public function generateNewId(Model $model, string $table = null)
     {
-        if ($table === null) {
-            $table = $model->table;
-        }
-
-        $ids = array_keys($this->data[$table]);
-
-        $type = $model->getField($model->id_field)->type;
-
-        switch ($type) {
-            case 'integer':
-                return count($ids) === 0 ? 1 : (max($ids) + 1);
-            case 'string':
-                return uniqid();
-            default:
-                throw (new Exception('Unsupported id field type. Array supports type=integer or type=string only'))
-                    ->addMoreInfo('type', $type);
-        }
+        throw new Exception('Not implemented');
     }
 
     /**
