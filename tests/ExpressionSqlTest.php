@@ -240,7 +240,6 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
     }
 
-
     public function testNeverSaveNeverPersist()
     {
         $this->setDb([
