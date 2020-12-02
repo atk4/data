@@ -10,7 +10,7 @@ use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
- * @method Scope getOwner()
+ * @method Model\Scope getOwner()
  */
 abstract class AbstractScope
 {
@@ -65,8 +65,6 @@ abstract class AbstractScope
 
     /**
      * Convert the scope to human readable words when applied on $model.
-     *
-     * @return bool
      */
     abstract public function toWords(Model $model = null): string;
 

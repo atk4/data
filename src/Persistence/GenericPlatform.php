@@ -9,9 +9,6 @@ use Doctrine\DBAL\Platforms;
 
 class GenericPlatform extends Platforms\AbstractPlatform
 {
-    /**
-     * @return DbalException|\Doctrine\DBAL\DBALException DBALException iff for DBAL 2.x
-     */
     private function createNotSupportedException(): \Exception // DbalException once DBAL 2.x support is dropped
     {
         if (\atk4\dsql\Connection::isComposerDbal2x()) {

@@ -19,9 +19,6 @@ class Iterator
      */
     public $generator;
 
-    /**
-     * Iterator constructor.
-     */
     public function __construct(array $data)
     {
         $this->generator = new \ArrayIterator($data);
@@ -29,9 +26,6 @@ class Iterator
 
     /**
      * Applies FilterIterator making sure that values of $field equal to $value.
-     *
-     * @param string $field
-     * @param string $value
      *
      * @return $this
      */
