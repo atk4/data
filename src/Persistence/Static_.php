@@ -54,7 +54,9 @@ class Static_ extends Array_
             $this->titleForModel = 'name';
             $this->fieldsForModel = ['name' => []];
 
-            return parent::__construct($data);
+            parent::__construct($data);
+
+            return;
         }
 
         if (isset($row1['name'])) {

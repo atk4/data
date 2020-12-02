@@ -7,7 +7,7 @@ namespace atk4\data\tests;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -16,7 +16,7 @@ class WithTest extends \atk4\schema\PhpunitTestCase
 {
     public function testWith()
     {
-        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+        if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
             $this->markTestIncomplete('TODO - add WITH support for MSSQL');
         }
 

@@ -7,7 +7,7 @@ namespace atk4\data\tests;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -80,7 +80,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
      */
     public function testInsert()
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
@@ -93,7 +93,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
      */
     public function testSave1()
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
@@ -108,7 +108,7 @@ class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
      */
     public function testSave2()
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 

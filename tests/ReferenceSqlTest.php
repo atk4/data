@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace atk4\data\tests;
 
 use atk4\data\Model;
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 /**
  * @coversDefaultClass \atk4\data\Model
@@ -296,9 +296,9 @@ class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
 
     public function testOtherAggregates()
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL does not support "SUM(variable)" syntax');
-        } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+        } elseif ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
             $this->markTestIncomplete('MSSQL does not support "LENGTH(variable)" function');
         }
 
