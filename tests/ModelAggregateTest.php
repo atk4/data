@@ -122,7 +122,7 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
     public function testGroupSelectCondition()
     {
         $aggregate = clone $this->aggregate;
-        $aggregate->master_model->addCondition('name', 'chair purchase');
+        $aggregate->baseModel->addCondition('name', 'chair purchase');
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],

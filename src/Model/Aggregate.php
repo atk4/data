@@ -45,6 +45,12 @@ class Aggregate extends Model
      */
     public const HOOK_AFTER_GROUP_SELECT = self::HOOK_INIT_SELECT_QUERY;
 
+    /** @var array */
+    protected $systemFields = [];
+    
+    /** @var Model */
+    public $baseModel;
+
     /**
      * Aggregate model should always be read-only.
      *
@@ -59,28 +65,22 @@ class Aggregate extends Model
      */
     public $id_field;
 
-    /** @var Model */
-    public $master_model;
-
     /** @var array */
     public $group = [];
 
     /** @var array */
     public $aggregate = [];
 
-    /** @var array */
-    public $system_fields = [];
-
     /**
      * Constructor.
      */
-    public function __construct(Model $model, array $defaults = [])
+    public function __construct(Model $baseModel, array $defaults = [])
     {
-        $this->master_model = $model;
-        $this->table = $model->table;
+        $this->baseModel = $baseModel;
+        $this->table = $baseModel->table;
 
         //$this->_default_class_addExpression = $model->_default_class_addExpression;
-        parent::__construct($model->persistence, $defaults);
+        parent::__construct($baseModel->persistence, $defaults);
 
         // always use table prefixes for this model
         $this->persistence_data['use_table_prefixes'] = true;
@@ -99,7 +99,7 @@ class Aggregate extends Model
         $this->group = $fields;
         $this->aggregate = $aggregate;
 
-        $this->system_fields = array_unique($this->system_fields + $fields);
+        $this->systemFields = array_unique($this->systemFields + $fields);
         foreach ($fields as $fieldName) {
             $this->addField($fieldName);
         }
@@ -109,11 +109,11 @@ class Aggregate extends Model
 
             $args = [];
             // if field originally defined in the parent model, then it can be used as part of expression
-            if ($this->master_model->hasField($fieldName)) {
-                $args = [$this->master_model->getField($fieldName)]; // @TODO Probably need cloning here
+            if ($this->baseModel->hasField($fieldName)) {
+                $args = [$this->baseModel->getField($fieldName)]; // @TODO Probably need cloning here
             }
 
-            $seed['expr'] = $this->master_model->expr($seed[0] ?? $seed['expr'], $args);
+            $seed['expr'] = $this->baseModel->expr($seed[0] ?? $seed['expr'], $args);
 
             // now add the expressions here
             $this->addExpression($fieldName, $seed);
@@ -129,7 +129,7 @@ class Aggregate extends Model
      */
     public function getRef($link): Reference
     {
-        return $this->master_model->getRef($link);
+        return $this->baseModel->getRef($link);
     }
 
     /**
@@ -166,8 +166,8 @@ class Aggregate extends Model
             return parent::addField($name, $seed);
         }
 
-        if ($this->master_model->hasField($name)) {
-            $field = clone $this->master_model->getField($name);
+        if ($this->baseModel->hasField($name)) {
+            $field = clone $this->baseModel->getField($name);
             $field->unsetOwner(); // will be new owner
         } else {
             $field = null;
@@ -193,12 +193,12 @@ class Aggregate extends Model
      */
     public function initQueryGrouping(Query $query)
     {
-        // use table alias of master model
-        $this->table_alias = $this->master_model->table_alias;
+        // use table alias of base model
+        $this->table_alias = $this->baseModel->table_alias;
 
         foreach ($this->group as $field) {
-            if ($this->master_model->hasField($field)) {
-                $expression = $this->master_model->getField($field);
+            if ($this->baseModel->hasField($field)) {
+                $expression = $this->baseModel->getField($field);
             } else {
                 $expression = $this->expr($field);
             }
@@ -219,7 +219,7 @@ class Aggregate extends Model
      */
     public function setLimit(int $count = null, int $offset = 0)
     {
-        $this->master_model->setLimit($count, $offset);
+        $this->baseModel->setLimit($count, $offset);
 
         return $this;
     }
@@ -236,7 +236,7 @@ class Aggregate extends Model
      */
     public function setOrder($field, string $desc = null)
     {
-        $this->master_model->setOrder($field, $desc);
+        $this->baseModel->setOrder($field, $desc);
 
         return $this;
     }
@@ -251,14 +251,13 @@ class Aggregate extends Model
      */
     public function action($mode, $args = [])
     {
-        $subquery = null;
         switch ($mode) {
             case 'select':
                 $fields = $this->only_fields ?: array_keys($this->getFields());
 
                 // select but no need your fields
-                $query = $this->master_model->action($mode, [false]);
-                $this->initQueryFields($query, array_unique($fields + $this->system_fields));
+                $query = $this->baseModel->action($mode, [false]);
+                $this->initQueryFields($query, array_unique($fields + $this->systemFields));
 
                 $this->initQueryGrouping($query);
                 $this->initQueryConditions($query);
@@ -267,7 +266,7 @@ class Aggregate extends Model
 
                 return $query;
             case 'count':
-                $query = $this->master_model->action($mode, $args);
+                $query = $this->baseModel->action($mode, $args);
 
                 $query->reset('field')->field($this->expr('1'));
                 $this->initQueryGrouping($query);
@@ -276,37 +275,16 @@ class Aggregate extends Model
 
                 return $query->dsql()->field('count(*)')->table($this->expr('([]) der', [$query]));
             case 'field':
-                if (!isset($args[0])) {
-                    throw (new Exception('This action requires one argument with field name'))
-                        ->addMoreInfo('mode', $mode);
-                }
-
-                if (!is_string($args[0])) {
-                    throw (new Exception('action "field" only support string fields'))
-                        ->addMoreInfo('field', $args[0]);
-                }
-
-                $subquery = $this->getSubQuery([$args[0]]);
-
-                break;
             case 'fx':
-                $subquery = $this->getSubAction('fx', [$args[0], $args[1], 'alias' => 'val']);
-
-                $args = [$args[0], $this->expr('val')];
-
-                break;
+                return parent::action($mode, $args);
             default:
                 throw (new Exception('Aggregate model does not support this action'))
                     ->addMoreInfo('mode', $mode);
         }
-
-        // Substitute FROM table with our subquery expression
-        return parent::action($mode, $args)->reset('table')->table($subquery);
     }
 
     /**
-     * Our own way applying conditions, where we use "having" for
-     * fields.
+     * Our own way applying conditions, where we use "having" for fields.
      */
     public function initQueryConditions(Query $query, Model\Scope\AbstractScope $condition = null): void
     {
@@ -344,7 +322,7 @@ class Aggregate extends Model
         return array_merge(parent::__debugInfo(), [
             'group' => $this->group,
             'aggregate' => $this->aggregate,
-            'master_model' => $this->master_model->__debugInfo(),
+            'baseModel' => $this->baseModel->__debugInfo(),
         ]);
     }
 
