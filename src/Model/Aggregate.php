@@ -94,7 +94,7 @@ class Aggregate extends Model
      *
      * @return $this
      */
-    public function groupBy(array $fields, array $aggregate = [])
+    public function groupBy(array $fields, array $aggregate = []): Model
     {
         $this->group = $fields;
         $this->aggregate = $aggregate;
@@ -142,7 +142,7 @@ class Aggregate extends Model
      *
      * $model->withAggregateField('xyz')->groupBy(['abc']);
      */
-    public function withAggregateField($name, $seed = [])
+    public function withAggregateField($name, $seed = []): Model
     {
         static::addField(...func_get_args());
 

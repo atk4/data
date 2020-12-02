@@ -321,7 +321,7 @@ class Union extends Model
      *
      * @return $this
      */
-    public function groupBy($group, array $aggregate = [])
+    public function groupBy($group, array $aggregate = []): Model
     {
         $this->aggregate = $aggregate;
         $this->group = $group;
