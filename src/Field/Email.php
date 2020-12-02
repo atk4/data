@@ -49,6 +49,10 @@ class Email extends Field
      */
     public function normalize($value)
     {
+        if ($value === null) {
+            return $value;
+        }
+
         // split value by any number of separator characters
         $emails = preg_split('/[' . implode('', array_map('preg_quote', $this->separator)) . ']+/', $value, -1, PREG_SPLIT_NO_EMPTY);
 
