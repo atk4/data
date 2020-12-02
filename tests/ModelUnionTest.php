@@ -64,7 +64,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
     public function testFieldExpr()
     {
-        $transaction = $this->subtractInvoiceTransaction;
+        $transaction = clone $this->subtractInvoiceTransaction;
 
         $this->assertSameSql('"amount"', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount')])->render());
         $this->assertSameSql('-"amount"', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount', '-[]')])->render());
@@ -73,7 +73,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
     public function testNestedQuery1()
     {
-        $transaction = $this->transaction;
+        $transaction = clone $this->transaction;
 
         $this->assertSameSql(
             '(select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "derivedTable"',
@@ -96,7 +96,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
      */
     public function testMissingField()
     {
-        $transaction = $this->transaction;
+        $transaction = clone $this->transaction;
         $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
         $transaction->addField('type');
 
@@ -108,7 +108,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
     public function testActions()
     {
-        $transaction = $this->transaction;
+        $transaction = clone $this->transaction;
 
         $this->assertSameSql(
             'select "name","amount" from (select "name" "name","amount" "amount" from "invoice" UNION ALL select "name" "name","amount" "amount" from "payment") "derivedTable"',
@@ -130,7 +130,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             $transaction->action('fx', ['sum', 'amount'])->render()
         );
 
-        $transaction = $this->subtractInvoiceTransaction;
+        $transaction = clone $this->subtractInvoiceTransaction;
 
         $this->assertSameSql(
             'select sum("val") from (select sum(-"amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "derivedTable"',
@@ -140,17 +140,17 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
     public function testActions2()
     {
-        $transaction = $this->transaction;
+        $transaction = clone $this->transaction;
         $this->assertSame(5, (int) $transaction->action('count')->getOne());
         $this->assertSame(37.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
 
-        $transaction = $this->subtractInvoiceTransaction;
+        $transaction = clone $this->subtractInvoiceTransaction;
         $this->assertSame(-9.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
     }
 
     public function testSubAction1()
     {
-        $transaction = $this->subtractInvoiceTransaction;
+        $transaction = clone $this->subtractInvoiceTransaction;
 
         $this->assertSameSql(
             '(select sum(-"amount") from "invoice" UNION ALL select sum("amount") from "payment") "derivedTable"',
@@ -170,7 +170,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
         $this->assertSame(19.0, (float) $client->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
 
-        $transaction = $this->transaction;
+        $transaction = clone $this->transaction;
 
         $this->assertSame([
             ['name' => 'chair purchase', 'amount' => 4.0],
@@ -193,7 +193,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
         $client->load(1);
 
-        $transaction = $this->subtractInvoiceTransaction;
+        $transaction = clone $this->subtractInvoiceTransaction;
 
         $this->assertSame([
             ['name' => 'chair purchase', 'amount' => -4.0],
@@ -215,7 +215,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
     public function testGrouping1()
     {
-        $transaction = $this->transaction;
+        $transaction = clone $this->transaction;
 
         $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'money']]);
 
@@ -224,7 +224,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             $transaction->getSubQuery(['name', 'amount'])->render()
         );
 
-        $transaction = $this->subtractInvoiceTransaction;
+        $transaction = clone $this->subtractInvoiceTransaction;
 
         $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'money']]);
 
@@ -236,7 +236,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
 
     public function testGrouping2()
     {
-        $transaction = $this->transaction;
+        $transaction = clone $this->transaction;
 
         $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'money']]);
 
@@ -245,7 +245,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             $transaction->action('select', [['name', 'amount']])->render()
         );
 
-        $transaction = $this->subtractInvoiceTransaction;
+        $transaction = clone $this->subtractInvoiceTransaction;
 
         $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'money']]);
 
@@ -261,7 +261,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
      */
     public function testGrouping3()
     {
-        $transaction = $this->transaction;
+        $transaction = clone $this->transaction;
         $transaction->groupBy('name', ['amount' => ['sum([amount])', 'type' => 'money']]);
         $transaction->setOrder('name');
 
@@ -272,7 +272,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             ['name' => 'table purchase', 'amount' => 15.0],
         ], $transaction->export());
 
-        $transaction = $this->subtractInvoiceTransaction;
+        $transaction = clone $this->subtractInvoiceTransaction;
         $transaction->groupBy('name', ['amount' => ['sum([])', 'type' => 'money']]);
         $transaction->setOrder('name');
 
@@ -290,7 +290,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
      */
     public function testSubGroupingByExpressions()
     {
-        $transaction = $this->transaction;
+        $transaction = clone $this->transaction;
         $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
         $transaction->nestedPayment->addExpression('type', '\'payment\'');
         $transaction->addField('type');
@@ -302,7 +302,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             ['type' => 'payment', 'amount' => 14.0],
         ], $transaction->export(['type', 'amount']));
 
-        $transaction = $this->subtractInvoiceTransaction;
+        $transaction = clone $this->subtractInvoiceTransaction;
         $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
         $transaction->nestedPayment->addExpression('type', '\'payment\'');
         $transaction->addField('type');
@@ -352,7 +352,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
      */
     public function testFieldAggregate()
     {
-        $client = $this->client;
+        $client = clone $this->client;
         $client->hasMany('tr', $this->createTransaction())
             ->addField('balance', ['field' => 'amount', 'aggregate' => 'sum']);
 
@@ -366,7 +366,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
      */
     public function testConditionOnMappedField()
     {
-        $transaction = $this->subtractInvoiceTransaction;
+        $transaction = clone $this->subtractInvoiceTransaction;
         $transaction->nestedInvoice->addCondition('amount', 4);
 
         $this->assertSame([
