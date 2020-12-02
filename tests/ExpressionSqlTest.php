@@ -239,4 +239,36 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         $q = $m->action('fx0', ['sum', 'x']);
         $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
     }
+
+    public function testNeverSaveNeverPersist()
+    {
+        $this->setDb([
+            'invoice' => [
+                ['foo' => 'bar'],
+            ],
+        ]);
+
+        $db = new Persistence\Sql($this->db->connection);
+        $i = new Model($db, 'invoice');
+
+        $i->addExpression('zero_basic', [$i->expr('0'), 'type' => 'integer', 'system' => true]);
+        $i->addExpression('zero_never_save', [$i->expr('0'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
+        $i->addExpression('zero_never_persist', [$i->expr('0'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->addExpression('one_basic', [$i->expr('1'), 'type' => 'integer', 'system' => true]);
+        $i->addExpression('one_never_save', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
+        $i->addExpression('one_never_persist', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->loadAny();
+
+        // normal fields
+        $this->assertSame(0, $i->get('zero_basic'));
+        $this->assertSame(1, $i->get('one_basic'));
+
+        // never_save - are loaded from DB, but not saved
+        $this->assertSame(0, $i->get('zero_never_save'));
+        $this->assertSame(1, $i->get('one_never_save'));
+
+        // never_persist - are not loaded from DB and not saved - as result expressions will not be executed
+        $this->assertNull($i->get('zero_never_persist'));
+        $this->assertNull($i->get('one_never_persist'));
+    }
 }
