@@ -42,6 +42,15 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
         $this->subtractInvoiceTransaction = $this->createSubtractInvoiceTransaction($this->db);
     }
 
+    protected function tearDown(): void
+    {
+        $this->client = null;
+        $this->transaction = null;
+        $this->subtractInvoiceTransaction = null;
+
+        parent::tearDown();
+    }
+
     protected function createTransaction($persistence = null)
     {
         return new Model\Transaction($persistence);

@@ -40,6 +40,13 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
         $this->aggregate = $invoice->withAggregateField('client');
     }
 
+    protected function tearDown(): void
+    {
+        $this->aggregate = null;
+
+        parent::tearDown();
+    }
+
     public function testGroupSelect()
     {
         $aggregate = clone $this->aggregate;
