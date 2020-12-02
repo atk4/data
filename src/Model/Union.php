@@ -138,6 +138,11 @@ class Union extends Model
                         continue;
                     }
 
+                    // if we group we do not select non-aggregate fields
+                    if ($this->group && !in_array($fieldName, (array) $this->group, true) && !isset($this->aggregate[$fieldName])) {
+                        continue;
+                    }
+
                     $fieldExpression = $this->getFieldExpr($nestedModel, $fieldName, $fieldMap[$fieldName] ?? null);
 
                     if (isset($this->aggregate[$fieldName])) {
