@@ -16,7 +16,7 @@ class Folder extends \atk4\data\Model
         $this->addField('name');
 
         $this->hasMany('SubFolder', [new self(), 'their_field' => 'parent_id'])
-            ->addField('count', ['aggregate' => 'count', 'field' => $this->expr('*')]);
+            ->addField('count', ['aggregate' => 'count', 'field' => $this->expr('*')]); // TODO PHPStan
 
         $this->hasOne('parent_id', new self())
             ->addTitle();

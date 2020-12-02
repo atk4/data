@@ -1172,16 +1172,16 @@ class Model implements \IteratorAggregate
      * when you save it next time, it ends up as a new
      * record in the database.
      *
-     * @param mixed|null $new_id
+     * @param mixed $newId
      *
      * @return $this
      */
-    public function duplicate($new_id = null)
+    public function duplicate($newId = null)
     {
         $this->setId(null);
 
         if ($this->id_field) {
-            $this->setId($new_id);
+            $this->setId($newId);
         }
 
         return $this;

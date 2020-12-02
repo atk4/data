@@ -333,7 +333,7 @@ class Array_ extends Persistence
         });
 
         if ($fields !== null) {
-            $data = array_map(function ($row) use ($model, $fields) {
+            $data = array_map(function ($row) use ($fields) {
                 return array_intersect_key($row, array_flip($fields));
             }, $data);
         }

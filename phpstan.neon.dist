@@ -1,0 +1,14 @@
+parameters:
+    level: 1
+    paths:
+        - ./
+    excludes_analyse:
+        - cache/
+        - build/
+        - vendor/
+
+    # TODO review once we drop PHP 7.x support
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        - '~^Unsafe usage of new static\(\)\.$~'
