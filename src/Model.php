@@ -396,13 +396,13 @@ class Model implements \IteratorAggregate
             'modifier' => Model\UserAction::MODIFIER_UPDATE,
             'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
             'callback' => 'save',
-            'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'edit']], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']], // @phpstan-ignore-line remove once https://github.com/atk4/ui/issues/1548 is resolved
+            'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'edit']], 'execButton' => [\atk4\ui\Button::class, 'Save', 'blue']],
         ]);
 
         $this->addUserAction('delete', [
             'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
             'modifier' => Model\UserAction::MODIFIER_DELETE,
-            'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'red trash']], 'confirm' => 'Are you sure?'], // @phpstan-ignore-line remove once https://github.com/atk4/ui/issues/1548 is resolved
+            'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => [\atk4\ui\Icon::class, 'red trash']], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
             },
