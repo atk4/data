@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 namespace atk4\data\Persistence;
 
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms;
 
 class GenericPlatform extends Platforms\AbstractPlatform
 {
-    private function createNotSupportedException(): DBALException
+    /**
+     * @return DbalException|\Doctrine\DBAL\DBALException DBALException iff for DBAL 2.x
+     */
+    private function createNotSupportedException(): \Exception // DbalException once DBAL 2.x support is dropped
     {
-        return DBALException::notSupported('SQL');
+        if (\atk4\dsql\Connection::isComposerDbal2x()) {
+            return \Doctrine\DBAL\DBALException::notSupported('SQL');
+        }
+
+        return DbalException::notSupported('SQL');
     }
 
     public function getName(): string
@@ -54,6 +61,11 @@ class GenericPlatform extends Platforms\AbstractPlatform
     }
 
     public function getSmallIntTypeDeclarationSQL(array $columnDef): string
+    {
+        throw $this->createNotSupportedException();
+    }
+
+    public function getCurrentDatabaseExpression(): string
     {
         throw $this->createNotSupportedException();
     }
