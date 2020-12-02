@@ -251,12 +251,12 @@ class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $i = new Model($db, 'invoice');
 
-        $i->addExpression('zero_basic', [$i->expr("0"), 'type' => 'integer', 'system' => true]);
-        $i->addExpression('zero_never_save', [$i->expr("0"), 'type' => 'integer', 'system' => true, 'never_save' => true]);
-        $i->addExpression('zero_never_persist', [$i->expr("0"), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
-        $i->addExpression('one_basic', [$i->expr("1"), 'type' => 'integer', 'system' => true]);
-        $i->addExpression('one_never_save', [$i->expr("1"), 'type' => 'integer', 'system' => true, 'never_save' => true]);
-        $i->addExpression('one_never_persist', [$i->expr("1"), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->addExpression('zero_basic', [$i->expr('0'), 'type' => 'integer', 'system' => true]);
+        $i->addExpression('zero_never_save', [$i->expr('0'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
+        $i->addExpression('zero_never_persist', [$i->expr('0'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
+        $i->addExpression('one_basic', [$i->expr('1'), 'type' => 'integer', 'system' => true]);
+        $i->addExpression('one_never_save', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
+        $i->addExpression('one_never_persist', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
         $i->loadAny();
 
         // normal fields
