@@ -19,6 +19,10 @@ use atk4\dsql\Query;
  *
  * For example if you are asking sum(amount), there is no need to fetch any extra
  * fields from sub-models.
+ *
+ * @property \atk4\data\Persistence\Sql $persistence
+ *
+ * @method Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
  */
 class Union extends Model
 {

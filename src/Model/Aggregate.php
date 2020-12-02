@@ -8,6 +8,7 @@ use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\FieldSqlExpression;
 use atk4\data\Model;
+use atk4\data\Persistence;
 use atk4\data\Reference;
 use atk4\dsql\Query;
 
@@ -34,6 +35,10 @@ use atk4\dsql\Query;
  *
  * You can also pass seed (for example field type) when aggregating:
  * $aggregate->groupBy(['first','last'], ['salary' => ['sum([])', 'type'=>'money']];
+ *
+ * @property \atk4\data\Persistence\Sql $persistence
+ *
+ * @method Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
  */
 class Aggregate extends Model
 {
@@ -47,7 +52,7 @@ class Aggregate extends Model
 
     /** @var array */
     protected $systemFields = [];
-    
+
     /** @var Model */
     public $baseModel;
 
@@ -76,10 +81,13 @@ class Aggregate extends Model
      */
     public function __construct(Model $baseModel, array $defaults = [])
     {
+        if (!$baseModel->persistence instanceof Persistence\Sql) {
+            throw new Exception('Base model must have Sql persistence to use grouping');
+        }
+
         $this->baseModel = $baseModel;
         $this->table = $baseModel->table;
 
-        //$this->_default_class_addExpression = $model->_default_class_addExpression;
         parent::__construct($baseModel->persistence, $defaults);
 
         // always use table prefixes for this model
@@ -207,16 +215,6 @@ class Aggregate extends Model
         }
     }
 
-    /**
-     * Sets limit.
-     *
-     * @param int      $count
-     * @param int|null $offset
-     *
-     * @return $this
-     *
-     * @todo Incorrect implementation
-     */
     public function setLimit(int $count = null, int $offset = 0)
     {
         $this->baseModel->setLimit($count, $offset);
@@ -224,16 +222,6 @@ class Aggregate extends Model
         return $this;
     }
 
-    /**
-     * Sets order.
-     *
-     * @param mixed     $field
-     * @param bool|null $desc
-     *
-     * @return $this
-     *
-     * @todo Incorrect implementation
-     */
     public function setOrder($field, string $desc = null)
     {
         $this->baseModel->setOrder($field, $desc);
