@@ -1,0 +1,17 @@
+parameters:
+    level: 1
+    paths:
+        - ./
+    excludes_analyse:
+        - cache/
+        - build/
+        - vendor/
+
+    # TODO review once we drop PHP 7.x support
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        - '~^Unsafe usage of new static\(\)\.$~'
+        
+        # TODO remove once https://github.com/atk4/ui/issues/1548 is resolved
+        - '~^Class atk4\\ui\\(Button|Icon) not found\.$~'

@@ -113,7 +113,7 @@ class HasMany extends Reference
                 return $this->refLink()->action('field', [$defaults['aggregate'], 'alias' => $alias]);
             };
         } elseif ($defaults['aggregate'] === 'count' && !isset($defaults['field'])) {
-            $fx = function () use ($defaults, $alias) {
+            $fx = function () use ($alias) {
                 return $this->refLink()->action('count', ['alias' => $alias]);
             };
         } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {

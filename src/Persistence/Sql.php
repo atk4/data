@@ -834,9 +834,9 @@ class Sql extends Persistence
      */
     public function prepareIterator(Model $model): iterable
     {
-        try {
-            $export = $model->action('select');
+        $export = $model->action('select');
 
+        try {
             return $export->getIterator();
         } catch (DsqlException $e) {
             throw (new Exception('Unable to execute iteration query', 0, $e))
