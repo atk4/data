@@ -10,7 +10,7 @@ use atk4\data\Exception;
 use atk4\data\Model;
 
 /**
- * @method Scope getOwner()
+ * @method Model\Scope getOwner()
  */
 abstract class AbstractScope
 {
