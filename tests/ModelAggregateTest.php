@@ -42,7 +42,7 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
 
     public function testGroupSelect()
     {
-        $aggregate = $this->aggregate;
+        $aggregate = clone $this->aggregate;
 
         $aggregate->groupBy(['client_id'], ['c' => ['expr' => 'count(*)', 'type' => 'integer']]);
 
@@ -51,13 +51,13 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
                 ['client' => 'Vinny', 'client_id' => '1', 'c' => 2],
                 ['client' => 'Zoe', 'client_id' => '2', 'c' => 1],
             ],
-            $aggregate->export()
+            $aggregate->setOrder('client_id', 'asc')->export()
         );
     }
 
     public function testGroupSelect2()
     {
-        $aggregate = $this->aggregate;
+        $aggregate = clone $this->aggregate;
 
         $aggregate->groupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'money'],
@@ -68,13 +68,13 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
                 ['client' => 'Vinny', 'client_id' => '1', 'amount' => 19.0],
                 ['client' => 'Zoe', 'client_id' => '2', 'amount' => 4.0],
             ],
-            $aggregate->export()
+            $aggregate->setOrder('client_id', 'asc')->export()
         );
     }
 
     public function testGroupSelect3()
     {
-        $aggregate = $this->aggregate;
+        $aggregate = clone $this->aggregate;
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],
@@ -88,13 +88,13 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
                 ['client' => 'Vinny', 'client_id' => '1', 's' => 19.0, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
                 ['client' => 'Zoe', 'client_id' => '2', 's' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0],
             ],
-            $aggregate->export()
+            $aggregate->setOrder('client_id', 'asc')->export()
         );
     }
 
     public function testGroupSelectExpr()
     {
-        $aggregate = $this->aggregate;
+        $aggregate = clone $this->aggregate;
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],
@@ -108,13 +108,13 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
                 ['client' => 'Vinny', 'client_id' => '1', 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
                 ['client' => 'Zoe', 'client_id' => '2', 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
             ],
-            $aggregate->export()
+            $aggregate->setOrder('client_id', 'asc')->export()
         );
     }
 
     public function testGroupSelectCondition()
     {
-        $aggregate = $this->aggregate;
+        $aggregate = clone $this->aggregate;
         $aggregate->master_model->addCondition('name', 'chair purchase');
 
         $aggregate->groupBy(['client_id'], [
@@ -129,13 +129,13 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
                 ['client' => 'Vinny', 'client_id' => '1', 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
                 ['client' => 'Zoe', 'client_id' => '2', 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
             ],
-            $aggregate->export()
+            $aggregate->setOrder('client_id', 'asc')->export()
         );
     }
 
     public function testGroupSelectCondition2()
     {
-        $aggregate = $this->aggregate;
+        $aggregate = clone $this->aggregate;
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],
@@ -155,7 +155,7 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
 
     public function testGroupSelectCondition3()
     {
-        $aggregate = $this->aggregate;
+        $aggregate = clone $this->aggregate;
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],
@@ -175,7 +175,7 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
 
     public function testGroupSelectCondition4()
     {
-        $aggregate = $this->aggregate;
+        $aggregate = clone $this->aggregate;
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],
@@ -195,7 +195,7 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
 
     public function testGroupLimit()
     {
-        $aggregate = $this->aggregate;
+        $aggregate = clone $this->aggregate;
 
         $aggregate->groupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'money'],
@@ -206,13 +206,13 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
             [
                 ['client' => 'Vinny', 'client_id' => '1', 'amount' => 19.0],
             ],
-            $aggregate->export()
+            $aggregate->setOrder('client_id', 'asc')->export()
         );
     }
 
     public function testGroupLimit2()
     {
-        $aggregate = $this->aggregate;
+        $aggregate = clone $this->aggregate;
 
         $aggregate->groupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'money'],
@@ -223,7 +223,7 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
             [
                 ['client' => 'Zoe', 'client_id' => '2', 'amount' => 4.0],
             ],
-            $aggregate->export()
+            $aggregate->setOrder('client_id', 'asc')->export()
         );
     }
 }

@@ -27,31 +27,31 @@ class ReportTest extends \atk4\schema\PhpunitTestCase
         ];
 
     /** @var Aggregate */
-    protected $g;
+    protected $invoiceAggregate;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->setDB($this->init_db);
 
-        $m1 = new Model\Invoice($this->db);
-        $m1->getRef('client_id')->addTitle();
-        $this->g = new Aggregate($m1);
-        $this->g->addField('client');
+        $invoice = new Model\Invoice($this->db);
+        $invoice->getRef('client_id')->addTitle();
+        $this->invoiceAggregate = new Aggregate($invoice);
+        $this->invoiceAggregate->addField('client');
     }
 
     public function testAliasGroupSelect()
     {
-        $g = $this->g;
+        $invoiceAggregate = clone $this->invoiceAggregate;
 
-        $g->groupBy(['client_id'], ['c' => ['count(*)', 'type' => 'integer']]);
+        $invoiceAggregate->groupBy(['client_id'], ['c' => ['count(*)', 'type' => 'integer']]);
 
         $this->assertSame(
             [
                 ['client' => 'Vinny', 'client_id' => '1', 'c' => 2],
                 ['client' => 'Zoe', 'client_id' => '2', 'c' => 1],
             ],
-            $g->export()
+            $invoiceAggregate->setOrder('client_id', 'asc')->export()
         );
     }
 }
