@@ -94,8 +94,6 @@ trait UserActionsTrait
     /**
      * Remove specified action(s).
      *
-     * @param string|array $name
-     *
      * @return $this
      */
     public function removeUserAction(string $name)

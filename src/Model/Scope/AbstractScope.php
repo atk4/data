@@ -65,8 +65,6 @@ abstract class AbstractScope
 
     /**
      * Convert the scope to human readable words when applied on $model.
-     *
-     * @return bool
      */
     abstract public function toWords(Model $model = null): string;
 
