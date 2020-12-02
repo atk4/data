@@ -12,6 +12,61 @@ parameters:
 
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'
-        
+
         # TODO remove once https://github.com/atk4/ui/issues/1548 is resolved
         - '~^Class atk4\\ui\\(Button|Icon) not found\.$~'
+
+        # TODO these rules are generated, this ignores should be fixed in the code
+        # for level = 2
+        # for src-schema/PhpunitTestCase.php
+        - '~^Access to an undefined property atk4\\data\\Persistence\:\:\$connection\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:dsql\(\)\.$~'
+        # for src/Action/Iterator.php
+        - '~^PHPDoc tag @param references unknown parameter\: \$field$~'
+        - '~^PHPDoc tag @param references unknown parameter\: \$value$~'
+        - '~^Access to an undefined property CallbackFilterIterator\:\:\$filterFx\.$~'
+        # for src/FieldSqlExpression.php
+        - '~^Call to an undefined method atk4\\data\\Model\:\:expr\(\)\.$~'
+        # for src/Model.php
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:load\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:tryLoad\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:loadAny\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:tryLoadAny\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:update\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:insert\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:export\(\)\.$~'
+        - '~^PHPDoc tag @return with type mixed is not subtype of native type iterable\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:prepareIterator\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:delete\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:action\(\)\.$~'
+        # for src/Model/ReferencesTrait.php (in context of class atk4\data\Model)
+        - '~^Call to an undefined method atk4\\data\\Reference\:\:refLink\(\)\.$~'
+        # for src/Model/Scope/AbstractScope.php
+        - '~^PHPDoc tag @return with type bool is incompatible with native type string\.$~'
+        # for src/Model/UserActionsTrait.php (in context of class atk4\data\Model)
+        - '~^PHPDoc tag @param for parameter \$name with type array\|string is not subtype of native type string\.$~'
+        # for src/Persistence/Array_.php
+        - '~^PHPDoc tag @param for parameter \$table with type mixed is not subtype of native type string\|null\.$~'
+        # for src/Persistence/GenericPlatform.php
+        - '~^PHPDoc tag @return with type Doctrine\\DBAL\\DBALException\|Doctrine\\DBAL\\Exception is not subtype of native type Exception\.$~'
+        - '~^Return typehint of method atk4\\data\\Persistence\\GenericPlatform\:\:createNotSupportedException\(\) has invalid type Doctrine\\DBAL\\DBALException\.$~'
+        # for src/Persistence/Sql.php
+        - '~^Call to an undefined method atk4\\dsql\\Query\:\:sequence\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:expr\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:exprNow\(\)\.$~'
+        # for src/Persistence/Sql/Join.php
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:initQuery\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:lastInsertId\(\)\.$~'
+        # for src/Reference/HasMany.php
+        - '~^Call to an undefined method atk4\\data\\Model\:\:dsql\(\)\.$~'
+        # for tests/FieldTest.php
+        - '~^Call to an undefined method atk4\\data\\Reference\\HasOne\:\:addTitle\(\)\.$~'
+        # for tests/JoinSqlTest.php
+        - '~^Call to an undefined method atk4\\data\\Reference\\HasOne\:\:addField\(\)\.$~'
+        # for tests/LookupSqlTest.php
+        - '~^Call to an undefined method atk4\\data\\Reference\\HasOne\:\:withTitle\(\)\.$~'
+        # for tests/PersistentArrayTest.php
+        - '~^Call to an undefined method atk4\\data\\Persistence\:\:applyScope\(\)\.$~'
+        # for tests/ReferenceSqlTest.php
+        - '~^Call to an undefined method atk4\\data\\Reference\\HasOne\:\:addFields\(\)\.$~'
+        - '~^Call to an undefined method atk4\\data\\Reference\:\:addTitle\(\)\.$~'
