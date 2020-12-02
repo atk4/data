@@ -15,14 +15,16 @@ class _Template extends \atk4\schema\PhpunitTestCase
 {
     public function sampleTest()
     {
-        $db = new PersistenceSql($this->db->connection);
-        $this->setDb([
+        $dbData = [
             'item' => [
                 ['name' => 'John'],
                 ['name' => 'Sue'],
                 ['name' => 'Smith'],
             ],
-        ]);
+        ];
+        $this->setDb($dbData);
+
+        $db = new PersistenceSql($this->db->connection);
 
         $m = new Model($db, 'item');
         $m->addField('name');
@@ -30,6 +32,6 @@ class _Template extends \atk4\schema\PhpunitTestCase
 
         $this->assertNotNull($m->getId());
 
-        $this->assertSame($a, $this->getDb());
+        $this->assertSame($dbData, $this->getDb());
     }
 }

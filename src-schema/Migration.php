@@ -7,7 +7,7 @@ namespace atk4\schema;
 use atk4\core\Exception;
 use atk4\data\Field;
 use atk4\data\FieldSqlExpression;
-use atk4\Data\Model;
+use atk4\data\Model;
 use atk4\data\Persistence;
 use atk4\data\Reference\HasOne;
 use atk4\dsql\Connection;
@@ -146,7 +146,7 @@ class Migration
     {
         try {
             $this->drop();
-        } catch (\Doctrine\DBAL\DBALException $e) {
+        } catch (\Doctrine\DBAL\Exception | \Doctrine\DBAL\DBALException $e) { // @phpstan-ignore-line for DBAL 2.x
         }
 
         return $this;
