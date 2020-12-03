@@ -310,13 +310,10 @@ class Union extends Model
 
     /**
      * Adds nested model in union.
-     *
-     * @param string|Model $class    model
-     * @param array        $fieldMap Array of field mapping
      */
-    public function addNestedModel($class, array $fieldMap = []): Model
+    public function addNestedModel(Model $model, array $fieldMap = []): Model
     {
-        $nestedModel = $this->persistence->add($class);
+        $nestedModel = $this->persistence->add($model);
 
         $this->union[] = [$nestedModel, $fieldMap];
 
