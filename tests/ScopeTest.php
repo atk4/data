@@ -71,7 +71,7 @@ class STicket extends Model
     }
 }
 
-class ScopeTest extends \atk4\schema\PhpunitTestCase
+class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 {
     protected $user;
     protected $country;

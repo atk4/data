@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace atk4\schema\Tests;
+namespace Atk4\Schema\Tests;
 
 use Atk4\Data\Model;
-use atk4\schema\PhpunitTestCase;
+use Atk4\Schema\PhpunitTestCase;
 
 class ModelTest extends PhpunitTestCase
 {

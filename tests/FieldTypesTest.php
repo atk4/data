@@ -12,7 +12,7 @@ use Atk4\Data\ValidationException;
 /**
  * Test various Field.
  */
-class FieldTypesTest extends \atk4\schema\PhpunitTestCase
+class FieldTypesTest extends \Atk4\Schema\PhpunitTestCase
 {
     public $pers;
 

@@ -10,7 +10,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\ValidationException;
 
-class FieldTest extends \atk4\schema\PhpunitTestCase
+class FieldTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testDirty1()
     {

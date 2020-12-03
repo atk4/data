@@ -13,7 +13,7 @@ use Atk4\Data\Persistence;
  *
  * Tests cases when model have to work with data that does not have ID field
  */
-class ReadOnlyModeTest extends \atk4\schema\PhpunitTestCase
+class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
 {
     public $m;
 

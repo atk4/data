@@ -8,7 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-class SerializeTest extends \atk4\schema\PhpunitTestCase
+class SerializeTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testBasicSerialize()
     {

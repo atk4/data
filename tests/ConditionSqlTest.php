@@ -11,7 +11,7 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 /**
  * @coversDefaultClass \Atk4\Data\Model
  */
-class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
+class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testBasic()
     {

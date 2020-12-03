@@ -14,7 +14,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 /**
  * @coversDefaultClass \Atk4\Data\Model
  */
-class JoinSqlTest extends \atk4\schema\PhpunitTestCase
+class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testDirection()
     {

@@ -14,7 +14,7 @@ use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
  *
  * Tests cases when model have to work with data that does not have ID field
  */
-class ModelWithoutIdTest extends \atk4\schema\PhpunitTestCase
+class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
 {
     public $m;
 

@@ -12,7 +12,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 /**
  * @coversDefaultClass \Atk4\Data\Model
  */
-class WithTest extends \atk4\schema\PhpunitTestCase
+class WithTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testWith()
     {

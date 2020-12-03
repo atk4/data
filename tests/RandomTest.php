@@ -69,7 +69,7 @@ class Model_Item3 extends \Atk4\Data\Model
 /**
  * @coversDefaultClass \Atk4\Data\Model
  */
-class RandomTest extends \atk4\schema\PhpunitTestCase
+class RandomTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testRate()
     {

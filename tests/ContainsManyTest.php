@@ -127,7 +127,7 @@ class Discount2 extends Model
  * ATK Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
  */
-class ContainsManyTest extends \atk4\schema\PhpunitTestCase
+class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
 {
     protected function setUp(): void
     {

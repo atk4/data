@@ -70,7 +70,7 @@
   "autoload": {
     "psr-4": {
       "Atk4\\Data\\": "src/",
-      "atk4\\schema\\": "src-schema/"
+      "Atk4\\Schema\\": "src-schema/"
     },
     "files": [
         "bootstrap-atk-types.php"
@@ -79,7 +79,7 @@
   "autoload-dev": {
     "psr-4": {
       "Atk4\\Data\\Tests\\": "tests/",
-      "atk4\\schema\\Tests\\": "tests-schema/"
+      "Atk4\\Schema\\Tests\\": "tests-schema/"
     }
   }
 }

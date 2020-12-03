@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\schema;
+namespace Atk4\Schema;
 
 use Atk4\Core\AtkPhpunit;
 use Atk4\Data\Model;
@@ -111,7 +111,7 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
 
     public function getMigrator(Model $model = null): Migration
     {
-        return new \atk4\schema\Migration($model ?: $this->db);
+        return new \Atk4\Schema\Migration($model ?: $this->db);
     }
 
     /**

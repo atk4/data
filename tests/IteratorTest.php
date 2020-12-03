@@ -11,7 +11,7 @@ use Atk4\Data\Persistence;
 /**
  * @coversDefaultClass \Atk4\Data\Model
  */
-class IteratorTest extends \atk4\schema\PhpunitTestCase
+class IteratorTest extends \Atk4\Schema\PhpunitTestCase
 {
     /**
      * If first argument is array, then second argument should not be used.

@@ -13,7 +13,7 @@ use Atk4\Data\Tests\Model\Smbo\Transfer;
 /**
  * Practical test contributed by Sortmybooks.com.
  */
-class SmboTransferTest extends \atk4\schema\PhpunitTestCase
+class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
 {
     protected function setUp(): void
     {

@@ -13,7 +13,7 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 /**
  * @coversDefaultClass \Atk4\Data\Model
  */
-class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
+class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testNakedExpression()
     {

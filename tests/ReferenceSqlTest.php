@@ -15,7 +15,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
  * also that the original model can be re-loaded with a different
  * value without making any condition stick.
  */
-class ReferenceSqlTest extends \atk4\schema\PhpunitTestCase
+class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testBasic()
     {

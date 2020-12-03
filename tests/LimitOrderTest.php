@@ -10,7 +10,7 @@ use Atk4\Data\Model;
 /**
  * @coversDefaultClass \Atk4\Data\Model
  */
-class LimitOrderTest extends \atk4\schema\PhpunitTestCase
+class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testBasic()
     {

@@ -51,7 +51,7 @@ class UaClient extends Model
 /**
  * Implements various tests for UserAction.
  */
-class UserActionTest extends \atk4\schema\PhpunitTestCase
+class UserActionTest extends \Atk4\Schema\PhpunitTestCase
 {
     public $pers;
 
