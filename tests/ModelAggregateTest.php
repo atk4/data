@@ -200,6 +200,22 @@ class ModelAggregateTest extends \atk4\schema\PhpunitTestCase
         );
     }
 
+    public function testGroupOrder()
+    {
+        $aggregate = clone $this->aggregate;
+
+        $aggregate->groupBy(['client_id'], [
+            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+        ]);
+
+        $aggregate->setOrder('client_id', 'asc');
+
+        $this->assertSameSql(
+            'select (select "name" from "client" "c" where "id" = "invoice"."client_id") "client","invoice"."client_id",sum("invoice"."amount") "amount" from "invoice" group by "invoice"."client_id" order by "invoice"."client_id"',
+            $aggregate->action('select')->render()
+        );
+    }
+
     public function testGroupLimit()
     {
         $aggregate = clone $this->aggregate;

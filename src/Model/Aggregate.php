@@ -10,6 +10,7 @@ use atk4\data\FieldSqlExpression;
 use atk4\data\Model;
 use atk4\data\Persistence;
 use atk4\data\Reference;
+use atk4\dsql\Expression;
 use atk4\dsql\Query;
 
 /**
@@ -222,13 +223,6 @@ class Aggregate extends Model
         return $this;
     }
 
-    public function setOrder($field, string $desc = null)
-    {
-        $this->baseModel->setOrder($field, $desc);
-
-        return $this;
-    }
-
     /**
      * Execute action.
      *
@@ -247,6 +241,7 @@ class Aggregate extends Model
                 $query = $this->baseModel->action($mode, [false]);
                 $this->initQueryFields($query, array_unique($fields + $this->systemFields));
 
+                $this->initQueryOrder($query);
                 $this->initQueryGrouping($query);
                 $this->initQueryConditions($query);
 
@@ -268,6 +263,25 @@ class Aggregate extends Model
             default:
                 throw (new Exception('Aggregate model does not support this action'))
                     ->addMoreInfo('mode', $mode);
+        }
+    }
+
+    protected function initQueryOrder(Query $query)
+    {
+        if ($this->order) {
+            foreach ($this->order as $order) {
+                $isDesc = strtolower($order[1]) === 'desc';
+
+                if ($order[0] instanceof Expression) {
+                    $query->order($order[0], $isDesc);
+                } elseif (is_string($order[0])) {
+                    $query->order($this->getField($order[0]), $isDesc);
+                } else {
+                    throw (new Exception('Unsupported order parameter'))
+                        ->addMoreInfo('model', $this)
+                        ->addMoreInfo('field', $order[0]);
+                }
+            }
         }
     }
 
