@@ -119,9 +119,8 @@ class Union extends Model
             $queryFieldExpressions = [];
             foreach ($fields as $fieldName) {
                 try {
-                    // Union can be joined with additional
-                    // table/query and we don't touch those
-                    // fields
+                    // Union can be joined with additional table/query
+                    // We don't touch those fields
 
                     if (!$this->hasField($fieldName)) {
                         $queryFieldExpressions[$fieldName] = $nestedModel->expr('NULL');
@@ -381,8 +380,8 @@ class Union extends Model
             return parent::addCondition(...func_get_args());
         }
 
-        // otherwise add condition in all sub-models
-        foreach ($this->union as $n => [$nestedModel, $fieldMap]) {
+        // otherwise add condition in all nested models
+        foreach ($this->union as [$nestedModel, $fieldMap]) {
             try {
                 $field = $key;
 
@@ -404,14 +403,13 @@ class Union extends Model
                         $nestedModel->addCondition($field, $operator);
 
                         break;
-                    case 3:
-                    case 4:
+                    default:
                         $nestedModel->addCondition($field, $operator, $value);
 
                         break;
                 }
             } catch (\atk4\core\Exception $e) {
-                throw $e->addMoreInfo('sub_model', $n);
+                throw $e->addMoreInfo('nestedModel', get_class($nestedModel));
             }
         }
 
