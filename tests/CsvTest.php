@@ -7,7 +7,7 @@ namespace atk4\data\Tests;
 use atk4\core\AtkPhpunit;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\data\tests\Model\Person;
+use atk4\data\Tests\Model\Person;
 
 /**
  * @coversDefaultClass \atk4\data\Model

@@ -8,8 +8,8 @@ use atk4\core\AtkPhpunit;
 use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence;
-use atk4\data\tests\Model\Female as Female;
-use atk4\data\tests\Model\Male as Male;
+use atk4\data\Tests\Model\Female as Female;
+use atk4\data\Tests\Model\Male as Male;
 
 /**
  * @coversDefaultClass \atk4\data\Model

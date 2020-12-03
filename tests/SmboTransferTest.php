@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace atk4\data\Tests;
 
 use atk4\data\Persistence;
-use atk4\data\tests\Model\Smbo\Account;
-use atk4\data\tests\Model\Smbo\Company;
-use atk4\data\tests\Model\Smbo\Payment;
-use atk4\data\tests\Model\Smbo\Transfer;
+use atk4\data\Tests\Model\Smbo\Account;
+use atk4\data\Tests\Model\Smbo\Company;
+use atk4\data\Tests\Model\Smbo\Payment;
+use atk4\data\Tests\Model\Smbo\Transfer;
 
 /**
  * Practical test contributed by Sortmybooks.com.
