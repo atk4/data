@@ -213,7 +213,7 @@ class Union extends Model
         $expr = [];
         $exprArgs = [];
 
-        foreach ($this->union as [$model, $mapping]) {
+        foreach ($this->union as [$model, $fieldMap]) {
             $modelActionArgs = $actionArgs;
 
             // now prepare query
@@ -222,7 +222,7 @@ class Union extends Model
                 $modelActionArgs[1] = $this->getFieldExpr(
                     $model,
                     $fieldName,
-                    $mapping[$fieldName] ?? null
+                    $fieldMap[$fieldName] ?? null
                 );
             }
 
@@ -324,8 +324,6 @@ class Union extends Model
      * Specify a single field or array of fields.
      *
      * @param string|array $group
-     *
-     * @return $this
      */
     public function groupBy($group, array $aggregate = []): Model
     {

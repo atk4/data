@@ -119,7 +119,7 @@ class Aggregate extends Model
             $args = [];
             // if field originally defined in the parent model, then it can be used as part of expression
             if ($this->baseModel->hasField($fieldName)) {
-                $args = [$this->baseModel->getField($fieldName)]; // @TODO Probably need cloning here
+                $args = [$this->baseModel->getField($fieldName)];
             }
 
             $seed['expr'] = $this->baseModel->expr($seed[0] ?? $seed['expr'], $args);
