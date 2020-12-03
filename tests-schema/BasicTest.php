@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\schema\tests;
+namespace atk4\schema\Tests;
 
 use atk4\schema\PhpunitTestCase;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests\Model\Smbo;
+namespace atk4\data\Tests\Model\Smbo;
 
 class Transfer extends Payment
 {

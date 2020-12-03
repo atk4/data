@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace atk4\data\Tests;
 
 use atk4\data\Exception;
 use atk4\data\Field;

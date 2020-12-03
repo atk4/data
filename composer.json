@@ -78,8 +78,8 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "atk4\\data\\tests\\": "tests/",
-      "atk4\\schema\\tests\\": "tests-schema/"
+      "atk4\\data\\Tests\\": "tests/",
+      "atk4\\schema\\Tests\\": "tests-schema/"
     }
   }
 }
