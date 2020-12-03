@@ -207,40 +207,38 @@ class Union extends Model
         return $this->persistence->dsql()->expr('(' . implode(' UNION ALL ', $expr) . ') {' . $cnt . '}', $args);
     }
 
-    /**
-     * No description.
-     */
-    public function getSubAction(string $action, array $act_arg = []): Expression
+    public function getSubAction(string $action, array $actionArgs = []): Expression
     {
         $cnt = 0;
         $expr = [];
-        $args = [];
+        $exprArgs = [];
 
         foreach ($this->union as [$model, $mapping]) {
+            $modelActionArgs = $actionArgs;
+
             // now prepare query
             $expr[] = '[' . $cnt . ']';
-            if ($act_arg && isset($act_arg[1])) {
-                $a = $act_arg;
-                $a[1] = $this->getFieldExpr(
+            if ($fieldName = $actionArgs[1] ?? null) {
+                $modelActionArgs[1] = $this->getFieldExpr(
                     $model,
-                    $a[1],
-                    $mapping[$a[1]] ?? null
+                    $fieldName,
+                    $mapping[$fieldName] ?? null
                 );
-                $query = $model->action($action, $a);
-            } else {
-                $query = $model->action($action, $act_arg);
             }
+
+            $query = $model->action($action, $modelActionArgs);
 
             // subquery should not be wrapped in parenthesis, SQLite is especially picky about that
             $query->wrapInParentheses = false;
 
-            $args[$cnt++] = $query;
+            $exprArgs[$cnt++] = $query;
         }
 
+        $expr = '(' . implode(' UNION ALL ', $expr) . ') {' . $cnt . '}';
         // last element is table name itself
-        $args[$cnt] = $this->table;
+        $exprArgs[$cnt] = $this->table;
 
-        return $this->persistence->dsql()->expr('(' . implode(' UNION ALL ', $expr) . ') {' . $cnt . '}', $args);
+        return $this->persistence->dsql()->expr($expr, $exprArgs);
     }
 
     /**
@@ -294,7 +292,9 @@ class Union extends Model
 
                 break;
             case 'fx':
-                $subquery = $this->getSubAction('fx', [$args[0], $args[1], 'alias' => 'val']);
+                $args['alias'] = 'val';
+
+                $subquery = $this->getSubAction('fx', $args);
 
                 $args = [$args[0], $this->expr('{}', ['val'])];
 
