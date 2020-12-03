@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\data;
+namespace Atk4\Data;
 
 use Atk4\Core\CollectionTrait;
 use Atk4\Core\ContainerTrait;
@@ -129,7 +129,7 @@ class Model implements \IteratorAggregate
     public $sequence;
 
     /**
-     * Persistence driver inherited from atk4\data\Persistence.
+     * Persistence driver inherited from Atk4\Data\Persistence.
      *
      * @var Persistence|Persistence\Sql
      */

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Model;
+use Atk4\Data\Model;
 
 /**
  * Country.
@@ -135,7 +135,7 @@ class LFriend extends Model
 }
 
 /**
- * @coversDefaultClass \atk4\data\Model
+ * @coversDefaultClass \Atk4\Data\Model
  *
  * ATK Data has an option to lookup ID values if their "lookup" values are specified.
  */

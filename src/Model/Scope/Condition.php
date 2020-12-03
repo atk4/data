@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Model\Scope;
+namespace Atk4\Data\Model\Scope;
 
 use Atk4\Core\ReadableCaptionTrait;
-use atk4\data\Exception;
-use atk4\data\Field;
-use atk4\data\Model;
+use Atk4\Data\Exception;
+use Atk4\Data\Field;
+use Atk4\Data\Model;
 use Atk4\Dsql\Expression;
 use Atk4\Dsql\Expressionable;
 

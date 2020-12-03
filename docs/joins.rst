@@ -1,7 +1,7 @@
 
 .. _Joins:
 
-.. php:namespace:: atk4\data\Model
+.. php:namespace:: Atk4\Data\Model
 
 =================================
 Model from multiple joined tables

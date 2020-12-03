@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace atk4\data;
+namespace Atk4\Data;
 
 use Atk4\Core\DiContainerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Core\TrackableTrait;
-use atk4\data\Model\Scope;
+use Atk4\Data\Model\Scope;
 use Atk4\Dsql\Expression;
 use Atk4\Dsql\Expressionable;
 

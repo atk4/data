@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace atk4\schema;
 
 use Atk4\Core\Exception;
-use atk4\data\Field;
-use atk4\data\FieldSqlExpression;
-use atk4\data\Model;
-use atk4\data\Persistence;
-use atk4\data\Reference\HasOne;
+use Atk4\Data\Field;
+use Atk4\Data\FieldSqlExpression;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence;
+use Atk4\Data\Reference\HasOne;
 use Atk4\Dsql\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -235,7 +235,7 @@ class Migration
         if ($field->reference instanceof HasOne) {
             $referenceTheirField = \Closure::bind(function () use ($field) {
                 return $field->reference->their_field;
-            }, null, \atk4\data\Reference::class)();
+            }, null, \Atk4\Data\Reference::class)();
 
             $referenceField = $referenceTheirField ?? $field->reference->getOwner()->id_field;
 

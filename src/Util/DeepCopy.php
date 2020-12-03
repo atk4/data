@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Util;
+namespace Atk4\Data\Util;
 
-use atk4\data\Model;
-use atk4\data\Reference\HasMany;
-use atk4\data\Reference\HasOne;
+use Atk4\Data\Model;
+use Atk4\Data\Reference\HasMany;
+use Atk4\Data\Reference\HasOne;
 
 /**
  * Class DeepCopy implements copying records between two models:.

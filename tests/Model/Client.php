@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Tests\Model;
+namespace Atk4\Data\Tests\Model;
 
 class Client extends User
 {

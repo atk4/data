@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Persistence;
+namespace Atk4\Data\Persistence;
 
-use atk4\data\Exception;
-use atk4\data\Field;
-use atk4\data\FieldSqlExpression;
-use atk4\data\Model;
-use atk4\data\Persistence;
+use Atk4\Data\Exception;
+use Atk4\Data\Field;
+use Atk4\Data\FieldSqlExpression;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 use Atk4\Dsql\Connection;
 use Atk4\Dsql\Exception as DsqlException;
 use Atk4\Dsql\Expression;
@@ -42,21 +42,21 @@ class Sql extends Persistence
      *
      * @var string
      */
-    public $_default_seed_addField = [\atk4\data\FieldSql::class];
+    public $_default_seed_addField = [\Atk4\Data\FieldSql::class];
 
     /**
      * Default class when adding hasOne field.
      *
      * @var string
      */
-    public $_default_seed_hasOne = [\atk4\data\Reference\HasOneSql::class];
+    public $_default_seed_hasOne = [\Atk4\Data\Reference\HasOneSql::class];
 
     /**
      * Default class when adding hasMany field.
      *
      * @var string
      */
-    public $_default_seed_hasMany; // [\atk4\data\Reference\HasMany::class];
+    public $_default_seed_hasMany; // [\Atk4\Data\Reference\HasMany::class];
 
     /**
      * Default class when adding Expression field.

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Model;
+use Atk4\Data\Model;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 /**
- * @coversDefaultClass \atk4\data\Model
+ * @coversDefaultClass \Atk4\Data\Model
  *
  * Tests that condition is applied when traversing hasMany
  * also that the original model can be re-loaded with a different

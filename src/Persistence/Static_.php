@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Persistence;
+namespace Atk4\Data\Persistence;
 
-use atk4\data\Model;
+use Atk4\Data\Model;
 
 /**
  * Implements a very basic array-access pattern:.

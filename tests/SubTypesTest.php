@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Model;
+use Atk4\Data\Model;
 
 class StAccount extends Model
 {

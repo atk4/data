@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Model;
-use atk4\data\Util\DeepCopy;
-use atk4\data\Util\DeepCopyException;
+use Atk4\Data\Model;
+use Atk4\Data\Util\DeepCopy;
+use Atk4\Data\Util\DeepCopyException;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class DcClient extends Model
@@ -339,7 +339,7 @@ class DeepCopyTest extends \atk4\schema\PhpunitTestCase
                 ->to($invoice)
                 ->with(['Lines'])
                 ->copy();
-        } catch (\atk4\data\Util\DeepCopyException $e) {
+        } catch (\Atk4\Data\Util\DeepCopyException $e) {
             $this->assertSame('Mandatory field value cannot be null', $e->getPrevious()->getMessage());
 
             throw $e;

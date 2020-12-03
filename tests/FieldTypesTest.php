@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Field;
-use atk4\data\Model;
-use atk4\data\Persistence\Static_ as Persistence_Static;
-use atk4\data\ValidationException;
+use Atk4\Data\Field;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence\Static_ as Persistence_Static;
+use Atk4\Data\ValidationException;
 
 /**
  * Test various Field.

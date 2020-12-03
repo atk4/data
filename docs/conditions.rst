@@ -2,7 +2,7 @@
 .. _DataSet:
 .. _conditions:
 
-.. php:namespace:: atk4\data
+.. php:namespace:: Atk4\Data
 
 ======================
 Conditions and DataSet
@@ -348,7 +348,7 @@ Checks if scope components are joined by OR
 
 Checks if scope components are joined by AND
 
-.. php:namespace:: atk4\data\Model\Scope
+.. php:namespace:: Atk4\Data\Model\Scope
 
 .. php:class:: Condition
 

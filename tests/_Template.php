@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Model;
-use atk4\data\Persistence\Sql as PersistenceSql;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql as PersistenceSql;
 
 /**
  * THIS IS NOT A TEST. This file is a template which you can duplicate

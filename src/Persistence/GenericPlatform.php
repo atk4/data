@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Persistence;
+namespace Atk4\Data\Persistence;
 
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms;

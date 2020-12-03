@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\schema\Tests;
 
-use atk4\data\Model;
+use Atk4\Data\Model;
 use atk4\schema\PhpunitTestCase;
 
 class ModelTest extends PhpunitTestCase
@@ -149,7 +149,7 @@ class ModelTest extends PhpunitTestCase
     }
 }
 
-class TestUser extends \atk4\data\Model
+class TestUser extends \Atk4\Data\Model
 {
     public $table = 'user';
 
@@ -166,7 +166,7 @@ class TestUser extends \atk4\data\Model
     }
 }
 
-class TestRole extends \atk4\data\Model
+class TestRole extends \Atk4\Data\Model
 {
     public $table = 'role';
 

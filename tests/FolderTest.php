@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Persistence;
+use Atk4\Data\Persistence;
 
-class Folder extends \atk4\data\Model
+class Folder extends \Atk4\Data\Model
 {
     public $table = 'folder';
 
@@ -27,7 +27,7 @@ class Folder extends \atk4\data\Model
 }
 
 /**
- * @coversDefaultClass \atk4\data\Model
+ * @coversDefaultClass \Atk4\Data\Model
  */
 class FolderTest extends \atk4\schema\PhpunitTestCase
 {

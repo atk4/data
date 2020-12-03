@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Persistence;
-use atk4\data\Tests\Model\Smbo\Account;
-use atk4\data\Tests\Model\Smbo\Company;
-use atk4\data\Tests\Model\Smbo\Payment;
-use atk4\data\Tests\Model\Smbo\Transfer;
+use Atk4\Data\Persistence;
+use Atk4\Data\Tests\Model\Smbo\Account;
+use Atk4\Data\Tests\Model\Smbo\Company;
+use Atk4\Data\Tests\Model\Smbo\Payment;
+use Atk4\Data\Tests\Model\Smbo\Transfer;
 
 /**
  * Practical test contributed by Sortmybooks.com.

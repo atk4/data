@@ -492,7 +492,7 @@ Here is what I need to do:
 
 Create new Model::
 
-    class Model_InvoicePayment extends \atk4\data\Model {
+    class Model_InvoicePayment extends \Atk4\Data\Model {
         public $table='invoice_payment';
         function init(): void
         {
@@ -607,7 +607,7 @@ adding invoice, I want to make it possible to specify 'Category' through the
 name, not only category_id. First, let me illustrate how can I do that with
 category_id::
 
-    class Model_Invoice extends \atk4\data\Model {
+    class Model_Invoice extends \Atk4\Data\Model {
         function init(): void {
 
             parent::init();

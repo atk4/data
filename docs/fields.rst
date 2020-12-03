@@ -1,7 +1,7 @@
 
 .. _Fields:
 
-.. php:namespace:: atk4\data
+.. php:namespace:: Atk4\Data
 
 .. php:class:: Field
 
@@ -270,7 +270,7 @@ Returns true if UI should not render this field in views.
 Password (after 1.5.0 release)
 ==============================
 
-.. php:namespace:: atk4\data\Field
+.. php:namespace:: Atk4\Data\Field
 
 .. php:class:: Password
 

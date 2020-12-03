@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\data;
+namespace Atk4\Data;
 
 use Atk4\Core\Factory;
 use Doctrine\DBAL\Platforms;
@@ -46,7 +46,7 @@ class Persistence
             case 'pgsql':
             case 'sqlsrv':
             case 'sqlite':
-                $db = new \atk4\data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
+                $db = new \Atk4\Data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
 
                 return $db;
             default:
