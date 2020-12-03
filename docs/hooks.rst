@@ -243,7 +243,7 @@ Save information into auditLog about failure:
 
 Upgrade schema:
 
-    use atk4\dsql\Exception as DsqlException;
+    use Atk4\Dsql\Exception as DsqlException;
 
     $m->onHook(Model::HOOK_ROLLBACK, function($m, $exception) { 
         if ($exception instanceof DsqlException) {

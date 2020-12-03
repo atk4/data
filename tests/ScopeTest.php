@@ -8,7 +8,7 @@ use atk4\data\Exception;
 use atk4\data\Model;
 use atk4\data\Model\Scope;
 use atk4\data\Model\Scope\Condition;
-use atk4\dsql\Expression;
+use Atk4\Dsql\Expression;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class SCountry extends Model

@@ -358,7 +358,7 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $this->expectException(\atk4\dsql\Exception::class);
+        $this->expectException(\Atk4\Dsql\Exception::class);
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 

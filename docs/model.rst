@@ -789,7 +789,7 @@ Setting limit and sort order
 
     Keep in mind - `true` means `desc`, desc means descending. Otherwise it will be ascending order by default.
 
-    You can also use \atk4\dsql\Expression or array of expressions instead of field name here.
+    You can also use \Atk4\Dsql\Expression or array of expressions instead of field name here.
     Or even mix them together::
 
         $m->setOrder($m->expr('[net]*[vat]'));

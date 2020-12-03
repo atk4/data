@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace atk4\data;
 
 use Atk4\Core\InitializerTrait;
-use atk4\dsql\Expression;
+use Atk4\Dsql\Expression;
 
 /**
  * Class description?

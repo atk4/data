@@ -10,7 +10,7 @@ use atk4\data\FieldSqlExpression;
 use atk4\data\Model;
 use atk4\data\Persistence;
 use atk4\data\Reference\HasOne;
-use atk4\dsql\Connection;
+use Atk4\Dsql\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;

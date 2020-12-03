@@ -39,7 +39,7 @@ parameters:
         # for src/Model/ReferencesTrait.php (in context of class atk4\data\Model)
         - '~^Call to an undefined method atk4\\data\\Reference\:\:refLink\(\)\.$~'
         # for src/Persistence/Sql.php
-        - '~^Call to an undefined method atk4\\dsql\\Query\:\:sequence\(\)\.$~'
+        - '~^Call to an undefined method Atk4\\Dsql\\Query\:\:sequence\(\)\.$~'
         - '~^Call to an undefined method atk4\\data\\Persistence\:\:expr\(\)\.$~'
         - '~^Call to an undefined method atk4\\data\\Persistence\:\:exprNow\(\)\.$~'
         # for src/Persistence/Sql/Join.php

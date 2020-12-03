@@ -8,8 +8,8 @@ use Atk4\Core\DiContainerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Core\TrackableTrait;
 use atk4\data\Model\Scope;
-use atk4\dsql\Expression;
-use atk4\dsql\Expressionable;
+use Atk4\Dsql\Expression;
+use Atk4\Dsql\Expressionable;
 
 /**
  * Class description?

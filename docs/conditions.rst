@@ -233,7 +233,7 @@ Expression as first argument
 Supported by: SQL, (Planned: Array, Mongo)
 
 The $field of addCondition() can be passed as either an expression or any
-object implementing atk4\dsql\Expressionable interface. Same logic applies
+object implementing Atk4\Dsql\Expressionable interface. Same logic applies
 to the $value::
 
     $m->addCondition($m->getField('name'), '!=', $this->getField('surname'));
