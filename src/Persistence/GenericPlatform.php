@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Persistence;
+namespace Atk4\Data\Persistence;
 
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms;
@@ -11,7 +11,7 @@ class GenericPlatform extends Platforms\AbstractPlatform
 {
     private function createNotSupportedException(): \Exception // DbalException once DBAL 2.x support is dropped
     {
-        if (\atk4\dsql\Connection::isComposerDbal2x()) {
+        if (\Atk4\Dsql\Connection::isComposerDbal2x()) {
             // @phpstan-ignore-next-line
             return \Doctrine\DBAL\DBALException::notSupported('SQL');
         }

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace atk4\data;
+namespace Atk4\Data;
 
-use atk4\core\DiContainerTrait;
-use atk4\core\ReadableCaptionTrait;
-use atk4\core\TrackableTrait;
-use atk4\data\Model\Scope;
-use atk4\dsql\Expression;
-use atk4\dsql\Expressionable;
+use Atk4\Core\DiContainerTrait;
+use Atk4\Core\ReadableCaptionTrait;
+use Atk4\Core\TrackableTrait;
+use Atk4\Data\Model\Scope;
+use Atk4\Dsql\Expression;
+use Atk4\Dsql\Expressionable;
 
 /**
  * Class description?

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Persistence;
+namespace Atk4\Data\Persistence;
 
-use atk4\data\Exception;
-use atk4\data\Model;
-use atk4\data\Persistence;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 
 /**
  * Implements persistence driver that can save data into array and load
@@ -323,7 +323,7 @@ class Array_ extends Persistence
     /**
      * Typecast data and return Iterator of data array.
      */
-    public function initAction(Model $model, array $fields = null): \atk4\data\Action\Iterator
+    public function initAction(Model $model, array $fields = null): \Atk4\Data\Action\Iterator
     {
         $data = $this->data[$model->table];
         array_walk($data, function (&$row, $id) use ($model) {
@@ -336,13 +336,13 @@ class Array_ extends Persistence
             }, $data);
         }
 
-        return new \atk4\data\Action\Iterator($data);
+        return new \Atk4\Data\Action\Iterator($data);
     }
 
     /**
      * Will set limit defined inside $m onto data.
      */
-    protected function setLimitOrder(Model $model, \atk4\data\Action\Iterator $action)
+    protected function setLimitOrder(Model $model, \Atk4\Data\Action\Iterator $action)
     {
         // first order by
         if ($model->order) {
@@ -358,9 +358,9 @@ class Array_ extends Persistence
     /**
      * Will apply conditions defined inside $model onto $iterator.
      *
-     * @return \atk4\data\Action\Iterator|null
+     * @return \Atk4\Data\Action\Iterator|null
      */
-    public function applyScope(Model $model, \atk4\data\Action\Iterator $iterator)
+    public function applyScope(Model $model, \Atk4\Data\Action\Iterator $iterator)
     {
         return $iterator->filter($model->scope());
     }

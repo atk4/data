@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Action;
+namespace Atk4\Data\Action;
 
-use atk4\data\Exception;
-use atk4\data\Field;
-use atk4\data\Model;
+use Atk4\Data\Exception;
+use Atk4\Data\Field;
+use Atk4\Data\Model;
 
 /**
  * Class Array_ is returned by $model->action(). Compatible with DSQL to a certain point as it implements
@@ -66,7 +66,7 @@ class Iterator
      * @param string $field
      * @param bool   $coalesce
      *
-     * @return \atk4\data\Action\Iterator
+     * @return \Atk4\Data\Action\Iterator
      */
     public function aggregate($fx, $field, $coalesce = false)
     {

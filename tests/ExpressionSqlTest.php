@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Model;
-use atk4\data\Persistence;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 /**
- * @coversDefaultClass \atk4\data\Model
+ * @coversDefaultClass \Atk4\Data\Model
  */
-class ExpressionSqlTest extends \atk4\schema\PhpunitTestCase
+class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testNakedExpression()
     {
