@@ -107,7 +107,7 @@ This now re-shifts the balance and makes it possible to implement any generic UI
 It's important to note, that glue may also interact with the model preparing it for a specific use-case:
 
 ``` php
-$grid = new \atk4\ui\Table();
+$grid = new \Atk4\Ui\Table();
 $data = new Order($db);
 $data->addCondition('is_new', true);
 $data->addCondition('client_id', $_GET['client_id']);
@@ -172,7 +172,7 @@ Your Report Model:
 In order to output results on HTML table:
 
 ``` php
-$grid = new \atk4\ui\Grid();
+$grid = new \Atk4\Ui\Grid();
 $data = new JobReport($db);
 $grid->setModel($data);
 

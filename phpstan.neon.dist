@@ -14,7 +14,7 @@ parameters:
         - '~^Unsafe usage of new static\(\)\.$~'
 
         # TODO remove once https://github.com/atk4/ui/issues/1548 is resolved
-        - '~^Class atk4\\ui\\(Button|Icon) not found\.$~'
+        - '~^Class Atk4\\Ui\\(Button|Icon) not found\.$~'
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for level = 2

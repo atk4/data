@@ -114,7 +114,7 @@ with Agile UI form, it will be displayed as radio button or a drop-down::
     $model->addField('gender', ['enum' => ['F', 'M']]);
 
     // Agile UI code:
-    $app = new \atk4\ui\App('my app');
+    $app = new \Atk4\Ui\App('my app');
     $app->initLayout('Centered');
     Form::addTo($app)->setModel($model);
 
@@ -278,7 +278,7 @@ Password (after 1.5.0 release)
 Without this class your password will be stored **unencrypted**.
 Here is how to use it properly::
 
-    $user->addField('mypass', [\atk4\ui\FormField\Password::class]);
+    $user->addField('mypass', [\Atk4\Ui\FormField\Password::class]);
 
     $user->set('mypass', 'secret');
     $user->save();
