@@ -182,12 +182,12 @@ $html = $grid->render();
 Or if you want to display them as a Chart, using https://github.com/atk4/chart and https://github.com/atk4/report
 
 ``` php
-$chart = new \atk4\chart\BarChart();
+$chart = new \Atk4\Chart\BarChart();
 $data = new JobReport($db);
 
 // BarChart wants aggregated data
 $data->addExpression('month', 'month([date])');
-$aggregate = new \atk4\report\GroupModel($data);
+$aggregate = new \Atk4\Report\GroupModel($data);
 $aggregate->groupBy('month', ['profit_margin'=>'sum']);
 
 // Associate presentation with data

@@ -23,7 +23,7 @@ inside a Table or Form and can be exported through RestAPI::
 
 We also allow use of custom Field implementation::
 
-    $this->addField('encrypted_password', new \atk4\login\Field\Password());
+    $this->addField('encrypted_password', new \Atk4\Login\Field\Password());
 
 A properly implemented type will still be able to offer some means to present
 it in human-readable format, however in some cases, if you plan on using ATK UI,
