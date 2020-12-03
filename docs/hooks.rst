@@ -195,7 +195,7 @@ effective, you can implement this through a hook::
 
     $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, function($m, $update, $st) {
         if (!$st->rowCount()) {
-            throw (new \atk4\core\Exception('Update didn\'t affect any records'))
+            throw (new \Atk4\Core\Exception('Update didn\'t affect any records'))
                 ->addMoreInfo('query', $update->getDebugQuery())
                 ->addMoreInfo('statement', $st)
                 ->addMoreInfo('model', $m)

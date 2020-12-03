@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\data\Tests;
 
-use atk4\core\Exception;
+use Atk4\Core\Exception;
 use atk4\data\Model;
 use atk4\data\Persistence\Static_ as Persistence_Static;
 
@@ -162,7 +162,7 @@ class UserActionTest extends \atk4\schema\PhpunitTestCase
 
     public function testException1()
     {
-        $this->expectException(\atk4\core\Exception::class);
+        $this->expectException(\Atk4\Core\Exception::class);
         $client = new UaClient($this->pers);
         $client->getUserAction('non_existant_action');
     }

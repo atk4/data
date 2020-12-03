@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace atk4\data\Tests;
 
-use atk4\core\AtkPhpunit;
-use atk4\core\Translator\Translator;
+use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Translator\Translator;
 use atk4\data\Exception;
 use atk4\data\Locale;
 use atk4\data\Model;

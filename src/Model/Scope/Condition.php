@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\data\Model\Scope;
 
-use atk4\core\ReadableCaptionTrait;
+use Atk4\Core\ReadableCaptionTrait;
 use atk4\data\Exception;
 use atk4\data\Field;
 use atk4\data\Model;

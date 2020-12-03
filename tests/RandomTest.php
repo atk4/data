@@ -257,7 +257,7 @@ class RandomTest extends \atk4\schema\PhpunitTestCase
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
-                throw (new \atk4\core\Exception('Update didn\'t affect any records'))
+                throw (new \Atk4\Core\Exception('Update didn\'t affect any records'))
                     ->addMoreInfo('query', $update->getDebugQuery())
                     ->addMoreInfo('statement', $st)
                     ->addMoreInfo('model', $m)

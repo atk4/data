@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\schema;
 
-use atk4\core\Exception;
+use Atk4\Core\Exception;
 use atk4\data\Field;
 use atk4\data\FieldSqlExpression;
 use atk4\data\Model;

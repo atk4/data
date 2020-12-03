@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace atk4\data\Model;
 
-use atk4\core\DiContainerTrait;
-use atk4\core\Exception;
-use atk4\core\InitializerTrait;
-use atk4\core\TrackableTrait;
+use Atk4\Core\DiContainerTrait;
+use Atk4\Core\Exception;
+use Atk4\Core\InitializerTrait;
+use Atk4\Core\TrackableTrait;
 use atk4\data\Model;
 
 /**

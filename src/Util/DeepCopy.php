@@ -20,7 +20,7 @@ use atk4\data\Reference\HasOne;
  */
 class DeepCopy
 {
-    use \atk4\core\DebugTrait;
+    use \Atk4\Core\DebugTrait;
 
     /** @const string */
     public const HOOK_AFTER_COPY = self::class . '@afterCopy';
@@ -295,7 +295,7 @@ class DeepCopy
             return $destination;
         } catch (DeepCopyException $e) {
             throw $e;
-        } catch (\atk4\core\Exception $e) {
+        } catch (\Atk4\Core\Exception $e) {
             $this->debug('noticed a problem');
 
             throw (new DeepCopyException('Problem cloning model', 0, $e))

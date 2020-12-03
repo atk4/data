@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace atk4\data;
 
-use atk4\core\CollectionTrait;
-use atk4\core\ContainerTrait;
-use atk4\core\DiContainerTrait;
-use atk4\core\DynamicMethodTrait;
-use atk4\core\Factory;
-use atk4\core\HookTrait;
-use atk4\core\InitializerTrait;
-use atk4\core\ReadableCaptionTrait;
+use Atk4\Core\CollectionTrait;
+use Atk4\Core\ContainerTrait;
+use Atk4\Core\DiContainerTrait;
+use Atk4\Core\DynamicMethodTrait;
+use Atk4\Core\Factory;
+use Atk4\Core\HookTrait;
+use Atk4\Core\InitializerTrait;
+use Atk4\Core\ReadableCaptionTrait;
 use atk4\dsql\Query;
 
 /**
@@ -577,7 +577,7 @@ class Model implements \IteratorAggregate
     {
         try {
             return $this->_getFromCollection($name, 'fields');
-        } catch (\atk4\core\Exception $e) {
+        } catch (\Atk4\Core\Exception $e) {
             throw (new Exception('Field is not defined in model', 0, $e))
                 ->addMoreInfo('model', $this)
                 ->addMoreInfo('field', $name);
@@ -764,7 +764,7 @@ class Model implements \IteratorAggregate
     {
         // set temporary hook to disable any normalization (null validation)
         $hookIndex = $this->onHookShort(self::HOOK_NORMALIZE, static function () {
-            throw new \atk4\core\HookBreaker(false);
+            throw new \Atk4\Core\HookBreaker(false);
         }, [], PHP_INT_MIN);
         try {
             return $this->set($field, null);
