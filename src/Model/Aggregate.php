@@ -85,7 +85,7 @@ class Aggregate extends Model
             throw new Exception('Base model must have Sql persistence to use grouping');
         }
 
-        $this->baseModel = $baseModel;
+        $this->baseModel = clone $baseModel;
         $this->table = $baseModel->table;
 
         parent::__construct($baseModel->persistence, $defaults);
