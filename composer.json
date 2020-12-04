@@ -41,13 +41,11 @@
   "require": {
     "php": ">=7.3.0",
     "ext-intl": "*",
-    "atk4/core": "dev-develop",
     "atk4/dsql": "dev-develop"
   },
   "require-release": {
     "php": ">=7.3.0",
     "ext-intl": "*",
-    "atk4/core": "~2.3.0",
     "atk4/dsql": "~2.3.0"
   },
   "require-dev": {
