@@ -32,7 +32,7 @@
       "homepage": "https://mvorisek.cz/"
     }
   ],
-  "version": "2.3.1",
+  "version": "2.3.2",
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
@@ -41,8 +41,8 @@
   "require": {
     "php": ">=7.3.0",
     "ext-intl": "*",
-    "atk4/core": "~2.3.0",
-    "atk4/dsql": "~2.3.0"
+    "atk4/core": "~2.3.2",
+    "atk4/dsql": "~2.3.2"
   },
   "require-dev": {
     "atk4/schema": "~2.3.0",
@@ -53,7 +53,8 @@
   },
   "autoload": {
     "psr-4": {
-      "atk4\\data\\": "src/"
+      "atk4\\data\\": "src/",
+      "Atk4\\Data\\": "src/"
     }
   },
   "autoload-dev": {
