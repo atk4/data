@@ -1765,7 +1765,7 @@ class Model implements \IteratorAggregate
     /**
      * Returns iterator (yield values).
      *
-     * @return mixed[]
+     * @return iterable<static>
      */
     public function getIterator(): iterable
     {
