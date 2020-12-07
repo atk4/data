@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Model\Aggregate;
+use Atk4\Data\Model\Aggregate;
 
-class ReportTest extends \atk4\schema\PhpunitTestCase
+class ReportTest extends \Atk4\Schema\PhpunitTestCase
 {
     /** @var array */
     private $init_db =

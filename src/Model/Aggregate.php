@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Model;
+namespace Atk4\Data\Model;
 
-use atk4\data\Exception;
-use atk4\data\Field;
-use atk4\data\FieldSqlExpression;
-use atk4\data\Model;
-use atk4\data\Persistence;
-use atk4\data\Reference;
-use atk4\dsql\Expression;
-use atk4\dsql\Query;
+use Atk4\Data\Exception;
+use Atk4\Data\Field;
+use Atk4\Data\FieldSqlExpression;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence;
+use Atk4\Data\Reference;
+use Atk4\Dsql\Expression;
+use Atk4\Dsql\Query;
 
 /**
  * Aggregate model allows you to query using "group by" clause on your existing model.
@@ -37,7 +37,7 @@ use atk4\dsql\Query;
  * You can also pass seed (for example field type) when aggregating:
  * $aggregate->groupBy(['first','last'], ['salary' => ['sum([])', 'type'=>'money']];
  *
- * @property \atk4\data\Persistence\Sql $persistence
+ * @property \Atk4\Data\Persistence\Sql $persistence
  *
  * @method Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
  */

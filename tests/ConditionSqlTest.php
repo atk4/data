@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\data\Model;
+use Atk4\Data\Model;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 /**
- * @coversDefaultClass \atk4\data\Model
+ * @coversDefaultClass \Atk4\Data\Model
  */
-class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
+class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testBasic()
     {
@@ -68,7 +68,7 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $mm = clone $m;
         $mm->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
-        $this->expectException(\atk4\data\Exception::class);
+        $this->expectException(\Atk4\Data\Exception::class);
         $this->expectExceptionMessageMatches('~different~');
         $mm->tryLoad(2);
     }
@@ -358,7 +358,7 @@ class ConditionSqlTest extends \atk4\schema\PhpunitTestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $this->expectException(\atk4\dsql\Exception::class);
+        $this->expectException(\Atk4\Dsql\Exception::class);
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 

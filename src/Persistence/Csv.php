@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Persistence;
+namespace Atk4\Data\Persistence;
 
-use atk4\data\Exception;
-use atk4\data\Model;
-use atk4\data\Persistence;
+use Atk4\Data\Exception;
+use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 
 /**
  * Implements persistence driver that can save data and load from CSV file.

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\Model;
+namespace Atk4\Data\Model;
 
-use atk4\data\Exception;
-use atk4\data\Field;
-use atk4\data\FieldSqlExpression;
-use atk4\data\Model;
-use atk4\dsql\Expression;
-use atk4\dsql\Query;
+use Atk4\Data\Exception;
+use Atk4\Data\Field;
+use Atk4\Data\FieldSqlExpression;
+use Atk4\Data\Model;
+use Atk4\Dsql\Expression;
+use Atk4\Dsql\Query;
 
 /**
  * Union model combines multiple nested models through a UNION in order to retrieve
@@ -20,7 +20,7 @@ use atk4\dsql\Query;
  * For example if you are asking sum(amount), there is no need to fetch any extra
  * fields from sub-models.
  *
- * @property \atk4\data\Persistence\Sql $persistence
+ * @property \Atk4\Data\Persistence\Sql $persistence
  *
  * @method Expression expr($expr, array $args = []) forwards to Persistence\Sql::expr using $this as model
  */
@@ -156,7 +156,7 @@ class Union extends Model
                     }
 
                     $queryFieldExpressions[$fieldName] = $fieldExpression;
-                } catch (\atk4\core\Exception $e) {
+                } catch (\Atk4\Core\Exception $e) {
                     throw $e->addMoreInfo('nestedModel', get_class($nestedModel));
                 }
             }
@@ -408,7 +408,7 @@ class Union extends Model
 
                         break;
                 }
-            } catch (\atk4\core\Exception $e) {
+            } catch (\Atk4\Core\Exception $e) {
                 throw $e->addMoreInfo('nestedModel', get_class($nestedModel));
             }
         }

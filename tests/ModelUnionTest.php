@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace atk4\data\tests;
+namespace Atk4\Data\Tests;
 
-use atk4\dsql\Expression;
+use Atk4\Dsql\Expression;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 
-class ModelUnionTest extends \atk4\schema\PhpunitTestCase
+class ModelUnionTest extends \Atk4\Schema\PhpunitTestCase
 {
     /** @var Model\Client */
     protected $client;
@@ -423,7 +423,7 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
     public function testConditionExpression()
     {
         $transaction = clone $this->subtractInvoiceTransaction;
-        $transaction->addCondition(new Expression('{} > 5', ['amount']));
+        $transaction->addCondition($transaction->expr('{} > 5', ['amount']));
 
         $this->assertSame([
             ['name' => 'prepay', 'amount' => 10.0],
@@ -444,9 +444,5 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             ['name' => 'prepay', 'amount' => 10.0],
             ['name' => 'full pay', 'amount' => 4.0],
         ], $transaction->export());
-    }
-
-    public function testNestedUnion()
-    {
     }
 }
