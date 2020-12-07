@@ -114,7 +114,7 @@ class Union extends Model
         $expr = [];
         $args = [];
 
-        foreach ($this->union as $n => [$nestedModel, $fieldMap]) {
+        foreach ($this->union as [$nestedModel, $fieldMap]) {
             // map fields for related model
             $queryFieldExpressions = [];
             foreach ($fields as $fieldName) {
@@ -157,7 +157,7 @@ class Union extends Model
 
                     $queryFieldExpressions[$fieldName] = $fieldExpression;
                 } catch (\atk4\core\Exception $e) {
-                    throw $e->addMoreInfo('model', $n);
+                    throw $e->addMoreInfo('nestedModel', get_class($nestedModel));
                 }
             }
 
@@ -389,7 +389,7 @@ class Union extends Model
                     // field is included in mapping - use mapping expression
                     $field = $fieldMap[$key] instanceof Expression
                             ? $fieldMap[$key]
-                            : $this->expr($fieldMap[$key], $nestedModel->getFields());
+                            : $this->getFieldExpr($nestedModel, $key, $fieldMap[$key]);
                 } elseif (is_string($key) && $nestedModel->hasField($key)) {
                     // model has such field - use that field directly
                     $field = $nestedModel->getField($key);

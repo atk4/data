@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace atk4\data\tests;
 
+use atk4\dsql\Expression;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 
 class ModelUnionTest extends \atk4\schema\PhpunitTestCase
@@ -376,6 +377,59 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
         //$c->load(1);
     }
 
+    public function testConditionOnUnionField()
+    {
+        $transaction = clone $this->subtractInvoiceTransaction;
+        $transaction->addCondition('amount', '<', 0);
+
+        $this->assertSame([
+            ['name' => 'chair purchase', 'amount' => -4.0],
+            ['name' => 'table purchase', 'amount' => -15.0],
+            ['name' => 'chair purchase', 'amount' => -4.0],
+        ], $transaction->export());
+    }
+
+    public function testConditionOnNestedModelField()
+    {
+        $transaction = clone $this->subtractInvoiceTransaction;
+        $transaction->addCondition('client_id', '>', 1);
+
+        $this->assertSame([
+            ['name' => 'chair purchase', 'amount' => -4.0],
+            ['name' => 'full pay', 'amount' => 4.0],
+        ], $transaction->export());
+    }
+
+    public function testConditionForcedOnNestedModels1()
+    {
+        $transaction = clone $this->subtractInvoiceTransaction;
+        $transaction->addCondition('amount', '>', 5, true);
+
+        $this->assertSame([
+            ['name' => 'prepay', 'amount' => 10.0],
+        ], $transaction->export());
+    }
+
+    public function testConditionForcedOnNestedModels2()
+    {
+        $transaction = clone $this->subtractInvoiceTransaction;
+        $transaction->addCondition('amount', '<', -10, true);
+
+        $this->assertSame([
+            ['name' => 'table purchase', 'amount' => -15.0],
+        ], $transaction->export());
+    }
+
+    public function testConditionExpression()
+    {
+        $transaction = clone $this->subtractInvoiceTransaction;
+        $transaction->addCondition(new Expression('{} > 5', ['amount']));
+
+        $this->assertSame([
+            ['name' => 'prepay', 'amount' => 10.0],
+        ], $transaction->export());
+    }
+
     /**
      * Model's conditions can still be placed on the original field values.
      */
@@ -390,5 +444,9 @@ class ModelUnionTest extends \atk4\schema\PhpunitTestCase
             ['name' => 'prepay', 'amount' => 10.0],
             ['name' => 'full pay', 'amount' => 4.0],
         ], $transaction->export());
+    }
+
+    public function testNestedUnion()
+    {
     }
 }
