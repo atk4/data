@@ -559,7 +559,7 @@ class Field implements Expressionable
      * @param string|null $operator one of Scope\Condition operators
      * @param mixed       $value    the condition value to be handled
      */
-    public function getQueryArguments($operator, $value, $useFieldAlias = false): array
+    public function getQueryArguments($operator, $value): array
     {
         $skipValueTypecast = [
             Scope\Condition::OPERATOR_LIKE,
@@ -578,9 +578,7 @@ class Field implements Expressionable
             }
         }
 
-        $field = $useFieldAlias && $this->useAlias() ? $this->short_name : $this;
-
-        return [$field, $operator, $value];
+        return [$this, $operator, $value];
     }
 
     // }}}

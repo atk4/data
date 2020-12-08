@@ -298,7 +298,7 @@ class Aggregate extends Model
 
             // simple condition
             if ($condition instanceof Model\Scope\Condition) {
-                $query->having(...$condition->toQueryArguments(true));
+                $query->having(...$condition->toQueryArguments());
             }
 
             // nested conditions

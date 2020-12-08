@@ -178,7 +178,7 @@ class Condition extends AbstractScope
         }
     }
 
-    public function toQueryArguments($useFieldAlias = false): array
+    public function toQueryArguments(): array
     {
         if ($this->isEmpty()) {
             return [];
@@ -220,7 +220,7 @@ class Condition extends AbstractScope
 
             // handle the query arguments using field
             if ($field instanceof Field) {
-                [$field, $operator, $value] = $field->getQueryArguments($operator, $value, $useFieldAlias);
+                [$field, $operator, $value] = $field->getQueryArguments($operator, $value);
             }
 
             // only expression contained in $field
