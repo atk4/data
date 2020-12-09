@@ -1178,11 +1178,13 @@ class Model implements \IteratorAggregate
      */
     public function duplicate($newId = null)
     {
-        $this->setId(null);
+        $this->entityId = null;
 
         if ($this->id_field) {
             $this->setId($newId);
         }
+
+        $this->dirty = $this->data;
 
         return $this;
     }
