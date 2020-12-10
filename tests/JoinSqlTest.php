@@ -641,7 +641,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
 
-        // now test reverse join without
+        // now test reverse join defined differently
         $m_user = new Model($db, 'user');
         $m_user->addField('name');
         $j = $m_user->join('detail', [ // here we just set foreign table name without dot and foreign_field
@@ -655,5 +655,21 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m = (clone $m_user)->tryLoad(22);
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
+
+        // now test reverse join with table_alias and foreign_alias
+        $m_user = new Model($db, ['user', 'table_alias' => 'u']);
+        $m_user->addField('name');
+        $j = $m_user->join('detail', [
+            'reverse' => true,
+            'foreign_field' => 'my_user_id',
+            'foreign_alias' => 'a',
+        ]);
+        $j->addField('notes');
+
+        // insert new record
+        $m = (clone $m_user)->save(['name' => 'Chris', 'notes' => '5th note']);
+        $m = (clone $m_user)->tryLoad(23);
+        $this->assertTrue($m->loaded());
+        $this->assertEquals(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
 }
