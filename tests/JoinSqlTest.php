@@ -41,7 +41,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
-        $this->expectException(Exception::class);
+        $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/pull/802
         $j = $m->join('contact4.foo_id', ['test_id', 'reverse' => true]);
         $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
