@@ -186,7 +186,7 @@ class Join
 
         if ($this->reverse === true) {
             if (isset($this->master_field) && $this->master_field !== $id_field) {
-                throw (new Exception('You are trying to link tables on non-id fields. This is not implemented yet'))
+                throw (new Exception('Joining tables on non-id fields is not implemented yet'))
                     ->addMoreInfo('condition', $this->getOwner()->table . '.' . $this->master_field . ' = ' . $this->foreign_table . '.' . $this->foreign_field);
             }
 
