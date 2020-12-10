@@ -497,7 +497,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue(isset($a->persistence));
     }
 
-    public function testDuplicate1()
+    public function testDuplicateSaveNew()
     {
         $this->setDb([
             'rate' => [
@@ -518,7 +518,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ], $m->export());
     }
 
-    public function testDuplicate2()
+    public function testDuplicateOverwriteExisting()
     {
         $this->setDb([
             'rate' => [
