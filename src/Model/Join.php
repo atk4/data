@@ -177,7 +177,7 @@ class Join
         // handle foreign table containing a dot - that will be reverse join
         if (is_string($this->foreign_table) && strpos($this->foreign_table, '.') !== false) {
             // split by LAST dot in foreign_table name
-            [$this->foreign_table, $this->foreign_field] = preg_split('/\.+(?=[^\.]+$)/', $this->foreign_table);
+            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
 
             if (!isset($this->reverse)) {
                 $this->reverse = true;
