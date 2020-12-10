@@ -601,7 +601,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $m_u->ref('Email')->export());
     }
 
-    public function testJoinOneOnOne()
+    public function testJoinReverseOneOnOne()
     {
         $this->setDb([
             'user' => [
@@ -640,5 +640,20 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m = (clone $m_user)->tryLoad(21);
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
+
+        // now test reverse join without
+        $m_user = new Model($db, 'user');
+        $m_user->addField('name');
+        $j = $m_user->join('detail', [ // here we just set foreign table name without dot and foreign_field
+            'reverse' => true, // and set it as revers join
+            'foreign_field' => 'my_user_id', // this is custome name so we have to set it here otherwise it will generate user_id
+        ]);
+        $j->addField('notes');
+
+        // insert new record
+        $m = (clone $m_user)->save(['name' => 'Olaf', 'notes' => '4th note']);
+        $m = (clone $m_user)->tryLoad(22);
+        $this->assertTrue($m->loaded());
+        $this->assertEquals(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
     }
 }
