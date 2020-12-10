@@ -599,38 +599,4 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
             ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
         ], $m_u->ref('Email')->export());
     }
-
-    public function testJoinOneOnOne()
-    {
-        $this->setDb([
-            'user' => [
-                10 => ['id' => 10, 'name' => 'John'],
-                20 => ['id' => 20, 'name' => 'Peter'],
-            ], 'detail' => [
-                100 => ['id' => 100, 'user_id' => 10, 'notes' => 'first note'],
-                200 => ['id' => 200, 'user_id' => 20, 'notes' => 'second note'],
-            ],
-        ]);
-
-        $db = new Persistence\Sql($this->db->connection);
-        $m_user = new Model($db, 'user');
-        $m_user->addField('name');
-        $j = $m_user->join('detail', [
-            'master_field' => 'id',
-            'foreign_field' => 'user_id',
-        ]);
-        $j->addField('notes');
-
-        // try load one record
-        $m = (clone $m_user)->tryLoad(20);
-        $this->assertTrue($m->loaded());
-        $this->assertEquals(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
-
-        // insert new record
-        $m = (clone $m_user)->save(['name' => 'Emily']);
-var_export($this->getDb());
-
-
-
-    }
 }
