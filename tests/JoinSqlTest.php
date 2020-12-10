@@ -599,4 +599,45 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
             ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
         ], $m_u->ref('Email')->export());
     }
+
+    public function testJoinOneOnOne()
+    {
+        $this->setDb([
+            'user' => [
+                10 => ['id' => 10, 'name' => 'John'],
+                20 => ['id' => 20, 'name' => 'Peter'],
+            ], 'detail' => [
+                100 => ['id' => 100, 'my_user_id' => 10, 'notes' => 'first note'],
+                200 => ['id' => 200, 'my_user_id' => 20, 'notes' => 'second note'],
+            ],
+        ]);
+
+        $db = new Persistence\Sql($this->db->connection);
+        $m_user = new Model($db, 'user');
+        $m_user->addField('name');
+        $j = $m_user->join('detail.my_user_id', [
+            //'reverse' => true, // this will be reverse join by default
+            // also no need to set these (will be done automatically), but still let's do that for test sake
+            'master_field' => 'id',
+            'foreign_field' => 'my_user_id',
+        ]);
+        $j->addField('notes');
+
+        // try load one record
+        $m = (clone $m_user)->tryLoad(20);
+        $this->assertTrue($m->loaded());
+        $this->assertEquals(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
+
+        // try to update loaded record
+        $m->save(['name' => 'Mark', 'notes' => '2nd note']);
+        $m = (clone $m_user)->tryLoad(20);
+        $this->assertTrue($m->loaded());
+        $this->assertEquals(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
+
+        // insert new record
+        $m = (clone $m_user)->save(['name' => 'Emily', 'notes' => '3rd note']);
+        $m = (clone $m_user)->tryLoad(21);
+        $this->assertTrue($m->loaded());
+        $this->assertEquals(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
+    }
 }
