@@ -530,12 +530,6 @@ class Field implements Expressionable
                 return serialize($v);
             }
 
-            // TODO fix array persistence DB typecast until typecasting is implemented cleanly/centrally for all persistences
-            if ($this->getOwner()->persistence instanceof Persistence\Array_ && $v instanceof \DateTimeInterface) {
-                $vUtc = (clone $v)->setTimezone(new \DateTimeZone('UTC'));
-                return $vUtc->format('Y-m-d H:i:s.u');
-            }
-
             return (string) $this->getOwner()->persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
         };
 

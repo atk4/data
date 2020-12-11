@@ -84,6 +84,20 @@ class Array_ extends Persistence
         }
     }
 
+    public function typecastSaveRow(Model $model, array $row): array
+    {
+        $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
+
+        return $sqlPersistence->typecastSaveRow($model, $row);
+    }
+
+    public function typecastLoadRow(Model $model, array $row): array
+    {
+        $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
+
+        return $sqlPersistence->typecastLoadRow($model, $row);
+    }
+
     /**
      * {@inheritdoc}
      */
