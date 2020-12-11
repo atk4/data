@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Model\Smbo;
 
-class Contact extends \Atk4\Data\Model
+use Atk4\Data\Model;
+
+class Contact extends Model
 {
     public $table = 'contact';
 

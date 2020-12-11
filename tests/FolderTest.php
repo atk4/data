@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-class Folder extends \Atk4\Data\Model
+class Folder extends Model
 {
     public $table = 'folder';
 

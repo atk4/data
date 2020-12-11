@@ -31,6 +31,7 @@ trait UaReminder
 class UaClient extends Model
 {
     use UaReminder;
+
     public $caption = 'UaClient';
 
     protected function init(): void
