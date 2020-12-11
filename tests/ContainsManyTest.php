@@ -269,7 +269,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
         // let's test how it all looks in persistence without typecasting
         $exp_lines = $i->setOrder('id')->export(null, null, false)[0]['lines'];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
-            $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC'));
+            $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
             return $dt->format('Y-m-d H:i:s.u');
         };
