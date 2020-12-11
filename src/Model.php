@@ -13,15 +13,16 @@ use Atk4\Core\HookTrait;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Dsql\Query;
+use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
  * Data model class.
  *
+ * @property int                 $id       @Atk\Field(visibility="protected_set") Contains ID of the current record.
+ *                                         If the value is null then the record is considered to be new.
  * @property Field[]|Reference[] $elements
- * @property mixed               $id       Contains ID of the current record. If the value is null then the record
- *                                         is considered to be new.
  */
-class Model implements \IteratorAggregate
+class Model extends Model\Base implements \IteratorAggregate
 {
     use ContainerTrait {
         add as _add;
@@ -36,6 +37,7 @@ class Model implements \IteratorAggregate
     use ReadableCaptionTrait;
     use Model\ReferencesTrait;
     use Model\JoinsTrait;
+    use HintableModelTrait;
     use Model\UserActionsTrait;
 
     /** @const string */
