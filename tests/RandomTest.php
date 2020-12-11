@@ -182,7 +182,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model_Item($db, 'item');
 
         $this->assertSame(
-            ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
     }
@@ -206,7 +206,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model_Item2($db, 'item');
 
         $this->assertSame(
-            ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
     }
