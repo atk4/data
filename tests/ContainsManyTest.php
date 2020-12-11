@@ -268,17 +268,32 @@ class ContainsManyTest extends \atk4\schema\PhpunitTestCase
 
         // let's test how it all looks in persistence without typecasting
         $exp_lines = $i->setOrder('id')->export(null, null, false)[0]['lines'];
+        $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
+            $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
+
+            return $dt->format('Y-m-d H:i:s.u');
+        };
         $this->assertSame(
             json_encode([
                 '1' => [
-                    'id' => 1, 'vat_rate_id' => '1', 'price' => '10', 'qty' => '2', 'add_date' => (new \DateTime('2019-06-01'))->format('Y-m-d\TH:i:sP'), 'discounts' => json_encode([
-                        '1' => ['id' => 1, 'percent' => '5', 'valid_till' => (new \DateTime('2019-07-15'))->format('Y-m-d\TH:i:sP')],
-                        '2' => ['id' => 2, 'percent' => '10', 'valid_till' => (new \DateTime('2019-07-30'))->format('Y-m-d\TH:i:sP')],
+                    'id' => 1,
+                    'vat_rate_id' => 1,
+                    'price' => 10,
+                    'qty' => 2,
+                    'add_date' => $formatDtForCompareFunc(new \DateTime('2019-06-01')),
+                    'discounts' => json_encode([
+                        '1' => ['id' => 1, 'percent' => 5, 'valid_till' => $formatDtForCompareFunc(new \DateTime('2019-07-15'))],
+                        '2' => ['id' => 2, 'percent' => 10, 'valid_till' => $formatDtForCompareFunc(new \DateTime('2019-07-30'))],
                     ]),
                 ],
                 '2' => [
-                    'id' => 2, 'vat_rate_id' => '2', 'price' => '15', 'qty' => '5', 'add_date' => (new \DateTime('2019-07-01'))->format('Y-m-d\TH:i:sP'), 'discounts' => json_encode([
-                        '1' => ['id' => 1, 'percent' => '20', 'valid_till' => (new \DateTime('2019-12-31'))->format('Y-m-d\TH:i:sP')],
+                    'id' => 2,
+                    'vat_rate_id' => 2,
+                    'price' => 15,
+                    'qty' => 5,
+                    'add_date' => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
+                    'discounts' => json_encode([
+                        '1' => ['id' => 1, 'percent' => 20, 'valid_till' => $formatDtForCompareFunc(new \DateTime('2019-12-31'))],
                     ]),
                 ],
             ]),
