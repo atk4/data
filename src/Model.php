@@ -372,7 +372,7 @@ class Model extends Model\Base implements \IteratorAggregate
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, ['type' => 'integer', 'system' => true]);
+            $this->addField($this->id_field, ['type' => 'integer', 'required' => true, 'system' => true]);
         } else {
             return; // don't declare actions for model without id_field
         }
