@@ -22,7 +22,7 @@ use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
  *                                         If the value is null then the record is considered to be new.
  * @property Field[]|Reference[] $elements
  */
-class Model extends Model\Base implements \IteratorAggregate
+class Model implements \IteratorAggregate
 {
     use ContainerTrait {
         add as _add;
