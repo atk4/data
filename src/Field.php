@@ -18,10 +18,10 @@ use Atk4\Dsql\Expressionable;
  */
 class Field implements Expressionable
 {
-    use TrackableTrait;
     use DiContainerTrait;
-    use ReadableCaptionTrait;
     use Model\JoinLinkTrait;
+    use ReadableCaptionTrait;
+    use TrackableTrait;
 
     // {{{ Properties
 
