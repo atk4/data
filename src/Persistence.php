@@ -12,10 +12,10 @@ class Persistence
     use \Atk4\Core\ContainerTrait {
         add as _add;
     }
-    use \Atk4\Core\HookTrait;
-    use \Atk4\Core\DynamicMethodTrait;
-    use \Atk4\Core\NameTrait;
     use \Atk4\Core\DiContainerTrait;
+    use \Atk4\Core\DynamicMethodTrait;
+    use \Atk4\Core\HookTrait;
+    use \Atk4\Core\NameTrait;
 
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
@@ -155,9 +155,9 @@ class Persistence
 
             // Expression and null cannot be converted.
             if (
-                $value instanceof \Atk4\Dsql\Expression ||
-                $value instanceof \Atk4\Dsql\Expressionable ||
-                $value === null
+                $value instanceof \Atk4\Dsql\Expression
+                || $value instanceof \Atk4\Dsql\Expressionable
+                || $value === null
             ) {
                 $result[$field->getPersistenceName()] = $value;
 

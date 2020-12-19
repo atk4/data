@@ -19,12 +19,12 @@ use Atk4\Data\Reference;
  */
 class Join
 {
-    use TrackableTrait;
+    use DiContainerTrait;
     use InitializerTrait {
         init as _init;
     }
-    use DiContainerTrait;
     use JoinLinkTrait;
+    use TrackableTrait;
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
