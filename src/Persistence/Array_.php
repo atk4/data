@@ -313,7 +313,7 @@ class Array_ extends Persistence
     /**
      * Prepare iterator.
      */
-    public function prepareIterator(Model $model): iterable
+    public function prepareIterator(Model $model): \Traversable
     {
         return $model->action('select')->get();
     }

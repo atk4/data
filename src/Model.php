@@ -1769,9 +1769,9 @@ class Model implements \IteratorAggregate
     /**
      * Returns iterator (yield values).
      *
-     * @return iterable<static>
+     * @return \Traversable<static>
      */
-    public function getIterator(): iterable
+    public function getIterator(): \Traversable
     {
         foreach ($this->rawIterator() as $data) {
             $thisCloned = clone $this;
@@ -1816,8 +1816,10 @@ class Model implements \IteratorAggregate
 
     /**
      * Returns iterator.
+     *
+     * @return \Traversable<array<string, string|null>>
      */
-    public function rawIterator(): iterable
+    public function rawIterator(): \Traversable
     {
         return $this->persistence->prepareIterator($this);
     }
