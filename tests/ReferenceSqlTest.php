@@ -390,21 +390,21 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $firstUserOrders->setOrder('id');
 
         $this->assertEquals([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+            ['id' => '1', 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => '3', 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $firstUserOrders->export());
 
         $user->unload();
 
         $this->assertEquals([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+            ['id' => '1', 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => '3', 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $firstUserOrders->export());
 
         $this->assertEquals([
-            ['id' => '1', 'company_id' => '1', 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
-            ['id' => '2', 'company_id' => '2', 'description' => 'Zoe Company Order', 'amount' => 10.0],
-            ['id' => '3', 'company_id' => '1', 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
+            ['id' => '1', 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
+            ['id' => '2', 'company_id' => 2, 'description' => 'Zoe Company Order', 'amount' => 10.0],
+            ['id' => '3', 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
         ], $user->ref('Company')->ref('Orders')->setOrder('id')->export());
     }
 
@@ -464,8 +464,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
                 ['name' => 'Ronaldo'],
             ],
             'stadium' => [
-                ['name' => 'Sue bernabeu', 'player_id' => '3'],
-                ['name' => 'John camp', 'player_id' => '1'],
+                ['name' => 'Sue bernabeu', 'player_id' => 3],
+                ['name' => 'John camp', 'player_id' => 1],
             ],
         ]);
 
@@ -480,7 +480,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $p->load(2);
         $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
         $this->assertSame('Nou camp nou', $p->ref('Stadium')->get('name'));
-        $this->assertSame('2', $p->ref('Stadium')->get('player_id'));
+        $this->assertSame(2, $p->ref('Stadium')->get('player_id'));
     }
 
     public function testModelProperty()
