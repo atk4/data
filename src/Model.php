@@ -1922,7 +1922,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|\Closure $expression
+     * @param string|array|\Atk4\Dsql\Expression|\Closure $expression
      *
      * @return Field\Callback
      */

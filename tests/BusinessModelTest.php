@@ -189,12 +189,9 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     {
         $m = new Model();
         $this->expectException(\Error::class);
-        $m->set(0, 'foo');
+        $m->set(0, 'foo'); // @phpstan-ignore-line
     }
 
-    /**
-     * Fields can't be numeric.
-     */
     public function testException2a()
     {
         $m = new Model();
@@ -202,9 +199,6 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->set('3', 'foo');
     }
 
-    /**
-     * Fields can't be numeric.
-     */
     public function testException2b()
     {
         $m = new Model();
@@ -212,21 +206,11 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->set('3b', 'foo');
     }
 
-    /**
-     * Fields can't be numeric.
-     */
     public function testException2c()
     {
         $m = new Model();
         $this->expectException(Exception::class);
         $m->set('', 'foo');
-    }
-
-    public function testException3()
-    {
-        $m = new Model();
-        $this->expectException(\Error::class);
-        $m->set(4, 5);
     }
 
     public function testClass1()
