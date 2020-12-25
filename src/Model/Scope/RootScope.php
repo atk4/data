@@ -14,9 +14,7 @@ use Atk4\Data\Model;
  */
 class RootScope extends Model\Scope
 {
-    /**
-     * @var Model
-     */
+    /** @var Model */
     protected $model;
 
     protected function __construct(array $nestedConditions = [])

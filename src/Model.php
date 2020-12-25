@@ -1150,7 +1150,7 @@ class Model implements \IteratorAggregate
         if ($ret === false) {
             return $this->unload();
         } elseif (is_object($ret)) {
-            return $ret;
+            return $ret; // @phpstan-ignore-line
         }
 
         return $this;
@@ -1261,7 +1261,7 @@ class Model implements \IteratorAggregate
         $model = (self::class)::fromSeed([$class ?? static::class], $options);
 
         if ($this->persistence) {
-            return $this->persistence->add($model);
+            return $this->persistence->add($model); // @phpstan-ignore-line
         }
 
         return $model;
@@ -1333,7 +1333,7 @@ class Model implements \IteratorAggregate
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
-                return $ret;
+                return $ret; // @phpstan-ignore-line
             }
         } else {
             $this->unload();
@@ -1365,7 +1365,7 @@ class Model implements \IteratorAggregate
         if ($ret === false) {
             return $this->unload();
         } elseif (is_object($ret)) {
-            return $ret;
+            return $ret; // @phpstan-ignore-line
         }
 
         return $this;
@@ -1397,7 +1397,7 @@ class Model implements \IteratorAggregate
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
-                return $ret;
+                return $ret; // @phpstan-ignore-line
             }
         } else {
             $this->unload();
@@ -1796,9 +1796,9 @@ class Model implements \IteratorAggregate
 
             if (is_object($ret)) {
                 if ($ret->id_field) {
-                    yield $ret->getId() => $ret;
+                    yield $ret->getId() => $ret; // @phpstan-ignore-line
                 } else {
-                    yield $ret;
+                    yield $ret; // @phpstan-ignore-line
                 }
             } else {
                 if ($this->id_field) {
@@ -1935,6 +1935,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
+        /** @var Field\Callback */
         $field = Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);
@@ -1958,7 +1959,11 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        return $this->addField($name, new Field\Callback($expression));
+        $field = new Field\Callback($expression);
+
+        $this->addField($name, $field);
+
+        return $field;
     }
 
     // }}}

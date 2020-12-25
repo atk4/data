@@ -19,11 +19,7 @@ class Scope extends Scope\AbstractScope
     public const OR = 'OR';
     public const AND = 'AND';
 
-    /**
-     * Junction to use in case more than one element.
-     *
-     * @var self::AND|self::OR
-     */
+    /** @var self::AND|self::OR Junction to use in case more than one element. */
     protected $junction = self::AND;
 
     /**
@@ -67,7 +63,7 @@ class Scope extends Scope\AbstractScope
         if ($this->issetOwner()) {
             $this->unsetOwner();
         }
-        $this->short_name = null;
+        $this->short_name = null; // @phpstan-ignore-line
     }
 
     /**

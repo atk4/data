@@ -259,7 +259,7 @@ class Join
      *
      * @param array $defaults
      *
-     * @return static
+     * @return self
      */
     public function join(string $foreign_table, $defaults = [])
     {
@@ -276,7 +276,7 @@ class Join
      *
      * @param array $defaults
      *
-     * @return static
+     * @return self
      */
     public function leftJoin(string $foreign_table, $defaults = [])
     {

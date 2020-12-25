@@ -394,7 +394,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('John', $m->getTitle()); // returns parent record title_field
 
         // no title_field set - return id value
-        $m->title_field = null;
+        $m->title_field = null; // @phpstan-ignore-line
         $this->assertEquals(2, $m->getTitle()); // loaded returns id value
 
         // expression as title field

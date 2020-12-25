@@ -12,7 +12,7 @@ trait JoinsTrait
     /**
      * The class used by join() method.
      *
-     * @var string|array
+     * @var array
      */
     public $_default_seed_join = [Join::class];
 

@@ -40,35 +40,35 @@ class Sql extends Persistence
     /**
      * Default class when adding new field.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_addField = [\Atk4\Data\FieldSql::class];
 
     /**
      * Default class when adding hasOne field.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_hasOne = [\Atk4\Data\Reference\HasOneSql::class];
 
     /**
      * Default class when adding hasMany field.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_hasMany; // [\Atk4\Data\Reference\HasMany::class];
 
     /**
      * Default class when adding Expression field.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_addExpression = [FieldSqlExpression::class];
 
     /**
      * Default class when adding join.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_join = [Sql\Join::class];
 
@@ -109,7 +109,7 @@ class Sql extends Persistence
     {
         parent::disconnect();
 
-        $this->connection = null;
+        $this->connection = null; // @phpstan-ignore-line
     }
 
     /**

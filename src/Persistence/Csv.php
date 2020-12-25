@@ -44,7 +44,7 @@ class Csv extends Persistence
     /**
      * File handle, when the $file is opened.
      *
-     * @var resource
+     * @var resource|null
      */
     public $handle;
 
@@ -81,7 +81,7 @@ class Csv extends Persistence
     /**
      * Array of field names.
      *
-     * @var array
+     * @var array|null
      */
     public $header;
 

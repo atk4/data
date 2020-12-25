@@ -2,7 +2,7 @@ includes:
     - vendor/mahalux/atk4-hintable/phpstan-ext.neon
 
 parameters:
-    level: 2
+    level: 3
     paths:
         - ./
     excludes_analyse:

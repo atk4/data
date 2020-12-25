@@ -15,7 +15,7 @@ use Atk4\Data\Model;
 class Iterator
 {
     /**
-     * @var \ArrayIterator
+     * @var \Iterator
      */
     public $generator;
 

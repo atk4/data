@@ -159,7 +159,7 @@ class Field implements Expressionable
      *
      * Value can be array [$encode_callback, $decode_callback].
      *
-     * @var bool|array|null
+     * @var bool|array|string|null
      */
     public $serialize;
 
