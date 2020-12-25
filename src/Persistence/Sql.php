@@ -693,7 +693,7 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if (!isset($data[$model->id_field]) || $data[$model->id_field] === null) {
+        if (!isset($data[$model->id_field])) {
             throw (new Exception('Model uses "id_field" but it wasn\'t available in the database'))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id_field', $model->id_field)
@@ -971,7 +971,7 @@ class Sql extends Persistence
         // TODO: Oracle does not support lastInsertId(), only for testing
         // as this does not support concurrent inserts
         if ($this->connection instanceof \Atk4\Dsql\Oracle\Connection) {
-            if ($model->id_field === false) {
+            if (!$model->id_field) {
                 return ''; // TODO code should never call lastInsertId() if id field is not defined
             }
 

@@ -112,7 +112,7 @@ class Model implements \IteratorAggregate
      *
      * $table = ['user', 'mysql'=>'tbl_user'];
      *
-     * @var string|array
+     * @var string|array|false
      */
     public $table;
 
@@ -133,7 +133,7 @@ class Model implements \IteratorAggregate
     /**
      * Persistence driver inherited from Atk4\Data\Persistence.
      *
-     * @var Persistence|Persistence\Sql
+     * @var Persistence|Persistence\Sql|null
      */
     public $persistence;
 
@@ -329,12 +329,12 @@ class Model implements \IteratorAggregate
             return new Model\Scope\RootScope();
         }, null, Model\Scope\RootScope::class)();
 
-        if ((is_string($persistence) || is_array($persistence)) && func_num_args() === 1) {
+        if (is_array($persistence) && func_num_args() === 1) {
             $defaults = $persistence;
             $persistence = null;
         }
 
-        if (is_string($defaults) || $defaults === false) {
+        if (is_string($defaults)) {
             $defaults = ['table' => $defaults];
         }
 

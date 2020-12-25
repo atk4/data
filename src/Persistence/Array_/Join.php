@@ -76,8 +76,7 @@ class Join extends Model\Join
         }
 
         // Figure out where are we going to save data
-        $persistence = $this->persistence ?:
-            $this->getOwner()->persistence;
+        $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->insert(
             $this->getOwner(),

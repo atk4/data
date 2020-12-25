@@ -402,8 +402,6 @@ class Field implements Expressionable
             case 'bool':
                 throw (new Exception('Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.'))
                     ->addMoreInfo('type', $f->type);
-
-                break;
             }
 
             return $value;

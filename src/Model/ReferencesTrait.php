@@ -53,7 +53,7 @@ trait ReferencesTrait
     protected function _hasReference(array $seed, string $link, $defaults = []): Reference
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model_' . $link];
+            $defaults = ['model' => $defaults];
         } elseif (isset($defaults[0])) {
             $defaults['model'] = $defaults[0];
             unset($defaults[0]);
