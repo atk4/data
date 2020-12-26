@@ -12,8 +12,6 @@ use Atk4\Dsql\Expression;
 use Atk4\Dsql\Expressionable;
 
 /**
- * Class description?
- *
  * @method Model getOwner()
  */
 class Field implements Expressionable
@@ -622,12 +620,8 @@ class Field implements Expressionable
     /**
      * When field is used as expression, this method will be called.
      * Universal way to convert ourselves to expression. Off-load implementation into persistence.
-     *
-     * @param Expression $expression
-     *
-     * @return Expression
      */
-    public function getDsqlExpression($expression)
+    public function getDsqlExpression(Expression $expression): Expression
     {
         if (!$this->getOwner()->persistence || !$this->getOwner()->persistence instanceof Persistence\Sql) {
             throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
