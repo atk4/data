@@ -1178,16 +1178,13 @@ class Model implements \IteratorAggregate
      */
     public function duplicate()
     {
-        if (func_num_args()) {
+        if (func_num_args() > 0) {
             throw new Exception('Duplicating using existing ID is no longer supported');
         }
 
-        $duplicate = (clone $this);
-
+        $duplicate = clone $this;
         $duplicate->dirty = $this->data;
-
         $duplicate->entityId = null;
-
         $duplicate->setId(null);
 
         return $duplicate;
