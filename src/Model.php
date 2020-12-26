@@ -21,6 +21,8 @@ use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
  * @property int                 $id       @Atk\Field(visibility="protected_set") Contains ID of the current record.
  *                                         If the value is null then the record is considered to be new.
  * @property Field[]|Reference[] $elements
+ *
+ * @phpstan-implements \IteratorAggregate<static>
  */
 class Model implements \IteratorAggregate
 {
@@ -1174,19 +1176,21 @@ class Model implements \IteratorAggregate
      * when you save it next time, it ends up as a new
      * record in the database.
      *
-     * @param mixed $newId
-     *
-     * @return $this
+     * @return static
      */
-    public function duplicate($newId = null)
+    public function duplicate()
     {
-        $this->setId(null);
-
-        if ($this->id_field) {
-            $this->setId($newId);
+        // TODO remove in v2.6
+        if (func_num_args() > 0) {
+            throw new Exception('Duplicating using existing ID is no longer supported');
         }
 
-        return $this;
+        $duplicate = clone $this;
+        $duplicate->dirty = $this->data;
+        $duplicate->entityId = null;
+        $duplicate->setId(null);
+
+        return $duplicate;
     }
 
     /**
@@ -1767,9 +1771,9 @@ class Model implements \IteratorAggregate
     /**
      * Returns iterator (yield values).
      *
-     * @return iterable<static>
+     * @return \Traversable<static>
      */
-    public function getIterator(): iterable
+    public function getIterator(): \Traversable
     {
         foreach ($this->rawIterator() as $data) {
             $thisCloned = clone $this;
@@ -1813,9 +1817,9 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Returns iterator.
+     * @return \Traversable<array<string, string|null>>
      */
-    public function rawIterator(): iterable
+    public function rawIterator(): \Traversable
     {
         return $this->persistence->prepareIterator($this);
     }
