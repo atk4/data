@@ -8,8 +8,6 @@ use Atk4\Dsql\Expression;
 use Atk4\Dsql\Expressionable;
 
 /**
- * Class description?
- *
  * @property Persistence\Sql\Join $join
  */
 class FieldSql extends Field implements Expressionable

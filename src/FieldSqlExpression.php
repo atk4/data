@@ -7,9 +7,6 @@ namespace Atk4\Data;
 use Atk4\Core\InitializerTrait;
 use Atk4\Dsql\Expression;
 
-/**
- * Class description?
- */
 class FieldSqlExpression extends FieldSql
 {
     use InitializerTrait {

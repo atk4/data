@@ -12,8 +12,6 @@ use Atk4\Dsql\Expression;
 use Atk4\Dsql\Expressionable;
 
 /**
- * Class description?
- *
  * @method Model getOwner()
  */
 class Field implements Expressionable
