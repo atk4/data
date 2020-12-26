@@ -23,20 +23,20 @@ use Atk4\Dsql\Query;
  */
 class Model implements \IteratorAggregate
 {
+    use CollectionTrait;
     use ContainerTrait {
         add as _add;
     }
+    use DiContainerTrait;
     use DynamicMethodTrait;
     use HookTrait;
     use InitializerTrait {
         init as _init;
     }
-    use DiContainerTrait;
-    use CollectionTrait;
-    use ReadableCaptionTrait;
-    use Model\ReferencesTrait;
     use Model\JoinsTrait;
+    use Model\ReferencesTrait;
     use Model\UserActionsTrait;
+    use ReadableCaptionTrait;
 
     /** @const string */
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
@@ -1173,6 +1173,7 @@ class Model implements \IteratorAggregate
      * record in the database.
      *
      * @param mixed $newId
+     *
      * @return static
      */
     public function duplicate($newId = null)

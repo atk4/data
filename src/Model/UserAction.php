@@ -22,10 +22,10 @@ use Atk4\Data\Model;
 class UserAction
 {
     use DiContainerTrait;
-    use TrackableTrait;
     use InitializerTrait {
         init as init_;
     }
+    use TrackableTrait;
 
     /** Defining records scope of the action */
     public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
