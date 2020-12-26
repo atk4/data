@@ -518,20 +518,11 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ], $m->export());
     }
 
-    public function testExceptionOnDuplicateOverwriteExisting()
+    public function testDuplicateWithIdArgumentException()
     {
-        $this->setDb([
-            'rate' => [
-                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],
-                ['dat' => '12/12/12', 'bid' => 8.3, 'ask' => 9.2],
-            ],
-        ]);
-
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model_Rate($db);
-
+        $m = new Model_Rate();
         $this->expectException(Exception::class);
-        $m->load(1)->duplicate(2)->save();
+        $m->duplicate(2)->save();
     }
 
     public function testTableNameDots()

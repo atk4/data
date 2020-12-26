@@ -1178,6 +1178,7 @@ class Model implements \IteratorAggregate
      */
     public function duplicate()
     {
+        // TODO remove in v2.6
         if (func_num_args() > 0) {
             throw new Exception('Duplicating using existing ID is no longer supported');
         }
