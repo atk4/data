@@ -310,9 +310,6 @@ class Array_ extends Persistence
         return $this->lastInsertIds['$'] ?? null;
     }
 
-    /**
-     * Prepare iterator.
-     */
     public function prepareIterator(Model $model): \Traversable
     {
         return $model->action('select')->getRows();

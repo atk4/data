@@ -1815,8 +1815,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Returns iterator.
-     *
      * @return \Traversable<array<string, string|null>>
      */
     public function rawIterator(): \Traversable

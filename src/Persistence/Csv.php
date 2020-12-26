@@ -265,9 +265,6 @@ class Csv extends Persistence
         return $data;
     }
 
-    /**
-     * Prepare iterator.
-     */
     public function prepareIterator(Model $model): \Traversable
     {
         if (!$this->mode) {
