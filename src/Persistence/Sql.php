@@ -829,10 +829,7 @@ class Sql extends Persistence
         return $data;
     }
 
-    /**
-     * Prepare iterator.
-     */
-    public function prepareIterator(Model $model): iterable
+    public function prepareIterator(Model $model): \Traversable
     {
         $export = $model->action('select');
 
