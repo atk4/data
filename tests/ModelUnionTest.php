@@ -68,8 +68,8 @@ class ModelUnionTest extends \Atk4\Schema\PhpunitTestCase
     {
         $client = new Model\Client($this->db);
 
-        $client->hasMany('Payment', [Model\Payment::class]);
-        $client->hasMany('Invoice', [Model\Invoice::class]);
+        $client->hasMany('Payment', ['model' => [Model\Payment::class]]);
+        $client->hasMany('Invoice', ['model' => [Model\Invoice::class]]);
 
         return $client;
     }

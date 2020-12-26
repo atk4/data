@@ -15,7 +15,7 @@ class Invoice extends Model
         parent::init();
         $this->addField('name');
 
-        $this->hasOne('client_id', [Client::class]);
+        $this->hasOne('client_id', ['model' => [Client::class]]);
         $this->addField('amount', ['type' => 'money']);
     }
 }

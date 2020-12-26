@@ -58,8 +58,8 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client_id' => '1', 'c' => 2],
-                ['client_id' => '2', 'c' => 1],
+                ['client_id' => 1, 'c' => 2],
+                ['client_id' => 2, 'c' => 1],
             ],
             $invoiceAggregate->setOrder('client_id', 'asc')->export()
         );
@@ -73,8 +73,8 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Vinny', 'client_id' => '1', 'c' => 2],
-                ['client' => 'Zoe', 'client_id' => '2', 'c' => 1],
+                ['client' => 'Vinny', 'client_id' => 1, 'c' => 2],
+                ['client' => 'Zoe', 'client_id' => 2, 'c' => 1],
             ],
             $aggregate->setOrder('client_id', 'asc')->export()
         );
@@ -90,8 +90,8 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Vinny', 'client_id' => '1', 'amount' => 19.0],
-                ['client' => 'Zoe', 'client_id' => '2', 'amount' => 4.0],
+                ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
+                ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
             ],
             $aggregate->setOrder('client_id', 'asc')->export()
         );
@@ -110,8 +110,8 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Vinny', 'client_id' => '1', 's' => 19.0, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
-                ['client' => 'Zoe', 'client_id' => '2', 's' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0],
+                ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'min' => 4.0, 'max' => 15.0, 'amount' => 19.0],
+                ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'min' => 4.0, 'max' => 4.0, 'amount' => 4.0],
             ],
             $aggregate->setOrder('client_id', 'asc')->export()
         );
@@ -130,8 +130,8 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Vinny', 'client_id' => '1', 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
-                ['client' => 'Zoe', 'client_id' => '2', 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
+                ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
+                ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
             ],
             $aggregate->setOrder('client_id', 'asc')->export()
         );
@@ -151,8 +151,8 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Vinny', 'client_id' => '1', 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
-                ['client' => 'Zoe', 'client_id' => '2', 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
+                ['client' => 'Vinny', 'client_id' => 1, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
+                ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
             ],
             $aggregate->setOrder('client_id', 'asc')->export()
         );
@@ -172,7 +172,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Vinny', 'client_id' => '1', 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
+                ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
             ],
             $aggregate->export()
         );
@@ -192,7 +192,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Vinny', 'client_id' => '1', 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
+                ['client' => 'Vinny', 'client_id' => 1, 's' => 19.0, 'amount' => 19.0, 'double' => 38.0],
             ],
             $aggregate->export()
         );
@@ -212,7 +212,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Zoe', 'client_id' => '2', 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
+                ['client' => 'Zoe', 'client_id' => 2, 's' => 4.0, 'amount' => 4.0, 'double' => 8.0],
             ],
             $aggregate->export()
         );
@@ -232,7 +232,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         var_dump($aggregate->action('select')->getDebugQuery());
         $this->assertSame(
             [
-                ['client' => 'Zoe', 'client_id' => '2', 'amount' => 4.0],
+                ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
             ],
             $aggregate->export()
         );
@@ -265,7 +265,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Vinny', 'client_id' => '1', 'amount' => 19.0],
+                ['client' => 'Vinny', 'client_id' => 1, 'amount' => 19.0],
             ],
             $aggregate->setOrder('client_id', 'asc')->export()
         );
@@ -282,7 +282,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Zoe', 'client_id' => '2', 'amount' => 4.0],
+                ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
             ],
             $aggregate->setOrder('client_id', 'asc')->export()
         );

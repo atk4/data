@@ -48,8 +48,8 @@ class ReportTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame(
             [
-                ['client' => 'Vinny', 'client_id' => '1', 'c' => 2],
-                ['client' => 'Zoe', 'client_id' => '2', 'c' => 1],
+                ['client' => 'Vinny', 'client_id' => 1, 'c' => 2],
+                ['client' => 'Zoe', 'client_id' => 2, 'c' => 1],
             ],
             $invoiceAggregate->setOrder('client_id', 'asc')->export()
         );
