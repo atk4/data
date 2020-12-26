@@ -7,9 +7,6 @@ namespace Atk4\Data;
 use Atk4\Core\InitializerTrait;
 use Atk4\Dsql\Expression;
 
-/**
- * Class description?
- */
 class FieldSqlExpression extends FieldSql
 {
     use InitializerTrait {
@@ -85,10 +82,8 @@ class FieldSqlExpression extends FieldSql
 
     /**
      * When field is used as expression, this method will be called.
-     *
-     * @param Expression $expression
      */
-    public function getDsqlExpression($expression): Expression
+    public function getDsqlExpression(Expression $expression): Expression
     {
         $expr = $this->expr;
         if ($expr instanceof \Closure) {

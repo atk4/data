@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data;
 
-/**
- * Class description?
- */
 class ValidationException extends Exception
 {
     /** @var array Array of errors */
