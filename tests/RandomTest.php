@@ -497,6 +497,34 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue(isset($a->persistence));
     }
 
+    public function testDuplicateSaveNew()
+    {
+        $this->setDb([
+            'rate' => [
+                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],
+                ['dat' => '12/12/12', 'bid' => 8.3, 'ask' => 9.2],
+            ],
+        ]);
+
+        $db = new Persistence\Sql($this->db->connection);
+        $m = new Model_Rate($db);
+
+        $m->load(1)->duplicate()->save();
+
+        $this->assertSame([
+            ['id' => 1, 'dat' => '18/12/12', 'bid' => '3.4', 'ask' => '9.4'],
+            ['id' => 2, 'dat' => '12/12/12', 'bid' => '8.3', 'ask' => '9.2'],
+            ['id' => 3, 'dat' => '18/12/12', 'bid' => '3.4', 'ask' => '9.4'],
+        ], $m->export());
+    }
+
+    public function testDuplicateWithIdArgumentException()
+    {
+        $m = new Model_Rate();
+        $this->expectException(Exception::class);
+        $m->duplicate(2)->save();
+    }
+
     public function testTableNameDots()
     {
         $d = new Model($this->db, 'db2.doc');

@@ -1174,19 +1174,21 @@ class Model implements \IteratorAggregate
      * when you save it next time, it ends up as a new
      * record in the database.
      *
-     * @param mixed $newId
-     *
-     * @return $this
+     * @return static
      */
-    public function duplicate($newId = null)
+    public function duplicate()
     {
-        $this->setId(null);
-
-        if ($this->id_field) {
-            $this->setId($newId);
+        // TODO remove in v2.6
+        if (func_num_args() > 0) {
+            throw new Exception('Duplicating using existing ID is no longer supported');
         }
 
-        return $this;
+        $duplicate = clone $this;
+        $duplicate->dirty = $this->data;
+        $duplicate->entityId = null;
+        $duplicate->setId(null);
+
+        return $duplicate;
     }
 
     /**
