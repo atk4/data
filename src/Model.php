@@ -21,6 +21,8 @@ use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
  * @property int                 $id       @Atk\Field(visibility="protected_set") Contains ID of the current record.
  *                                         If the value is null then the record is considered to be new.
  * @property Field[]|Reference[] $elements
+ *
+ * @phpstan-implements \IteratorAggregate<static>
  */
 class Model implements \IteratorAggregate
 {
@@ -1769,9 +1771,9 @@ class Model implements \IteratorAggregate
     /**
      * Returns iterator (yield values).
      *
-     * @return iterable<static>
+     * @return \Traversable<static>
      */
-    public function getIterator(): iterable
+    public function getIterator(): \Traversable
     {
         foreach ($this->rawIterator() as $data) {
             $thisCloned = clone $this;
@@ -1815,9 +1817,9 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Returns iterator.
+     * @return \Traversable<array<string, string|null>>
      */
-    public function rawIterator(): iterable
+    public function rawIterator(): \Traversable
     {
         return $this->persistence->prepareIterator($this);
     }
