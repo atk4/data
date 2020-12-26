@@ -26,7 +26,7 @@ class Static_ extends Array_
     /**
      * Populate the following fields for the model.
      *
-     * @var string[]
+     * @var array<string, array>
      */
     public $fieldsForModel = [];
 

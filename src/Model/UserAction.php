@@ -22,10 +22,10 @@ use Atk4\Data\Model;
 class UserAction
 {
     use DiContainerTrait;
-    use TrackableTrait;
     use InitializerTrait {
         init as init_;
     }
+    use TrackableTrait;
 
     /** Defining records scope of the action */
     public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
@@ -45,10 +45,10 @@ class UserAction
     /** @var string How this action interact with record. default = 'read' */
     public $modifier = self::MODIFIER_READ;
 
-    /** @var \Closure code to execute. By default will call method with same name */
+    /** @var \Closure|string code to execute. By default will call method with same name */
     public $callback;
 
-    /** @var \Closure code, identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure|string code, identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
     /** @var string caption to put on the button */

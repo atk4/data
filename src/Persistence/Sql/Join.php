@@ -21,7 +21,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
      * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
      *
-     * @var \Atk4\Dsql\Expression
+     * @var \Atk4\Dsql\Expression|string|null
      */
     protected $on;
 
@@ -33,12 +33,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
         return '_' . ($this->foreign_alias ?: $this->foreign_table[0]);
     }
 
-    /**
-     * Returns DSQL Expression.
-     *
-     * @param \Atk4\Dsql\Expression $q
-     */
-    public function getDsqlExpression($q): Expression
+    public function getDsqlExpression(Expression $expr): Expression
     {
         /*
         // If our Model has expr() method (inherited from Persistence\Sql) then use it
@@ -47,7 +42,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
         }
 
         // Otherwise call it from expression itself
-        return $q->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
+        return $expr->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
         */
 
         // Romans: Join\Sql shouldn't even be called if expr is undefined. I think we should leave it here to produce error.

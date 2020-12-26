@@ -28,6 +28,7 @@ class ModelTest extends PhpunitTestCase
         $this->assertTrue(true);
 
         return; // TODO enable once import to Model is supported using DBAL
+        // @phpstan-ignore-next-line
         $this->dropTableIfExists('user');
 
         $migrator = $this->getMigrator();
@@ -100,6 +101,7 @@ class ModelTest extends PhpunitTestCase
         $this->assertTrue(true);
 
         return; // TODO enable once create from Model is supported using DBAL
+        // @phpstan-ignore-next-line
         $this->dropTableIfExists('user');
 
         $this->getMigrator(new TestUser($this->db))->create();
@@ -145,7 +147,7 @@ class ModelTest extends PhpunitTestCase
             ['blob', 'MIXEDcase'],
         ));
 
-        $this->assertSame([['id' => '1'], ['id' => '2']], $model->export(['id']));
+        $this->assertSame([['id' => 1], ['id' => 2]], $model->export(['id']));
     }
 }
 
@@ -162,7 +164,7 @@ class TestUser extends \Atk4\Data\Model
         $this->addField('is_admin', ['type' => 'boolean']);
         $this->addField('notes', ['type' => 'text']);
 
-        $this->hasOne('role_id', [TestRole::class, 'our_field' => 'main_role_id', 'their_field' => 'id']);
+        $this->hasOne('role_id', ['model' => [TestRole::class], 'our_field' => 'main_role_id', 'their_field' => 'id']);
     }
 }
 

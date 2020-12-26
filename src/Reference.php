@@ -17,11 +17,11 @@ use Atk4\Core\Factory;
  */
 class Reference
 {
+    use \Atk4\Core\DiContainerTrait;
     use \Atk4\Core\InitializerTrait {
         init as _init;
     }
     use \Atk4\Core\TrackableTrait;
-    use \Atk4\Core\DiContainerTrait;
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -47,7 +47,7 @@ class Reference
      * then used inside getModel() to fully populate and associate with
      * persistence.
      *
-     * @var Model|string|array
+     * @var Model|\Closure|array
      */
     public $model;
 
@@ -163,16 +163,10 @@ class Reference
             }
         } else {
             // add model from seed
-            if (is_array($this->model)) {
-                $modelDefaults = $this->model;
-                $theirModelSeed = [$modelDefaults[0]];
-
-                unset($modelDefaults[0]);
-
-                $defaults = array_merge($modelDefaults, $defaults);
-            } else {
-                $theirModelSeed = [$this->model];
-            }
+            $modelDefaults = $this->model;
+            $theirModelSeed = [$modelDefaults[0]];
+            unset($modelDefaults[0]);
+            $defaults = array_merge($modelDefaults, $defaults);
 
             $theirModel = Factory::factory($theirModelSeed, $defaults);
         }

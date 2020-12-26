@@ -84,6 +84,20 @@ class Array_ extends Persistence
         }
     }
 
+    public function typecastSaveRow(Model $model, array $row): array
+    {
+        $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
+
+        return $sqlPersistence->typecastSaveRow($model, $row);
+    }
+
+    public function typecastLoadRow(Model $model, array $row): array
+    {
+        $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
+
+        return $sqlPersistence->typecastLoadRow($model, $row);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -296,12 +310,9 @@ class Array_ extends Persistence
         return $this->lastInsertIds['$'] ?? null;
     }
 
-    /**
-     * Prepare iterator.
-     */
-    public function prepareIterator(Model $model): iterable
+    public function prepareIterator(Model $model): \Traversable
     {
-        return $model->action('select')->get();
+        return $model->action('select')->generator; // @phpstan-ignore-line
     }
 
     /**
@@ -309,7 +320,7 @@ class Array_ extends Persistence
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
-        $data = $model->action('select', [$fields])->get();
+        $data = $model->action('select', [$fields])->getRows();
 
         if ($typecast) {
             $data = array_map(function ($row) use ($model) {

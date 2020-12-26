@@ -40,35 +40,35 @@ class Sql extends Persistence
     /**
      * Default class when adding new field.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_addField = [\Atk4\Data\FieldSql::class];
 
     /**
      * Default class when adding hasOne field.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_hasOne = [\Atk4\Data\Reference\HasOneSql::class];
 
     /**
      * Default class when adding hasMany field.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_hasMany; // [\Atk4\Data\Reference\HasMany::class];
 
     /**
      * Default class when adding Expression field.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_addExpression = [FieldSqlExpression::class];
 
     /**
      * Default class when adding join.
      *
-     * @var string
+     * @var array
      */
     public $_default_seed_join = [Sql\Join::class];
 
@@ -109,7 +109,7 @@ class Sql extends Persistence
     {
         parent::disconnect();
 
-        $this->connection = null;
+        $this->connection = null; // @phpstan-ignore-line
     }
 
     /**
@@ -693,7 +693,7 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if (!isset($data[$model->id_field]) || $data[$model->id_field] === null) {
+        if (!isset($data[$model->id_field])) {
             throw (new Exception('Model uses "id_field" but it wasn\'t available in the database'))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id_field', $model->id_field)
@@ -829,10 +829,7 @@ class Sql extends Persistence
         return $data;
     }
 
-    /**
-     * Prepare iterator.
-     */
-    public function prepareIterator(Model $model): iterable
+    public function prepareIterator(Model $model): \Traversable
     {
         $export = $model->action('select');
 
@@ -971,7 +968,7 @@ class Sql extends Persistence
         // TODO: Oracle does not support lastInsertId(), only for testing
         // as this does not support concurrent inserts
         if ($this->connection instanceof \Atk4\Dsql\Oracle\Connection) {
-            if ($model->id_field === false) {
+            if (!$model->id_field) {
                 return ''; // TODO code should never call lastInsertId() if id field is not defined
             }
 

@@ -231,8 +231,8 @@ class DeepCopy
                     $source_table = $ref->refModel()->table;
 
                     if (
-                        isset($this->mapping[$source_table]) &&
-                        array_key_exists($source->get($ref_key), $this->mapping[$source_table])
+                        isset($this->mapping[$source_table])
+                        && array_key_exists($source->get($ref_key), $this->mapping[$source_table])
                     ) {
                         // no need to deep copy, simply alter ID
                         $destination->set($ref_key, $this->mapping[$source_table][$source->get($ref_key)]);

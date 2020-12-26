@@ -15,23 +15,13 @@ class Condition extends AbstractScope
 {
     use ReadableCaptionTrait;
 
-    /**
-     * Stores the condition key.
-     *
-     * @var string|Field|Expression
-     */
+    /** @var string|Field|Expression */
     public $key;
 
-    /**
-     * Stores the condition operator.
-     *
-     * @var string
-     */
+    /** @var string */
     public $operator;
 
-    /**
-     * Stores the condition value.
-     */
+    /** @var mixed */
     public $value;
 
     public const OPERATOR_EQUALS = '=';
@@ -106,14 +96,6 @@ class Condition extends AbstractScope
             $key = $key->short_name;
         } elseif (!is_string($key) && !($key instanceof Expression) && !($key instanceof Expressionable)) {
             throw new Exception('Field must be a string or an instance of Expression');
-        }
-
-        if (func_num_args() === 1 && is_bool($key)) {
-            if ($key) {
-                return;
-            }
-
-            $key = new Expression('false');
         }
 
         if (func_num_args() === 2) {
@@ -245,7 +227,9 @@ class Condition extends AbstractScope
 
     public function clear()
     {
-        $this->key = $this->operator = $this->value = null;
+        $this->key = null; // @phpstan-ignore-line
+        $this->operator = null; // @phpstan-ignore-line
+        $this->value = null;
 
         return $this;
     }

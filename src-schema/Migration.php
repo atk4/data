@@ -239,8 +239,10 @@ class Migration
 
             $referenceField = $referenceTheirField ?? $field->reference->getOwner()->id_field;
 
-            $referenceModelClass = $field->reference->model;
-            $referenceModel = new $referenceModelClass(new Persistence\Sql($this->connection));
+            $modelSeed = is_array($field->reference->model)
+                ? $field->reference->model
+                : [get_class($field->reference->model)];
+            $referenceModel = Model::fromSeed($modelSeed, [new Persistence\Sql($this->connection)]);
 
             return $referenceModel->getField($referenceField);
         }

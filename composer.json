@@ -41,22 +41,24 @@
   "require": {
     "php": ">=7.3.0",
     "ext-intl": "*",
-    "atk4/dsql": "dev-develop"
+    "atk4/dsql": "dev-develop",
+    "mahalux/atk4-hintable": "^1.1.4"
   },
   "require-release": {
     "php": ">=7.3.0",
     "ext-intl": "*",
-    "atk4/dsql": "~2.3.0"
+    "atk4/dsql": "~2.3.0",
+    "mahalux/atk4-hintable": "^1.1.4"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^2.16",
+    "friendsofphp/php-cs-fixer": "^2.17",
     "johnkary/phpunit-speedtrap": "^3.2",
     "phpstan/phpstan": "^0.12.58",
     "phpunit/phpcov": "*",
     "phpunit/phpunit": ">=9.0"
   },
   "require-dev-release": {
-    "friendsofphp/php-cs-fixer": "^2.16",
+    "friendsofphp/php-cs-fixer": "^2.17",
     "johnkary/phpunit-speedtrap": "^3.2",
     "phpstan/phpstan": "^0.12.58",
     "phpunit/phpcov": "*",

@@ -63,7 +63,7 @@ no purpose initially, it does come in handy in some cases, when you need to
 unite a few statistical queries. Let's start by looking a at a very basic
 example::
 
-    $m = new Model($db, false);
+    $m = new Model($db, ['table' => false]);
     $m->addExpression('now', 'now()');
     $m->loadAny();
     echo $m->get('now');
@@ -79,7 +79,7 @@ actually use consistently throughout the system. The real benefit from this
 can be gained when you need to pull various statistical values from your
 database at once::
 
-    $m = new Model($db, false);
+    $m = new Model($db, ['table' => false]);
     $m->addExpression('total_orders', (new Model_Order($db))->action('count'));
     $m->addExpression('total_payments', (new Model_Payment($db))->action('count'));
     $m->addExpression('total_received', (new Model_Payment($db))->action('fx0', ['sum', 'amount']));

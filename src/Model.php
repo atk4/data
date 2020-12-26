@@ -13,31 +13,35 @@ use Atk4\Core\HookTrait;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Dsql\Query;
+use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
  * Data model class.
  *
+ * @property int                 $id       @Atk\Field(visibility="protected_set") Contains ID of the current record.
+ *                                         If the value is null then the record is considered to be new.
  * @property Field[]|Reference[] $elements
- * @property mixed               $id       Contains ID of the current record. If the value is null then the record
- *                                         is considered to be new.
+ *
+ * @phpstan-implements \IteratorAggregate<static>
  */
 class Model implements \IteratorAggregate
 {
+    use CollectionTrait;
     use ContainerTrait {
         add as _add;
     }
+    use DiContainerTrait;
     use DynamicMethodTrait;
+    use HintableModelTrait;
     use HookTrait;
     use InitializerTrait {
         init as _init;
     }
-    use DiContainerTrait;
-    use CollectionTrait;
-    use ReadableCaptionTrait;
-    use Model\ReferencesTrait;
     use Model\AggregatesTrait;
     use Model\JoinsTrait;
+    use Model\ReferencesTrait;
     use Model\UserActionsTrait;
+    use ReadableCaptionTrait;
 
     /** @const string */
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
@@ -111,7 +115,7 @@ class Model implements \IteratorAggregate
      *
      * $table = ['user', 'mysql'=>'tbl_user'];
      *
-     * @var string|array
+     * @var string|array|false
      */
     public $table;
 
@@ -132,7 +136,7 @@ class Model implements \IteratorAggregate
     /**
      * Persistence driver inherited from Atk4\Data\Persistence.
      *
-     * @var Persistence|Persistence\Sql
+     * @var Persistence|Persistence\Sql|null
      */
     public $persistence;
 
@@ -328,12 +332,12 @@ class Model implements \IteratorAggregate
             return new Model\Scope\RootScope();
         }, null, Model\Scope\RootScope::class)();
 
-        if ((is_string($persistence) || is_array($persistence)) && func_num_args() === 1) {
+        if (is_array($persistence) && func_num_args() === 1) {
             $defaults = $persistence;
             $persistence = null;
         }
 
-        if (is_string($defaults) || $defaults === false) {
+        if (is_string($defaults)) {
             $defaults = ['table' => $defaults];
         }
 
@@ -371,7 +375,7 @@ class Model implements \IteratorAggregate
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, ['system' => true]);
+            $this->addField($this->id_field, ['type' => 'integer', 'required' => true, 'system' => true]);
         } else {
             return; // don't declare actions for model without id_field
         }
@@ -1149,7 +1153,7 @@ class Model implements \IteratorAggregate
         if ($ret === false) {
             return $this->unload();
         } elseif (is_object($ret)) {
-            return $ret;
+            return $ret; // @phpstan-ignore-line
         }
 
         return $this;
@@ -1173,19 +1177,21 @@ class Model implements \IteratorAggregate
      * when you save it next time, it ends up as a new
      * record in the database.
      *
-     * @param mixed $newId
-     *
-     * @return $this
+     * @return static
      */
-    public function duplicate($newId = null)
+    public function duplicate()
     {
-        $this->setId(null);
-
-        if ($this->id_field) {
-            $this->setId($newId);
+        // TODO remove in v2.6
+        if (func_num_args() > 0) {
+            throw new Exception('Duplicating using existing ID is no longer supported');
         }
 
-        return $this;
+        $duplicate = clone $this;
+        $duplicate->dirty = $this->data;
+        $duplicate->entityId = null;
+        $duplicate->setId(null);
+
+        return $duplicate;
     }
 
     /**
@@ -1260,7 +1266,7 @@ class Model implements \IteratorAggregate
         $model = (self::class)::fromSeed([$class ?? static::class], $options);
 
         if ($this->persistence) {
-            return $this->persistence->add($model);
+            return $this->persistence->add($model); // @phpstan-ignore-line
         }
 
         return $model;
@@ -1332,7 +1338,7 @@ class Model implements \IteratorAggregate
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
-                return $ret;
+                return $ret; // @phpstan-ignore-line
             }
         } else {
             $this->unload();
@@ -1364,7 +1370,7 @@ class Model implements \IteratorAggregate
         if ($ret === false) {
             return $this->unload();
         } elseif (is_object($ret)) {
-            return $ret;
+            return $ret; // @phpstan-ignore-line
         }
 
         return $this;
@@ -1396,7 +1402,7 @@ class Model implements \IteratorAggregate
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
-                return $ret;
+                return $ret; // @phpstan-ignore-line
             }
         } else {
             $this->unload();
@@ -1766,9 +1772,9 @@ class Model implements \IteratorAggregate
     /**
      * Returns iterator (yield values).
      *
-     * @return iterable<static>
+     * @return \Traversable<static>
      */
-    public function getIterator(): iterable
+    public function getIterator(): \Traversable
     {
         foreach ($this->rawIterator() as $data) {
             $thisCloned = clone $this;
@@ -1795,9 +1801,9 @@ class Model implements \IteratorAggregate
 
             if (is_object($ret)) {
                 if ($ret->id_field) {
-                    yield $ret->getId() => $ret;
+                    yield $ret->getId() => $ret; // @phpstan-ignore-line
                 } else {
-                    yield $ret;
+                    yield $ret; // @phpstan-ignore-line
                 }
             } else {
                 if ($this->id_field) {
@@ -1812,9 +1818,9 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Returns iterator.
+     * @return \Traversable<array<string, string|null>>
      */
-    public function rawIterator(): iterable
+    public function rawIterator(): \Traversable
     {
         return $this->persistence->prepareIterator($this);
     }
@@ -1921,7 +1927,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|\Closure $expression
+     * @param string|array|\Atk4\Dsql\Expression|\Closure $expression
      *
      * @return Field\Callback
      */
@@ -1934,6 +1940,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
+        /** @var Field\Callback */
         $field = Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);
@@ -1957,7 +1964,11 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        return $this->addField($name, new Field\Callback($expression));
+        $field = new Field\Callback($expression);
+
+        $this->addField($name, $field);
+
+        return $field;
     }
 
     // }}}
