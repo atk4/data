@@ -38,7 +38,7 @@ class Join
      * If $persistence is set, then it's used for loading
      * and storing the values, instead $owner->persistence.
      *
-     * @var Persistence|Persistence\Sql
+     * @var Persistence|Persistence\Sql|null
      */
     protected $persistence;
 
@@ -259,7 +259,7 @@ class Join
      *
      * @param array $defaults
      *
-     * @return static
+     * @return self
      */
     public function join(string $foreign_table, $defaults = [])
     {
@@ -276,7 +276,7 @@ class Join
      *
      * @param array $defaults
      *
-     * @return static
+     * @return self
      */
     public function leftJoin(string $foreign_table, $defaults = [])
     {
@@ -316,7 +316,7 @@ class Join
     public function hasOne(string $link, $defaults = [])
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model_' . $link];
+            $defaults = ['model' => $defaults];
         }
 
         $defaults['joinName'] = $this->short_name;
@@ -334,7 +334,7 @@ class Join
     public function hasMany(string $link, $defaults = [])
     {
         if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults ?: 'Model_' . $link];
+            $defaults = ['model' => $defaults];
         }
 
         $defaults = array_merge([

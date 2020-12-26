@@ -157,7 +157,7 @@ class Field implements Expressionable
      *
      * Value can be array [$encode_callback, $decode_callback].
      *
-     * @var bool|array|null
+     * @var bool|array|string|null
      */
     public $serialize;
 
@@ -400,8 +400,6 @@ class Field implements Expressionable
             case 'bool':
                 throw (new Exception('Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.'))
                     ->addMoreInfo('type', $f->type);
-
-                break;
             }
 
             return $value;

@@ -21,7 +21,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
      * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
      *
-     * @var \Atk4\Dsql\Expression
+     * @var \Atk4\Dsql\Expression|string|null
      */
     protected $on;
 

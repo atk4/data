@@ -15,7 +15,7 @@ use Atk4\Data\Model;
 class Iterator
 {
     /**
-     * @var \ArrayIterator
+     * @var \Iterator
      */
     public $generator;
 
@@ -50,7 +50,7 @@ class Iterator
                 $this->generator = new \CallbackFilterIterator($this->generator, static function (array $row) use ($filterFxWeakRef) {
                     return $filterFxWeakRef->get()($row);
                 });
-                $this->generator->filterFx = $filterFx; // prevent filter function to be GCed
+                $this->generator->filterFx = $filterFx; // @phpstan-ignore-line prevent filter function to be GCed
             } else {
                 $this->generator = new \CallbackFilterIterator($this->generator, $filterFx);
             }

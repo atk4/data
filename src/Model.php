@@ -114,7 +114,7 @@ class Model implements \IteratorAggregate
      *
      * $table = ['user', 'mysql'=>'tbl_user'];
      *
-     * @var string|array
+     * @var string|array|false
      */
     public $table;
 
@@ -135,7 +135,7 @@ class Model implements \IteratorAggregate
     /**
      * Persistence driver inherited from Atk4\Data\Persistence.
      *
-     * @var Persistence|Persistence\Sql
+     * @var Persistence|Persistence\Sql|null
      */
     public $persistence;
 
@@ -331,12 +331,12 @@ class Model implements \IteratorAggregate
             return new Model\Scope\RootScope();
         }, null, Model\Scope\RootScope::class)();
 
-        if ((is_string($persistence) || is_array($persistence)) && func_num_args() === 1) {
+        if (is_array($persistence) && func_num_args() === 1) {
             $defaults = $persistence;
             $persistence = null;
         }
 
-        if (is_string($defaults) || $defaults === false) {
+        if (is_string($defaults)) {
             $defaults = ['table' => $defaults];
         }
 
@@ -1152,7 +1152,7 @@ class Model implements \IteratorAggregate
         if ($ret === false) {
             return $this->unload();
         } elseif (is_object($ret)) {
-            return $ret;
+            return $ret; // @phpstan-ignore-line
         }
 
         return $this;
@@ -1265,7 +1265,7 @@ class Model implements \IteratorAggregate
         $model = (self::class)::fromSeed([$class ?? static::class], $options);
 
         if ($this->persistence) {
-            return $this->persistence->add($model);
+            return $this->persistence->add($model); // @phpstan-ignore-line
         }
 
         return $model;
@@ -1337,7 +1337,7 @@ class Model implements \IteratorAggregate
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
-                return $ret;
+                return $ret; // @phpstan-ignore-line
             }
         } else {
             $this->unload();
@@ -1369,7 +1369,7 @@ class Model implements \IteratorAggregate
         if ($ret === false) {
             return $this->unload();
         } elseif (is_object($ret)) {
-            return $ret;
+            return $ret; // @phpstan-ignore-line
         }
 
         return $this;
@@ -1401,7 +1401,7 @@ class Model implements \IteratorAggregate
             if ($ret === false) {
                 return $this->unload();
             } elseif (is_object($ret)) {
-                return $ret;
+                return $ret; // @phpstan-ignore-line
             }
         } else {
             $this->unload();
@@ -1800,9 +1800,9 @@ class Model implements \IteratorAggregate
 
             if (is_object($ret)) {
                 if ($ret->id_field) {
-                    yield $ret->getId() => $ret;
+                    yield $ret->getId() => $ret; // @phpstan-ignore-line
                 } else {
-                    yield $ret;
+                    yield $ret; // @phpstan-ignore-line
                 }
             } else {
                 if ($this->id_field) {
@@ -1926,7 +1926,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|\Closure $expression
+     * @param string|array|\Atk4\Dsql\Expression|\Closure $expression
      *
      * @return Field\Callback
      */
@@ -1939,6 +1939,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
+        /** @var Field\Callback */
         $field = Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);
@@ -1962,7 +1963,11 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        return $this->addField($name, new Field\Callback($expression));
+        $field = new Field\Callback($expression);
+
+        $this->addField($name, $field);
+
+        return $field;
     }
 
     // }}}

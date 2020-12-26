@@ -44,7 +44,7 @@ class BadValidationModel extends Model
 
     public function validate($intent = null): array
     {
-        return 'This should be array';
+        return 'This should be array'; // @phpstan-ignore-line
     }
 }
 
