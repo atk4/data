@@ -512,9 +512,9 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m->load(1)->duplicate()->save();
 
         $this->assertSame([
-            ['id' => '1', 'dat' => '18/12/12', 'bid' => '3.4', 'ask' => '9.4'],
-            ['id' => '2', 'dat' => '12/12/12', 'bid' => '8.3', 'ask' => '9.2'],
-            ['id' => '3', 'dat' => '18/12/12', 'bid' => '3.4', 'ask' => '9.4'],
+            ['id' => 1, 'dat' => '18/12/12', 'bid' => '3.4', 'ask' => '9.4'],
+            ['id' => 2, 'dat' => '12/12/12', 'bid' => '8.3', 'ask' => '9.2'],
+            ['id' => 3, 'dat' => '18/12/12', 'bid' => '3.4', 'ask' => '9.4'],
         ], $m->export());
     }
 
