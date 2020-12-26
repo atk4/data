@@ -315,7 +315,7 @@ class Array_ extends Persistence
      */
     public function prepareIterator(Model $model): \Traversable
     {
-        return $model->action('select')->get();
+        return $model->action('select')->getRows();
     }
 
     /**
@@ -323,7 +323,7 @@ class Array_ extends Persistence
      */
     public function export(Model $model, array $fields = null, bool $typecast = true): array
     {
-        $data = $model->action('select', [$fields])->get();
+        $data = $model->action('select', [$fields])->getRows();
 
         if ($typecast) {
             $data = array_map(function ($row) use ($model) {

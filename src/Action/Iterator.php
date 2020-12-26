@@ -71,7 +71,7 @@ class Iterator
     public function aggregate($fx, $field, $coalesce = false)
     {
         $result = 0;
-        $column = array_column($this->get(), $field);
+        $column = array_column($this->getRows(), $field);
 
         switch (strtoupper($fx)) {
             case 'SUM':
@@ -226,7 +226,7 @@ class Iterator
      */
     public function order($fields)
     {
-        $data = $this->get();
+        $data = $this->getRows();
 
         // prepare arguments for array_multisort()
         $args = [];
@@ -252,7 +252,7 @@ class Iterator
      */
     public function limit(int $limit = null, int $offset = 0)
     {
-        $data = array_slice($this->get(), $offset, $limit, true);
+        $data = array_slice($this->getRows(), $offset, $limit, true);
 
         // put data back in generator
         $this->generator = new \ArrayIterator($data);
@@ -285,9 +285,19 @@ class Iterator
     }
 
     /**
-     * Return all data inside array.
+     * @deprecated use "getRows" method instead - will be removed in v2.5
      */
     public function get(): array
+    {
+        'trigger_error'('Method is deprecated. Use getRows instead', E_USER_DEPRECATED);
+
+        return $this->getRows();
+    }
+
+    /**
+     * Return all data inside array.
+     */
+    public function getRows(): array
     {
         return iterator_to_array($this->generator, true);
     }

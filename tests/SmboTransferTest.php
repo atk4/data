@@ -64,8 +64,8 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
             return $e1['id'] < $e2['id'] ? -1 : 1;
         });
         $this->assertSame([
-            ['id' => 1, 'transfer_document_id' => '2'],
-            ['id' => 2, 'transfer_document_id' => '1'],
+            ['id' => 1, 'transfer_document_id' => 2],
+            ['id' => 2, 'transfer_document_id' => 1],
         ], $data);
     }
 
