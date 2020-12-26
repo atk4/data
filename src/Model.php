@@ -13,13 +13,14 @@ use Atk4\Core\HookTrait;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Dsql\Query;
+use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
  * Data model class.
  *
+ * @property int                 $id       @Atk\Field(visibility="protected_set") Contains ID of the current record.
+ *                                         If the value is null then the record is considered to be new.
  * @property Field[]|Reference[] $elements
- * @property mixed               $id       Contains ID of the current record. If the value is null then the record
- *                                         is considered to be new.
  */
 class Model implements \IteratorAggregate
 {
@@ -29,6 +30,7 @@ class Model implements \IteratorAggregate
     }
     use DiContainerTrait;
     use DynamicMethodTrait;
+    use HintableModelTrait;
     use HookTrait;
     use InitializerTrait {
         init as _init;
@@ -370,7 +372,7 @@ class Model implements \IteratorAggregate
         $this->_init();
 
         if ($this->id_field) {
-            $this->addField($this->id_field, ['system' => true]);
+            $this->addField($this->id_field, ['type' => 'integer', 'required' => true, 'system' => true]);
         } else {
             return; // don't declare actions for model without id_field
         }

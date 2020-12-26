@@ -8,7 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-class Model_Rate extends \Atk4\Data\Model
+class Model_Rate extends Model
 {
     public $table = 'rate';
 
@@ -20,7 +20,7 @@ class Model_Rate extends \Atk4\Data\Model
         $this->addField('ask');
     }
 }
-class Model_Item extends \Atk4\Data\Model
+class Model_Item extends Model
 {
     public $table = 'item';
 
@@ -32,7 +32,7 @@ class Model_Item extends \Atk4\Data\Model
             ->addTitle();
     }
 }
-class Model_Item2 extends \Atk4\Data\Model
+class Model_Item2 extends Model
 {
     public $table = 'item';
 
@@ -45,7 +45,7 @@ class Model_Item2 extends \Atk4\Data\Model
             ->addTitle();
     }
 }
-class Model_Item3 extends \Atk4\Data\Model
+class Model_Item3 extends Model
 {
     public $table = 'item';
 
@@ -182,7 +182,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model_Item($db, 'item');
 
         $this->assertSame(
-            ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
     }
@@ -206,7 +206,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model_Item2($db, 'item');
 
         $this->assertSame(
-            ['id' => '3', 'name' => 'Smith', 'parent_item_id' => '2', 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
             $m->load(3)->get()
         );
     }
@@ -357,7 +357,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'user');
 
-        // caption is not set, so generate it from class name \Atk4\Data\Model
+        // caption is not set, so generate it from class name Model
         $this->assertSame('Atk 4 Data Model', $m->getModelCaption());
 
         // caption is set

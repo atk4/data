@@ -167,30 +167,39 @@ class Join
     {
         $this->_init();
 
-        // handle foreign table containing a dot
+        // owner model should have id_field set
+        $id_field = $this->getOwner()->id_field;
+        if (!$id_field) {
+            throw (new Exception('Joins owner model should have id_field set'))
+                ->addMoreInfo('model', $this->getOwner());
+        }
+
+        // handle foreign table containing a dot - that will be reverse join
         if (is_string($this->foreign_table) && strpos($this->foreign_table, '.') !== false) {
+            // split by LAST dot in foreign_table name
+            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
+
             if (!isset($this->reverse)) {
                 $this->reverse = true;
-                if (isset($this->master_field)) {
-                    // both master and foreign fields are set
+            }
+        }
 
-                    // master_field exists, no we will use that
-                    // if (!is_object($this->master_field) && !$this->getOwner()->hasField($this->master_field)) {
-                    throw (new Exception('You are trying to link tables on non-id fields. This is not implemented yet'))
-                        ->addMoreInfo('condition', $this->getOwner()->table . '.' . $this->master_field . ' = ' . $this->foreign_table);
-                    // } $this->reverse = 'link';
-                }
+        if ($this->reverse === true) {
+            if (isset($this->master_field) && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
+                throw (new Exception('Joining tables on non-id fields is not implemented yet'))
+                    ->addMoreInfo('condition', $this->getOwner()->table . '.' . $this->master_field . ' = ' . $this->foreign_table . '.' . $this->foreign_field);
             }
 
-            // split by LAST dot in foreign_table name
-            [$this->foreign_table, $this->foreign_field] = preg_split('/\.+(?=[^\.]+$)/', $this->foreign_table);
-
             if (!$this->master_field) {
-                $this->master_field = 'id';
+                $this->master_field = $id_field;
+            }
+
+            if (!$this->foreign_field) {
+                $this->foreign_field = $this->getOwner()->table . '_' . $id_field;
             }
         } else {
             $this->reverse = false;
-            $id_field = $this->getOwner()->id_field ?: 'id';
+
             if (!$this->master_field) {
                 $this->master_field = $this->foreign_table . '_' . $id_field;
             }

@@ -10,16 +10,22 @@ use Doctrine\DBAL\Types\Types;
 
 // TODO for types to DBAL migration, might be removed later
 
+final class AtkTypes
+{
+    public const MONEY = 'money';
+    public const PASSWORD = 'password';
+}
+
 class AtkTypeMoney extends Type
 {
     public function getName(): string
     {
-        return 'money';
+        return AtkTypes::MONEY;
     }
 
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
-        return Type::getType('float' /* Types::FLOAT supported from DBAL 2.10.x */)->getSQLDeclaration($fieldDeclaration, $platform);
+        return Type::getType(Types::FLOAT)->getSQLDeclaration($fieldDeclaration, $platform);
     }
 }
 
@@ -27,14 +33,14 @@ class AtkTypePassword extends Type
 {
     public function getName(): string
     {
-        return 'password';
+        return AtkTypes::PASSWORD;
     }
 
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
     {
-        return Type::getType('string' /* Types::STRING supported from DBAL 2.10.x */)->getSQLDeclaration($fieldDeclaration, $platform);
+        return Type::getType(Types::STRING)->getSQLDeclaration($fieldDeclaration, $platform);
     }
 }
 
-Type::addType('money', AtkTypeMoney::class);
-Type::addType('password', AtkTypePassword::class);
+Type::addType(AtkTypes::MONEY, AtkTypeMoney::class);
+Type::addType(AtkTypes::PASSWORD, AtkTypePassword::class);

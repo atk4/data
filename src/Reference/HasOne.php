@@ -20,11 +20,10 @@ class HasOne extends Reference
      *
      * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
      *             'date', 'datetime', 'time', 'array', 'object'.
-     * Can also be set to unspecified type for your own custom handling.
      *
      * @var string
      */
-    public $type;
+    public $type = 'integer';
 
     /**
      * Is it system field?

@@ -357,7 +357,7 @@ Depending on the statement you can also use your statement to retrieve data::
 
     $data = $this->expr("call get_client_report_data([client_id])", [
         'client_id'=>$client_id
-    ])->get();
+    ])->getRows();
 
 This can be handy if you wish to create a method for your Model to abstract away
 the data::
@@ -375,7 +375,7 @@ the data::
             return $this->expr("call get_client_report_data([client_id, arg])", [
                 'arg'       => $arg,
                 'client_id' => $client_id,
-            ])->get();
+            ])->getRows();
         }
     }
 

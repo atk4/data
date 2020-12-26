@@ -9,8 +9,8 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Tests\Model\Client as Client;
-use Atk4\Data\Tests\Model\User as User;
+use Atk4\Data\Tests\Model\Client;
+use Atk4\Data\Tests\Model\User;
 
 /**
  * @coversDefaultClass \Atk4\Data\Model

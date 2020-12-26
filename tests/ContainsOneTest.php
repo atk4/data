@@ -142,7 +142,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertFalse($a->loaded());
 
         // now store some address
-        $a->setMulti($row = ['id' => 1, 'country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01 UTC'), 'tags' => ['foo', 'bar'], 'door_code' => null]);
+        $a->setMulti($row = ['id' => 1, 'country_id' => 1, 'address' => 'foo', 'built_date' => new \DateTime('2019-01-01'), 'tags' => ['foo', 'bar'], 'door_code' => null]);
         $a->save();
 
         // now reload invoice and see if it is saved
@@ -156,7 +156,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
 
         // now add nested containsOne - DoorCode
         $c = $i->ref('addr')->ref('door_code');
-        $c->setMulti($row = ['id' => 1, 'code' => 'ABC', 'valid_till' => new \DateTime('2019-07-01 UTC')]);
+        $c->setMulti($row = ['id' => 1, 'code' => 'ABC', 'valid_till' => new \DateTime('2019-07-01')]);
         $c->save();
         $this->assertEquals($row, $i->ref('addr')->ref('door_code')->get());
 
@@ -174,8 +174,24 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
 
         // let's test how it all looks in persistence without typecasting
         $exp_addr = $i->setOrder('id')->export(null, null, false)[0]['addr'];
+        $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
+            $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
+
+            return $dt->format('Y-m-d H:i:s.u');
+        };
         $this->assertSame(
-            '{"id":1,"country_id":"2","address":"bar","built_date":"2019-01-01T00:00:00+00:00","tags":"[\"foo\",\"bar\"]","door_code":"{\"id\":1,\"code\":\"DEF\",\"valid_till\":\"2019-07-01T00:00:00+00:00\"}"}',
+            json_encode([
+                'id' => 1,
+                'country_id' => 2,
+                'address' => 'bar',
+                'built_date' => $formatDtForCompareFunc(new \DateTime('2019-01-01')),
+                'tags' => json_encode(['foo', 'bar']),
+                'door_code' => json_encode([
+                    'id' => 1,
+                    'code' => 'DEF',
+                    'valid_till' => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
+                ]),
+            ]),
             $exp_addr
         );
 
