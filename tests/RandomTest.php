@@ -532,8 +532,6 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
 
         $m->load(1)->duplicate(2)->save();
 
-        $this->assertSame(2, $m->getId());
-
         $this->assertSame([
             ['id' => '1', 'dat' => '18/12/12', 'bid' => '3.4', 'ask' => '9.4'],
             ['id' => '2', 'dat' => '18/12/12', 'bid' => '3.4', 'ask' => '9.4'],

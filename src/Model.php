@@ -1173,20 +1173,21 @@ class Model implements \IteratorAggregate
      * record in the database.
      *
      * @param mixed $newId
-     *
-     * @return $this
+     * @return static
      */
     public function duplicate($newId = null)
     {
-        $this->entityId = null;
+        $duplicate = (clone $this);
 
-        if ($this->id_field) {
-            $this->setId($newId);
+        $duplicate->dirty = $this->data;
+
+        $duplicate->entityId = null;
+
+        if ($duplicate->id_field) {
+            $duplicate->setId($newId);
         }
 
-        $this->dirty = $this->data;
-
-        return $this;
+        return $duplicate;
     }
 
     /**
