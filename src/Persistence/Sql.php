@@ -351,9 +351,9 @@ class Sql extends Persistence
                 $isDesc = strtolower($order[1]) === 'desc';
 
                 if ($order[0] instanceof Expression) {
-                    $query->order($order[0], $isDesc); // @phpstan-ignore-line
+                    $query->order($order[0], $isDesc);
                 } elseif (is_string($order[0])) {
-                    $query->order($model->getField($order[0]), $isDesc); // @phpstan-ignore-line
+                    $query->order($model->getField($order[0]), $isDesc);
                 } else {
                     throw (new Exception('Unsupported order parameter'))
                         ->addMoreInfo('model', $model)
