@@ -226,10 +226,10 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
             'amount' => ['expr' => 'sum([])', 'type' => 'money'],
         ]);
 
-        $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', 4.0));
+        $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', 4));
 
         $aggregate->addCondition($scope);
-        var_dump($aggregate->action('select')->getDebugQuery());
+
         $this->assertSame(
             [
                 ['client' => 'Zoe', 'client_id' => 2, 'amount' => 4.0],
