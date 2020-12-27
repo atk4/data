@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Data\Model\Aggregate;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 
@@ -28,9 +27,9 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ];
 
-    /** @var Model\Invoice */
+    /** @var Model\Invoice|null */
     protected $invoice;
-    /** @var Aggregate */
+    /** @var \Atk4\Data\Model|null */
     protected $invoiceAggregate;
 
     protected function setUp(): void
@@ -139,6 +138,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelectCondition()
     {
+        /** @var \Atk4\Data\Model\Aggregate $aggregate */
         $aggregate = clone $this->invoiceAggregate;
         $aggregate->baseModel->addCondition('name', 'chair purchase');
 

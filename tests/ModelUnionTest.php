@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Dsql\Expression;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 
 class ModelUnionTest extends \Atk4\Schema\PhpunitTestCase
 {
-    /** @var Model\Client */
+    /** @var Model\Client|null */
     protected $client;
-    /** @var Model\Transaction */
+    /** @var Model\Transaction|null */
     protected $transaction;
-    /** @var Model\Transaction */
+    /** @var Model\Transaction|null */
     protected $subtractInvoiceTransaction;
 
     /** @var array */
