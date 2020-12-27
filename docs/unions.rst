@@ -5,18 +5,19 @@
 Model Unions
 ============
 
-.. php:namespace:: atk4\data\Model
+.. php:namespace:: Atk4\Data\Model
 
 .. php:class:: Union
 
 In some cases data from multiple models need to be combined. In this case the Union model comes very handy.
 In the case used below Client model schema may have multiple invoices and multiple payments. Payment is not related to the invoice.::
 
-   class Client extends \atk4\data\Model {
+   class Client extends \Atk4\Data\Model {
      public $table = 'client';
      
-     function init() {
-      parent::init();
+     protected function init(): void
+     {
+         parent::init();
          $this->addField('name');
        
          $this->hasMany('Payment');
@@ -24,7 +25,7 @@ In the case used below Client model schema may have multiple invoices and multip
      }
    }
 
-(see tests/ModelUnionTest.php, tests/Client.php, tests/Payment.php and tests/Invoice.php files).
+(see tests/ModelUnionTest.php, tests/Model/Client.php, tests/Model/Payment.php and tests/Model/Invoice.php files).
 
 Union Model Definition
 ----------------------
@@ -33,7 +34,7 @@ Normally a model is associated with a single table. Union model can have multipl
 results from that. As a result, Union model will have no "id" field. Below is an example of inline definition of Union model.
 The Union model can be separated in a designated class and nested model added within the init() method body of the new class::
 
-   $unionPaymentInvoice = new \atk4\data\Model\Union();
+   $unionPaymentInvoice = new \Atk4\Data\Model\Union();
    
    $nestedPayment = $unionPaymentInvoice->addNestedModel(new Invoice());
    $nestedInvoice = $unionPaymentInvoice->addNestedModel(new Payment());

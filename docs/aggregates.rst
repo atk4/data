@@ -5,7 +5,7 @@
 Model Aggregates
 ================
 
-.. php:namespace:: atk4\data\Model
+.. php:namespace:: Atk4\Data\Model
 
 .. php:class:: Aggregate
 
@@ -16,7 +16,7 @@ Grouping
 
 Aggregate model can be used for grouping::
 
-   $orders->add(new \atk4\data\Model\Aggregate());
+   $orders->add(new \Atk4\Data\Model\Aggregate());
 
    $aggregate = $orders->action('group');
 
@@ -33,7 +33,7 @@ in various ways to fine-tune aggregation. Below is one sample use::
      ],
    );
    
-   foreach($aggregate as $row) {
+   foreach ($aggregate as $row) {
      var_dump(json_encode($row));
      // ['country'=>'UK', 'count'=>20, 'total_amount'=>123.20];
      // ..
@@ -45,7 +45,7 @@ Below is how opening balance can be build::
    $ledger->addCondition('date', '<', $from);
    
    // we actually need grouping by nominal
-   $ledger->add(new \atk4\data\Model\Aggregate());
+   $ledger->add(new \Atk4\Data\Model\Aggregate());
    $byNominal = $ledger->action('group', 'nominal_id');
    $byNominal->addField('opening_balance', ['sum', 'amount']);
-   $byNominal->join()
+   $byNominal->join();
