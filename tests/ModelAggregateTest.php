@@ -34,7 +34,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         $this->setDB($this->init_db);
     }
 
-    protected function createInvoice()
+    protected function createInvoice(): Model\Invoice
     {
         $invoice = new Model\Invoice($this->db);
         $invoice->getRef('client_id')->addTitle();
