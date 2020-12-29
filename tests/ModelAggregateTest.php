@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Model\Aggregate;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 
@@ -27,33 +28,28 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ];
 
-    /** @var Model\Invoice|null */
-    protected $invoice;
-    /** @var \Atk4\Data\Model|null */
-    protected $invoiceAggregate;
-
     protected function setUp(): void
     {
         parent::setUp();
         $this->setDB($this->init_db);
-
-        $this->invoice = new Model\Invoice($this->db);
-        $this->invoice->getRef('client_id')->addTitle();
-
-        $this->invoiceAggregate = $this->invoice->withAggregateField('client');
     }
 
-    protected function tearDown(): void
+    protected function createInvoice()
     {
-        $this->invoice = null;
-        $this->invoiceAggregate = null;
+        $invoice = new Model\Invoice($this->db);
+        $invoice->getRef('client_id')->addTitle();
 
-        parent::tearDown();
+        return $invoice;
+    }
+
+    protected function createInvoiceAggregate(): Aggregate
+    {
+        return $this->createInvoice()->withAggregateField('client');
     }
 
     public function testGroupBy()
     {
-        $invoiceAggregate = $this->invoice->groupBy(['client_id'], ['c' => ['expr' => 'count(*)', 'type' => 'integer']]);
+        $invoiceAggregate = $this->createInvoice()->groupBy(['client_id'], ['c' => ['expr' => 'count(*)', 'type' => 'integer']]);
 
         $this->assertSame(
             [
@@ -66,7 +62,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelect()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], ['c' => ['expr' => 'count(*)', 'type' => 'integer']]);
 
@@ -81,7 +77,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelect2()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'money'],
@@ -98,7 +94,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelect3()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],
@@ -118,7 +114,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelectExpr()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],
@@ -138,8 +134,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelectCondition()
     {
-        /** @var \Atk4\Data\Model\Aggregate $aggregate */
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
         $aggregate->baseModel->addCondition('name', 'chair purchase');
 
         $aggregate->groupBy(['client_id'], [
@@ -160,7 +155,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelectCondition2()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],
@@ -180,7 +175,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelectCondition3()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],
@@ -200,7 +195,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelectCondition4()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             's' => ['expr' => 'sum([amount])', 'type' => 'money'],
@@ -220,7 +215,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelectScope()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'money'],
@@ -240,7 +235,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupOrder()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'money'],
@@ -256,7 +251,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupLimit()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'money'],
@@ -273,7 +268,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupLimit2()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'money'],
@@ -290,7 +285,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupCount()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
             'amount' => ['expr' => 'sum([])', 'type' => 'money'],
@@ -304,7 +299,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testAggregateFieldExpression()
     {
-        $aggregate = clone $this->invoiceAggregate;
+        $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['abc'], [
             'xyz' => ['expr' => 'sum([amount])'],
