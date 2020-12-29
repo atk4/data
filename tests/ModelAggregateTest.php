@@ -42,7 +42,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
         return $invoice;
     }
 
-    protected function createInvoiceAggregate(): Aggregate
+    protected function createInvoiceAggregate()
     {
         return $this->createInvoice()->withAggregateField('client');
     }
@@ -134,6 +134,7 @@ class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testGroupSelectCondition()
     {
+        /** @var Aggregate $aggregate */
         $aggregate = $this->createInvoiceAggregate();
         $aggregate->baseModel->addCondition('name', 'chair purchase');
 
