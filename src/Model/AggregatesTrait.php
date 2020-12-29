@@ -12,11 +12,13 @@ use Atk4\Data\Model;
 trait AggregatesTrait
 {
     /**
+     * @param array|object $seed
+     *
      * @see Aggregate::withAggregateField.
      */
-    public function withAggregateField($name, $seed = []): Model
+    public function withAggregateField(string $name, $seed = []): Model
     {
-        return (new Aggregate($this))->withAggregateField(...func_get_args());
+        return (new Aggregate($this))->withAggregateField($name, $seed);
     }
 
     /**

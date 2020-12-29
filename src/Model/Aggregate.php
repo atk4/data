@@ -135,9 +135,9 @@ class Aggregate extends Model
      *
      * $model->withAggregateField('xyz')->groupBy(['abc']);
      */
-    public function withAggregateField($name, $seed = []): Model
+    public function withAggregateField(string $name, $seed = []): Model
     {
-        static::addField(...func_get_args());
+        static::addField($name, $seed);
 
         return $this;
     }
