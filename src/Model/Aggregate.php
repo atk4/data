@@ -85,7 +85,7 @@ class Aggregate extends Model
      */
     public function groupBy(array $fields, array $aggregateExpressions = []): Model
     {
-        $this->groupByFields = array_unique($this->groupByFields + $fields);
+        $this->groupByFields = array_unique(array_merge($this->groupByFields, $fields));
 
         foreach ($fields as $fieldName) {
             $this->addField($fieldName);
