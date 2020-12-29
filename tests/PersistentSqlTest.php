@@ -23,7 +23,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 
@@ -53,7 +53,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->setDb($dbData);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 
@@ -87,7 +87,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         ];
         $this->setDb($dbData);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 
@@ -110,7 +110,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 
@@ -134,7 +134,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         ];
         $this->setDb($dbData, false); // create empty table
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 
@@ -157,7 +157,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         ];
         $this->setDb($dbData);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 
@@ -194,7 +194,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 

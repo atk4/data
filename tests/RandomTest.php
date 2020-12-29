@@ -95,7 +95,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addFields(['name', ['salary', 'default' => 10]]);
 
         $m->import([['name' => 'Peter'], ['name' => 'Steve', 'salary' => 30]]);
@@ -121,7 +121,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addFields(['name', 'login'], ['default' => 'unknown']);
 
         $m->insert(['name' => 'Peter']);
@@ -145,7 +145,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addFields(['name'], ['default' => 'anonymous']);
         $m->addFields([
             'last_name',
@@ -179,7 +179,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model_Item($db, 'item');
+        $m = new Model_Item($db, ['table' => 'item']);
 
         $this->assertSame(
             ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
@@ -203,7 +203,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model_Item2($db, 'item');
+        $m = new Model_Item2($db, ['table' => 'item']);
 
         $this->assertSame(
             ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
@@ -227,7 +227,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model_Item3($db, 'item');
+        $m = new Model_Item3($db, ['table' => 'item']);
 
         $this->assertEquals(
             ['id' => '2', 'name' => 'Sue', 'parent_item_id' => 1, 'parent_item' => 'John', 'age' => '20', 'child_age' => 24],
@@ -249,7 +249,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, 'item');
+        $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
         $m->load(2);
 
@@ -297,7 +297,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addField('name');
 
         $m->onHook(Model::HOOK_BEFORE_SAVE, static function ($m) {
@@ -355,7 +355,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
     public function testModelCaption()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
 
         // caption is not set, so generate it from class name Model
         $this->assertSame('Atk 4 Data Model', $m->getModelCaption());
@@ -375,7 +375,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model_Item($db, 'item');
+        $m = new Model_Item($db, ['table' => 'item']);
 
         // default title_field = name
         $this->assertNull($m->getTitle()); // not loaded model returns null
@@ -423,7 +423,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m1->addField('name');
 
         // model with id field
-        $m2 = new Model($this->db, 'user');
+        $m2 = new Model($this->db, ['table' => 'user']);
         $m2->addField('code');
         $m2->addField('name');
 
@@ -486,7 +486,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
     public function testNewInstance()
     {
         // model without persistence
-        $m = new Model(['table' => 'order']);
+        $m = new Model(null, ['table' => 'order']);
         $a = $m->newInstance();
         $this->assertFalse(isset($a->persistence));
 
@@ -527,10 +527,10 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testTableNameDots()
     {
-        $d = new Model($this->db, 'db2.doc');
+        $d = new Model($this->db, ['table' => 'db2.doc']);
         $d->addField('name');
 
-        $m = new Model($this->db, 'db1.user');
+        $m = new Model($this->db, ['table' => 'db1.user']);
         $m->addField('name');
 
         $d->hasOne('user_id', $m)->addTitle();

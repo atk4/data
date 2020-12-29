@@ -322,32 +322,17 @@ class Model implements \IteratorAggregate
      *  - type hinting will work;
      *  - you can specify string for a table
      *
-     * @param Persistence|array $persistence
-     * @param string|array      $defaults
+     * @param array<string, mixed> $defaults
      */
-    public function __construct($persistence = null, $defaults = [])
+    public function __construct(Persistence $persistence = null, array $defaults = [])
     {
         $this->scope = \Closure::bind(function () {
             return new Model\Scope\RootScope();
         }, null, Model\Scope\RootScope::class)();
 
-        if (is_array($persistence) && func_num_args() === 1) {
-            $defaults = $persistence;
-            $persistence = null;
-        }
-
-        if (is_string($defaults)) {
-            $defaults = ['table' => $defaults];
-        }
-
-        if (isset($defaults[0])) {
-            $defaults['table'] = $defaults[0];
-            unset($defaults[0]);
-        }
-
         $this->setDefaults($defaults);
 
-        if ($persistence) {
+        if ($persistence !== null) {
             $persistence->add($this);
         }
     }
@@ -1283,7 +1268,8 @@ class Model implements \IteratorAggregate
      *
      * See https://github.com/atk4/data/issues/111 for use-case examples.
      *
-     * @param mixed $id
+     * @param mixed                $id
+     * @param class-string<static> $class
      *
      * @return static
      */
@@ -1291,7 +1277,7 @@ class Model implements \IteratorAggregate
     {
         $class = $class ?? static::class;
 
-        $model = new $class($persistence, $this->table);
+        $model = new $class($persistence, ['table' => $this->table]);
 
         if ($this->id_field) {
             $model->setId($id === true ? $this->get($this->id_field) : $id);

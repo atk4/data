@@ -32,7 +32,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
-        $m = new Model($p, 'user');
+        $m = new Model($p, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 
@@ -87,7 +87,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
             ],
         ]);
-        $m = new Male($p, 'user');
+        $m = new Male($p, ['table' => 'user']);
 
         $m->load(1);
         $this->assertTrue($m->loaded());
@@ -95,7 +95,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->saveAndUnload();
         $this->assertFalse($m->loaded());
 
-        $m = new Female($p, 'user');
+        $m = new Female($p, ['table' => 'user']);
         $m->load(1);
         $this->assertTrue($m->loaded());
 
@@ -115,7 +115,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
-        $m = new Model($p, 'user');
+        $m = new Model($p, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 
@@ -157,7 +157,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
-        $m = new Model($p, 'user');
+        $m = new Model($p, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 
@@ -182,7 +182,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
                 2 => ['name' => 'Sarah', 'surname' => 'Jones'],
             ],
         ]);
-        $m = new Model($p, 'user');
+        $m = new Model($p, ['table' => 'user']);
         $m->addField('name');
         $m->addField('surname');
 
@@ -336,7 +336,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         ]];
 
         $p = new Persistence\Array_($dbData);
-        $m = new Model($p, 'countries');
+        $m = new Model($p, ['table' => 'countries']);
         $m->addField('code', ['type' => 'integer']);
         $m->addField('country');
         $m->addField('active', ['type' => 'boolean']);
@@ -452,7 +452,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         ]];
 
         $p = new Persistence\Array_($dbData);
-        $m = new Model($p, 'countries');
+        $m = new Model($p, ['table' => 'countries']);
         $m->addField('code', ['type' => 'integer']);
         $m->addField('country');
         $m->addField('active', ['type' => 'boolean']);
@@ -569,7 +569,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             10 => ['id' => 10, 'items' => 0, 'active' => 1],
             11 => ['id' => 11, 'items' => null, 'active' => 1],
         ]]);
-        $m = new Model($p, 'invoices');
+        $m = new Model($p, ['table' => 'invoices']);
         $m->addField('items', ['type' => 'integer']);
 
         $this->assertSame(13.5, $m->action('fx', ['avg', 'items'])->getOne());
@@ -584,7 +584,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $p = new Persistence\Array_(['invoices' => [
             1 => ['id' => 1, 'number' => 'ABC9', 'items' => 11, 'active' => 1],
         ]]);
-        $m = new Model($p, 'invoices');
+        $m = new Model($p, ['table' => 'invoices']);
         $m->addField('items', ['type' => 'integer']);
 
         $this->assertSame(1, $m->action('exists')->getOne());
@@ -871,7 +871,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ],
         ]);
 
-        $user = new Model($p, 'user');
+        $user = new Model($p, ['table' => 'user']);
         $user->addField('name');
         $user->addField('surname');
 
@@ -905,7 +905,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ],
         ]);
 
-        $country = new Model($p, 'country');
+        $country = new Model($p, ['table' => 'country']);
         $country->addField('name');
 
         $user = new Model();

@@ -33,8 +33,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $u = (new Model($this->db, 'user'))->addFields(['name']);
-        $o = (new Model($this->db, 'order'))->addFields(['amount', 'user_id']);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
+        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
 
         $u->hasMany('Orders', $o);
 
@@ -67,8 +67,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
      */
     public function testLink()
     {
-        $u = (new Model($this->db, 'user'))->addFields(['name']);
-        $o = (new Model($this->db, 'order'))->addFields(['amount', 'user_id']);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
+        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
 
         $u->hasMany('Orders', $o);
 
@@ -92,8 +92,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $u = (new Model($this->db, 'user'))->addFields(['name', 'currency']);
-        $c = (new Model($this->db, 'currency'))->addFields(['currency', 'name']);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency']);
+        $c = (new Model($this->db, ['table' => 'currency']))->addFields(['currency', 'name']);
 
         $u->hasMany('cur', [$c, 'our_field' => 'currency', 'their_field' => 'currency']);
 
@@ -108,8 +108,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testLink2()
     {
-        $u = (new Model($this->db, 'user'))->addFields(['name', 'currency_code']);
-        $c = (new Model($this->db, 'currency'))->addFields(['code', 'name']);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
+        $c = (new Model($this->db, ['table' => 'currency']))->addFields(['code', 'name']);
 
         $u->hasMany('cur', [$c, 'our_field' => 'currency_code', 'their_field' => 'code']);
 
@@ -139,8 +139,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $u = (new Model($this->db, 'user'))->addFields(['name']);
-        $o = (new Model($this->db, 'order'))->addFields(['amount']);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
+        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
 
         $o->hasOne('user_id', $u);
 
@@ -178,9 +178,9 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $u = (new Model($this->db, 'user'))->addFields(['name', ['date', 'type' => 'date']]);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', ['date', 'type' => 'date']]);
 
-        $o = (new Model($this->db, 'order'))->addFields(['amount']);
+        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', $u)->addFields(['username' => 'name', ['date', 'type' => 'date']]);
 
         $this->assertSame('John', (clone $o)->load(1)->get('username'));
@@ -191,12 +191,12 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Joe', (clone $o)->load(5)->get('username'));
 
         // few more tests
-        $o = (new Model($this->db, 'order'))->addFields(['amount']);
+        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', $u)->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
         $this->assertSame('John', (clone $o)->load(1)->get('username'));
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('thedate'));
 
-        $o = (new Model($this->db, 'order'))->addFields(['amount']);
+        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', $u)->addFields(['date'], ['type' => 'date']);
         $this->assertEquals(new \DateTime('2001-01-02'), (clone $o)->load(1)->get('date'));
     }
@@ -219,8 +219,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $i = (new Model($this->db, 'invoice'))->addFields(['ref_no']);
-        $l = (new Model($this->db, 'invoice_line'))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
+        $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
         $i->hasMany('line', $l);
 
         $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
@@ -249,8 +249,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $i = (new Model($this->db, 'invoice'))->addFields(['ref_no']);
-        $l = (new Model($this->db, 'invoice_line'))->addFields([
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
+        $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields([
             'invoice_id',
             ['total_net', 'type' => 'money'],
             ['total_vat', 'type' => 'money'],
@@ -318,8 +318,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $l = (new Model($this->db, 'list'))->addFields(['name']);
-        $i = (new Model($this->db, 'item'))->addFields(['list_id', 'name', 'code']);
+        $l = (new Model($this->db, ['table' => 'list']))->addFields(['name']);
+        $i = (new Model($this->db, ['table' => 'item']))->addFields(['list_id', 'name', 'code']);
         $l->hasMany('Items', $i)
             ->addFields([
                 ['items_name', 'aggregate' => 'count', 'field' => 'name'],
@@ -371,13 +371,13 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $user = (new Model($this->db, 'user'))->addFields(['name', 'company_id']);
+        $user = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'company_id']);
 
-        $company = (new Model($this->db, 'company'))->addFields(['name']);
+        $company = (new Model($this->db, ['table' => 'company']))->addFields(['name']);
 
         $user->hasOne('Company', [$company, 'our_field' => 'company_id', 'their_field' => 'id']);
 
-        $order = new Model($this->db, 'order');
+        $order = new Model($this->db, ['table' => 'order']);
         $order->addField('company_id');
         $order->addField('description');
         $order->addField('amount', ['default' => 20, 'type' => 'float']);
@@ -422,8 +422,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $u = (new Model($this->db, 'user'))->addFields(['name']);
-        $c = (new Model($this->db, 'contact'))->addFields(['address']);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
+        $c = (new Model($this->db, ['table' => 'contact']))->addFields(['address']);
 
         $u->hasOne('contact_id', $c)
             ->addField('address');
@@ -469,9 +469,9 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $p = (new Model($this->db, 'player'))->addFields(['name']);
+        $p = (new Model($this->db, ['table' => 'player']))->addFields(['name']);
 
-        $s = (new Model($this->db, 'stadium'));
+        $s = (new Model($this->db, ['table' => 'stadium']));
         $s->addFields(['name']);
         $s->hasOne('player_id', $p);
 
@@ -505,8 +505,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $u = (new Model($this->db, 'user'))->addFields(['name']);
-        $o = (new Model($this->db, 'order'))->addFields(['amount']);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
+        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
 
         // by default not set
         $o->hasOne('user_id', $u);
@@ -518,7 +518,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame($o->getField('user_id')->isVisible(), false);
 
         // if it is set manually then it will not be changed
-        $o = (new Model($this->db, 'order'))->addFields(['amount']);
+        $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', $u);
         $o->getField('user_id')->ui['visible'] = true;
         $o->getRef('user_id')->addTitle();
@@ -548,8 +548,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->setDb($dbData);
 
         // with default title_field='name'
-        $u = (new Model($this->db, 'user'))->addFields(['name', 'last_name']);
-        $o = (new Model($this->db, 'order'));
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'last_name']);
+        $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', $u)->addTitle();
 
         // change order user by changing title_field value
@@ -565,8 +565,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->setDb($dbData);
 
         // with custom title_field='last_name'
-        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
-        $o = (new Model($this->db, 'order'));
+        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', $u)->addTitle();
 
         // change order user by changing title_field value
@@ -582,8 +582,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->setDb($dbData);
 
         // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
-        $o = (new Model($this->db, 'order'));
+        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', [$u, 'our_field' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
@@ -599,8 +599,8 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->setDb($dbData);
 
         // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
-        $o = (new Model($this->db, 'order'));
+        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', [$u, 'our_field' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
@@ -633,7 +633,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
                 3 => ['id' => 3, 'user_id' => 1],
             ],
         ]);
-        $u = (new Model($this->db, ['user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
 
         // Test : Now the caption is null and is generated from field name
         $this->assertSame('Last Name', $u->getField('last_name')->getCaption());
@@ -643,7 +643,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         // Test : Now the caption is not null and the value is returned
         $this->assertSame('Surname', $u->getField('last_name')->getCaption());
 
-        $o = (new Model($this->db, 'order'));
+        $o = (new Model($this->db, ['table' => 'order']));
         $order_user_ref = $o->hasOne('my_user', [$u, 'our_field' => 'user_id']);
         $order_user_ref->addField('user_last_name', 'last_name');
 

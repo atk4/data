@@ -13,7 +13,7 @@ class SerializeTest extends \Atk4\Schema\PhpunitTestCase
     public function testBasicSerialize()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'job');
+        $m = new Model($db, ['table' => 'job']);
 
         $f = $m->addField('data', ['serialize' => 'serialize']);
 
@@ -53,7 +53,7 @@ class SerializeTest extends \Atk4\Schema\PhpunitTestCase
     public function testSerializeErrorJson()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'job');
+        $m = new Model($db, ['table' => 'job']);
 
         $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
 
@@ -64,7 +64,7 @@ class SerializeTest extends \Atk4\Schema\PhpunitTestCase
     public function testSerializeErrorJson2()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'job');
+        $m = new Model($db, ['table' => 'job']);
 
         $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
 

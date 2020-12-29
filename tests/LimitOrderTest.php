@@ -22,7 +22,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
         $i->getField($i->id_field)->system = false;
 
@@ -45,7 +45,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $ii = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
         $ii->getField($ii->id_field)->system = false;
 
@@ -96,7 +96,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $ii = (new Model($this->db, 'invoice'))->addFields(['net', 'vat']);
+        $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['net', 'vat']);
         $ii->getField($ii->id_field)->system = false;
 
         // pass parameters as array elements [field,order]
@@ -141,7 +141,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         // order by expression field
-        $i = (new Model($this->db, 'invoice'))->addFields(['code', 'net', 'vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['code', 'net', 'vat']);
         $i->addExpression('gross', '[net]+[vat]');
         $i->getField($i->id_field)->system = false;
 
@@ -205,7 +205,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $i = (new Model($this->db, 'invoice'))->addFields(['net']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['net']);
         $i->setOrder(new \DateTime()); // @phpstan-ignore-line
         $this->expectException(Exception::class);
         $i->export(); // executes query and throws exception because of DateTime object
@@ -221,7 +221,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
         $i->getField($i->id_field)->system = false;
 

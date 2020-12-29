@@ -130,7 +130,7 @@ class ModelTest extends PhpunitTestCase
             ->field('blob', ['type' => 'blob'])
             ->create();
 
-        $model = new Model($this->db, 'user');
+        $model = new Model($this->db, ['table' => 'user']);
         $model->addField('string');
         $model->addField('text');
         $model->addField('blob');

@@ -396,7 +396,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
     public function testTypecastBoolean()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'job');
+        $m = new Model($db, ['table' => 'job']);
 
         $f = $m->addField('closed', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
 
@@ -406,7 +406,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
     public function testTypecastTimezone()
     {
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'event');
+        $m = new Model($db, ['table' => 'event']);
         $dt = $m->addField('dt', ['type' => 'datetime', 'persist_timezone' => 'EEST']);
         $d = $m->addField('d', ['type' => 'date', 'persist_timezone' => 'EEST']);
         $t = $m->addField('t', ['type' => 'time', 'persist_timezone' => 'EEST']);

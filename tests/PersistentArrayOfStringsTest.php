@@ -21,7 +21,7 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
         $p = new Persistence\ArrayOfStrings([
             'user' => [],
         ]);
-        $m = new Model($p, 'user');
+        $m = new Model($p, ['table' => 'user']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
         $m->addField('integer', ['type' => 'integer']);
