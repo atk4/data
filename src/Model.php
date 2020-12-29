@@ -1274,7 +1274,8 @@ class Model implements \IteratorAggregate
      *
      * See https://github.com/atk4/data/issues/111 for use-case examples.
      *
-     * @param mixed $id
+     * @param mixed               $id
+     * @param class-string<static> $class
      *
      * @return static
      */
@@ -1282,7 +1283,7 @@ class Model implements \IteratorAggregate
     {
         $class = $class ?? static::class;
 
-        $model = new $class($persistence, $this->table);
+        $model = new $class($persistence, ['table' => $this->table]);
 
         if ($this->id_field) {
             $model->setId($id === true ? $this->get($this->id_field) : $id);
