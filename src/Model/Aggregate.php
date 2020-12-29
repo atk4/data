@@ -187,35 +187,6 @@ class Aggregate extends Model
             : parent::addField($name, $seed);
     }
 
-    /**
-     * Given a query, will add safe fields in.
-     */
-    public function initQueryFields(Query $query, array $fields = []): Query
-    {
-        $this->persistence->initQueryFields($this, $query, $fields);
-
-        return $query;
-    }
-
-    /**
-     * Adds grouping in query.
-     */
-    public function initQueryGrouping(Query $query)
-    {
-        // use table alias of base model
-        $this->table_alias = $this->baseModel->table_alias;
-
-        foreach ($this->group as $field) {
-            if ($this->baseModel->hasField($field)) {
-                $expression = $this->baseModel->getField($field);
-            } else {
-                $expression = $this->expr($field);
-            }
-
-            $query->group($expression);
-        }
-    }
-
     public function setLimit(int $count = null, int $offset = 0)
     {
         $this->baseModel->setLimit($count, $offset);
@@ -266,6 +237,13 @@ class Aggregate extends Model
         }
     }
 
+    protected function initQueryFields(Query $query, array $fields = []): Query
+    {
+        $this->persistence->initQueryFields($this, $query, $fields);
+
+        return $query;
+    }
+
     protected function initQueryOrder(Query $query)
     {
         if ($this->order) {
@@ -285,10 +263,23 @@ class Aggregate extends Model
         }
     }
 
-    /**
-     * Our own way applying conditions, where we use "having" for fields.
-     */
-    public function initQueryConditions(Query $query, Model\Scope\AbstractScope $condition = null): void
+    protected function initQueryGrouping(Query $query)
+    {
+        // use table alias of base model
+        $this->table_alias = $this->baseModel->table_alias;
+
+        foreach ($this->group as $field) {
+            if ($this->baseModel->hasField($field)) {
+                $expression = $this->baseModel->getField($field);
+            } else {
+                $expression = $this->expr($field);
+            }
+
+            $query->group($expression);
+        }
+    }
+
+    protected function initQueryConditions(Query $query, Model\Scope\AbstractScope $condition = null): void
     {
         $condition = $condition ?? $this->scope();
 

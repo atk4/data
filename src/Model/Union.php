@@ -105,8 +105,181 @@ class Union extends Model
     }
 
     /**
-     * Configures nested models to have a specified set of fields
-     * available.
+     * Adds nested model in union.
+     */
+    public function addNestedModel(Model $model, array $fieldMap = []): Model
+    {
+        $nestedModel = $this->persistence->add($model);
+
+        $this->union[] = [$nestedModel, $fieldMap];
+
+        return $nestedModel;
+    }
+
+    /**
+     * Specify a single field or array of fields.
+     *
+     * @param string|array $group
+     */
+    public function groupBy($group, array $aggregate = []): Model
+    {
+        $this->aggregate = $aggregate;
+        $this->group = $group;
+
+        foreach ($aggregate as $fieldName => $seed) {
+            $seed = (array) $seed;
+
+            $field = $this->hasField($fieldName) ? $this->getField($fieldName) : null;
+
+            // first element of seed should be expression itself
+            if (isset($seed[0]) && is_string($seed[0])) {
+                $seed[0] = $this->expr($seed[0], $field ? [$field] : null);
+            }
+
+            if ($field) {
+                $this->removeField($fieldName);
+            }
+
+            $this->addExpression($fieldName, $seed);
+        }
+
+        foreach ($this->union as [$nestedModel, $fieldMap]) {
+            if ($nestedModel instanceof self) {
+                $nestedModel->aggregate = $aggregate;
+                $nestedModel->group = $group;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * If Union model has such field, then add condition to it.
+     * Otherwise adds condition to all nested models.
+     *
+     * @param mixed $key
+     * @param mixed $operator
+     * @param mixed $value
+     * @param bool  $forceNested Should we add condition to all nested models?
+     *
+     * @return $this
+     */
+    public function addCondition($key, $operator = null, $value = null, $forceNested = false)
+    {
+        if (func_num_args() === 1) {
+            return parent::addCondition($key);
+        }
+
+        // if Union model has such field, then add condition to it
+        if ($this->hasField($key) && !$forceNested) {
+            return parent::addCondition(...func_get_args());
+        }
+
+        // otherwise add condition in all nested models
+        foreach ($this->union as [$nestedModel, $fieldMap]) {
+            try {
+                $field = $key;
+
+                if (isset($fieldMap[$key])) {
+                    // field is included in mapping - use mapping expression
+                    $field = $fieldMap[$key] instanceof Expression
+                    ? $fieldMap[$key]
+                    : $this->getFieldExpr($nestedModel, $key, $fieldMap[$key]);
+                } elseif (is_string($key) && $nestedModel->hasField($key)) {
+                    // model has such field - use that field directly
+                    $field = $nestedModel->getField($key);
+                } else {
+                    // we don't know what to do, so let's do nothing
+                    continue;
+                }
+
+                switch (func_num_args()) {
+                    case 2:
+                        $nestedModel->addCondition($field, $operator);
+
+                        break;
+                    default:
+                        $nestedModel->addCondition($field, $operator, $value);
+
+                        break;
+                }
+            } catch (\Atk4\Core\Exception $e) {
+                throw $e->addMoreInfo('nestedModel', get_class($nestedModel));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Execute action.
+     *
+     * @param string $mode
+     * @param array  $args
+     *
+     * @return Query
+     */
+    public function action($mode, $args = [])
+    {
+        $subquery = null;
+        switch ($mode) {
+            case 'select':
+                // get list of available fields
+                $fields = $this->only_fields ?: array_keys($this->getFields());
+                foreach ($fields as $k => $field) {
+                    if ($this->getField($field)->never_persist) {
+                        unset($fields[$k]);
+                    }
+                }
+                $subquery = $this->getSubQuery($fields);
+                $query = parent::action($mode, $args)->reset('table')->table($subquery);
+
+                if (isset($this->group)) {
+                    $query->group($this->group);
+                }
+                $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
+
+                return $query;
+            case 'count':
+                $subquery = $this->getSubAction('count', ['alias' => 'cnt']);
+
+                $mode = 'fx';
+                $args = ['sum', $this->expr('{}', ['cnt'])];
+
+                break;
+            case 'field':
+                if (!isset($args[0])) {
+                    throw (new Exception('This action requires one argument with field name'))
+                        ->addMoreInfo('mode', $mode);
+                }
+
+                if (!is_string($args[0])) {
+                    throw (new Exception('action "field" only support string fields'))
+                        ->addMoreInfo('field', $args[0]);
+                }
+
+                $subquery = $this->getSubQuery([$args[0]]);
+
+                break;
+            case 'fx':
+                $args['alias'] = 'val';
+
+                $subquery = $this->getSubAction('fx', $args);
+
+                $args = [$args[0], $this->expr('{}', ['val'])];
+
+                break;
+            default:
+                throw (new Exception('Union model does not support this action'))
+                    ->addMoreInfo('mode', $mode);
+        }
+
+        // Substitute FROM table with our subquery expression
+        return parent::action($mode, $args)->reset('table')->table($subquery);
+    }
+
+    /**
+     * Configures nested models to have a specified set of fields available.
      */
     public function getSubQuery(array $fields): Expression
     {
@@ -222,7 +395,7 @@ class Union extends Model
                     $model,
                     $fieldName,
                     $fieldMap[$fieldName] ?? null
-                );
+                    );
             }
 
             $query = $model->action($action, $modelActionArgs);
@@ -238,182 +411,6 @@ class Union extends Model
         $exprArgs[$cnt] = $this->table;
 
         return $this->persistence->dsql()->expr($expr, $exprArgs);
-    }
-
-    /**
-     * Execute action.
-     *
-     * @param string $mode
-     * @param array  $args
-     *
-     * @return Query
-     */
-    public function action($mode, $args = [])
-    {
-        $subquery = null;
-        switch ($mode) {
-            case 'select':
-                // get list of available fields
-                $fields = $this->only_fields ?: array_keys($this->getFields());
-                foreach ($fields as $k => $field) {
-                    if ($this->getField($field)->never_persist) {
-                        unset($fields[$k]);
-                    }
-                }
-                $subquery = $this->getSubQuery($fields);
-                $query = parent::action($mode, $args)->reset('table')->table($subquery);
-
-                if (isset($this->group)) {
-                    $query->group($this->group);
-                }
-                $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
-
-                return $query;
-            case 'count':
-                $subquery = $this->getSubAction('count', ['alias' => 'cnt']);
-
-                $mode = 'fx';
-                $args = ['sum', $this->expr('{}', ['cnt'])];
-
-                break;
-            case 'field':
-                if (!isset($args[0])) {
-                    throw (new Exception('This action requires one argument with field name'))
-                        ->addMoreInfo('mode', $mode);
-                }
-
-                if (!is_string($args[0])) {
-                    throw (new Exception('action "field" only support string fields'))
-                        ->addMoreInfo('field', $args[0]);
-                }
-
-                $subquery = $this->getSubQuery([$args[0]]);
-
-                break;
-            case 'fx':
-                $args['alias'] = 'val';
-
-                $subquery = $this->getSubAction('fx', $args);
-
-                $args = [$args[0], $this->expr('{}', ['val'])];
-
-                break;
-            default:
-                throw (new Exception('Union model does not support this action'))
-                    ->addMoreInfo('mode', $mode);
-        }
-
-        // Substitute FROM table with our subquery expression
-        return parent::action($mode, $args)->reset('table')->table($subquery);
-    }
-
-    /**
-     * Adds nested model in union.
-     */
-    public function addNestedModel(Model $model, array $fieldMap = []): Model
-    {
-        $nestedModel = $this->persistence->add($model);
-
-        $this->union[] = [$nestedModel, $fieldMap];
-
-        return $nestedModel;
-    }
-
-    /**
-     * Specify a single field or array of fields.
-     *
-     * @param string|array $group
-     */
-    public function groupBy($group, array $aggregate = []): Model
-    {
-        $this->aggregate = $aggregate;
-        $this->group = $group;
-
-        foreach ($aggregate as $fieldName => $seed) {
-            $seed = (array) $seed;
-
-            $field = $this->hasField($fieldName) ? $this->getField($fieldName) : null;
-
-            // first element of seed should be expression itself
-            if (isset($seed[0]) && is_string($seed[0])) {
-                $seed[0] = $this->expr($seed[0], $field ? [$field] : null);
-            }
-
-            if ($field) {
-                $this->removeField($fieldName);
-            }
-
-            $this->addExpression($fieldName, $seed);
-        }
-
-        foreach ($this->union as [$nestedModel, $fieldMap]) {
-            if ($nestedModel instanceof self) {
-                $nestedModel->aggregate = $aggregate;
-                $nestedModel->group = $group;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Adds condition.
-     *
-     * If Union model has such field, then add condition to it.
-     * Otherwise adds condition to all nested models.
-     *
-     * @param mixed $key
-     * @param mixed $operator
-     * @param mixed $value
-     * @param bool  $forceNested Should we add condition to all nested models?
-     *
-     * @return $this
-     */
-    public function addCondition($key, $operator = null, $value = null, $forceNested = false)
-    {
-        if (func_num_args() === 1) {
-            return parent::addCondition($key);
-        }
-
-        // if Union model has such field, then add condition to it
-        if ($this->hasField($key) && !$forceNested) {
-            return parent::addCondition(...func_get_args());
-        }
-
-        // otherwise add condition in all nested models
-        foreach ($this->union as [$nestedModel, $fieldMap]) {
-            try {
-                $field = $key;
-
-                if (isset($fieldMap[$key])) {
-                    // field is included in mapping - use mapping expression
-                    $field = $fieldMap[$key] instanceof Expression
-                            ? $fieldMap[$key]
-                            : $this->getFieldExpr($nestedModel, $key, $fieldMap[$key]);
-                } elseif (is_string($key) && $nestedModel->hasField($key)) {
-                    // model has such field - use that field directly
-                    $field = $nestedModel->getField($key);
-                } else {
-                    // we don't know what to do, so let's do nothing
-                    continue;
-                }
-
-                switch (func_num_args()) {
-                    case 2:
-                        $nestedModel->addCondition($field, $operator);
-
-                        break;
-                    default:
-                        $nestedModel->addCondition($field, $operator, $value);
-
-                        break;
-                }
-            } catch (\Atk4\Core\Exception $e) {
-                throw $e->addMoreInfo('nestedModel', get_class($nestedModel));
-            }
-        }
-
-        return $this;
     }
 
     // {{{ Debug Methods
