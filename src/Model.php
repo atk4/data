@@ -114,7 +114,7 @@ class Model implements \IteratorAggregate
      *
      * $table = ['user', 'mysql'=>'tbl_user'];
      *
-     * @var string|array|false
+     * @var string|array<0|string, string>|false
      */
     public $table;
 
