@@ -6,8 +6,6 @@ namespace Atk4\Data\Tests\Model;
 
 class Client extends User
 {
-    public $table = 'client';
-
     protected function init(): void
     {
         parent::init();
