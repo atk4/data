@@ -1268,7 +1268,7 @@ class Model implements \IteratorAggregate
      *
      * See https://github.com/atk4/data/issues/111 for use-case examples.
      *
-     * @param mixed               $id
+     * @param mixed                $id
      * @param class-string<static> $class
      *
      * @return static
