@@ -83,7 +83,7 @@ class Aggregate extends Model
      *
      * @return $this
      */
-    public function groupBy(array $fields, array $aggregateExpressions = []): Model
+    public function groupBy(array $fields, array $aggregateExpressions = [])
     {
         $this->groupByFields = array_unique(array_merge($this->groupByFields, $fields));
 
@@ -111,12 +111,7 @@ class Aggregate extends Model
         return $this;
     }
 
-    /**
-     * Return reference field.
-     *
-     * @param string $link
-     */
-    public function getRef($link): Reference
+    public function getRef(string $link): Reference
     {
         return $this->baseModel->getRef($link);
     }
