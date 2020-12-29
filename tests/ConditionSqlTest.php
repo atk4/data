@@ -22,7 +22,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
         $mm = clone $m;
@@ -62,7 +62,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
         $mm = clone $m;
@@ -84,7 +84,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
         $m->addCondition('gender', null);
@@ -109,7 +109,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
         $mm = clone $m;
@@ -156,7 +156,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
         $mm = clone $m;
@@ -189,7 +189,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender', 'surname']);
 
         $mm = clone $m;
@@ -240,7 +240,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender', 'surname']);
 
         $m->join('contact')->addField('contact_phone');
@@ -289,22 +289,22 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', ['John', 'Doe']);
         $this->assertSame(1, count($m->export()));
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', 'in', ['Johhny', 'Doe', 'Mary']);
         $this->assertSame(2, count($m->export()));
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', []); // this should not fail, always should be false
         $this->assertSame(0, count($m->export()));
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', 'not in', []); // this should not fail, always should be true
         $this->assertSame(3, count($m->export()));
@@ -319,7 +319,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
@@ -336,7 +336,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
@@ -354,7 +354,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($this->db, 'user');
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
@@ -372,7 +372,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $u = (new Model($this->db, 'user'))->addFields(['name']);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
 
         $u->addCondition(Model\Scope::createOr(
             ['name', 'John'],
@@ -402,7 +402,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $u = (new Model($this->db, 'user'))->addFields(['name']);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
 
         $u->loadBy('name', 'John');
         $this->assertTrue($u->scope()->isEmpty());
@@ -432,7 +432,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $u = new Model($this->db, 'user');
+        $u = new Model($this->db, ['table' => 'user']);
         $u->addField('name', ['type' => 'string']);
         $u->addField('active', ['type' => 'boolean']);
         $u->addField('created', ['type' => 'datetime']);

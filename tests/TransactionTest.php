@@ -23,7 +23,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, 'item');
+        $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
         $m->load(2);
 
@@ -61,7 +61,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         // test insert
-        $m = new Model($db, 'item');
+        $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
         $m->onHook(Model::HOOK_BEFORE_SAVE, function ($model, $is_update) {
             $this->assertFalse($is_update);
@@ -69,7 +69,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         $m->save(['name' => 'Foo']);
 
         // test update
-        $m = new Model($db, 'item');
+        $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
         $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
             $this->assertTrue($is_update);
@@ -87,7 +87,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         // test insert
-        $m = new Model($db, 'item');
+        $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
         $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
             $this->assertFalse($is_update);
@@ -95,7 +95,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         $m->save(['name' => 'Foo']);
 
         // test update
-        $m = new Model($db, 'item');
+        $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
         $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
             $this->assertTrue($is_update);
@@ -113,7 +113,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         // test insert
-        $m = new Model($db, 'item');
+        $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
         $m->addField('foo');
 

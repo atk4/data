@@ -95,7 +95,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
         $this->expectException(Exception::class);
@@ -111,7 +111,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addField('name', ['required' => true]);
         $m->addField('surname');
         $this->expectException(Exception::class);
@@ -127,7 +127,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
         $m->load(1);
@@ -144,7 +144,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true, 'default' => 'NoName']);
         $m->addField('surname');
         $m->insert(['surname' => 'qq']);
@@ -293,7 +293,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, 'item');
+        $m = new Model($db, ['table' => 'item']);
         $m->addField('name', ['never_persist' => true]);
         $m->addField('surname', ['never_save' => true]);
         $m->load(1);
@@ -355,10 +355,10 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $c = new Model($db, 'category');
+        $c = new Model($db, ['table' => 'category']);
         $c->addField('name');
 
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addField('name');
         $m->hasOne('category_id', $c)
             ->addTitle();
@@ -400,7 +400,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addField('first_name', ['actual' => 'name']);
         $m->addField('surname');
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
@@ -437,7 +437,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, 'invoice');
+        $m = new Model($db, ['table' => 'invoice']);
         $m->addField('net', ['type' => 'money']);
         $m->addField('vat', ['type' => 'money']);
         $m->addCalculatedField('total', function ($m) {
@@ -505,7 +505,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             return base64_decode($value, true);
         };
 
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true]);
         $m->addField('secret', [
             //'password'  => 'bonkers',

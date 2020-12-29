@@ -22,7 +22,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     public function testDirection()
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
 
         $j = $m->join('contact');
         $this->assertFalse($this->getProtected($j, 'reverse'));
@@ -54,7 +54,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     public function testJoinException()
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
         $j = $m->join('contact.foo_id', 'test_id');
@@ -63,7 +63,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     public function testJoinSaving1()
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, 'user');
+        $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
@@ -115,7 +115,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     public function testJoinSaving2()
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, 'user');
+        $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
         $j = $m_u->join('contact.test_id');
         $j->addField('contact_phone');
@@ -144,7 +144,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_c = new Model($db, 'contact');
+        $m_c = new Model($db, ['table' => 'contact']);
         $m_c->load(2);
         $m_c->delete();
 
@@ -168,7 +168,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     public function testJoinSaving3()
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, 'user');
+        $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
         $j = $m_u->join('contact', 'test_id');
         $j->addField('contact_phone');
@@ -217,7 +217,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ],
         ]);
-        $m_u = new Model($db, 'user');
+        $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
@@ -251,7 +251,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
                 2 => ['id' => 2, 'contact_phone' => '+321'],
             ],
         ]);
-        $m_u = new Model($db, 'user');
+        $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
@@ -322,7 +322,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
                 3 => ['id' => 3, 'contact_phone' => '+777'],
             ],
         ]);
-        $m_u = new Model($db, 'user');
+        $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
@@ -355,7 +355,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
                 3 => ['id' => 3, 'contact_phone' => '+777'],
             ],
         ]);
-        $m_u = new Model($db, 'user');
+        $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');

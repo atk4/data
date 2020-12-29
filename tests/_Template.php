@@ -26,7 +26,7 @@ class _Template extends \Atk4\Schema\PhpunitTestCase
 
         $db = new PersistenceSql($this->db->connection);
 
-        $m = new Model($db, 'item');
+        $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
         $m->load(2);
 

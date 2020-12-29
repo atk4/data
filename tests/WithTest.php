@@ -33,11 +33,11 @@ class WithTest extends \Atk4\Schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
 
         // setup models
-        $m_user = new Model($db, 'user');
+        $m_user = new Model($db, ['table' => 'user']);
         $m_user->addField('name');
         $m_user->addField('salary', ['type' => 'money']);
 
-        $m_invoice = new Model($db, 'invoice');
+        $m_invoice = new Model($db, ['table' => 'invoice']);
         $m_invoice->addField('net', ['type' => 'money']);
         $m_invoice->hasOne('user_id', $m_user);
         $m_invoice->addCondition('net', '>', 100);

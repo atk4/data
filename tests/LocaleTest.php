@@ -38,7 +38,7 @@ class LocaleTest extends AtkPhpunit\TestCase
         ]);
 
         try {
-            $m = new Model($p, 'user');
+            $m = new Model($p, ['table' => 'user']);
             $m->addField('name');
             $m->addField('surname');
             $m->load(4);

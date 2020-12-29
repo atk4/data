@@ -30,7 +30,7 @@ class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $this->m = new Model($db, ['user', 'id_field' => false]);
+        $this->m = new Model($db, ['table' => 'user', 'id_field' => false]);
 
         $this->m->addFields(['name', 'gender']);
     }

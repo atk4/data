@@ -95,7 +95,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -139,7 +139,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -183,7 +183,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');

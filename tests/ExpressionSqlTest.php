@@ -34,7 +34,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
@@ -75,7 +75,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', function ($i, $q) {
             return '[total_net]+[total_vat]';
         });
@@ -106,7 +106,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('sum_net', $i->action('fx', ['sum', 'total_net']));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
@@ -139,7 +139,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'user');
+        $m = new Model($db, ['table' => 'user']);
         $m->addFields(['name', 'surname', 'cached_name']);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
@@ -184,7 +184,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, 'math');
+        $m = new Model($db, ['table' => 'math']);
         $m->addFields(['a', 'b']);
 
         $m->addExpression('sum', '[a] + [b]');
@@ -198,7 +198,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(9, $m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
 
         $this->setDb($dbData);
-        $m = new Model($db, ['math', 'reload_after_save' => false]);
+        $m = new Model($db, ['table' => 'math', 'reload_after_save' => false]);
         $m->addFields(['a', 'b']);
 
         $m->addExpression('sum', '[a] + [b]');
@@ -249,7 +249,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $i = new Model($db, 'invoice');
+        $i = new Model($db, ['table' => 'invoice']);
 
         $i->addExpression('zero_basic', [$i->expr('0'), 'type' => 'integer', 'system' => true]);
         $i->addExpression('zero_never_save', [$i->expr('0'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
