@@ -37,6 +37,7 @@ class Model implements \IteratorAggregate
     use InitializerTrait {
         init as _init;
     }
+    use Model\AggregatesTrait;
     use Model\JoinsTrait;
     use Model\ReferencesTrait;
     use Model\UserActionsTrait;
