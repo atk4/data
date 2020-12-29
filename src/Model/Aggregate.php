@@ -52,29 +52,12 @@ class Aggregate extends Model
     /** @var Model */
     public $baseModel;
 
-    /**
-     * Aggregate model should always be read-only.
-     *
-     * @var bool
-     */
-    public $read_only = true;
-
-    /**
-     * Aggregate does not have ID field.
-     *
-     * @var string
-     */
-    public $id_field;
-
     /** @var array */
     public $group = [];
 
     /** @var array */
     public $aggregate = [];
 
-    /**
-     * Constructor.
-     */
     public function __construct(Model $baseModel, array $defaults = [])
     {
         if (!$baseModel->persistence instanceof Persistence\Sql) {
@@ -83,6 +66,12 @@ class Aggregate extends Model
 
         $this->baseModel = clone $baseModel;
         $this->table = $baseModel->table;
+
+        // this model does not have ID field
+        $this->id_field = null;
+
+        // this model should always be read-only
+        $this->read_only = true;
 
         parent::__construct($baseModel->persistence, $defaults);
 
