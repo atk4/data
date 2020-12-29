@@ -322,8 +322,8 @@ class Model implements \IteratorAggregate
      *  - type hinting will work;
      *  - you can specify string for a table
      *
-     * @param Persistence|array $persistence
-     * @param string|array      $defaults
+     * @param Persistence|array    $persistence
+     * @param array<string, mixed> $defaults
      */
     public function __construct($persistence = null, $defaults = [])
     {
@@ -334,15 +334,6 @@ class Model implements \IteratorAggregate
         if (is_array($persistence) && func_num_args() === 1) {
             $defaults = $persistence;
             $persistence = null;
-        }
-
-        if (is_string($defaults)) {
-            $defaults = ['table' => $defaults];
-        }
-
-        if (isset($defaults[0])) {
-            $defaults['table'] = $defaults[0];
-            unset($defaults[0]);
         }
 
         $this->setDefaults($defaults);
