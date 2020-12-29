@@ -322,10 +322,10 @@ class Model implements \IteratorAggregate
      *  - type hinting will work;
      *  - you can specify string for a table
      *
-     * @param Persistence|array    $persistence
-     * @param array<string, mixed> $defaults
+     * @param Persistence|array<string, mixed> $persistence
+     * @param array<string, mixed>             $defaults
      */
-    public function __construct($persistence = null, $defaults = [])
+    public function __construct($persistence = null, array $defaults = [])
     {
         $this->scope = \Closure::bind(function () {
             return new Model\Scope\RootScope();
