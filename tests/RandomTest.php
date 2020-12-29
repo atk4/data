@@ -486,7 +486,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
     public function testNewInstance()
     {
         // model without persistence
-        $m = new Model(['table' => 'order']);
+        $m = new Model(null, ['table' => 'order']);
         $a = $m->newInstance();
         $this->assertFalse(isset($a->persistence));
 

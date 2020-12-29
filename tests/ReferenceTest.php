@@ -16,7 +16,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
 {
     public function testBasicReferences()
     {
-        $user = new Model(['table' => 'user']);
+        $user = new Model(null, ['table' => 'user']);
         $user->addField('id');
         $user->addField('name');
         $user->setId(1);
@@ -48,7 +48,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
      */
     public function testModelCaption()
     {
-        $user = new Model(['table' => 'user']);
+        $user = new Model(null, ['table' => 'user']);
         $user->addField('id');
         $user->addField('name');
         $user->setId(1);
@@ -77,7 +77,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
 
     public function testRefName1()
     {
-        $user = new Model(['table' => 'user']);
+        $user = new Model(null, ['table' => 'user']);
         $order = new Model();
         $order->addField('user_id');
 
@@ -88,8 +88,8 @@ class ReferenceTest extends AtkPhpunit\TestCase
 
     public function testRefName2()
     {
-        $order = new Model(['table' => 'order']);
-        $user = new Model(['table' => 'user']);
+        $order = new Model(null, ['table' => 'order']);
+        $user = new Model(null, ['table' => 'user']);
 
         $user->hasOne('user_id', $user);
         $this->expectException(Exception::class);

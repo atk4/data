@@ -315,7 +315,7 @@ later::
 
 You cannot add conditions just yet, although you can pass in some of the defaults::
 
-    $m = new Model_User(['table'=>'user2']);
+    $m = new Model_User(null, ['table'=>'user2']);
 
     $db->add($m); // will use table user2
 
