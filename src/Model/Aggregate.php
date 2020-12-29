@@ -49,10 +49,10 @@ class Aggregate extends Model
     /** @var Model */
     public $baseModel;
 
-    /** @var array */
+    /** @var string[] */
     public $groupByFields = [];
 
-    /** @var array */
+    /** @var mixed[] */
     public $aggregateExpressions = [];
 
     public function __construct(Model $baseModel, array $defaults = [])
@@ -79,8 +79,7 @@ class Aggregate extends Model
     /**
      * Specify a single field or array of fields on which we will group model.
      *
-     * @param array $fields               Array of field names
-     * @param array $aggregateExpressions Array of aggregate expressions with alias as key
+     * @param mixed[] $aggregateExpressions Array of aggregate expressions with alias as key
      *
      * @return $this
      */
