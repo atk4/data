@@ -24,8 +24,8 @@ trait AggregatesTrait
     /**
      * @see Aggregate::groupBy.
      */
-    public function groupBy(array $group, array $aggregate = []): Model
+    public function groupBy(array $fields, array $aggregateExpressions = []): Model
     {
-        return (new Aggregate($this))->groupBy(...func_get_args());
+        return (new Aggregate($this))->groupBy($fields, $aggregateExpressions);
     }
 }

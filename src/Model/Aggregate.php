@@ -46,17 +46,14 @@ class Aggregate extends Model
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
 
-    /** @var array */
-    protected $systemFields = [];
-
     /** @var Model */
     public $baseModel;
 
     /** @var array */
-    public $group = [];
+    public $groupByFields = [];
 
     /** @var array */
-    public $aggregate = [];
+    public $aggregateExpressions = [];
 
     public function __construct(Model $baseModel, array $defaults = [])
     {
@@ -82,34 +79,34 @@ class Aggregate extends Model
     /**
      * Specify a single field or array of fields on which we will group model.
      *
-     * @param array $fields    Array of field names
-     * @param array $aggregate Array of aggregate mapping
+     * @param array $fields               Array of field names
+     * @param array $aggregateExpressions Array of aggregate expressions with alias as key
      *
      * @return $this
      */
-    public function groupBy(array $fields, array $aggregate = []): Model
+    public function groupBy(array $fields, array $aggregateExpressions = []): Model
     {
-        $this->group = $fields;
-        $this->aggregate = $aggregate;
+        $this->groupByFields = array_unique($this->groupByFields + $fields);
 
-        $this->systemFields = array_unique($this->systemFields + $fields);
         foreach ($fields as $fieldName) {
             $this->addField($fieldName);
         }
 
-        foreach ($aggregate as $fieldName => $expr) {
+        foreach ($aggregateExpressions as $name => $expr) {
+            $this->aggregateExpressions[$name] = $expr;
+
             $seed = is_array($expr) ? $expr : [$expr];
 
             $args = [];
             // if field originally defined in the parent model, then it can be used as part of expression
-            if ($this->baseModel->hasField($fieldName)) {
-                $args = [$this->baseModel->getField($fieldName)];
+            if ($this->baseModel->hasField($name)) {
+                $args = [$this->baseModel->getField($name)];
             }
 
             $seed['expr'] = $this->baseModel->expr($seed[0] ?? $seed['expr'], $args);
 
             // now add the expressions here
-            $this->addExpression($fieldName, $seed);
+            $this->addExpression($name, $seed);
         }
 
         return $this;
@@ -179,8 +176,6 @@ class Aggregate extends Model
     }
 
     /**
-     * Execute action.
-     *
      * @param string $mode
      * @param array  $args
      *
@@ -195,7 +190,7 @@ class Aggregate extends Model
                 // select but no need your fields
                 $query = $this->baseModel->action($mode, [false]);
 
-                $this->initQueryFields($query, array_unique($fields + $this->systemFields));
+                $this->initQueryFields($query, array_unique($fields + $this->groupByFields));
                 $this->initQueryOrder($query);
                 $this->initQueryGrouping($query);
                 $this->initQueryConditions($query);
@@ -250,7 +245,7 @@ class Aggregate extends Model
         // use table alias of base model
         $this->table_alias = $this->baseModel->table_alias;
 
-        foreach ($this->group as $field) {
+        foreach ($this->groupByFields as $field) {
             if ($this->baseModel->hasField($field)) {
                 $expression = $this->baseModel->getField($field);
             } else {
@@ -295,8 +290,8 @@ class Aggregate extends Model
     public function __debugInfo(): array
     {
         return array_merge(parent::__debugInfo(), [
-            'group' => $this->group,
-            'aggregate' => $this->aggregate,
+            'groupByFields' => $this->groupByFields,
+            'aggregateExpressions' => $this->aggregateExpressions,
             'baseModel' => $this->baseModel->__debugInfo(),
         ]);
     }
