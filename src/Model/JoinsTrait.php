@@ -23,7 +23,7 @@ trait JoinsTrait
      * join will also query $foreignTable in order to find additional fields. When inserting
      * the record will be also added inside $foreignTable and relationship will be maintained.
      *
-     * @param array<string, string> $defaults
+     * @param array<string, mixed> $defaults
      */
     public function join(string $foreignTable, array $defaults = []): Join
     {
@@ -37,7 +37,7 @@ trait JoinsTrait
      *
      * @see join()
      *
-     * @param array<string, string> $defaults
+     * @param array<string, mixed> $defaults
      */
     public function leftJoin(string $foreignTable, array $defaults = []): Join
     {
