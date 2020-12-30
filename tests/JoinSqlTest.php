@@ -563,7 +563,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         // hasOne phone model
         $m_p = new Model($db, ['table' => 'phone']);
         $m_p->addField('number');
-        $ref = $j->hasOne('phone_id', $m_p); // hasOne on JOIN
+        $ref = $j->hasOne('phone_id', ['model' => $m_p]); // hasOne on JOIN
         $ref->addField('number');
 
         $m_u->load(1);
@@ -575,7 +575,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m_t = new Model($db, ['table' => 'token']);
         $m_t->addField('user_id');
         $m_t->addField('token');
-        $ref = $j->hasMany('Token', $m_t); // hasMany on JOIN (use default our_field, their_field)
+        $ref = $j->hasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default our_field, their_field)
 
         $m_u->load(1);
         $this->assertEquals([
@@ -587,7 +587,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m_e = new Model($db, ['table' => 'email']);
         $m_e->addField('contact_id');
         $m_e->addField('address');
-        $ref = $j->hasMany('Email', [$m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+        $ref = $j->hasMany('Email', ['model' => $m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
 
         $m_u->load(1);
         $this->assertEquals([

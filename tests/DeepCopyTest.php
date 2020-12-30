@@ -19,9 +19,9 @@ class DcClient extends Model
 
         $this->addField('name');
 
-        $this->hasMany('Invoices', new DcInvoice());
-        $this->hasMany('Quotes', new DcQuote());
-        $this->hasMany('Payments', new DcPayment());
+        $this->hasMany('Invoices', ['model' => [DcInvoice::class]]);
+        $this->hasMany('Quotes', ['model' => [DcQuote::class]]);
+        $this->hasMany('Payments', ['model' => [DcPayment::class]]);
     }
 }
 
@@ -33,12 +33,12 @@ class DcInvoice extends Model
     {
         parent::init();
 
-        $this->hasOne('client_id', new DcClient());
+        $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
-        $this->hasMany('Lines', [new DcInvoiceLine(), 'their_field' => 'parent_id'])
+        $this->hasMany('Lines', ['model' => [DcInvoiceLine::class], 'their_field' => 'parent_id'])
             ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
-        $this->hasMany('Payments', new DcPayment())
+        $this->hasMany('Payments', ['model' => [DcPayment::class]])
             ->addField('paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
         $this->addExpression('due', '[total]-[paid]');
@@ -62,9 +62,9 @@ class DcQuote extends Model
     protected function init(): void
     {
         parent::init();
-        $this->hasOne('client_id', new DcClient());
+        $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
-        $this->hasMany('Lines', [new DcQuoteLine(), 'their_field' => 'parent_id'])
+        $this->hasMany('Lines', ['model' => [DcQuoteLine::class], 'their_field' => 'parent_id'])
             ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
         $this->addField('ref');
@@ -80,7 +80,7 @@ class DcInvoiceLine extends Model
     protected function init(): void
     {
         parent::init();
-        $this->hasOne('parent_id', new DcInvoice());
+        $this->hasOne('parent_id', ['model' => [DcInvoice::class]]);
 
         $this->addField('name');
 
@@ -104,7 +104,7 @@ class DcQuoteLine extends Model
     {
         parent::init();
 
-        $this->hasOne('parent_id', new DcQuote());
+        $this->hasOne('parent_id', ['model' => [DcQuote::class]]);
 
         $this->addField('name');
 
@@ -126,9 +126,9 @@ class DcPayment extends Model
     protected function init(): void
     {
         parent::init();
-        $this->hasOne('client_id', new DcClient());
+        $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
-        $this->hasOne('invoice_id', new DcInvoice());
+        $this->hasOne('invoice_id', ['model' => [DcInvoice::class]]);
 
         $this->addField('amount', ['type' => 'money']);
     }
@@ -269,7 +269,7 @@ class DeepCopyTest extends \Atk4\Schema\PhpunitTestCase
         $client_id = $client->insert(['name' => 'John']);
 
         $quote = new DcQuote($this->db);
-        $quote->hasMany('Lines2', [new DcQuoteLine(), 'their_field' => 'parent_id']);
+        $quote->hasMany('Lines2', ['model' => [DcQuoteLine::class], 'their_field' => 'parent_id']);
 
         $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
             ['name' => 'tools', 'qty' => 5, 'price' => 10],

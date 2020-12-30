@@ -360,7 +360,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'user']);
         $m->addField('name');
-        $m->hasOne('category_id', $c)
+        $m->hasOne('category_id', ['model' => $c])
             ->addTitle();
 
         $m->load(1);

@@ -26,19 +26,19 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->hasMany('Orders', [$order, 'caption' => 'My Orders']);
+        $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders');
 
         $this->assertSame(20, $o->get('amount'));
         $this->assertSame(1, $o->get('user_id'));
 
-        $user->hasMany('BigOrders', function () {
+        $user->hasMany('BigOrders', ['model' => function () {
             $m = new Model();
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id');
 
             return $m;
-        });
+        }]);
 
         $this->assertSame(100, $user->ref('BigOrders')->get('amount'));
     }
@@ -58,7 +58,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->hasMany('Orders', [$order, 'caption' => 'My Orders']);
+        $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
         $this->assertSame('My Orders', $user->refModel('Orders')->getModelCaption());
@@ -81,9 +81,9 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $order = new Model();
         $order->addField('user_id');
 
-        $user->hasMany('Orders', $order);
+        $user->hasMany('Orders', ['model' => $order]);
         $this->expectException(Exception::class);
-        $user->hasMany('Orders', $order);
+        $user->hasMany('Orders', ['model' => $order]);
     }
 
     public function testRefName2()
@@ -91,22 +91,22 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $order = new Model(null, ['table' => 'order']);
         $user = new Model(null, ['table' => 'user']);
 
-        $user->hasOne('user_id', $user);
+        $user->hasOne('user_id', ['model' => $user]);
         $this->expectException(Exception::class);
-        $user->hasOne('user_id', $user);
+        $user->hasOne('user_id', ['model' => $user]);
     }
 
     public function testRefName3()
     {
         $db = new Persistence();
         $order = new Model($db, ['table' => 'order']);
-        $order->addRef('archive', function ($m) {
+        $order->addRef('archive', ['model' => function ($m) {
             return $m->newInstance(null, ['table' => $m->table . '_archive']);
-        });
+        }]);
         $this->expectException(Exception::class);
-        $order->addRef('archive', function ($m) {
+        $order->addRef('archive', ['model' => function ($m) {
             return $m->newInstance(null, ['table' => $m->table . '_archive']);
-        });
+        }]);
     }
 
     public function testCustomRef()
@@ -114,9 +114,9 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $p = new Persistence\Array_();
 
         $m = new Model($p, ['table' => 'user']);
-        $m->addRef('archive', function ($m) {
+        $m->addRef('archive', ['model' => function ($m) {
             return $m->newInstance(null, ['table' => $m->table . '_archive']);
-        });
+        }]);
 
         $this->assertSame('user_archive', $m->ref('archive')->table);
     }

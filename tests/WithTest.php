@@ -39,7 +39,7 @@ class WithTest extends \Atk4\Schema\PhpunitTestCase
 
         $m_invoice = new Model($db, ['table' => 'invoice']);
         $m_invoice->addField('net', ['type' => 'money']);
-        $m_invoice->hasOne('user_id', $m_user);
+        $m_invoice->hasOne('user_id', ['model' => $m_user]);
         $m_invoice->addCondition('net', '>', 100);
 
         // setup test model

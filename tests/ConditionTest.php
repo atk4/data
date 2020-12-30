@@ -58,7 +58,7 @@ class ConditionTest extends AtkPhpunit\TestCase
 
         $m = new Model();
         $m->addField('name');
-        $m->hasOne('gender_id', $gender);
+        $m->hasOne('gender_id', ['model' => $gender]);
 
         $this->assertFalse($m->getField('gender_id')->system);
         $this->assertTrue($m->getField('gender_id')->isEditable());
