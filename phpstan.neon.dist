@@ -19,10 +19,6 @@ parameters:
         # TODO remove once https://github.com/atk4/ui/issues/1548 is resolved
         - '~^Class Atk4\\Ui\\(Button|Icon) not found\.$~'
 
-        # TODO do we want to allow to pass an Model instance?
-        - '~^Parameter #2 \$defaults of method Atk4\\Data\\Model::(hasOne|hasMany)\(\) expects array, .+ given\.$~'
-        - '~^Parameter #2 \$defaults of method Atk4\\Data\\Model\\Join::(hasOne|hasMany)\(\) expects array, .+ given\.$~'
-
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src-schema/PhpunitTestCase.php
         - '~^Access to an undefined property Atk4\\Data\\Persistence\:\:\$connection\.$~'

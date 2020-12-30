@@ -56,12 +56,12 @@ SQL Reference
 
     Allows importing field from a referenced model::
 
-        $model->hasOne('country_id', new Country())
+        $model->hasOne('country_id', ['model' => [Country::class]])
             ->addField('country_name', 'name');
 
     Second argument could be array containing additional settings for the field::
 
-        $model->hasOne('account_id', new Account())
+        $model->hasOne('account_id', ['model' => [Account::class]])
             ->addField('account_balance', ['balance', 'type'=>'money']);
 
     Returns new field object.
@@ -70,12 +70,12 @@ SQL Reference
 
     Allows importing multiple fields::
 
-        $model->hasOne('country_id', new Country())
+        $model->hasOne('country_id', ['model' => [Country::class]])
             ->addFields(['country_name', 'country_code']);
 
     You can specify defaults to be applied on all fields::
 
-        $model->hasOne('account_id', new Account())
+        $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
                 'opening_balance',
                 'balance'
@@ -83,7 +83,7 @@ SQL Reference
 
     You can also specify aliases::
 
-        $model->hasOne('account_id', new Account())
+        $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
                 'opening_balance',
                 'account_balance'=>'balance'
@@ -91,7 +91,7 @@ SQL Reference
 
     If you need to pass more details to individual field, you can also use sub-array::
 
-        $model->hasOne('account_id', new Account())
+        $model->hasOne('account_id', ['model' => [Account::class]])
             ->addFields([
             [
                 ['opening_balance', 'caption'=>'The Opening Balance'],
@@ -119,14 +119,14 @@ SQL Reference
     Similar to addField, but will import "title" field and will come up with
     good name for it::
 
-        $model->hasOne('country_id', new Country())
+        $model->hasOne('country_id', ['model' => [Country::class]])
             ->addTitle();
 
         // creates 'country' field as sub-query for country.name
 
     You may pass defaults::
 
-        $model->hasOne('country_id', new Country())
+        $model->hasOne('country_id', ['model' => [Country::class]])
             ->addTitle(['caption'=>'Country Name']);
 
     Returns new field object.
@@ -414,7 +414,7 @@ fetching like this::
         function init(): void {
             parent::init();
 
-            $this->hasOne('parent_id', new self());
+            $this->hasOne('parent_id', ['model' => [self::class]]);
             $this->addField('name');
 
             $this->addExpression('path', 'get_path([id])');

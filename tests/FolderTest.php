@@ -16,10 +16,10 @@ class Folder extends Model
         parent::init();
         $this->addField('name');
 
-        $this->hasMany('SubFolder', [new self(), 'their_field' => 'parent_id'])
+        $this->hasMany('SubFolder', ['model' => [self::class], 'their_field' => 'parent_id'])
             ->addField('count', ['aggregate' => 'count', 'field' => $this->persistence->expr($this, '*')]);
 
-        $this->hasOne('parent_id', new self())
+        $this->hasOne('parent_id', ['model' => [self::class]])
             ->addTitle();
 
         $this->addField('is_deleted', ['type' => 'boolean']);

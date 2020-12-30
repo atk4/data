@@ -29,7 +29,7 @@ store extra fields there. In your code::
 As you implement single Account and multiple Transaction types, you want to relate
 both::
 
-    $account->hasMany('Transactions', new Transaction());
+    $account->hasMany('Transactions', ['model' => [Transaction::class]]);
 
 There are however two difficulties here:
 
@@ -42,9 +42,9 @@ Best practice for specifying relation type
 Although there is no magic behind it, I recommend that you use the following
 code pattern when dealing with multiple types::
 
-    $account->hasMany('Transactions', new Transaction());
-    $account->hasMany('Transactions:Deposit', new Transaction\Deposit());
-    $account->hasMany('Transactions:Transfer', new Transaction\Transfer());
+    $account->hasMany('Transactions', ['model' => [Transaction::class]]);
+    $account->hasMany('Transactions:Deposit', ['model' => [Transaction\Deposit::class]]);
+    $account->hasMany('Transactions:Transfer', ['model' => [Transaction\Transfer::class]]);
 
 You can then use type-specific reference::
 
@@ -510,12 +510,12 @@ Next we need to define reference. Inside Model_Invoice add::
 
     $this->hasMany('InvoicePayment');
 
-    $this->hasMany('Payment', [function($m) {
+    $this->hasMany('Payment', ['model' => function($m) {
         $p = new Model_Payment($m->persistence);
         $j = $p->join('invoice_payment.payment_id');
         $j->addField('amount_closed');
         $j->hasOne('invoice_id', 'Model_Invoice');
-    }, 'their_field'=>'invoice_id']);
+    }, 'their_field' => 'invoice_id']);
 
     $this->onHookShort(Model::HOOK_BEFORE_DELETE, function(){
         $this->ref('InvoicePayment')->action('delete')->execute();
@@ -776,7 +776,7 @@ define Model_Document::
 One option here is to move 'Model_Contact' into model property, which will be
 different for the extended class::
 
-    $this->hasOne('client_id', $this->client_class);
+    $this->hasOne('client_id', ['model' => [$this->client_class]]);
 
 Alternatively you can replace model in the init() method of Model_Invoice::
 
@@ -797,9 +797,9 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
 
     $this->hasOne('client_id', 'Client');
 
-    $this->hasOne('payment_invoice_id', function($m){
+    $this->hasOne('payment_invoice_id', ['model' => function($m){
         return $m->ref('client_id')->ref('Payment');
-    });
+    }]);
 
     /// how to use
 
@@ -825,9 +825,9 @@ Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::
 
     $this->hasMany('Invoice', 'Model_Invoice');
-    $this->hasMany('OverdueInvoice', function($m){
+    $this->hasMany('OverdueInvoice', ['model' => function($m){
         return $m->ref('Invoice')->addCondition('due','<',date('Y-m-d'))
-    });
+    }]);
 
 This way if you extend your class into 'Model_Client' and modify the 'Invoice'
 reference to use different model::

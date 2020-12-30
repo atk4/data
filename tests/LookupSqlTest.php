@@ -32,7 +32,7 @@ class LCountry extends Model
 
         $this->addField('is_eu', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasMany('Users', new LUser())
+        $this->hasMany('Users', ['model' => [LUser::class]])
             ->addField('user_names', ['field' => 'name', 'concat' => ',']);
     }
 }
@@ -66,11 +66,11 @@ class LUser extends Model
         $this->addField('name');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasOne('country_id', new LCountry())
+        $this->hasOne('country_id', ['model' => [LCountry::class]])
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
 
-        $this->hasMany('Friends', new LFriend())
+        $this->hasMany('Friends', ['model' => [LFriend::class]])
             ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
     }
 }
@@ -97,9 +97,9 @@ class LFriend extends Model
     {
         parent::init();
 
-        $this->hasOne('user_id', new LUser())
+        $this->hasOne('user_id', ['model' => [LUser::class]])
             ->addField('my_name', 'name');
-        $this->hasOne('friend_id', new LUser())
+        $this->hasOne('friend_id', ['model' => [LUser::class]])
             ->addField('friend_name', 'name');
 
         // add or remove reverse friendships

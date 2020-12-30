@@ -31,18 +31,13 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('id', $this->getProtected($j, 'master_field'));
         $this->assertSame('test_id', $this->getProtected($j, 'foreign_field'));
 
-        $j = $m->join('contact3', 'test_id');
-        $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
-
-        $j = $m->join('contact3', ['test_id']);
+        $j = $m->join('contact3', ['master_field' => 'test_id']);
         $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-        $j = $m->join('contact4.foo_id', ['test_id', 'reverse' => true]);
+        $j = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
         $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
@@ -54,7 +49,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $j = $m->join('contact.foo_id', 'test_id');
+        $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
     }
 
     public function testJoinSaving1()
@@ -184,7 +179,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $m_u->addField('name');
-        $j = $m_u->join('contact', 'test_id');
+        $j = $m_u->join('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');
 
         $m_u->set('name', 'John');
@@ -568,7 +563,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         // hasOne phone model
         $m_p = new Model($db, ['table' => 'phone']);
         $m_p->addField('number');
-        $ref = $j->hasOne('phone_id', $m_p); // hasOne on JOIN
+        $ref = $j->hasOne('phone_id', ['model' => $m_p]); // hasOne on JOIN
         $ref->addField('number');
 
         $m_u->load(1);
@@ -580,7 +575,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m_t = new Model($db, ['table' => 'token']);
         $m_t->addField('user_id');
         $m_t->addField('token');
-        $ref = $j->hasMany('Token', $m_t); // hasMany on JOIN (use default our_field, their_field)
+        $ref = $j->hasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default our_field, their_field)
 
         $m_u->load(1);
         $this->assertEquals([
@@ -592,7 +587,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m_e = new Model($db, ['table' => 'email']);
         $m_e->addField('contact_id');
         $m_e->addField('address');
-        $ref = $j->hasMany('Email', [$m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+        $ref = $j->hasMany('Email', ['model' => $m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
 
         $m_u->load(1);
         $this->assertEquals([

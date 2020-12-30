@@ -139,7 +139,7 @@ class JobReport extends Job {
     $invoice_lines = $invoice->ref('Lines');
 
     // Build relation between job and invoice line
-    $this->hasMany('InvoiceLines', $invoice_lines)
+    $this->hasMany('InvoiceLines', ['model' => $invoice_lines])
       ->addField('invoiced', ['aggregate'=>'sum', 'field'=>'total', 'type'=>'money']);
 
     // Next we need to see how much is reported through timesheets
@@ -152,7 +152,7 @@ class JobReport extends Job {
     $timesheet->addExpression('cost', '[hours]*[hourly_rate]');
 
     // Build relation between Job and Timesheets
-    $this->hasMany('Timesheets', $timesheet)
+    $this->hasMany('Timesheets', ['model' => $timesheet])
       ->addField('reported', ['aggregate'=>'sum', 'field'=>'cost', 'type'=>'money']);
 
 	// Finally lets calculate profit
@@ -356,7 +356,7 @@ class Client extends \Atk4\Data\Model {
 
     $this->addFields(['name','address']);
 
-    $this->hasMany('Project', new Project());
+    $this->hasMany('Project', ['model' => [Project::class]]);
   }
 }
 ```

@@ -236,7 +236,7 @@ Code (add inside `init()`)::
         protected function init(): void {
             parent::init();
 
-            $this->hasMany('Order', new Model_Order());
+            $this->hasMany('Order', ['model' => [Model_Order::class]]);
         }
     }
 
@@ -244,7 +244,7 @@ Code (add inside `init()`)::
         protected function init(): void {
             parent::init();
 
-            $this->hasOne('Client', new Model_Client());
+            $this->hasOne('Client', ['model' => [Model_Client::class]]);
 
             // addField declarations
         }

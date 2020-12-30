@@ -879,7 +879,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $country->table = 'country';
         $country->addField('name');
 
-        $user->hasOne('country_id', $country);
+        $user->hasOne('country_id', ['model' => $country]);
 
         $uu = (clone $user)->load(1);
         $this->assertSame('Latvia', $uu->ref('country_id')->get('name'));
@@ -913,8 +913,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $user->addField('name');
         $user->addField('surname');
 
-        $country->hasMany('Users', $user);
-        $user->hasOne('country_id', $country);
+        $country->hasMany('Users', ['model' => $user]);
+        $user->hasOne('country_id', ['model' => $country]);
 
         $cc = (clone $country)->load(1);
         $this->assertSame(2, $cc->ref('Users')->action('count')->getOne());

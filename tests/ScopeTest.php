@@ -26,7 +26,7 @@ class SCountry extends Model
 
         $this->addField('is_eu', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasMany('Users', new SUser())
+        $this->hasMany('Users', ['model' => [SUser::class]])
             ->addField('user_names', ['field' => 'name', 'concat' => ',']);
     }
 }
@@ -45,11 +45,11 @@ class SUser extends Model
         $this->addField('surname');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasOne('country_id', new SCountry())
+        $this->hasOne('country_id', ['model' => [SCountry::class]])
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
 
-        $this->hasMany('Tickets', [new STicket(), 'their_field' => 'user']);
+        $this->hasMany('Tickets', ['model' => [STicket::class], 'their_field' => 'user']);
     }
 }
 
@@ -67,7 +67,7 @@ class STicket extends Model
         $this->addField('venue');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasOne('user', new SUser());
+        $this->hasOne('user', ['model' => [SUser::class]]);
     }
 }
 

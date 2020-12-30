@@ -14,7 +14,7 @@ class Transfer extends Payment
     {
         parent::init();
 
-        $this->j_payment->hasOne('transfer_document_id', new self());
+        $this->j_payment->hasOne('transfer_document_id', ['model' => [self::class]]);
 
         // only used to create / destroy trasfer legs
         if (!$this->detached) {

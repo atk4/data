@@ -8,6 +8,7 @@ use Atk4\Core\DiContainerTrait;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Reference;
@@ -216,17 +217,9 @@ class Join
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table, but
      * form the join instead.
-     *
-     * @param string $name
-     * @param array  $seed
-     *
-     * @return \Atk4\Data\Field
      */
-    public function addField($name, $seed = [])
+    public function addField(string $name, array $seed = []): Field
     {
-        if ($seed && !is_array($seed)) {
-            $seed = [$seed];
-        }
         $seed['joinName'] = $this->short_name;
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
@@ -257,15 +250,10 @@ class Join
     /**
      * Another join will be attached to a current join.
      *
-     * @param array $defaults
-     *
      * @return self
      */
-    public function join(string $foreign_table, $defaults = [])
+    public function join(string $foreign_table, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        }
         $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->join($foreign_table, $defaults);
@@ -274,15 +262,10 @@ class Join
     /**
      * Another leftJoin will be attached to a current join.
      *
-     * @param array $defaults
-     *
      * @return self
      */
-    public function leftJoin(string $foreign_table, $defaults = [])
+    public function leftJoin(string $foreign_table, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        }
         $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->leftJoin($foreign_table, $defaults);
@@ -292,8 +275,6 @@ class Join
      * weakJoin will be attached to a current join.
      *
      * @todo NOT IMPLEMENTED! weakJoin method does not exist!
-     *
-     * @param array $defaults
      *
      * @return
      */
@@ -309,16 +290,10 @@ class Join
     /**
      * Creates reference based on a field from the join.
      *
-     * @param array $defaults
-     *
      * @return Reference\HasOne
      */
-    public function hasOne(string $link, $defaults = [])
+    public function hasOne(string $link, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults];
-        }
-
         $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->hasOne($link, $defaults);
@@ -327,16 +302,10 @@ class Join
     /**
      * Creates reference based on the field from the join.
      *
-     * @param array $defaults
-     *
      * @return Reference\HasMany
      */
-    public function hasMany(string $link, $defaults = [])
+    public function hasMany(string $link, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults];
-        }
-
         $defaults = array_merge([
             'our_field' => $this->id_field,
             'their_field' => $this->getOwner()->table . '_' . $this->id_field,
@@ -351,18 +320,11 @@ class Join
      *
      * @todo NOT IMPLEMENTED !
      *
-     * @param Model $model
-     * @param array $defaults
-     *
      * @return ???
      */
     /*
-    public function containsOne($model, $defaults = [])
+    public function containsOne(Model $model, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = [$defaults];
-        }
-
         if (is_string($defaults[0])) {
             $defaults[0] = $this->addField($defaults[0], ['system' => true]);
         }
@@ -377,18 +339,11 @@ class Join
      *
      * @todo NOT IMPLEMENTED !
      *
-     * @param Model $model
-     * @param array $defaults
-     *
      * @return ???
      */
     /*
-    public function containsMany($model, $defaults = [])
+    public function containsMany(Model $model, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = [$defaults];
-        }
-
         if (is_string($defaults[0])) {
             $defaults[0] = $this->addField($defaults[0], ['system' => true]);
         }
@@ -408,12 +363,9 @@ class Join
      * to all the fields. Conditions will be automatically mapped.
      *
      * @todo NOT IMPLEMENTED !
-     *
-     * @param Model $model
-     * @param array $defaults
      */
     /*
-    public function importModel($model, $defaults = [])
+    public function importModel(Model $model, array $defaults = [])
     {
         // not implemented yet !!!
     }
@@ -424,12 +376,9 @@ class Join
      * then import all of the data into our model.
      *
      * @todo NOT IMPLEMENTED!
-     *
-     * @param Model $model
-     * @param array $fields
      */
     /*
-    public function weakJoinModel($model, $fields = [])
+    public function weakJoinModel(Model $model, array $fields = [])
     {
         if (!is_object($model)) {
             $model = $this->getOwner()->connection->add($model);

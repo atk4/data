@@ -16,7 +16,7 @@ class Account extends Model
 
         $this->addField('name');
 
-        $this->hasMany('Payment', new Payment())
+        $this->hasMany('Payment', ['model' => [Payment::class]])
             ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount']);
     }
 

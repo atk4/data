@@ -41,7 +41,7 @@ class Model_Item2 extends Model
         parent::init();
         $this->addField('name');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', new self())
+        $i2->hasOne('parent_item_id', ['model' => [self::class]])
             ->addTitle();
     }
 }
@@ -58,10 +58,10 @@ class Model_Item3 extends Model
         $this->addField('name');
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', [$m, 'table_alias' => 'parent'])
+        $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
             ->withTitle();
 
-        $this->hasMany('Child', [$m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
+        $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
     }
 }
@@ -533,8 +533,8 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($this->db, ['table' => 'db1.user']);
         $m->addField('name');
 
-        $d->hasOne('user_id', $m)->addTitle();
-        $m->hasMany('Documents', $d);
+        $d->hasOne('user_id', ['model' => $m])->addTitle();
+        $m->hasMany('Documents', ['model' => $d]);
 
         $d->addCondition('user', 'Sarah');
 
