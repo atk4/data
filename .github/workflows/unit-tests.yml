@@ -54,6 +54,7 @@ jobs:
           if [ "${{ matrix.type }}" != "CodingStyle" ]; then composer remove --no-interaction --no-update friendsofphp/php-cs-fixer --dev && composer --no-interaction --no-update require jdorn/sql-formatter ; fi
           if [ "${{ matrix.type }}" != "StaticAnalysis" ]; then composer remove --no-interaction --no-update phpstan/phpstan --dev ; fi
           composer install --no-suggest --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+          if [ "${{ matrix.type }}" = "StaticAnalysis" ]; then git clone --depth 1 --branch 1.1.5 https://github.com/mvorisek/atk4-hintable-mirror.git && php -d phar.readonly=0 atk4-hintable-mirror/patch-phpstan-static-type-issue-4267.php vendor/phpstan/phpstan/phpstan.phar && rm -R atk4-hintable-mirror ; fi
 
       - name: Init
         run: |
