@@ -162,13 +162,6 @@ class Aggregate extends Model
             : parent::addField($name, $seed);
     }
 
-    public function setLimit(int $count = null, int $offset = 0)
-    {
-        $this->baseModel->setLimit($count, $offset);
-
-        return $this;
-    }
-
     /**
      * @param string $mode
      * @param array  $args
@@ -188,6 +181,7 @@ class Aggregate extends Model
                 $this->initQueryOrder($query);
                 $this->initQueryGrouping($query);
                 $this->initQueryConditions($query);
+                $this->initQueryLimit($query);
 
                 $this->hook(self::HOOK_INIT_SELECT_QUERY, [$query]);
 
@@ -273,6 +267,17 @@ class Aggregate extends Model
 
                 $query->having($expression);
             }
+        }
+    }
+
+    protected function initQueryLimit(Query $query)
+    {
+        if ($this->limit && ($this->limit[0] || $this->limit[1])) {
+            if ($this->limit[0] === null) {
+                $this->limit[0] = PHP_INT_MAX;
+            }
+
+            $query->limit($this->limit[0], $this->limit[1]);
         }
     }
 
