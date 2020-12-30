@@ -51,7 +51,7 @@ class Invoice2 extends Model
         $this->addCalculatedField('discounts_total_sum', function (self $m) {
             $total = 0;
             foreach ($m->lines as $line) {
-                $total += $line->total_gross * $line->get('discounts_percent') / 100; // @phpstan-ignore-line
+                $total += $line->total_gross * $line->get('discounts_percent') / 100;
             }
 
             return $total;
