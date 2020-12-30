@@ -23,17 +23,10 @@ trait JoinsTrait
      * join will also query $foreignTable in order to find additional fields. When inserting
      * the record will be also added inside $foreignTable and relationship will be maintained.
      *
-     * @param array|string $defaults
+     * @param array<string, string> $defaults
      */
-    public function join(string $foreignTable, $defaults = []): Join
+    public function join(string $foreignTable, array $defaults = []): Join
     {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        } elseif (isset($defaults[0])) {
-            $defaults['master_field'] = $defaults[0];
-            unset($defaults[0]);
-        }
-
         $defaults[0] = $foreignTable;
 
         return $this->add(Join::fromSeed($this->_default_seed_join, $defaults));
@@ -44,13 +37,10 @@ trait JoinsTrait
      *
      * @see join()
      *
-     * @param array|string $defaults
+     * @param array<string, string> $defaults
      */
-    public function leftJoin(string $foreignTable, $defaults = []): Join
+    public function leftJoin(string $foreignTable, array $defaults = []): Join
     {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        }
         $defaults['weak'] = true;
 
         return $this->join($foreignTable, $defaults);

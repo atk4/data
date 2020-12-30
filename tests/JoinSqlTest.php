@@ -31,18 +31,13 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('id', $this->getProtected($j, 'master_field'));
         $this->assertSame('test_id', $this->getProtected($j, 'foreign_field'));
 
-        $j = $m->join('contact3', 'test_id');
-        $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
-
-        $j = $m->join('contact3', ['test_id']);
+        $j = $m->join('contact3', ['master_field' => 'test_id']);
         $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-        $j = $m->join('contact4.foo_id', ['test_id', 'reverse' => true]);
+        $j = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
         $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
@@ -54,7 +49,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $j = $m->join('contact.foo_id', 'test_id');
+        $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
     }
 
     public function testJoinSaving1()
@@ -184,7 +179,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $m_u->addField('name');
-        $j = $m_u->join('contact', 'test_id');
+        $j = $m_u->join('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');
 
         $m_u->set('name', 'John');

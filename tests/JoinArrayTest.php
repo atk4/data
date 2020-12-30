@@ -34,18 +34,13 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $this->assertSame('id', $this->getProtected($j, 'master_field'));
         $this->assertSame('test_id', $this->getProtected($j, 'foreign_field'));
 
-        $j = $m->join('contact3', 'test_id');
-        $this->assertFalse($this->getProtected($j, 'reverse'));
-        $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
-        $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
-
-        $j = $m->join('contact3', ['test_id']);
+        $j = $m->join('contact3', ['master_field' => 'test_id']);
         $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-        $j = $m->join('contact4.foo_id', ['test_id', 'reverse' => true]);
+        $j = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
         $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
@@ -57,7 +52,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $j = $m->join('contact.foo_id', 'test_id');
+        $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
     }
 
     public function testJoinSaving1()
@@ -170,7 +165,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
-        $j = $m_u->join('contact', 'test_id');
+        $j = $m_u->join('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');
 
         $m_u->set('name', 'John');
@@ -190,7 +185,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $m_u = new Model($db, 'user');
         $m_u->addField('name');
         $m_u->addField('code');
-        $j = $m_u->join('contact.code', 'code');
+        $j = $m_u->join('contact.code', ['master_field' => 'code']);
         $j->addField('contact_phone');
 
         $m_u->get('name') = 'John';
@@ -383,7 +378,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
         // tricky cases to testt
         //
-        //$m->join('foo.bar', ['master_field'=>'baz']);
+        //$m->join('foo.bar', ['master_field' => 'baz']);
         // foreign_table = 'foo.bar'
     }
     */
