@@ -10,9 +10,7 @@ use Atk4\Data\Persistence;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 
 /**
- * @coversDefaultClass \Atk4\Data\Model
- *
- * Tests cases when model have to work with data that does not have ID field
+ * Tests cases when model have to work with data that does not have ID field.
  */
 class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
 {

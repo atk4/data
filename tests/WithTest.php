@@ -9,9 +9,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class WithTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testWith()

@@ -9,9 +9,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class JoinArrayTest extends AtkPhpunit\TestCase
 {
     private function getInternalPersistenceData(Persistence\Array_ $db): array

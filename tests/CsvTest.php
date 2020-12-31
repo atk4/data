@@ -9,9 +9,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Tests\Model\Person;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class CsvTest extends AtkPhpunit\TestCase
 {
     protected $file;

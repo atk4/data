@@ -11,9 +11,6 @@ use Atk4\Data\Persistence;
 use Atk4\Data\Tests\Model\Female as Female;
 use Atk4\Data\Tests\Model\Male as Male;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class PersistentArrayTest extends AtkPhpunit\TestCase
 {
     private function getInternalPersistenceData(Persistence\Array_ $db): array

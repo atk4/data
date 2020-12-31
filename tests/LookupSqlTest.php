@@ -135,8 +135,6 @@ class LFriend extends Model
 }
 
 /**
- * @coversDefaultClass \Atk4\Data\Model
- *
  * ATK Data has an option to lookup ID values if their "lookup" values are specified.
  */
 class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase

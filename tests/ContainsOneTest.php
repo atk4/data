@@ -87,8 +87,6 @@ class Country1 extends Model
 // ============================================================================
 
 /**
- * @coversDefaultClass \Atk4\Data\Model
- *
  * ATK Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
  */
