@@ -11,9 +11,6 @@ use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testDirection()

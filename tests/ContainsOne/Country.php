@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Atk4\Data\Tests\ContainsOne;
+
+use Atk4\Data\Model;
+
+/**
+ * Country model.
+ *
+ * @property string $name @Atk\Field()
+ */
+class Country extends Model
+{
+    public $table = 'country';
+
+    protected function init(): void
+    {
+        parent::init();
+
+        $this->addField($this->fieldName()->name);
+    }
+}

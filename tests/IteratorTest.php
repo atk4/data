@@ -8,9 +8,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class IteratorTest extends \Atk4\Schema\PhpunitTestCase
 {
     /**

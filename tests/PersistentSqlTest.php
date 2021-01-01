@@ -6,9 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
     /**

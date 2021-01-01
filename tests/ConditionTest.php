@@ -7,9 +7,6 @@ namespace Atk4\Data\Tests;
 use Atk4\Core\AtkPhpunit;
 use Atk4\Data\Model;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class ConditionTest extends AtkPhpunit\TestCase
 {
     public function testException1()

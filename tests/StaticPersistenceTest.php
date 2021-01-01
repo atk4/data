@@ -8,9 +8,6 @@ use Atk4\Core\AtkPhpunit;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class StaticPersistenceTest extends AtkPhpunit\TestCase
 {
     /**

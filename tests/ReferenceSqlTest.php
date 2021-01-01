@@ -9,8 +9,6 @@ use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 /**
- * @coversDefaultClass \Atk4\Data\Model
- *
  * Tests that condition is applied when traversing hasMany
  * also that the original model can be re-loaded with a different
  * value without making any condition stick.

@@ -9,9 +9,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
 /**
- * @coversDefaultClass \Atk4\Data\Model
- *
- * Tests cases when model have to work with data that does not have ID field
+ * Tests cases when model have to work with data that does not have ID field.
  */
 class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
 {

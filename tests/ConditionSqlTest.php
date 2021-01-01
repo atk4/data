@@ -8,9 +8,6 @@ use Atk4\Data\Model;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testBasic()

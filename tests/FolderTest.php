@@ -27,9 +27,6 @@ class Folder extends Model
     }
 }
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class FolderTest extends \Atk4\Schema\PhpunitTestCase
 {
     public function testRate()
