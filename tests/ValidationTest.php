@@ -9,6 +9,11 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\ValidationException;
 
+class ValidationTest
+{
+    // TODO ignore CS fixer error
+}
+
 class MyValidationModel extends Model
 {
     protected function init(): void
