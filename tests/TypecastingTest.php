@@ -80,7 +80,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame([1, 2, 3], $mm->get('array'));
         $this->assertSame(8.202343, $mm->get('float'));
 
-        $m/*->duplicate()*/->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m/*->duplicate()*/ ->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData = [
             'types' => [
@@ -198,7 +198,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $mm->save();
         $this->assertEquals($dbData, $this->getDb());
 
-        $m/*->duplicate()*/->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m/*->duplicate()*/ ->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData['types'][2] = [
             'id' => 2,
@@ -293,7 +293,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($mm->get('b1'));
         $this->assertFalse($mm->get('b2'));
 
-        (clone $m)/*->duplicate()*/->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        (clone $m)/*->duplicate()*/ ->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
         $m->delete(1);
 
         unset($dbData['types'][0]);
