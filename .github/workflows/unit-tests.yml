@@ -82,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.3', 'latest', '8.0']
+        php: ['7.3', '7.4', 'latest']
         type: ['Phpunit']
         include:
           - php: 'latest'
@@ -158,19 +158,14 @@ jobs:
         if: startsWith(matrix.type, 'Phpunit')
         run: "vendor/bin/phpunit --configuration phpunit-pgsql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
-      - name: "Run tests: MSSQL (for PHP < 8.0) (only for Phpunit)"
-        if: startsWith(matrix.type, 'Phpunit') && matrix.php != '8.0'
-        # reenable once https://github.com/doctrine/dbal/pull/4284 is merged
+      - name: "Run tests: (only for Phpunit)"
+        if: startsWith(matrix.type, 'Phpunit')
+        # remove "continue-on-error: true" once https://github.com/doctrine/dbal/pull/4284 is merged
         continue-on-error: true
         run: "vendor/bin/phpunit --configuration phpunit-mssql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
-      - name: "Run tests: MSSQL (for PHP = 8.0, allowed to fail) (only for Phpunit)"
-        if: startsWith(matrix.type, 'Phpunit') && matrix.php == '8.0'
-        continue-on-error: true
-        run: "vendor/bin/phpunit --configuration phpunit-mssql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
-
-      - name: "Run tests: Oracle (for PHP < 8.0) (only for Phpunit)"
-        if: startsWith(matrix.type, 'Phpunit') && matrix.php != '8.0'
+      - name: "Run tests: Oracle (only for Phpunit)"
+        if: startsWith(matrix.type, 'Phpunit')
         run: "vendor/bin/phpunit --configuration phpunit-oracle.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: Upload coverage logs 1/2 (only for "latest" Phpunit)
