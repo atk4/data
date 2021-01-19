@@ -158,7 +158,7 @@ jobs:
         if: startsWith(matrix.type, 'Phpunit')
         run: "vendor/bin/phpunit --configuration phpunit-pgsql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
-      - name: "Run tests: (only for Phpunit)"
+      - name: "Run tests: MSSQL (only for Phpunit)"
         if: startsWith(matrix.type, 'Phpunit')
         # remove "continue-on-error: true" once https://github.com/doctrine/dbal/pull/4284 is merged
         continue-on-error: true
