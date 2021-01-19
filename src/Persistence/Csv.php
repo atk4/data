@@ -134,7 +134,7 @@ class Csv extends Persistence
     public function getLine(): ?array
     {
         $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape_char);
-        if ($data === false || $data === null) {
+        if ($data === false) {
             return null;
         }
 
