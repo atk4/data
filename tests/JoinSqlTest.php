@@ -664,4 +664,83 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
+
+    public function testJoinActualFieldNamesAndPrefix()
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'first_name' => 'John', 'cid' => 1],
+                2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
+                3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
+            ], 'contact' => [
+                1 => ['id' => 1, 'contact_phone' => '+123'],
+                2 => ['id' => 2, 'contact_phone' => '+321'],
+            ], 'salaries' => [
+                1 => ['id' => 1, 'amount' => 123, 'uid' => 1],
+                2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
+            ],
+        ]);
+
+        $db = new Persistence\Sql($this->db->connection);
+        $m_u = new Model($db, ['table' => 'user']);
+        $m_u->addField('contact_id', ['actual' => 'cid']);
+        $m_u->addField('name', ['actual' => 'first_name']);
+        // normal join
+        $j = $m_u->join('contact', ['prefix' => 'j1_']);
+        $j->addField('phone', ['actual' => 'contact_phone']);
+        // reverse join
+        $j2 = $m_u->join('salaries.uid', ['prefix' => 'j2_']);
+        $j2->addField('salary', ['actual' => 'amount']);
+
+        // update
+        $m_u2 = (clone $m_u)->load(1);
+        $m_u2->set('name', 'John 2');
+        $m_u2->set('j1_phone', '+555');
+        $m_u2->set('j2_salary', 111);
+        $m_u2->save();
+
+        $this->assertEquals(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'first_name' => 'John 2', 'cid' => 1],
+                    2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
+                    3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
+                ], 'contact' => [
+                    1 => ['id' => 1, 'contact_phone' => '+555'],
+                    2 => ['id' => 2, 'contact_phone' => '+321'],
+                ], 'salaries' => [
+                    1 => ['id' => 1, 'amount' => 111, 'uid' => 1],
+                    2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
+                ],
+            ],
+            $this->getDb()
+        );
+
+        // insert
+        $m_u3 = (clone $m_u)->unload();
+        $m_u3->set('name', 'Marvin');
+        $m_u3->set('j1_phone', '+999');
+        $m_u3->set('j2_salary', 222);
+        $m_u3->save();
+
+        $this->assertEquals(
+            [
+                'user' => [
+                    1 => ['id' => 1, 'first_name' => 'John 2', 'cid' => 1],
+                    2 => ['id' => 2, 'first_name' => 'Peter', 'cid' => 1],
+                    3 => ['id' => 3, 'first_name' => 'Joe', 'cid' => 2],
+                    4 => ['id' => 4, 'first_name' => 'Marvin', 'cid' => 3],
+                ], 'contact' => [
+                    1 => ['id' => 1, 'contact_phone' => '+555'],
+                    2 => ['id' => 2, 'contact_phone' => '+321'],
+                    3 => ['id' => 3, 'contact_phone' => '+999'],
+                ], 'salaries' => [
+                    1 => ['id' => 1, 'amount' => 111, 'uid' => 1],
+                    2 => ['id' => 2, 'amount' => 456, 'uid' => 2],
+                    3 => ['id' => 3, 'amount' => 222, 'uid' => 4],
+                ],
+            ],
+            $this->getDb()
+        );
+    }
 }

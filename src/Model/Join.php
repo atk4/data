@@ -94,8 +94,9 @@ class Join
     protected $reverse;
 
     /**
-     * Field to be used for matching inside master field. By default
+     * Field to be used for matching inside master table. By default
      * it's $foreign_table.'_id'.
+     * Note that it should be actual field name in master table.
      *
      * @var string
      */
@@ -104,6 +105,7 @@ class Join
     /**
      * Field to be used for matching in a foreign table. By default
      * it's 'id'.
+     * Note that it should be actual field name in foreign table.
      *
      * @var string
      */
@@ -228,11 +230,9 @@ class Join
     /**
      * Adds multiple fields.
      *
-     * @param array $fields
-     *
      * @return $this
      */
-    public function addFields($fields = [])
+    public function addFields(array $fields = [])
     {
         foreach ($fields as $field) {
             if (is_array($field)) {
