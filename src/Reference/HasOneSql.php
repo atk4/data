@@ -177,7 +177,7 @@ class HasOneSql extends HasOne
     {
         $ourModel = $this->getOurModel();
 
-        $fieldName = $defaults['field'] ?? preg_replace('/_' . $ourModel->id_field . '$/i', '', $this->link);
+        $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
 
         if ($ourModel->hasField($fieldName)) {
             throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))
