@@ -195,7 +195,7 @@ class Reference
             $ourModel = $this->getOurModel();
 
             $this->table_alias = $this->link;
-            $this->table_alias = preg_replace('~_(' . $ourModel->id_field . '|id)~', '', $this->table_alias);
+            $this->table_alias = preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->table_alias);
             $this->table_alias = preg_replace('~([a-z])[a-z]*[^a-z]*~i', '$1', $this->table_alias);
             if (isset($ourModel->table_alias)) {
                 $this->table_alias = $ourModel->table_alias . '_' . $this->table_alias;
