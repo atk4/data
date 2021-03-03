@@ -77,7 +77,7 @@ class Boolean extends \Atk4\Data\Field
             return (bool) $value;
         }
 
-        throw new ValidationException([$this->name => 'Must be a boolean value']);
+        throw new ValidationException([$this->name => 'Must be a boolean value'], $this->getOwner());
     }
 
     /**
@@ -101,7 +101,7 @@ class Boolean extends \Atk4\Data\Field
     {
         // if value required, then only valueTrue is allowed
         if ($this->required && $value !== $this->valueTrue) {
-            throw new ValidationException([$this->name => 'Must be selected']);
+            throw new ValidationException([$this->name => 'Must be selected'], $this->getOwner());
         }
     }
 }
