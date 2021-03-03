@@ -249,7 +249,7 @@ class Field implements Expressionable
 
             if ($value === null) {
                 if ($this->required/* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576 || $this->mandatory*/) {
-                    throw new ValidationException([$this->name => 'Must not be null']);
+                    throw new ValidationException([$this->name => 'Must not be null'], $this->getOwner());
                 }
 
                 return;
@@ -261,7 +261,7 @@ class Field implements Expressionable
             // other field types empty value is the same as no-value, nothing or null
             if ($f->type && $f->type !== 'string' && $value === '') {
                 if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
+                    throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
                 }
 
                 return;
@@ -270,7 +270,7 @@ class Field implements Expressionable
             // validate scalar values
             if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float'], true)) {
                 if (!is_scalar($value)) {
-                    throw new ValidationException([$this->name => 'Must use scalar value']);
+                    throw new ValidationException([$this->name => 'Must use scalar value'], $this->getOwner());
                 }
 
                 $value = (string) $value;
@@ -280,7 +280,7 @@ class Field implements Expressionable
             switch ($f->type) {
             case null: // loose comparison, but is OK here
                 if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
+                    throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
                 }
 
                 break;
@@ -288,7 +288,7 @@ class Field implements Expressionable
                 // remove all line-ends and trim
                 $value = trim(str_replace(["\r", "\n"], '', $value));
                 if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
+                    throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
                 }
 
                 break;
@@ -296,7 +296,7 @@ class Field implements Expressionable
                 // normalize line-ends to LF and trim
                 $value = trim(str_replace(["\r\n", "\r"], "\n", $value));
                 if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
+                    throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
                 }
 
                 break;
@@ -307,11 +307,11 @@ class Field implements Expressionable
                 $value = trim(str_replace(["\r", "\n"], '', $value));
                 $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
-                    throw new ValidationException([$this->name => 'Must be numeric']);
+                    throw new ValidationException([$this->name => 'Must be numeric'], $this->getOwner());
                 }
                 $value = (int) $value;
                 if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a zero']);
+                    throw new ValidationException([$this->name => 'Must not be a zero'], $this->getOwner());
                 }
 
                 break;
@@ -319,11 +319,11 @@ class Field implements Expressionable
                 $value = trim(str_replace(["\r", "\n"], '', $value));
                 $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
-                    throw new ValidationException([$this->name => 'Must be numeric']);
+                    throw new ValidationException([$this->name => 'Must be numeric'], $this->getOwner());
                 }
                 $value = (float) $value;
                 if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a zero']);
+                    throw new ValidationException([$this->name => 'Must not be a zero'], $this->getOwner());
                 }
 
                 break;
@@ -331,11 +331,11 @@ class Field implements Expressionable
                 $value = trim(str_replace(["\r", "\n"], '', $value));
                 $value = preg_replace('/[,`\']/', '', $value);
                 if (!is_numeric($value)) {
-                    throw new ValidationException([$this->name => 'Must be numeric']);
+                    throw new ValidationException([$this->name => 'Must be numeric'], $this->getOwner());
                 }
                 $value = round((float) $value, 4);
                 if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a zero']);
+                    throw new ValidationException([$this->name => 'Must not be a zero'], $this->getOwner());
                 }
 
                 break;
@@ -357,10 +357,10 @@ class Field implements Expressionable
                         $value = new $class($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
                     } else {
                         if (is_object($value)) {
-                            throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value class' => get_class($value)]);
+                            throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value class' => get_class($value)], $this->getOwner());
                         }
 
-                        throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value type' => gettype($value)]);
+                        throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value type' => gettype($value)], $this->getOwner());
                     }
                 }
 
@@ -381,7 +381,7 @@ class Field implements Expressionable
                 }
 
                 if (!is_array($value)) {
-                    throw new ValidationException([$this->name => 'Must be an array']);
+                    throw new ValidationException([$this->name => 'Must be an array'], $this->getOwner());
                 }
 
                 break;
@@ -391,7 +391,7 @@ class Field implements Expressionable
                }
 
                 if (!is_object($value)) {
-                    throw new ValidationException([$this->name => 'Must be an object']);
+                    throw new ValidationException([$this->name => 'Must be an object'], $this->getOwner());
                 }
 
                 break;
