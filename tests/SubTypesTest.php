@@ -154,10 +154,10 @@ class SubTypesTest extends \Atk4\Schema\PhpunitTestCase
         $inheritance->transferTo($current, 500);
         $current->withdraw(350);
 
-        $this->assertSame(StTransaction_Ob::class, get_class($inheritance->ref('Transactions')->load(1)));
-        $this->assertSame(StTransaction_TransferOut::class, get_class($inheritance->ref('Transactions')->load(2)));
-        $this->assertSame(StTransaction_TransferIn::class, get_class($current->ref('Transactions')->load(3)));
-        $this->assertSame(StTransaction_Withdrawal::class, get_class($current->ref('Transactions')->load(4)));
+        $this->assertInstanceOf(StTransaction_Ob::class, $inheritance->ref('Transactions')->load(1));
+        $this->assertInstanceOf(StTransaction_TransferOut::class, $inheritance->ref('Transactions')->load(2));
+        $this->assertInstanceOf(StTransaction_TransferIn::class, $current->ref('Transactions')->load(3));
+        $this->assertInstanceOf(StTransaction_Withdrawal::class, $current->ref('Transactions')->load(4));
 
         $cl = [];
         foreach ($current->ref('Transactions') as $tr) {
