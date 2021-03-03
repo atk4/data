@@ -250,8 +250,10 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
             return;
         }
 
-        $id = $this->reverse ? $this->getOwner()->getId() : $this->getOwner()->get($this->master_field);
+        $model = $this->getOwner();
+        $query = $this->dsql();
+        $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
 
-        $this->dsql()->where($this->foreign_field, $id)->delete();
+        $query->where($this->foreign_field, $id)->delete();
     }
 }
