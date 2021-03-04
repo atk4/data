@@ -194,12 +194,14 @@ class Reference
         if (!$this->table_alias) {
             $ourModel = $this->getOurModel();
 
-            $this->table_alias = $this->link;
-            $this->table_alias = preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->table_alias);
-            $this->table_alias = preg_replace('~([a-z])[a-z]*[^a-z]*~i', '$1', $this->table_alias);
+            $aliasFull = $this->link;
+            $alias = preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $aliasFull);
+            $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
             if (isset($ourModel->table_alias)) {
-                $this->table_alias = $ourModel->table_alias . '_' . $this->table_alias;
+                $aliasFull = $ourModel->table_alias . '_' . $aliasFull;
+                $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->table_alias) . '_' . $alias;
             }
+            $this->table_alias = '_' . $alias . '_' . substr(md5($aliasFull), 0, 12);
         }
     }
 
