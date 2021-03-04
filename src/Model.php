@@ -1280,7 +1280,7 @@ class Model implements \IteratorAggregate
         $model = new $class($persistence, ['table' => $this->table]);
 
         if ($this->id_field) {
-            $model->setId($id === true ? $this->get($this->id_field) : $id);
+            $model->setId($id === true ? $this->getId() : $id);
         }
 
         // include any fields defined inline
