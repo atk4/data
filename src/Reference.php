@@ -274,7 +274,7 @@ class Reference
     {
         $arr = [];
         foreach ($this->__debug_fields as $k => $v) {
-            $k = is_numeric($k) ? $v : $k;
+            $k = is_int($k) ? $v : $k;
             if (isset($this->{$v})) {
                 $arr[$k] = $this->{$v};
             }
