@@ -106,7 +106,7 @@ class HasOneSql extends HasOne
 
             $theirFieldName = $ourFieldDefaults[0];
 
-            if (is_numeric($ourFieldName)) {
+            if (is_int($ourFieldName)) {
                 $ourFieldName = $theirFieldName;
             }
 
