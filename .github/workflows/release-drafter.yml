@@ -1,10 +1,10 @@
 name: Release Drafter
 
 on:
-  push:
+#  push:
     # branches to consider in the event; optional, defaults to all
-    branches:
-      - develop
+#    branches:
+#      - develop
 
 jobs:
   update_release_draft:
