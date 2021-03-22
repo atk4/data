@@ -1,7 +1,7 @@
 name: Release Drafter
 
 on:
-#  push:
+  push:
     # branches to consider in the event; optional, defaults to all
 #    branches:
 #      - develop
