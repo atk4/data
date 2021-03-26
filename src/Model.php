@@ -377,7 +377,6 @@ class Model implements \IteratorAggregate
             'appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS,
             'callback' => 'save',
             'description' => 'Add ' . $this->getModelCaption(),
-            'ui' => ['icon' => 'plus'],
         ]);
 
         $this->addUserAction('edit', [
@@ -385,13 +384,11 @@ class Model implements \IteratorAggregate
             'modifier' => Model\UserAction::MODIFIER_UPDATE,
             'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
             'callback' => 'save',
-            'ui' => ['icon' => 'edit', 'button' => [null, 'icon' => [\Atk4\Ui\Icon::class, 'edit']], 'execButton' => [\Atk4\Ui\Button::class, 'Save', 'blue']],
         ]);
 
         $this->addUserAction('delete', [
             'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
             'modifier' => Model\UserAction::MODIFIER_DELETE,
-            'ui' => ['icon' => 'trash', 'button' => [null, 'icon' => [\Atk4\Ui\Icon::class, 'red trash']], 'confirm' => 'Are you sure?'],
             'callback' => function ($model) {
                 return $model->delete();
             },

@@ -16,9 +16,6 @@ parameters:
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'
 
-        # TODO remove once https://github.com/atk4/ui/issues/1548 is resolved
-        - '~^Class Atk4\\Ui\\(Button|Icon) not found\.$~'
-
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src-schema/PhpunitTestCase.php
         - '~^Access to an undefined property Atk4\\Data\\Persistence\:\:\$connection\.$~'
