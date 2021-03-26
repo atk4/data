@@ -63,9 +63,6 @@ class UserAction
     /** @var bool|string|\Closure Set this to "true", string or return the value from the callback. Will ask user to confirm. */
     public $confirmation = false;
 
-    /** @var array UI properties, e,g. 'icon'=>.. , 'warning', etc. UI implementation can interpret or extend. */
-    public $ui = [];
-
     /** @var bool|\Closure setting this to false will disable action. Callback will be executed with ($m) and must return bool */
     public $enabled = true;
 
