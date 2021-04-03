@@ -24,6 +24,8 @@ class Condition extends AbstractScope
     /** @var mixed */
     public $value;
 
+    protected $system = false;
+
     public const OPERATOR_EQUALS = '=';
     public const OPERATOR_DOESNOT_EQUAL = '!=';
     public const OPERATOR_GREATER = '>';
@@ -139,6 +141,13 @@ class Condition extends AbstractScope
         }
     }
 
+    protected function setSystem($system = true)
+    {
+        $this->system = $system;
+
+        return $this;
+    }
+
     protected function onChangeModel(): void
     {
         if ($model = $this->getModel()) {
@@ -146,7 +155,7 @@ class Condition extends AbstractScope
             // sets it as default value for field and locks it
             // new records will automatically get this value assigned for the field
             // @todo: consider this when condition is part of OR scope
-            if ($this->operator === self::OPERATOR_EQUALS && !is_object($this->value) && !is_array($this->value)) {
+            if ($this->system && $this->setsDefiniteValue()) {
                 // key containing '/' means chained references and it is handled in toQueryArguments method
                 if (is_string($field = $this->key) && !str_contains($field, '/')) {
                     $field = $model->getField($field);
@@ -223,6 +232,14 @@ class Condition extends AbstractScope
     public function isEmpty(): bool
     {
         return array_filter([$this->key, $this->operator, $this->value]) ? false : true;
+    }
+
+    /**
+     * Checks if condition sets a definitive scalar value for a field.
+     */
+    protected function setsDefiniteValue(): bool
+    {
+        return $this->operator === self::OPERATOR_EQUALS && !is_object($this->value) && !is_array($this->value);
     }
 
     public function clear()
