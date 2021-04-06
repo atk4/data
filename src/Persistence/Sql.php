@@ -694,7 +694,7 @@ class Sql extends Persistence
         }
 
         if (!isset($data[$model->id_field])) {
-            throw (new Exception('Model uses "id_field" but it wasn\'t available in the database'))
+            throw (new Exception('Model uses "id_field" but it was not available in the database'))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id_field', $model->id_field)
                 ->addMoreInfo('id', $id)
@@ -728,19 +728,19 @@ class Sql extends Persistence
      */
     public function tryLoadAny(Model $model): ?array
     {
-        $load = $model->action('select');
-        $load->limit(1);
+        $query = $model->action('select');
+        $query->limit(1);
 
         // execute action
         try {
-            $dataRaw = $load->getRow();
+            $dataRaw = $query->getRow();
             if ($dataRaw === null) {
                 return null;
             }
             $data = $this->typecastLoadRow($model, $dataRaw);
         } catch (DsqlException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
-                ->addMoreInfo('query', $load->getDebugQuery())
+                ->addMoreInfo('query', $query->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->scope()->toWords());
