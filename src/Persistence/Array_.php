@@ -138,50 +138,30 @@ class Array_ extends Persistence
         return $model;
     }
 
-    /**
-     * Loads model and returns data record.
-     *
-     * @param mixed $id
-     */
-    public function load(Model $model, $id, string $table = null): array
-    {
-        if (isset($model->table) && !isset($this->data[$model->table])) {
-            throw (new Exception('Table was not found in the array data source'))
-                ->addMoreInfo('table', $model->table);
-        }
-
-        if (!isset($this->data[$table ?? $model->table][$id])) {
-            throw (new Exception('Record with specified ID was not found', 404))
-                ->addMoreInfo('id', $id);
-        }
-
-        return $this->tryLoad($model, $id, $table);
-    }
-
-    /**
-     * Tries to load first available record and return data record.
-     */
-    public function loadAny(Model $model, string $table = null): array
-    {
-        $row = $this->tryLoadAny($model, $table);
-        if ($row === null) {
-            throw (new Exception('No matching records were found', 404))
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
-        }
-
-        return $row;
-    }
-
-    /**
-     * Tries to load model and return data record.
-     * Doesn't throw exception if model can't be loaded.
-     *
-     * @param mixed $id
-     */
     public function tryLoad(Model $model, $id, string $table = null): ?array
     {
         $table = $table ?? $model->table;
+        if (!isset($this->data[$table])) {
+            throw (new Exception('Table was not found in the array data source'))
+                ->addMoreInfo('table', $table);
+        }
+
+        if ($id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY) {
+            if (count($this->data[$table]) === 0) {
+                return null;
+            } elseif ($id === self::ID_LOAD_ONE && count($this->data[$table]) !== 1) {
+                throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
+                    ->addMoreInfo('model', $model)
+                    ->addMoreInfo('id', null);
+            }
+
+            $id = array_key_first($this->data[$table]);
+
+            $row = $this->tryLoad($model, $id, $table);
+            $model->setId($id); // @TODO is it needed?
+
+            return $row;
+        }
 
         if (!isset($this->data[$table][$id])) {
             return null;
@@ -191,27 +171,6 @@ class Array_ extends Persistence
         $this->addIdToLoadRow($model, $row, $id);
 
         return $this->typecastLoadRow($model, $row);
-    }
-
-    /**
-     * Tries to load first available record and return data record.
-     * Doesn't throw exception if model can't be loaded or there are no data records.
-     */
-    public function tryLoadAny(Model $model, string $table = null): ?array
-    {
-        $table = $table ?? $model->table;
-
-        if (!$this->data[$table]) {
-            return null;
-        }
-
-        reset($this->data[$table]);
-        $id = key($this->data[$table]);
-
-        $row = $this->load($model, $id, $table);
-        $model->setId($id);
-
-        return $row;
     }
 
     /**

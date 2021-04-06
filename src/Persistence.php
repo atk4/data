@@ -135,12 +135,12 @@ class Persistence
      */
     public function load(Model $model, $id): array
     {
-        $data = $this->tryLoad($model, $id);
+        $data = $this->tryLoad($model, $id, ...array_slice(func_get_args(), 2, null, true));
 
         if (!$data) {
             $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
 
-            throw (new Exception('No record was found', 404))
+            throw (new Exception($noId ? 'No record was found' : 'Record with specified ID was not found', 404))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id', $noId ? null : $id)
                 ->addMoreInfo('scope', $model->scope()->toWords());
@@ -154,7 +154,7 @@ class Persistence
      */
     public function tryLoadAny(Model $model): ?array
     {
-        return $this->tryLoad($model, self::ID_LOAD_ANY);
+        return $this->tryLoad($model, self::ID_LOAD_ANY, ...array_slice(func_get_args(), 1, null, true));
     }
 
     /**
@@ -162,7 +162,7 @@ class Persistence
      */
     public function loadAny(Model $model): array
     {
-        return $this->load($model, self::ID_LOAD_ANY);
+        return $this->load($model, self::ID_LOAD_ANY, ...array_slice(func_get_args(), 1, null, true));
     }
 
     /**
