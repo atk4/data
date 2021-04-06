@@ -31,6 +31,8 @@ class Sql extends Persistence
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
 
     /** @const string */
+    protected const ID_LOAD_ONE = self::class . '@idLoadOne';
+    /** @const string */
     protected const ID_LOAD_ANY = self::class . '@idLoadAny';
 
     /**
@@ -672,24 +674,31 @@ class Sql extends Persistence
      */
     public function tryLoad(Model $model, $id): ?array
     {
+        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+
         $query = $model->action('select');
 
-        if ($id !== self::ID_LOAD_ANY) {
+        if (!$noId) {
             if (!$model->id_field) {
                 throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
                     ->addMoreInfo('id', $id);
             }
             $query->where($model->getField($model->id_field), $id);
         }
-        $query->limit(1);
+        $query->limit($id === self::ID_LOAD_ANY ? 1 : 2);
 
         // execute action
         try {
-            $dataRaw = $query->getRow();
-            if ($dataRaw === null) {
+            $rowsRaw = $query->getRows();
+            if (count($rowsRaw) === 0) {
                 return null;
+            } elseif (count($rowsRaw) !== 1) {
+                throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
+                    ->addMoreInfo('model', $model)
+                    ->addMoreInfo('id_field', $model->id_field)
+                    ->addMoreInfo('id', $noId ? null : $id);
             }
-            $data = $this->typecastLoadRow($model, $dataRaw);
+            $data = $this->typecastLoadRow($model, $rowsRaw[0]);
         } catch (DsqlException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
                 ->addMoreInfo('query', $query->getDebugQuery())
@@ -702,7 +711,7 @@ class Sql extends Persistence
             throw (new Exception('Model uses "id_field" but it was not available in the database'))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id_field', $model->id_field)
-                ->addMoreInfo('id', $id === self::ID_LOAD_ANY ? null : $id)
+                ->addMoreInfo('id', $noId ? null : $id)
                 ->addMoreInfo('data', $data);
         }
 
@@ -719,9 +728,11 @@ class Sql extends Persistence
         $data = $this->tryLoad($model, $id);
 
         if (!$data) {
-            throw (new Exception('Record was not found', 404))
+            $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+
+            throw (new Exception('No record was found', 404))
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('id', $id)
+                ->addMoreInfo('id', $noId ? null : $id)
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
@@ -741,15 +752,7 @@ class Sql extends Persistence
      */
     public function loadAny(Model $model): array
     {
-        $data = $this->tryLoadAny($model);
-
-        if (!$data) {
-            throw (new Exception('No matching records were found', 404))
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
-        }
-
-        return $data;
+        return $this->load($model, self::ID_LOAD_ANY);
     }
 
     /**
