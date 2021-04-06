@@ -30,6 +30,9 @@ class Sql extends Persistence
     /** @const string */
     public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
 
+    /** @const string */
+    protected const ID_LOAD_ANY = self::class . '@idLoadAny';
+
     /**
      * Connection object.
      *
@@ -669,13 +672,15 @@ class Sql extends Persistence
      */
     public function tryLoad(Model $model, $id): ?array
     {
-        if (!$model->id_field) {
-            throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
-                ->addMoreInfo('id', $id);
-        }
-
         $query = $model->action('select');
-        $query->where($model->getField($model->id_field), $id);
+
+        if ($id !== self::ID_LOAD_ANY) {
+            if (!$model->id_field) {
+                throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
+                    ->addMoreInfo('id', $id);
+            }
+            $query->where($model->getField($model->id_field), $id);
+        }
         $query->limit(1);
 
         // execute action
@@ -693,11 +698,11 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if (!isset($data[$model->id_field])) {
+        if ($model->id_field && !isset($data[$model->id_field])) {
             throw (new Exception('Model uses "id_field" but it was not available in the database'))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id_field', $model->id_field)
-                ->addMoreInfo('id', $id)
+                ->addMoreInfo('id', $id === self::ID_LOAD_ANY ? null : $id)
                 ->addMoreInfo('data', $data);
         }
 
@@ -728,33 +733,7 @@ class Sql extends Persistence
      */
     public function tryLoadAny(Model $model): ?array
     {
-        $query = $model->action('select');
-        $query->limit(1);
-
-        // execute action
-        try {
-            $dataRaw = $query->getRow();
-            if ($dataRaw === null) {
-                return null;
-            }
-            $data = $this->typecastLoadRow($model, $dataRaw);
-        } catch (DsqlException $e) {
-            throw (new Exception('Unable to load due to query error', 0, $e))
-                ->addMoreInfo('query', $query->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
-        }
-
-        // if id_field is not set, model will be read-only
-        if ($model->id_field && !isset($data[$model->id_field])) {
-            throw (new Exception('Model uses "id_field" but it was not available in the database'))
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('id_field', $model->id_field)
-                ->addMoreInfo('data', $data);
-        }
-
-        return $data;
+        return $this->tryLoad($model, self::ID_LOAD_ANY);
     }
 
     /**
