@@ -21,9 +21,9 @@ class Persistence
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
     /** @const string */
-    protected const ID_LOAD_ONE = self::class . '@idLoadOne';
+    public const ID_LOAD_ONE = self::class . '@idLoadOne';
     /** @const string */
-    protected const ID_LOAD_ANY = self::class . '@idLoadAny';
+    public const ID_LOAD_ANY = self::class . '@idLoadAny';
 
     /**
      * Connects database.
@@ -135,7 +135,11 @@ class Persistence
      */
     public function load(Model $model, $id): array
     {
-        $data = $this->tryLoad($model, $id, ...array_slice(func_get_args(), 2, null, true));
+        $data = $this->tryLoad(
+            $model,
+            $id,
+            ...array_slice(func_get_args(), 2, null, true)
+        );
 
         if (!$data) {
             $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
@@ -147,22 +151,6 @@ class Persistence
         }
 
         return $data;
-    }
-
-    /**
-     * Tries to load any one record.
-     */
-    public function tryLoadAny(Model $model): ?array
-    {
-        return $this->tryLoad($model, self::ID_LOAD_ANY, ...array_slice(func_get_args(), 1, null, true));
-    }
-
-    /**
-     * Loads any one record.
-     */
-    public function loadAny(Model $model): array
-    {
-        return $this->load($model, self::ID_LOAD_ANY, ...array_slice(func_get_args(), 1, null, true));
     }
 
     /**

@@ -1105,6 +1105,19 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * @param mixed $id
+     *
+     * @return mixed
+     */
+    private function remapIdAnyToPersistence($id)
+    {
+        return [
+            self::ID_LOAD_ONE => Persistence::ID_LOAD_ONE,
+            self::ID_LOAD_ANY => Persistence::ID_LOAD_ANY,
+        ][$id] ?? $id;
+    }
+
+    /**
      * Try to load record. Will not throw an exception if record does not exist.
      *
      * @param mixed $id
@@ -1113,24 +1126,17 @@ class Model implements \IteratorAggregate
      */
     public function tryLoad($id)
     {
-        if ($id === self::ID_LOAD_ONE) {
-            throw new Exception('Not implemented');
-        }
-
         $this->checkPersistence();
 
         if ($this->loaded()) {
             $this->unload();
         }
 
-        if ($id === self::ID_LOAD_ANY) { // @TODO simplify, pure port from tryLoadAny
-            $this->data = $this->persistence->tryLoadAny($this);
-        } else {
-            $this->data = $this->persistence->tryLoad($this, $id);
-        }
+        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+        $this->data = $this->persistence->tryLoad($this, $this->remapIdAnyToPersistence($id));
 
         if ($this->data) {
-            if ($id === self::ID_LOAD_ANY) { // @TODO simplify, pure port from tryLoadAny
+            if ($noId) { // @TODO pure port from tryLoadAny, simplify
                 if ($this->id_field) {
                     if (isset($this->data[$this->id_field])) {
                         $this->setId($this->data[$this->id_field]);
@@ -1162,27 +1168,24 @@ class Model implements \IteratorAggregate
      */
     public function load($id)
     {
-        if ($id === self::ID_LOAD_ONE) {
-            throw new Exception('Not implemented');
-        }
-
         $this->checkPersistence();
 
         if ($this->loaded()) {
             $this->unload();
         }
 
-        if ($id === self::ID_LOAD_ANY) { // @TODO simplify, pure port from tryLoadAny
-            $this->data = $this->persistence->loadAny($this);
+        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+        if ($noId) {
+            $this->data = $this->persistence->load($this, $this->remapIdAnyToPersistence($id));
         } else {
-            if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
+            if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) { // @TODO pure port from loadAny. why not for tryLoad?
                 return $this;
             }
 
             $this->data = $this->persistence->load($this, $id);
         }
 
-        if ($id === self::ID_LOAD_ANY) { // @TODO simplify, pure port from tryLoadAny
+        if ($noId) { // @TODO pure port from loadAny, simplify
             if ($this->id_field) {
                 $this->setId($this->data[$this->id_field]);
             }
@@ -1203,7 +1206,29 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * Try to load one record. Will throw if more than one record exists, but not if there is no record.
+     *
+     * @return $this
+     */
+    public function tryLoadOne()
+    {
+        return $this->tryLoad(self::ID_LOAD_ONE);
+    }
+
+    /**
+     * Load one record. Will throw if more than one record exists.
+     *
+     * @return $this
+     */
+    public function loadOne()
+    {
+        return $this->load(self::ID_LOAD_ONE);
+    }
+
+    /**
      * Try to load any record. Will not throw an exception if record does not exist.
+     *
+     * If only one record should match, use checked "tryLoadOne" method.
      *
      * @return $this
      */
@@ -1214,6 +1239,8 @@ class Model implements \IteratorAggregate
 
     /**
      * Load any record.
+     *
+     * If only one record should match, use checked "loadOne" method.
      *
      * @return $this
      */
