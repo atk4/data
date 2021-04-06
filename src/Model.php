@@ -1109,12 +1109,15 @@ class Model implements \IteratorAggregate
      *
      * @return mixed
      */
-    private function remapIdAnyToPersistence($id)
+    private function remapIdLoadToPersistence($id)
     {
-        return [
-            self::ID_LOAD_ONE => Persistence::ID_LOAD_ONE,
-            self::ID_LOAD_ANY => Persistence::ID_LOAD_ANY,
-        ][$id] ?? $id;
+        if ($id === self::ID_LOAD_ONE) {
+            return Persistence::ID_LOAD_ONE;
+        } elseif ($id === self::ID_LOAD_ANY) {
+            return Persistence::ID_LOAD_ANY;
+        }
+
+        return $id;
     }
 
     /**
@@ -1133,7 +1136,7 @@ class Model implements \IteratorAggregate
         }
 
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
-        $this->data = $this->persistence->tryLoad($this, $this->remapIdAnyToPersistence($id));
+        $this->data = $this->persistence->tryLoad($this, $this->remapIdLoadToPersistence($id));
 
         if ($this->data) {
             if ($noId) { // @TODO pure port from tryLoadAny, simplify
@@ -1176,7 +1179,7 @@ class Model implements \IteratorAggregate
 
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
         if ($noId) {
-            $this->data = $this->persistence->load($this, $this->remapIdAnyToPersistence($id));
+            $this->data = $this->persistence->load($this, $this->remapIdLoadToPersistence($id));
         } else {
             if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) { // @TODO pure port from loadAny. why not for tryLoad?
                 return $this;
