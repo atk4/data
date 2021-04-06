@@ -79,6 +79,11 @@ class Model implements \IteratorAggregate
     /** @const string Executed when self::onlyFields() method is called. */
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
+    /** @const string */
+    protected const ID_LOAD_ONE = self::class . '@idLoadOne';
+    /** @const string */
+    protected const ID_LOAD_ANY = self::class . '@idLoadAny';
+
     // {{{ Properties of the class
 
     /**
@@ -1108,15 +1113,32 @@ class Model implements \IteratorAggregate
      */
     public function tryLoad($id)
     {
+        if ($id === self::ID_LOAD_ONE) {
+            throw new Exception('Not implemented');
+        }
+
         $this->checkPersistence();
 
         if ($this->loaded()) {
             $this->unload();
         }
 
-        $this->data = $this->persistence->tryLoad($this, $id);
+        if ($id === self::ID_LOAD_ANY) { // @TODO simplify, pure port from tryLoadAny
+            $this->data = $this->persistence->tryLoadAny($this);
+        } else {
+            $this->data = $this->persistence->tryLoad($this, $id);
+        }
+
         if ($this->data) {
-            $this->setId($id);
+            if ($id === self::ID_LOAD_ANY) { // @TODO simplify, pure port from tryLoadAny
+                if ($this->id_field) {
+                    if (isset($this->data[$this->id_field])) {
+                        $this->setId($this->data[$this->id_field]);
+                    }
+                }
+            } else {
+                $this->setId($id);
+            }
 
             $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
@@ -1140,19 +1162,34 @@ class Model implements \IteratorAggregate
      */
     public function load($id)
     {
+        if ($id === self::ID_LOAD_ONE) {
+            throw new Exception('Not implemented');
+        }
+
         $this->checkPersistence();
 
         if ($this->loaded()) {
             $this->unload();
         }
 
-        if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
-            return $this;
+        if ($id === self::ID_LOAD_ANY) { // @TODO simplify, pure port from tryLoadAny
+            $this->data = $this->persistence->loadAny($this);
+        } else {
+            if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
+                return $this;
+            }
+
+            $this->data = $this->persistence->load($this, $id);
         }
 
-        $this->data = $this->persistence->load($this, $id);
-        if ($this->getId() === null) { // TODO what is the usecase?
-            $this->setId($id);
+        if ($id === self::ID_LOAD_ANY) { // @TODO simplify, pure port from tryLoadAny
+            if ($this->id_field) {
+                $this->setId($this->data[$this->id_field]);
+            }
+        } else {
+            if ($this->getId() === null) { // TODO what is the usecase?
+                $this->setId($id);
+            }
         }
 
         $ret = $this->hook(self::HOOK_AFTER_LOAD);
@@ -1172,31 +1209,7 @@ class Model implements \IteratorAggregate
      */
     public function tryLoadAny()
     {
-        $this->checkPersistence();
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        $this->data = $this->persistence->tryLoadAny($this);
-        if ($this->data) {
-            if ($this->id_field) {
-                if (isset($this->data[$this->id_field])) {
-                    $this->setId($this->data[$this->id_field]);
-                }
-            }
-
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                return $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret; // @phpstan-ignore-line
-            }
-        } else {
-            $this->unload();
-        }
-
-        return $this;
+        return $this->tryLoad(self::ID_LOAD_ANY);
     }
 
     /**
@@ -1206,26 +1219,7 @@ class Model implements \IteratorAggregate
      */
     public function loadAny()
     {
-        $this->checkPersistence();
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        $this->data = $this->persistence->loadAny($this);
-
-        if ($this->id_field) {
-            $this->setId($this->data[$this->id_field]);
-        }
-
-        $ret = $this->hook(self::HOOK_AFTER_LOAD);
-        if ($ret === false) {
-            return $this->unload();
-        } elseif (is_object($ret)) {
-            return $ret; // @phpstan-ignore-line
-        }
-
-        return $this;
+        return $this->load(self::ID_LOAD_ANY);
     }
 
     /**
