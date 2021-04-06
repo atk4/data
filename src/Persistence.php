@@ -20,6 +20,11 @@ class Persistence
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
+    /** @const string */
+    protected const ID_LOAD_ONE = self::class . '@idLoadOne';
+    /** @const string */
+    protected const ID_LOAD_ANY = self::class . '@idLoadAny';
+
     /**
      * Connects database.
      *
@@ -111,6 +116,53 @@ class Persistence
     public function getDatabasePlatform(): Platforms\AbstractPlatform
     {
         return new Persistence\GenericPlatform();
+    }
+
+    /**
+     * Tries to load data record, but will not fail if record can't be loaded.
+     *
+     * @param mixed $id
+     */
+    public function tryLoad(Model $model, $id): ?array
+    {
+        throw new Exception('Not implemented'); // finish in https://github.com/atk4/data/pull/847
+    }
+
+    /**
+     * Loads a record from model and returns a associative array.
+     *
+     * @param mixed $id
+     */
+    public function load(Model $model, $id): array
+    {
+        $data = $this->tryLoad($model, $id);
+
+        if (!$data) {
+            $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+
+            throw (new Exception('No record was found', 404))
+                ->addMoreInfo('model', $model)
+                ->addMoreInfo('id', $noId ? null : $id)
+                ->addMoreInfo('scope', $model->scope()->toWords());
+        }
+
+        return $data;
+    }
+
+    /**
+     * Tries to load any one record.
+     */
+    public function tryLoadAny(Model $model): ?array
+    {
+        return $this->tryLoad($model, self::ID_LOAD_ANY);
+    }
+
+    /**
+     * Loads any one record.
+     */
+    public function loadAny(Model $model): array
+    {
+        return $this->load($model, self::ID_LOAD_ANY);
     }
 
     /**

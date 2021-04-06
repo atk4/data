@@ -13,7 +13,6 @@ use Atk4\Dsql\Query;
  * Provides model joining functionality specific for the Sql persistence.
  *
  * @property Persistence\Sql $persistence
- * @property static          $join
  */
 class Join extends Model\Join implements \Atk4\Dsql\Expressionable
 {

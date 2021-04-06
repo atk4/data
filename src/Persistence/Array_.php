@@ -161,7 +161,7 @@ class Array_ extends Persistence
     /**
      * Tries to load first available record and return data record.
      */
-    public function loadAny(Model $model, string $table = null): ?array
+    public function loadAny(Model $model, string $table = null): array
     {
         $row = $this->tryLoadAny($model, $table);
         if ($row === null) {
