@@ -123,7 +123,10 @@ abstract class Persistence
      *
      * @param mixed $id
      */
-    abstract public function tryLoad(Model $model, $id): ?array;
+    public function tryLoad(Model $model, $id): ?array
+    {
+        throw new Exception('Load is not supported.');
+    }
 
     /**
      * Loads a record from model and returns a associative array.
