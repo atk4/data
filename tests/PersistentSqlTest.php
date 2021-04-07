@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 
 class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
@@ -37,6 +38,42 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $mm = (clone $m)->load(2);
         $this->assertSame('Smith', $mm->get('surname'));
+    }
+
+    public function testModelLoadOneAndAny()
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['name' => 'John', 'surname' => 'Smith'],
+                2 => ['name' => 'Sarah', 'surname' => 'Jones'],
+            ],
+        ]);
+
+        $m = new Model($this->db, ['table' => 'user']);
+        $m->addField('name');
+        $m->addField('surname');
+
+        $mm = (clone $m)->addCondition($m->id_field, 1);
+        $this->assertSame('John', (clone $mm)->load(1)->get('name'));
+        $this->assertNull((clone $mm)->tryload(2)->get('name'));
+        $this->assertSame('John', (clone $mm)->tryloadOne()->get('name'));
+        $this->assertSame('John', (clone $mm)->loadOne()->get('name'));
+        $this->assertSame('John', (clone $mm)->tryLoadAny()->get('name'));
+        $this->assertSame('John', (clone $mm)->loadAny()->get('name'));
+
+        $mm = (clone $m)->addCondition('surname', 'Jones');
+        $this->assertSame('Sarah', (clone $mm)->load(2)->get('name'));
+        $this->assertNull((clone $mm)->tryload(1)->get('name'));
+        $this->assertSame('Sarah', (clone $mm)->tryloadOne()->get('name'));
+        $this->assertSame('Sarah', (clone $mm)->loadOne()->get('name'));
+        $this->assertSame('Sarah', (clone $mm)->tryLoadAny()->get('name'));
+        $this->assertSame('Sarah', (clone $mm)->loadAny()->get('name'));
+
+        (clone $m)->loadAny();
+        (clone $m)->tryLoadAny();
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Ambiguous conditions, more than one record can be loaded.');
+        (clone $m)->tryLoadOne();
     }
 
     public function testPersistenceInsert()

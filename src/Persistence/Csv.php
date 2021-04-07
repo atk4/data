@@ -236,12 +236,12 @@ class Csv extends Persistence
         return $row;
     }
 
-    /**
-     * Tries to load model and return data record.
-     * Doesn't throw exception if model can't be loaded.
-     */
-    public function tryLoadAny(Model $model): ?array
+    public function tryLoad(Model $model, $id): ?array
     {
+        if ($id !== self::ID_LOAD_ANY) {
+            throw new \Error/*Exception*/ ('CSV Persistence does not support other than LOAD ANY mode'); // @TODO we can iterate...
+        }
+
         if (!$this->mode) {
             $this->mode = 'r';
         } elseif ($this->mode === 'w') {
@@ -289,21 +289,6 @@ class Csv extends Persistence
 
             yield $data;
         }
-    }
-
-    /**
-     * Loads any one record.
-     */
-    public function loadAny(Model $model): array
-    {
-        $data = $this->tryLoadAny($model);
-
-        if (!$data) {
-            throw (new Exception('No more records', 404))
-                ->addMoreInfo('model', $model);
-        }
-
-        return $data;
     }
 
     /**

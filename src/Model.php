@@ -79,6 +79,11 @@ class Model implements \IteratorAggregate
     /** @const string Executed when self::onlyFields() method is called. */
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
+    /** @const string */
+    protected const ID_LOAD_ONE = self::class . '@idLoadOne';
+    /** @const string */
+    protected const ID_LOAD_ANY = self::class . '@idLoadAny';
+
     // {{{ Properties of the class
 
     /**
@@ -1100,6 +1105,64 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * @param mixed $id
+     *
+     * @return mixed
+     */
+    private function remapIdLoadToPersistence($id)
+    {
+        if ($id === self::ID_LOAD_ONE) {
+            return Persistence::ID_LOAD_ONE;
+        } elseif ($id === self::ID_LOAD_ANY) {
+            return Persistence::ID_LOAD_ANY;
+        }
+
+        return $id;
+    }
+
+    /**
+     * Try to load record. Will not throw an exception if record does not exist.
+     *
+     * @param mixed $id
+     *
+     * @return $this
+     */
+    public function tryLoad($id)
+    {
+        $this->checkPersistence();
+
+        if ($this->loaded()) {
+            $this->unload();
+        }
+
+        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+        $this->data = $this->persistence->tryLoad($this, $this->remapIdLoadToPersistence($id));
+
+        if ($this->data) {
+            if ($noId) { // @TODO pure port from tryLoadAny, simplify
+                if ($this->id_field) {
+                    if (isset($this->data[$this->id_field])) {
+                        $this->setId($this->data[$this->id_field]);
+                    }
+                }
+            } else {
+                $this->setId($id);
+            }
+
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
+            if ($ret === false) {
+                return $this->unload();
+            } elseif (is_object($ret)) {
+                return $ret; // @phpstan-ignore-line
+            }
+        } else {
+            $this->unload();
+        }
+
+        return $this;
+    }
+
+    /**
      * Load model.
      *
      * @param mixed $id
@@ -1108,26 +1171,31 @@ class Model implements \IteratorAggregate
      */
     public function load($id)
     {
-        // deprecated, remove on 2021-03
-        if (func_num_args() > 1) {
-            throw new Exception('Model::load() with 2nd param $from_persistence is no longer supported');
-        }
-
-        if (!$this->persistence) {
-            throw new Exception('Model is not associated with any database');
-        }
+        $this->checkPersistence();
 
         if ($this->loaded()) {
             $this->unload();
         }
 
-        if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
-            return $this;
+        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+        if ($noId) {
+            $this->data = $this->persistence->load($this, $this->remapIdLoadToPersistence($id));
+        } else {
+            if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) { // @TODO pure port from loadAny. why not for tryLoad?
+                return $this;
+            }
+
+            $this->data = $this->persistence->load($this, $id);
         }
 
-        $this->data = $this->persistence->load($this, $id);
-        if ($this->getId() === null) { // TODO what is the usecase?
-            $this->setId($id);
+        if ($noId) { // @TODO pure port from loadAny, simplify
+            if ($this->id_field) {
+                $this->setId($this->data[$this->id_field]);
+            }
+        } else {
+            if ($this->getId() === null) { // TODO what is the usecase?
+                $this->setId($id);
+            }
         }
 
         $ret = $this->hook(self::HOOK_AFTER_LOAD);
@@ -1138,6 +1206,50 @@ class Model implements \IteratorAggregate
         }
 
         return $this;
+    }
+
+    /**
+     * Try to load one record. Will throw if more than one record exists, but not if there is no record.
+     *
+     * @return $this
+     */
+    public function tryLoadOne()
+    {
+        return $this->tryLoad(self::ID_LOAD_ONE);
+    }
+
+    /**
+     * Load one record. Will throw if more than one record exists.
+     *
+     * @return $this
+     */
+    public function loadOne()
+    {
+        return $this->load(self::ID_LOAD_ONE);
+    }
+
+    /**
+     * Try to load any record. Will not throw an exception if record does not exist.
+     *
+     * If only one record should match, use checked "tryLoadOne" method.
+     *
+     * @return $this
+     */
+    public function tryLoadAny()
+    {
+        return $this->tryLoad(self::ID_LOAD_ANY);
+    }
+
+    /**
+     * Load any record.
+     *
+     * If only one record should match, use checked "loadOne" method.
+     *
+     * @return $this
+     */
+    public function loadAny()
+    {
+        return $this->load(self::ID_LOAD_ANY);
     }
 
     /**
@@ -1297,103 +1409,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Try to load record.
-     * Will not throw exception if record doesn't exist.
-     *
-     * @param mixed $id
-     *
-     * @return $this
-     */
-    public function tryLoad($id)
-    {
-        $this->checkPersistence('tryLoad');
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        $this->data = $this->persistence->tryLoad($this, $id);
-        if ($this->data) {
-            $this->setId($id);
-
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                return $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret; // @phpstan-ignore-line
-            }
-        } else {
-            $this->unload();
-        }
-
-        return $this;
-    }
-
-    /**
-     * Load any record.
-     *
-     * @return $this
-     */
-    public function loadAny()
-    {
-        $this->checkPersistence('loadAny');
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        $this->data = $this->persistence->loadAny($this);
-
-        if ($this->id_field) {
-            $this->setId($this->data[$this->id_field]);
-        }
-
-        $ret = $this->hook(self::HOOK_AFTER_LOAD);
-        if ($ret === false) {
-            return $this->unload();
-        } elseif (is_object($ret)) {
-            return $ret; // @phpstan-ignore-line
-        }
-
-        return $this;
-    }
-
-    /**
-     * Try to load any record.
-     * Will not throw exception if record doesn't exist.
-     *
-     * @return $this
-     */
-    public function tryLoadAny()
-    {
-        $this->checkPersistence('tryLoadAny');
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        $this->data = $this->persistence->tryLoadAny($this);
-        if ($this->data) {
-            if ($this->id_field) {
-                if (isset($this->data[$this->id_field])) {
-                    $this->setId($this->data[$this->id_field]);
-                }
-            }
-
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                return $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret; // @phpstan-ignore-line
-            }
-        } else {
-            $this->unload();
-        }
-
-        return $this;
-    }
-
-    /**
      * Load record by condition.
      *
      * @param mixed $value
@@ -1450,8 +1465,6 @@ class Model implements \IteratorAggregate
 
     /**
      * Check if model has persistence with specified method.
-     *
-     * @param string $method
      */
     public function checkPersistence(string $method = null)
     {

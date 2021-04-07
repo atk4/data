@@ -23,10 +23,6 @@ parameters:
         # for src/FieldSqlExpression.php
         - '~^Call to an undefined method Atk4\\Data\\Model\:\:expr\(\)\.$~'
         # for src/Model.php
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:load\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:tryLoad\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:loadAny\(\)\.$~'
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:tryLoadAny\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:update\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:insert\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:export\(\)\.$~'

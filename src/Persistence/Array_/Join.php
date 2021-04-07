@@ -6,9 +6,12 @@ namespace Atk4\Data\Persistence\Array_;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 
 /**
  * Provides model joining functionality specific for the Array_ persistence.
+ *
+ * @property Persistence\Array_|null $persistence
  */
 class Join extends Model\Join
 {
@@ -51,7 +54,8 @@ class Join extends Model\Join
         }
 
         try {
-            $data = $model->persistence->load($model, $this->id, $this->foreign_table);
+            $data = Persistence\Array_::assertInstanceOf($model->persistence)
+                ->load($model, $this->id, $this->foreign_table);
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
                 ->addMoreInfo('table', $this->foreign_table)

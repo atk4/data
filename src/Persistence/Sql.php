@@ -662,29 +662,33 @@ class Sql extends Persistence
         return $query;
     }
 
-    /**
-     * Tries to load data record, but will not fail if record can't be loaded.
-     *
-     * @param mixed $id
-     */
     public function tryLoad(Model $model, $id): ?array
     {
-        if (!$model->id_field) {
-            throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
-                ->addMoreInfo('id', $id);
-        }
+        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
 
         $query = $model->action('select');
-        $query->where($model->getField($model->id_field), $id);
-        $query->limit(1);
+
+        if (!$noId) {
+            if (!$model->id_field) {
+                throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
+                    ->addMoreInfo('id', $id);
+            }
+            $query->where($model->getField($model->id_field), $id);
+        }
+        $query->limit($id === self::ID_LOAD_ANY ? 1 : 2);
 
         // execute action
         try {
-            $dataRaw = $query->getRow();
-            if ($dataRaw === null) {
+            $rowsRaw = $query->getRows();
+            if (count($rowsRaw) === 0) {
                 return null;
+            } elseif (count($rowsRaw) !== 1) {
+                throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
+                    ->addMoreInfo('model', $model)
+                    ->addMoreInfo('id_field', $model->id_field)
+                    ->addMoreInfo('id', $noId ? null : $id);
             }
-            $data = $this->typecastLoadRow($model, $dataRaw);
+            $data = $this->typecastLoadRow($model, $rowsRaw[0]);
         } catch (DsqlException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
                 ->addMoreInfo('query', $query->getDebugQuery())
@@ -693,81 +697,12 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if (!isset($data[$model->id_field])) {
-            throw (new Exception('Model uses "id_field" but it wasn\'t available in the database'))
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('id_field', $model->id_field)
-                ->addMoreInfo('id', $id)
-                ->addMoreInfo('data', $data);
-        }
-
-        return $data;
-    }
-
-    /**
-     * Loads a record from model and returns a associative array.
-     *
-     * @param mixed $id
-     */
-    public function load(Model $model, $id): array
-    {
-        $data = $this->tryLoad($model, $id);
-
-        if (!$data) {
-            throw (new Exception('Record was not found', 404))
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('id', $id)
-                ->addMoreInfo('scope', $model->scope()->toWords());
-        }
-
-        return $data;
-    }
-
-    /**
-     * Tries to load any one record.
-     */
-    public function tryLoadAny(Model $model): ?array
-    {
-        $load = $model->action('select');
-        $load->limit(1);
-
-        // execute action
-        try {
-            $dataRaw = $load->getRow();
-            if ($dataRaw === null) {
-                return null;
-            }
-            $data = $this->typecastLoadRow($model, $dataRaw);
-        } catch (DsqlException $e) {
-            throw (new Exception('Unable to load due to query error', 0, $e))
-                ->addMoreInfo('query', $load->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
-        }
-
-        // if id_field is not set, model will be read-only
         if ($model->id_field && !isset($data[$model->id_field])) {
             throw (new Exception('Model uses "id_field" but it was not available in the database'))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id_field', $model->id_field)
+                ->addMoreInfo('id', $noId ? null : $id)
                 ->addMoreInfo('data', $data);
-        }
-
-        return $data;
-    }
-
-    /**
-     * Loads any one record.
-     */
-    public function loadAny(Model $model): array
-    {
-        $data = $this->tryLoadAny($model);
-
-        if (!$data) {
-            throw (new Exception('No matching records were found', 404))
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
         return $data;
