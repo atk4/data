@@ -64,7 +64,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
 
     public function testModelProperty()
     {
-        $db = new Persistence();
+        $db = new Persistence\Array_();
         $user = new Model($db, ['table' => 'user']);
         $user->setId(1);
         $user->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
@@ -95,7 +95,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
 
     public function testRefName3()
     {
-        $db = new Persistence();
+        $db = new Persistence\Array_();
         $order = new Model($db, ['table' => 'order']);
         $order->addRef('archive', ['model' => function ($m) {
             return $m->newInstance(null, ['table' => $m->table . '_archive']);

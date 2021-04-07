@@ -7,7 +7,7 @@ namespace Atk4\Data;
 use Atk4\Core\Factory;
 use Doctrine\DBAL\Platforms;
 
-class Persistence
+abstract class Persistence
 {
     use \Atk4\Core\ContainerTrait {
         add as _add;
@@ -125,7 +125,7 @@ class Persistence
      */
     public function tryLoad(Model $model, $id): ?array
     {
-        throw new Exception('Not implemented'); // finish in https://github.com/atk4/data/pull/847
+        throw new Exception('Load is not supported.');
     }
 
     /**

@@ -488,7 +488,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertFalse(isset($a->persistence));
 
         // model with persistence
-        $db = new Persistence();
+        $db = new Persistence\Array_();
         $m = new Model($db, ['table' => 'order']);
         $a = $m->newInstance();
         $this->assertTrue(isset($a->persistence));

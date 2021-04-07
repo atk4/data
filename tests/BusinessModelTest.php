@@ -212,7 +212,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
 
     public function testClass1()
     {
-        $p = new Persistence();
+        $p = new Persistence\Array_();
         $c = new Client($p);
         $this->assertEquals(10, $c->get('order'));
     }
