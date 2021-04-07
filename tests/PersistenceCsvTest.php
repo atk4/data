@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Core\AtkPhpunit;
+use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Tests\Model\Person;
 
-class CsvTest extends AtkPhpunit\TestCase
+class PersistenceCsvTest extends AtkPhpunit\TestCase
 {
     protected $file;
     protected $file2;
@@ -139,6 +140,21 @@ class CsvTest extends AtkPhpunit\TestCase
         $mm = clone $m;
         $mm->tryLoadAny();
         $this->assertFalse($mm->loaded());
+    }
+
+    public function testLoadByIdNotSupportedException()
+    {
+        $data = [
+            ['name' => 'John', 'surname' => 'Smith'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
+
+        $this->setDb($data);
+
+        $p = $this->makeCsvPersistence($this->file);
+        $m = new Model($p);
+        $this->expectException(Exception::class);
+        $m->tryLoad(1);
     }
 
     public function testPersistenceCopy()

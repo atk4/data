@@ -221,36 +221,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     }
 
     /**
-     * Some persistences don't support tryLoad() method.
-     */
-    public function testTryLoadNotSupportedException()
-    {
-        $m = new Model(new Persistence());
-        $this->expectException(Exception::class);
-        $m->tryLoad(1);
-    }
-
-    /**
-     * Some persistences don't support loadAny() method.
-     */
-    public function testLoadAnyNotSupportedException()
-    {
-        $m = new Model(new Persistence());
-        $this->expectException(Exception::class);
-        $m->loadAny();
-    }
-
-    /**
-     * Some persistences don't support tryLoadAny() method.
-     */
-    public function testTryLoadAnyNotSupportedException()
-    {
-        $m = new Model(new Persistence());
-        $this->expectException(Exception::class);
-        $m->tryLoadAny();
-    }
-
-    /**
      * Test export.
      */
     public function testExport()
