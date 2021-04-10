@@ -806,14 +806,14 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
     $m = new Model_Invoice($db);
     $m->set('client_id', 123);
 
-    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->getId());
+    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadOne()->getId());
 
 In this case the payment_invoice_id will be set to ID of any payment by client
 123. There also may be some better uses::
 
     $cl->ref('Invoice')->each(function($m) {
 
-        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->getId());
+        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadOne()->getId());
         $m->save();
 
     });
