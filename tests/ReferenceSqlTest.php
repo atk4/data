@@ -96,11 +96,11 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency', 'their_field' => 'currency']);
 
         $cc = (clone $u)->load(1)->ref('cur');
-        $cc->tryLoadAny();
+        $cc->tryLoadOne();
         $this->assertSame('Euro', $cc->get('name'));
 
         $cc = (clone $u)->load(2)->ref('cur');
-        $cc->tryLoadAny();
+        $cc->tryLoadOne();
         $this->assertSame('Pound', $cc->get('name'));
     }
 
