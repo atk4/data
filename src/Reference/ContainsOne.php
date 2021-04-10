@@ -100,8 +100,7 @@ class ContainsOne extends Reference
             });
         }
 
-        // try to load any (actually only one possible) record
-        $theirModel->tryLoadAny();
+        $theirModel->tryLoadOne();
 
         return $theirModel;
     }
