@@ -377,7 +377,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
 
-        $m->loadAny();
+        $m->loadOne();
         $this->assertTrue($m->loaded());
         $d = $m->get('date');
         $m->unload();
@@ -386,7 +386,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($m->loaded());
         $m->unload();
 
-        $m->addCondition('date', $d)->loadAny();
+        $m->addCondition('date', $d)->loadOne();
         $this->assertTrue($m->loaded());
     }
 
@@ -453,7 +453,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
-        $m->loadAny();
+        $m->loadOne();
 
         // must respect 'actual'
         $this->assertNotNull($m->get('ts'));
@@ -475,7 +475,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $this->expectException(Exception::class);
-        $m->loadAny();
+        $m->loadOne();
     }
 
     public function testDirtyTimestamp()
@@ -493,7 +493,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
-        $m->loadAny();
+        $m->loadOne();
         $m->set('ts', clone $m->get('ts'));
 
         $this->assertFalse($m->isDirty('ts'));
@@ -512,7 +512,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
-        $m->loadAny();
+        $m->loadOne();
         $m->set('ts', new \DateTime('2012-02-30'));
         $m->save();
 
@@ -575,7 +575,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
-        $m->loadAny();
+        $m->loadOne();
 
         $m->set('ts', $sql_time_new);
         $this->assertTrue($m->isDirty('ts'));
@@ -603,7 +603,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
-        $m->loadAny();
+        $m->loadOne();
 
         $m->set('ts', $sql_time);
         $this->assertTrue($m->isDirty('ts'));

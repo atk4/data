@@ -162,7 +162,7 @@ class DeepCopyTest extends \Atk4\Schema\PhpunitTestCase
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
             ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
-        $quote->loadAny();
+        $quote->loadOne();
 
         // total price should match
         $this->assertEquals(90.00, $quote->get('total'));
@@ -275,7 +275,7 @@ class DeepCopyTest extends \Atk4\Schema\PhpunitTestCase
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
             ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
-        $quote->loadAny();
+        $quote->loadOne();
 
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function ($m) {
@@ -316,7 +316,7 @@ class DeepCopyTest extends \Atk4\Schema\PhpunitTestCase
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
             ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
-        $quote->loadAny();
+        $quote->loadOne();
 
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function ($m) {

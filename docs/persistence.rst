@@ -73,19 +73,6 @@ There are several ways to link your model up with the persistence::
 
         $m->save();     // will either create new record or update existing
 
-.. php:method:: loadAny
-
-    Attempt to load any matching record. You can use this in conjunction with
-    setOrder()::
-
-        $m->loadAny();
-        echo $m->get('name');
-
-.. php:method:: tryLoadAny
-
-    Attempt to load any record, but silently fail if there are no records in
-    the DataSet.
-
 .. php:method:: unload
 
     Remove active record and restore model to default state::

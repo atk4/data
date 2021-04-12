@@ -84,7 +84,7 @@ database at once::
     $m->addExpression('total_payments', (new Model_Payment($db))->action('count'));
     $m->addExpression('total_received', (new Model_Payment($db))->action('fx0', ['sum', 'amount']));
 
-    $data = $m->loadAny()->get();
+    $data = $m->loadOne()->get();
 
 Of course you can also use a DSQL for this::
 

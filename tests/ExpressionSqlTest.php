@@ -17,7 +17,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => false]);
         $m->addExpression('x', '2+3');
-        $m->tryLoadAny();
+        $m->loadOne();
         $this->assertEquals(5, $m->get('x'));
     }
 
@@ -254,7 +254,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $i->addExpression('one_basic', [$i->expr('1'), 'type' => 'integer', 'system' => true]);
         $i->addExpression('one_never_save', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
         $i->addExpression('one_never_persist', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
-        $i->loadAny();
+        $i->loadOne();
 
         // normal fields
         $this->assertSame(0, $i->get('zero_basic'));
