@@ -1,44 +1,56 @@
-name: Bundler
+name: Build Release
 
-on: create
+on:
+  push:
+    branches:
+      - '**\.build'
+      - 'release/*'
+      - '!**\.gen'
 
 jobs:
   autocommit:
-    name: Update to stable dependencies
-    if: startsWith(github.ref, 'refs/heads/release/')
+    name: Build Release
     runs-on: ubuntu-latest
     container:
-      image: atk4/image:latest # https://github.com/atk4/image
+      image: atk4/image:latest
     steps:
-      - uses: actions/checkout@master
-      - run: echo ${{ github.ref }}
-      - name: Update to stable dependencies
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Install PHP dependencies
+        run: composer update --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Composer unset version
+        run: composer config version --unset
+
+      - name: Update composer.json
+        run: >-
+          php -r '
+          $f = __DIR__ . "/composer.json";
+          $data = json_decode(file_get_contents($f), true);
+          foreach ($data as $k => $v) {
+              if (preg_match("~^(.+)-release$~", $k, $matches)) {
+                  $data[$matches[1]] = $data[$k]; unset($data[$k]);
+              }
+          }
+          $str = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
+          echo $str;
+          file_put_contents($f, $str);
+          '
+
+      - name: Composer validate config
+        run: composer validate --strict --no-check-lock && composer normalize --dry-run --no-check-lock
+
+      - name: Commit
         run: |
-          # replaces X keys with X-release keys
-          jq '. as $in | reduce (keys_unsorted[] | select(endswith("-release")|not)) as $k ({}; . + {($k) : (($k + "-release") as $kr | $in | if has($kr) then .[$kr] else .[$k] end) } )' < composer.json > tmp && mv tmp composer.json
-          composer config version --unset
-          v=$(echo ${{ github.ref }} | cut -d / -f 4)
-          echo "::set-env name=version::$v"
+          git config --global user.name "$(git show -s --format='%an')"
+          git config --global user.email "$(git show -s --format='%ae')"
+          git add -A && git diff --staged && git commit -m "Build Release"
 
-      - uses: teaminkling/autocommit@master
+      - name: Push
+        uses: ad-m/github-push-action@master
         with:
-          commit-message: Setting release dependencies
-      - uses: ad-m/github-push-action@master
-        with:
-          branch: ${{ github.ref }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: pull-request
-        uses: romaninsh/pull-request@master
-        with:
-          source_branch: "release/${{ env.version }}"
-          destination_branch: "master"          # If blank, default: master
-          pr_title: "Releasing ${{ env.version }} into master"
-          pr_body: |
-            - [ ] Review changes (must include stable dependencies)
-            - [ ] Merge this PR into master (will delete ${{ github.ref }})
-            - [ ] Go to Releases and create TAG from master
-            Do not merge master into develop
-          pr_reviewer: "romaninsh"
-          pr_assignee: "romaninsh"
+          branch: ${{ github.ref }}.gen
+          force: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
