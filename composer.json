@@ -42,7 +42,7 @@
     "require-release": {
         "php": ">=7.3.0",
         "ext-intl": "*",
-        "atk4/dsql": "~2.3.0",
+        "atk4/dsql": "~2.4.0",
         "mahalux/atk4-hintable": "^1.1.4"
     },
     "conflict": {
