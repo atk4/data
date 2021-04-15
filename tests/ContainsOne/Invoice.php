@@ -9,8 +9,8 @@ use Atk4\Data\Model;
 /**
  * Invoice model.
  *
- * @property string  $ref_no @Atk\Field()
- * @property Address $addr   @Atk\RefOne()
+ * @property string  $ref_no @Atk4\Field()
+ * @property Address $addr   @Atk4\RefOne()
  */
 class Invoice extends Model
 {

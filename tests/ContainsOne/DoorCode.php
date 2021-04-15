@@ -9,8 +9,8 @@ use Atk4\Data\Model;
 /**
  * DoorCode model.
  *
- * @property string    $code       @Atk\Field()
- * @property \DateTime $valid_till @Atk\Field()
+ * @property string    $code       @Atk4\Field()
+ * @property \DateTime $valid_till @Atk4\Field()
  */
 class DoorCode extends Model
 {

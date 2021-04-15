@@ -9,11 +9,11 @@ use Atk4\Data\Model;
 /**
  * Address model.
  *
- * @property Country   $country_id @Atk\RefOne()
- * @property string    $address    @Atk\Field()
- * @property \DateTime $built_date @Atk\Field()
- * @property string[]  $tags       @Atk\Field()
- * @property DoorCode  $door_code  @Atk\RefOne()
+ * @property Country   $country_id @Atk4\RefOne()
+ * @property string    $address    @Atk4\Field()
+ * @property \DateTime $built_date @Atk4\Field()
+ * @property string[]  $tags       @Atk4\Field()
+ * @property DoorCode  $door_code  @Atk4\RefOne()
  */
 class Address extends Model
 {

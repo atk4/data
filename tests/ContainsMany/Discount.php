@@ -9,8 +9,8 @@ use Atk4\Data\Model;
 /**
  * Each line can have multiple discounts.
  *
- * @property int       $percent    @Atk\Field()
- * @property \DateTime $valid_till @Atk\Field()
+ * @property int       $percent    @Atk4\Field()
+ * @property \DateTime $valid_till @Atk4\Field()
  */
 class Discount extends Model
 {

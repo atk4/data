@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 /**
  * Country model.
  *
- * @property string $name @Atk\Field()
+ * @property string $name @Atk4\Field()
  */
 class Country extends Model
 {
