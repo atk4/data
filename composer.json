@@ -42,13 +42,13 @@
     "php": ">=7.3.0",
     "ext-intl": "*",
     "atk4/dsql": "dev-develop",
-    "mahalux/atk4-hintable": "~1.2.0"
+    "mahalux/atk4-hintable": "~1.2.1"
   },
   "require-release": {
     "php": ">=7.3.0",
     "ext-intl": "*",
     "atk4/dsql": "~2.3.0",
-    "mahalux/atk4-hintable": "~1.2.0"
+    "mahalux/atk4-hintable": "~1.2.1"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^2.17",
