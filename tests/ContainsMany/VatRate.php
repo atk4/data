@@ -9,8 +9,8 @@ use Atk4\Data\Model;
 /**
  * VAT rate model.
  *
- * @property string $name @Atk\Field()
- * @property int    $rate @Atk\Field()
+ * @property string $name @Atk4\Field()
+ * @property int    $rate @Atk4\Field()
  */
 class VatRate extends Model
 {

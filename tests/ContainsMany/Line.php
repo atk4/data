@@ -9,13 +9,13 @@ use Atk4\Data\Model;
 /**
  * Invoice lines model.
  *
- * @property VatRate   $vat_rate_id       @Atk\RefOne()
- * @property float     $price             @Atk\Field()
- * @property float     $qty               @Atk\Field()
- * @property \DateTime $add_date          @Atk\Field()
- * @property string    $total_gross       @Atk\Field()
- * @property Discount  $discounts         @Atk\RefOne()
- * @property float     $discounts_percent @Atk\Field()
+ * @property VatRate   $vat_rate_id       @Atk4\RefOne()
+ * @property float     $price             @Atk4\Field()
+ * @property float     $qty               @Atk4\Field()
+ * @property \DateTime $add_date          @Atk4\Field()
+ * @property string    $total_gross       @Atk4\Field()
+ * @property Discount  $discounts         @Atk4\RefOne()
+ * @property float     $discounts_percent @Atk4\Field()
  */
 class Line extends Model
 {
