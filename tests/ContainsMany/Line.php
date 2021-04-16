@@ -14,7 +14,7 @@ use Atk4\Data\Model;
  * @property float     $qty               @Atk4\Field()
  * @property \DateTime $add_date          @Atk4\Field()
  * @property string    $total_gross       @Atk4\Field()
- * @property Discount  $discounts         @Atk4\RefOne()
+ * @property Discount  $discounts         @Atk4\RefMany()
  * @property float     $discounts_percent @Atk4\Field()
  */
 class Line extends Model
