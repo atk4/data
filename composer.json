@@ -16,7 +16,6 @@
         "postgresql"
     ],
     "homepage": "https://github.com/atk4/data",
-    "version": "dev-develop",
     "license": "MIT",
     "authors": [
         {
@@ -36,12 +35,6 @@
     "require": {
         "php": ">=7.3.0",
         "ext-intl": "*",
-        "atk4/dsql": "dev-develop",
-        "mahalux/atk4-hintable": "~1.2.1"
-    },
-    "require-release": {
-        "php": ">=7.3.0",
-        "ext-intl": "*",
         "atk4/dsql": "~2.4.0",
         "mahalux/atk4-hintable": "~1.2.1"
     },
@@ -49,14 +42,6 @@
         "atk4/schema": "*"
     },
     "require-dev": {
-        "ergebnis/composer-normalize": "^2.13",
-        "friendsofphp/php-cs-fixer": "^2.17",
-        "johnkary/phpunit-speedtrap": "^3.2",
-        "phpstan/phpstan": "^0.12.82",
-        "phpunit/phpcov": "*",
-        "phpunit/phpunit": ">=9.0"
-    },
-    "require-dev-release": {
         "friendsofphp/php-cs-fixer": "^2.17",
         "johnkary/phpunit-speedtrap": "^3.2",
         "phpstan/phpstan": "^0.12.58",
