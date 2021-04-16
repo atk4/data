@@ -9,11 +9,11 @@ use Atk4\Data\Model;
 /**
  * Invoice model.
  *
- * @property string $ref_no              @Atk\Field()
- * @property float  $amount              @Atk\Field()
- * @property Line   $lines               @Atk\RefOne()
- * @property string $total_gross         @Atk\Field()
- * @property float  $discounts_total_sum @Atk\Field()
+ * @property string $ref_no              @Atk4\Field()
+ * @property float  $amount              @Atk4\Field()
+ * @property Line   $lines               @Atk4\RefMany()
+ * @property string $total_gross         @Atk4\Field()
+ * @property float  $discounts_total_sum @Atk4\Field()
  */
 class Invoice extends Model
 {
