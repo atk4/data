@@ -364,12 +364,15 @@ class Sql extends Persistence
     }
 
     /**
-     * Will apply a condition defined inside $condition or $model->scope() onto $query.
+     * Will apply $model->scope() conditions onto $query.
      */
-    public function initQueryConditions(Model $model, Query $query, Model\Scope\AbstractScope $condition = null): void
+    public function initQueryConditions(Model $model, Query $query): void
     {
-        $condition = $condition ?? $model->scope();
+        $this->_initQueryConditions($query, $model->scope());
+    }
 
+    private function _initQueryConditions(Query $query, Model\Scope\AbstractScope $condition = null): void
+    {
         if (!$condition->isEmpty()) {
             // peel off the single nested scopes to convert (((field = value))) to field = value
             $condition = $condition->simplify();
@@ -384,7 +387,7 @@ class Sql extends Persistence
                 $expression = $condition->isOr() ? $query->orExpr() : $query->andExpr();
 
                 foreach ($condition->getNestedConditions() as $nestedCondition) {
-                    $this->initQueryConditions($model, $expression, $nestedCondition);
+                    $this->_initQueryConditions($expression, $nestedCondition);
                 }
 
                 $query->where($expression);
