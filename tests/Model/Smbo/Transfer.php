@@ -18,7 +18,7 @@ class Transfer extends Payment
 
         // only used to create / destroy trasfer legs
         if (!$this->detached) {
-            $this->addCondition('transfer_document_id', 'not', null);
+            $this->addCondition('transfer_document_id', '!=', null);
         }
 
         $this->addField('destination_account_id', ['never_persist' => true]);

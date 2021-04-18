@@ -53,12 +53,12 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         $boi = (new Account($this->db))->save(['name' => 'BOI']);
 
         $t = $aib->transfer($boi, 100); // create transfer between accounts
-
         $t->save();
 
         $this->assertEquals(-100, $aib->reload()->get('balance'));
         $this->assertEquals(100, $boi->reload()->get('balance'));
 
+        $t = new Transfer($this->db);
         $data = $t->export(['id', 'transfer_document_id']);
         usort($data, function ($e1, $e2) {
             return $e1['id'] < $e2['id'] ? -1 : 1;
