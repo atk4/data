@@ -1640,6 +1640,11 @@ class Model implements \IteratorAggregate
      */
     public function export(array $fields = null, $key_field = null, $typecast_data = true): array
     {
+        if ($this->entityId !== null) {
+            throw (new Exception('Model is loaded as an entity, it can not be iterated'))
+                ->addMoreInfo('entityId', $this->entityId);;
+        }
+
         $this->checkPersistence('export');
 
         // no key field - then just do export
@@ -1762,6 +1767,11 @@ class Model implements \IteratorAggregate
      */
     public function rawIterator(): \Traversable
     {
+        if ($this->entityId !== null) {
+            throw (new Exception('Model is loaded as an entity, it can not be iterated'))
+                ->addMoreInfo('entityId', $this->entityId);
+        }
+
         return $this->persistence->prepareIterator($this);
     }
 
