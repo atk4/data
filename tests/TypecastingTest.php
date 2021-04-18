@@ -80,7 +80,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame([1, 2, 3], $mm->get('array'));
         $this->assertSame(8.202343, $mm->get('float'));
 
-        $m->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        (clone $m)->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData = [
             'types' => [
