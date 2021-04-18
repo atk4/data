@@ -404,8 +404,10 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('first_name', ['actual' => 'name']);
         $m->addField('surname');
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
-        $m->loadBy('first_name', 'John');
-        $this->assertSame('John', $m->get('first_name'));
+
+        $mm = clone $m;
+        $mm->loadBy('first_name', 'John');
+        $this->assertSame('John', $mm->get('first_name'));
 
         $d = $m->export();
         $this->assertSame('John', $d[0]['first_name']);
@@ -417,8 +419,8 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ], $this->getDb());
 
-        $m->set('first_name', 'Scott');
-        $m->save();
+        $mm->set('first_name', 'Scott');
+        $mm->save();
 
         $this->assertEquals([
             'user' => [
