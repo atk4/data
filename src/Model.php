@@ -228,7 +228,7 @@ class Model implements \IteratorAggregate
      * you would want to use a different one or maybe don't create field
      * at all.
      *
-     * @var string
+     * @var string|null
      */
     public $id_field = 'id';
 
@@ -1642,7 +1642,7 @@ class Model implements \IteratorAggregate
     {
         if ($this->entityId !== null) {
             throw (new Exception('Model is loaded as an entity, it can not be iterated'))
-                ->addMoreInfo('entityId', $this->entityId);;
+                ->addMoreInfo('entityId', $this->entityId);
         }
 
         $this->checkPersistence('export');

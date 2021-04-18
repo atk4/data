@@ -22,7 +22,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
         $i->getField($i->id_field)->system = false;
-        $i->id_field = false;
+        $i->id_field = null;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);
@@ -46,7 +46,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
         $ii->getField($ii->id_field)->system = false;
-        $ii->id_field = false;
+        $ii->id_field = null;
 
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross' => 'desc']);
@@ -97,7 +97,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
 
         $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['net', 'vat']);
         $ii->getField($ii->id_field)->system = false;
-        $ii->id_field = false;
+        $ii->id_field = null;
 
         // pass parameters as array elements [field,order]
         $i = clone $ii;
@@ -144,7 +144,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['code', 'net', 'vat']);
         $i->addExpression('gross', '[net]+[vat]');
         $i->getField($i->id_field)->system = false;
-        $i->id_field = false;
+        $i->id_field = null;
 
         $i->setOrder('gross');
         $i->onlyFields(['gross']);
@@ -225,7 +225,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
         $i->getField($i->id_field)->system = false;
-        $i->id_field = false;
+        $i->id_field = null;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);
