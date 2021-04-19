@@ -854,7 +854,7 @@ class Model implements \IteratorAggregate
     public function getModelCaption(): string
     {
         return $this->caption ?: $this->readableCaption(
-            strpos(static::class, 'class@anonymous') === 0 ? get_parent_class(static::class) : static::class
+            (new \ReflectionClass(static::class))->isAnonymous() ? get_parent_class(static::class) : static::class
         );
     }
 
