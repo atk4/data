@@ -431,7 +431,7 @@ take values of 123 and write it on top of 124?
 
 Here is how::
 
-    $m->load(123)->duplicate(124)->replace();
+    $m->load(123)->duplicate()->setId(124)->save();
 
 Now the record 124 will be replaced with the data taken from record 123.
 For SQL that means calling 'replace into x'.
@@ -618,7 +618,7 @@ application::
             $m = $this->sql->add(clone $class)->load($id);
 
             // store into MemCache too
-            $m = $m->withPersistence($this->mdb)->replace();
+            $m = $m->withPersistence($this->mdb)->save();
         }
 
         $m->onHook(Model::HOOK_BEFORE_SAVE, function($m){
@@ -656,7 +656,7 @@ cache::
         $m = $this->sql->add(clone $class)->load($id);
 
         // store into MemCache too
-        $m = $m->withPersistence($this->mdb)->replace();
+        $m = $m->withPersistence($this->mdb)->save();
     }
 
 Load the record from the SQL database and store it into $m. Next, save $m into
