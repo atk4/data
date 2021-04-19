@@ -591,30 +591,6 @@ The above example would then work like this::
 Note that after saving 'Order' it may attempt to :ref:`load_after_save` just
 to ensure that stored model is a valid 'Order'.
 
-.. php:method:: saveAs($class = null, $options= [])
-
-    Save record into the database, using a different class for a model.
-
-As in my archiving example, here is how we can eliminate need of archive()
-method altogether::
-
-    $o = new ActiveOrder($db);
-    $o->load(123);
-
-    $o->set('is_arhived', true)->saveAs('Order');
-
-Currently the implementation of saveAs is rather trivial, but in the future
-versions of Agile Data you may be able to do this::
-
-    // MAY NOT WORK YET
-    $o = new ActiveOrder($db);
-    $o->load(123);
-
-    $o->saveAs('ArchivedOrder');
-
-Of course - instead of using 'Order' you can also specify the object
-with `new Order()`.
-
 
 Working with Multiple Persistences
 ==================================

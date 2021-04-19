@@ -1288,23 +1288,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Saves the current record by using a different
-     * model class. This is similar to:.
-     *
-     * $m2 = $m->newInstance($class);
-     * $m2->load($m->getId());
-     * $m2->set($m->get());
-     * $m2->save();
-     *
-     * but will assume that both models are compatible,
-     * therefore will not perform any loading.
-     */
-    public function saveAs(string $class, array $options = []): self
-    {
-        return $this->asModel($class, $options)->save();
-    }
-
-    /**
      * Store the data into database, but will never attempt to
      * reload the data. Additionally any data will be unloaded.
      * Use this instead of save() if you want to squeeze a

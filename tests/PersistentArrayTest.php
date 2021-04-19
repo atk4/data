@@ -54,28 +54,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
-    public function testSaveAs()
-    {
-        $p = new Persistence\Array_([
-            'person' => [
-                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
-            ],
-        ]);
-
-        $m = new Male($p);
-        $m->load(1);
-        $m->saveAs(Female::class);
-        $m->delete();
-
-        $this->assertEquals([
-            'person' => [
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
-                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
-            ],
-        ], $this->getInternalPersistenceData($p));
-    }
-
     public function testSaveAndUnload()
     {
         $p = new Persistence\Array_([
