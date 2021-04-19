@@ -46,7 +46,7 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
             'array' => ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
             'object' => (object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
         ]);
-        $m->saveAndUnload();
+        (clone $m)->saveAndUnload();
 
         // no typecasting option set in export()
         $data = $m->export(null, null, false);

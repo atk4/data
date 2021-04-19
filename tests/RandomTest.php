@@ -380,7 +380,6 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
 
         $m->load(2);
         $this->assertSame('Sue', $m->getTitle()); // loaded returns title_field value
-        $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
         // set custom title_field
         $m->title_field = 'parent_item_id';
@@ -399,7 +398,10 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m->title_field = 'my_name';
         $m->load(2);
         $this->assertEquals(2, $m->getTitle()); // loaded returns id value
-        $this->assertEquals([1 => 1, 2 => 2], $m->getTitles()); // all titles (my_name)
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessageMatches('~entity.+iterate~');
+        $m->getTitles();
     }
 
     /**
@@ -492,7 +494,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Rate($db);
 
-        $m->load(1)->duplicate()->save();
+        (clone $m)->load(1)->duplicate()->save();
 
         $this->assertSame([
             ['id' => 1, 'dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],

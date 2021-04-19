@@ -66,7 +66,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $mm->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
         $this->expectException(\Atk4\Data\Exception::class);
-        $this->expectExceptionMessageMatches('~different~');
+        $this->expectExceptionMessageMatches('~entity.+different~');
         $mm->tryLoad(2);
     }
 
