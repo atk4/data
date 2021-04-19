@@ -1288,23 +1288,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Saves the current record by using a different
-     * model class. This is similar to:.
-     *
-     * $m2 = $m->newInstance($class);
-     * $m2->load($m->getId());
-     * $m2->set($m->get());
-     * $m2->save();
-     *
-     * but will assume that both models are compatible,
-     * therefore will not perform any loading.
-     */
-    public function saveAs(string $class, array $options = []): self
-    {
-        return $this->asModel($class, $options)->save();
-    }
-
-    /**
      * Store the data into database, but will never attempt to
      * reload the data. Additionally any data will be unloaded.
      * Use this instead of save() if you want to squeeze a
@@ -1328,46 +1311,8 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * This will cast Model into another class without
-     * loosing state of your active record.
-     */
-    public function asModel(string $class, array $options = []): self
-    {
-        $m = $this->newInstance($class, $options);
-
-        foreach ($this->data as $field => $value) {
-            if ($value !== null && $value !== $this->getField($field)->default && $field !== $this->id_field) {
-                // Copying only non-default value
-                $m->set($field, $value);
-            }
-        }
-
-        // next we need to go over fields to see if any system
-        // values have changed and mark them as dirty
-
-        return $m;
-    }
-
-    /**
      * Create new model from the same base class
-     * as $this.
-     *
-     * @return static
-     */
-    public function newInstance(string $class = null, array $options = [])
-    {
-        $model = (self::class)::fromSeed([$class ?? static::class], $options);
-
-        if ($this->persistence) {
-            return $this->persistence->add($model); // @phpstan-ignore-line
-        }
-
-        return $model;
-    }
-
-    /**
-     * Create new model from the same base class
-     * as $this. If you omit $id,then when saving
+     * as $this. If you omit $id then when saving
      * a new record will be created with default ID.
      * If you specify $id then it will be used
      * to save/update your record. If set $id

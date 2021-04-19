@@ -35,7 +35,7 @@ and even perform operations on multiple records (See `Persistence Actions` below
    $m->addCondition('expired', true);
 
    $m->action('delete')->execute(); // performs mass delete, hooks are not executed
-   
+
    $m->each(function () use ($m) { $m->delete(); }); // deletes each record, hooks are executed
 
 When data is loaded from associated Persistence, it is automatically converted into
@@ -434,17 +434,6 @@ This introduces a new business object, which is a sub-set of User. The new class
 inherit all the fields, methods and actions of "User" class but will introduce one new
 action - `send_gift`.
 
-There are some advanced techniques like "SubTypes" or class substitution,
-for example, this hook may be placed in the "User" class init()::
-
-   $this->onHookShort(Model::HOOK_AFTER_LOAD, function() {
-      if ($this->get('purchases') > 1000) {
-         $this->breakHook($this->asModel(VipUser::class);
-      }
-   });
-
-See also :php:class:`Field\\SubTypeSwitch`
-
 
 Associating Model with Database
 ===============================
@@ -498,14 +487,6 @@ Creates a duplicate of a current model and associate new copy with a specified
 persistence. This method is useful for moving model data from one persistence
 to another.
 
-.. php:method:: asModel($class, $options = [])
-
-Casts current model into another class. The new model class should be compatible
-with $this - you can do `$user->asModel(VipUser::class)` but converting `$user`
-into `Invoice::class` is a bad idea.
-
-Although class is switched, the new model will retain current record data, replace all
-fields/actions and will combine conditions (avoiding identical conditions).
 
 Populating Data
 ===============

@@ -431,7 +431,7 @@ take values of 123 and write it on top of 124?
 
 Here is how::
 
-    $m->load(123)->duplicate(124)->replace();
+    $m->load(123)->duplicate()->setId(124)->save();
 
 Now the record 124 will be replaced with the data taken from record 123.
 For SQL that means calling 'replace into x'.
@@ -482,7 +482,7 @@ Start by creating a beforeSave handler for Order::
         if ($this->isDirty('ref')) {
 
             if (
-                $this->newInstance()
+                (new static())
                     ->addCondition('client_id', $this->get('client_id'))  // same client
                     ->addCondition($this->id_field, '!=', $this->getId()) // has another order
                     ->tryLoadBy('ref', $this->get('ref'))                 // with same ref
@@ -537,7 +537,7 @@ The other, more appropriate option is to re-use a vanilla Order record::
     function archive() {
         $this->save(); // just to be sure, no dirty stuff is left over
 
-        $archive = $this->newInstance();
+        $archive = (new static());
         $archive->load($this->getId());
         $archive->set('is_archived', true);
 
@@ -545,75 +545,6 @@ The other, more appropriate option is to re-use a vanilla Order record::
 
         return $archive;
     }
-
-This method may still not work if you extend and use "ActiveOrder" as your
-model. In this case you should pass the class to newInstance()::
-
-    $archive = $this->newInstance('Order');
-    // or
-    $archive = $this->newInstance(new Order());
-    // or with passing some default properties:
-    $archive = $this->newInstance([new Order(), 'audit'=>true]);
-
-
-In this case newInstance() would just associate passed class with the
-persistence pretty much identical to::
-
-    $archive = new Order($this->persistence);
-
-The use of newInstance() however requires you to load the model which is
-an extra database query.
-
-Using Model casting and saveAs
-------------------------------
-
-There is another method that can help with escaping the DataSet that does not
-involve record loading:
-
-.. php:method:: asModel($class = null, $options = [])
-
-    Changes the class of a model, while keeping all the loaded and dirty
-    values.
-
-The above example would then work like this::
-
-    function archive() {
-        $this->save(); // just to be sure, no dirty stuff is left over
-
-        $archive = $o->asModel('Order');
-        $archive->set('is_archived', true);
-
-        $this->unload(); // active record is no longer accessible.
-
-        return $archive;
-    }
-
-Note that after saving 'Order' it may attempt to :ref:`load_after_save` just
-to ensure that stored model is a valid 'Order'.
-
-.. php:method:: saveAs($class = null, $options= [])
-
-    Save record into the database, using a different class for a model.
-
-As in my archiving example, here is how we can eliminate need of archive()
-method altogether::
-
-    $o = new ActiveOrder($db);
-    $o->load(123);
-
-    $o->set('is_arhived', true)->saveAs('Order');
-
-Currently the implementation of saveAs is rather trivial, but in the future
-versions of Agile Data you may be able to do this::
-
-    // MAY NOT WORK YET
-    $o = new ActiveOrder($db);
-    $o->load(123);
-
-    $o->saveAs('ArchivedOrder');
-
-Of course - instead of using 'Order' you can also specify the object
-with `new Order()`.
 
 
 Working with Multiple Persistences
@@ -659,7 +590,7 @@ application::
             $m = $this->sql->add(clone $class)->load($id);
 
             // store into MemCache too
-            $m = $m->withPersistence($this->mdb)->replace();
+            $m = $m->withPersistence($this->mdb)->save();
         }
 
         $m->onHook(Model::HOOK_BEFORE_SAVE, function($m){
@@ -697,7 +628,7 @@ cache::
         $m = $this->sql->add(clone $class)->load($id);
 
         // store into MemCache too
-        $m = $m->withPersistence($this->mdb)->replace();
+        $m = $m->withPersistence($this->mdb)->save();
     }
 
 Load the record from the SQL database and store it into $m. Next, save $m into
