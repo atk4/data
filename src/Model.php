@@ -1319,9 +1319,7 @@ class Model implements \IteratorAggregate
         $m = $this->newInstance($class, $options);
 
         foreach ($this->data as $field => $value) {
-            if ($field !== $this->id_field) {
-                $m->set($field, $value);
-            }
+            $m->set($field, $value);
         }
 
         // next we need to go over fields to see if any system
@@ -1349,7 +1347,7 @@ class Model implements \IteratorAggregate
 
     /**
      * Create new model from the same base class
-     * as $this. If you omit $id,then when saving
+     * as $this. If you omit $id then when saving
      * a new record will be created with default ID.
      * If you specify $id then it will be used
      * to save/update your record. If set $id
