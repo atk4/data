@@ -482,7 +482,7 @@ Start by creating a beforeSave handler for Order::
         if ($this->isDirty('ref')) {
 
             if (
-                $this->newInstance()
+                (new static())
                     ->addCondition('client_id', $this->get('client_id'))  // same client
                     ->addCondition($this->id_field, '!=', $this->getId()) // has another order
                     ->tryLoadBy('ref', $this->get('ref'))                 // with same ref
@@ -537,7 +537,7 @@ The other, more appropriate option is to re-use a vanilla Order record::
     function archive() {
         $this->save(); // just to be sure, no dirty stuff is left over
 
-        $archive = $this->newInstance();
+        $archive = (new static());
         $archive->load($this->getId());
         $archive->set('is_archived', true);
 
@@ -546,23 +546,6 @@ The other, more appropriate option is to re-use a vanilla Order record::
         return $archive;
     }
 
-This method may still not work if you extend and use "ActiveOrder" as your
-model. In this case you should pass the class to newInstance()::
-
-    $archive = $this->newInstance('Order');
-    // or
-    $archive = $this->newInstance(new Order());
-    // or with passing some default properties:
-    $archive = $this->newInstance([new Order(), 'audit'=>true]);
-
-
-In this case newInstance() would just associate passed class with the
-persistence pretty much identical to::
-
-    $archive = new Order($this->persistence);
-
-The use of newInstance() however requires you to load the model which is
-an extra database query.
 
 Using Model casting and saveAs
 ------------------------------

@@ -480,20 +480,6 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ], $m2->export(['code', 'name'], 'code'));
     }
 
-    public function testNewInstance()
-    {
-        // model without persistence
-        $m = new Model(null, ['table' => 'order']);
-        $a = $m->newInstance();
-        $this->assertFalse(isset($a->persistence));
-
-        // model with persistence
-        $db = new Persistence\Array_();
-        $m = new Model($db, ['table' => 'order']);
-        $a = $m->newInstance();
-        $this->assertTrue(isset($a->persistence));
-    }
-
     public function testDuplicateSaveNew()
     {
         $this->setDb([

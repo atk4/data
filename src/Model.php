@@ -1313,10 +1313,12 @@ class Model implements \IteratorAggregate
     /**
      * This will cast Model into another class without
      * loosing state of your active record.
+     *
+     * @param class-string<self> $class
      */
     public function asModel(string $class, array $options = []): self
     {
-        $m = $this->newInstance($class, $options);
+        $m = new $class(null, $options);
 
         foreach ($this->data as $field => $value) {
             $m->set($field, $value);
@@ -1326,23 +1328,6 @@ class Model implements \IteratorAggregate
         // values have changed and mark them as dirty
 
         return $m;
-    }
-
-    /**
-     * Create new model from the same base class
-     * as $this.
-     *
-     * @return static
-     */
-    public function newInstance(string $class = null, array $options = [])
-    {
-        $model = (self::class)::fromSeed([$class ?? static::class], $options);
-
-        if ($this->persistence) {
-            return $this->persistence->add($model); // @phpstan-ignore-line
-        }
-
-        return $model;
     }
 
     /**
