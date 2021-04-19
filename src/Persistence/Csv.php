@@ -326,7 +326,7 @@ class Csv extends Persistence
      *
      * @param mixed $id
      */
-    public function update(Model $model, $id, array $data, string $table = null)
+    public function update(Model $model, $id, array $data)
     {
         throw new Exception('Updating records is not supported in CSV persistence.');
     }
@@ -336,7 +336,7 @@ class Csv extends Persistence
      *
      * @param mixed $id
      */
-    public function delete(Model $model, $id, string $table = null)
+    public function delete(Model $model, $id)
     {
         throw new Exception('Deleting records is not supported in CSV persistence.');
     }
@@ -346,7 +346,7 @@ class Csv extends Persistence
      *
      * @return string
      */
-    public function generateNewId(Model $model, string $table = null)
+    public function generateNewId(Model $model)
     {
         throw new Exception('Not implemented');
     }

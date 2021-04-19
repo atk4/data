@@ -57,7 +57,7 @@ class Array_ extends Persistence
         }
     }
 
-    private function saveRow(Model $model, array $row, $id, string $table): void
+    private function saveRow(Model $model, array $row, $id): void
     {
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
@@ -68,7 +68,7 @@ class Array_ extends Persistence
             }
         }
 
-        $this->data[$table][$id] = $row;
+        $this->data[$model->table][$id] = $row;
     }
 
     private function addIdToLoadRow(Model $model, array &$row, $id): void
@@ -138,36 +138,35 @@ class Array_ extends Persistence
         return $model;
     }
 
-    public function tryLoad(Model $model, $id, string $table = null): ?array
+    public function tryLoad(Model $model, $id): ?array
     {
-        $table = $table ?? $model->table;
-        if (!isset($this->data[$table])) {
+        if (!isset($this->data[$model->table])) {
             throw (new Exception('Table was not found in the array data source'))
-                ->addMoreInfo('table', $table);
+                ->addMoreInfo('table', $model->table);
         }
 
         if ($id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY) {
-            if (count($this->data[$table]) === 0) {
+            if (count($this->data[$model->table]) === 0) {
                 return null;
-            } elseif ($id === self::ID_LOAD_ONE && count($this->data[$table]) !== 1) {
+            } elseif ($id === self::ID_LOAD_ONE && count($this->data[$model->table]) !== 1) {
                 throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
                     ->addMoreInfo('model', $model)
                     ->addMoreInfo('id', null);
             }
 
-            $id = array_key_first($this->data[$table]);
+            $id = array_key_first($this->data[$model->table]);
 
-            $row = $this->tryLoad($model, $id, $table);
+            $row = $this->tryLoad($model, $id);
             $model->setId($id); // @TODO is it needed?
 
             return $row;
         }
 
-        if (!isset($this->data[$table][$id])) {
+        if (!isset($this->data[$model->table][$id])) {
             return null;
         }
 
-        $row = $this->data[$table][$id];
+        $row = $this->data[$model->table][$id];
         $this->addIdToLoadRow($model, $row, $id);
 
         return $this->typecastLoadRow($model, $row);
@@ -178,15 +177,13 @@ class Array_ extends Persistence
      *
      * @return mixed
      */
-    public function insert(Model $model, array $data, string $table = null)
+    public function insert(Model $model, array $data)
     {
-        $table = $table ?? $model->table;
-
         $data = $this->typecastSaveRow($model, $data);
 
-        $id = $data[$model->id_field] ?? $this->generateNewId($model, $table);
+        $id = $data[$model->id_field] ?? $this->generateNewId($model);
 
-        $this->saveRow($model, $data, $id, $table);
+        $this->saveRow($model, $data, $id);
 
         return $id;
     }
@@ -198,13 +195,11 @@ class Array_ extends Persistence
      *
      * @return mixed
      */
-    public function update(Model $model, $id, array $data, string $table = null)
+    public function update(Model $model, $id, array $data)
     {
-        $table = $table ?? $model->table;
-
         $data = $this->typecastSaveRow($model, $data);
 
-        $this->saveRow($model, array_merge($this->data[$table][$id] ?? [], $data), $id, $table);
+        $this->saveRow($model, array_merge($this->data[$model->table][$id] ?? [], $data), $id);
 
         return $id;
     }
@@ -214,11 +209,9 @@ class Array_ extends Persistence
      *
      * @param mixed $id
      */
-    public function delete(Model $model, $id, string $table = null)
+    public function delete(Model $model, $id)
     {
-        $table = $table ?? $model->table;
-
-        unset($this->data[$table][$id]);
+        unset($this->data[$model->table][$id]);
     }
 
     /**
@@ -226,15 +219,13 @@ class Array_ extends Persistence
      *
      * @return string
      */
-    public function generateNewId(Model $model, string $table = null)
+    public function generateNewId(Model $model)
     {
-        $table = $table ?? $model->table;
-
         $type = $model->id_field ? $model->getField($model->id_field)->type : 'integer';
 
         switch ($type) {
             case 'integer':
-                $ids = $model->id_field ? array_keys($this->data[$table]) : [count($this->data[$table])];
+                $ids = $model->id_field ? array_keys($this->data[$model->table]) : [count($this->data[$model->table])];
 
                 $id = $ids ? max($ids) + 1 : 1;
 
@@ -248,7 +239,7 @@ class Array_ extends Persistence
                     ->addMoreInfo('type', $type);
         }
 
-        $this->lastInsertIds[$table] = $id;
+        $this->lastInsertIds[$model->table] = $id;
         $this->lastInsertIds['$'] = $id;
 
         return $id;
@@ -310,7 +301,7 @@ class Array_ extends Persistence
     }
 
     /**
-     * Will set limit defined inside $m onto data.
+     * Will set limit defined inside $model onto data.
      */
     protected function setLimitOrder(Model $model, \Atk4\Data\Action\Iterator $action)
     {
