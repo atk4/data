@@ -1319,8 +1319,7 @@ class Model implements \IteratorAggregate
         $m = $this->newInstance($class, $options);
 
         foreach ($this->data as $field => $value) {
-            if ($value !== null && $value !== $this->getField($field)->default && $field !== $this->id_field) {
-                // Copying only non-default value
+            if ($field !== $this->id_field) {
                 $m->set($field, $value);
             }
         }
