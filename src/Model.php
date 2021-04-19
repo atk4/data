@@ -1311,26 +1311,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * This will cast Model into another class without
-     * loosing state of your active record.
-     *
-     * @param class-string<self> $class
-     */
-    public function asModel(string $class, array $options = []): self
-    {
-        $m = new $class(null, $options);
-
-        foreach ($this->data as $field => $value) {
-            $m->set($field, $value);
-        }
-
-        // next we need to go over fields to see if any system
-        // values have changed and mark them as dirty
-
-        return $m;
-    }
-
-    /**
      * Create new model from the same base class
      * as $this. If you omit $id then when saving
      * a new record will be created with default ID.

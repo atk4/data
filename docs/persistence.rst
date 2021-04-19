@@ -547,34 +547,6 @@ The other, more appropriate option is to re-use a vanilla Order record::
     }
 
 
-Using Model casting and saveAs
-------------------------------
-
-There is another method that can help with escaping the DataSet that does not
-involve record loading:
-
-.. php:method:: asModel($class = null, $options = [])
-
-    Changes the class of a model, while keeping all the loaded and dirty
-    values.
-
-The above example would then work like this::
-
-    function archive() {
-        $this->save(); // just to be sure, no dirty stuff is left over
-
-        $archive = $o->asModel('Order');
-        $archive->set('is_archived', true);
-
-        $this->unload(); // active record is no longer accessible.
-
-        return $archive;
-    }
-
-Note that after saving 'Order' it may attempt to :ref:`load_after_save` just
-to ensure that stored model is a valid 'Order'.
-
-
 Working with Multiple Persistences
 ==================================
 
