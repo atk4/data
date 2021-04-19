@@ -45,6 +45,8 @@ class Join extends Model\Join
         $modelCloned = clone $this->getOwner();
         $modelCloned->table = $this->foreign_table;
 
+        // @TODO hooks will be fixed on a cloned model, Join should be replaced later by supporting unioned table as a table model
+
         return $modelCloned;
     }
 
