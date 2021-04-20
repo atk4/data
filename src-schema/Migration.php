@@ -100,7 +100,7 @@ class Migration
                             EOT,
                         [
                             'table' => $this->table->getName(),
-                            'table_ai_trigger_before' => $this->table->getName() . '_ai_trigger_before',
+                            'table_ai_trigger_before' => $this->table->getName() . '__aitb',
                         ]
                     )->render(),
                 ]
@@ -130,7 +130,7 @@ class Migration
                     $this->connection->expr(
                         'drop trigger {table_ai_trigger_before}',
                         [
-                            'table_ai_trigger_before' => $this->table->getName() . '_ai_trigger_before',
+                            'table_ai_trigger_before' => $this->table->getName() . '__aitb',
                         ]
                     )->render(),
                 ]
