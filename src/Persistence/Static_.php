@@ -47,7 +47,7 @@ class Static_ extends Array_
         if (!is_array($row1)) {
             // convert array of strings into array of hashes
             foreach ($data as $k => $str) {
-                $data[$k] = ['id' => $k, 'name' => $str];
+                $data[$k] = ['name' => $str];
             }
             unset($str);
 
