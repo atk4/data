@@ -33,7 +33,6 @@ class Array_ extends Persistence
     {
         $this->seedData = $data;
 
-
         // if there is no model table specified, then create fake one named 'data'
         // and put all persistence data in there 1/2
         if (count($this->seedData) > 0 && !isset($this->seedData['data'])) {
