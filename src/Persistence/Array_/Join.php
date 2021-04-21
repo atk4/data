@@ -9,8 +9,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
 /**
- * Provides model joining functionality specific for the Array_ persistence.
- *
  * @property Persistence\Array_|null $persistence
  */
 class Join extends Model\Join

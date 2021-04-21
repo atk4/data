@@ -294,7 +294,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         // if no condition we should get all the data back
         $iterator = $m->action('select');
         $result = $m->persistence->applyScope($m, $iterator);
-        $this->assertInstanceOf(\Atk4\Data\Action\Iterator::class, $result);
+        $this->assertInstanceOf(Persistence\Array_\Action::class, $result);
         $m->unload();
         unset($iterator);
         unset($result);
@@ -415,7 +415,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         // if no condition we should get all the data back
         $iterator = $m->action('select');
         $result = $m->persistence->applyScope($m, $iterator);
-        $this->assertInstanceOf(\Atk4\Data\Action\Iterator::class, $result);
+        $this->assertInstanceOf(Persistence\Array_\Action::class, $result);
         $m->unload();
         unset($iterator);
         unset($result);

@@ -7,6 +7,7 @@ namespace Atk4\Data\Persistence;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Array_\Action;
 
 /**
  * Implements persistence driver that can save data into array and load
@@ -337,7 +338,7 @@ class Array_ extends Persistence
     /**
      * Typecast data and return Iterator of data array.
      */
-    public function initAction(Model $model, array $fields = null): \Atk4\Data\Action\Iterator
+    public function initAction(Model $model, array $fields = null): Action
     {
         $this->seedData($model);
 
@@ -352,13 +353,13 @@ class Array_ extends Persistence
             }, $data);
         }
 
-        return new \Atk4\Data\Action\Iterator($data);
+        return new Action($data);
     }
 
     /**
      * Will set limit defined inside $model onto data.
      */
-    protected function setLimitOrder(Model $model, \Atk4\Data\Action\Iterator $action)
+    protected function setLimitOrder(Model $model, Action $action)
     {
         // first order by
         if ($model->order) {
@@ -374,9 +375,9 @@ class Array_ extends Persistence
     /**
      * Will apply conditions defined inside $model onto $iterator.
      *
-     * @return \Atk4\Data\Action\Iterator|null
+     * @return Action|null
      */
-    public function applyScope(Model $model, \Atk4\Data\Action\Iterator $iterator)
+    public function applyScope(Model $model, Action $iterator)
     {
         return $iterator->filter($model->scope());
     }
