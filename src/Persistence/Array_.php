@@ -21,13 +21,14 @@ class Array_ extends Persistence
     /** @var array<string, array> */
     private $data;
 
-    /**
-     * Array of last inserted ids per table.
-     * Last inserted ID for any table is stored under '$' key.
-     *
-     * @var array
-     */
-    protected $lastInsertIds = [];
+    /** @var array<string, int> */
+    protected $maxSeenIdByTable = [];
+
+    /** @var array<string, int|string> */
+    protected $lastInsertIdByTable = [];
+
+    /** @var string */
+    protected $lastInsertIdTable;
 
     public function __construct(array $data = [])
     {
@@ -112,6 +113,10 @@ class Array_ extends Persistence
                 $this->assertNoIdMismatch($row[$idColumnName], $id);
                 unset($row[$idColumnName]);
             }
+        }
+
+        if ($id > ($this->maxSeenIdByTable[$model->table] ?? 0)) {
+            $this->maxSeenIdByTable[$model->table] = $id;
         }
 
         $this->data[$model->table][$id] = $row;
@@ -275,13 +280,12 @@ class Array_ extends Persistence
 
         switch ($type) {
             case 'integer':
-                $ids = $model->id_field ? array_keys($this->data[$model->table]) : [count($this->data[$model->table])];
-
-                $id = $ids ? max($ids) + 1 : 1;
+                $nextId = ($this->maxSeenIdByTable[$model->table] ?? 0) + 1;
+                $this->maxSeenIdByTable[$model->table] = $nextId;
 
                 break;
             case 'string':
-                $id = uniqid();
+                $nextId = uniqid();
 
                 break;
             default:
@@ -289,25 +293,24 @@ class Array_ extends Persistence
                     ->addMoreInfo('type', $type);
         }
 
-        $this->lastInsertIds[$model->table] = $id;
-        $this->lastInsertIds['$'] = $id;
+        $this->lastInsertIdByTable[$model->table] = $nextId;
+        $this->lastInsertIdTable = $model->table;
 
-        return $id;
+        return $nextId;
     }
 
     /**
      * Last ID inserted.
-     * Last inserted ID for any table is stored under '$' key.
      *
      * @return mixed
      */
     public function lastInsertId(Model $model = null)
     {
         if ($model) {
-            return $this->lastInsertIds[$model->table] ?? null;
+            return $this->lastInsertIdByTable[$model->table] ?? null;
         }
 
-        return $this->lastInsertIds['$'] ?? null;
+        return $this->lastInsertIdByTable[$this->lastInsertIdTable] ?? null;
     }
 
     public function prepareIterator(Model $model): \Traversable

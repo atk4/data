@@ -152,7 +152,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
                 3 => ['name' => 'Sue'],
             ], 'contact' => [
                 1 => ['test_id' => 1, 'contact_phone' => '+123'],
-                2 => ['test_id' => 3, 'contact_phone' => '+444'],
+                3 => ['test_id' => 3, 'contact_phone' => '+444'],
             ],
         ], $this->getInternalPersistenceData($db));
     }
