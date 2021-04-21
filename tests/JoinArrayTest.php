@@ -201,12 +201,12 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     {
         $db = new Persistence\Array_([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
+                1 => ['name' => 'John', 'contact_id' => 1],
+                2 => ['name' => 'Peter', 'contact_id' => 1],
+                3 => ['name' => 'Joe', 'contact_id' => 2],
             ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+123'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                1 => ['contact_phone' => '+123'],
+                2 => ['contact_phone' => '+321'],
             ],
         ]);
         $m_u = new Model($db, ['table' => 'user']);
@@ -235,12 +235,12 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     {
         $db = new Persistence\Array_([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
+                1 => ['name' => 'John', 'contact_id' => 1],
+                2 => ['name' => 'Peter', 'contact_id' => 1],
+                3 => ['name' => 'Joe', 'contact_id' => 2],
             ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+123'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                1 => ['contact_phone' => '+123'],
+                2 => ['contact_phone' => '+321'],
             ],
         ]);
         $m_u = new Model($db, ['table' => 'user']);
@@ -257,11 +257,11 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $this->assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'Joe', 'contact_id' => 2],
+                2 => ['name' => 'Peter', 'contact_id' => 1],
+                3 => ['name' => 'Joe', 'contact_id' => 2],
             ], 'contact' => [
                 1 => ['contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+321'],
+                2 => ['contact_phone' => '+321'],
             ],
         ], $this->getInternalPersistenceData($db));
 
@@ -273,7 +273,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $this->assertSame([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
             ], 'contact' => [
                 1 => ['contact_phone' => '+555'],
@@ -289,7 +289,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $this->assertEquals([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
+                2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
                 4 => ['name' => 'YYY', 'contact_id' => 3],
             ], 'contact' => [
@@ -304,14 +304,14 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     {
         $db = new Persistence\Array_([
             'user' => [
-                1 => ['id' => 1, 'name' => 'John 2', 'contact_id' => 1],
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                1 => ['name' => 'John 2', 'contact_id' => 1],
+                2 => ['name' => 'Peter', 'contact_id' => 1],
+                3 => ['name' => 'XX', 'contact_id' => 2],
+                4 => ['name' => 'YYY', 'contact_id' => 3],
             ], 'contact' => [
-                1 => ['id' => 1, 'contact_phone' => '+555'],
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
+                1 => ['contact_phone' => '+555'],
+                2 => ['contact_phone' => '+999'],
+                3 => ['contact_phone' => '+777'],
             ],
         ]);
         $m_u = new Model($db, ['table' => 'user']);
@@ -325,12 +325,12 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 
         $this->assertSame([
             'user' => [
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                2 => ['name' => 'Peter', 'contact_id' => 1],
+                3 => ['name' => 'XX', 'contact_id' => 2],
+                4 => ['name' => 'YYY', 'contact_id' => 3],
             ], 'contact' => [
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
+                2 => ['contact_phone' => '+999'],
+                3 => ['contact_phone' => '+777'],
             ],
         ], $this->getInternalPersistenceData($db));
     }
@@ -339,12 +339,12 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     {
         $db = new Persistence\Array_([
             'user' => [
-                2 => ['id' => 2, 'name' => 'Peter', 'contact_id' => 1],
-                3 => ['id' => 3, 'name' => 'XX', 'contact_id' => 2],
-                4 => ['id' => 4, 'name' => 'YYY', 'contact_id' => 3],
+                2 => ['name' => 'Peter', 'contact_id' => 1],
+                3 => ['name' => 'XX', 'contact_id' => 2],
+                4 => ['name' => 'YYY', 'contact_id' => 3],
             ], 'contact' => [
-                2 => ['id' => 2, 'contact_phone' => '+999'],
-                3 => ['id' => 3, 'contact_phone' => '+777'],
+                2 => ['contact_phone' => '+999'],
+                3 => ['contact_phone' => '+777'],
             ],
         ]);
         $m_u = new Model($db, ['table' => 'user']);
