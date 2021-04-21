@@ -16,12 +16,10 @@ use Atk4\Data\Persistence;
 class Array_ extends Persistence
 {
     /** @var array */
-    private $data;
+    private $seedData;
 
-    public function __construct(array $data = [])
-    {
-        $this->data = $data;
-    }
+    /** @var array<string, array> */
+    private $data;
 
     /**
      * Array of last inserted ids per table.
@@ -31,6 +29,53 @@ class Array_ extends Persistence
      */
     protected $lastInsertIds = [];
 
+    public function __construct(array $data = [])
+    {
+        $this->seedData = $data;
+
+
+        // if there is no model table specified, then create fake one named 'data'
+        // and put all persistence data in there 1/2
+        if (count($this->seedData) > 0 && !isset($this->seedData['data'])) {
+            $rowSample = reset($this->seedData);
+            if (is_array($rowSample) && !is_array(reset($rowSample))) {
+                $this->seedData = ['data' => $this->seedData];
+            }
+        }
+    }
+
+    private function seedData(Model $model): void
+    {
+        if (isset($this->data[$model->table])) {
+            return;
+        }
+
+        $this->data[$model->table] = [];
+
+        if (isset($this->seedData[$model->table])) {
+            $rows = $this->seedData[$model->table];
+            unset($this->seedData[$model->table]);
+
+            foreach ($rows as $id => $row) {
+                $this->saveRow($model, $row, $id);
+            }
+        }
+
+        // for array persistence join which accept table directly (without model initialization)
+        foreach ($model->getFields() as $field) {
+            if ($field->hasJoin()) {
+                $join = $field->getJoin();
+                $joinTable = \Closure::bind(function () use ($join) {
+                    return $join->foreign_table;
+                }, null, Array_\Join::class)();
+                if (isset($this->seedData[$joinTable])) {
+                    $dummyJoinModel = new Model($this, ['table' => $joinTable]);
+                    $this->add($dummyJoinModel);
+                }
+            }
+        }
+    }
+
     /**
      * @deprecated TODO temporary for these:
      *             - https://github.com/atk4/data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsOne.php#L119
@@ -39,6 +84,8 @@ class Array_ extends Persistence
      */
     public function getRawDataByTable(Model $model, string $table): array
     {
+        $this->seedData($model);
+
         $rows = [];
         foreach ($this->data[$table] as $id => $row) {
             $this->addIdToLoadRow($model, $row, $id);
@@ -114,6 +161,12 @@ class Array_ extends Persistence
 
         $model = parent::add($model, $defaults);
 
+        // if there is no model table specified, then create fake one named 'data'
+        // and put all persistence data in there 2/2
+        if (!$model->table) {
+            $model->table = 'data';
+        }
+
         if ($model->id_field && $model->hasField($model->id_field)) {
             $f = $model->getField($model->id_field);
             if (!$f->type) {
@@ -121,25 +174,15 @@ class Array_ extends Persistence
             }
         }
 
-        // if there is no model table specified, then create fake one named 'data'
-        // and put all persistence data in there
-        if (!$model->table) {
-            $model->table = 'data'; // fake table name 'data'
-            if (!isset($this->data[$model->table]) || count($this->data) !== 1) {
-                $this->data = [$model->table => $this->data];
-            }
-        }
-
-        // if there is no such table in persistence, then create empty one
-        if (!isset($this->data[$model->table])) {
-            $this->data[$model->table] = [];
-        }
+        $this->seedData($model);
 
         return $model;
     }
 
     public function tryLoad(Model $model, $id): ?array
     {
+        $this->seedData($model);
+
         if (!isset($this->data[$model->table])) {
             throw (new Exception('Table was not found in the array data source'))
                 ->addMoreInfo('table', $model->table);
@@ -179,6 +222,8 @@ class Array_ extends Persistence
      */
     public function insert(Model $model, array $data)
     {
+        $this->seedData($model);
+
         $data = $this->typecastSaveRow($model, $data);
 
         $id = $data[$model->id_field] ?? $this->generateNewId($model);
@@ -197,6 +242,8 @@ class Array_ extends Persistence
      */
     public function update(Model $model, $id, array $data)
     {
+        $this->seedData($model);
+
         $data = $this->typecastSaveRow($model, $data);
 
         $this->saveRow($model, array_merge($this->data[$model->table][$id] ?? [], $data), $id);
@@ -211,6 +258,8 @@ class Array_ extends Persistence
      */
     public function delete(Model $model, $id)
     {
+        $this->seedData($model);
+
         unset($this->data[$model->table][$id]);
     }
 
@@ -221,6 +270,8 @@ class Array_ extends Persistence
      */
     public function generateNewId(Model $model)
     {
+        $this->seedData($model);
+
         $type = $model->id_field ? $model->getField($model->id_field)->type : 'integer';
 
         switch ($type) {
@@ -286,6 +337,8 @@ class Array_ extends Persistence
      */
     public function initAction(Model $model, array $fields = null): \Atk4\Data\Action\Iterator
     {
+        $this->seedData($model);
+
         $data = $this->data[$model->table];
         array_walk($data, function (&$row, $id) use ($model) {
             $this->addIdToLoadRow($model, $row, $id);

@@ -631,12 +631,8 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ['id' => 3, 'f1' => 'A'],
             ['id' => 5, 'f1' => 'D'],
         ]);
-        $m = new Model($p);
-        $m->addField('f1');
-
-        // array keys do not match id field value
         $this->expectException(Exception::class);
-        $m->export();
+        $m = new Model($p);
     }
 
     public function testImportAndAutoincrement()
