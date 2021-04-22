@@ -46,8 +46,6 @@ parameters:
         - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne\:\:addField\(\)\.$~'
         # for tests/LookupSqlTest.php
         - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne\:\:withTitle\(\)\.$~'
-        # for tests/PersistentArrayTest.php
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\:\:applyScope\(\)\.$~'
         # for tests/ReferenceSqlTest.php
         - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne\:\:addFields\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Reference\:\:addTitle\(\)\.$~'

@@ -155,6 +155,14 @@ class Action
 
     protected function evaluateIf($v1, $operator, $v2): bool
     {
+        if ($v2 instanceof self) {
+            $v2 = $v2->getRows();
+        }
+
+        if ($v2 instanceof \Traversable) {
+            throw new \Exception('Unexpected v2 type');
+        }
+
         switch (strtoupper((string) $operator)) {
             case '=':
                 $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
@@ -192,7 +200,14 @@ class Action
 
             break;
             case 'IN':
-                $result = is_array($v2) ? in_array($v1, $v2, true) : $this->evaluateIf($v1, '=', $v2);
+                $result = false;
+                foreach ($v2 as $v2Item) { // flatten rows, this looses column names!
+                    if ($this->evaluateIf($v1, '=', $v2Item)) {
+                        $result = true;
+
+                        break;
+                    }
+                }
 
             break;
             case 'NOT IN':

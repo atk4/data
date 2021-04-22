@@ -266,11 +266,17 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         // use alias as array key if it is set
         $q = $m->action('field', ['name', 'alias' => 'first_name']);
-        $this->assertSame(['first_name' => 'John'], $q);
+        $this->assertSame([
+            1 => ['first_name' => 'John'],
+            2 => ['first_name' => 'Sarah'],
+        ], $q->getRows());
 
         // if alias is not set, then use field name as key
         $q = $m->action('field', ['name']);
-        $this->assertSame(['name' => 'John'], $q);
+        $this->assertSame([
+            1 => ['name' => 'John'],
+            2 => ['name' => 'Sarah'],
+        ], $q->getRows());
     }
 
     /**
