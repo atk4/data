@@ -339,7 +339,7 @@ class Array_ extends Persistence
     }
 
     /**
-     * Typecast data and return Iterator of data array.
+     * Typecast data and return Action of data array.
      */
     public function initAction(Model $model, array $fields = null): Action
     {
@@ -360,7 +360,7 @@ class Array_ extends Persistence
     }
 
     /**
-     * Will set limit defined inside $model onto data.
+     * Will set limit defined inside $model onto Action.
      */
     protected function setLimitOrder(Model $model, Action $action)
     {
@@ -376,13 +376,11 @@ class Array_ extends Persistence
     }
 
     /**
-     * Will apply conditions defined inside $model onto $iterator.
-     *
-     * @return Action|null
+     * Will apply conditions defined inside $model onto Action.
      */
-    public function applyScope(Model $model, Action $iterator)
+    protected function applyScope(Model $model, Action $action): void
     {
-        return $iterator->filter($model->scope());
+        $action->filter($model->scope());
     }
 
     /**

@@ -302,14 +302,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('country');
         $m->addField('active', ['type' => 'boolean']);
 
-        // if no condition we should get all the data back
-        $iterator = $m->action('select');
-        $result = $m->persistence->applyScope($m, $iterator);
-        $this->assertInstanceOf(Persistence\Array_\Action::class, $result);
-        $m->unload();
-        unset($iterator);
-        unset($result);
-
         // case : str%
         $m->addCondition('country', 'LIKE', 'La%');
         $result = $m->action('select')->getRows();
@@ -422,14 +414,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('code', ['type' => 'integer']);
         $m->addField('country');
         $m->addField('active', ['type' => 'boolean']);
-
-        // if no condition we should get all the data back
-        $iterator = $m->action('select');
-        $result = $m->persistence->applyScope($m, $iterator);
-        $this->assertInstanceOf(Persistence\Array_\Action::class, $result);
-        $m->unload();
-        unset($iterator);
-        unset($result);
 
         $m->scope()->clear();
         $m->addCondition('country', 'REGEXP', 'Ireland|UK');
