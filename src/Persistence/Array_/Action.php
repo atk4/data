@@ -64,7 +64,7 @@ class Action
      * @param string $field
      * @param bool   $coalesce
      *
-     * @return \Atk4\Data\Action\Iterator
+     * @return $this
      */
     public function aggregate($fx, $field, $coalesce = false)
     {

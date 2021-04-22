@@ -113,9 +113,9 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
             'name' => 'hello',
             'test_int' => 123,
             'test_float' => 123.45,
-            'test_date' => new \DateTime(),
-            'test_array' => ['a', 'b', 'c'],
-            'test_object' => new \DateInterval('P1Y'),
+            // 'test_date' => new \DateTime(),
+            // 'test_array' => ['a', 'b', 'c'],
+            // 'test_object' => new \DateInterval('P1Y'),
             'test_str_1' => 'abc',
             'test_str_2' => '123',
             'test_str_3' => '123.45',
@@ -124,9 +124,9 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
         $this->assertSame('integer', $m->getField('test_int')->type);
         $this->assertSame('float', $m->getField('test_float')->type);
-        $this->assertSame('datetime', $m->getField('test_date')->type);
-        $this->assertSame('array', $m->getField('test_array')->type);
-        $this->assertSame('object', $m->getField('test_object')->type);
+        // $this->assertSame('datetime', $m->getField('test_date')->type);
+        // $this->assertSame('array', $m->getField('test_array')->type);
+        // $this->assertSame('object', $m->getField('test_object')->type);
 
         // string is default type, so it is null
         $this->assertNull($m->getField('name')->type);
