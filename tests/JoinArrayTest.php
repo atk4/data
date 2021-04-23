@@ -13,7 +13,18 @@ class JoinArrayTest extends AtkPhpunit\TestCase
 {
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {
-        return $this->getProtected($db, 'data');
+        $data = [];
+        /** @var Persistence\Array_\Db\Table $table */
+        foreach ($this->getProtected($db, 'data') as $table) {
+            foreach ($table->getRows() as $row) {
+                $rowData = $row->getData();
+                $id = $rowData['id'];
+                unset($rowData['id']);
+                $data[$table->getTableName()][$id] = $rowData;
+            }
+        }
+
+        return $data;
     }
 
     public function testDirection()

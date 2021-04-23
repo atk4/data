@@ -15,7 +15,18 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 {
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {
-        return $this->getProtected($db, 'data');
+        $data = [];
+        /** @var Persistence\Array_\Db\Table $table */
+        foreach ($this->getProtected($db, 'data') as $table) {
+            foreach ($table->getRows() as $row) {
+                $rowData = $row->getData();
+                $id = $rowData['id'];
+                unset($rowData['id']);
+                $data[$table->getTableName()][$id] = $rowData;
+            }
+        }
+
+        return $data;
     }
 
     /**
@@ -270,13 +281,13 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $dbData = ['countries' => [
             1 => ['name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
             2 => ['name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
-            3 => ['code' => 13, 'country' => 'Latvia', 'active' => 1],
+            3 => ['name' => null, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
             4 => ['name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
             5 => ['name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
             6 => ['name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
             7 => ['name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
             8 => ['name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
-            9 => ['code' => 19, 'country' => 'Latvia', 'active' => 1],
+            9 => ['name' => null, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
             10 => ['code' => null, 'country' => 'Germany', 'active' => 1],
         ]];
 
@@ -294,7 +305,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         // if no condition we should get all the data back
         $iterator = $m->action('select');
         $result = $m->persistence->applyScope($m, $iterator);
-        $this->assertInstanceOf(\Atk4\Data\Action\Iterator::class, $result);
+        $this->assertInstanceOf(Persistence\Array_\Action::class, $result);
         $m->unload();
         unset($iterator);
         unset($result);
@@ -392,13 +403,13 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $dbData = ['countries' => [
             1 => ['name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
             2 => ['name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
-            3 => ['code' => 13, 'country' => 'Latvia', 'active' => 1],
+            3 => ['name' => null, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
             4 => ['name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
             5 => ['name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
             6 => ['name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
             7 => ['name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
             8 => ['name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
-            9 => ['code' => 19, 'country' => 'Latvia', 'active' => 1],
+            9 => ['name' => null, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
         ]];
 
         $dbDataCountries = $dbData['countries'];
@@ -415,7 +426,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         // if no condition we should get all the data back
         $iterator = $m->action('select');
         $result = $m->persistence->applyScope($m, $iterator);
-        $this->assertInstanceOf(\Atk4\Data\Action\Iterator::class, $result);
+        $this->assertInstanceOf(Persistence\Array_\Action::class, $result);
         $m->unload();
         unset($iterator);
         unset($result);

@@ -7,6 +7,9 @@ namespace Atk4\Data\Persistence;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Array_\Action;
+use Atk4\Data\Persistence\Array_\Db\Row;
+use Atk4\Data\Persistence\Array_\Db\Table;
 
 /**
  * Implements persistence driver that can save data into array and load
@@ -18,7 +21,7 @@ class Array_ extends Persistence
     /** @var array */
     private $seedData;
 
-    /** @var array<string, array> */
+    /** @var array<string, Table> */
     private $data;
 
     /** @var array<string, int> */
@@ -46,15 +49,16 @@ class Array_ extends Persistence
 
     private function seedData(Model $model): void
     {
-        if (isset($this->data[$model->table])) {
+        $tableName = $model->table;
+        if (isset($this->data[$tableName])) {
             return;
         }
 
-        $this->data[$model->table] = [];
+        $this->data[$tableName] = new Table($tableName);
 
-        if (isset($this->seedData[$model->table])) {
-            $rows = $this->seedData[$model->table];
-            unset($this->seedData[$model->table]);
+        if (isset($this->seedData[$tableName])) {
+            $rows = $this->seedData[$tableName];
+            unset($this->seedData[$tableName]);
 
             foreach ($rows as $id => $row) {
                 $this->saveRow($model, $row, $id);
@@ -65,15 +69,22 @@ class Array_ extends Persistence
         foreach ($model->getFields() as $field) {
             if ($field->hasJoin()) {
                 $join = $field->getJoin();
-                $joinTable = \Closure::bind(function () use ($join) {
+                $joinTableName = \Closure::bind(function () use ($join) {
                     return $join->foreign_table;
                 }, null, Array_\Join::class)();
-                if (isset($this->seedData[$joinTable])) {
-                    $dummyJoinModel = new Model($this, ['table' => $joinTable]);
+                if (isset($this->seedData[$joinTableName])) {
+                    $dummyJoinModel = new Model($this, ['table' => $joinTableName]);
                     $this->add($dummyJoinModel);
                 }
             }
         }
+    }
+
+    private function seedDataAndGetTable(Model $model): Table
+    {
+        $this->seedData($model);
+
+        return $this->data[$model->table];
     }
 
     /**
@@ -87,9 +98,8 @@ class Array_ extends Persistence
         $this->seedData($model);
 
         $rows = [];
-        foreach ($this->data[$table] as $id => $row) {
-            $this->addIdToLoadRow($model, $row, $id);
-            $rows[$id] = $row;
+        foreach ($this->data[$table]->getRows() as $row) {
+            $rows[$row->getValue($model->id_field)] = $row->getData();
         }
 
         return $rows;
@@ -104,34 +114,35 @@ class Array_ extends Persistence
         }
     }
 
-    private function saveRow(Model $model, array $row, $id): void
+    private function saveRow(Model $model, array $rowData, $id): void
     {
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
             $idColumnName = $idField->getPersistenceName();
-            if (array_key_exists($idColumnName, $row)) {
-                $this->assertNoIdMismatch($row[$idColumnName], $id);
-                unset($row[$idColumnName]);
+            if (array_key_exists($idColumnName, $rowData)) {
+                $this->assertNoIdMismatch($rowData[$idColumnName], $id);
+                unset($rowData[$idColumnName]);
             }
+
+            $rowData = [$idColumnName => $id] + $rowData;
         }
 
         if ($id > ($this->maxSeenIdByTable[$model->table] ?? 0)) {
             $this->maxSeenIdByTable[$model->table] = $id;
         }
 
-        $this->data[$model->table][$id] = $row;
-    }
+        $table = $this->data[$model->table];
 
-    private function addIdToLoadRow(Model $model, array &$row, $id): void
-    {
-        if ($model->id_field) {
-            $idField = $model->getField($model->id_field);
-            $idColumnName = $idField->getPersistenceName();
-            if (array_key_exists($idColumnName, $row)) {
-                $this->assertNoIdMismatch($row[$idColumnName], $id);
+        $row = $table->getRowById($model, $id);
+        if ($row !== null) {
+            foreach (array_keys($rowData) as $columnName) {
+                if (!$table->hasColumnName($columnName)) {
+                    $table->addColumnName($columnName);
+                }
             }
-
-            $row = [$idColumnName => $id] + $row;
+            $row->updateValues($rowData);
+        } else {
+            $row = $table->addRow(Row::class, $rowData);
         }
     }
 
@@ -185,23 +196,18 @@ class Array_ extends Persistence
 
     public function tryLoad(Model $model, $id): ?array
     {
-        $this->seedData($model);
-
-        if (!isset($this->data[$model->table])) {
-            throw (new Exception('Table was not found in the array data source'))
-                ->addMoreInfo('table', $model->table);
-        }
+        $table = $this->seedDataAndGetTable($model);
 
         if ($id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY) {
-            if (count($this->data[$model->table]) === 0) {
+            if (iterator_count($table->getRows()) === 0) {
                 return null;
-            } elseif ($id === self::ID_LOAD_ONE && count($this->data[$model->table]) !== 1) {
+            } elseif ($id === self::ID_LOAD_ONE && iterator_count($table->getRows()) !== 1) {
                 throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
                     ->addMoreInfo('model', $model)
                     ->addMoreInfo('id', null);
             }
 
-            $id = array_key_first($this->data[$model->table]);
+            $id = $table->getRows()->current()->getValue($model->id_field); // @phpstan-ignore-line
 
             $row = $this->tryLoad($model, $id);
             $model->setId($id); // @TODO is it needed?
@@ -209,14 +215,12 @@ class Array_ extends Persistence
             return $row;
         }
 
-        if (!isset($this->data[$model->table][$id])) {
+        $row = $table->getRowById($model, $id);
+        if ($row === null) {
             return null;
         }
 
-        $row = $this->data[$model->table][$id];
-        $this->addIdToLoadRow($model, $row, $id);
-
-        return $this->typecastLoadRow($model, $row);
+        return $this->typecastLoadRow($model, $row->getData());
     }
 
     /**
@@ -246,11 +250,11 @@ class Array_ extends Persistence
      */
     public function update(Model $model, $id, array $data)
     {
-        $this->seedData($model);
+        $table = $this->seedDataAndGetTable($model);
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $this->saveRow($model, array_merge($this->data[$model->table][$id] ?? [], $data), $id);
+        $this->saveRow($model, array_merge($table->getRowById($model, $id)->getData(), $data), $id);
 
         return $id;
     }
@@ -262,9 +266,9 @@ class Array_ extends Persistence
      */
     public function delete(Model $model, $id)
     {
-        $this->seedData($model);
+        $table = $this->seedDataAndGetTable($model);
 
-        unset($this->data[$model->table][$id]);
+        $table->deleteRow($table->getRowById($model, $id));
     }
 
     /**
@@ -337,28 +341,28 @@ class Array_ extends Persistence
     /**
      * Typecast data and return Iterator of data array.
      */
-    public function initAction(Model $model, array $fields = null): \Atk4\Data\Action\Iterator
+    public function initAction(Model $model, array $fields = null): Action
     {
-        $this->seedData($model);
+        $table = $this->seedDataAndGetTable($model);
 
-        $data = $this->data[$model->table];
-        array_walk($data, function (&$row, $id) use ($model) {
-            $this->addIdToLoadRow($model, $row, $id);
-        });
-
-        if ($fields !== null) {
-            $data = array_map(function ($row) use ($fields) {
-                return array_intersect_key($row, array_flip($fields));
-            }, $data);
+        $rows = [];
+        foreach ($table->getRows() as $row) {
+            $rows[$row->getValue($model->id_field)] = $row->getData();
         }
 
-        return new \Atk4\Data\Action\Iterator($data);
+        if ($fields !== null) {
+            $rows = array_map(function ($row) use ($fields) {
+                return array_intersect_key($row, array_flip($fields));
+            }, $rows);
+        }
+
+        return new Action($rows);
     }
 
     /**
      * Will set limit defined inside $model onto data.
      */
-    protected function setLimitOrder(Model $model, \Atk4\Data\Action\Iterator $action)
+    protected function setLimitOrder(Model $model, Action $action)
     {
         // first order by
         if ($model->order) {
@@ -374,9 +378,9 @@ class Array_ extends Persistence
     /**
      * Will apply conditions defined inside $model onto $iterator.
      *
-     * @return \Atk4\Data\Action\Iterator|null
+     * @return Action|null
      */
-    public function applyScope(Model $model, \Atk4\Data\Action\Iterator $iterator)
+    public function applyScope(Model $model, Action $iterator)
     {
         return $iterator->filter($model->scope());
     }

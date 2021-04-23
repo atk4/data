@@ -2,21 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data\Action;
+namespace Atk4\Data\Persistence\Array_;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 
 /**
- * Class Array_ is returned by $model->action(). Compatible with DSQL to a certain point as it implements
- * specific actions such as getOne() or get().
+ * Returned by Model::action(). Compatible with DSQL to a certain point as it implements
+ * specific actions such as getOne() or getRows().
  */
-class Iterator
+class Action
 {
-    /**
-     * @var \Iterator
-     */
+    /** @var \Iterator */
     public $generator;
 
     public function __construct(array $data)
@@ -66,7 +64,7 @@ class Iterator
      * @param string $field
      * @param bool   $coalesce
      *
-     * @return \Atk4\Data\Action\Iterator
+     * @return $this
      */
     public function aggregate($fx, $field, $coalesce = false)
     {
