@@ -8,8 +8,8 @@ use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Array_\Action;
-use Atk4\Data\Persistence\Array_\Db\RowArray;
-use Atk4\Data\Persistence\Array_\Db\TableArray;
+use Atk4\Data\Persistence\Array_\Db\Row;
+use Atk4\Data\Persistence\Array_\Db\Table;
 
 /**
  * Implements persistence driver that can save data into array and load
@@ -21,7 +21,7 @@ class Array_ extends Persistence
     /** @var array */
     private $seedData;
 
-    /** @var array<string, TableArray> */
+    /** @var array<string, Table> */
     private $data;
 
     /** @var array<string, int> */
@@ -54,7 +54,7 @@ class Array_ extends Persistence
             return;
         }
 
-        $this->data[$tableName] = new TableArray($tableName);
+        $this->data[$tableName] = new Table($tableName);
 
         if (isset($this->seedData[$tableName])) {
             $rows = $this->seedData[$tableName];
@@ -80,7 +80,7 @@ class Array_ extends Persistence
         }
     }
 
-    private function seedDataAndGetTable(Model $model): TableArray
+    private function seedDataAndGetTable(Model $model): Table
     {
         $this->seedData($model);
 
@@ -142,7 +142,7 @@ class Array_ extends Persistence
             }
             $row->updateValues($rowData);
         } else {
-            $row = $table->addRow(RowArray::class, $rowData);
+            $row = $table->addRow(Row::class, $rowData);
         }
     }
 

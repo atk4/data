@@ -14,7 +14,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {
         $data = [];
-        /** @var Persistence\Array_\Db\TableArray $table */
+        /** @var Persistence\Array_\Db\Table $table */
         foreach ($this->getProtected($db, 'data') as $table) {
             foreach ($table->getRows() as $row) {
                 $rowData = $row->getData();

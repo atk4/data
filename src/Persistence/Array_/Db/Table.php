@@ -6,13 +6,13 @@ namespace Atk4\Data\Persistence\Array_\Db;
 
 use Atk4\Data\Exception;
 
-class TableArray
+class Table
 {
     /** @var string Immutable */
     private $tableName;
     /** @var array<string, string> */
     private $columnNames = [];
-    /** @var array<int, RowArray> */
+    /** @var array<int, Row> */
     private $rows = [];
 
     public function __construct(string $tableName)
@@ -45,7 +45,7 @@ class TableArray
      */
     protected function assertValidValue($value): void
     {
-        if ($value instanceof self || $value instanceof RowArray) {
+        if ($value instanceof self || $value instanceof Row) {
             throw new Exception('Value can not be an ' . get_class($value) . ' object');
         } elseif (!is_scalar($value) && $value !== null) {
             throw (new Exception('Value must be scalar'))
@@ -108,7 +108,7 @@ class TableArray
         return isset($this->rows[$rowIndex]);
     }
 
-    public function getRow(int $rowIndex): RowArray
+    public function getRow(int $rowIndex): Row
     {
         if (!isset($this->rows[$rowIndex])) {
             throw (new Exception('Row with given index was not found'))
@@ -120,14 +120,14 @@ class TableArray
     }
 
     /**
-     * @param class-string<RowArray> $rowClass
-     * @param array<string, mixed>   $rowData
+     * @param class-string<Row>    $rowClass
+     * @param array<string, mixed> $rowData
      */
-    public function addRow(string $rowClass, array $rowData): RowArray
+    public function addRow(string $rowClass, array $rowData): Row
     {
         $that = $this;
         $columnNames = $this->getColumnNames();
-        /** @var RowArray $row */
+        /** @var Row $row */
         $row = \Closure::bind(function () use ($that, $rowClass, $columnNames) {
             $row = new $rowClass($that);
             foreach ($columnNames as $columnName) {
@@ -149,7 +149,7 @@ class TableArray
         return $row;
     }
 
-    public function deleteRow(RowArray $row): void
+    public function deleteRow(Row $row): void
     {
         \Closure::bind(function () use ($row) {
             $row->beforeDelete();
@@ -159,7 +159,7 @@ class TableArray
     }
 
     /**
-     * @return \Traversable<RowArray>
+     * @return \Traversable<Row>
      */
     public function getRows(): \Traversable
     {
@@ -169,7 +169,7 @@ class TableArray
     /**
      * @param array<string, mixed> $newRowData
      */
-    protected function beforeValuesSet(RowArray $childRow, $newRowData): void
+    protected function beforeValuesSet(Row $childRow, $newRowData): void
     {
         foreach ($newRowData as $columnName => $newValue) {
             $this->assertValidValue($newValue);
@@ -183,7 +183,7 @@ class TableArray
      *
      * @param mixed $id
      */
-    public function getRowById(\Atk4\Data\Model $model, $id): ?RowArray
+    public function getRowById(\Atk4\Data\Model $model, $id): ?Row
     {
         foreach ($this->getRows() as $row) {
             if ($row->getValue($model->id_field) === $id) {
