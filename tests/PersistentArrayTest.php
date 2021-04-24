@@ -266,11 +266,17 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         // use alias as array key if it is set
         $q = $m->action('field', ['name', 'alias' => 'first_name']);
-        $this->assertSame(['first_name' => 'John'], $q);
+        $this->assertSame([
+            1 => ['first_name' => 'John'],
+            2 => ['first_name' => 'Sarah'],
+        ], $q->getRows());
 
         // if alias is not set, then use field name as key
         $q = $m->action('field', ['name']);
-        $this->assertSame(['name' => 'John'], $q);
+        $this->assertSame([
+            1 => ['name' => 'John'],
+            2 => ['name' => 'Sarah'],
+        ], $q->getRows());
     }
 
     /**
@@ -301,14 +307,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('code', ['type' => 'integer']);
         $m->addField('country');
         $m->addField('active', ['type' => 'boolean']);
-
-        // if no condition we should get all the data back
-        $iterator = $m->action('select');
-        $result = $m->persistence->applyScope($m, $iterator);
-        $this->assertInstanceOf(Persistence\Array_\Action::class, $result);
-        $m->unload();
-        unset($iterator);
-        unset($result);
 
         // case : str%
         $m->addCondition('country', 'LIKE', 'La%');
@@ -422,14 +420,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('code', ['type' => 'integer']);
         $m->addField('country');
         $m->addField('active', ['type' => 'boolean']);
-
-        // if no condition we should get all the data back
-        $iterator = $m->action('select');
-        $result = $m->persistence->applyScope($m, $iterator);
-        $this->assertInstanceOf(Persistence\Array_\Action::class, $result);
-        $m->unload();
-        unset($iterator);
-        unset($result);
 
         $m->scope()->clear();
         $m->addCondition('country', 'REGEXP', 'Ireland|UK');

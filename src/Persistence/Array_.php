@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence;
 
+use Atk4\Data\Action\RenameColumnIterator;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
@@ -199,15 +200,19 @@ class Array_ extends Persistence
         $table = $this->seedDataAndGetTable($model);
 
         if ($id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY) {
-            if (iterator_count($table->getRows()) === 0) {
+            $action = $this->action($model, 'select');
+            $action->generator->rewind(); // TODO needed for some reasons!
+
+            $selectRow = $action->getRow();
+            if ($selectRow === null) {
                 return null;
-            } elseif ($id === self::ID_LOAD_ONE && iterator_count($table->getRows()) !== 1) {
+            } elseif ($id === self::ID_LOAD_ONE && $action->getRow() !== null) {
                 throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
                     ->addMoreInfo('model', $model)
                     ->addMoreInfo('id', null);
             }
 
-            $id = $table->getRows()->current()->getValue($model->id_field); // @phpstan-ignore-line
+            $id = $selectRow[$model->id_field];
 
             $row = $this->tryLoad($model, $id);
             $model->setId($id); // @TODO is it needed?
@@ -339,7 +344,7 @@ class Array_ extends Persistence
     }
 
     /**
-     * Typecast data and return Iterator of data array.
+     * Typecast data and return Action of data array.
      */
     public function initAction(Model $model, array $fields = null): Action
     {
@@ -360,7 +365,7 @@ class Array_ extends Persistence
     }
 
     /**
-     * Will set limit defined inside $model onto data.
+     * Will set limit defined inside $model onto Action.
      */
     protected function setLimitOrder(Model $model, Action $action)
     {
@@ -376,13 +381,11 @@ class Array_ extends Persistence
     }
 
     /**
-     * Will apply conditions defined inside $model onto $iterator.
-     *
-     * @return Action|null
+     * Will apply conditions defined inside $model onto Action.
      */
-    public function applyScope(Model $model, Action $iterator)
+    protected function applyScope(Model $model, Action $action): void
     {
-        return $iterator->filter($model->scope());
+        $action->filter($model->scope());
     }
 
     /**
@@ -427,15 +430,11 @@ class Array_ extends Persistence
                 $this->applyScope($model, $action);
                 $this->setLimitOrder($model, $action);
 
-                // get first record
-                if ($row = $action->getRow()) {
-                    if (isset($args['alias']) && array_key_exists($field, $row)) {
-                        $row[$args['alias']] = $row[$field];
-                        unset($row[$field]);
-                    }
+                if (isset($args['alias'])) {
+                    $action->generator = new RenameColumnIterator($action->generator, $field, $args['alias']);
                 }
 
-                return $row;
+                return $action;
             case 'fx':
             case 'fx0':
                 if (!isset($args[0], $args[1])) {
