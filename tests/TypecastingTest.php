@@ -192,7 +192,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($mm->get('array'));
         $this->assertNull($mm->get('object'));
         if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
-            $this->assertSame([], $mm->dirty);
+            $this->assertSame([], $mm->getDirtyRef());
         }
 
         $mm->save();
@@ -527,36 +527,36 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('i', ['type' => 'integer']);
 
-        $m->data['i'] = 1;
-        $this->assertSame([], $m->dirty);
+        $m->getDataRef()['i'] = 1;
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('i', '2');
-        $this->assertSame(['i' => 1], $m->dirty);
+        $this->assertSame(['i' => 1], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         // same test without type integer
         $m = new Model($db, ['table' => 'types']);
         $m->addField('i');
 
-        $m->data['i'] = 1;
-        $this->assertSame([], $m->dirty);
+        $m->getDataRef()['i'] = 1;
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('i', '2');
-        $this->assertSame(['i' => 1], $m->dirty);
+        $this->assertSame(['i' => 1], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('i', 1);
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
     }
 
     public function testDirtyTime()

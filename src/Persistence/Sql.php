@@ -830,7 +830,7 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
+        if ($model->id_field && isset($data[$model->id_field]) && $model->getDirtyRef()[$model->id_field]) {
             // ID was changed
             $model->setId($data[$model->id_field]);
         }
@@ -839,10 +839,11 @@ class Sql extends Persistence
 
         // if any rows were updated in database, and we had expressions, reload
         if ($model->reload_after_save === true && (!$st || $st->rowCount())) {
-            $d = $model->dirty;
+            $d = $model->getDirtyRef();
             $model->reload();
-            $model->_dirty_after_reload = $model->dirty;
-            $model->dirty = $d;
+            $model->_dirty_after_reload = $model->getDirtyRef();
+            $dirtyRef = &$model->getDirtyRef();
+            $dirtyRef = $d;
         }
     }
 

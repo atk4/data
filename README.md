@@ -253,7 +253,7 @@ You can, however, [import fields through joins too](http://agile-data.readthedoc
 
 #### Q: I don't like the `$book->set('field', 123)`, I prefer properties
 
-Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$model->getId()`, `$model->persistence` and `model->data`.
+Agile Models are not Entities. They don't represent a single record, but rather a set of records. Which is why Model has some important properties: `$model->getId()`, `$model->persistence` and `model->getDataRef()`.
 
 Read more on [working with individual data records](http://agile-data.readthedocs.io/en/develop/persistence.html).
 

@@ -668,7 +668,8 @@ done with a single record::
     $m->set('completed', true);
 
     $m->withPersistence($write_replica)->save();
-    $m->dirty = [];
+    $dirtyRef = &$m->getDirtyRef();
+    $dirtyRef = [];
 
     // Possibly the update is delayed
     // $m->reload();

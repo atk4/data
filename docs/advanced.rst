@@ -431,7 +431,7 @@ inside your model are unique::
         function beforeSave(Model $m)
         {
             foreach ($this->fields as $field) {
-                if ($m->dirty[$field]) {
+                if ($m->getDirtyRef()[$field]) {
                     $mm = clone $m;
                     $mm->addCondition($mm->id_field != $this->id);
                     $mm->tryLoadBy($field, $m->get($field));

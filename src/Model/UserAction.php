@@ -129,12 +129,12 @@ class UserAction
 
         // Verify that model fields wouldn't be too dirty
         if (is_array($this->fields)) {
-            $tooDirty = array_diff(array_keys($this->getOwner()->dirty), $this->fields);
+            $tooDirty = array_diff(array_keys($this->getOwner()->getDirtyRef()), $this->fields);
 
             if ($tooDirty) {
                 throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action.'))
                     ->addMoreInfo('too_dirty', $tooDirty)
-                    ->addMoreInfo('dirty', array_keys($this->getOwner()->dirty))
+                    ->addMoreInfo('dirty', array_keys($this->getOwner()->getDirtyRef()))
                     ->addMoreInfo('permitted', $this->fields);
             }
         } elseif (!is_bool($this->fields)) {
