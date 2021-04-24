@@ -201,7 +201,7 @@ class Array_ extends Persistence
 
         if ($id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY) {
             $action = $this->action($model, 'select');
-            $action->generator->rewind(); // needed for some reasons!
+            $action->generator->rewind(); // TODO needed for some reasons!
 
             $selectRow = $action->getRow();
             if ($selectRow === null) {

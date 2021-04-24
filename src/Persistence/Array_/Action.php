@@ -201,7 +201,7 @@ class Action
             break;
             case 'IN':
                 $result = false;
-                foreach ($v2 as $v2Item) { // flatten rows, this looses column names!
+                foreach ($v2 as $v2Item) { // TODO flatten rows, this looses column names!
                     if ($this->evaluateIf($v1, '=', $v2Item)) {
                         $result = true;
 
