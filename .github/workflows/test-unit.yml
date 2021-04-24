@@ -61,6 +61,12 @@ jobs:
         if: matrix.type == 'Phpunit'
         run: "vendor/bin/phpunit \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
+      - name: "Run tests: SQLite Hintable (only for Phpunit)"
+        if: matrix.type == 'Phpunit'
+        run: |
+          sed -i 's~"psr-4": {~"psr-4": { "Mvorisek\\\\Atk4\\\\Hintable\\\\Tests\\\\": "vendor/mahalux/atk4-hintable/tests/",~' composer.json && composer dump
+          vendor/bin/phpunit --configuration vendor/mahalux/atk4-hintable/phpunit.xml.dist --bootstrap vendor/autoload.php --no-coverage -v
+
       - name: Check Coding Style (only for CodingStyle)
         if: matrix.type == 'CodingStyle'
         run: vendor/bin/php-cs-fixer fix --dry-run --using-cache=no --diff --diff-format=udiff --verbose --show-progress=dots

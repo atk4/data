@@ -113,9 +113,9 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
             );
         }
 
-        $i->tryLoad(1);
-        $this->assertEquals(10, $i->get('total_net'));
-        $this->assertEquals(30, $i->get('sum_net'));
+        $ii = (clone $i)->tryLoad(1);
+        $this->assertEquals(10, $ii->get('total_net'));
+        $this->assertEquals(30, $ii->get('sum_net'));
 
         $q = $db->dsql();
         $q->field($i->action('count'), 'total_orders');

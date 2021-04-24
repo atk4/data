@@ -14,6 +14,8 @@ use Atk4\Dsql\Exception as DsqlException;
 use Atk4\Dsql\Expression;
 use Atk4\Dsql\Query;
 use Doctrine\DBAL\Platforms;
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class Sql extends Persistence
 {
@@ -369,6 +371,18 @@ class Sql extends Persistence
     public function initQueryConditions(Model $model, Query $query): void
     {
         $this->_initQueryConditions($query, $model->scope());
+
+        // add entity ID to scope to allow easy traversal
+        if ($model->id_field && $model->getId() !== null) {
+            $query->group($model->getField($model->id_field));
+            if ($this->getDatabasePlatform() instanceof SQLServer2012Platform
+                || $this->getDatabasePlatform() instanceof OraclePlatform) {
+                foreach ($query->args['field'] as $alias => $field) {
+                    $query->group(is_int($alias) ? $field : $alias);
+                }
+            }
+            $query->having($model->getField($model->id_field), $model->getId());
+        }
     }
 
     private function _initQueryConditions(Query $query, Model\Scope\AbstractScope $condition = null): void
