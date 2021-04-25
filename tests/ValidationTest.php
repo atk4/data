@@ -139,7 +139,7 @@ class ValidationTests extends AtkPhpunit\TestCase
             $this->m->save();
             $this->fail('Expected exception');
         } catch (\Atk4\Data\ValidationException $e) {
-            $this->assertSame(2, count($e->errors));
+            $this->assertCount(2, $e->errors);
         }
     }
 }

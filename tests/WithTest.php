@@ -50,7 +50,7 @@ class WithTest extends \Atk4\Schema\PhpunitTestCase
             'with "i" ("user_id","invoiced") as (select "user_id","net" from "invoice" where "net" > :a) select "user"."id","user"."name","user"."salary","_i"."invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
             $m->action('select')->render()
         );
-        $this->assertSame(2, count($m->export()));
+        $this->assertCount(2, $m->export());
     }
 
     /**
