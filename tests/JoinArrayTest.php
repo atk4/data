@@ -226,17 +226,17 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = (clone $m_u)->load(1);
+        $m_u2 = $m_u->load(1);
         $this->assertEquals([
             'name' => 'John', 'contact_id' => 1, 'contact_phone' => '+123', 'id' => 1,
         ], $m_u2->get());
 
-        $m_u2 = (clone $m_u)->load(3);
+        $m_u2 = $m_u->load(3);
         $this->assertEquals([
             'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321', 'id' => 3,
         ], $m_u2->get());
 
-        $m_u2 = (clone $m_u)->tryLoad(4);
+        $m_u2 = $m_u->tryLoad(4);
         $this->assertEquals([
             'name' => null, 'contact_id' => null, 'contact_phone' => null, 'id' => null,
         ], $m_u2->get());
@@ -260,7 +260,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = (clone $m_u)->load(1);
+        $m_u2 = $m_u->load(1);
         $m_u2->set('name', 'John 2');
         $m_u2->set('contact_phone', '+555');
         $m_u2->save();
@@ -276,7 +276,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2 = (clone $m_u)->load(3);
+        $m_u2 = $m_u->load(3);
         $m_u2->set('name', 'XX');
         $m_u2->set('contact_phone', '+999');
         $m_u2->save();
@@ -292,7 +292,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2 = (clone $m_u)->tryLoad(4);
+        $m_u2 = $m_u->tryLoad(4);
         $m_u2->set('name', 'YYY');
         $m_u2->set('contact_phone', '+777');
         $m_u2->save();

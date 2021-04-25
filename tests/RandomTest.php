@@ -495,7 +495,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Rate($db);
 
-        (clone $m)->load(1)->duplicate()->save();
+        $m->load(1)->duplicate()->save();
 
         $this->assertSame([
             ['id' => 1, 'dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4],

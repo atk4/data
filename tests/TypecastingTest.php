@@ -68,7 +68,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('array', ['type' => 'array']);
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
 
         $this->assertSame('foo', $mm->get('string'));
         $this->assertTrue($mm->get('boolean'));
@@ -162,7 +162,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('float', ['type' => 'float']);
         $m->addField('array', ['type' => 'array']);
         $m->addField('object', ['type' => 'object']);
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
 
         // Only
         $this->assertSame($emptyStringValue, $mm->get('string'));
@@ -281,7 +281,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m->addField('rot13', ['typecast' => [$rot, $rot]]);
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
 
         $this->assertSame('hello world', $mm->get('rot13'));
         $this->assertSame(1, (int) $mm->getId());

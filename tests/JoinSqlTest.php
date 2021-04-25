@@ -209,17 +209,17 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = (clone $m_u)->load(1);
+        $m_u2 = $m_u->load(1);
         $this->assertEquals([
             'name' => 'John', 'contact_id' => 1, 'contact_phone' => '+123', 'id' => 1,
         ], $m_u2->get());
 
-        $m_u2 = (clone $m_u)->load(3);
+        $m_u2 = $m_u->load(3);
         $this->assertEquals([
             'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321', 'id' => 3,
         ], $m_u2->get());
 
-        $m_u2 = (clone $m_u)->tryLoad(4);
+        $m_u2 = $m_u->tryLoad(4);
         $this->assertEquals([
             'name' => null, 'contact_id' => null, 'contact_phone' => null, 'id' => null,
         ], $m_u2->get());
@@ -249,7 +249,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = (clone $m_u)->load(1);
+        $m_u2 = $m_u->load(1);
         $m_u2->set('name', 'John 2');
         $m_u2->set('contact_phone', '+555');
         $m_u2->save();
@@ -268,10 +268,10 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
             $this->getDb()
         );
 
-        $m_u2 = (clone $m_u)->load(1);
+        $m_u2 = $m_u->load(1);
         $m_u2->set('name', 'XX');
         $m_u2->set('contact_phone', '+999');
-        $m_u2 = (clone $m_u)->load(3);
+        $m_u2 = $m_u->load(3);
         $m_u2->set('name', 'XX');
         $m_u2->save();
 
@@ -306,7 +306,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
             $this->getDb()
         );
 
-        $m_u2 = (clone $m_u)->tryLoad(4);
+        $m_u2 = $m_u->tryLoad(4);
         $m_u2->set('name', 'YYY');
         $m_u2->set('contact_phone', '+777');
         $m_u2->save();
@@ -431,15 +431,15 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $j_country = $j_contact->join('country');
         $j_country->addField('country_name', ['actual' => 'name']);
 
-        $m_u2 = (clone $m_u)->load(10);
+        $m_u2 = $m_u->load(10);
         $m_u2->delete();
 
-        $m_u2 = (clone $m_u)->loadBy('country_name', 'US');
+        $m_u2 = $m_u->loadBy('country_name', 'US');
         $this->assertEquals(30, $m_u2->getId());
         $m_u2->set('country_name', 'USA');
         $m_u2->save();
 
-        $m_u2 = (clone $m_u)->tryLoad(40);
+        $m_u2 = $m_u->tryLoad(40);
         $this->assertFalse($m_u2->loaded());
 
         $this->assertSame($m_u2->getField('country_id')->getJoin(), $m_u2->getField('contact_phone')->getJoin());
@@ -495,7 +495,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $c = $j->join('country');
         $c->addFields([['country_name', ['actual' => 'name']]]);
 
-        $m_u2 = (clone $m_u)->load(10);
+        $m_u2 = $m_u->load(10);
         $m_u2->delete();
 
         $m_u = $m_u->loadBy('country_name', 'US');
@@ -617,19 +617,19 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $j->addField('notes');
 
         // try load one record
-        $m = (clone $m_user)->tryLoad(20);
+        $m = $m_user->tryLoad(20);
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
 
         // try to update loaded record
         $m->save(['name' => 'Mark', 'notes' => '2nd note']);
-        $m = (clone $m_user)->tryLoad(20);
+        $m = $m_user->tryLoad(20);
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
 
         // insert new record
         $m = (clone $m_user)->save(['name' => 'Emily', 'notes' => '3rd note']);
-        $m = (clone $m_user)->tryLoad(21);
+        $m = $m_user->tryLoad(21);
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
 
@@ -644,7 +644,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         // insert new record
         $m = (clone $m_user)->save(['name' => 'Olaf', 'notes' => '4th note']);
-        $m = (clone $m_user)->tryLoad(22);
+        $m = $m_user->tryLoad(22);
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
 
@@ -660,7 +660,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         // insert new record
         $m = (clone $m_user)->save(['name' => 'Chris', 'notes' => '5th note']);
-        $m = (clone $m_user)->tryLoad(23);
+        $m = $m_user->tryLoad(23);
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
@@ -697,7 +697,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $j2->addField('salary', ['actual' => 'amount']);
 
         // update
-        $m_u2 = (clone $m_u)->load(1);
+        $m_u2 = $m_u->load(1);
         $m_u2->set('name', 'John 2');
         $m_u2->set('j1_phone', '+555');
         $m_u2->set('j2_salary', 111);

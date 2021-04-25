@@ -23,9 +23,9 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->addFields(['name', 'gender']);
 
         $mm = clone $m;
-        $mmm = (clone $mm)->tryLoad(1);
+        $mmm = $mm->tryLoad(1);
         $this->assertSame('John', $mmm->get('name'));
-        $mmm = (clone $mm)->tryLoad(2);
+        $mmm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mmm->get('name'));
 
         $mm = clone $m;
@@ -110,9 +110,9 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->addFields(['name', 'gender']);
 
         $mm = clone $m;
-        $mmm = (clone $mm)->tryLoad(1);
+        $mmm = $mm->tryLoad(1);
         $this->assertSame('John', $mmm->get('name'));
-        $mmm = (clone $mm)->tryLoad(2);
+        $mmm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mmm->get('name'));
 
         $mm = clone $m;
@@ -157,9 +157,9 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->addFields(['name', 'gender']);
 
         $mm = clone $m;
-        $mmm = (clone $mm)->tryLoad(1);
+        $mmm = $mm->tryLoad(1);
         $this->assertSame('John', $mmm->get('name'));
-        $mmm = (clone $mm)->tryLoad(2);
+        $mmm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mmm->get('name'));
 
         $mm = clone $m;
@@ -190,9 +190,9 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->addFields(['name', 'gender', 'surname']);
 
         $mm = clone $m;
-        $mmm = (clone $mm)->tryLoad(1);
+        $mmm = $mm->tryLoad(1);
         $this->assertSame('John', $mmm->get('name'));
-        $mmm = (clone $mm)->tryLoad(2);
+        $mmm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mmm->get('name'));
 
         $mm = clone $m;
@@ -243,13 +243,13 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->join('contact')->addField('contact_phone');
 
         $mm = clone $m;
-        $mmm = (clone $mm)->tryLoad(1);
+        $mmm = $mm->tryLoad(1);
         $this->assertSame('John', $mmm->get('name'));
         $this->assertSame('+123 smiths', $mmm->get('contact_phone'));
-        $mmm = (clone $mm)->tryLoad(2);
+        $mmm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mmm->get('name'));
         $this->assertSame('+321 sues', $mmm->get('contact_phone'));
-        $mmm = (clone $mm)->tryLoad(3);
+        $mmm = $mm->tryLoad(3);
         $this->assertSame('Peter', $mmm->get('name'));
         $this->assertSame('+123 smiths', $mmm->get('contact_phone'));
 
@@ -265,13 +265,13 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('\'+123 smiths\' = [contact_phone]'));
-        $mmm = (clone $mm)->tryLoad(1);
+        $mmm = $mm->tryLoad(1);
         $this->assertSame('John', $mmm->get('name'));
         $this->assertSame('+123 smiths', $mmm->get('contact_phone'));
-        $mmm = (clone $mm)->tryLoad(2);
+        $mmm = $mm->tryLoad(2);
         $this->assertNull($mmm->get('name'));
         $this->assertNull($mmm->get('contact_phone'));
-        $mmm = (clone $mm)->tryLoad(3);
+        $mmm = $mm->tryLoad(3);
         $this->assertSame('Peter', $mmm->get('name'));
         $this->assertSame('+123 smiths', $mmm->get('contact_phone'));
     }

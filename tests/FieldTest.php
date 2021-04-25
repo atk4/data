@@ -447,9 +447,9 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         });
         $m->insert(['net' => 30, 'vat' => 8]);
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertEquals(121, $mm->get('total'));
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertEquals(38, $mm->get('total'));
 
         $d = $m->export(); // in export calculated fields are not included

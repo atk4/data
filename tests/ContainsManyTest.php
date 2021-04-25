@@ -217,17 +217,17 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
         }
 
         // add some discounts
-        (clone $l)->load(1)->discounts->insert([
+        $l->load(1)->discounts->insert([
             $l->discounts->fieldName()->id => 1,
             $l->discounts->fieldName()->percent => 5,
             $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-15'),
         ]);
-        (clone $l)->load(1)->discounts->insert([
+        $l->load(1)->discounts->insert([
             $l->discounts->fieldName()->id => 2,
             $l->discounts->fieldName()->percent => 10,
             $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-30'),
         ]);
-        (clone $l)->load(2)->discounts->insert([
+        $l->load(2)->discounts->insert([
             $l->discounts->fieldName()->id => 1,
             $l->discounts->fieldName()->percent => 20,
             $l->discounts->fieldName()->valid_till => new \DateTime('2019-12-31'),
