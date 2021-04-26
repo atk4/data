@@ -155,9 +155,9 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
         $model = $this->getOwner();
 
         // we need to collect ID
-        if (isset($model->data[$this->short_name])) {
-            $this->id = $model->data[$this->short_name];
-            unset($model->data[$this->short_name]);
+        if (isset($model->getDataRef()[$this->short_name])) {
+            $this->id = $model->getDataRef()[$this->short_name];
+            unset($model->getDataRef()[$this->short_name]);
         }
     }
 

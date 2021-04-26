@@ -214,7 +214,8 @@ the database. Here is how you can implement this functionality::
     $m->onHook(Model::HOOK_BEFORE_LOAD, function($m, $id) {
         $data = $m->getApp()->cacheFetch($m->table, $id);
         if ($data) {
-            $m->data = $data;
+            $dataRef = &$m->getDataRef();
+            $dataRef = $data;
             $m->setId($id);
             $m->breakHook(false);
         }

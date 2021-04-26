@@ -302,7 +302,8 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         });
 
         $m->onHook(Model::HOOK_BEFORE_LOAD, static function ($m, $id) {
-            $m->data = ['name' => 'rec #' . $id];
+            $dataRef = &$m->getDataRef();
+            $dataRef = ['name' => 'rec #' . $id];
             $m->setId($id);
             $m->breakHook(false);
         });

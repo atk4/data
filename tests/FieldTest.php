@@ -29,7 +29,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertFalse($m->isDirty('foo'));
 
         // set initial data
-        $m->data['foo'] = 'xx';
+        $m->getDataRef()['foo'] = 'xx';
         $this->assertFalse($m->isDirty('foo'));
 
         $m->set('foo', 'abc');

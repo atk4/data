@@ -57,52 +57,54 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     {
         $m = new Model();
         $m->addField('name');
-        $m->data = ['name' => 5];
+        $dataRef = &$m->getDataRef();
+        $dirtyRef = &$m->getDirtyRef();
+        $dataRef = ['name' => 5];
         $m->set('name', 5);
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('name', 10);
-        $this->assertSame(['name' => 5], $m->dirty);
+        $this->assertSame(['name' => 5], $m->getDirtyRef());
 
         $m->set('name', 15);
-        $this->assertSame(['name' => 5], $m->dirty);
+        $this->assertSame(['name' => 5], $m->getDirtyRef());
 
         $m->set('name', 5);
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('name', '5');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('name', '6');
-        $this->assertSame(['name' => 5], $m->dirty);
+        $this->assertSame(['name' => 5], $m->getDirtyRef());
         $m->set('name', '5');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('name', '5.0');
-        $this->assertSame(['name' => '5'], $m->dirty);
+        $this->assertSame(['name' => '5'], $m->getDirtyRef());
 
-        $m->dirty = [];
-        $m->data = ['name' => ''];
+        $dirtyRef = [];
+        $dataRef = ['name' => ''];
         $m->set('name', '');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
-        $m->data = ['name' => '5'];
+        $dataRef = ['name' => '5'];
         $m->set('name', 5);
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
         $m->set('name', 6);
-        $this->assertSame(['name' => '5'], $m->dirty);
+        $this->assertSame(['name' => '5'], $m->getDirtyRef());
         $m->set('name', 5);
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
         $m->set('name', '5');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
-        $m->data = ['name' => 4.28];
+        $dataRef = ['name' => 4.28];
         $m->set('name', '4.28');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
         $m->set('name', '5.28');
-        $this->assertSame(['name' => 4.28], $m->dirty);
+        $this->assertSame(['name' => 4.28], $m->getDirtyRef());
         $m->set('name', 4.28);
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         // now with defaults
         $m = new Model();
@@ -112,8 +114,8 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertSame('John', $m->get('name'));
 
         $m->set('name', null);
-        $this->assertSame(['name' => 'John'], $m->dirty);
-        $this->assertSame(['name' => null], $m->data);
+        $this->assertSame(['name' => 'John'], $m->getDirtyRef());
+        $this->assertSame(['name' => null], $m->getDataRef());
         $this->assertNull($m->get('name'));
 
         $m->_unset('name');
@@ -243,7 +245,8 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertFalse($m->_isset('salary'));
 
         // Next we load record from $db
-        $m->data = ['salary' => 2000];
+        $dataRef = &$m->getDataRef();
+        $dataRef = ['salary' => 2000];
         $this->assertSame(2000, $m->get('salary'));
         $this->assertFalse($m->_isset('salary'));
 

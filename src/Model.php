@@ -153,7 +153,7 @@ class Model implements \IteratorAggregate
     public $persistence_data = [];
 
     /** @var Model\Scope\RootScope */
-    protected $scope;
+    private $scope;
 
     /**
      * Array of limit set.
@@ -185,7 +185,7 @@ class Model implements \IteratorAggregate
      *
      * @var array
      */
-    public $data = [];
+    private $data = [];
 
     /**
      * After loading an active record from DataSet it will be stored in
@@ -201,7 +201,7 @@ class Model implements \IteratorAggregate
      *
      * @var array
      */
-    public $dirty = [];
+    private $dirty = [];
 
     /**
      * Setting model as read_only will protect you from accidentally
@@ -443,6 +443,22 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * @internal should be removed or made non-public after #862 is merged
+     */
+    public function &getDataRef(): array
+    {
+        return $this->data;
+    }
+
+    /**
+     * @internal should be removed or made non-public after #862 is merged
+     */
+    public function &getDirtyRef(): array
+    {
+        return $this->dirty;
+    }
+
+    /**
      * Perform validation on a currently loaded values, must return Array in format:
      *  ['field'=>'must be 4 digits exactly'] or empty array if no errors were present.
      *
@@ -620,7 +636,8 @@ class Model implements \IteratorAggregate
     {
         $this->checkOnlyFieldsField($field);
 
-        if (array_key_exists($field, $this->dirty)) {
+        $dirtyRef = &$this->getDirtyRef();
+        if (array_key_exists($field, $dirtyRef)) {
             return true;
         }
 
@@ -687,9 +704,11 @@ class Model implements \IteratorAggregate
         }
 
         // do nothing when value has not changed
-        $currentValue = array_key_exists($field, $this->data)
-            ? $this->data[$field]
-            : (array_key_exists($field, $this->dirty) ? $this->dirty[$field] : $f->default);
+        $dataRef = &$this->getDataRef();
+        $dirtyRef = &$this->getDirtyRef();
+        $currentValue = array_key_exists($field, $dataRef)
+            ? $dataRef[$field]
+            : (array_key_exists($field, $dirtyRef) ? $dirtyRef[$field] : $f->default);
         if (!$value instanceof \Atk4\Dsql\Expression && $f->compare($value, $currentValue)) {
             return $this;
         }
@@ -736,12 +755,12 @@ class Model implements \IteratorAggregate
             }
         }
 
-        if (array_key_exists($field, $this->dirty) && $f->compare($this->dirty[$field], $value)) {
-            unset($this->dirty[$field]);
-        } elseif (!array_key_exists($field, $this->dirty)) {
-            $this->dirty[$field] = array_key_exists($field, $this->data) ? $this->data[$field] : $f->default;
+        if (array_key_exists($field, $dirtyRef) && $f->compare($dirtyRef[$field], $value)) {
+            unset($dirtyRef[$field]);
+        } elseif (!array_key_exists($field, $dirtyRef)) {
+            $dirtyRef[$field] = array_key_exists($field, $dataRef) ? $dataRef[$field] : $f->default;
         }
-        $this->data[$field] = $value;
+        $dataRef[$field] = $value;
 
         return $this;
     }
@@ -800,8 +819,9 @@ class Model implements \IteratorAggregate
 
         $this->checkOnlyFieldsField($field);
 
-        if (array_key_exists($field, $this->data)) {
-            return $this->data[$field];
+        $dataRef = &$this->getDataRef();
+        if (array_key_exists($field, $dataRef)) {
+            return $dataRef[$field];
         }
 
         return $this->getField($field)->default;
@@ -899,7 +919,9 @@ class Model implements \IteratorAggregate
     {
         $this->checkOnlyFieldsField($name);
 
-        return array_key_exists($name, $this->dirty);
+        $dirtyRef = &$this->getDirtyRef();
+
+        return array_key_exists($name, $dirtyRef);
     }
 
     /**
@@ -911,9 +933,11 @@ class Model implements \IteratorAggregate
     {
         $this->checkOnlyFieldsField($name);
 
-        if (array_key_exists($name, $this->dirty)) {
-            $this->data[$name] = $this->dirty[$name];
-            unset($this->dirty[$name]);
+        $dataRef = &$this->getDataRef();
+        $dirtyRef = &$this->getDirtyRef();
+        if (array_key_exists($name, $dirtyRef)) {
+            $dataRef[$name] = $dirtyRef[$name];
+            unset($dirtyRef[$name]);
         }
 
         return $this;
@@ -1094,11 +1118,13 @@ class Model implements \IteratorAggregate
     public function unload()
     {
         $this->hook(self::HOOK_BEFORE_UNLOAD);
-        $this->data = [];
+        $dataRef = &$this->getDataRef();
+        $dirtyRef = &$this->getDirtyRef();
+        $dataRef = [];
         if ($this->id_field) {
             $this->setId(null);
         }
-        $this->dirty = [];
+        $dirtyRef = [];
         $this->hook(self::HOOK_AFTER_UNLOAD);
 
         return $this;
@@ -1136,13 +1162,17 @@ class Model implements \IteratorAggregate
         }
 
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
-        $this->data = $this->persistence->tryLoad($this, $this->remapIdLoadToPersistence($id));
+        $dataRef = &$this->getDataRef();
+        $dataRef = $this->persistence->tryLoad($this, $this->remapIdLoadToPersistence($id));
+        if ($dataRef === null) { // TODO move at better place
+            $dataRef = [];
+        }
 
-        if ($this->data) {
+        if ($dataRef) {
             if ($noId) { // @TODO pure port from tryLoadAny, simplify
                 if ($this->id_field) {
-                    if (isset($this->data[$this->id_field])) {
-                        $this->setId($this->data[$this->id_field]);
+                    if (isset($dataRef[$this->id_field])) {
+                        $this->setId($dataRef[$this->id_field]);
                     }
                 }
             } else {
@@ -1177,20 +1207,21 @@ class Model implements \IteratorAggregate
             $this->unload();
         }
 
+        $dataRef = &$this->getDataRef();
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
         if ($noId) {
-            $this->data = $this->persistence->load($this, $this->remapIdLoadToPersistence($id));
+            $dataRef = $this->persistence->load($this, $this->remapIdLoadToPersistence($id));
         } else {
             if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) { // @TODO pure port from loadAny. why not for tryLoad?
                 return $this;
             }
 
-            $this->data = $this->persistence->load($this, $id);
+            $dataRef = $this->persistence->load($this, $id);
         }
 
         if ($noId) { // @TODO pure port from loadAny, simplify
             if ($this->id_field) {
-                $this->setId($this->data[$this->id_field]);
+                $this->setId($dataRef[$this->id_field]);
             }
         } else {
             if ($this->getId() === null) { // TODO what is the usecase?
@@ -1280,7 +1311,9 @@ class Model implements \IteratorAggregate
         }
 
         $duplicate = clone $this;
-        $duplicate->dirty = $this->data;
+        $dataRef = &$this->getDataRef();
+        $duplicateDirtyRef = &$duplicate->getDirtyRef();
+        $duplicateDirtyRef = $dataRef;
         $duplicate->entityId = null;
         $duplicate->setId(null);
 
@@ -1344,8 +1377,10 @@ class Model implements \IteratorAggregate
             }
         }
 
-        $model->data = $this->data;
-        $model->dirty = $this->dirty;
+        $modelDataRef = &$model->getDataRef();
+        $modelDirtyRef = &$model->getDirtyRef();
+        $modelDataRef = &$this->getDataRef();
+        $modelDirtyRef = &$this->getDirtyRef();
         $model->limit = $this->limit;
         $model->order = $this->order;
         $model->scope = (clone $this->scope)->setModel($model);
@@ -1447,6 +1482,8 @@ class Model implements \IteratorAggregate
         $this->setMulti($data);
 
         return $this->atomic(function () {
+            $dirtyRef = &$this->getDirtyRef();
+
             if (($errors = $this->validate('save')) !== []) {
                 throw new ValidationException($errors, $this);
             }
@@ -1458,7 +1495,7 @@ class Model implements \IteratorAggregate
             if ($is_update) {
                 $data = [];
                 $dirty_join = false;
-                foreach ($this->dirty as $name => $ignore) {
+                foreach ($dirtyRef as $name => $ignore) {
                     if (!$this->hasField($name)) {
                         continue;
                     }
@@ -1522,23 +1559,23 @@ class Model implements \IteratorAggregate
                 if (!$this->id_field) {
                     $this->hook(self::HOOK_AFTER_INSERT, [null]);
 
-                    $this->dirty = [];
+                    $dirtyRef = [];
                 } else {
                     $this->setId($id);
                     $this->hook(self::HOOK_AFTER_INSERT, [$this->getId()]);
 
                     if ($this->reload_after_save !== false) {
-                        $d = $this->dirty;
-                        $this->dirty = [];
+                        $d = $dirtyRef;
+                        $dirtyRef = [];
                         $this->reload();
-                        $this->_dirty_after_reload = $this->dirty;
-                        $this->dirty = $d;
+                        $this->_dirty_after_reload = $dirtyRef;
+                        $dirtyRef = $d;
                     }
                 }
             }
 
             if ($this->loaded()) {
-                $this->dirty = $this->_dirty_after_reload;
+                $dirtyRef = $this->_dirty_after_reload;
             }
 
             $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
@@ -1587,7 +1624,7 @@ class Model implements \IteratorAggregate
 
         // store id value
         if ($this->id_field) {
-            $m->data[$m->id_field] = $m->getId();
+            $m->getDataRef()[$m->id_field] = $m->getId();
         }
 
         // if there was referenced data, then import it
@@ -1724,7 +1761,8 @@ class Model implements \IteratorAggregate
         foreach ($this->rawIterator() as $data) {
             $thisCloned = clone $this;
 
-            $thisCloned->data = $this->persistence->typecastLoadRow($this, $data);
+            $thisClonedDataRef = &$thisCloned->getDataRef();
+            $thisClonedDataRef = $this->persistence->typecastLoadRow($this, $data);
             if ($this->id_field) {
                 $thisCloned->setId($data[$this->id_field] ?? null);
             }
