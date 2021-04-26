@@ -9,11 +9,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\ValidationException;
 
-class ValidationTest
-{
-    // TODO ignore CS fixer error
-}
-
 class MyValidationModel extends Model
 {
     protected function init(): void
@@ -53,7 +48,7 @@ class BadValidationModel extends Model
     }
 }
 
-class ValidationTests extends AtkPhpunit\TestCase
+class ValidationTest extends AtkPhpunit\TestCase
 {
     public $m;
 
@@ -139,7 +134,7 @@ class ValidationTests extends AtkPhpunit\TestCase
             $this->m->save();
             $this->fail('Expected exception');
         } catch (\Atk4\Data\ValidationException $e) {
-            $this->assertSame(2, count($e->errors));
+            $this->assertCount(2, $e->errors);
         }
     }
 }

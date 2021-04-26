@@ -56,13 +56,6 @@
         "phpunit/phpcov": "*",
         "phpunit/phpunit": ">=9.0"
     },
-    "require-dev-release": {
-        "friendsofphp/php-cs-fixer": "^2.17",
-        "johnkary/phpunit-speedtrap": "^3.2",
-        "phpstan/phpstan": "^0.12.58",
-        "phpunit/phpcov": "*",
-        "phpunit/phpunit": ">=9.0"
-    },
     "config": {
         "sort-packages": true
     },

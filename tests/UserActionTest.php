@@ -71,8 +71,8 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
         $client = new UaClient($this->pers);
 
         $actions = $client->getUserActions();
-        $this->assertSame(4, count($actions)); // don't return system actions here, but include add/edit/delete
-        $this->assertSame(0, count($client->getUserActions(Model\UserAction::APPLIES_TO_ALL_RECORDS))); // don't return system actions here
+        $this->assertCount(4, $actions); // don't return system actions here, but include add/edit/delete
+        $this->assertCount(0, $client->getUserActions(Model\UserAction::APPLIES_TO_ALL_RECORDS)); // don't return system actions here
 
         $act1 = $actions['send_reminder'];
 
