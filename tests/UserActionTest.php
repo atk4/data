@@ -207,20 +207,20 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     public function testFields()
     {
         $client = new UaClient($this->pers);
-        $a = $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
+        $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
 
         $client = $client->load(1);
 
         $this->assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
-        $a->execute();
+        $client->getUserAction('change_details')->execute();
         $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testFieldsTooDirty1()
     {
         $client = new UaClient($this->pers);
-        $a = $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
+        $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
 
         $client = $client->load(1);
 
@@ -228,21 +228,21 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
         $client->set('name', 'Peter');
         $client->set('reminder_sent', true);
         $this->expectExceptionMessage('dirty fields');
-        $a->execute();
+        $client->getUserAction('change_details')->execute();
         $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testFieldsIncorrect()
     {
         $client = new UaClient($this->pers);
-        $a = $client->addUserAction('change_details', ['callback' => 'save', 'fields' => 'whops_forgot_brackets']);
+        $client->addUserAction('change_details', ['callback' => 'save', 'fields' => 'whops_forgot_brackets']);
 
         $client = $client->load(1);
 
         $this->assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
         $this->expectExceptionMessage('array');
-        $a->execute();
+        $client->getUserAction('change_details')->execute();
         $this->assertSame('Peter', $client->get('name'));
     }
 
