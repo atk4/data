@@ -22,8 +22,13 @@ class RootScope extends Model\Scope
         parent::__construct($nestedConditions, self::AND);
     }
 
+    /**
+     * @return $this
+     */
     public function setModel(Model $model)
     {
+        $model->assertIsModel();
+
         if ($this->model !== $model) {
             $this->model = $model;
 

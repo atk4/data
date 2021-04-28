@@ -329,7 +329,8 @@ class Model implements \IteratorAggregate
     {
         $this->scope = \Closure::bind(function () {
             return new Model\Scope\RootScope();
-        }, null, Model\Scope\RootScope::class)();
+        }, null, Model\Scope\RootScope::class)()
+            ->setModel($this);
 
         $this->setDefaults($defaults);
 
@@ -343,7 +344,9 @@ class Model implements \IteratorAggregate
      */
     public function __clone()
     {
-        $this->scope = (clone $this->scope)->setModel($this);
+        if (!$this->isEntity()) {
+            $this->scope = (clone $this->scope)->setModel($this);
+        }
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
         $this->_cloneCollection('userActions');
@@ -1069,7 +1072,11 @@ class Model implements \IteratorAggregate
      */
     public function scope(): Model\Scope\RootScope
     {
-        return $this->scope->setModel($this);
+        if ($this->scope->getModel() === null) {
+            $this->scope->setModel($this);
+        }
+
+        return $this->scope;
     }
 
     /**
@@ -1477,7 +1484,9 @@ class Model implements \IteratorAggregate
         }
         $model->limit = $this->limit;
         $model->order = $this->order;
-        $model->scope = (clone $this->scope)->setModel($model);
+        if (!$this->isEntity()) {
+            $model->scope = (clone $this->scope)->setModel($model);
+        }
 
         return $model;
     }
