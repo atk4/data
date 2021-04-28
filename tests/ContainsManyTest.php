@@ -257,7 +257,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without typecasting
-        $exp_lines = $i->duplicate()->setOrder($i->fieldName()->id)->export(null, null, false)[0][$i->fieldName()->lines];
+        $exp_lines = $i->getModel()->setOrder($i->fieldName()->id)->export(null, null, false)[0][$i->fieldName()->lines];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 

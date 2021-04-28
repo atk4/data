@@ -375,11 +375,13 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $m = new Model_Item($db, ['table' => 'item']);
+
+        $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
+
         $m = $m->createEntity();
 
         // default title_field = name
         $this->assertNull($m->getTitle()); // not loaded model returns null
-        $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
         $m = $m->load(2);
         $this->assertSame('Sue', $m->getTitle()); // loaded returns title_field value
@@ -403,7 +405,6 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(2, $m->getTitle()); // loaded returns id value
 
 //        $this->expectException(Exception::class);
-//        $this->expectExceptionMessageMatches('~entity.+iterate~');
 //        $m->getTitles();
     }
 

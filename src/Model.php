@@ -89,16 +89,12 @@ class Model implements \IteratorAggregate
     /**
      * The class used by addField() method.
      *
-     * @todo use Field::class here and refactor addField() method to not use namespace prefixes.
-     *       but because that's backward incompatible change, then we can do that only in next
-     *       major version.
-     *
      * @var string|array
      */
     public $_default_seed_addField = [Field::class];
 
     /**
-     * The class used by addField() method.
+     * The class used by addExpression() method.
      *
      * @var string|array
      */
@@ -452,7 +448,7 @@ class Model implements \IteratorAggregate
     public function assertIsModel(): void
     {
         if ($this->isEntity()) {
-//            throw new \Error('Expected model, but instance is an entity'); // TODO Exception, but Error for debug
+            throw new \Error('Expected model, but instance is an entity'); // TODO Exception, but Error for debug
         }
     }
 
@@ -463,19 +459,19 @@ class Model implements \IteratorAggregate
         }
     }
 
-//    /**
-//     * @return static
-//     */
-//    public function getModel(): self
-//    {
-//        $this->assertIsEntity();
-//
-//        $model = clone $this; // TODO
-//        $model->unload();
-//        $model->entityId = null;
-//
-//        return $model;
-//    }
+    /**
+     * @return static
+     */
+    public function getModel(): self
+    {
+        $this->assertIsEntity();
+
+        $model = clone $this; // TODO
+        $model->unload();
+        $model->entityId = null;
+
+        return $model;
+    }
 
     /**
      * @return static
@@ -484,13 +480,8 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        // TODO remove, $this->assertIsModel() above is enough once enabled
-        if ($this->isEntity()) {
-            throw new \Error('Expected model, but instance is an entity');
-        }
-
         $model = clone $this;
-        if ($model->entityId === null) { // TODO
+        if ($model->entityId === null) {
             $model->entityId = true;
         }
 
@@ -562,7 +553,7 @@ class Model implements \IteratorAggregate
      */
     public function addField(string $name, $seed = []): Field
     {
-        $this->assertIsModel();
+//        $this->assertIsModel();
 
         if (is_object($seed)) {
             $field = $seed;
@@ -647,7 +638,7 @@ class Model implements \IteratorAggregate
 
     public function getField(string $name): Field
     {
-        $this->assertIsModel();
+//        $this->assertIsModel();
 
         try {
             return $this->_getFromCollection($name, 'fields');
@@ -1066,7 +1057,7 @@ class Model implements \IteratorAggregate
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        $this->assertIsModel();
+//        $this->assertIsModel();
 
         $this->scope()->addCondition(...func_get_args());
 
