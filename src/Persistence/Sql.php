@@ -373,7 +373,7 @@ class Sql extends Persistence
         $this->_initQueryConditions($query, $model->scope());
 
         // add entity ID to scope to allow easy traversal
-        if ($model->id_field && $model->getId() !== null) {
+        if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
             $query->group($model->getField($model->id_field));
             if ($this->getDatabasePlatform() instanceof SQLServer2012Platform
                 || $this->getDatabasePlatform() instanceof OraclePlatform) {

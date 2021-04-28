@@ -388,7 +388,7 @@ class Array_ extends Persistence
         $scope = $model->scope();
 
         // add entity ID to scope to allow easy traversal
-        if ($model->id_field && $model->getId() !== null) {
+        if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
             $scope = new Model\Scope([$scope]);
             $scope->addCondition($model->getField($model->id_field), $model->getId());
         }

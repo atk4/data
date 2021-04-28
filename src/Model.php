@@ -906,10 +906,6 @@ class Model implements \IteratorAggregate
      */
     public function getId()
     {
-        if (!$this->isEntity()) { // TODO for debug only
-            return null;
-        }
-
         $this->assertHasIdField();
 
         return $this->get($this->id_field);
