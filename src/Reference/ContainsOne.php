@@ -100,7 +100,7 @@ class ContainsOne extends Reference
             });
         }
 
-        $theirModel->tryLoadOne();
+        $theirModel = $theirModel->tryLoadOne();
 
         return $theirModel;
     }

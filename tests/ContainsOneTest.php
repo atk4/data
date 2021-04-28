@@ -78,7 +78,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
     public function testContainsOne()
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // check do we have address set
         $a = $i->addr;
@@ -168,7 +168,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
     public function testContainsOneWhenChangeModelFields()
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // with address
         $a = $i->addr;

@@ -80,7 +80,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
     public function testContainsMany()
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // now let's add some lines
         $l = $i->lines;
@@ -191,7 +191,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
     public function testNestedContainsMany()
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // now let's add some lines
         $l = $i->lines;

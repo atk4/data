@@ -129,7 +129,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
         $user->scope()->add($condition);
 
-        $user->loadOne();
+        $user = $user->loadOne();
 
         $this->assertEquals('Smith', $user->get('surname'));
     }

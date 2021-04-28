@@ -96,11 +96,11 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency', 'their_field' => 'currency']);
 
         $cc = (clone $u)->load(1)->ref('cur');
-        $cc->tryLoadOne();
+        $cc = $cc->tryLoadOne();
         $this->assertSame('Euro', $cc->get('name'));
 
         $cc = (clone $u)->load(2)->ref('cur');
-        $cc->tryLoadOne();
+        $cc = $cc->tryLoadOne();
         $this->assertSame('Pound', $cc->get('name'));
     }
 
@@ -260,7 +260,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
                 ['total_net', 'aggregate' => 'sum'],
                 ['total_gross', 'aggregate' => 'sum'],
             ]);
-        $i->load('1');
+        $i = $i->load('1');
 
         // type was set explicitly
         $this->assertSame('money', $i->getField('total_vat')->type);
@@ -382,7 +382,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $company->hasMany('Orders', ['model' => $order]);
 
-        $user->load(1);
+        $user = $user->load(1);
 
         $firstUserOrders = $user->ref('Company')->ref('Orders');
         $firstUserOrders->setOrder('id');
@@ -475,7 +475,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $p->hasOne('Stadium', ['model' => $s, 'our_field' => 'id', 'their_field' => 'player_id']);
 
-        $p->load(2);
+        $p = $p->load(2);
         $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
         $this->assertSame('Nou camp nou', $p->ref('Stadium')->get('name'));
         $this->assertSame(2, $p->ref('Stadium')->get('player_id'));
@@ -551,7 +551,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
         // change order user by changing title_field value
-        $o->load(1);
+        $o = $o->load(1);
         $o->set('user', 'Peter');
         $this->assertEquals(1, $o->get('user_id'));
         $o->save();
@@ -568,7 +568,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
         // change order user by changing title_field value
-        $o->load(1);
+        $o = $o->load(1);
         $o->set('user', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
         $o->save();
@@ -585,7 +585,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
-        $o->load(1);
+        $o = $o->load(1);
         $o->set('my_user', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
         $o->save();
@@ -602,7 +602,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
-        $o->load(1);
+        $o = $o->load(1);
         $o->set('my_user', 'Foo'); // user_id=2
         $o->set('user_id', 3);     // user_id=3 (this will take precedence)
         $this->assertEquals(3, $o->get('user_id'));

@@ -80,7 +80,7 @@ class StGenericTransaction extends Model
             if (static::class !== $this->getClassName()) {
                 $cl = $this->getClassName();
                 $cl = new $cl($this->persistence);
-                $cl->load($this->getId());
+                $cl = $cl->load($this->getId());
 
                 $this->breakHook($cl);
             }

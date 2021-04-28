@@ -204,15 +204,15 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->delete($ids[0]);
         $this->assertFalse($m->loaded());
 
-        $m->load($ids[1]);
+        $m = $m->load($ids[1]);
         $this->assertSame('Jones', $m->get('surname'));
         $m->set('surname', 'Smith');
         $m->save();
 
-        $m->tryLoad($ids[0]);
+        $m = $m->tryLoad($ids[0]);
         $this->assertFalse($m->loaded());
 
-        $m->load($ids[1]);
+        $m = $m->load($ids[1]);
         $this->assertSame('Smith', $m->get('surname'));
     }
 

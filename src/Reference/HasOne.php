@@ -210,9 +210,9 @@ class HasOne extends Reference
         if ($ourValue = $this->getOurFieldValue()) {
             // if our model is loaded, then try to load referenced model
             if ($this->their_field) {
-                $theirModel->tryLoadBy($this->their_field, $ourValue);
+                $theirModel = $theirModel->tryLoadBy($this->their_field, $ourValue);
             } else {
-                $theirModel->tryLoad($ourValue);
+                $theirModel = $theirModel->tryLoad($ourValue);
             }
         }
 

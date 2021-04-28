@@ -50,7 +50,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $mm->unload();
         $this->assertFalse($mm->loaded());
 
-        $mm->tryLoadAny();
+        $mm = $mm->tryLoadAny();
         $this->assertTrue($mm->loaded());
 
         $mm = (clone $m)->load(2);
@@ -75,14 +75,14 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         ]);
         $m = new Male($p, ['table' => 'user']);
 
-        $m->load(1);
+        $m = $m->load(1);
         $this->assertTrue($m->loaded());
         $m->set('gender', 'F');
         $m->saveAndUnload();
         $this->assertFalse($m->loaded());
 
         $m = new Female($p, ['table' => 'user']);
-        $m->load(1);
+        $m = $m->load(1);
         $this->assertTrue($m->loaded());
 
         $this->assertSame([
@@ -882,7 +882,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $this->expectExceptionCode(404);
-        $m->loadAny();
+        $m = $m->loadAny();
     }
 
     public function testTryLoadAnyNotThrowsExceptionOnRecordNotFound()
@@ -891,7 +891,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m->tryLoadAny();
+        $m = $m->tryLoadAny();
         $this->assertFalse($m->loaded());
     }
 
@@ -906,7 +906,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m->tryLoadAny();
+        $m = $m->tryLoadAny();
         $this->assertSame(2, $m->getId());
     }
 }

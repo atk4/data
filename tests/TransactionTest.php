@@ -25,7 +25,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
-        $m->load(2);
+        $m = $m->load(2);
 
         $m->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
             throw new \Exception('Awful thing happened');
@@ -74,7 +74,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
             $this->assertTrue($is_update);
         });
-        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
+        $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testAfterSaveHook()
@@ -100,7 +100,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
             $this->assertTrue($is_update);
         });
-        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
+        $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testOnRollbackHook()

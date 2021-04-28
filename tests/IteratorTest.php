@@ -28,7 +28,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->tryLoad(1);
+        $m = $m->tryLoad(1);
     }
 
     /**
@@ -38,7 +38,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->tryLoadAny();
+        $m = $m->tryLoadAny();
     }
 
     /**
@@ -48,7 +48,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->load(1);
+        $m = $m->load(1);
     }
 
     /**
@@ -58,7 +58,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->loadAny();
+        $m = $m->loadAny();
     }
 
     /**

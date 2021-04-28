@@ -125,7 +125,7 @@ class LFriend extends Model
             $c = clone $this;
             $c->skip_reverse = true;
 
-            $c->loadBy([
+            $c = $c->loadBy([
                 'user_id' => $this->get('friend_id'),
                 'friend_id' => $this->get('user_id'),
             ])->delete();

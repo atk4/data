@@ -81,7 +81,7 @@ hook. Place the following inside Transaction::init()::
         if (get_class($this) != $this->getClassName()) {
             $cl = '\\'.$this->getClassName();
             $cl = new $cl($this->persistence);
-            $cl->load($this->getId());
+            $cl = $cl->load($this->getId());
 
             $this->breakHook($cl);
         }
@@ -284,7 +284,7 @@ When active, a new field will be defined 'is_deleted' and a new dynamic method
 will be added into a model, allowing you to do this::
 
     $m = new Model_Invoice($db);
-    $m->load(10);
+    $m = $m->load(10);
     $m->softDelete();
 
 The method body is actually defined in our controller. Notice that we have
@@ -310,7 +310,7 @@ It's also possible for you to easily look at deleted records and even restore
 them::
 
     $m = new Model_Invoice($db, ['deleted_only'=>true]);
-    $m->load(10);
+    $m = $m->load(10);
     $m->restore();
 
 Note that you can call $m->delete() still on any record to permanently delete it.
@@ -392,7 +392,7 @@ the record is marked as deleted and unloaded.
 You can still access the deleted records::
 
     $m = new Model_Invoice($db, ['deleted_only'=>true]);
-    $m->load(10);
+    $m = $m->load(10);
     $m->restore();
 
 Calling delete() on the model with 'deleted_only' property will delete it
@@ -434,7 +434,7 @@ inside your model are unique::
                 if ($m->getDirtyRef()[$field]) {
                     $mm = clone $m;
                     $mm->addCondition($mm->id_field != $this->id);
-                    $mm->tryLoadBy($field, $m->get($field));
+                    $mm = $mm->tryLoadBy($field, $m->get($field));
 
                     if ($mm->loaded()) {
                         throw (new \Atk4\Core\Exception('Duplicate record exists'))
@@ -568,12 +568,12 @@ payment towards a most suitable invoice::
         while($this->get('amount_due') > 0) {
 
             // See if any invoices match by 'reference';
-            $invoices->tryLoadBy('reference', $this->get('reference'));
+            $invoices = $invoices->tryLoadBy('reference', $this->get('reference'));
 
             if (!$invoices->loaded()) {
 
                 // otherwise load any unpaid invoice
-                $invoices->tryLoadAny();
+                $invoices = $invoices->tryLoadAny();
 
                 if(!$invoices->loaded()) {
 

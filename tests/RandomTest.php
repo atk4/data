@@ -159,7 +159,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
             ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100, 'tax' => 20, 'vat' => 15],
         ], $m->export());
 
-        $m->load(2);
+        $m = $m->load(2);
         $this->assertTrue(is_float($m->get('salary')));
         $this->assertTrue(is_float($m->get('tax')));
         $this->assertTrue(is_float($m->get('vat')));
@@ -248,7 +248,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
-        $m->load(2);
+        $m = $m->load(2);
 
         $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, static function ($m, $update, $st) {
             // we can use afterUpdate to make sure that record was updated
@@ -343,7 +343,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model_Rate($db);
         $m->addField('x1', new \Atk4\Data\FieldSql());
         $m->addField('x2', new \Atk4\Data\Field());
-        $m->load(1);
+        $m = $m->load(1);
 
         $this->assertEquals(3.4, $m->get('bid'));
         $this->assertSame('y1', $m->get('x1'));
@@ -379,7 +379,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($m->getTitle()); // not loaded model returns null
         $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
-        $m->load(2);
+        $m = $m->load(2);
         $this->assertSame('Sue', $m->getTitle()); // loaded returns title_field value
 
         // set custom title_field
@@ -397,7 +397,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         // expression as title field
         $m->addExpression('my_name', '[id]');
         $m->title_field = 'my_name';
-        $m->load(2);
+        $m = $m->load(2);
         $this->assertEquals(2, $m->getTitle()); // loaded returns id value
 
         $this->expectException(Exception::class);

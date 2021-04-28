@@ -130,7 +130,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
-        $m->load(1);
+        $m = $m->load(1);
         $this->expectException(Exception::class);
         $m->save(['name' => null]);
     }
@@ -296,7 +296,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'item']);
         $m->addField('name', ['never_persist' => true]);
         $m->addField('surname', ['never_save' => true]);
-        $m->load(1);
+        $m = $m->load(1);
 
         $this->assertNull($m->get('name'));
         $this->assertSame('Smith', $m->get('surname'));
@@ -363,7 +363,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->hasOne('category_id', ['model' => $c])
             ->addTitle();
 
-        $m->load(1);
+        $m = $m->load(1);
 
         $this->assertSame('John', $m->get('name'));
         $this->assertSame('Programmer', $m->get('category'));
@@ -406,7 +406,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
 
         $mm = clone $m;
-        $mm->loadBy('first_name', 'John');
+        $mm = $mm->loadBy('first_name', 'John');
         $this->assertSame('John', $mm->get('first_name'));
 
         $d = $m->export();

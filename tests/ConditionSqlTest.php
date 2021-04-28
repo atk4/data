@@ -30,9 +30,9 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $mm = clone $m;
         $mm->addCondition('gender', 'M');
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertNull($mm->get('name'));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
@@ -44,9 +44,9 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $mm = clone $m;
         $mm->withId(2); // = addCondition(id, 2)
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mm->get('name'));
     }
 
@@ -63,11 +63,11 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->addFields(['name', 'gender']);
 
         $mm = clone $m;
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
         $this->expectException(\Atk4\Data\Exception::class);
         $this->expectExceptionMessageMatches('~entity.+different~');
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
     }
 
     public function testNull()
@@ -117,30 +117,30 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $mm = clone $m;
         $mm->addCondition('gender', 'M');
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertNull($mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('gender', '!=', 'M');
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('id', '>', 1);
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('id', 'in', [1, 3]);
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertNull($mm->get('name'));
     }
 
@@ -164,16 +164,16 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[] > 1', [$mm->getField('id')]));
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[id] > 1'));
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mm->get('name'));
     }
 
@@ -197,30 +197,30 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] = [surname]'));
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($m->getField('name'), $m->getField('surname'));
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] != [surname]'));
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertNull($mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($m->getField('name'), '!=', $m->getField('surname'));
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertNull($mm->get('name'));
     }
 
@@ -255,12 +255,12 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] = [surname]'));
-        $mm->tryLoad(1);
+        $mm = $mm->tryLoad(1);
         $this->assertFalse($mm->loaded());
-        $mm->tryLoad(2);
+        $mm = $mm->tryLoad(2);
         $this->assertSame('Sue', $mm->get('name'));
         $this->assertSame('+321 sues', $mm->get('contact_phone'));
-        $mm->tryLoad(3);
+        $mm = $mm->tryLoad(3);
         $this->assertFalse($mm->loaded());
 
         $mm = clone $m;
@@ -320,7 +320,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $m->tryLoadBy('date', new \DateTime('08-12-1982'));
+        $m = $m->tryLoadBy('date', new \DateTime('08-12-1982'));
         $this->assertSame('Sue', $m->get('name'));
     }
 
@@ -338,7 +338,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('date', ['type' => 'date']);
 
         $m->addCondition('date', new \DateTime('08-12-1982'));
-        $m->loadOne();
+        $m = $m->loadOne();
         $this->assertSame('Sue', $m->get('name'));
     }
 
@@ -356,7 +356,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('date', ['type' => 'date']);
 
         $this->expectException(\Atk4\Dsql\Exception::class);
-        $m->tryLoadBy('name', new \DateTime('08-12-1982'));
+        $m = $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 
     public function testOrConditions()
@@ -401,12 +401,12 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
 
-        $u->loadBy('name', 'John');
+        $u = $u->loadBy('name', 'John');
         $this->assertTrue($u->scope()->isEmpty());
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value
 
-        $u->tryLoadBy('name', 'John');
+        $u = $u->tryLoadBy('name', 'John');
         $this->assertTrue($u->scope()->isEmpty());
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value

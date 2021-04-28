@@ -21,12 +21,12 @@ object you can load/unload individual records (See Single record Operations belo
 
    $m = new User($db);
 
-   $m->load(3);
+   $m = $m->load(3);
    $m->set('note', 'just updating');
    $m->save();
    $m->unload();
 
-   $m->load(8);
+   $m = $m->load(8);
    ....
 
 and even perform operations on multiple records (See `Persistence Actions` below)::
@@ -363,7 +363,7 @@ a user invokable actions::
 
 With a method alone, you can generate and send passwords::
 
-   $user->load(3);
+   $user = $user->load(3);
    $user->send_new_password();
 
 but using `$this->addUserAction()` exposes that method to the ATK UI wigets,
@@ -457,7 +457,7 @@ of static persistence::
 
    $m = new Model(new Persistence\Static_(['john', 'peter', 'steve']);
 
-   $m->load(1);
+   $m = $m->load(1);
    echo $m->get('name');  // peter
 
 See :php:class:`Persistence\\Static_`
@@ -642,7 +642,7 @@ Full example::
     echo $m->get('salary');          // 1000
 
     // Next we load record from $db
-    $m->load(1);
+    $m = $m->load(1);
 
     echo $m->get('salary');          // 2000 (from db)
     echo $m->_isset('salary');  // false, was not changed

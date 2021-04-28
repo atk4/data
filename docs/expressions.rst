@@ -23,7 +23,7 @@ Example will calculate "total_gross" by adding up values for "net" and "vat"::
     $m->addFields(['total_net', 'total_vat']);
 
     $m->addExpression('total_gross', '[total_net]+[total_vat]');
-    $m->load(1);
+    $m = $m->load(1);
 
     echo $m->get('total_gross');
 
@@ -65,7 +65,7 @@ example::
 
     $m = new Model($db, ['table' => false]);
     $m->addExpression('now', 'now()');
-    $m->loadAny();
+    $m = $m->loadAny();
     echo $m->get('now');
 
 In this example the query will look like this:

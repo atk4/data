@@ -99,7 +99,7 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         ], $data);
 
         // Account is loaded, will dump all Payments related to that particular Account
-        $a->load(1);
+        $a = $a->load(1);
         $data = $a->ref('Payment')->export(['amount']);
         $this->assertEquals([
             ['amount' => 10],

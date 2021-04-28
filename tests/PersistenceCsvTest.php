@@ -109,7 +109,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m->loadAny();
+        $m = $m->loadAny();
 
         $this->assertSame('John', $m->get('name'));
         $this->assertSame('Smith', $m->get('surname'));
@@ -130,15 +130,15 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $m->addField('surname');
 
         $mm = clone $m;
-        $mm->loadAny();
+        $mm = $mm->loadAny();
         $mm = clone $m;
-        $mm->loadAny();
+        $mm = $mm->loadAny();
 
         $this->assertSame('Sarah', $mm->get('name'));
         $this->assertSame('Jones', $mm->get('surname'));
 
         $mm = clone $m;
-        $mm->tryLoadAny();
+        $mm = $mm->tryLoadAny();
         $this->assertFalse($mm->loaded());
     }
 
@@ -154,7 +154,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $p = $this->makeCsvPersistence($this->file);
         $m = new Model($p);
         $this->expectException(Exception::class);
-        $m->tryLoad(1);
+        $m = $m->tryLoad(1);
     }
 
     public function testPersistenceCopy()

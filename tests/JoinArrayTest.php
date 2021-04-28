@@ -148,7 +148,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($db));
 
         $m_c = new Model($db, ['table' => 'contact']);
-        $m_c->load(2);
+        $m_c = $m_c->load(2);
         $m_c->delete();
 
         $m_u2->unload();
@@ -331,7 +331,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u->load(1);
+        $m_u = $m_u->load(1);
         $m_u->delete();
 
         $this->assertSame([
@@ -364,7 +364,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
         $this->expectException(Exception::class);
-        $m_u->load(2);
+        $m_u = $m_u->load(2);
     }
 
     /*

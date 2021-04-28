@@ -45,7 +45,7 @@ There are several ways to link your model up with the persistence::
 
     Load active record from the DataSet::
 
-        $m->load(10);
+        $m = $m->load(10);
         echo $m->get('name');
 
     If record not found, will throw exception.
@@ -55,7 +55,7 @@ There are several ways to link your model up with the persistence::
     Store active record back into DataSet. If record wasn't loaded, store it as
     a new record::
 
-        $m->load(10);
+        $m = $m->load(10);
         $m->set('name', 'John');
         $m->save();
 
@@ -68,7 +68,7 @@ There are several ways to link your model up with the persistence::
 
     Same as load() but will silently fail if record is not found::
 
-        $m->tryLoad(10);
+        $m = $m->tryLoad(10);
         $m->setMulti($data);
 
         $m->save();     // will either create new record or update existing
@@ -77,7 +77,7 @@ There are several ways to link your model up with the persistence::
 
     Remove active record and restore model to default state::
 
-        $m->load(10);
+        $m = $m->load(10);
         $m->unload();
 
         $m->set('name', 'New User');
@@ -103,7 +103,7 @@ explicitly::
 However if you change the ID for record that was loaded, then your database
 record will also have its ID changed. Here is example::
 
-    $m->load(123);
+    $m = $m->load(123);
     $m->setId(321);
     $m->save();
 
@@ -125,7 +125,7 @@ correctly for saving and restored as they were when loading::
 
     // SQL database will actually store `0`
 
-    $m->load();
+    $m = $m->load();
 
     $m->get('is_admin');  // converted back to `false`
 
@@ -190,7 +190,7 @@ Final field flag that is worth mentioning is called :php:attr:`Field::read_only`
 and if set, then value of a field may not be modified directly::
 
     $m->addField('ref_no', ['read_only' => true]);
-    $m->load(123);
+    $m = $m->load(123);
 
     $m->get('ref_no'); // perfect for reading field that is populated by trigger.
 
@@ -507,7 +507,7 @@ option to archive your orders. The method `archive()` is supposed to mark order
 as archived and return that order back. Here is the usage pattern::
 
     $o->addCondition('is_archived', false); // to restrict loading of archived orders
-    $o->load(123);
+    $o = $o->load(123);
     $archive = $o->archive();
     $archive->set('note', $archive->get('note') . "\nArchived on $date.");
     $archive->save();
@@ -538,7 +538,7 @@ The other, more appropriate option is to re-use a vanilla Order record::
         $this->save(); // just to be sure, no dirty stuff is left over
 
         $archive = (new static());
-        $archive->load($this->getId());
+        $archive = $archive->load($this->getId());
         $archive->set('is_archived', true);
 
         $this->unload(); // active record is no longer accessible
@@ -720,7 +720,7 @@ you can implement it like this::
 
     $sess = new \Atk4\Data\Persistence\Array_($_SESSION['ad']);
     $logged_user = new User($sess);
-    $logged_user->load('active_user');
+    $logged_user = $logged_user->load('active_user');
 
 This would load the user data from Array located inside a local session. There
 is no point storing multiple users, so I'm using id='active_user' for the only
@@ -729,7 +729,7 @@ user record that I'm going to store there.
 How to add record inside session, e.g. log the user in? Here is the code::
 
     $u = new User($db);
-    $u->load(123);
+    $u = $u->load(123);
 
     $u->withPersistence($sess, 'active_user')->save();
 

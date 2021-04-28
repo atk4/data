@@ -17,7 +17,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => false]);
         $m->addExpression('x', '2+3');
-        $m->loadOne();
+        $m = $m->loadOne();
         $this->assertEquals(5, $m->get('x'));
     }
 
@@ -58,7 +58,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
             );
         }
 
-        $i->tryLoad(1);
+        $i = $i->tryLoad(1);
         $this->assertEquals(($i->get('total_net') + $i->get('total_vat')) * 2, $i->get('double_total_gross'));
     }
 
@@ -166,9 +166,9 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
             );
         }
 
-        $m->tryLoad(1);
+        $m = $m->tryLoad(1);
         $this->assertNull($m->get('name'));
-        $m->tryLoad(2);
+        $m = $m->tryLoad(2);
         $this->assertSame('Sue', $m->get('name'));
     }
 
@@ -254,7 +254,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $i->addExpression('one_basic', [$i->expr('1'), 'type' => 'integer', 'system' => true]);
         $i->addExpression('one_never_save', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
         $i->addExpression('one_never_persist', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
-        $i->loadOne();
+        $i = $i->loadOne();
 
         // normal fields
         $this->assertSame(0, $i->get('zero_basic'));

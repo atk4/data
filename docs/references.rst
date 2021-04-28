@@ -19,7 +19,7 @@ use::
 
     $m = new Model_User($db, 'user');
     $m->hasMany('Orders', ['model' => [Model_Order::class]]);
-    $m->load(13);
+    $m = $m->load(13);
 
     $orders_for_user_13 = $m->ref('Orders');
 
@@ -32,7 +32,7 @@ also possible::
     $m->addCondition('is_vip', true);
 
     $orders_for_vips = $m->ref('Orders');
-    $orders_for_vips->loadAny();
+    $orders_for_vips = $orders_for_vips->loadAny();
 
 Condition on the base model will be carried over to the orders and you will
 only be able to access orders that belong to VIP users. The query for loading
@@ -89,7 +89,7 @@ If you are worried about performance you can keep 2 models in memory::
     $client = $order->refModel('client_id');
 
     foreach($order as $o) {
-        $client->load($o->get('client_id'));
+        $client = $client->load($o->get('client_id'));
     }
 
 .. warning:: This code is seriously flawed and is called "N+1 Problem".
@@ -326,7 +326,7 @@ DataSet of the user model::
     $u = $o->ref('user_id');
 
 
-    $u->loadAny();  // will load some user who has at least one failed order
+    $u = $u->loadAny();  // will load some user who has at least one failed order
 
 The important point here is that no additional queries are generated in the
 process and the loadAny() will look like this:
@@ -403,7 +403,7 @@ easier way how to define currency title::
 
 This would create 'currency' field containing name of the currency::
 
-    $i->load(20);
+    $i = $i->load(20);
 
     echo "Currency for invoice 20 is ".$i->get('currency');   // EUR
 
