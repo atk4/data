@@ -134,7 +134,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals('Smith', $user->get('surname'));
     }
 
-    public function testContitionToWords()
+    public function testConditionToWords()
     {
         $user = clone $this->user;
 
@@ -179,7 +179,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals('Country that has reference Users where number of records is greater than 0', $country->scope()->toWords());
     }
 
-    public function testContitionUnsupportedToWords()
+    public function testConditionUnsupportedToWords()
     {
         $condition = new Condition('name', 'abc');
 
@@ -187,7 +187,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $condition->toWords();
     }
 
-    public function testContitionUnsupportedOperator()
+    public function testConditionUnsupportedOperator()
     {
         $country = clone $this->country;
 
@@ -195,7 +195,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $country->addCondition('name', '==', 'abc');
     }
 
-    public function testContitionUnsupportedNegate()
+    public function testConditionUnsupportedNegate()
     {
         $condition = new Condition(new Expression('false'));
 
