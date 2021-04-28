@@ -395,17 +395,17 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
 
-        $m = $m->loadOne();
-        $this->assertTrue($m->loaded());
-        $d = $m->get('date');
-        $m->unload();
+        $m2 = $m->loadOne();
+        $this->assertTrue($m2->loaded());
+        $d = $m2->get('date');
+        $m2->unload();
 
-        $m = $m->loadBy('date', $d);
-        $this->assertTrue($m->loaded());
-        $m->unload();
+        $m2 = $m->loadBy('date', $d);
+        $this->assertTrue($m2->loaded());
+        $m2->unload();
 
-        $m->addCondition('date', $d)->loadOne();
-        $this->assertTrue($m->loaded());
+        $m2 = $m->addCondition('date', $d)->loadOne();
+        $this->assertTrue($m2->loaded());
     }
 
     public function testTypecastBoolean()

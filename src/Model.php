@@ -1483,17 +1483,13 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Load record by condition.
-     *
      * @param mixed $value
      *
      * @return static
      */
-    public function loadBy(string $fieldName, $value)
+    private function _loadBy(bool $isTryLoad, string $fieldName, $value)
     {
-        if (!$this->isEntity()) {
-            return $this->createEntity()->loadBy($fieldName, $value);
-        }
+        $this->assertIsModel();
 
         $field = $this->getField($fieldName);
 
@@ -1501,11 +1497,10 @@ class Model implements \IteratorAggregate
         $systemBak = $field->system;
         $defaultBak = $field->default;
         try {
-            // add condition to cloned scope and try to load record
             $this->scope = clone $this->scope;
             $this->addCondition($field, $value);
 
-            return $this->loadAny();
+            return $this->{$isTryLoad ? 'tryLoadOne' : 'loadOne'}();
         } finally {
             $this->scope = $scopeBak;
             $field->system = $systemBak;
@@ -1514,8 +1509,19 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Try to load record by condition.
-     * Will not throw exception if record doesn't exist.
+     * Load one record by condition. Will throw if more than one record exists.
+     *
+     * @param mixed $value
+     *
+     * @return static
+     */
+    public function loadBy(string $fieldName, $value)
+    {
+        return $this->_loadBy(false, $fieldName, $value);
+    }
+
+    /**
+     * Try to load one record by condition. Will throw if more than one record exists, but not if there is no record.
      *
      * @param mixed $value
      *
@@ -1523,26 +1529,7 @@ class Model implements \IteratorAggregate
      */
     public function tryLoadBy(string $fieldName, $value)
     {
-        if (!$this->isEntity()) {
-            return $this->createEntity()->tryLoadBy($fieldName, $value);
-        }
-
-        $field = $this->getField($fieldName);
-
-        $scopeBak = $this->scope;
-        $systemBak = $field->system;
-        $defaultBak = $field->default;
-        try {
-            // add condition to cloned scope and try to load record
-            $this->scope = clone $this->scope;
-            $this->addCondition($field, $value);
-
-            return $this->tryLoadAny();
-        } finally {
-            $this->scope = $scopeBak;
-            $field->system = $systemBak;
-            $field->default = $defaultBak;
-        }
+        return $this->_loadBy(true, $fieldName, $value);
     }
 
     /**

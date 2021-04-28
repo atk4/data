@@ -395,12 +395,14 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
 
-        $u = $u->loadBy('name', 'John');
+        $u2 = $u->loadBy('name', 'John');
+        $this->assertSame(['id' => 1, 'name' => 'John'], $u2->get());
         $this->assertTrue($u->scope()->isEmpty());
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value
 
-        $u = $u->tryLoadBy('name', 'John');
+        $u2 = $u->tryLoadBy('name', 'Joe');
+        $this->assertSame(['id' => 3, 'name' => 'Joe'], $u2->get());
         $this->assertTrue($u->scope()->isEmpty());
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value
