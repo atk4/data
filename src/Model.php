@@ -502,7 +502,7 @@ class Model implements \IteratorAggregate
      */
     public function &getDataRef(): array
     {
-        // $this->assertIsEntity();
+        $this->assertIsEntity();
 
         return $this->data;
     }
@@ -512,7 +512,7 @@ class Model implements \IteratorAggregate
      */
     public function &getDirtyRef(): array
     {
-        // $this->assertIsEntity();
+        $this->assertIsEntity();
 
         return $this->dirty;
     }
@@ -1455,13 +1455,17 @@ class Model implements \IteratorAggregate
      * @param mixed                $id
      * @param class-string<static> $class
      *
-     * @return static
+     * @return self
      */
     public function withPersistence(Persistence $persistence, $id = null, string $class = null)
     {
         $class = $class ?? static::class;
 
+        /** @var self $model */
         $model = new $class($persistence, ['table' => $this->table]);
+        if ($this->isEntity()) { // TODO should this method work with entity at all?
+            $model = $model->createEntity();
+        }
 
         if ($this->id_field && $id !== null) {
             $model->setId($id === true ? $this->getId() : $id);
@@ -1474,10 +1478,12 @@ class Model implements \IteratorAggregate
             }
         }
 
-        $modelDataRef = &$model->getDataRef();
-        $modelDirtyRef = &$model->getDirtyRef();
-        $modelDataRef = &$this->getDataRef();
-        $modelDirtyRef = &$this->getDirtyRef();
+        if ($this->isEntity()) {
+            $modelDataRef = &$model->getDataRef();
+            $modelDirtyRef = &$model->getDirtyRef();
+            $modelDataRef = &$this->getDataRef();
+            $modelDirtyRef = &$this->getDirtyRef();
+        }
         $model->limit = $this->limit;
         $model->order = $this->order;
         $model->scope = (clone $this->scope)->setModel($model);

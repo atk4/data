@@ -7,11 +7,6 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Static_ as Persistence_Static;
 
-/**
- * Sample trait designed to extend model.
- *
- * @target Model
- */
 trait UaReminder
 {
     public function send_reminder()
@@ -48,9 +43,6 @@ class UaClient extends Model
     }
 }
 
-/**
- * Implements various tests for UserAction.
- */
 class UserActionTest extends \Atk4\Schema\PhpunitTestCase
 {
     /** @var Persistence_Static */
@@ -137,6 +129,8 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     public function testAppliesTo1()
     {
         $client = new UaClient($this->pers);
+        $client = $client->createEntity();
+
         $this->expectExceptionMessage('load existing record');
         $client->executeUserAction('send_reminder');
     }
@@ -155,6 +149,7 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     {
         $client = new UaClient($this->pers);
         $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS, 'atomic' => false]);
+        $client = $client->createEntity();
 
         $this->expectExceptionMessage('not defined');
         $client->executeUserAction('new_client');
