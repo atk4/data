@@ -1182,10 +1182,6 @@ class Model implements \IteratorAggregate
      */
     public function loaded(): bool
     {
-        if (!$this->isEntity()) { // TODO for debug only
-            return false;
-        }
-
         return $this->id_field && $this->getId() !== null && ($this->entityId !== null && $this->entityId !== true);
     }
 

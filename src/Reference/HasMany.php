@@ -41,7 +41,7 @@ class HasMany extends Reference
     {
         $ourModel = $this->getOurModel();
 
-        if ($ourModel->loaded()) {
+        if ($ourModel->isEntity() && $ourModel->loaded()) {
             return $this->our_field
                 ? $ourModel->get($this->our_field)
                 : $ourModel->getId();

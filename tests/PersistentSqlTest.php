@@ -200,10 +200,8 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         foreach ($dbData['user'] as $id => $row) {
             $ids[] = $this->db->insert($m, $row);
         }
-        $this->assertFalse($m->loaded());
 
         $m->delete($ids[0]);
-        $this->assertFalse($m->loaded());
 
         $m = $m->load($ids[1]);
         $this->assertSame('Jones', $m->get('surname'));
