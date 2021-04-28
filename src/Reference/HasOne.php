@@ -207,12 +207,16 @@ class HasOne extends Reference
             $this->getOurField()->setNull();
         });
 
-        if ($ourValue = $this->getOurFieldValue()) {
-            // if our model is loaded, then try to load referenced model
-            if ($this->their_field) {
-                $theirModel = $theirModel->tryLoadBy($this->their_field, $ourValue);
+        if ($this->getOurModel()->isEntity()) {
+            if ($ourValue = $this->getOurFieldValue()) {
+                // if our model is loaded, then try to load referenced model
+                if ($this->their_field) {
+                    $theirModel = $theirModel->tryLoadBy($this->their_field, $ourValue);
+                } else {
+                    $theirModel = $theirModel->tryLoad($ourValue);
+                }
             } else {
-                $theirModel = $theirModel->tryLoad($ourValue);
+                $theirModel = $theirModel->createEntity();
             }
         }
 
