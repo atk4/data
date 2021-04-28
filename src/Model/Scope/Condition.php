@@ -350,14 +350,26 @@ class Condition extends AbstractScope
         }
 
         // use the referenced model title if such exists
+        $title = null;
         if ($field && ($field->reference ?? false)) {
             // make sure we set the value in the Model parent of the reference
             // it should be same class as $model but $model might be a clone
             $field->reference->getOwner()->set($field->short_name, $value);
 
-            $value = $field->reference->ref()->getTitle() ?: $value;
+            $title = $field->reference->ref()->getTitle();
+            if ($title === $value) {
+                $title = null;
+            }
         }
 
-        return "'" . (string) $value . "'";
+        if (is_bool($value)) {
+            $valueStr = $value ? 'true' : 'false';
+        } elseif (is_int($value) || is_float($value)) {
+            $valueStr = $value;
+        } else {
+            $valueStr = '\'' . (string) $value . '\'';
+        }
+
+        return $valueStr . ($title !== null ? ' (\'' . $title . '\')' : '');
     }
 }

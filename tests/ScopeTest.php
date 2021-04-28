@@ -148,7 +148,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
         $condition = new Condition('country_id', 2);
 
-        $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->toWords($user));
+        $this->assertEquals('Country Id is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
@@ -166,7 +166,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
         $condition = (new Condition('country_id', 2))->negate();
 
-        $this->assertEquals('Country Id is not equal to \'Latvia\'', $condition->toWords($user));
+        $this->assertEquals('Country Id is not equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         $condition = new Condition($user->getField('surname'), $user->getField('name'));
 
@@ -176,7 +176,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
         $country->addCondition('Users/#', '>', 0);
 
-        $this->assertEquals('Country that has reference Users where number of records is greater than \'0\'', $country->scope()->toWords());
+        $this->assertEquals('Country that has reference Users where number of records is greater than 0', $country->scope()->toWords());
     }
 
     public function testContitionUnsupportedToWords()
