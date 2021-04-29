@@ -1930,43 +1930,36 @@ class Model implements \IteratorAggregate
      *
      * @param mixed $id
      *
-     * @return $this
+     * @return static
      */
     public function delete($id = null)
     {
-        if (!$this->isEntity()) {
-            return $this->createEntity()->delete($id);
-        }
-
-        if ($this->read_only) {
-            throw new Exception('Model is read-only and cannot be deleted');
-        }
-
-        if ($this->compare($this->id_field, $id)) {
-            $id = null;
-        }
-
         if ($id !== null) {
-            $thisCloned = clone $this;
-            $thisCloned->load($id)->delete();
+            $this->assertIsModel();
+
+            $this->load($id)->delete();
 
             return $this;
         }
 
-        return $this->atomic(function () {
-            if ($this->loaded()) {
-                if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->getId()]) === false) {
-                    return $this;
-                }
-                $this->persistence->delete($this, $this->getId());
-                $this->hook(self::HOOK_AFTER_DELETE, [$this->getId()]);
-                $this->unload();
+        $this->assertIsEntity();
 
-                return $this;
-            }
-
+        if ($this->read_only) {
+            throw new Exception('Model is read-only and cannot be deleted');
+        } elseif (!$this->loaded()) {
             throw new Exception('No active record is set, unable to delete.');
+        }
+
+        $this->atomic(function () {
+            if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->getId()]) === false) {
+                return;
+            }
+            $this->persistence->delete($this, $this->getId());
+            $this->hook(self::HOOK_AFTER_DELETE, [$this->getId()]);
         });
+        $this->unload();
+
+        return $this;
     }
 
     /**
