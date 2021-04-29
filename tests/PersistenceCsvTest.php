@@ -172,7 +172,10 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $m = new Person($p);
 
         $m2 = $m->withPersistence($p2);
-        $m2->reload_after_save = false; // TODO should be not needed after https://github.com/atk4/data/pull/690 is merged
+
+        // TODO should be not needed after https://github.com/atk4/data/pull/690 is merged
+        // Exception: CSV Persistence does not support other than LOAD ANY mode
+        $m2->reload_after_save = false;
 
         foreach ($m as $row) {
             $m2->createEntity()->save($row->get());

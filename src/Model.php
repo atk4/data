@@ -1698,12 +1698,8 @@ class Model implements \IteratorAggregate
      */
     public function insert(array $row)
     {
-        if (!$this->isEntity()) {
-            return $this->createEntity()->insert($row);
-        }
-
-        $model = clone $this;
-        $model->_entityId = null; // TODO we want to use probably getModel here
+        $model = ($this->isEntity() ? $this->getModel() : $this)
+            ->createEntity();
         $model->_rawInsert($row);
 
         return $this->id_field ? $model->getId() : null;
