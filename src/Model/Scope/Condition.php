@@ -153,7 +153,10 @@ class Condition extends AbstractScope
                     $field = $model->getField($field);
                 }
 
-                if ($field instanceof Field) {
+                // TODO Model/field should not be mutated, see:
+                // https://github.com/atk4/data/issues/662
+                // for now, do not set default at least for PK/ID
+                if ($field instanceof Field && $field->short_name !== $field->getOwner()->id_field) {
                     $field->system = true;
                     $field->default = $this->value;
                 }
