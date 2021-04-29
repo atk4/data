@@ -404,8 +404,8 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $mm = $m->load(2);
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
-//        $this->expectException(Exception::class);
-//        $mm->getTitles();
+        $this->expectException(Exception::class);
+        $mm->getTitles();
     }
 
     /**

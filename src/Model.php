@@ -349,14 +349,14 @@ class Model implements \IteratorAggregate
     public function assertIsModel(): void
     {
         if ($this->isEntity()) {
-            throw new \Error('Expected model, but instance is an entity'); // TODO Exception, but Error for debug
+            throw new Exception('Expected model, but instance is an entity');
         }
     }
 
     public function assertIsEntity(): void
     {
         if (!$this->isEntity()) {
-            throw new \Error('Expected entity, but instance is a model'); // TODO Exception, but Error for debug
+            throw new Exception('Expected entity, but instance is a model');
         }
     }
 
