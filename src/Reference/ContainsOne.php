@@ -76,7 +76,7 @@ class ContainsOne extends Reference
     protected function getDefaultPersistence(Model $theirModel)
     {
         return new Persistence\ArrayOfStrings([
-            $this->table_alias => $this->getOurFieldValue() ? [1 => $this->getOurFieldValue()] : [],
+            $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],
         ]);
     }
 

@@ -15,8 +15,7 @@ class ContainsMany extends ContainsOne
     protected function getDefaultPersistence(Model $theirModel)
     {
         return new Persistence\ArrayOfStrings([
-            // @TODO PR Distinguish strictly between model and entity #862
-            $this->table_alias => $this->getOurModel()->isEntity() ? ($this->getOurFieldValue() ?: []) : [],
+            $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? $this->getOurFieldValue() : [],
         ]);
     }
 

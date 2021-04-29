@@ -188,11 +188,6 @@ class Reference
 
     protected function getOurFieldValue()
     {
-        // @TODO PR Distinguish strictly between model and entity #862
-        if (!$this->getOurModel()->isEntity()) {
-            return null;
-        }
-
         return $this->getOurField()->get();
     }
 
