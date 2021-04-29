@@ -179,6 +179,19 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals('Country that has reference Users where number of records is greater than 0', $country->scope()->toWords());
     }
 
+    public function testContitionToWordsImmutableReference()
+    {
+        $user = clone $this->user;
+
+        $condition = new Condition('country_id', 2);
+
+        $originalReferenceModelData = $user->getField('country_id')->reference->getOwner()->data;
+
+        $this->assertEquals('Country Id is equal to 2 (\'Latvia\')', $condition->toWords($user));
+
+        $this->assertSame($originalReferenceModelData, $user->getField('country_id')->reference->getOwner()->data);
+    }
+
     public function testConditionUnsupportedToWords()
     {
         $condition = new Condition('name', 'abc');

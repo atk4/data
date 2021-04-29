@@ -307,6 +307,8 @@ class Condition extends AbstractScope
 
     protected function valueToWords(Model $model, $value): string
     {
+        $model = clone $model;
+
         if ($value === null) {
             return $this->operator ? 'empty' : '';
         }
@@ -352,11 +354,11 @@ class Condition extends AbstractScope
         // use the referenced model title if such exists
         $title = null;
         if ($field && ($field->reference ?? false)) {
-            // make sure we set the value in the Model parent of the reference
-            // it should be same class as $model but $model might be a clone
-            $field->reference->getOwner()->set($field->short_name, $value);
+            // make sure we set the value in the Model
+            $model->set($field->short_name, $value);
 
-            $title = $field->reference->ref()->getTitle();
+            // then take the title
+            $title = $model->getRef($field->reference->link)->ref()->getTitle();
             if ($title === $value) {
                 $title = null;
             }
