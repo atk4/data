@@ -141,7 +141,8 @@ class Condition extends AbstractScope
 
     protected function onChangeModel(): void
     {
-        if ($model = $this->getModel()) {
+        $model = $this->getModel();
+        if ($model !== null) {
             // if we have a definitive scalar value for a field
             // sets it as default value for field and locks it
             // new records will automatically get this value assigned for the field
@@ -170,7 +171,8 @@ class Condition extends AbstractScope
         $operator = $this->operator;
         $value = $this->value;
 
-        if ($model = $this->getModel()) {
+        $model = $this->getModel();
+        if ($model !== null) {
             if (is_string($field)) {
                 // shorthand for adding conditions on references
                 // use chained reference names separated by "/"
@@ -265,7 +267,8 @@ class Condition extends AbstractScope
     {
         $words = [];
 
-        if (is_string($field = $this->key)) {
+        $field = $this->key;
+        if (is_string($field)) {
             if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
@@ -311,10 +314,10 @@ class Condition extends AbstractScope
             return $this->operator ? 'empty' : '';
         }
 
-        if (is_array($values = $value)) {
+        if (is_array($value)) {
             $ret = [];
-            foreach ($values as $value) {
-                $ret[] = $this->valueToWords($model, $value);
+            foreach ($value as $v) {
+                $ret[] = $this->valueToWords($model, $v);
             }
 
             return implode(' or ', $ret);
