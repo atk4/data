@@ -87,6 +87,14 @@ class Model implements \IteratorAggregate
     // {{{ Properties of the class
 
     /**
+     * Once set, Model behaves like an entity and loading a different ID
+     * will result in an error.
+     *
+     * @var mixed
+     */
+    private $entityId;
+
+    /**
      * The class used by addField() method.
      *
      * @var string|array
@@ -212,14 +220,6 @@ class Model implements \IteratorAggregate
     public $read_only = false;
 
     /**
-     * Once set, Model behaves like an entity and loading a different ID
-     * will result in an error.
-     *
-     * @var mixed
-     */
-    private $entityId;
-
-    /**
      * While in most cases your id field will be called 'id', sometimes
      * you would want to use a different one or maybe don't create field
      * at all.
@@ -339,6 +339,54 @@ class Model implements \IteratorAggregate
         }
     }
 
+    public function isEntity(): bool
+    {
+        return $this->entityId !== null;
+    }
+
+    public function assertIsModel(): void
+    {
+        if ($this->isEntity()) {
+            throw new \Error('Expected model, but instance is an entity'); // TODO Exception, but Error for debug
+        }
+    }
+
+    public function assertIsEntity(): void
+    {
+        if (!$this->isEntity()) {
+            throw new \Error('Expected entity, but instance is a model'); // TODO Exception, but Error for debug
+        }
+    }
+
+    /**
+     * @return static
+     */
+    public function getModel(): self
+    {
+        $this->assertIsEntity();
+
+        $model = clone $this; // TODO
+        $model->unload();
+        $model->entityId = null;
+
+        return $model;
+    }
+
+    /**
+     * @return static
+     */
+    public function createEntity(): self
+    {
+        $this->assertIsModel();
+
+        $model = clone $this;
+        if ($model->entityId === null) {
+            $model->entityId = true;
+        }
+
+        return $model;
+    }
+
     /**
      * Clones model object.
      */
@@ -441,54 +489,6 @@ class Model implements \IteratorAggregate
         $this->onHookShort(self::HOOK_AFTER_DELETE, $checkFx, [], -10);
         $this->onHookShort(self::HOOK_BEFORE_SAVE, $checkFx, [], 10);
         $this->onHookShort(self::HOOK_AFTER_SAVE, $checkFx, [], -10);
-    }
-
-    public function isEntity(): bool
-    {
-        return $this->entityId !== null;
-    }
-
-    public function assertIsModel(): void
-    {
-        if ($this->isEntity()) {
-            throw new \Error('Expected model, but instance is an entity'); // TODO Exception, but Error for debug
-        }
-    }
-
-    public function assertIsEntity(): void
-    {
-        if (!$this->isEntity()) {
-            throw new \Error('Expected entity, but instance is a model'); // TODO Exception, but Error for debug
-        }
-    }
-
-    /**
-     * @return static
-     */
-    public function getModel(): self
-    {
-        $this->assertIsEntity();
-
-        $model = clone $this; // TODO
-        $model->unload();
-        $model->entityId = null;
-
-        return $model;
-    }
-
-    /**
-     * @return static
-     */
-    public function createEntity(): self
-    {
-        $this->assertIsModel();
-
-        $model = clone $this;
-        if ($model->entityId === null) {
-            $model->entityId = true;
-        }
-
-        return $model;
     }
 
     /**
