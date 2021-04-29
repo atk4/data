@@ -1224,6 +1224,46 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * @param mixed $id
+     *
+     * @return $this
+     */
+    private function _loadThis(bool $isTryLoad, $id)
+    {
+        $this->assertIsEntity();
+        if ($this->loaded()) {
+            throw new Exception('Entity must be unloaded');
+        }
+
+        $this->checkPersistence();
+
+        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+        if ($this->hook(self::HOOK_BEFORE_LOAD, [$noId ? null : $id]) === false) {
+            return $this;
+        }
+        $dataRef = &$this->getDataRef();
+        $dataRef = $this->persistence->{$isTryLoad ? 'tryLoad' : 'load'}($this, $this->remapIdLoadToPersistence($id));
+        if ($isTryLoad && $dataRef === null) {
+            $dataRef = [];
+            $this->unload();
+        } else {
+            if ($this->id_field) {
+                $this->setId($this->getId());
+            }
+
+            /** @var static|false $ret */
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
+            if ($ret === false) {
+                $this->unload();
+            } elseif (is_object($ret)) {
+                return $ret; // @phpstan-ignore-line
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Try to load record. Will not throw an exception if record does not exist.
      *
      * @param mixed $id
@@ -1232,46 +1272,9 @@ class Model implements \IteratorAggregate
      */
     public function tryLoad($id)
     {
-        if (!$this->isEntity()) {
-            return $this->createEntity()->tryLoad($id);
-        }
-        $callerFrame = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-        if (($callerFrame['class'] ?? null) !== self::class || ($callerFrame['function'] ?? null) !== 'tryLoad') {
-            $this->assertIsModel();
-        }
+        $this->assertIsModel();
 
-        $this->checkPersistence();
-
-        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
-        $dataRef = &$this->getDataRef();
-        $dataRef = $this->persistence->tryLoad($this, $this->remapIdLoadToPersistence($id));
-        if ($dataRef === null) { // TODO move at better place
-            $dataRef = [];
-        }
-
-        if ($dataRef) {
-            if ($noId) { // @TODO pure port from tryLoadAny, simplify
-                if ($this->id_field) {
-                    if (isset($dataRef[$this->id_field])) {
-                        $this->setId($dataRef[$this->id_field]);
-                    }
-                }
-            } else {
-                $this->setId($id);
-            }
-
-            /** @var static|false $ret */
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret;
-            }
-        } else {
-            $this->unload();
-        }
-
-        return $this;
+        return $this->createEntity()->_loadThis(true, $id);
     }
 
     /**
@@ -1283,47 +1286,9 @@ class Model implements \IteratorAggregate
      */
     public function load($id)
     {
-        if (!$this->isEntity()) {
-            return $this->createEntity()->load($id);
-        }
-        $callerFrame = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-        if (($callerFrame['class'] ?? null) !== self::class || !in_array($callerFrame['function'] ?? null, ['load', 'reload'], true) || $this->loaded()) {
-            $this->assertIsModel();
-        }
+        $this->assertIsModel();
 
-        $this->checkPersistence();
-
-        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
-        $dataRef = &$this->getDataRef();
-        if ($noId) {
-            $dataRef = $this->persistence->load($this, $this->remapIdLoadToPersistence($id));
-        } else {
-            if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) { // @TODO pure port from loadAny. why not for tryLoad?
-                return $this;
-            }
-
-            $dataRef = $this->persistence->load($this, $id);
-        }
-
-        if ($noId) { // @TODO pure port from loadAny, simplify
-            if ($this->id_field) {
-                $this->setId($dataRef[$this->id_field]);
-            }
-        } else {
-            if ($this->getId() === null) { // TODO what is the usecase?
-                $this->setId($id);
-            }
-        }
-
-        /** @var static|false $ret */
-        $ret = $this->hook(self::HOOK_AFTER_LOAD);
-        if ($ret === false) {
-            $this->unload();
-        } elseif (is_object($ret)) {
-            return $ret;
-        }
-
-        return $this;
+        return $this->createEntity()->_loadThis(false, $id);
     }
 
     /**
@@ -1380,7 +1345,7 @@ class Model implements \IteratorAggregate
         $id = $this->getId();
         $this->unload();
 
-        return $this->load($id); // @phpstan-ignore-line TODO must not return a new instance
+        return $this->_loadThis(false, $id);
     }
 
     /**
@@ -1486,7 +1451,7 @@ class Model implements \IteratorAggregate
     /**
      * @param mixed $value
      *
-     * @return static
+     * @return static|null
      */
     private function _loadBy(bool $isTryLoad, string $fieldName, $value)
     {
