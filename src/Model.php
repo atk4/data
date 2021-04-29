@@ -1168,6 +1168,8 @@ class Model implements \IteratorAggregate
      */
     public function setLimit(int $count = null, int $offset = 0)
     {
+        $this->assertIsModel();
+
         $this->limit = [$count, $offset];
 
         return $this;
