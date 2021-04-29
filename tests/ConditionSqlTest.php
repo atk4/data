@@ -49,6 +49,13 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Sue', $mm2->get('name'));
     }
 
+    public function testEntityNoScopeCloning()
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+        $scope = $m->scope();
+        $this->assertSame($scope, $m->createEntity()->scope());
+    }
+
     public function testEntityReloadWithDifferentIdException()
     {
         $this->setDb([

@@ -377,8 +377,12 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        $model = clone $this;
-        $model->_model = $this;
+        $this->_model = $this;
+        try {
+            $model = clone $this;
+        } finally {
+            $this->_model = null;
+        }
         $model->_entityId = null;
 
         return $model;
