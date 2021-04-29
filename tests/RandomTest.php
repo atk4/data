@@ -294,32 +294,32 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($db, ['table' => 'never_used']);
         $m->addField('name');
-        $m = $m->createEntity();
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, static function ($m) {
+        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
             $m->breakHook(false);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_LOAD, static function ($m, $id) {
-            $dataRef = &$m->getDataRef();
-            $dataRef = ['name' => 'rec #' . $id];
+        $m->onHook(Model::HOOK_BEFORE_LOAD, static function (Model $m, int $id) {
             $m->setId($id);
+            $m->set('name', 'rec #' . $id);
             $m->breakHook(false);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, static function ($m, $id) {
+        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m, int $id) {
             $m->unload();
             $m->breakHook(false);
         });
 
+        $m = $m->createEntity();
         $m->set('name', 'john');
         $m->save();
 
-        $this->assertSame('rec #3', $m->getModel()->load(3)->get('name'));
+        $m = $m->getModel()->load(3);
+        $this->assertSame('rec #3', $m->get('name'));
 
-//        $m->delete();
+        $m->delete();
     }
 
     public function testIssue220()

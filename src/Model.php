@@ -87,12 +87,14 @@ class Model implements \IteratorAggregate
     // {{{ Properties of the class
 
     /**
-     * Once set, Model behaves like an entity and loading a different ID
-     * will result in an error.
-     *
-     * @var mixed
+     * @var static|null not-null if and only if this instance is an entity
      */
-    private $entityId;
+    private $_model;
+
+    /**
+     * @var mixed once set, loading a different ID will result in an error
+     */
+    private $_entityId;
 
     /**
      * The class used by addField() method.
@@ -341,7 +343,7 @@ class Model implements \IteratorAggregate
 
     public function isEntity(): bool
     {
-        return $this->entityId !== null;
+        return $this->_model !== null;
     }
 
     public function assertIsModel(): void
@@ -365,11 +367,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $model = clone $this; // TODO
-        $model->unload();
-        $model->entityId = null;
-
-        return $model;
+        return $this->_model;
     }
 
     /**
@@ -380,9 +378,8 @@ class Model implements \IteratorAggregate
         $this->assertIsModel();
 
         $model = clone $this;
-        if ($model->entityId === null) {
-            $model->entityId = true;
-        }
+        $model->_model = $this;
+        $model->_entityId = null;
 
         return $model;
     }
@@ -416,7 +413,7 @@ class Model implements \IteratorAggregate
             return; // don't declare actions for model without id_field
         }
 
-        $this->initEntityHooks();
+        $this->initEntityIdHooks();
 
         if ($this->read_only) {
             return; // don't declare action for read-only model
@@ -456,39 +453,41 @@ class Model implements \IteratorAggregate
         ]);
     }
 
-    private function initEntityHooks(): void
+    private function initEntityIdAndAssertUnchanged(): void
     {
-        $checkFx = function () {
-            if ($this->getId() === null) { // allow unload
-                return;
-            }
+        $id = $this->getId();
+        if ($id === null) { // allow unload
+            return;
+        }
 
-            if ($this->entityId === null || $this->entityId === true) {
-                if ($this->getId() !== null) {
-                    $this->entityId = $this->getId();
-                }
-            } else {
-                if (!$this->compare($this->id_field, $this->entityId)) {
-                    $newId = $this->getId();
-                    $this->unload(); // data for different ID were loaded, make sure to discard them
+        if ($this->_entityId === null) {
+            // set entity ID to the first seen ID
+            $this->_entityId = $id;
+        } elseif (!$this->compare($this->id_field, $this->_entityId)) {
+            $this->unload(); // data for different ID were loaded, make sure to discard them
 
-                    throw (new Exception('Model is loaded as an entity, ID can not be changed to a different one'))
-                        ->addMoreInfo('entityId', $this->entityId)
-                        ->addMoreInfo('newId', $newId);
-                }
-            }
+            throw (new Exception('Model instance is an entity, ID can not be changed to a different one'))
+                ->addMoreInfo('entityId', $this->_entityId)
+                ->addMoreInfo('newId', $id);
+        }
+    }
+
+    private function initEntityIdHooks(): void
+    {
+        $fx = function () {
+            $this->initEntityIdAndAssertUnchanged();
         };
 
-        $this->onHookShort(self::HOOK_BEFORE_LOAD, $checkFx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_LOAD, $checkFx, [], -10);
-        $this->onHookShort(self::HOOK_BEFORE_INSERT, $checkFx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_INSERT, $checkFx, [], -10);
-        $this->onHookShort(self::HOOK_BEFORE_UPDATE, $checkFx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_UPDATE, $checkFx, [], -10);
-        $this->onHookShort(self::HOOK_BEFORE_DELETE, $checkFx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_DELETE, $checkFx, [], -10);
-        $this->onHookShort(self::HOOK_BEFORE_SAVE, $checkFx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_SAVE, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_LOAD, $fx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_LOAD, $fx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_INSERT, $fx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_INSERT, $fx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_UPDATE, $fx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_UPDATE, $fx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_DELETE, $fx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_DELETE, $fx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_SAVE, $fx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_SAVE, $fx, [], -10);
     }
 
     /**
@@ -926,10 +925,7 @@ class Model implements \IteratorAggregate
             $this->set($this->id_field, $value);
         }
 
-        // set entity ID to the first set ID
-        if (($this->entityId === null || $this->entityId === true) && $this->getId() !== null) {
-            $this->entityId = $this->getId();
-        }
+        $this->initEntityIdAndAssertUnchanged();
 
         return $this;
     }
@@ -1184,7 +1180,7 @@ class Model implements \IteratorAggregate
      */
     public function loaded(): bool
     {
-        return $this->id_field && $this->getId() !== null && ($this->entityId !== null && $this->entityId !== true);
+        return $this->id_field && $this->getId() !== null && $this->_entityId !== null;
     }
 
     /**
@@ -1365,10 +1361,10 @@ class Model implements \IteratorAggregate
         }
 
         $duplicate = clone $this;
+        $duplicate->_entityId = null;
         $dataRef = &$this->getDataRef();
         $duplicateDirtyRef = &$duplicate->getDirtyRef();
         $duplicateDirtyRef = $dataRef;
-        $duplicate->entityId = $duplicate->entityId !== null ? true : null;
         $duplicate->setId(null);
 
         return $duplicate;
@@ -1703,7 +1699,7 @@ class Model implements \IteratorAggregate
         }
 
         $model = clone $this;
-        $model->entityId = true;
+        $model->_entityId = null; // TODO we want to use probably getModel here
         $model->_rawInsert($row);
 
         return $this->id_field ? $model->getId() : null;
