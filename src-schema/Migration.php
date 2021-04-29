@@ -232,16 +232,17 @@ class Migration
 
     protected function getReferenceField(Field $field): ?Field
     {
-        if ($field->reference instanceof HasOne) {
-            $referenceTheirField = \Closure::bind(function () use ($field) {
-                return $field->reference->their_field;
+        $fieldReference = $field->getReference();
+        if ($fieldReference instanceof HasOne) {
+            $referenceTheirField = \Closure::bind(function () use ($fieldReference) {
+                return $fieldReference->their_field;
             }, null, \Atk4\Data\Reference::class)();
 
-            $referenceField = $referenceTheirField ?? $field->reference->getOwner()->id_field;
+            $referenceField = $referenceTheirField ?? $fieldReference->getOwner()->id_field;
 
-            $modelSeed = is_array($field->reference->model)
-                ? $field->reference->model
-                : [get_class($field->reference->model)];
+            $modelSeed = is_array($fieldReference->model)
+                ? $fieldReference->model
+                : [get_class($fieldReference->model)];
             $referenceModel = Model::fromSeed($modelSeed, [new Persistence\Sql($this->connection)]);
 
             return $referenceModel->getField($referenceField);
