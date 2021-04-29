@@ -58,13 +58,13 @@ class Field implements Expressionable
 
     /**
      * If value of this field can be described by a model, this property
-     * will contain reference to that model.
+     * will contain the reference link to that model.
      *
      * It's used more in atk4/ui repository. See there.
      *
-     * @var Reference|null
+     * @var string
      */
-    public $reference;
+    protected $reference;
 
     /**
      * Actual field name.
@@ -535,6 +535,16 @@ class Field implements Expressionable
     public function getPersistenceName(): string
     {
         return $this->actual ?? $this->short_name;
+    }
+
+    public function hasReference(): bool
+    {
+        return $this->issetOwner() && $this->reference !== null;
+    }
+
+    public function getReference(): ?Reference
+    {
+        return $this->hasReference() ? $this->getOwner()->getRef($this->reference) : null;
     }
 
     /**
