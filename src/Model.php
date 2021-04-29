@@ -1235,12 +1235,12 @@ class Model implements \IteratorAggregate
         if (!$this->isEntity()) {
             return $this->createEntity()->tryLoad($id);
         }
+        $callerFrame = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+        if (($callerFrame['class'] ?? null) !== self::class || ($callerFrame['function'] ?? null) !== 'tryLoad') {
+            $this->assertIsModel();
+        }
 
         $this->checkPersistence();
-
-        if ($this->loaded()) {
-            $this->unload();
-        }
 
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
         $dataRef = &$this->getDataRef();
@@ -1286,15 +1286,15 @@ class Model implements \IteratorAggregate
         if (!$this->isEntity()) {
             return $this->createEntity()->load($id);
         }
+        $callerFrame = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+        if (($callerFrame['class'] ?? null) !== self::class || !in_array($callerFrame['function'] ?? null, ['load', 'reload'], true) || $this->loaded()) {
+            $this->assertIsModel();
+        }
 
         $this->checkPersistence();
 
-        if ($this->loaded()) {
-            $this->unload();
-        }
-
-        $dataRef = &$this->getDataRef();
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+        $dataRef = &$this->getDataRef();
         if ($noId) {
             $dataRef = $this->persistence->load($this, $this->remapIdLoadToPersistence($id));
         } else {

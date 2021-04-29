@@ -317,9 +317,9 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('name', 'john');
         $m->save();
 
-        $this->assertSame('rec #3', $m->load(3)->get('name'));
+        $this->assertSame('rec #3', $m->getModel()->load(3)->get('name'));
 
-        $m->delete();
+//        $m->delete();
     }
 
     public function testIssue220()
@@ -378,34 +378,34 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
-        $m = $m->createEntity();
+        $mm = $m->createEntity();
 
         // default title_field = name
-        $this->assertNull($m->getTitle()); // not loaded model returns null
+        $this->assertNull($mm->getTitle()); // not loaded model returns null
 
-        $m = $m->load(2);
-        $this->assertSame('Sue', $m->getTitle()); // loaded returns title_field value
+        $mm = $m->load(2);
+        $this->assertSame('Sue', $mm->getTitle()); // loaded returns title_field value
 
         // set custom title_field
-        $m->title_field = 'parent_item_id';
-        $this->assertEquals(1, $m->getTitle()); // returns parent_item_id value
+        $mm->title_field = 'parent_item_id';
+        $this->assertEquals(1, $mm->getTitle()); // returns parent_item_id value
 
         // set custom title_field as title_field from linked model
-        $m->title_field = 'parent_item';
-        $this->assertSame('John', $m->getTitle()); // returns parent record title_field
+        $mm->title_field = 'parent_item';
+        $this->assertSame('John', $mm->getTitle()); // returns parent record title_field
 
         // no title_field set - return id value
-        $m->title_field = null; // @phpstan-ignore-line
-        $this->assertEquals(2, $m->getTitle()); // loaded returns id value
+        $mm->title_field = null; // @phpstan-ignore-line
+        $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field
         $m->addExpression('my_name', '[id]');
         $m->title_field = 'my_name';
-        $m = $m->load(2);
-        $this->assertEquals(2, $m->getTitle()); // loaded returns id value
+        $mm = $m->load(2);
+        $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
 //        $this->expectException(Exception::class);
-//        $m->getTitles();
+//        $mm->getTitles();
     }
 
     /**

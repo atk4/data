@@ -50,7 +50,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $mm->unload();
         $this->assertFalse($mm->loaded());
 
-        $mm = $mm->tryLoadAny();
+        $mm = $m->tryLoadAny();
         $this->assertTrue($mm->loaded());
 
         $mm = $m->load(2);

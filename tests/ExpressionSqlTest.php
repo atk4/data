@@ -166,10 +166,10 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
             );
         }
 
-        $m = $m->tryLoad(1);
-        $this->assertNull($m->get('name'));
-        $m = $m->tryLoad(2);
-        $this->assertSame('Sue', $m->get('name'));
+        $mm = $m->tryLoad(1);
+        $this->assertNull($mm->get('name'));
+        $mm = $m->tryLoad(2);
+        $this->assertSame('Sue', $mm->get('name'));
     }
 
     public function testReloading()

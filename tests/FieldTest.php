@@ -536,7 +536,8 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNotNull($dbData['user'][1]['secret']);
         $this->assertNotSame('i am a woman', $dbData['user'][1]['secret']);
 
-        $m->unload()->load(1);
+        $m->set('secret', 'unload');
+        $m->reload();
         $this->assertSame('i am a woman', $m->get('secret'));
     }
 
