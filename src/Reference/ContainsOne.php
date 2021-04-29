@@ -62,7 +62,7 @@ class ContainsOne extends Reference
         if (!$ourModel->hasElement($ourField)) {
             $ourModel->addField($ourField, [
                 'type' => $this->type,
-                'reference' => $this,
+                'referenceLink' => $this->link,
                 'system' => $this->system,
                 'caption' => $this->caption, // it's ref models caption, but we can use it here for field too
                 'ui' => array_merge([

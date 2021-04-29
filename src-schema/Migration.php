@@ -224,7 +224,7 @@ class Migration
                 'mandatory' => ($field->mandatory || $field->required) && ($persistField->mandatory || $persistField->required),
             ];
 
-            $this->field($field->actual ?: $field->short_name, $options);
+            $this->field($field->getPersistenceName(), $options);
         }
 
         return $model;
@@ -232,16 +232,17 @@ class Migration
 
     protected function getReferenceField(Field $field): ?Field
     {
-        if ($field->reference instanceof HasOne) {
-            $referenceTheirField = \Closure::bind(function () use ($field) {
-                return $field->reference->their_field;
+        $reference = $field->getReference();
+        if ($reference instanceof HasOne) {
+            $referenceTheirField = \Closure::bind(function () use ($reference) {
+                return $reference->their_field;
             }, null, \Atk4\Data\Reference::class)();
 
-            $referenceField = $referenceTheirField ?? $field->reference->getOwner()->id_field;
+            $referenceField = $referenceTheirField ?? $reference->getOwner()->id_field;
 
-            $modelSeed = is_array($field->reference->model)
-                ? $field->reference->model
-                : [get_class($field->reference->model)];
+            $modelSeed = is_array($reference->model)
+                ? $reference->model
+                : [get_class($reference->model)];
             $referenceModel = Model::fromSeed($modelSeed, [new Persistence\Sql($this->connection)]);
 
             return $referenceModel->getField($referenceField);

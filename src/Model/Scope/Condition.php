@@ -141,7 +141,8 @@ class Condition extends AbstractScope
 
     protected function onChangeModel(): void
     {
-        if ($model = $this->getModel()) {
+        $model = $this->getModel();
+        if ($model !== null) {
             // if we have a definitive scalar value for a field
             // sets it as default value for field and locks it
             // new records will automatically get this value assigned for the field
@@ -170,7 +171,8 @@ class Condition extends AbstractScope
         $operator = $this->operator;
         $value = $this->value;
 
-        if ($model = $this->getModel()) {
+        $model = $this->getModel();
+        if ($model !== null) {
             if (is_string($field)) {
                 // shorthand for adding conditions on references
                 // use chained reference names separated by "/"
@@ -265,7 +267,8 @@ class Condition extends AbstractScope
     {
         $words = [];
 
-        if (is_string($field = $this->key)) {
+        $field = $this->key;
+        if (is_string($field)) {
             if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
@@ -311,10 +314,10 @@ class Condition extends AbstractScope
             return $this->operator ? 'empty' : '';
         }
 
-        if (is_array($values = $value)) {
+        if (is_array($value)) {
             $ret = [];
-            foreach ($values as $value) {
-                $ret[] = $this->valueToWords($model, $value);
+            foreach ($value as $v) {
+                $ret[] = $this->valueToWords($model, $v);
             }
 
             return implode(' or ', $ret);
@@ -333,7 +336,8 @@ class Condition extends AbstractScope
         }
 
         // handling of scope on references
-        if (is_string($field = $this->key)) {
+        $field = $this->key;
+        if (is_string($field)) {
             if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
@@ -350,14 +354,27 @@ class Condition extends AbstractScope
         }
 
         // use the referenced model title if such exists
-        if ($field && ($field->reference ?? false)) {
-            // make sure we set the value in the Model parent of the reference
-            // it should be same class as $model but $model might be a clone
-            $field->reference->getOwner()->set($field->short_name, $value);
+        $title = null;
+        if (is_object($field) && $field->getReference() !== null) {
+            // make sure we set the value in the Model
+            $model = clone $model;
+            $model->set($field->short_name, $value);
 
-            $value = $field->reference->ref()->getTitle() ?: $value;
+            // then take the title
+            $title = $model->getRef($field->getReference()->link)->ref()->getTitle();
+            if ($title === $value) {
+                $title = null;
+            }
         }
 
-        return "'" . (string) $value . "'";
+        if (is_bool($value)) {
+            $valueStr = $value ? 'true' : 'false';
+        } elseif (is_int($value) || is_float($value)) {
+            $valueStr = $value;
+        } else {
+            $valueStr = '\'' . (string) $value . '\'';
+        }
+
+        return $valueStr . ($title !== null ? ' (\'' . $title . '\')' : '');
     }
 }
