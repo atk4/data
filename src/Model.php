@@ -1392,7 +1392,7 @@ class Model implements \IteratorAggregate
      */
     public function duplicate()
     {
-        // TODO remove in v2.6
+        // deprecated, TODO remove in v3.1
         if (func_num_args() > 0) {
             throw new Exception('Duplicating using existing ID is no longer supported');
         }
@@ -1557,7 +1557,7 @@ class Model implements \IteratorAggregate
      */
     public function save(array $data = [])
     {
-        // deprecated, remove on 2021-03
+        // deprecated, TODO remove in v3.1
         if (func_num_args() > 1) {
             throw new Exception('Model::save() with 2nd param $to_persistence is no longer supported');
         }
@@ -1959,7 +1959,7 @@ class Model implements \IteratorAggregate
      */
     public function atomic(\Closure $fx)
     {
-        // deprecated, remove on 2021-03
+        // deprecated, TODO remove in v3.1
         if (func_num_args() > 1) {
             throw new Exception('Model::atomic() with 2nd param $persistence is no longer supported');
         }
