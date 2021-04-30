@@ -17,7 +17,7 @@ use Atk4\Data\Model;
  *
  * UserAction must NOT rely on any specific UI implementation.
  *
- * @method Model getOwner()
+ * @method Exception getOwner() use getModel() method instead
  */
 class UserAction
 {
@@ -26,6 +26,9 @@ class UserAction
         init as init_;
     }
     use TrackableTrait;
+
+    /** @var Model|null */
+    private $entity;
 
     /** Defining records scope of the action */
     public const APPLIES_TO_NO_RECORDS = 'none'; // e.g. add
@@ -98,11 +101,11 @@ class UserAction
 
             $run = function () use ($args) {
                 if ($this->callback === null) {
-                    $fx = [$this->getOwner(), $this->short_name];
+                    $fx = [$this->getModel(), $this->short_name];
                 } elseif (is_string($this->callback)) {
-                    $fx = [$this->getOwner(), $this->callback];
+                    $fx = [$this->getModel(), $this->callback];
                 } else {
-                    array_unshift($args, $this->getOwner());
+                    array_unshift($args, $this->getModel());
                     $fx = $this->callback;
                 }
 
@@ -110,7 +113,7 @@ class UserAction
             };
 
             if ($this->atomic) {
-                return $this->getOwner()->atomic($run);
+                return $this->getModel()->atomic($run);
             }
 
             return $run();
@@ -123,18 +126,18 @@ class UserAction
 
     protected function validateBeforeExecute(): void
     {
-        if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)($this->getOwner()) === false)) {
+        if ($this->enabled === false || ($this->enabled instanceof \Closure && ($this->enabled)($this->getModel()) === false)) {
             throw new Exception('This action is disabled');
         }
 
         // Verify that model fields wouldn't be too dirty
         if (is_array($this->fields)) {
-            $tooDirty = array_diff(array_keys($this->getOwner()->getDirtyRef()), $this->fields);
+            $tooDirty = array_diff(array_keys($this->getModel()->getDirtyRef()), $this->fields);
 
             if ($tooDirty) {
                 throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action.'))
                     ->addMoreInfo('too_dirty', $tooDirty)
-                    ->addMoreInfo('dirty', array_keys($this->getOwner()->getDirtyRef()))
+                    ->addMoreInfo('dirty', array_keys($this->getModel()->getDirtyRef()))
                     ->addMoreInfo('permitted', $this->fields);
             }
         } elseif (!is_bool($this->fields)) {
@@ -145,14 +148,14 @@ class UserAction
         // Verify some records scope cases
         switch ($this->appliesTo) {
             case self::APPLIES_TO_NO_RECORDS:
-                if ($this->getOwner()->loaded()) {
+                if ($this->getModel()->loaded()) {
                     throw (new Exception('This user action can be executed on non-existing record only.'))
-                        ->addMoreInfo('id', $this->getOwner()->getId());
+                        ->addMoreInfo('id', $this->getModel()->getId());
                 }
 
                 break;
             case self::APPLIES_TO_SINGLE_RECORD:
-                if (!$this->getOwner()->loaded()) {
+                if (!$this->getModel()->loaded()) {
                     throw new Exception('This user action requires you to load existing record first.');
                 }
 
@@ -172,9 +175,9 @@ class UserAction
         if ($this->preview === null) {
             throw new Exception('You must specify preview callback explicitly');
         } elseif (is_string($this->preview)) {
-            $fx = \Closure::fromCallable([$this->getOwner(), $this->preview]);
+            $fx = \Closure::fromCallable([$this->getModel(), $this->preview]);
         } else {
-            array_unshift($args, $this->getOwner());
+            array_unshift($args, $this->getModel());
             $fx = $this->preview;
         }
 
@@ -190,7 +193,7 @@ class UserAction
             return ($this->description)($this);
         }
 
-        return $this->description ?? $this->getCaption() . ' ' . $this->getOwner()->getModelCaption();
+        return $this->description ?? $this->getCaption() . ' ' . $this->getModel()->getModelCaption();
     }
 
     /**
@@ -203,7 +206,7 @@ class UserAction
         } elseif ($this->confirmation === true) {
             $confirmation = 'Are you sure you wish to execute ';
             $confirmation .= $this->getCaption();
-            $confirmation .= $this->getOwner()->getTitle() ? ' using ' . $this->getOwner()->getTitle() : '';
+            $confirmation .= $this->getModel()->getTitle() ? ' using ' . $this->getModel()->getTitle() : '';
             $confirmation .= '?';
 
             return $confirmation;
@@ -213,11 +216,20 @@ class UserAction
     }
 
     /**
-     * Return model associate with this action.
+     * Return model associated with this action.
      */
     public function getModel(): Model
     {
-        return $this->getOwner();
+        return $this->entity ?? $this->getOwner();
+    }
+
+    public function setEntity(Model $entity): void
+    {
+        if ($entity->getModel() !== $this->getOwner() && PHP_MAJOR_VERSION > 0) { // TODO 2nd condition is for phpstan, see https://github.com/phpstan/phpstan/issues/4928
+            throw new Exception('Entity model does not match owner object instance');
+        }
+
+        $this->entity = $entity;
     }
 
     public function getCaption(): string
