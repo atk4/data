@@ -162,7 +162,7 @@ class HasOne extends Reference
         if (!$ourModel->hasField($this->our_field)) {
             $ourModel->addField($this->our_field, [
                 'type' => $this->type,
-                'referenceLink' => $this->link,
+                Field::propName()->referenceLink => $this->link,
                 'system' => $this->system,
                 'joinName' => $this->joinName,
                 'default' => $this->default,
