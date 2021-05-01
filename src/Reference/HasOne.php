@@ -7,6 +7,7 @@ namespace Atk4\Data\Reference;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Reference;
+use Mvorisek\Atk4\Hintable\Core\Prop;
 
 /**
  * Reference\HasOne class.
@@ -164,7 +165,7 @@ class HasOne extends Reference
                 'type' => $this->type,
                 Field::propName()->referenceLink => $this->link,
                 'system' => $this->system,
-                'joinName' => $this->joinName,
+                Prop::propName(Field::class)->joinName => $this->joinName,
                 'default' => $this->default,
                 'never_persist' => $this->never_persist,
                 'read_only' => $this->read_only,
