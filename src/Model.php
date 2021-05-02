@@ -1056,7 +1056,7 @@ class Model implements \IteratorAggregate
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-//        $this->assertIsModel();
+        $this->assertIsModel();
 
         $this->scope()->addCondition(...func_get_args());
 

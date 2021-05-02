@@ -154,14 +154,18 @@ class HasOneSql extends HasOne
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->isEntity() && $ourModel->loaded() && !$theirModel->loaded()) {
             if ($ourModel->id_field === $this->getOurFieldName()) {
-                return $theirModel->addCondition($theirField, $this->getOurFieldValue());
+                return $theirModel->getModel()
+                    ->addCondition($theirField, $this->getOurFieldValue());
             }
         }
 
         // handles the deep traversal using an expression
         $ourFieldExpression = $ourModel->action('field', [$ourField]);
 
-        return $theirModel->addCondition($theirField, $ourFieldExpression);
+        ($theirModel->isEntity() ? $theirModel->getModel() : $theirModel)
+            ->addCondition($theirField, $ourFieldExpression);
+
+        return $theirModel;
     }
 
     /**
