@@ -2015,8 +2015,17 @@ class Model implements \IteratorAggregate
      */
     public function __debugInfo(): array
     {
+        if ($this->isEntity()) {
+            return [
+                'entityId' => $this->id_field && $this->hasField('id')
+                    ? (($this->_entityId !== null ? $this->_entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null'))
+                    : 'no id field',
+                'model' => $this->getModel()->__debugInfo(),
+            ];
+        }
+
         return [
-            'id' => $this->id_field && $this->hasField('id') ? $this->getId() : 'no id field',
+            'table' => $this->table,
             'scope' => $this->scope()->toWords(),
         ];
     }
