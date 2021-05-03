@@ -363,8 +363,12 @@ class Model implements \IteratorAggregate
     /**
      * @return static
      */
-    public function getModel(): self
+    public function getModel(bool $allowOnModel = false): self
     {
+        if ($allowOnModel && !$this->isEntity()) {
+            return $this;
+        }
+
         $this->assertIsEntity();
 
         return $this->_model;
@@ -384,6 +388,7 @@ class Model implements \IteratorAggregate
             $this->_model = null;
         }
         $model->_entityId = null;
+        $model->scope = null; // @phpstan-ignore-line
 
         return $model;
     }
@@ -1056,8 +1061,6 @@ class Model implements \IteratorAggregate
      */
     public function addCondition($field, $operator = null, $value = null)
     {
-        $this->assertIsModel();
-
         $this->scope()->addCondition(...func_get_args());
 
         return $this;
@@ -1068,6 +1071,8 @@ class Model implements \IteratorAggregate
      */
     public function scope(): Model\Scope\RootScope
     {
+        $this->assertIsModel();
+
         if ($this->scope->getModel() === null) {
             $this->scope->setModel($this);
         }
@@ -1244,7 +1249,7 @@ class Model implements \IteratorAggregate
             return $this;
         }
         $dataRef = &$this->getDataRef();
-        $dataRef = $this->persistence->{$isTryLoad ? 'tryLoad' : 'load'}($this, $this->remapIdLoadToPersistence($id));
+        $dataRef = $this->persistence->{$isTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
         if ($isTryLoad && $dataRef === null) {
             $dataRef = [];
             $this->unload();

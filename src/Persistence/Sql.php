@@ -370,7 +370,7 @@ class Sql extends Persistence
      */
     public function initQueryConditions(Model $model, Query $query): void
     {
-        $this->_initQueryConditions($query, $model->scope());
+        $this->_initQueryConditions($query, $model->getModel(true)->scope());
 
         // add entity ID to scope to allow easy traversal
         if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
@@ -749,7 +749,7 @@ class Sql extends Persistence
                 ->addMoreInfo('query', $insert->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
+                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
         if ($model->id_field && isset($data[$model->id_field])) {
@@ -827,7 +827,7 @@ class Sql extends Persistence
                 ->addMoreInfo('query', $update->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
+                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
         if ($model->id_field && isset($data[$model->id_field]) && $model->getDirtyRef()[$model->id_field]) {
@@ -870,7 +870,7 @@ class Sql extends Persistence
                 ->addMoreInfo('query', $delete->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('scope', $model->scope()->toWords());
+                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
     }
 

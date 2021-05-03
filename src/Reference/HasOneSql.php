@@ -162,7 +162,7 @@ class HasOneSql extends HasOne
         // handles the deep traversal using an expression
         $ourFieldExpression = $ourModel->action('field', [$ourField]);
 
-        ($theirModel->isEntity() ? $theirModel->getModel() : $theirModel)
+        $theirModel->getModel(true)
             ->addCondition($theirField, $ourFieldExpression);
 
         return $theirModel;

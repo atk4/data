@@ -53,7 +53,9 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model($this->db, ['table' => 'user']);
         $scope = $m->scope();
-        $this->assertSame($scope, $m->createEntity()->scope());
+        $this->assertSame($scope, $m->createEntity()->getModel()->scope());
+//        $this->expectException(\Atk4\Data\Exception::class);
+//        $m->createEntity()->scope();
     }
 
     public function testEntityReloadWithDifferentIdException()
