@@ -495,7 +495,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @internal should be removed or made non-public after #862 is merged
+     * @internal should be not used outside atk4/data
      */
     public function &getDataRef(): array
     {
@@ -505,7 +505,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @internal should be removed or made non-public after #862 is merged
+     * @internal should be not used outside atk4/data
      */
     public function &getDirtyRef(): array
     {
