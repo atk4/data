@@ -424,9 +424,9 @@ class Sql extends Persistence
 
         switch ($field->type) {
             case 'boolean':
-                // if enum is not set, then simply cast value to integer
+                // if enum is not set, then simply cast value to boolean
                 if (!isset($field->enum) || !$field->enum) {
-                    $v = (int) $v;
+                    $v = (bool) $v;
 
                     break;
                 }

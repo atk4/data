@@ -57,7 +57,7 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
             'integer' => 123,
             'money' => 123.45,
             'float' => 123.456789,
-            'boolean' => 1,
+            'boolean' => true,
             'boolean_enum' => 'N',
             'date' => '2019-01-20',
             'datetime' => '2019-01-20 12:23:34.000000',
