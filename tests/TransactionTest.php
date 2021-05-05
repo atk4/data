@@ -25,7 +25,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
-        $m->load(2);
+        $m = $m->load(2);
 
         $m->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
             throw new \Exception('Awful thing happened');
@@ -63,18 +63,19 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         // test insert
         $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHook(Model::HOOK_BEFORE_SAVE, function ($model, $is_update) {
-            $this->assertFalse($is_update);
+        $testCase = $this;
+        $m->onHookShort(Model::HOOK_BEFORE_SAVE, static function (bool $isUpdate) use ($testCase) {
+            $testCase->assertFalse($isUpdate);
         });
-        $m->save(['name' => 'Foo']);
+        $m->createEntity()->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
-            $this->assertTrue($is_update);
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
+            $testCase->assertTrue($isUpdate);
         });
-        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
+        $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testAfterSaveHook()
@@ -89,18 +90,19 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         // test insert
         $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
-            $this->assertFalse($is_update);
+        $testCase = $this;
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
+            $testCase->assertFalse($isUpdate);
         });
-        $m->save(['name' => 'Foo']);
+        $m->createEntity()->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
-            $this->assertTrue($is_update);
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
+            $testCase->assertTrue($isUpdate);
         });
-        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
+        $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
     public function testOnRollbackHook()
@@ -119,13 +121,14 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
 
         $hook_called = false;
         $values = [];
-        $m->onHook(Model::HOOK_ROLLBACK, function ($mm, $e) use (&$hook_called, &$values) {
+        $m->onHook(Model::HOOK_ROLLBACK, static function (Model $model, \Exception $e) use (&$hook_called, &$values) {
             $hook_called = true;
-            $values = $mm->get(); // model field values are still the same no matter we rolled back
-            $mm->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
+            $values = $model->get(); // model field values are still the same no matter we rolled back
+            $model->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
         });
 
         // this will fail because field foo is not in DB and call onRollback hook
+        $m = $m->createEntity();
         $m->setMulti(['name' => 'Jane', 'foo' => 'bar']);
         $m->save();
 

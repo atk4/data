@@ -171,7 +171,9 @@ class Reference
             $theirModel = Factory::factory($theirModelSeed, $defaults);
         }
 
-        return $this->addToPersistence($theirModel, $defaults);
+        $this->addToPersistence($theirModel, $defaults);
+
+        return $theirModel;
     }
 
     protected function getOurField(): Field
@@ -205,10 +207,7 @@ class Reference
         }
     }
 
-    /**
-     * Adds model to persistence.
-     */
-    protected function addToPersistence(Model $theirModel, array $defaults = []): Model
+    protected function addToPersistence(Model $theirModel, array $defaults = []): void
     {
         if (!$theirModel->persistence && $persistence = $this->getDefaultPersistence($theirModel)) {
             $persistence->add($theirModel, $defaults);
@@ -218,8 +217,6 @@ class Reference
         if ($this->caption !== null) {
             $theirModel->caption = $this->caption;
         }
-
-        return $theirModel;
     }
 
     /**

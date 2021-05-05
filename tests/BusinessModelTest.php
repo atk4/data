@@ -35,6 +35,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m = new Model();
         $m->addField('name');
         $m->addField('surname');
+        $m = $m->createEntity();
 
         $m->set('name', 5);
         $this->assertSame(5, $m->get('name'));
@@ -49,6 +50,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     public function testNoFieldException()
     {
         $m = new Model();
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('name', 5);
     }
@@ -57,6 +59,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     {
         $m = new Model();
         $m->addField('name');
+        $m = $m->createEntity();
         $dataRef = &$m->getDataRef();
         $dirtyRef = &$m->getDirtyRef();
         $dataRef = ['name' => 5];
@@ -109,6 +112,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         // now with defaults
         $m = new Model();
         $f = $m->addField('name', ['default' => 'John']);
+        $m = $m->createEntity();
         $this->assertSame('John', $f->default);
 
         $this->assertSame('John', $m->get('name'));
@@ -122,26 +126,17 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertSame('John', $m->get('name'));
     }
 
-    /*
-     * This is no longer the case after PR #69
-     *
-     * Now changing $m->get('id') will actually update the value
-     * of original records. In a way $m->get('id') is not a direct
-     * alias to ID, but has a deeper meaning and behaves more
-     * like a regular field.
-     *
-     *
     public function testDefaultInit()
     {
-        $d = new Persistence();
-        $m = new Model($d);
+        $p = new Persistence\Array_();
+        $m = new Model($p);
+        $m = $m->createEntity();
 
         $this->assertNotNull($m->getField('id'));
 
         $m->set('id', 20);
         $this->assertEquals(20, $m->getId());
     }
-     */
 
     public function testException1()
     {
@@ -149,17 +144,19 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
         $m->onlyFields(['surname']);
+        $m = $m->createEntity();
 
         $this->expectException(Exception::class);
         $m->set('name', 5);
     }
 
-    public function testException1fixed()
+    public function testException1Fixed()
     {
         $m = new Model();
         $m->addField('name');
         $m->addField('surname');
         $m->onlyFields(['surname']);
+        $m = $m->createEntity();
 
         $m->allFields();
 
@@ -174,6 +171,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     {
         $m = new Model();
         $m->addField('name');
+        $m = $m->createEntity();
         $m->set('name', 'foo');
         $this->assertSame('foo', $m->get('name'));
 
@@ -187,6 +185,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     public function testException2()
     {
         $m = new Model();
+        $m = $m->createEntity();
         $this->expectException(\Error::class);
         $m->set(0, 'foo'); // @phpstan-ignore-line
     }
@@ -194,6 +193,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     public function testException2a()
     {
         $m = new Model();
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('3', 'foo');
     }
@@ -201,6 +201,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     public function testException2b()
     {
         $m = new Model();
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('3b', 'foo');
     }
@@ -208,6 +209,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     public function testException2c()
     {
         $m = new Model();
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('', 'foo');
     }
@@ -216,6 +218,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     {
         $p = new Persistence\Array_();
         $c = new Client($p);
+        $c = $c->createEntity();
         $this->assertEquals(10, $c->get('order'));
     }
 
@@ -225,6 +228,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->addField('name', ['type' => 'string']);
         $m->addField('age', ['type' => 'int']);
         $m->addField('data');
+        $m = $m->createEntity();
 
         $m->set('name', '');
         $this->assertSame('', $m->get('name'));
@@ -241,6 +245,8 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m = new User();
 
         $m->addField('salary', ['default' => 1000]);
+        $m = $m->createEntity();
+
         $this->assertSame(1000, $m->get('salary'));
         $this->assertFalse($m->_isset('salary'));
 

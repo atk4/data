@@ -78,7 +78,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
     public function testContainsOne()
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // check do we have address set
         $a = $i->addr;
@@ -127,7 +127,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('United Kingdom', $c->name);
 
         // let's test how it all looks in persistence without typecasting
-        $exp_addr = $i->duplicate()->setOrder('id')->export(null, null, false)[0][$i->fieldName()->addr];
+        $exp_addr = $i->getModel()->setOrder('id')->export(null, null, false)[0][$i->fieldName()->addr];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
@@ -168,7 +168,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
     public function testContainsOneWhenChangeModelFields()
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // with address
         $a = $i->addr;

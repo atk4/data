@@ -19,7 +19,7 @@ class FieldHereditaryTest extends \Atk4\Schema\PhpunitTestCase
             return strtoupper($m->get('name'));
         });
 
-        $m->load(1);
+        $m = $m->load(1);
         $this->assertSame('world', $m->get('name'));
         $this->assertSame('WORLD', $m->get('caps'));
     }

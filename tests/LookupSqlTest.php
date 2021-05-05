@@ -89,9 +89,11 @@ class LUser extends Model
  */
 class LFriend extends Model
 {
-    public $skip_reverse = false;
     public $table = 'friend';
     public $title_field = 'friend_name';
+
+    /** @var bool */
+    public $skip_reverse = false;
 
     protected function init(): void
     {
@@ -125,7 +127,7 @@ class LFriend extends Model
             $c = clone $this;
             $c->skip_reverse = true;
 
-            $c->loadBy([
+            $c = $c->loadBy([
                 'user_id' => $this->get('friend_id'),
                 'friend_id' => $this->get('user_id'),
             ])->delete();
@@ -159,14 +161,15 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         $results = [];
 
         // should be OK, will set country name, rest of fields will be null
-        (clone $c)->saveAndUnload(['name' => 'Canada']);
+        $c->createEntity()->saveAndUnload(['name' => 'Canada']);
 
         // adds another country, but with more fields
-        (clone $c)->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
+        $c->createEntity()->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
 
         // setting field prior will affect save()
-        $c->set('is_eu', true);
-        $c->save(['name' => 'Estonia', 'code' => 'ES']);
+        $cc = $c->createEntity();
+        $cc->set('is_eu', true);
+        $cc->save(['name' => 'Estonia', 'code' => 'ES']);
 
         // is_eu will NOT BLEED into this record, because insert() does not make use of current model values.
         $c->insert(['name' => 'Korea', 'code' => 'KR']);

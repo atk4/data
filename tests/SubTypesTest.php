@@ -30,11 +30,12 @@ class StAccount extends Model
 
     public static function open($persistence, $name, $amount = 0)
     {
-        $m = new self($persistence);
+        $m = new static($persistence);
+        $m = $m->createEntity();
         $m->save(['name' => $name]);
 
         if ($amount) {
-            $m->ref('Transactions:Ob')->save(['amount' => $amount]);
+            $m->ref('Transactions:Ob')->createEntity()->save(['amount' => $amount]);
         }
 
         return $m;
@@ -42,18 +43,18 @@ class StAccount extends Model
 
     public function deposit($amount)
     {
-        return $this->ref('Transactions:Deposit')->save(['amount' => $amount]);
+        return $this->ref('Transactions:Deposit')->createEntity()->save(['amount' => $amount]);
     }
 
     public function withdraw($amount)
     {
-        return $this->ref('Transactions:Withdrawal')->save(['amount' => $amount]);
+        return $this->ref('Transactions:Withdrawal')->createEntity()->save(['amount' => $amount]);
     }
 
     public function transferTo(self $account, $amount)
     {
-        $out = $this->ref('Transactions:TransferOut')->save(['amount' => $amount]);
-        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->getId()]);
+        $out = $this->ref('Transactions:TransferOut')->createEntity()->save(['amount' => $amount]);
+        $in = $account->ref('Transactions:TransferIn')->createEntity()->save(['amount' => $amount, 'link_id' => $out->getId()]);
         $out->set('link_id', $in->getId());
         $out->save();
     }
@@ -62,6 +63,7 @@ class StAccount extends Model
 class StGenericTransaction extends Model
 {
     public $table = 'transaction';
+    /** @var string */
     public $type;
 
     protected function init(): void
@@ -80,7 +82,7 @@ class StGenericTransaction extends Model
             if (static::class !== $this->getClassName()) {
                 $cl = $this->getClassName();
                 $cl = new $cl($this->persistence);
-                $cl->load($this->getId());
+                $cl = $cl->load($this->getId());
 
                 $this->breakHook($cl);
             }

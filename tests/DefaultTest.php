@@ -13,6 +13,7 @@ class DefaultTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model();
         $m->addField('nodefault');
         $m->addField('withdefault', ['default' => 'abc']);
+        $m = $m->createEntity();
 
         $this->assertNull($m->get('nodefault'));
         $this->assertSame('abc', $m->get('withdefault'));

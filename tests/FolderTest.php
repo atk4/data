@@ -46,7 +46,7 @@ class FolderTest extends \Atk4\Schema\PhpunitTestCase
 
         $db = new Persistence\Sql($this->db->connection);
         $f = new Folder($db);
-        $f->load(4);
+        $f = $f->load(4);
 
         $this->assertEquals([
             'id' => 4,

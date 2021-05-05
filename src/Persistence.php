@@ -147,7 +147,7 @@ abstract class Persistence
             throw (new Exception($noId ? 'No record was found' : 'Record with specified ID was not found', 404))
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('id', $noId ? null : $id)
-                ->addMoreInfo('scope', $model->scope()->toWords());
+                ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
         return $data;

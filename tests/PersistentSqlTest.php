@@ -25,18 +25,18 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
@@ -54,26 +54,26 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('surname');
 
         $mm = (clone $m)->addCondition($m->id_field, 1);
-        $this->assertSame('John', (clone $mm)->load(1)->get('name'));
-        $this->assertNull((clone $mm)->tryload(2)->get('name'));
-        $this->assertSame('John', (clone $mm)->tryloadOne()->get('name'));
-        $this->assertSame('John', (clone $mm)->loadOne()->get('name'));
-        $this->assertSame('John', (clone $mm)->tryLoadAny()->get('name'));
-        $this->assertSame('John', (clone $mm)->loadAny()->get('name'));
+        $this->assertSame('John', $mm->load(1)->get('name'));
+        $this->assertNull($mm->tryload(2)->get('name'));
+        $this->assertSame('John', $mm->tryloadOne()->get('name'));
+        $this->assertSame('John', $mm->loadOne()->get('name'));
+        $this->assertSame('John', $mm->tryLoadAny()->get('name'));
+        $this->assertSame('John', $mm->loadAny()->get('name'));
 
         $mm = (clone $m)->addCondition('surname', 'Jones');
-        $this->assertSame('Sarah', (clone $mm)->load(2)->get('name'));
-        $this->assertNull((clone $mm)->tryload(1)->get('name'));
-        $this->assertSame('Sarah', (clone $mm)->tryloadOne()->get('name'));
-        $this->assertSame('Sarah', (clone $mm)->loadOne()->get('name'));
-        $this->assertSame('Sarah', (clone $mm)->tryLoadAny()->get('name'));
-        $this->assertSame('Sarah', (clone $mm)->loadAny()->get('name'));
+        $this->assertSame('Sarah', $mm->load(2)->get('name'));
+        $this->assertNull($mm->tryload(1)->get('name'));
+        $this->assertSame('Sarah', $mm->tryloadOne()->get('name'));
+        $this->assertSame('Sarah', $mm->loadOne()->get('name'));
+        $this->assertSame('Sarah', $mm->tryLoadAny()->get('name'));
+        $this->assertSame('Sarah', $mm->loadAny()->get('name'));
 
-        (clone $m)->loadAny();
-        (clone $m)->tryLoadAny();
+        $m->loadAny();
+        $m->tryLoadAny();
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Ambiguous conditions, more than one record can be loaded.');
-        (clone $m)->tryLoadOne();
+        $m->tryLoadOne();
     }
 
     public function testPersistenceInsert()
@@ -96,18 +96,18 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
             $ids[] = $this->db->insert($m, $row);
         }
 
-        $mm = (clone $m)->load($ids[0]);
+        $mm = $m->load($ids[0]);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load($ids[1]);
+        $mm = $m->load($ids[1]);
         $this->assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
 
-        $mm = (clone $m)->load($ids[0]);
+        $mm = $m->load($ids[0]);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load($ids[1]);
+        $mm = $m->load($ids[1]);
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
@@ -130,9 +130,9 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
             $ms[] = $m->insert($row);
         }
 
-        $this->assertSame('John', (clone $m)->load($ms[0])->get('name'));
+        $this->assertSame('John', $m->load($ms[0])->get('name'));
 
-        $this->assertSame('Jones', (clone $m)->load($ms[1])->get('surname'));
+        $this->assertSame('Jones', $m->load($ms[1])->get('surname'));
     }
 
     public function testModelSaveNoReload()
@@ -150,6 +150,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         // insert new record, model id field
         $m->reload_after_save = false;
+        $m = $m->createEntity();
         $m->save(['name' => 'Jane', 'surname' => 'Doe']);
         $this->assertSame('Jane', $m->get('name'));
         $this->assertSame('Doe', $m->get('surname'));
@@ -199,21 +200,19 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         foreach ($dbData['user'] as $id => $row) {
             $ids[] = $this->db->insert($m, $row);
         }
-        $this->assertFalse($m->loaded());
 
         $m->delete($ids[0]);
-        $this->assertFalse($m->loaded());
 
-        $m->load($ids[1]);
-        $this->assertSame('Jones', $m->get('surname'));
-        $m->set('surname', 'Smith');
-        $m->save();
+        $m2 = $m->load($ids[1]);
+        $this->assertSame('Jones', $m2->get('surname'));
+        $m2->set('surname', 'Smith');
+        $m2->save();
 
-        $m->tryLoad($ids[0]);
-        $this->assertFalse($m->loaded());
+        $m2 = $m->tryLoad($ids[0]);
+        $this->assertFalse($m2->loaded());
 
-        $m->load($ids[1]);
-        $this->assertSame('Smith', $m->get('surname'));
+        $m2 = $m->load($ids[1]);
+        $this->assertSame('Smith', $m2->get('surname'));
     }
 
     /**

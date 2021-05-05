@@ -28,7 +28,7 @@ actually opened unless you perform load/save operation::
     $p = new Persistence\Csv('myfile.csv');
 
     $u = new Model_User($p);
-    $u->tryLoadAny();   // actually opens file and finds first record
+    $u = $u->tryLoadAny();   // actually opens file and finds first record
 
 Exporting and Importing data from CSV
 =====================================

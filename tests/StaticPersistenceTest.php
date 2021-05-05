@@ -19,12 +19,12 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
 
         // default title field
         $m = new Model($p);
-        $m->load(1);
+        $m = $m->load(1);
         $this->assertSame('world', $m->get('name'));
 
         // custom title field and try loading from same static twice
         $m = new Model($p); //, ['title_field' => 'foo']);
-        $m->load(1);
+        $m = $m->load(1);
         $this->assertSame('world', $m->get('name')); // still 'name' here not 'foo'
     }
 
@@ -33,7 +33,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $p = new Persistence\Static_([['hello', 'xx', true], ['world', 'xy', false]]);
         $m = new Model($p);
 
-        $m->load(1);
+        $m = $m->load(1);
 
         $this->assertSame('world', $m->get('name'));
         $this->assertSame('xy', $m->get('field1'));
@@ -45,7 +45,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $p = new Persistence\Static_([['foo' => 'hello'], ['foo' => 'world']]);
         $m = new Model($p);
 
-        $m->load(1);
+        $m = $m->load(1);
 
         $this->assertSame('world', $m->get('foo'));
     }
@@ -55,7 +55,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $p = new Persistence\Static_([['id' => 20, 'foo' => 'hello'], ['id' => 21, 'foo' => 'world']]);
         $m = new Model($p);
 
-        $m->load(21);
+        $m = $m->load(21);
 
         $this->assertSame('world', $m->get('foo'));
     }
@@ -65,7 +65,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $p = new Persistence\Static_([20 => ['foo' => 'hello'], 21 => ['foo' => 'world']]);
         $m = new Model($p);
 
-        $m->load(21);
+        $m = $m->load(21);
 
         $this->assertSame('world', $m->get('foo'));
     }
@@ -75,7 +75,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $p = new Persistence\Static_([]);
         $m = new Model($p);
 
-        $m->tryLoadAny();
+        $m = $m->tryLoadAny();
 
         $this->assertFalse($m->loaded());
     }

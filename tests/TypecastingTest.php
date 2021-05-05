@@ -35,6 +35,23 @@ class MyDateTime extends \DateTime
 
 class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 {
+    /** @var string */
+    private $defaultTzBackup;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->defaultTzBackup = date_default_timezone_get();
+    }
+
+    protected function tearDown(): void
+    {
+        date_default_timezone_set($this->defaultTzBackup);
+
+        parent::tearDown();
+    }
+
     public function testType()
     {
         $dbData = [
@@ -68,7 +85,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('array', ['type' => 'array']);
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
 
         $this->assertSame('foo', $mm->get('string'));
         $this->assertTrue($mm->get('boolean'));
@@ -80,7 +97,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame([1, 2, 3], $mm->get('array'));
         $this->assertSame(8.202343, $mm->get('float'));
 
-        (clone $m)->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData = [
             'types' => [
@@ -162,7 +179,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('float', ['type' => 'float']);
         $m->addField('array', ['type' => 'array']);
         $m->addField('object', ['type' => 'object']);
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
 
         // Only
         $this->assertSame($emptyStringValue, $mm->get('string'));
@@ -198,7 +215,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $mm->save();
         $this->assertEquals($dbData, $this->getDb());
 
-        $m->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData['types'][2] = [
             'id' => 2,
@@ -232,6 +249,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('a');
         $m->addField('b');
         $m->addField('c');
+        $m = $m->createEntity();
 
         unset($row['id']);
         $m->setMulti($row);
@@ -281,7 +299,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m->addField('rot13', ['typecast' => [$rot, $rot]]);
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
 
         $this->assertSame('hello world', $mm->get('rot13'));
         $this->assertSame(1, (int) $mm->getId());
@@ -293,7 +311,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($mm->get('b1'));
         $this->assertFalse($mm->get('b2'));
 
-        (clone $m)->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
         $m->delete(1);
 
         unset($dbData['types'][0]);
@@ -318,7 +336,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
 
-        $m->tryLoad(1);
+        $m = $m->tryLoad(1);
 
         $this->assertTrue($m->get('date') instanceof MyDate);
     }
@@ -338,7 +356,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
 
-        $m->tryLoadAny();
+        $m = $m->tryLoadAny();
 
         $this->assertTrue($m->get('date') instanceof MyDate);
     }
@@ -358,7 +376,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
 
-        $m->loadBy('id', 1);
+        $m = $m->loadBy('id', 1);
 
         $this->assertTrue($m->get('date') instanceof MyDate);
     }
@@ -377,17 +395,17 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
 
-        $m->loadOne();
-        $this->assertTrue($m->loaded());
-        $d = $m->get('date');
-        $m->unload();
+        $m2 = $m->loadOne();
+        $this->assertTrue($m2->loaded());
+        $d = $m2->get('date');
+        $m2->unload();
 
-        $m->loadBy('date', $d);
-        $this->assertTrue($m->loaded());
-        $m->unload();
+        $m2 = $m->loadBy('date', $d);
+        $this->assertTrue($m2->loaded());
+        $m2->unload();
 
-        $m->addCondition('date', $d)->loadOne();
-        $this->assertTrue($m->loaded());
+        $m2 = $m->addCondition('date', $d)->loadOne();
+        $this->assertTrue($m2->loaded());
     }
 
     public function testTypecastBoolean()
@@ -453,7 +471,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
-        $m->loadOne();
+        $m = $m->loadOne();
 
         // must respect 'actual'
         $this->assertNotNull($m->get('ts'));
@@ -475,7 +493,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $this->expectException(Exception::class);
-        $m->loadOne();
+        $m = $m->loadOne();
     }
 
     public function testDirtyTimestamp()
@@ -493,7 +511,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
-        $m->loadOne();
+        $m = $m->loadOne();
         $m->set('ts', clone $m->get('ts'));
 
         $this->assertFalse($m->isDirty('ts'));
@@ -512,7 +530,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
-        $m->loadOne();
+        $m = $m->loadOne();
         $m->set('ts', new \DateTime('2012-02-30'));
         $m->save();
 
@@ -526,6 +544,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('i', ['type' => 'integer']);
+        $m = $m->createEntity();
 
         $m->getDataRef()['i'] = 1;
         $this->assertSame([], $m->getDirtyRef());
@@ -542,6 +561,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         // same test without type integer
         $m = new Model($db, ['table' => 'types']);
         $m->addField('i');
+        $m = $m->createEntity();
 
         $m->getDataRef()['i'] = 1;
         $this->assertSame([], $m->getDirtyRef());
@@ -575,7 +595,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
-        $m->loadOne();
+        $m = $m->loadOne();
 
         $m->set('ts', $sql_time_new);
         $this->assertTrue($m->isDirty('ts'));
@@ -603,7 +623,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
-        $m->loadOne();
+        $m = $m->loadOne();
 
         $m->set('ts', $sql_time);
         $this->assertTrue($m->isDirty('ts'));

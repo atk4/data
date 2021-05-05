@@ -17,7 +17,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => false]);
         $m->addExpression('x', '2+3');
-        $m->loadOne();
+        $m = $m->loadOne();
         $this->assertEquals(5, $m->get('x'));
     }
 
@@ -41,11 +41,11 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
             );
         }
 
-        $ii = (clone $i)->tryLoad(1);
+        $ii = $i->tryLoad(1);
         $this->assertEquals(10, $ii->get('total_net'));
         $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
-        $ii = (clone $i)->tryLoad(2);
+        $ii = $i->tryLoad(2);
         $this->assertEquals(20, $ii->get('total_net'));
         $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
@@ -58,7 +58,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
             );
         }
 
-        $i->tryLoad(1);
+        $i = $i->tryLoad(1);
         $this->assertEquals(($i->get('total_net') + $i->get('total_vat')) * 2, $i->get('double_total_gross'));
     }
 
@@ -84,11 +84,11 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
             );
         }
 
-        $ii = (clone $i)->tryLoad(1);
+        $ii = $i->tryLoad(1);
         $this->assertEquals(10, $ii->get('total_net'));
         $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
-        $ii = (clone $i)->tryLoad(2);
+        $ii = $i->tryLoad(2);
         $this->assertEquals(20, $ii->get('total_net'));
         $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
     }
@@ -113,7 +113,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
             );
         }
 
-        $ii = (clone $i)->tryLoad(1);
+        $ii = $i->tryLoad(1);
         $this->assertEquals(10, $ii->get('total_net'));
         $this->assertEquals(30, $ii->get('sum_net'));
 
@@ -166,10 +166,10 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
             );
         }
 
-        $m->tryLoad(1);
-        $this->assertNull($m->get('name'));
-        $m->tryLoad(2);
-        $this->assertSame('Sue', $m->get('name'));
+        $mm = $m->tryLoad(1);
+        $this->assertNull($mm->get('name'));
+        $mm = $m->tryLoad(2);
+        $this->assertSame('Sue', $mm->get('name'));
     }
 
     public function testReloading()
@@ -186,13 +186,13 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $m->addExpression('sum', '[a] + [b]');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertEquals(4, $mm->get('sum'));
 
         $mm->save(['a' => 3]);
         $this->assertEquals(5, $mm->get('sum'));
 
-        $this->assertEquals(9, $m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
+        $this->assertEquals(9, $m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
 
         $this->setDb($dbData);
         $m = new Model($db, ['table' => 'math', 'reload_after_save' => false]);
@@ -200,13 +200,13 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $m->addExpression('sum', '[a] + [b]');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertEquals(4, $mm->get('sum'));
 
         $mm->save(['a' => 3]);
         $this->assertEquals(4, $mm->get('sum'));
 
-        $this->assertNull($m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
+        $this->assertNull($m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
     }
 
     public function testExpressionActionAlias()
@@ -254,7 +254,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $i->addExpression('one_basic', [$i->expr('1'), 'type' => 'integer', 'system' => true]);
         $i->addExpression('one_never_save', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
         $i->addExpression('one_never_persist', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
-        $i->loadOne();
+        $i = $i->loadOne();
 
         // normal fields
         $this->assertSame(0, $i->get('zero_basic'));

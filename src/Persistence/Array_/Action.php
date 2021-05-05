@@ -298,7 +298,7 @@ class Action
     }
 
     /**
-     * @deprecated use "getRows" method instead - will be removed in v2.5
+     * @deprecated use "getRows" method instead - TODO remove in v3.1
      */
     public function get(): array
     {

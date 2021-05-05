@@ -13,6 +13,7 @@ use Atk4\Data\Persistence;
  */
 class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
 {
+    /** @var Model */
     public $m;
 
     protected function setUp(): void
@@ -37,12 +38,12 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
      */
     public function testBasic()
     {
-        $mm = (clone $this->m)->tryLoadAny();
-        $this->assertSame('John', $mm->get('name'));
+        $m = $this->m->tryLoadAny();
+        $this->assertSame('John', $m->get('name'));
 
         $this->m->setOrder('name', 'desc');
-        $mm = (clone $this->m)->tryLoadAny();
-        $this->assertSame('Sue', $mm->get('name'));
+        $m = $this->m->tryLoadAny();
+        $this->assertSame('Sue', $m->get('name'));
 
         $this->assertEquals([1 => 'John', 2 => 'Sue'], $this->m->getTitles());
     }
@@ -52,8 +53,8 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
      */
     public function testLoad()
     {
-        $this->m->load(1);
-        $this->assertTrue($this->m->loaded());
+        $m = $this->m->load(1);
+        $this->assertTrue($m->loaded());
     }
 
     /**
@@ -61,10 +62,10 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
      */
     public function testLoadSave()
     {
-        $this->m->load(1);
-        $this->m->set('name', 'X');
+        $m = $this->m->load(1);
+        $m->set('name', 'X');
         $this->expectException(Exception::class);
-        $this->m->save();
+        $m->save();
     }
 
     /**
@@ -81,9 +82,9 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
      */
     public function testSave1()
     {
-        $this->m->tryLoadAny();
+        $m = $this->m->tryLoadAny();
         $this->expectException(Exception::class);
-        $this->m->saveAndUnload();
+        $m->saveAndUnload();
     }
 
     /**
@@ -91,15 +92,15 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
      */
     public function testLoadBy()
     {
-        $this->m->loadBy('name', 'Sue');
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->loadBy('name', 'Sue');
+        $this->assertSame('Sue', $m->get('name'));
     }
 
     public function testLoadCondition()
     {
         $this->m->addCondition('name', 'Sue');
-        $this->m->loadAny();
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->loadAny();
+        $this->assertSame('Sue', $m->get('name'));
     }
 
     public function testFailDelete1()

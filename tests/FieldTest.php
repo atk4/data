@@ -16,6 +16,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['default' => 'abc']);
+        $m = $m->createEntity();
 
         $this->assertFalse($m->isDirty('foo'));
 
@@ -46,6 +47,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['default' => 'abc']);
+        $m = $m->createEntity();
 
         $this->assertTrue($m->compare('foo', 'abc'));
         $m->set('foo', 'zzz');
@@ -58,6 +60,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['mandatory' => true]);
+        $m = $m->createEntity();
         $m->set('foo', 'abc');
         $m->set('foo', '');
 
@@ -72,6 +75,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
+        $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
         $m->set('foo', '');
@@ -81,6 +85,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
+        $m = $m->createEntity();
 
         $this->expectException(ValidationException::class);
         $m->set('foo', null);
@@ -130,7 +135,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true]);
         $m->addField('surname');
-        $m->load(1);
+        $m = $m->load(1);
         $this->expectException(Exception::class);
         $m->save(['name' => null]);
     }
@@ -185,6 +190,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['read_only' => true]);
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 'bar');
     }
@@ -193,6 +199,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
+        $m = $m->createEntity();
         $m->set('foo', 'abc');
         $this->assertSame('abc', $m->get('foo'));
     }
@@ -201,6 +208,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['enum' => ['foo', 'bar']]);
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 'xx');
     }
@@ -209,6 +217,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar']]);
+        $m = $m->createEntity();
         $m->set('foo', 1);
 
         $this->assertSame(1, $m->get('foo'));
@@ -221,6 +230,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar']]);
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', true);
     }
@@ -232,6 +242,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         // to a weird behaviours of PHP
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
+        $m = $m->createEntity();
         $m->set('foo', null);
 
         $this->assertNull($m->get('foo'));
@@ -241,6 +252,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['values' => ['foo', 'bar']]);
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 4);
     }
@@ -249,6 +261,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['values' => [3 => 'bar']]);
+        $m = $m->createEntity();
         $m->set('foo', 3);
 
         $this->assertSame(3, $m->get('foo'));
@@ -261,6 +274,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['values' => [1 => 'bar']]);
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', true);
     }
@@ -269,6 +283,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo', ['values' => [1 => 'bar']]);
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 'bar');
     }
@@ -280,6 +295,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         // to a weird behaviours of PHP
         $m = new Model();
         $m->addField('foo', ['values' => ['1a' => 'bar']]);
+        $m = $m->createEntity();
         $m->set('foo', '1a');
         $this->assertSame('1a', $m->get('foo'));
     }
@@ -296,7 +312,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'item']);
         $m->addField('name', ['never_persist' => true]);
         $m->addField('surname', ['never_save' => true]);
-        $m->load(1);
+        $m = $m->load(1);
 
         $this->assertNull($m->get('name'));
         $this->assertSame('Smith', $m->get('surname'));
@@ -363,7 +379,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->hasOne('category_id', ['model' => $c])
             ->addTitle();
 
-        $m->load(1);
+        $m = $m->load(1);
 
         $this->assertSame('John', $m->get('name'));
         $this->assertSame('Programmer', $m->get('category'));
@@ -387,6 +403,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model();
         $m->addField('foo');
+        $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('baz', 'bar');
     }
@@ -405,8 +422,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('surname');
         $m->insert(['first_name' => 'Peter', 'surname' => 'qq']);
 
-        $mm = clone $m;
-        $mm->loadBy('first_name', 'John');
+        $mm = $m->loadBy('first_name', 'John');
         $this->assertSame('John', $mm->get('first_name'));
 
         $d = $m->export();
@@ -447,9 +463,9 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         });
         $m->insert(['net' => 30, 'vat' => 8]);
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertEquals(121, $mm->get('total'));
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertEquals(38, $mm->get('total'));
 
         $d = $m->export(); // in export calculated fields are not included
@@ -513,13 +529,15 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
             //'password'  => 'bonkers',
             'typecast' => [$encrypt, $decrypt],
         ]);
+        $m = $m->createEntity();
         $m->save(['name' => 'John', 'secret' => 'i am a woman']);
 
         $dbData = $this->getDb();
         $this->assertNotNull($dbData['user'][1]['secret']);
         $this->assertNotSame('i am a woman', $dbData['user'][1]['secret']);
 
-        $m->unload()->load(1);
+        $m->set('secret', 'unload');
+        $m->reload();
         $this->assertSame('i am a woman', $m->get('secret'));
     }
 
@@ -541,6 +559,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('time', ['type' => 'time']);
         $m->addField('array', ['type' => 'array']);
         $m->addField('object', ['type' => 'object']);
+        $m = $m->createEntity();
 
         // string
         $m->set('string', "Two\r\nLines  ");
@@ -608,6 +627,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'string']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', []);
     }
@@ -616,6 +636,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'text']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', []);
     }
@@ -624,6 +645,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'integer']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', []);
     }
@@ -632,6 +654,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'money']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', []);
     }
@@ -640,6 +663,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'float']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', []);
     }
@@ -648,6 +672,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'date']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', []);
     }
@@ -656,6 +681,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'datetime']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', []);
     }
@@ -664,6 +690,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'time']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', []);
     }
@@ -672,6 +699,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'integer']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', '123---456');
     }
@@ -680,6 +708,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'money']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', '123---456');
     }
@@ -688,6 +717,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'float']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', '123---456');
     }
@@ -696,6 +726,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'array']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', 'ABC');
     }
@@ -704,6 +735,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'object']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', 'ABC');
     }
@@ -712,6 +744,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'boolean']);
+        $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', 'ABC');
     }
@@ -734,6 +767,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('time', ['type' => 'time']);
         $m->addField('array', ['type' => 'array']);
         $m->addField('object', ['type' => 'object']);
+        $m = $m->createEntity();
 
         $this->assertSame('TwoLines', $m->getField('string')->toString("Two\r\nLines  "));
         $this->assertSame("Two\nLines", $m->getField('text')->toString("Two\r\nLines  "));
@@ -767,6 +801,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $model->addField('visible', ['ui' => ['visible' => true]]);
         $model->addField('visible_system', ['ui' => ['visible' => true], 'system' => true]);
         $model->addField('not_editable', ['ui' => ['editable' => false]]);
+        $model = $model->createEntity();
 
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
         $this->assertSame(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
@@ -793,6 +828,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $model->addField('date', ['type' => 'date']);
         $model->addField('time', ['type' => 'time']);
         $model->addField('datetime', ['type' => 'datetime']);
+        $model = $model->createEntity();
 
         $this->assertSame('', $model->getField('date')->toString());
         $this->assertSame('', $model->getField('time')->toString());
@@ -825,6 +861,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('a');
         $m->addField('b', ['mandatory' => true]);
         $m->addField('c', ['required' => true]);
+        $m = $m->createEntity();
 
         // valid value for set()
         $m->set('a', 'x');
@@ -859,6 +896,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('is_vip_1', ['type' => 'boolean', 'enum' => ['No', 'Yes']]);
         $m->addField('is_vip_2', ['type' => 'boolean', 'valueTrue' => 1, 'valueFalse' => 0]);
         $m->addField('is_vip_3', ['type' => 'boolean', 'valueTrue' => 'Y', 'valueFalse' => 'N']);
+        $m = $m->createEntity();
 
         $m->set('is_vip_1', 'No');
         $this->assertFalse($m->get('is_vip_1'));

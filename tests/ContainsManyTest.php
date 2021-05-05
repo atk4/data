@@ -80,7 +80,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
     public function testContainsMany()
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // now let's add some lines
         $l = $i->lines;
@@ -191,7 +191,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
     public function testNestedContainsMany()
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // now let's add some lines
         $l = $i->lines;
@@ -217,17 +217,17 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
         }
 
         // add some discounts
-        (clone $l)->load(1)->discounts->insert([
+        $l->load(1)->discounts->insert([
             $l->discounts->fieldName()->id => 1,
             $l->discounts->fieldName()->percent => 5,
             $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-15'),
         ]);
-        (clone $l)->load(1)->discounts->insert([
+        $l->load(1)->discounts->insert([
             $l->discounts->fieldName()->id => 2,
             $l->discounts->fieldName()->percent => 10,
             $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-30'),
         ]);
-        (clone $l)->load(2)->discounts->insert([
+        $l->load(2)->discounts->insert([
             $l->discounts->fieldName()->id => 1,
             $l->discounts->fieldName()->percent => 20,
             $l->discounts->fieldName()->valid_till => new \DateTime('2019-12-31'),
@@ -257,7 +257,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without typecasting
-        $exp_lines = $i->duplicate()->setOrder($i->fieldName()->id)->export(null, null, false)[0][$i->fieldName()->lines];
+        $exp_lines = $i->getModel()->setOrder($i->fieldName()->id)->export(null, null, false)[0][$i->fieldName()->lines];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 

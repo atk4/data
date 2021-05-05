@@ -23,7 +23,7 @@ class ModelTest extends PhpunitTestCase
         $this->getMigrator($user)->create();
 
         // now we can use user
-        $user->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
+        $user->createEntity()->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
     }
 
     public function testImportTable()

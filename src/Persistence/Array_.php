@@ -215,7 +215,6 @@ class Array_ extends Persistence
             $id = $selectRow[$model->id_field];
 
             $row = $this->tryLoad($model, $id);
-            $model->setId($id); // @TODO is it needed?
 
             return $row;
         }
@@ -385,10 +384,10 @@ class Array_ extends Persistence
      */
     protected function applyScope(Model $model, Action $action): void
     {
-        $scope = $model->scope();
+        $scope = $model->getModel(true)->scope();
 
         // add entity ID to scope to allow easy traversal
-        if ($model->id_field && $model->getId() !== null) {
+        if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
             $scope = new Model\Scope([$scope]);
             $scope->addCondition($model->getField($model->id_field), $model->getId());
         }

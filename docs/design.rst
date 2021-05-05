@@ -272,7 +272,7 @@ ID Field
 Each object is stored with some unique identifier, so you can load and store
 object if you know it's ID::
 
-    $order->load(20);
+    $order = $order->load(20);
     $order->set('amount', 1200.20);
     $order->save();
 
@@ -360,7 +360,7 @@ DataSet is an object that represents collection of Domain model records that
 are persisted::
 
     $order = $db->add('Model_Order');
-    $order->load(10);
+    $order = $order->load(10);
 
 In scenario above we loaded a specific record. Agile Data does not create a
 separate object when loading, instead the same object is re-used. This is done
@@ -372,13 +372,13 @@ Orders::
 
     $sum = 0;
     $order = $db->add('Model_Order');
-    $order->load(10);
+    $order = $order->load(10);
     $sum += $order->get('amount');
 
-    $order->load(11);
+    $order = $order->load(11);
     $sum += $order->get('amount');
 
-    $order->load(13);
+    $order = $order->load(13);
     $sum += $order->get('amount');
 
 You can iterate over the DataSet::

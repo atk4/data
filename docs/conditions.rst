@@ -14,7 +14,7 @@ When model is associated with the database, you can specify a default table
 either explicitly or through a $table property inside a model::
 
     $m = new Model_User($db, 'user');
-    $m->load(1);
+    $m = $m->load(1);
     echo $m->get('gender');   // "M"
 
 
@@ -23,7 +23,7 @@ narrow down set of "loadable" records by introducing a condition::
 
     $m = new Model_User($db, 'user');
     $m->addCondition('gender','F');
-    $m->load(1);    // exception, user with ID=1 is M
+    $m = $m->load(1);    // exception, user with ID=1 is M
 
 Conditions serve important role and must be used to intelligently restrict
 logically accessible data for a model before you attempt the loading.
@@ -45,8 +45,8 @@ to preserve the state of your model, you need to use clone::
     $m = new Model_User($db, 'user');
     $girls = (clone $m)->addCondition('gender','F');
 
-    $m->load(1);        // success
-    $girls->load(1);    // exception
+    $m = $m->load(1);        // success
+    $girls = $girls->load(1);    // exception
 
 Operations
 ----------

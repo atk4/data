@@ -4,15 +4,9 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Static_ as Persistence_Static;
 
-/**
- * Sample trait designed to extend model.
- *
- * @target Model
- */
 trait UaReminder
 {
     public function send_reminder()
@@ -49,11 +43,9 @@ class UaClient extends Model
     }
 }
 
-/**
- * Implements various tests for UserAction.
- */
 class UserActionTest extends \Atk4\Schema\PhpunitTestCase
 {
+    /** @var Persistence_Static */
     public $pers;
 
     protected function setUp(): void
@@ -70,19 +62,18 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     {
         $client = new UaClient($this->pers);
 
-        $actions = $client->getUserActions();
-        $this->assertCount(4, $actions); // don't return system actions here, but include add/edit/delete
+        $this->assertCount(4, $client->getUserActions()); // don't return system actions here, but include add/edit/delete
         $this->assertCount(0, $client->getUserActions(Model\UserAction::APPLIES_TO_ALL_RECORDS)); // don't return system actions here
 
-        $act1 = $actions['send_reminder'];
-
         // action takes no arguments. If it would, we should be able to find info about those
+        $act1 = $client->getUserActions()['send_reminder'];
         $this->assertSame([], $act1->args);
         $this->assertSame(Model\UserAction::APPLIES_TO_SINGLE_RECORD, $act1->appliesTo);
 
         // load record, before executing, because scope is single record
-        $client->load(1);
+        $client = $client->load(1);
 
+        $act1 = $client->getUserActions()['send_reminder'];
         $this->assertNotTrue($client->get('reminder_sent'));
         $res = $act1->execute();
         $this->assertTrue($client->get('reminder_sent'));
@@ -111,7 +102,7 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
             return $m->get('name');
         });
 
-        $client->load(1);
+        $client = $client->load(1);
         $this->assertSame('John', $client->getUserAction('say_name')->execute());
 
         $client->getUserAction('say_name')->preview = function ($m, $arg) {
@@ -138,6 +129,8 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     public function testAppliesTo1()
     {
         $client = new UaClient($this->pers);
+        $client = $client->createEntity();
+
         $this->expectExceptionMessage('load existing record');
         $client->executeUserAction('send_reminder');
     }
@@ -146,7 +139,7 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     {
         $client = new UaClient($this->pers);
         $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS]);
-        $client->load(1);
+        $client = $client->load(1);
 
         $this->expectExceptionMessage('can be executed on non-existing record');
         $client->executeUserAction('new_client');
@@ -156,6 +149,7 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     {
         $client = new UaClient($this->pers);
         $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS, 'atomic' => false]);
+        $client = $client->createEntity();
 
         $this->expectExceptionMessage('not defined');
         $client->executeUserAction('new_client');
@@ -171,7 +165,7 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     public function testDisabled1()
     {
         $client = new UaClient($this->pers);
-        $client->load(1);
+        $client = $client->load(1);
 
         $client->getUserAction('send_reminder')->enabled = false;
 
@@ -182,7 +176,7 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     public function testDisabled2()
     {
         $client = new UaClient($this->pers);
-        $client->load(1);
+        $client = $client->load(1);
 
         $client->getUserAction('send_reminder')->enabled = function () {
             return false;
@@ -195,7 +189,7 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     public function testDisabled3()
     {
         $client = new UaClient($this->pers);
-        $client->load(1);
+        $client = $client->load(1);
 
         $client->getUserAction('send_reminder')->enabled = function () {
             return true;
@@ -208,49 +202,49 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     public function testFields()
     {
         $client = new UaClient($this->pers);
-        $a = $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
+        $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
 
-        $client->load(1);
+        $client = $client->load(1);
 
         $this->assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
-        $a->execute();
+        $client->getUserAction('change_details')->execute();
         $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testFieldsTooDirty1()
     {
         $client = new UaClient($this->pers);
-        $a = $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
+        $client->addUserAction('change_details', ['callback' => 'save', 'fields' => ['name']]);
 
-        $client->load(1);
+        $client = $client->load(1);
 
         $this->assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
         $client->set('reminder_sent', true);
         $this->expectExceptionMessage('dirty fields');
-        $a->execute();
+        $client->getUserAction('change_details')->execute();
         $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testFieldsIncorrect()
     {
         $client = new UaClient($this->pers);
-        $a = $client->addUserAction('change_details', ['callback' => 'save', 'fields' => 'whops_forgot_brackets']);
+        $client->addUserAction('change_details', ['callback' => 'save', 'fields' => 'whops_forgot_brackets']);
 
-        $client->load(1);
+        $client = $client->load(1);
 
         $this->assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
         $this->expectExceptionMessage('array');
-        $a->execute();
+        $client->getUserAction('change_details')->execute();
         $this->assertSame('Peter', $client->get('name'));
     }
 
     public function testConfirmation()
     {
         $client = new UaClient($this->pers);
-        $client->load(1);
+        $client = $client->load(1);
         $action = $client->addUserAction('test');
 
         $this->assertFalse($action->getConfirmation());
@@ -262,7 +256,7 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Are you sure?', $action->getConfirmation());
 
         $action->confirmation = function ($action) {
-            return 'Proceed with Test: ' . $action->getModel()->getTitle();
+            return 'Proceed with Test: ' . $action->getEntity()->getTitle();
         };
         $this->assertSame('Proceed with Test: John', $action->getConfirmation());
     }

@@ -136,7 +136,7 @@ inside console::
     $m = new \Atk4\Data\Model($db, 'contact_info');
     $m->addFields(['address_1','address_2']);
     $m->addCondition('address_1', 'not', null);
-    $m->loadAny();
+    $m = $m->loadAny();
     $m->get();
     $m->action('count')->getOne();
 
@@ -158,7 +158,7 @@ Next, exit and create file `src/Model_ContactInfo.php`::
 Save, exit and run console again. You can now type this::
 
     $m = new Model_ContactInfo($db);
-    $m->loadAny();
+    $m = $m->loadAny();
     $m->get();
 
 .. note:: Should the "addCondition" be located inside model definition or
@@ -220,7 +220,7 @@ Active Record is a third essential piece of information that your model stores.
 You can load / unload records like this::
 
     $m = new Model_User($db);
-    $m->loadAny();
+    $m = $m->loadAny();
 
     $m->get();     // inside console, this will show you what's inside your model
 
@@ -353,7 +353,7 @@ Lets once again load up the console for some exercises::
 
     $m = new Model_User($db);
 
-    $m->loadBy('username','john');
+    $m = $m->loadBy('username','john');
     $m->get();
 
 At this point you'll see that address has also been loaded for the user.
@@ -393,7 +393,7 @@ For some persistence classes, you should use constructor directly::
     $db = new \Atk4\Data\Persistence\Array_($array);
     $m = new \Atk4\Data\Model($db);
     $m->addField('name');
-    $m->load(2);
+    $m = $m->load(2);
     echo $m->get('name');  // Peter
 
 There are several Persistence classes that deal with different data sources.
@@ -441,7 +441,7 @@ As per our database design - one user can have multiple 'system' records::
 
 Next you can load a specific user and traverse into System model::
 
-    $m->loadBy('username', 'john');
+    $m = $m->loadBy('username', 'john');
     $s = $m->ref('System');
 
 Unlike most ORM and ActiveRecord implementations today - instead of returning
@@ -573,7 +573,7 @@ This is useful with hasMany references::
 
     $m = new Model_User($db);
     $m->getRef('country_id')->addField('country', 'name');
-    $m->loadAny();
+    $m = $m->loadAny();
     $m->get();  // look for 'country' field
 
 hasMany::addField() again is a short-cut for creating expression, which you can
@@ -590,7 +590,7 @@ to change Client/Supplier status to 'suspended' for a specific user. Fire up a
 console once away::
 
     $m = new Model_User($db);
-    $m->loadBy('username','john');
+    $m = $m->loadBy('username','john');
     $m->hasMany('System');
     $c = $m->ref('System')->ref('Client');
     $s = $m->ref('System')->ref('Supplier');

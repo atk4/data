@@ -44,24 +44,24 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
         $mm->unload();
         $this->assertFalse($mm->loaded());
 
-        $mm->tryLoadAny();
+        $mm = $m->tryLoadAny();
         $this->assertTrue($mm->loaded());
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
@@ -75,14 +75,14 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         ]);
         $m = new Male($p, ['table' => 'user']);
 
-        $m->load(1);
+        $m = $m->load(1);
         $this->assertTrue($m->loaded());
         $m->set('gender', 'F');
         $m->saveAndUnload();
         $this->assertFalse($m->loaded());
 
         $m = new Female($p, ['table' => 'user']);
-        $m->load(1);
+        $m = $m->load(1);
         $this->assertTrue($m->loaded());
 
         $this->assertSame([
@@ -105,11 +105,11 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $mm->set('name', 'Peter');
         $mm->save();
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $mm->set('surname', 'Smith');
         $mm->save();
         $mm->set('surname', 'QQ');
@@ -122,7 +122,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ],
         ], $this->getInternalPersistenceData($p));
 
-        $m->unload();
+        $m = $m->createEntity();
         $m->setMulti(['name' => 'Foo', 'surname' => 'Bar']);
         $m->save();
 
@@ -194,18 +194,18 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
@@ -316,7 +316,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[7], $result[7]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         // case : str% NOT LIKE
         $m->scope()->clear();
@@ -341,7 +340,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[8], $result[8]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         // case : %str%
         $m->scope()->clear();
@@ -356,7 +354,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[8], $result[8]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         // case : boolean field
         $m->scope()->clear();
@@ -431,7 +428,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[5], $result[5]);
         $this->assertSame($dbDataCountries[6], $result[6]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('country', 'NOT REGEXP', 'Ireland|UK|Latvia');
@@ -439,7 +435,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertCount(1, $result);
         $this->assertSame($dbDataCountries[8], $result[8]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '>', 18);
@@ -447,7 +442,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertCount(1, $result);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '>=', 18);
@@ -456,7 +450,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[8], $result[8]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '<', 12);
@@ -464,7 +457,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertCount(1, $result);
         $this->assertSame($dbDataCountries[1], $result[1]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '<=', 12);
@@ -473,7 +465,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[1], $result[1]);
         $this->assertSame($dbDataCountries[2], $result[2]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', [11, 12]);
@@ -482,14 +473,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[1], $result[1]);
         $this->assertSame($dbDataCountries[2], $result[2]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', 'IN', []);
         $result = $m->action('select')->getRows();
         $this->assertCount(0, $result);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', 'NOT IN', [11, 12, 13, 14, 15, 16, 17]);
@@ -498,7 +487,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[8], $result[8]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '!=', [11, 12, 13, 14, 15, 16, 17]);
@@ -507,7 +495,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[8], $result[8]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
     }
 
     public function testAggregates()
@@ -834,10 +821,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
 
         $user->hasOne('country_id', ['model' => $country]);
 
-        $uu = (clone $user)->load(1);
+        $uu = $user->load(1);
         $this->assertSame('Latvia', $uu->ref('country_id')->get('name'));
 
-        $uu = (clone $user)->load(2);
+        $uu = $user->load(2);
         $this->assertSame('UK', $uu->ref('country_id')->get('name'));
     }
 
@@ -869,10 +856,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $country->hasMany('Users', ['model' => $user]);
         $user->hasOne('country_id', ['model' => $country]);
 
-        $cc = (clone $country)->load(1);
+        $cc = $country->load(1);
         $this->assertSame(2, $cc->ref('Users')->action('count')->getOne());
 
-        $cc = (clone $country)->load(2);
+        $cc = $country->load(2);
         $this->assertSame(1, $cc->ref('Users')->action('count')->getOne());
     }
 
@@ -882,7 +869,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $this->expectExceptionCode(404);
-        $m->loadAny();
+        $m = $m->loadAny();
     }
 
     public function testTryLoadAnyNotThrowsExceptionOnRecordNotFound()
@@ -891,7 +878,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m->tryLoadAny();
+        $m = $m->tryLoadAny();
         $this->assertFalse($m->loaded());
     }
 
@@ -906,7 +893,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m->tryLoadAny();
+        $m = $m->tryLoadAny();
         $this->assertSame(2, $m->getId());
     }
 }

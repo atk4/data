@@ -289,7 +289,7 @@ will always get `NULL`.
 
 There is another way to verify passwords using :php:meth:`Model::compare`::
 
-    $user->loadBy('email', $email);
+    $user = $user->loadBy('email', $email);
     return $user->compare('password', $password);
 
 This should return `true` if your supplied password matches the one that is
