@@ -256,7 +256,7 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Are you sure?', $action->getConfirmation());
 
         $action->confirmation = function ($action) {
-            return 'Proceed with Test: ' . $action->getModel()->getTitle();
+            return 'Proceed with Test: ' . $action->getEntity()->getTitle();
         };
         $this->assertSame('Proceed with Test: John', $action->getConfirmation());
     }

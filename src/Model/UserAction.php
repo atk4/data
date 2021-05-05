@@ -17,7 +17,7 @@ use Atk4\Data\Model;
  *
  * UserAction must NOT rely on any specific UI implementation.
  *
- * @method Exception getOwner() use getEntity() method instead
+ * @method Exception getOwner() use getModel() or getEntity() method instead
  */
 class UserAction
 {
@@ -113,7 +113,7 @@ class UserAction
             };
 
             if ($this->atomic) {
-                return $this->getEntity()->atomic($run);
+                return $this->getModel()->atomic($run);
             }
 
             return $run();
@@ -220,15 +220,19 @@ class UserAction
      */
     public function getModel(): Model
     {
-        return $this->getOwner()->getModel(true);
+        return $this->getOwner()->getModel(true); // @phpstan-ignore-line
     }
-    
+
     public function getEntity(): Model
     {
-        if (!$this->entity) {
-            $this->setEntity($this->getModel()->createEntity());
+        if ($this->getOwner()->isEntity()) { // @phpstan-ignore-line
+            return $this->getOwner(); // @phpstan-ignore-line
         }
-        
+
+        if ($this->entity === null) {
+            $this->setEntity($this->getOwner()->createEntity()); // @phpstan-ignore-line
+        }
+
         return $this->entity;
     }
 
