@@ -182,6 +182,10 @@ class DeepCopy
      */
     protected function _copy(Model $source, Model $destination, array $references, array $exclusions, array $transforms): Model
     {
+        if (!$destination->isEntity()) { // @TODO PR Distinguish strictly between model and entity #862
+            $destination = $destination->createEntity();
+        }
+
         try {
             // Perhaps source was already copied, then simply load destination model and return
             if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->getId()])) {

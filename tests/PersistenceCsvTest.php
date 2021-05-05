@@ -12,7 +12,9 @@ use Atk4\Data\Tests\Model\Person;
 
 class PersistenceCsvTest extends AtkPhpunit\TestCase
 {
+    /** @var resource */
     protected $file;
+    /** @var resource */
     protected $file2;
 
     protected function setUp(): void
@@ -34,6 +36,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
     protected function makeCsvPersistence($fileHandle, array $defaults = []): Persistence\Csv
     {
         return new class($fileHandle, $defaults) extends Persistence\Csv {
+            /** @var resource */
             private $handleUnloaded;
 
             public function __construct($fileHandle, $defaults)
@@ -129,16 +132,13 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = clone $m;
-        $mm = $mm->loadAny();
-        $mm = clone $m;
-        $mm = $mm->loadAny();
+        $mm = $m->loadAny();
+        $mm = $m->loadAny();
 
         $this->assertSame('Sarah', $mm->get('name'));
         $this->assertSame('Jones', $mm->get('surname'));
 
-        $mm = clone $m;
-        $mm = $mm->tryLoadAny();
+        $mm = $m->tryLoadAny();
         $this->assertFalse($mm->loaded());
     }
 
@@ -175,7 +175,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $m2->reload_after_save = false; // TODO should be not needed after https://github.com/atk4/data/pull/690 is merged
 
         foreach ($m as $row) {
-            (clone $m2)->save($row->get());
+            $m2->createEntity()->save($row->get());
         }
 
         fseek($this->file, 0);

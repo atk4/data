@@ -70,7 +70,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'John');
         $m_u2->set('contact_phone', '+123');
 
@@ -81,7 +81,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
             'contact' => [1 => ['id' => 1, 'contact_phone' => '+123']],
         ], $this->getDb(['user', 'contact']));
 
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'Joe');
         $m_u2->set('contact_phone', '+321');
         $m_u2->save();
@@ -112,7 +112,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $j = $m_u->join('contact.test_id');
         $j->addFields(['contact_phone']);
 
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'John');
         $m_u2->set('contact_phone', '+123');
         $m_u2->save();
@@ -123,7 +123,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['user', 'contact']));
 
         $m_u2->unload();
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'Peter');
         $m_u2->save();
         $this->assertEquals([
@@ -143,7 +143,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         }
 
         $m_u2->unload();
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'Sue');
         $m_u2->set('contact_phone', '+444');
         $m_u2->save();
@@ -178,6 +178,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m_u->addField('name');
         $j = $m_u->join('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');
+        $m_u = $m_u->createEntity();
 
         $m_u->set('name', 'John');
         $m_u->set('contact_phone', '+123');
@@ -389,7 +390,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
                 $m->save();
             }
         });
-
+        $m_u = $m_u->createEntity();
         $m_u->set('name', 'John');
         $m_u->save();
 
@@ -444,7 +445,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertSame($m_u2->getField('country_id')->getJoin(), $m_u2->getField('contact_phone')->getJoin());
 
-        (clone $m_u)->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
+        $m_u->createEntity()->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
         $this->assertEquals(
             [
@@ -628,7 +629,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
 
         // insert new record
-        $m = (clone $m_user)->save(['name' => 'Emily', 'notes' => '3rd note']);
+        $m = $m_user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
         $m = $m_user->tryLoad(21);
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
@@ -643,7 +644,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $j->addField('notes');
 
         // insert new record
-        $m = (clone $m_user)->save(['name' => 'Olaf', 'notes' => '4th note']);
+        $m = $m_user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
         $m = $m_user->tryLoad(22);
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
@@ -659,7 +660,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $j->addField('notes');
 
         // insert new record
-        $m = (clone $m_user)->save(['name' => 'Chris', 'notes' => '5th note']);
+        $m = $m_user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
         $m = $m_user->tryLoad(23);
         $this->assertTrue($m->loaded());
         $this->assertEquals(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
@@ -721,7 +722,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         );
 
         // insert
-        $m_u3 = (clone $m_u)->unload();
+        $m_u3 = $m_u->createEntity()->unload();
         $m_u3->set('name', 'Marvin');
         $m_u3->set('j1_phone', '+999');
         $m_u3->set('j2_salary', 222);

@@ -122,7 +122,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ],
         ], $this->getInternalPersistenceData($p));
 
-        $m->unload();
+        $m = $m->createEntity();
         $m->setMulti(['name' => 'Foo', 'surname' => 'Bar']);
         $m->save();
 
@@ -316,7 +316,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[7], $result[7]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         // case : str% NOT LIKE
         $m->scope()->clear();
@@ -341,7 +340,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[8], $result[8]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         // case : %str%
         $m->scope()->clear();
@@ -356,7 +354,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[8], $result[8]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         // case : boolean field
         $m->scope()->clear();
@@ -431,7 +428,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[5], $result[5]);
         $this->assertSame($dbDataCountries[6], $result[6]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('country', 'NOT REGEXP', 'Ireland|UK|Latvia');
@@ -439,7 +435,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertCount(1, $result);
         $this->assertSame($dbDataCountries[8], $result[8]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '>', 18);
@@ -447,7 +442,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertCount(1, $result);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '>=', 18);
@@ -456,7 +450,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[8], $result[8]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '<', 12);
@@ -464,7 +457,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertCount(1, $result);
         $this->assertSame($dbDataCountries[1], $result[1]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '<=', 12);
@@ -473,7 +465,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[1], $result[1]);
         $this->assertSame($dbDataCountries[2], $result[2]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', [11, 12]);
@@ -482,14 +473,12 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[1], $result[1]);
         $this->assertSame($dbDataCountries[2], $result[2]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', 'IN', []);
         $result = $m->action('select')->getRows();
         $this->assertCount(0, $result);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', 'NOT IN', [11, 12, 13, 14, 15, 16, 17]);
@@ -498,7 +487,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[8], $result[8]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '!=', [11, 12, 13, 14, 15, 16, 17]);
@@ -507,7 +495,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($dbDataCountries[8], $result[8]);
         $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
     }
 
     public function testAggregates()

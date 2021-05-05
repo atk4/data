@@ -187,7 +187,7 @@ class UserAction
     public function getDescription(): string
     {
         if ($this->description instanceof \Closure) {
-            return call_user_func($this->description, $this);
+            return ($this->description)($this);
         }
 
         return $this->description ?? $this->getCaption() . ' ' . $this->getOwner()->getModelCaption();
@@ -199,7 +199,7 @@ class UserAction
     public function getConfirmation()
     {
         if ($this->confirmation instanceof \Closure) {
-            return call_user_func($this->confirmation, $this);
+            return ($this->confirmation)($this);
         } elseif ($this->confirmation === true) {
             $confirmation = 'Are you sure you wish to execute ';
             $confirmation .= $this->getCaption();

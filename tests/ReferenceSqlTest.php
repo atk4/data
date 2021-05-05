@@ -52,7 +52,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $ooo = $oo->tryLoad(3);
         $this->assertNull($ooo->get('amount'));
 
-        $oo = $u->unload()->addCondition('id', '>', '1')->ref('Orders');
+        $oo = $u->addCondition('id', '>', '1')->ref('Orders');
 
         $this->assertSameSql(
             'select "id","amount","user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)',
@@ -147,7 +147,6 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('John', $o->load(3)->ref('user_id')->get('name'));
         $this->assertSame('Joe', $o->load(5)->ref('user_id')->get('name'));
 
-        $o->unload();
         $o->addCondition('amount', '>', 6);
         $o->addCondition('amount', '<', 9);
 

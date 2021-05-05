@@ -49,3 +49,5 @@ parameters:
         # for tests/ReferenceSqlTest.php
         - '~^Call to an undefined method Atk4\\Data\\Reference\\HasOne::addFields\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Reference::addTitle\(\)\.$~'
+        # for tests/ScopeTest.php
+        - '~^Call to an undefined method Atk4\\Data\\Tests\\SUser::expr\(\)\.$~'

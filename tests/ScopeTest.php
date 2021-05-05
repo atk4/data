@@ -14,7 +14,6 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 class SCountry extends Model
 {
     public $table = 'country';
-
     public $caption = 'Country';
 
     protected function init(): void
@@ -34,7 +33,6 @@ class SCountry extends Model
 class SUser extends Model
 {
     public $table = 'user';
-
     public $caption = 'User';
 
     protected function init(): void
@@ -56,7 +54,6 @@ class SUser extends Model
 class STicket extends Model
 {
     public $table = 'ticket';
-
     public $caption = 'Ticket';
 
     protected function init(): void
@@ -73,20 +70,13 @@ class STicket extends Model
 
 class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 {
-    protected $user;
-    protected $country;
-    protected $ticket;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->country = new SCountry($this->db);
-
-        $this->getMigrator($this->country)->dropIfExists()->create();
-
-        // Specifying hasMany here will perform input
-        $this->country->import([
+        $country = new SCountry($this->db);
+        $this->getMigrator($country)->dropIfExists()->create();
+        $country->import([
             ['name' => 'Canada', 'code' => 'CA'],
             ['name' => 'Latvia', 'code' => 'LV'],
             ['name' => 'Japan', 'code' => 'JP'],
@@ -96,11 +86,9 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
             ['name' => 'Brazil', 'code' => 'BR'],
         ]);
 
-        $this->user = new SUser($this->db);
-
-        $this->getMigrator($this->user)->dropIfExists()->create();
-
-        $this->user->import([
+        $user = new SUser($this->db);
+        $this->getMigrator($user)->dropIfExists()->create();
+        $user->import([
             ['name' => 'John', 'surname' => 'Smith', 'country_code' => 'CA'],
             ['name' => 'Jane', 'surname' => 'Doe', 'country_code' => 'LV'],
             ['name' => 'Alain', 'surname' => 'Prost', 'country_code' => 'FR'],
@@ -108,11 +96,9 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
             ['name' => 'Rubens', 'surname' => 'Barichello', 'country_code' => 'BR'],
         ]);
 
-        $this->ticket = new STicket($this->db);
-
-        $this->getMigrator($this->ticket)->dropIfExists()->create();
-
-        $this->ticket->import([
+        $ticket = new STicket($this->db);
+        $this->getMigrator($ticket)->dropIfExists()->create();
+        $ticket->import([
             ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],
             ['number' => '002', 'venue' => 'Best Stadium', 'user' => 2],
             ['number' => '003', 'venue' => 'Best Stadium', 'user' => 2],
@@ -123,7 +109,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testCondition()
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition = new Condition('name', 'John');
 
@@ -136,7 +122,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testConditionToWords()
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition = new Condition(new Expression('false'));
 
@@ -172,7 +158,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertEquals('Surname is equal to User Name', $condition->toWords($user));
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         $country->addCondition('Users/#', '>', 0);
 
@@ -189,7 +175,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testConditionUnsupportedOperator()
     {
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
         $country->addCondition('name', '==', 'abc');
@@ -205,7 +191,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testRootScopeUnsupportedNegate()
     {
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
         $country->scope()->negate();
@@ -213,7 +199,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testConditionOnReferencedRecords()
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $user->addCondition('country_id/code', 'LV');
 
@@ -223,7 +209,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
             $this->assertEquals('LV', $u->get('country_code'));
         }
 
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         // users that have no ticket
         $user->addCondition('Tickets/#', 0);
@@ -234,7 +220,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
             $this->assertTrue(in_array($u->get('name'), ['Alain', 'Aerton', 'Rubens'], true));
         }
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         // countries with more than one user
         $country->addCondition('Users/#', '>', 1);
@@ -243,7 +229,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
             $this->assertEquals('BR', $c->get('code'));
         }
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         // countries with users that have ticket number 001
         $country->addCondition('Users/Tickets/number', '001');
@@ -252,7 +238,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
             $this->assertEquals('CA', $c->get('code'));
         }
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         // countries with users that have more than one ticket
         $country->addCondition('Users/Tickets/#', '>', 1);
@@ -261,7 +247,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
             $this->assertEquals('LV', $c->get('code'));
         }
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         // countries with users that have any tickets
         $country->addCondition('Users/Tickets/#', '>', 0);
@@ -272,7 +258,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
             $this->assertTrue(in_array($c->get('code'), ['LV', 'CA', 'BR'], true));
         }
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         // countries with users that have no tickets
         $country->addCondition('Users/Tickets/#', 0);
@@ -283,7 +269,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
             $this->assertTrue(in_array($c->get('code'), ['FR'], true));
         }
 
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         // users with tickets that have more than two users per country
         // test if a model can be referenced multiple times
@@ -307,7 +293,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testScope()
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = ['name', 'John'];
         $condition2 = new Condition('country_code', 'CA');
@@ -345,7 +331,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\') or Code is equal to \'BR\'', $scope->toWords($user));
 
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $user->scope()->add($scope);
 
@@ -354,7 +340,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testScopeToWords()
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'CA');
@@ -369,7 +355,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNegate()
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', '!=', 'Alain');
         $condition2 = new Condition('country_code', '!=', 'FR');
@@ -385,7 +371,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testAnd()
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
@@ -399,7 +385,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testOr()
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
@@ -413,7 +399,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testMerge()
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
@@ -425,7 +411,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testDestroyEmpty()
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');

@@ -35,6 +35,23 @@ class MyDateTime extends \DateTime
 
 class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 {
+    /** @var string */
+    private $defaultTzBackup;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->defaultTzBackup = date_default_timezone_get();
+    }
+
+    protected function tearDown(): void
+    {
+        date_default_timezone_set($this->defaultTzBackup);
+
+        parent::tearDown();
+    }
+
     public function testType()
     {
         $dbData = [
@@ -80,7 +97,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame([1, 2, 3], $mm->get('array'));
         $this->assertSame(8.202343, $mm->get('float'));
 
-        (clone $m)->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData = [
             'types' => [
@@ -198,7 +215,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $mm->save();
         $this->assertEquals($dbData, $this->getDb());
 
-        $m->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData['types'][2] = [
             'id' => 2,
@@ -232,6 +249,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('a');
         $m->addField('b');
         $m->addField('c');
+        $m = $m->createEntity();
 
         unset($row['id']);
         $m->setMulti($row);
@@ -293,7 +311,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($mm->get('b1'));
         $this->assertFalse($mm->get('b2'));
 
-        (clone $m)->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
         $m->delete(1);
 
         unset($dbData['types'][0]);
@@ -526,6 +544,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
         $m->addField('i', ['type' => 'integer']);
+        $m = $m->createEntity();
 
         $m->getDataRef()['i'] = 1;
         $this->assertSame([], $m->getDirtyRef());
@@ -542,6 +561,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         // same test without type integer
         $m = new Model($db, ['table' => 'types']);
         $m->addField('i');
+        $m = $m->createEntity();
 
         $m->getDataRef()['i'] = 1;
         $this->assertSame([], $m->getDirtyRef());

@@ -188,12 +188,12 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
 
         $data = [];
         foreach ($i as $id => $item) {
-            $data[$id] = clone $item;
+            $data[$id] = $item;
         }
 
         $this->assertEquals(10, $data[1]->get('total_net'));
         $this->assertEquals(20, $data[2]->get('total_net'));
         $this->assertEquals(15, $data[3]->get('total_net'));
-        $this->assertNull($i->get('total_net'));
+        $this->assertNull($i->createEntity()->get('total_net'));
     }
 }

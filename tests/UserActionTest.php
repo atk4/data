@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Static_ as Persistence_Static;
 
@@ -54,6 +53,7 @@ class UaClient extends Model
  */
 class UserActionTest extends \Atk4\Schema\PhpunitTestCase
 {
+    /** @var Persistence_Static */
     public $pers;
 
     protected function setUp(): void
@@ -70,19 +70,18 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
     {
         $client = new UaClient($this->pers);
 
-        $actions = $client->getUserActions();
-        $this->assertCount(4, $actions); // don't return system actions here, but include add/edit/delete
+        $this->assertCount(4, $client->getUserActions()); // don't return system actions here, but include add/edit/delete
         $this->assertCount(0, $client->getUserActions(Model\UserAction::APPLIES_TO_ALL_RECORDS)); // don't return system actions here
 
-        $act1 = $actions['send_reminder'];
-
         // action takes no arguments. If it would, we should be able to find info about those
+        $act1 = $client->getUserActions()['send_reminder'];
         $this->assertSame([], $act1->args);
         $this->assertSame(Model\UserAction::APPLIES_TO_SINGLE_RECORD, $act1->appliesTo);
 
         // load record, before executing, because scope is single record
         $client = $client->load(1);
 
+        $act1 = $client->getUserActions()['send_reminder'];
         $this->assertNotTrue($client->get('reminder_sent'));
         $res = $act1->execute();
         $this->assertTrue($client->get('reminder_sent'));

@@ -49,8 +49,8 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
      */
     public function testTransfer()
     {
-        $aib = (new Account($this->db))->save(['name' => 'AIB']);
-        $boi = (new Account($this->db))->save(['name' => 'BOI']);
+        $aib = (new Account($this->db))->createEntity()->save(['name' => 'AIB']);
+        $boi = (new Account($this->db))->createEntity()->save(['name' => 'BOI']);
 
         $t = $aib->transfer($boi, 100); // create transfer between accounts
         $t->save();
@@ -74,20 +74,20 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         // create accounts and payments
         $a = new Account($this->db);
 
-        $aa = clone $a;
+        $aa = $a->createEntity();
         $aa->save(['name' => 'AIB']);
-        $aa->ref('Payment')->save(['amount' => 10]);
-        $aa->ref('Payment')->save(['amount' => 20]);
+        $aa->ref('Payment')->createEntity()->save(['amount' => 10]);
+        $aa->ref('Payment')->createEntity()->save(['amount' => 20]);
         $aa->unload();
 
-        $aa = clone $a;
+        $aa = $a->createEntity();
         $aa->save(['name' => 'BOI']);
-        $aa->ref('Payment')->save(['amount' => 30]);
-        $a->unload();
+        $aa->ref('Payment')->createEntity()->save(['amount' => 30]);
+        $aa->unload();
 
         // create payment without link to account
         $p = new Payment($this->db);
-        $p->saveAndUnload(['amount' => 40]);
+        $p->createEntity()->saveAndUnload(['amount' => 40]);
 
         // Account is not loaded, will dump all Payments related to ANY Account
         $data = $a->ref('Payment')->export(['amount']);

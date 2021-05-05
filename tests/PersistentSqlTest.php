@@ -150,6 +150,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         // insert new record, model id field
         $m->reload_after_save = false;
+        $m = $m->createEntity();
         $m->save(['name' => 'Jane', 'surname' => 'Doe']);
         $this->assertSame('Jane', $m->get('name'));
         $this->assertSame('Doe', $m->get('surname'));
