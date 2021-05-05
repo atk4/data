@@ -154,7 +154,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * test various ways to import countries.
      */
-    public function testImportCountriesBasic()
+    public function testImportCountriesBasic(): void
     {
         $c = new LCountry($this->db);
 
@@ -229,7 +229,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['country']));
     }
 
-    public function testImportInternationalUsers()
+    public function testImportInternationalUsers(): void
     {
         $c = new LCountry($this->db);
 
@@ -283,7 +283,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['country', 'user']));
     }
 
-    public function testImportByLookup()
+    public function testImportByLookup(): void
     {
         $c = new LCountry($this->db);
 
@@ -358,7 +358,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
      *
      * TODO - that's left for hasMTM implementation..., to be coming later
      *
-    public function testImportInternationalFriends()
+    public function testImportInternationalFriends(): void
     {
         $c = new LCountry($this->db);
 

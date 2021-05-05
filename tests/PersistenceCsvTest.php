@@ -87,7 +87,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
     /**
      * Test constructor.
      */
-    public function testTestcase()
+    public function testTestcase(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -99,7 +99,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $this->assertSame($data, $data2);
     }
 
-    public function testLoadAny()
+    public function testLoadAny(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -118,7 +118,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $this->assertSame('Smith', $m->get('surname'));
     }
 
-    public function testLoadAnyException()
+    public function testLoadAnyException(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -142,7 +142,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $this->assertFalse($mm->loaded());
     }
 
-    public function testLoadByIdNotSupportedException()
+    public function testLoadByIdNotSupportedException(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -157,7 +157,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $m = $m->tryLoad(1);
     }
 
-    public function testPersistenceCopy()
+    public function testPersistenceCopy(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
@@ -192,7 +192,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
     /**
      * Test export.
      */
-    public function testExport()
+    public function testExport(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],

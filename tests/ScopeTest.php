@@ -107,7 +107,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         ]);
     }
 
-    public function testCondition()
+    public function testCondition(): void
     {
         $user = new SUser($this->db);
 
@@ -120,7 +120,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals('Smith', $user->get('surname'));
     }
 
-    public function testConditionToWords()
+    public function testConditionToWords(): void
     {
         $user = new SUser($this->db);
 
@@ -165,7 +165,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals('Country that has reference Users where number of records is greater than 0', $country->scope()->toWords());
     }
 
-    public function testConditionUnsupportedToWords()
+    public function testConditionUnsupportedToWords(): void
     {
         $condition = new Condition('name', 'abc');
 
@@ -173,7 +173,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $condition->toWords();
     }
 
-    public function testConditionUnsupportedOperator()
+    public function testConditionUnsupportedOperator(): void
     {
         $country = new SCountry($this->db);
 
@@ -181,7 +181,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $country->addCondition('name', '==', 'abc');
     }
 
-    public function testConditionUnsupportedNegate()
+    public function testConditionUnsupportedNegate(): void
     {
         $condition = new Condition(new Expression('false'));
 
@@ -189,7 +189,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $condition->negate();
     }
 
-    public function testRootScopeUnsupportedNegate()
+    public function testRootScopeUnsupportedNegate(): void
     {
         $country = new SCountry($this->db);
 
@@ -197,7 +197,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $country->scope()->negate();
     }
 
-    public function testConditionOnReferencedRecords()
+    public function testConditionOnReferencedRecords(): void
     {
         $user = new SUser($this->db);
 
@@ -291,7 +291,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         }
     }
 
-    public function testScope()
+    public function testScope(): void
     {
         $user = new SUser($this->db);
 
@@ -338,7 +338,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(4, count($user->export()));
     }
 
-    public function testScopeToWords()
+    public function testScopeToWords(): void
     {
         $user = new SUser($this->db);
 
@@ -353,7 +353,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->toWords($user));
     }
 
-    public function testNegate()
+    public function testNegate(): void
     {
         $user = new SUser($this->db);
 
@@ -369,7 +369,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         }
     }
 
-    public function testAnd()
+    public function testAnd(): void
     {
         $user = new SUser($this->db);
 
@@ -383,7 +383,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'FR\') or Name is equal to \'John\'', $scope->toWords($user));
     }
 
-    public function testOr()
+    public function testOr(): void
     {
         $user = new SUser($this->db);
 
@@ -397,7 +397,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals('(Name is equal to \'Alain\' or Code is equal to \'FR\') and Name is equal to \'John\'', $scope->toWords($user));
     }
 
-    public function testMerge()
+    public function testMerge(): void
     {
         $user = new SUser($this->db);
 
@@ -409,7 +409,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $scope->toWords($user));
     }
 
-    public function testDestroyEmpty()
+    public function testDestroyEmpty(): void
     {
         $user = new SUser($this->db);
 
@@ -425,13 +425,13 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEmpty($scope->toWords($user));
     }
 
-    public function testInvalid1()
+    public function testInvalid1(): void
     {
         $this->expectException(Exception::class);
         new Condition('name', '>', ['a', 'b']);
     }
 
-    public function testInvalid2()
+    public function testInvalid2(): void
     {
         $this->expectException(Exception::class);
         new Condition('name', ['a', 'b' => ['c']]);

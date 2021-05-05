@@ -29,7 +29,7 @@ class Folder extends Model
 
 class FolderTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testRate()
+    public function testRate(): void
     {
         $this->setDb([
             'folder' => [

@@ -15,7 +15,7 @@ class ModelTest extends PhpunitTestCase
     /**
      * @doesNotPerformAssertions
      */
-    public function testSetModelCreate()
+    public function testSetModelCreate(): void
     {
         $this->dropTableIfExists('user');
         $user = new TestUser($this->db);
@@ -26,7 +26,7 @@ class ModelTest extends PhpunitTestCase
         $user->createEntity()->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
     }
 
-    public function testImportTable()
+    public function testImportTable(): void
     {
         $this->assertTrue(true);
 
@@ -81,7 +81,7 @@ class ModelTest extends PhpunitTestCase
     /**
      * @doesNotPerformAssertions
      */
-    public function testMigrateTable()
+    public function testMigrateTable(): void
     {
         $this->dropTableIfExists('user');
         $migrator = $this->getMigrator();
@@ -99,7 +99,7 @@ class ModelTest extends PhpunitTestCase
             ])->insert();
     }
 
-    public function testCreateModel()
+    public function testCreateModel(): void
     {
         $this->assertTrue(true);
 
@@ -123,7 +123,7 @@ class ModelTest extends PhpunitTestCase
         );
     }
 
-    public function testStringFieldCaseInsensitive()
+    public function testStringFieldCaseInsensitive(): void
     {
         $this->dropTableIfExists('user');
 

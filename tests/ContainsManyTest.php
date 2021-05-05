@@ -64,7 +64,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test caption of referenced model.
      */
-    public function testModelCaption()
+    public function testModelCaption(): void
     {
         $i = new Invoice($this->db);
 
@@ -77,7 +77,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test containsMany.
      */
-    public function testContainsMany()
+    public function testContainsMany(): void
     {
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
@@ -177,7 +177,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
      * Model should be loaded before traversing to containsMany relation.
      */
     /* Imants: it looks that this is not actually required - disabling
-    public function testEx1()
+    public function testEx1(): void
     {
         $i = new Invoice($this->db);
         $this->expectException(Exception::class);
@@ -188,7 +188,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Nested containsMany tests.
      */
-    public function testNestedContainsMany()
+    public function testNestedContainsMany(): void
     {
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');

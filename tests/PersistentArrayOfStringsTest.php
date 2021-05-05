@@ -13,7 +13,7 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
     /**
      * Test typecasting.
      */
-    public function testTypecasting()
+    public function testTypecasting(): void
     {
         $p = new Persistence\ArrayOfStrings([
             'user' => [],

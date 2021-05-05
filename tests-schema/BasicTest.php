@@ -13,7 +13,7 @@ class BasicTest extends PhpunitTestCase
      *
      * @doesNotPerformAssertions
      */
-    public function testCreate()
+    public function testCreate(): void
     {
         $this->dropTableIfExists('user');
 
@@ -36,7 +36,7 @@ class BasicTest extends PhpunitTestCase
      *
      * @doesNotPerformAssertions
      */
-    public function testCreateAndDrop()
+    public function testCreateAndDrop(): void
     {
         $this->dropTableIfExists('user');
 

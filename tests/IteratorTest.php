@@ -13,7 +13,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * If first argument is array, then second argument should not be used.
      */
-    public function testException1()
+    public function testException1(): void
     {
         $m = new Model();
         $m->addFields(['name', 'salary']);
@@ -24,7 +24,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException2()
+    public function testException2(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
@@ -34,7 +34,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException3()
+    public function testException3(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
@@ -44,7 +44,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException4()
+    public function testException4(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
@@ -54,7 +54,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException5()
+    public function testException5(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
@@ -64,7 +64,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException6()
+    public function testException6(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
@@ -74,14 +74,14 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException7()
+    public function testException7(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
         $m->action('insert');
     }
 
-    public function testBasic()
+    public function testBasic(): void
     {
         $this->setDb([
             'invoice' => [
@@ -125,7 +125,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
         ], $data);
     }
 
-    public function testRawIterator()
+    public function testRawIterator(): void
     {
         $this->setDb([
             'invoice' => [
@@ -169,7 +169,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
         ], $data);
     }
 
-    public function testBasicId()
+    public function testBasicId(): void
     {
         $this->setDb([
             'invoice' => [

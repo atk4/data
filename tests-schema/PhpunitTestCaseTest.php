@@ -8,7 +8,7 @@ use Atk4\Schema\PhpunitTestCase;
 
 class PhpunitTestCaseTest extends PhpunitTestCase
 {
-    public function testInit()
+    public function testInit(): void
     {
         $this->setDb($q = [
             'user' => [

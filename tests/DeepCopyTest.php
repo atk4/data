@@ -151,7 +151,7 @@ class DeepCopyTest extends \Atk4\Schema\PhpunitTestCase
         $this->getMigrator(new DcPayment($this->db))->dropIfExists()->create();
     }
 
-    public function testBasic()
+    public function testBasic(): void
     {
         $client = new DcClient($this->db);
         $client_id = $client->insert(['name' => 'John']);
@@ -263,7 +263,7 @@ class DeepCopyTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(5, $client3->ref('Invoices')->action('fx', ['sum', 'due'])->getOne());
     }
 
-    public function testError()
+    public function testError(): void
     {
         $client = new DcClient($this->db);
         $client_id = $client->insert(['name' => 'John']);
@@ -305,7 +305,7 @@ class DeepCopyTest extends \Atk4\Schema\PhpunitTestCase
         }
     }
 
-    public function testDeepError()
+    public function testDeepError(): void
     {
         $client = new DcClient($this->db);
         $client_id = $client->insert(['name' => 'John']);

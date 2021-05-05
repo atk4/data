@@ -62,7 +62,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test caption of referenced model.
      */
-    public function testModelCaption()
+    public function testModelCaption(): void
     {
         $a = (new Invoice($this->db))->addr;
 
@@ -75,7 +75,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test containsOne.
      */
-    public function testContainsOne()
+    public function testContainsOne(): void
     {
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
@@ -165,7 +165,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * How containsOne performs when not all values are stored or there are more values in DB than fields in model.
      */
-    public function testContainsOneWhenChangeModelFields()
+    public function testContainsOneWhenChangeModelFields(): void
     {
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
@@ -206,7 +206,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
      * Imants: it looks that this is not actually required - disabling.
      */
     /*
-    public function testEx1()
+    public function testEx1(): void
     {
         $i = new Invoice($this->db);
         $this->expectException(Exception::class);

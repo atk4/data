@@ -11,7 +11,7 @@ use Atk4\Data\Persistence;
 
 class ReferenceTest extends AtkPhpunit\TestCase
 {
-    public function testBasicReferences()
+    public function testBasicReferences(): void
     {
         $user = new Model(null, ['table' => 'user']);
         $user->addField('id');
@@ -44,7 +44,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
     /**
      * Test caption of referenced model.
      */
-    public function testModelCaption()
+    public function testModelCaption(): void
     {
         $user = new Model(null, ['table' => 'user']);
         $user->addField('id');
@@ -64,7 +64,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $this->assertSame('My Orders', $user->ref('Orders')->getModelCaption());
     }
 
-    public function testModelProperty()
+    public function testModelProperty(): void
     {
         $db = new Persistence\Array_();
         $user = new Model($db, ['table' => 'user']);
@@ -75,7 +75,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $this->assertSame('order', $o->table);
     }
 
-    public function testRefName1()
+    public function testRefName1(): void
     {
         $user = new Model(null, ['table' => 'user']);
         $order = new Model();
@@ -86,7 +86,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $user->hasMany('Orders', ['model' => $order]);
     }
 
-    public function testRefName2()
+    public function testRefName2(): void
     {
         $order = new Model(null, ['table' => 'order']);
         $user = new Model(null, ['table' => 'user']);
@@ -96,7 +96,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
         $user->hasOne('user_id', ['model' => $user]);
     }
 
-    public function testRefName3()
+    public function testRefName3(): void
     {
         $db = new Persistence\Array_();
         $order = new Model($db, ['table' => 'order']);
@@ -109,7 +109,7 @@ class ReferenceTest extends AtkPhpunit\TestCase
         }]);
     }
 
-    public function testCustomRef()
+    public function testCustomRef(): void
     {
         $p = new Persistence\Array_();
 

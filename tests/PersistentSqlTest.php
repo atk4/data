@@ -12,7 +12,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test constructor.
      */
-    public function testLoadArray()
+    public function testLoadArray(): void
     {
         $this->setDb([
             'user' => [
@@ -40,7 +40,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
-    public function testModelLoadOneAndAny()
+    public function testModelLoadOneAndAny(): void
     {
         $this->setDb([
             'user' => [
@@ -76,7 +76,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->tryLoadOne();
     }
 
-    public function testPersistenceInsert()
+    public function testPersistenceInsert(): void
     {
         $dbData = [
             'user' => [
@@ -111,7 +111,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
-    public function testModelInsert()
+    public function testModelInsert(): void
     {
         $dbData = [
             'user' => [
@@ -135,7 +135,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Jones', $m->load($ms[1])->get('surname'));
     }
 
-    public function testModelSaveNoReload()
+    public function testModelSaveNoReload(): void
     {
         $this->setDb([
             'user' => [
@@ -159,7 +159,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(3, $m->getId());
     }
 
-    public function testModelInsertRows()
+    public function testModelInsertRows(): void
     {
         $dbData = [
             'user' => [
@@ -182,7 +182,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(2, $m->action('count')->getOne());
     }
 
-    public function testPersistenceDelete()
+    public function testPersistenceDelete(): void
     {
         $dbData = [
             'user' => [
@@ -218,7 +218,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test export.
      */
-    public function testExport()
+    public function testExport(): void
     {
         $this->setDb([
             'user' => [

@@ -36,7 +36,7 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Basic operation should work just fine on model without ID.
      */
-    public function testBasic()
+    public function testBasic(): void
     {
         $m = $this->m->tryLoadAny();
         $this->assertSame('John', $m->get('name'));
@@ -51,7 +51,7 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Read only model can be loaded just fine.
      */
-    public function testLoad()
+    public function testLoad(): void
     {
         $m = $this->m->load(1);
         $this->assertTrue($m->loaded());
@@ -60,7 +60,7 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Model cannot be saved.
      */
-    public function testLoadSave()
+    public function testLoadSave(): void
     {
         $m = $this->m->load(1);
         $m->set('name', 'X');
@@ -71,7 +71,7 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Insert should fail too.
      */
-    public function testInsert()
+    public function testInsert(): void
     {
         $this->expectException(Exception::class);
         $this->m->insert(['name' => 'Joe']);
@@ -80,7 +80,7 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Different attempt that should also fail.
      */
-    public function testSave1()
+    public function testSave1(): void
     {
         $m = $this->m->tryLoadAny();
         $this->expectException(Exception::class);
@@ -90,20 +90,20 @@ class ReadOnlyModeTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Conditions should work fine.
      */
-    public function testLoadBy()
+    public function testLoadBy(): void
     {
         $m = $this->m->loadBy('name', 'Sue');
         $this->assertSame('Sue', $m->get('name'));
     }
 
-    public function testLoadCondition()
+    public function testLoadCondition(): void
     {
         $this->m->addCondition('name', 'Sue');
         $m = $this->m->loadAny();
         $this->assertSame('Sue', $m->get('name'));
     }
 
-    public function testFailDelete1()
+    public function testFailDelete1(): void
     {
         $this->expectException(Exception::class);
         $this->m->delete(1);

@@ -37,7 +37,7 @@ class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Basic operation should work just fine on model without ID.
      */
-    public function testBasic()
+    public function testBasic(): void
     {
         $m = $this->m->tryLoadAny();
         $this->assertSame('John', $m->get('name'));
@@ -53,7 +53,7 @@ class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame(['Sue', 'John'], $n);
     }
 
-    public function testGetIdException()
+    public function testGetIdException(): void
     {
         $m = $this->m->loadAny();
         $this->expectException(Exception::class);
@@ -61,7 +61,7 @@ class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
         $m->getId();
     }
 
-    public function testSetIdException()
+    public function testSetIdException(): void
     {
         $m = $this->m->createEntity();
         $this->expectException(Exception::class);
@@ -69,7 +69,7 @@ class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
         $m->setId(1);
     }
 
-    public function testFail1()
+    public function testFail1(): void
     {
         $this->expectException(Exception::class);
         $this->m->load(1);
@@ -78,7 +78,7 @@ class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Inserting into model without ID should be OK.
      */
-    public function testInsert()
+    public function testInsert(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
@@ -91,7 +91,7 @@ class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Since no ID is set, a new record will be created if saving is attempted.
      */
-    public function testSave1()
+    public function testSave1(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
@@ -106,7 +106,7 @@ class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Calling save will always create new record.
      */
-    public function testSave2()
+    public function testSave2(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
@@ -121,20 +121,20 @@ class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Conditions should work fine.
      */
-    public function testLoadBy()
+    public function testLoadBy(): void
     {
         $m = $this->m->loadBy('name', 'Sue');
         $this->assertSame('Sue', $m->get('name'));
     }
 
-    public function testLoadCondition()
+    public function testLoadCondition(): void
     {
         $this->m->addCondition('name', 'Sue');
         $m = $this->m->loadAny();
         $this->assertSame('Sue', $m->get('name'));
     }
 
-    public function testFailDelete1()
+    public function testFailDelete1(): void
     {
         $this->expectException(Exception::class);
         $this->m->delete(4);

@@ -10,7 +10,7 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testBasic()
+    public function testBasic(): void
     {
         $this->setDb([
             'user' => [
@@ -49,7 +49,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Sue', $mm2->get('name'));
     }
 
-    public function testEntityNoScopeCloning()
+    public function testEntityNoScopeCloning(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
         $scope = $m->scope();
@@ -58,7 +58,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->createEntity()->scope();
     }
 
-    public function testEntityReloadWithDifferentIdException()
+    public function testEntityReloadWithDifferentIdException(): void
     {
         $this->setDb([
             'user' => [
@@ -80,7 +80,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->reload();
     }
 
-    public function testNull()
+    public function testNull(): void
     {
         $this->setDb([
             'user' => [
@@ -107,7 +107,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame(2, $nullCount);
     }
 
-    public function testOperations()
+    public function testOperations(): void
     {
         $this->setDb([
             'user' => [
@@ -153,7 +153,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($mm2->get('name'));
     }
 
-    public function testExpressions1()
+    public function testExpressions1(): void
     {
         $this->setDb([
             'user' => [
@@ -185,7 +185,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Sue', $mm2->get('name'));
     }
 
-    public function testExpressions2()
+    public function testExpressions2(): void
     {
         $this->setDb([
             'user' => [
@@ -231,7 +231,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($mm2->get('name'));
     }
 
-    public function testExpressionJoin()
+    public function testExpressionJoin(): void
     {
         $this->setDb([
             'user' => [
@@ -282,7 +282,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('+123 smiths', $mm2->get('contact_phone'));
     }
 
-    public function testArrayCondition()
+    public function testArrayCondition(): void
     {
         $this->setDb([
             'user' => [
@@ -313,7 +313,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertCount(3, $m->export());
     }
 
-    public function testDateCondition()
+    public function testDateCondition(): void
     {
         $this->setDb([
             'user' => [
@@ -330,7 +330,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Sue', $m->get('name'));
     }
 
-    public function testDateCondition2()
+    public function testDateCondition2(): void
     {
         $this->setDb([
             'user' => [
@@ -348,7 +348,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Sue', $m->get('name'));
     }
 
-    public function testDateConditionFailure()
+    public function testDateConditionFailure(): void
     {
         $this->setDb([
             'user' => [
@@ -365,7 +365,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m = $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 
-    public function testOrConditions()
+    public function testOrConditions(): void
     {
         $this->setDb([
             'user' => [
@@ -395,7 +395,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
      * Test loadBy and tryLoadBy.
      * They should set only temporary condition.
      */
-    public function testLoadBy()
+    public function testLoadBy(): void
     {
         $this->setDb([
             'user' => [
@@ -423,7 +423,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test LIKE condition.
      */
-    public function testLikeCondition()
+    public function testLikeCondition(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL does not support "column LIKE variable" syntax');

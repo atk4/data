@@ -12,7 +12,7 @@ use Atk4\Data\Persistence;
  */
 class TransactionTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testAtomicOperations()
+    public function testAtomicOperations(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -51,7 +51,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
     }
 
-    public function testBeforeSaveHook()
+    public function testBeforeSaveHook(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -78,7 +78,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
-    public function testAfterSaveHook()
+    public function testAfterSaveHook(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -105,7 +105,7 @@ class TransactionTest extends \Atk4\Schema\PhpunitTestCase
         $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
-    public function testOnRollbackHook()
+    public function testOnRollbackHook(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([

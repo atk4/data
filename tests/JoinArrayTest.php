@@ -27,7 +27,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         return $data;
     }
 
-    public function testDirection()
+    public function testDirection(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m = new Model($db, ['table' => 'user']);
@@ -54,7 +54,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
-    public function testJoinException()
+    public function testJoinException(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m = new Model($db, ['table' => 'user']);
@@ -63,7 +63,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
     }
 
-    public function testJoinSaving1()
+    public function testJoinSaving1(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
@@ -115,7 +115,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    public function testJoinSaving2()
+    public function testJoinSaving2(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
@@ -168,7 +168,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    public function testJoinSaving3()
+    public function testJoinSaving3(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
@@ -188,7 +188,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    /*public function testJoinSaving4()
+    /*public function testJoinSaving4(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, 'user');
@@ -210,7 +210,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($db));
     }*/
 
-    public function testJoinLoading()
+    public function testJoinLoading(): void
     {
         $db = new Persistence\Array_([
             'user' => [
@@ -244,7 +244,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $m_u2->get());
     }
 
-    public function testJoinUpdate()
+    public function testJoinUpdate(): void
     {
         $db = new Persistence\Array_([
             'user' => [
@@ -313,7 +313,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    public function testJoinDelete()
+    public function testJoinDelete(): void
     {
         $db = new Persistence\Array_([
             'user' => [
@@ -348,7 +348,7 @@ class JoinArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    public function testLoadMissing()
+    public function testLoadMissing(): void
     {
         $db = new Persistence\Array_([
             'user' => [
@@ -370,18 +370,18 @@ class JoinArrayTest extends AtkPhpunit\TestCase
     }
 
     /*
-    public function testReverseJoin()
+    public function testReverseJoin(): void
     {
         $db = new Persistence\Array_();
         $m = new Model($db);
         $m->addField('name');
     }
 
-    public function testMultipleJoins()
+    public function testMultipleJoins(): void
     {
     }
 
-    public function testTrickyCases()
+    public function testTrickyCases(): void
     {
         $db = new Persistence\Array_();
         $m = new Model($db);

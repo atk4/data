@@ -11,7 +11,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class WithTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testWith()
+    public function testWith(): void
     {
         if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
             $this->markTestIncomplete('TODO - add WITH support for MSSQL');
@@ -56,7 +56,7 @@ class WithTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Alias should be unique.
      */
-    public function testUniqueAliasException()
+    public function testUniqueAliasException(): void
     {
         $m1 = new Model();
         $m2 = new Model();

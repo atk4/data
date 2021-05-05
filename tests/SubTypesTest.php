@@ -148,7 +148,7 @@ class SubTypesTest extends \Atk4\Schema\PhpunitTestCase
         $this->getMigrator(new StTransaction_TransferOut($this->db))->dropIfExists()->create();
     }
 
-    public function testBasic()
+    public function testBasic(): void
     {
         $inheritance = StAccount::open($this->db, 'inheritance', 1000);
         $current = StAccount::open($this->db, 'current');

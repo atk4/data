@@ -12,7 +12,7 @@ use Atk4\Data\ValidationException;
 
 class FieldTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testDirty1()
+    public function testDirty1(): void
     {
         $m = new Model();
         $m->addField('foo', ['default' => 'abc']);
@@ -43,7 +43,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertFalse($m->isDirty('foo'));
     }
 
-    public function testCompare()
+    public function testCompare(): void
     {
         $m = new Model();
         $m->addField('foo', ['default' => 'abc']);
@@ -56,7 +56,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($m->compare('foo', 'zzz'));
     }
 
-    public function testMandatory1()
+    public function testMandatory1(): void
     {
         $m = new Model();
         $m->addField('foo', ['mandatory' => true]);
@@ -71,7 +71,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue(true); // no exceptions
     }
 
-    public function testRequired1()
+    public function testRequired1(): void
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
@@ -81,7 +81,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', '');
     }
 
-    public function testRequired11()
+    public function testRequired11(): void
     {
         $m = new Model();
         $m->addField('foo', ['required' => true]);
@@ -91,7 +91,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', null);
     }
 
-    public function testMandatory2()
+    public function testMandatory2(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -107,7 +107,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->insert(['surname' => 'qq']);
     }
 
-    public function testRequired2()
+    public function testRequired2(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -123,7 +123,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->insert(['surname' => 'qq', 'name' => '']);
     }
 
-    public function testMandatory3()
+    public function testMandatory3(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -140,7 +140,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->save(['name' => null]);
     }
 
-    public function testMandatory4()
+    public function testMandatory4(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -161,7 +161,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb());
     }
 
-    public function testCaption()
+    public function testCaption(): void
     {
         $m = new Model();
         $f = $m->addField('foo');
@@ -186,7 +186,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('This Is NASA My Big Bull Shit 123 Foo', $f->getCaption());
     }
 
-    public function testReadOnly1()
+    public function testReadOnly1(): void
     {
         $m = new Model();
         $m->addField('foo', ['read_only' => true]);
@@ -195,7 +195,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', 'bar');
     }
 
-    public function testReadOnly2()
+    public function testReadOnly2(): void
     {
         $m = new Model();
         $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
@@ -204,7 +204,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('abc', $m->get('foo'));
     }
 
-    public function testEnum1()
+    public function testEnum1(): void
     {
         $m = new Model();
         $m->addField('foo', ['enum' => ['foo', 'bar']]);
@@ -213,7 +213,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', 'xx');
     }
 
-    public function testEnum2()
+    public function testEnum2(): void
     {
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar']]);
@@ -226,7 +226,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('bar', $m->get('foo'));
     }
 
-    public function testEnum3()
+    public function testEnum3(): void
     {
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar']]);
@@ -235,7 +235,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', true);
     }
 
-    public function testEnum4()
+    public function testEnum4(): void
     {
         // PHP type control is really crappy...
         // This test has no purpose but it stands testament
@@ -248,7 +248,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($m->get('foo'));
     }
 
-    public function testValues1()
+    public function testValues1(): void
     {
         $m = new Model();
         $m->addField('foo', ['values' => ['foo', 'bar']]);
@@ -257,7 +257,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', 4);
     }
 
-    public function testValues2()
+    public function testValues2(): void
     {
         $m = new Model();
         $m->addField('foo', ['values' => [3 => 'bar']]);
@@ -270,7 +270,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($m->get('foo'));
     }
 
-    public function testValues3()
+    public function testValues3(): void
     {
         $m = new Model();
         $m->addField('foo', ['values' => [1 => 'bar']]);
@@ -279,7 +279,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', true);
     }
 
-    public function testValues3a()
+    public function testValues3a(): void
     {
         $m = new Model();
         $m->addField('foo', ['values' => [1 => 'bar']]);
@@ -288,7 +288,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', 'bar');
     }
 
-    public function testValues4()
+    public function testValues4(): void
     {
         // PHP type control is really crappy...
         // This test has no purpose but it stands testament
@@ -300,7 +300,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('1a', $m->get('foo'));
     }
 
-    public function testPersist()
+    public function testPersist(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb($dbData = [
@@ -357,7 +357,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('X', $m->get('surname'));
     }
 
-    public function testTitle()
+    public function testTitle(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -399,7 +399,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb());
     }
 
-    public function testNonExisitngField()
+    public function testNonExisitngField(): void
     {
         $m = new Model();
         $m->addField('foo');
@@ -408,7 +408,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('baz', 'bar');
     }
 
-    public function testActual()
+    public function testActual(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -446,7 +446,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb());
     }
 
-    public function testCalculatedField()
+    public function testCalculatedField(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -472,7 +472,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertFalse(isset($d[0]['total']));
     }
 
-    public function testSystem1()
+    public function testSystem1(): void
     {
         $m = new Model();
         $m->addField('foo', ['system' => true]);
@@ -484,7 +484,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         // TODO: build a query and see if the field is there
     }
 
-    public function testEncryptedField()
+    public function testEncryptedField(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -541,7 +541,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('i am a woman', $m->get('secret'));
     }
 
-    public function testNormalize()
+    public function testNormalize(): void
     {
         $m = new Model(null, ['strict_types' => true]);
 
@@ -623,7 +623,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertInstanceof('DateTime', $m->get('time'));
     }
 
-    public function testNormalizeException1()
+    public function testNormalizeException1(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'string']);
@@ -632,7 +632,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', []);
     }
 
-    public function testNormalizeException2()
+    public function testNormalizeException2(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'text']);
@@ -641,7 +641,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', []);
     }
 
-    public function testNormalizeException3()
+    public function testNormalizeException3(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'integer']);
@@ -650,7 +650,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', []);
     }
 
-    public function testNormalizeException4()
+    public function testNormalizeException4(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'money']);
@@ -659,7 +659,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', []);
     }
 
-    public function testNormalizeException5()
+    public function testNormalizeException5(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'float']);
@@ -668,7 +668,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', []);
     }
 
-    public function testNormalizeException6()
+    public function testNormalizeException6(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'date']);
@@ -677,7 +677,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', []);
     }
 
-    public function testNormalizeException7()
+    public function testNormalizeException7(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'datetime']);
@@ -686,7 +686,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', []);
     }
 
-    public function testNormalizeException8()
+    public function testNormalizeException8(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'time']);
@@ -695,7 +695,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', []);
     }
 
-    public function testNormalizeException9()
+    public function testNormalizeException9(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'integer']);
@@ -704,7 +704,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', '123---456');
     }
 
-    public function testNormalizeException10()
+    public function testNormalizeException10(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'money']);
@@ -713,7 +713,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', '123---456');
     }
 
-    public function testNormalizeException11()
+    public function testNormalizeException11(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'float']);
@@ -722,7 +722,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', '123---456');
     }
 
-    public function testNormalizeException12()
+    public function testNormalizeException12(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'array']);
@@ -731,7 +731,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', 'ABC');
     }
 
-    public function testNormalizeException13()
+    public function testNormalizeException13(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'object']);
@@ -740,7 +740,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', 'ABC');
     }
 
-    public function testNormalizeException14()
+    public function testNormalizeException14(): void
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'boolean']);
@@ -749,7 +749,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('foo', 'ABC');
     }
 
-    public function testToString()
+    public function testToString(): void
     {
         $m = new Model(null, ['strict_types' => true]);
 
@@ -785,14 +785,14 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
     }
 
-    public function testAddFieldDirectly()
+    public function testAddFieldDirectly(): void
     {
         $this->expectException(Exception::class);
         $model = new Model();
         $model->add(new Field(), ['test']);
     }
 
-    public function testGetFields()
+    public function testGetFields(): void
     {
         $model = new Model();
         $model->addField('system', ['system' => true]);
@@ -822,7 +822,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $model->getFields('foo');
     }
 
-    public function testDateTimeFieldsToString()
+    public function testDateTimeFieldsToString(): void
     {
         $model = new Model();
         $model->addField('date', ['type' => 'date']);
@@ -855,7 +855,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame($dt->format('Y-m-d\TH:i:s.uP'), $model->getField('datetime')->toString());
     }
 
-    public function testSetNull()
+    public function testSetNull(): void
     {
         $m = new Model();
         $m->addField('a');
@@ -890,7 +890,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('c', null); // @TODO even "b"/mandatory field should fail!
     }
 
-    public function testBoolean()
+    public function testBoolean(): void
     {
         $m = new Model();
         $m->addField('is_vip_1', ['type' => 'boolean', 'enum' => ['No', 'Yes']]);
