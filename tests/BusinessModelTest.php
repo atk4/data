@@ -14,9 +14,6 @@ use Atk4\Data\Tests\Model\User;
 
 class BusinessModelTest extends AtkPhpunit\TestCase
 {
-    /**
-     * Test constructor.
-     */
     public function testConstructFields(): void
     {
         $m = new Model();

@@ -9,9 +9,6 @@ use Atk4\Data\Model;
 
 class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
-    /**
-     * Test constructor.
-     */
     public function testLoadArray(): void
     {
         $this->setDb([

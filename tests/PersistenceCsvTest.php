@@ -84,9 +84,6 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         return $data;
     }
 
-    /**
-     * Test constructor.
-     */
     public function testTestcase(): void
     {
         $data = [

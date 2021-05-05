@@ -9,8 +9,6 @@ use Atk4\Schema\PhpunitTestCase;
 class BasicTest extends PhpunitTestCase
 {
     /**
-     * Test constructor.
-     *
      * @doesNotPerformAssertions
      */
     public function testCreate(): void

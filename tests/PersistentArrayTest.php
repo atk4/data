@@ -29,9 +29,6 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         return $data;
     }
 
-    /**
-     * Test constructor.
-     */
     public function testLoadArray(): void
     {
         $p = new Persistence\Array_([

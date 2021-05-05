@@ -10,9 +10,6 @@ use Atk4\Data\Persistence;
 
 class StaticPersistenceTest extends AtkPhpunit\TestCase
 {
-    /**
-     * Test constructor.
-     */
     public function testBasicStatic(): void
     {
         $p = new Persistence\Static_(['hello', 'world']);
