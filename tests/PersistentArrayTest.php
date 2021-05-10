@@ -154,7 +154,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ],
         ], $this->getInternalPersistenceData($p));
 
-        $this->assertSame(3, $p->lastInsertID());
+        $this->assertSame(3, $p->lastInsertId());
     }
 
     public function testIterator(): void

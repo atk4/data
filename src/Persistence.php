@@ -97,7 +97,7 @@ abstract class Persistence
      * you can define additional methods or store additional data. This method
      * is executed before model's init().
      */
-    protected function initPersistence(Model $m)
+    protected function initPersistence(Model $m): void
     {
     }
 
@@ -415,20 +415,24 @@ abstract class Persistence
      */
     public function _serializeSaveField(Field $f, $value)
     {
-        switch ($f->serialize === true ? 'serialize' : $f->serialize) {
-        case 'serialize':
-            return serialize($value);
-        case 'json':
-            return $this->jsonEncode($f, $value);
-        case 'base64':
-            if (!is_string($value)) {
-                throw (new Exception('Field value can not be base64 encoded because it is not of string type'))
-                    ->addMoreInfo('field', $f)
-                    ->addMoreInfo('value', $value);
-            }
+        switch ($f->serialize === true ? 'serialize' : $f->serialize)
+        {
+            case 'serialize':
+                return serialize($value);
+            case 'json':
+                return $this->jsonEncode($f, $value);
+            case 'base64':
+                if (!is_string($value)) {
+                    throw (new Exception('Field value can not be base64 encoded because it is not of string type'))
+                        ->addMoreInfo('field', $f)
+                        ->addMoreInfo('value', $value);
+                }
 
-            return base64_encode($value);
+                return base64_encode($value);
         }
+
+        throw (new Exception('Invalid serialize type'))
+            ->addMoreInfo('serialize_type', $f->serialize);
     }
 
     /**
@@ -440,14 +444,18 @@ abstract class Persistence
      */
     public function _serializeLoadField(Field $f, $value)
     {
-        switch ($f->serialize === true ? 'serialize' : $f->serialize) {
-        case 'serialize':
-            return unserialize($value);
-        case 'json':
-            return $this->jsonDecode($f, $value, $f->type === 'array');
-        case 'base64':
-            return base64_decode($value, true);
+        switch ($f->serialize === true ? 'serialize' : $f->serialize)
+        {
+            case 'serialize':
+                return unserialize($value);
+            case 'json':
+                return $this->jsonDecode($f, $value, $f->type === 'array');
+            case 'base64':
+                return base64_decode($value, true);
         }
+
+        throw (new Exception('Invalid serialize type'))
+            ->addMoreInfo('serialize_type', $f->serialize);
     }
 
     /**

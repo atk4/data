@@ -137,7 +137,7 @@ class Static_ extends Array_
      *
      * Called by HOOK_AFTER_ADD hook.
      */
-    public function afterAdd(Model $model)
+    public function afterAdd(Model $model): void
     {
         if ($this->titleForModel) {
             $model->title_field = $this->titleForModel;

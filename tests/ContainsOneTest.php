@@ -28,8 +28,8 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our models
-        $this->getMigrator(new Country($this->db))->dropIfExists()->create();
-        $this->getMigrator(new Invoice($this->db))->dropIfExists()->create();
+        $this->createMigrator(new Country($this->db))->dropIfExists()->create();
+        $this->createMigrator(new Invoice($this->db))->dropIfExists()->create();
 
         // fill in some default values
         $m = new Country($this->db);

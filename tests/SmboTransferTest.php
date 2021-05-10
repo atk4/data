@@ -19,12 +19,12 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
     {
         parent::setUp();
 
-        $this->getMigrator()->table('account')->dropIfExists()
+        $this->createMigrator()->table('account')->dropIfExists()
             ->id()
             ->field('name')
             ->create();
 
-        $this->getMigrator()->table('document')->dropIfExists()
+        $this->createMigrator()->table('document')->dropIfExists()
             ->id()
             ->field('reference')
             ->field('contact_from_id')
@@ -33,7 +33,7 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
             ->field('amount', ['type' => 'float'])
             ->create();
 
-        $this->getMigrator()->table('payment')->dropIfExists()
+        $this->createMigrator()->table('payment')->dropIfExists()
             ->id()
             ->field('document_id', ['type' => 'integer'])
             ->field('account_id', ['type' => 'integer'])

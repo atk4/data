@@ -37,6 +37,9 @@ class Condition extends AbstractScope
     public const OPERATOR_REGEXP = 'REGEXP';
     public const OPERATOR_NOT_REGEXP = 'NOT REGEXP';
 
+    /**
+     * @var array<string, array<string, string>>
+     */
     protected static $operators = [
         self::OPERATOR_EQUALS => [
             'negate' => self::OPERATOR_DOESNOT_EQUAL,
@@ -380,7 +383,7 @@ class Condition extends AbstractScope
 
         // use the referenced model title if such exists
         $title = null;
-        if (is_object($field) && $field->getReference() !== null) {
+        if ($field instanceof Field && $field->getReference() !== null) {
             // make sure we set the value in the Model
             $model = $model->isEntity() ? clone $model : $model->createEntity();
             $model->set($field->short_name, $value);

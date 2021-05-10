@@ -75,7 +75,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         parent::setUp();
 
         $country = new SCountry($this->db);
-        $this->getMigrator($country)->dropIfExists()->create();
+        $this->createMigrator($country)->dropIfExists()->create();
         $country->import([
             ['name' => 'Canada', 'code' => 'CA'],
             ['name' => 'Latvia', 'code' => 'LV'],
@@ -87,7 +87,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $user = new SUser($this->db);
-        $this->getMigrator($user)->dropIfExists()->create();
+        $this->createMigrator($user)->dropIfExists()->create();
         $user->import([
             ['name' => 'John', 'surname' => 'Smith', 'country_code' => 'CA'],
             ['name' => 'Jane', 'surname' => 'Doe', 'country_code' => 'LV'],
@@ -97,7 +97,7 @@ class ScopeTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $ticket = new STicket($this->db);
-        $this->getMigrator($ticket)->dropIfExists()->create();
+        $this->createMigrator($ticket)->dropIfExists()->create();
         $ticket->import([
             ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],
             ['number' => '002', 'venue' => 'Best Stadium', 'user' => 2],

@@ -153,7 +153,11 @@ class Action
         return $match;
     }
 
-    protected function evaluateIf($v1, $operator, $v2): bool
+    /**
+     * @param mixed $v1
+     * @param mixed $v2
+     */
+    protected function evaluateIf($v1, string $operator, $v2): bool
     {
         if ($v2 instanceof self) {
             $v2 = $v2->getRows();
@@ -163,7 +167,7 @@ class Action
             throw new \Exception('Unexpected v2 type');
         }
 
-        switch (strtoupper((string) $operator)) {
+        switch (strtoupper($operator)) {
             case '=':
                 $result = is_array($v2) ? $this->evaluateIf($v1, 'IN', $v2) : $v1 === $v2;
 

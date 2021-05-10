@@ -133,11 +133,9 @@ class Join
      */
     protected $save_buffer = [];
 
-    public function __construct($foreign_table = null)
+    public function __construct(string $foreign_table = null)
     {
-        if ($foreign_table !== null) {
-            $this->foreign_table = $foreign_table;
-        }
+        $this->foreign_table = $foreign_table;
     }
 
     protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -178,7 +176,7 @@ class Join
         }
 
         // handle foreign table containing a dot - that will be reverse join
-        if (is_string($this->foreign_table) && strpos($this->foreign_table, '.') !== false) {
+        if (strpos($this->foreign_table, '.') !== false) {
             // split by LAST dot in foreign_table name
             [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
 
@@ -409,7 +407,7 @@ class Join
     /**
      * Clears id and save buffer.
      */
-    protected function afterUnload()
+    protected function afterUnload(): void
     {
         $this->id = null;
         $this->save_buffer = [];

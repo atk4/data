@@ -6,6 +6,8 @@ namespace Atk4\Data\Action;
 
 /**
  * @internal
+ *
+ * @phpstan-extends \IteratorIterator<int, array, \Traversable<array>>
  */
 final class RenameColumnIterator extends \IteratorIterator
 {

@@ -52,16 +52,16 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $mm = (clone $m)->addCondition($m->id_field, 1);
         $this->assertSame('John', $mm->load(1)->get('name'));
-        $this->assertNull($mm->tryload(2)->get('name'));
-        $this->assertSame('John', $mm->tryloadOne()->get('name'));
+        $this->assertNull($mm->tryLoad(2)->get('name'));
+        $this->assertSame('John', $mm->tryLoadOne()->get('name'));
         $this->assertSame('John', $mm->loadOne()->get('name'));
         $this->assertSame('John', $mm->tryLoadAny()->get('name'));
         $this->assertSame('John', $mm->loadAny()->get('name'));
 
         $mm = (clone $m)->addCondition('surname', 'Jones');
         $this->assertSame('Sarah', $mm->load(2)->get('name'));
-        $this->assertNull($mm->tryload(1)->get('name'));
-        $this->assertSame('Sarah', $mm->tryloadOne()->get('name'));
+        $this->assertNull($mm->tryLoad(1)->get('name'));
+        $this->assertSame('Sarah', $mm->tryLoadOne()->get('name'));
         $this->assertSame('Sarah', $mm->loadOne()->get('name'));
         $this->assertSame('Sarah', $mm->tryLoadAny()->get('name'));
         $this->assertSame('Sarah', $mm->loadAny()->get('name'));

@@ -589,6 +589,7 @@ class Model implements \IteratorAggregate
         return Field::fromSeed($seed);
     }
 
+    /** @var array<string, array> */
     protected $typeToFieldSeed = [
         'boolean' => [Field\Boolean::class],
     ];
@@ -685,7 +686,7 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    private function checkOnlyFieldsField(string $field)
+    private function checkOnlyFieldsField(string $field): void
     {
         $this->getField($field); // test if field exists
 
@@ -1073,10 +1074,6 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsModel();
 
-        if ($this->scope->getModel() === null) {
-            $this->scope->setModel($this);
-        }
-
         return $this->scope;
     }
 
@@ -1258,7 +1255,6 @@ class Model implements \IteratorAggregate
                 $this->setId($this->getId());
             }
 
-            /** @var static|false $ret */
             $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
                 $this->unload();
@@ -1508,7 +1504,7 @@ class Model implements \IteratorAggregate
     /**
      * Check if model has persistence with specified method.
      */
-    public function checkPersistence(string $method = null)
+    public function checkPersistence(string $method = null): void
     {
         if (!$this->persistence) {
             throw new Exception('Model is not associated with any persistence');
@@ -1825,17 +1821,17 @@ class Model implements \IteratorAggregate
                 $thisCloned->setId($data[$this->id_field] ?? null);
             }
 
-            // you can return false in afterLoad hook to prevent to yield this data row
-            // use it like this:
+            // you can return false in afterLoad hook to prevent to yield this data row, example:
             // $model->onHook(self::HOOK_AFTER_LOAD, static function ($m) {
-            //     if ($m->get('date') < $m->date_from) $m->breakHook(false);
+            //     if ($m->get('date') < $m->date_from) {
+            //         $m->breakHook(false);
+            //     }
             // })
 
             // you can also use breakHook() with specific object which will then be returned
             // as a next iterator value
 
             $ret = $thisCloned->hook(self::HOOK_AFTER_LOAD);
-
             if ($ret === false) {
                 continue;
             }
@@ -1935,9 +1931,11 @@ class Model implements \IteratorAggregate
         try {
             return $this->persistence->atomic($fx);
         } catch (\Exception $e) {
-            if ($this->hook(self::HOOK_ROLLBACK, [$e]) !== false) {
-                throw $e;
+            if ($this->hook(self::HOOK_ROLLBACK, [$e]) === false) {
+                return false;
             }
+
+            throw $e;
         }
     }
 

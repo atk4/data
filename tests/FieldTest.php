@@ -604,23 +604,23 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
         // date, datetime, time
         $m->set('date', 123);
-        $this->assertInstanceof('DateTime', $m->get('date'));
+        $this->assertInstanceOf('DateTime', $m->get('date'));
         $m->set('date', '123');
-        $this->assertInstanceof('DateTime', $m->get('date'));
+        $this->assertInstanceOf('DateTime', $m->get('date'));
         $m->set('date', '2018-05-31');
-        $this->assertInstanceof('DateTime', $m->get('date'));
+        $this->assertInstanceOf('DateTime', $m->get('date'));
         $m->set('datetime', 123);
-        $this->assertInstanceof('DateTime', $m->get('datetime'));
+        $this->assertInstanceOf('DateTime', $m->get('datetime'));
         $m->set('datetime', '123');
-        $this->assertInstanceof('DateTime', $m->get('datetime'));
+        $this->assertInstanceOf('DateTime', $m->get('datetime'));
         $m->set('datetime', '2018-05-31 12:13:14');
-        $this->assertInstanceof('DateTime', $m->get('datetime'));
+        $this->assertInstanceOf('DateTime', $m->get('datetime'));
         $m->set('time', 123);
-        $this->assertInstanceof('DateTime', $m->get('time'));
+        $this->assertInstanceOf('DateTime', $m->get('time'));
         $m->set('time', '123');
-        $this->assertInstanceof('DateTime', $m->get('time'));
+        $this->assertInstanceOf('DateTime', $m->get('time'));
         $m->set('time', '12:13:14');
-        $this->assertInstanceof('DateTime', $m->get('time'));
+        $this->assertInstanceOf('DateTime', $m->get('time'));
     }
 
     public function testNormalizeException1(): void

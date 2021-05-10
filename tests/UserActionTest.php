@@ -9,14 +9,14 @@ use Atk4\Data\Persistence\Static_ as Persistence_Static;
 
 trait UaReminder
 {
-    public function send_reminder()
+    public function send_reminder(): string
     {
         $this->save(['reminder_sent' => true]);
 
         return 'sent reminder to ' . $this->getTitle();
     }
 
-    public function backup_clients()
+    public function backup_clients(): string
     {
         return 'backs up all clients';
     }

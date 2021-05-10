@@ -73,7 +73,7 @@ class ContainsOne extends Reference
         }
     }
 
-    protected function getDefaultPersistence(Model $theirModel)
+    protected function getDefaultPersistence(Model $theirModel): Persistence
     {
         return new Persistence\ArrayOfStrings([
             $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],

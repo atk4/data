@@ -186,6 +186,9 @@ class Reference
         return $this->our_field ?: $this->getOurModel()->id_field;
     }
 
+    /**
+     * @return mixed
+     */
     protected function getOurFieldValue()
     {
         return $this->getOurField()->get();
@@ -261,6 +264,8 @@ class Reference
 
     /**
      * List of properties to show in var_dump.
+     *
+     * @var array<int|string, string>
      */
     protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
 

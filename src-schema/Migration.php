@@ -66,7 +66,7 @@ class Migration
         return $this->connection->connection()->getSchemaManager();
     }
 
-    public function table($tableName): self
+    public function table(string $tableName): self
     {
         $this->table = new Table($this->getDatabasePlatform()->quoteSingleIdentifier($tableName));
 
@@ -152,7 +152,7 @@ class Migration
         return $this;
     }
 
-    public function field(string $fieldName, $options = []): self
+    public function field(string $fieldName, array $options = []): self
     {
         // TODO remove once we no longer support "money" database type
         if (($options['type'] ?? null) === 'money') {

@@ -248,7 +248,7 @@ class Sql extends Persistence
     /**
      * Initializes WITH cursors.
      */
-    public function initWithCursors(Model $model, Query $query)
+    public function initWithCursors(Model $model, Query $query): void
     {
         if (!$with = $model->with) {
             return;
@@ -278,7 +278,7 @@ class Sql extends Persistence
     /**
      * Adds Field in Query.
      */
-    public function initField(Query $query, Field $field)
+    public function initField(Query $query, Field $field): void
     {
         $query->field($field, $field->useAlias() ? $field->short_name : null);
     }
@@ -288,7 +288,7 @@ class Sql extends Persistence
      *
      * @param array|false|null $fields
      */
-    public function initQueryFields(Model $model, Query $query, $fields = null)
+    public function initQueryFields(Model $model, Query $query, $fields = null): void
     {
         // do nothing on purpose
         if ($fields === false) {
@@ -337,7 +337,7 @@ class Sql extends Persistence
     /**
      * Will set limit defined inside $m onto query $q.
      */
-    protected function setLimitOrder(Model $model, Query $query)
+    protected function setLimitOrder(Model $model, Query $query): void
     {
         // set limit
         if ($model->limit && ($model->limit[0] || $model->limit[1])) {
@@ -801,7 +801,7 @@ class Sql extends Persistence
      *
      * @param mixed $id
      */
-    public function update(Model $model, $id, array $data)
+    public function update(Model $model, $id, array $data): void
     {
         if (!$model->id_field) {
             throw new Exception('id_field of a model is not set. Unable to update record.');
@@ -852,7 +852,7 @@ class Sql extends Persistence
      *
      * @param mixed $id
      */
-    public function delete(Model $model, $id)
+    public function delete(Model $model, $id): void
     {
         if (!$model->id_field) {
             throw new Exception('id_field of a model is not set. Unable to delete record.');
@@ -874,7 +874,7 @@ class Sql extends Persistence
         }
     }
 
-    public function getFieldSqlExpression(Field $field, Expression $expression)
+    public function getFieldSqlExpression(Field $field, Expression $expression): Expression
     {
         if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {
             $mask = '{{}}.{}';

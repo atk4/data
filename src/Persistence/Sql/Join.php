@@ -79,14 +79,12 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
             // so you can use expressions or fields inside joined entities.
             // If string specified here does not point to an existing model field
             // a new basic field is inserted and marked hidden.
-            if (is_string($this->master_field)) {
-                if (!$this->getOwner()->hasField($this->master_field)) {
-                    $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
+            if (!$this->getOwner()->hasField($this->master_field)) {
+                $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
 
-                    $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
+                $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
 
-                    $this->master_field = $field->short_name;
-                }
+                $this->master_field = $field->short_name;
             }
 
             $this->onHookShortToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);

@@ -12,7 +12,7 @@ use Atk4\Data\Persistence;
  */
 class ContainsMany extends ContainsOne
 {
-    protected function getDefaultPersistence(Model $theirModel)
+    protected function getDefaultPersistence(Model $theirModel): Persistence
     {
         return new Persistence\ArrayOfStrings([
             $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? $this->getOurFieldValue() : [],
