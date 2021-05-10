@@ -15,7 +15,7 @@ class Condition extends AbstractScope
 {
     use ReadableCaptionTrait;
 
-    /** @var string|Field|Expression */
+    /** @var string|Field|Expressionable */
     public $key;
 
     /** @var string */
@@ -88,14 +88,19 @@ class Condition extends AbstractScope
         ],
     ];
 
+    /**
+     * @param string|Expressionable $key
+     * @param string|mixed|null     $operator
+     * @param mixed|null            $value
+     */
     public function __construct($key, $operator = null, $value = null)
     {
         if ($key instanceof AbstractScope) {
             throw new Exception('Only Scope can contain another conditions');
         } elseif ($key instanceof Field) { // for BC
             $key = $key->short_name;
-        } elseif (!is_string($key) && !($key instanceof Expression) && !($key instanceof Expressionable)) {
-            throw new Exception('Field must be a string or an instance of Expression');
+        } elseif (!is_string($key) && !($key instanceof Expressionable)) {
+            throw new Exception('Field must be a string or an instance of Expressionable');
         }
 
         if (func_num_args() === 2) {
@@ -108,11 +113,11 @@ class Condition extends AbstractScope
 
         if ($operator === null) {
             // at least MSSQL database always requires an operator
-            if (!($key instanceof Expression) && !($key instanceof Expressionable)) {
+            if (!($key instanceof Expressionable)) {
                 throw new Exception('Operator must be specified');
             }
         } else {
-            $this->operator = strtoupper((string) $operator);
+            $this->operator = strtoupper($operator);
 
             if (!array_key_exists($this->operator, self::$operators)) {
                 throw (new Exception('Operator is not supported'))
@@ -149,7 +154,8 @@ class Condition extends AbstractScope
             // @todo: consider this when condition is part of OR scope
             if ($this->operator === self::OPERATOR_EQUALS && !is_object($this->value) && !is_array($this->value)) {
                 // key containing '/' means chained references and it is handled in toQueryArguments method
-                if (is_string($field = $this->key) && !str_contains($field, '/')) {
+                $field = $this->key;
+                if (is_string($field) && !str_contains($field, '/')) {
                     $field = $model->getField($field);
                 }
 
@@ -312,8 +318,8 @@ class Condition extends AbstractScope
 
         if ($field instanceof Field) {
             $words[] = $field->getCaption();
-        } elseif ($field instanceof Expression) {
-            $words[] = "expression '{$field->getDebugQuery()}'";
+        } elseif ($field instanceof Expressionable) {
+            $words[] = $this->valueToWords($model, $field);
         }
 
         return implode(' ', array_filter($words));
@@ -324,6 +330,9 @@ class Condition extends AbstractScope
         return $this->operator ? self::$operators[$this->operator]['label'] : '';
     }
 
+    /**
+     * @param mixed $value
+     */
     protected function valueToWords(Model $model, $value): string
     {
         if ($value === null) {
@@ -344,8 +353,8 @@ class Condition extends AbstractScope
                 return $value->getOwner()->getModelCaption() . ' ' . $value->getCaption();
             }
 
-            if ($value instanceof Expression || $value instanceof Expressionable) {
-                return "expression '{$value->getDebugQuery()}'";
+            if ($value instanceof Expressionable) {
+                return 'expression \'' . $value->getDsqlExpression(new Expression())->getDebugQuery() . '\'';
             }
 
             return 'object ' . print_r($value, true);
