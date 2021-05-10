@@ -6,7 +6,6 @@ namespace Atk4\Data\Model\Scope;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Dsql\Expressionable;
 
 /**
  * The root scope object used in the Model::$scope property

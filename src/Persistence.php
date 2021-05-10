@@ -415,8 +415,7 @@ abstract class Persistence
      */
     public function _serializeSaveField(Field $f, $value)
     {
-        switch ($f->serialize === true ? 'serialize' : $f->serialize)
-        {
+        switch ($f->serialize === true ? 'serialize' : $f->serialize) {
             case 'serialize':
                 return serialize($value);
             case 'json':
@@ -444,8 +443,7 @@ abstract class Persistence
      */
     public function _serializeLoadField(Field $f, $value)
     {
-        switch ($f->serialize === true ? 'serialize' : $f->serialize)
-        {
+        switch ($f->serialize === true ? 'serialize' : $f->serialize) {
             case 'serialize':
                 return unserialize($value);
             case 'json':
