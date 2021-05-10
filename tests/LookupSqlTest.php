@@ -366,7 +366,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         $c->insert(['Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
         // Inserting Users into Latvia can also specify Friends. In this case Friend name will be looked up
-        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain,Imants']]]);
+        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain, Imants']]]);
 
         // Inserting This time explicitly specify friend attributes
         $c->insert(['UK', 'Users' => [

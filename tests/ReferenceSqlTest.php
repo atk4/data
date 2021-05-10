@@ -55,7 +55,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $oo = $u->addCondition('id', '>', '1')->ref('Orders');
 
         $this->assertSameSql(
-            'select "id","amount","user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)',
+            'select "id", "amount", "user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)',
             $oo->action('select')->render()
         );
     }
@@ -71,7 +71,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $u->hasMany('Orders', ['model' => $o]);
 
         $this->assertSameSql(
-            'select "id","amount","user_id" from "order" where "user_id" = "user"."id"',
+            'select "id", "amount", "user_id" from "order" where "user_id" = "user"."id"',
             $u->refLink('Orders')->action('select')->render()
         );
     }
@@ -112,7 +112,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency_code', 'their_field' => 'code']);
 
         $this->assertSameSql(
-            'select "id","code","name" from "currency" where "code" = "user"."currency_code"',
+            'select "id", "code", "name" from "currency" where "code" = "user"."currency_code"',
             $u->refLink('cur')->action('select')->render()
         );
     }
@@ -151,7 +151,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $o->addCondition('amount', '<', 9);
 
         $this->assertSameSql(
-            'select "id","name" from "user" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
+            'select "id", "name" from "user" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
             $o->ref('user_id')->action('select')->render()
         );
     }
@@ -223,7 +223,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
 
         $this->assertSameSql(
-            'select "invoice"."id","invoice"."ref_no",(select sum("total_net") from "invoice_line" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
+            'select "invoice"."id", "invoice"."ref_no", (select sum("total_net") from "invoice_line" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
             $i->action('select')->render()
         );
     }

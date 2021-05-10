@@ -169,8 +169,6 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
         $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // =245.10
-
-        //var_dump($i->export(), $i->export(null,null,false));
     }
 
     /**

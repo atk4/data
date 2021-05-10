@@ -36,7 +36,7 @@ class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id","name","gender" from "user" where "gender" = :a',
+                'select "id", "name", "gender" from "user" where "gender" = :a',
                 $mm->action('select')->render()
             );
         }

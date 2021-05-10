@@ -99,7 +99,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         $ii->getField($ii->id_field)->system = false;
         $ii->id_field = null;
 
-        // pass parameters as array elements [field,order]
+        // pass parameters as array elements [field, order]
         $i = clone $ii;
         $i->setOrder([['net', 'desc'], ['vat']]);
         $i->onlyFields(['net', 'vat']);

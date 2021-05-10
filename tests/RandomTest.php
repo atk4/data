@@ -528,7 +528,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $d->addCondition('user', 'Sarah');
 
         $this->assertSameSql(
-            'select "id","name","user_id",(select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a',
+            'select "id", "name", "user_id", (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a',
             $d->action('select')->render()
         );
     }

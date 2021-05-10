@@ -36,7 +36,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
+                'select "id", "total_net", "total_vat", ("total_net"+"total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()
             );
         }
@@ -53,7 +53,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertEquals(
-                'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross",(("total_net"+"total_vat")*2) "double_total_gross" from "invoice"',
+                'select "id", "total_net", "total_vat", ("total_net"+"total_vat") "total_gross", (("total_net"+"total_vat")*2) "double_total_gross" from "invoice"',
                 $i->action('select')->render()
             );
         }
@@ -79,7 +79,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
+                'select "id", "total_net", "total_vat", ("total_net"+"total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()
             );
         }
@@ -108,7 +108,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id","total_net","total_vat",(select sum("total_net") from "invoice") "sum_net" from "invoice"',
+                'select "id", "total_net", "total_vat", (select sum("total_net") from "invoice") "sum_net" from "invoice"',
                 $i->action('select')->render()
             );
         }
@@ -151,17 +151,17 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where (("name" || " " || "surname") != "cached_name")',
+                'select "id", "name", "surname", "cached_name", ("name" || " " || "surname") "full_name" from "user" where (("name" || " " || "surname") != "cached_name")',
                 $m->action('select')->render()
             );
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->assertSame(
-                'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
+                'select "id", "name", "surname", "cached_name", ("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
                 $m->action('select')->render()
             );
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(
-                'select `id`,`name`,`surname`,`cached_name`,(CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
+                'select `id`,`name`,`surname`,`cached_name`, (CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
                 $m->action('select')->render()
             );
         }
