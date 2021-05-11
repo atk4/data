@@ -16,7 +16,6 @@
         "postgresql"
     ],
     "homepage": "https://github.com/atk4/data",
-    "version": "dev-develop",
     "license": "MIT",
     "authors": [
         {
@@ -34,14 +33,6 @@
         }
     ],
     "require": {
-        "php": ">=7.4.0",
-        "ext-intl": "*",
-        "ext-pdo": "*",
-        "atk4/core": "dev-develop",
-        "doctrine/dbal": "^2.10 || ^3.0",
-        "mahalux/atk4-hintable": "~1.3.1"
-    },
-    "require-release": {
         "php": ">=7.4.0",
         "ext-intl": "*",
         "ext-pdo": "*",
