@@ -606,10 +606,87 @@ Now you can explore. Try typing:
 
 ## Agile Core and DSQL
 
-Agile Data relies on [DSQL - Query Builder](https://github.com/atk4/dsql) for SQL persistence and multi-record operations though Actions. Various interfaces and PHP patterns are implemented through [Agile Core](https://github.com/atk4/core). For more information use the following links:
+Agile Data relies on DSQL - Query Builder for SQL persistence and multi-record operations though Actions. Various interfaces and PHP patterns are implemented through [Agile Core](https://github.com/atk4/core).
 
--   DSQL Documentation: http://dsql.readthedocs.io
--   Agile Core Documentation: http://agile-core.readthedocs.io
+Hold on! Why yet another query builder? Obviously because existing ones are not good enough. You can write multi-vendor queries in PHP profiting from better security, clean syntax and avoid human errors.
+
+DSQL tries to do things differently:
+
+1. Composability. Unlike other libraries, we render queries recursively allowing many levels of sub-selects.
+2. Small footprint. We don't duplicate query code for all vendors, instead we use clever templating system.
+3. Extensibility. We have 3 different ways to extend DSQL as well as 3rd party vendor driver support.
+4. **Any Query** - any query with any complexity can be expressed through DSQL.
+5. Almost no dependencies. Use DSQL in any PHP application or framework.
+6. NoSQL support. In addition to supporting PDO, DSQL can be extended to deal with SQL-compatible NoSQL servers.
+
+DSQL Is Simple and Powerful
+
+``` php
+$query = new Atk4\Dsql\Query();
+$query  ->table('employees')
+        ->where('birth_date','1961-05-02')
+        ->field('count(*)')
+        ;
+echo "Employees born on May 2, 1961: ".$query->getOne();
+```
+
+If the basic query is not fun, how about more complex one?
+
+``` php
+// Establish a query looking for a maximum salary
+$salary = new Atk4\Dsql\Query(['connection' => $pdo]);
+
+// Create few expression objects
+$e_ms = $salary->expr('max(salary)');
+$e_df = $salary->expr('TimeStampDiff(month, from_date, to_date)');
+
+// Configure our basic query
+$salary
+    ->table('salary')
+    ->field(['emp_no', 'max_salary' => $e_ms, 'months' => $e_df])
+    ->group('emp_no')
+    ->order('-max_salary')
+
+// Define sub-query for employee "id" with certain birth-date
+$employees = $salary->dsql()
+    ->table('employees')
+    ->where('birth_date','1961-05-02')
+    ->field('emp_no')
+    ;
+
+// use sub-select to condition salaries
+$salary->where('emp_no', $employees);
+
+// Join with another table for more data
+$salary
+    ->join('employees.emp_id','emp_id')
+    ->field('employees.first_name');
+
+
+// finally, fetch result
+foreach ($salary as $row) {
+    echo "Data: ".json_encode($row)."\n";
+}
+```
+
+This builds and executes a single query that looks like this:
+
+``` sql
+SELECT
+    `emp_no`,
+    max(salary) `max_salary`,
+    TimeStampDiff(month, from_date, to_date) `months`
+FROM
+    `salary`
+JOIN
+    `employees` on `employees`.`emp_id` = `salary`.`emp_id`
+WHERE
+    `salary`.`emp_no` in (select `id` from `employees` where `birth_date` = :a)
+GROUP BY `emp_no`
+ORDER BY max_salary desc
+
+:a = "1961-05-02"
+```
 
 ## UI for Agile Data
 
