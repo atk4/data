@@ -30,16 +30,9 @@ class Action
     public function filter(Model\Scope\AbstractScope $condition)
     {
         if (!$condition->isEmpty()) {
-            // CallbackFilterIterator with circular reference (bound function) is not GCed,
-            // because of specific php implementation of SPL iterator, see:
-            // https://bugs.php.net/bug.php?id=80125
-            // and related
-            // https://bugs.php.net/bug.php?id=65387
-            // - PHP 7.3 - impossible to fix easily
-            // - PHP 7.4 - fix it using WeakReference
-            // - PHP 8.0 - fixed in php, see:
+            // CallbackFilterIterator with circular reference (bound function) is not GCed in PHP 7.4, see
             // https://github.com/php/php-src/commit/afab9eb48c883766b7870f76f2e2b0a4bd575786
-            // remove the if below once PHP 7.3 and 7.4 is no longer supported
+            // remove the if below once PHP 7.4 is no longer supported
             $filterFx = function ($row) use ($condition) {
                 return $this->match($row, $condition);
             };
