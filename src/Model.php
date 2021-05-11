@@ -749,7 +749,7 @@ class Model implements \IteratorAggregate
             }
 
             return false;
-        }, ARRAY_FILTER_USE_BOTH);
+        }, \ARRAY_FILTER_USE_BOTH);
     }
 
     /**
@@ -849,7 +849,7 @@ class Model implements \IteratorAggregate
         // set temporary hook to disable any normalization (null validation)
         $hookIndex = $this->onHookShort(self::HOOK_NORMALIZE, static function () {
             throw new \Atk4\Core\HookBreaker(false);
-        }, [], PHP_INT_MIN);
+        }, [], \PHP_INT_MIN);
         try {
             return $this->set($field, null);
         } finally {

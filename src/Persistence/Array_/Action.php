@@ -36,7 +36,7 @@ class Action
             $filterFx = function ($row) use ($condition) {
                 return $this->match($row, $condition);
             };
-            if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 4) {
+            if (\PHP_MAJOR_VERSION === 7 && \PHP_MINOR_VERSION === 4) {
                 $filterFxWeakRef = \WeakReference::create($filterFx);
                 $this->generator = new \CallbackFilterIterator($this->generator, static function (array $row) use ($filterFxWeakRef) {
                     return $filterFxWeakRef->get()($row);
@@ -242,7 +242,7 @@ class Action
         $args = [];
         foreach ($fields as [$field, $direction]) {
             $args[] = array_column($data, $field);
-            $args[] = strtolower($direction) === 'desc' ? SORT_DESC : SORT_ASC;
+            $args[] = strtolower($direction) === 'desc' ? \SORT_DESC : \SORT_ASC;
         }
         $args[] = &$data;
 
@@ -299,7 +299,7 @@ class Action
      */
     public function get(): array
     {
-        'trigger_error'('Method is deprecated. Use getRows instead', E_USER_DEPRECATED);
+        'trigger_error'('Method is deprecated. Use getRows instead', \E_USER_DEPRECATED);
 
         return $this->getRows();
     }

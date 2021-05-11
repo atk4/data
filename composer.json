@@ -50,11 +50,11 @@
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.13",
-        "friendsofphp/php-cs-fixer": "^2.17",
+        "friendsofphp/php-cs-fixer": "^3.0",
         "johnkary/phpunit-speedtrap": "^3.2",
         "phpstan/phpstan": "^0.12.82",
         "phpunit/phpcov": "*",
-        "phpunit/phpunit": ">=9.0"
+        "phpunit/phpunit": ">=9.3"
     },
     "config": {
         "sort-packages": true

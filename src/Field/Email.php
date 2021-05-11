@@ -54,7 +54,7 @@ class Email extends Field
         }
 
         // split value by any number of separator characters
-        $emails = preg_split('/[' . implode('', array_map('preg_quote', $this->separator)) . ']+/', $value, -1, PREG_SPLIT_NO_EMPTY);
+        $emails = preg_split('/[' . implode('', array_map('preg_quote', $this->separator)) . ']+/', $value, -1, \PREG_SPLIT_NO_EMPTY);
 
         if (!$this->allow_multiple && count($emails) > 1) {
             throw new ValidationException([$this->name => 'Only a single email can be entered'], $this->getOwner());
@@ -73,9 +73,9 @@ class Email extends Field
             }
 
             [$user, $domain] = explode('@', $email, 2);
-            $domain = idn_to_ascii($domain, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46); // always convert domain to ASCII
+            $domain = idn_to_ascii($domain, \IDNA_DEFAULT, \INTL_IDNA_VARIANT_UTS46); // always convert domain to ASCII
 
-            if (!filter_var($user . '@' . $domain, FILTER_VALIDATE_EMAIL)) {
+            if (!filter_var($user . '@' . $domain, \FILTER_VALIDATE_EMAIL)) {
                 throw new ValidationException([$this->name => 'Email address format is invalid'], $this->getOwner());
             }
 
@@ -95,10 +95,10 @@ class Email extends Field
     {
         foreach (array_unique(array_map('strtoupper', $types)) as $t) {
             $dnsConsts = [
-                'MX' => DNS_MX,
-                'A' => DNS_A,
-                'AAAA' => DNS_AAAA,
-                'CNAME' => DNS_CNAME,
+                'MX' => \DNS_MX,
+                'A' => \DNS_A,
+                'AAAA' => \DNS_AAAA,
+                'CNAME' => \DNS_CNAME,
             ];
 
             $records = dns_get_record($domain . '.', $dnsConsts[$t]);

@@ -342,7 +342,7 @@ class Sql extends Persistence
         // set limit
         if ($model->limit && ($model->limit[0] || $model->limit[1])) {
             if ($model->limit[0] === null) {
-                $model->limit[0] = PHP_INT_MAX;
+                $model->limit[0] = \PHP_INT_MAX;
             }
             $query->limit($model->limit[0], $model->limit[1]);
         }

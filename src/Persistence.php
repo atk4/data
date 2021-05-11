@@ -463,7 +463,7 @@ abstract class Persistence
      */
     public function jsonDecode(Field $f, string $json, bool $assoc = true)
     {
-        return json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
+        return json_decode($json, $assoc, 512, \JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -473,6 +473,6 @@ abstract class Persistence
      */
     public function jsonEncode(Field $f, $value): string
     {
-        return json_encode($value, JSON_THROW_ON_ERROR, 512);
+        return json_encode($value, \JSON_THROW_ON_ERROR, 512);
     }
 }
