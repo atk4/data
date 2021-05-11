@@ -69,7 +69,7 @@ jobs:
 
       - name: Check Coding Style (only for CodingStyle)
         if: matrix.type == 'CodingStyle'
-        run: vendor/bin/php-cs-fixer fix --dry-run --using-cache=no --diff --diff-format=udiff --verbose --show-progress=dots
+        run: vendor/bin/php-cs-fixer fix --dry-run --using-cache=no --diff --verbose
 
       - name: Run Static Analysis (only for StaticAnalysis)
         if: matrix.type == 'StaticAnalysis'
@@ -85,7 +85,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.3', '7.4', 'latest']
+        php: ['7.4', 'latest']
         type: ['Phpunit']
         include:
           - php: 'latest'
