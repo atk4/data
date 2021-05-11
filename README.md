@@ -604,9 +604,9 @@ Now you can explore. Try typing:
 > $m->action('count')->getOne()
 ```
 
-## Agile DSQL
+## Agile Core and DSQL
 
-Agile Data relies on DSQL - Query Builder for SQL persistence and multi-record operations though Actions.
+Agile Data relies on DSQL - Query Builder for SQL persistence and multi-record operations though Actions. Various interfaces and PHP patterns are implemented through [Agile Core](https://github.com/atk4/core).
 
 Hold on! Why yet another query builder? Obviously because existing ones are not good enough. You can write multi-vendor queries in PHP profiting from better security, clean syntax and avoid human errors.
 
