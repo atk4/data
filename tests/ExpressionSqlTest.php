@@ -161,7 +161,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
             );
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(
-                'select `id`,`name`,`surname`,`cached_name`, (CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
+                'select `id`, `name`, `surname`, `cached_name`, (CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
                 $m->action('select')->render()
             );
         }
