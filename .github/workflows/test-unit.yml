@@ -171,7 +171,9 @@ jobs:
 
       - name: Upload coverage logs 1/2 (only for "latest" Phpunit)
         if: env.LOG_COVERAGE
-        run: vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml
+        run: |
+          echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/custom-memory-limit.ini
+          vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml
 
       - name: Upload coverage logs 2/2 (only for "latest" Phpunit)
         if: env.LOG_COVERAGE
