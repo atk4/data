@@ -9,10 +9,7 @@ use Atk4\Data\Model;
 
 class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
-    /**
-     * Test constructor.
-     */
-    public function testLoadArray()
+    public function testLoadArray(): void
     {
         $this->setDb([
             'user' => [
@@ -40,7 +37,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
-    public function testModelLoadOneAndAny()
+    public function testModelLoadOneAndAny(): void
     {
         $this->setDb([
             'user' => [
@@ -55,16 +52,16 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         $mm = (clone $m)->addCondition($m->id_field, 1);
         $this->assertSame('John', $mm->load(1)->get('name'));
-        $this->assertNull($mm->tryload(2)->get('name'));
-        $this->assertSame('John', $mm->tryloadOne()->get('name'));
+        $this->assertNull($mm->tryLoad(2)->get('name'));
+        $this->assertSame('John', $mm->tryLoadOne()->get('name'));
         $this->assertSame('John', $mm->loadOne()->get('name'));
         $this->assertSame('John', $mm->tryLoadAny()->get('name'));
         $this->assertSame('John', $mm->loadAny()->get('name'));
 
         $mm = (clone $m)->addCondition('surname', 'Jones');
         $this->assertSame('Sarah', $mm->load(2)->get('name'));
-        $this->assertNull($mm->tryload(1)->get('name'));
-        $this->assertSame('Sarah', $mm->tryloadOne()->get('name'));
+        $this->assertNull($mm->tryLoad(1)->get('name'));
+        $this->assertSame('Sarah', $mm->tryLoadOne()->get('name'));
         $this->assertSame('Sarah', $mm->loadOne()->get('name'));
         $this->assertSame('Sarah', $mm->tryLoadAny()->get('name'));
         $this->assertSame('Sarah', $mm->loadAny()->get('name'));
@@ -76,7 +73,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $m->tryLoadOne();
     }
 
-    public function testPersistenceInsert()
+    public function testPersistenceInsert(): void
     {
         $dbData = [
             'user' => [
@@ -111,7 +108,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
-    public function testModelInsert()
+    public function testModelInsert(): void
     {
         $dbData = [
             'user' => [
@@ -135,7 +132,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Jones', $m->load($ms[1])->get('surname'));
     }
 
-    public function testModelSaveNoReload()
+    public function testModelSaveNoReload(): void
     {
         $this->setDb([
             'user' => [
@@ -159,7 +156,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(3, $m->getId());
     }
 
-    public function testModelInsertRows()
+    public function testModelInsertRows(): void
     {
         $dbData = [
             'user' => [
@@ -182,7 +179,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(2, $m->action('count')->getOne());
     }
 
-    public function testPersistenceDelete()
+    public function testPersistenceDelete(): void
     {
         $dbData = [
             'user' => [
@@ -218,7 +215,7 @@ class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test export.
      */
-    public function testExport()
+    public function testExport(): void
     {
         $this->setDb([
             'user' => [

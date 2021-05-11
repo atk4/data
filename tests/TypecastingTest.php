@@ -52,7 +52,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         parent::tearDown();
     }
 
-    public function testType()
+    public function testType(): void
     {
         $dbData = [
             'types' => [
@@ -137,7 +137,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals($first, $duplicate);
     }
 
-    public function testEmptyValues()
+    public function testEmptyValues(): void
     {
         // Oracle always converts empty string to null
         // see https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
@@ -235,7 +235,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals($dbData, $this->getDb());
     }
 
-    public function testTypecastNull()
+    public function testTypecastNull(): void
     {
         $dbData = [
             'test' => [
@@ -260,7 +260,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals($dbData, $this->getDb());
     }
 
-    public function testTypeCustom1()
+    public function testTypeCustom1(): void
     {
         $dbData = [
             'types' => [
@@ -321,7 +321,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals($dbData, $this->getDb());
     }
 
-    public function testTryLoad()
+    public function testTryLoad(): void
     {
         $this->setDb([
             'types' => [
@@ -341,7 +341,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($m->get('date') instanceof MyDate);
     }
 
-    public function testTryLoadAny()
+    public function testTryLoadAny(): void
     {
         $this->setDb([
             'types' => [
@@ -361,7 +361,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($m->get('date') instanceof MyDate);
     }
 
-    public function testTryLoadBy()
+    public function testTryLoadBy(): void
     {
         $this->setDb([
             'types' => [
@@ -381,7 +381,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($m->get('date') instanceof MyDate);
     }
 
-    public function testLoadBy()
+    public function testLoadBy(): void
     {
         $this->setDb([
             'types' => [
@@ -408,7 +408,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($m2->loaded());
     }
 
-    public function testTypecastBoolean()
+    public function testTypecastBoolean(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'job']);
@@ -418,7 +418,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('N', $db->typecastSaveField($f, 'N'));
     }
 
-    public function testTypecastTimezone()
+    public function testTypecastTimezone(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'event']);
@@ -456,7 +456,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
     }
 
-    public function testTimestamp()
+    public function testTimestamp(): void
     {
         $sql_time = '2016-10-25 11:44:08';
 
@@ -477,7 +477,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNotNull($m->get('ts'));
     }
 
-    public function testBadTimestamp()
+    public function testBadTimestamp(): void
     {
         $sql_time = '20blah16-10-25 11:44:08';
 
@@ -496,7 +496,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m = $m->loadOne();
     }
 
-    public function testDirtyTimestamp()
+    public function testDirtyTimestamp(): void
     {
         $sql_time = '2016-10-25 11:44:08';
 
@@ -517,7 +517,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertFalse($m->isDirty('ts'));
     }
 
-    public function testTimestampSave()
+    public function testTimestampSave(): void
     {
         $this->setDb([
             'types' => [
@@ -538,7 +538,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(['types' => [1 => ['id' => 1, 'date' => '2012-03-01']]], $this->getDb());
     }
 
-    public function testIntegerSave()
+    public function testIntegerSave(): void
     {
         $db = new Persistence\Sql($this->db->connection);
 
@@ -579,7 +579,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame([], $m->getDirtyRef());
     }
 
-    public function testDirtyTime()
+    public function testDirtyTime(): void
     {
         $sql_time = '11:44:08';
         $sql_time_new = '12:34:56';
@@ -607,7 +607,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($m->isDirty('ts'));
     }
 
-    public function testDirtyTimeAfterSave()
+    public function testDirtyTimeAfterSave(): void
     {
         $sql_time = '11:44:08';
         $sql_time_new = '12:34:56';

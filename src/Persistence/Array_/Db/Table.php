@@ -58,12 +58,12 @@ class Table
         return $this->tableName;
     }
 
-    public function hasColumnName($columnName): bool
+    public function hasColumnName(string $columnName): bool
     {
         return isset($this->columnNames[$columnName]);
     }
 
-    public function assertHasColumnName($columnName): void
+    public function assertHasColumnName(string $columnName): void
     {
         if (!isset($this->columnNames[$columnName])) {
             throw (new Exception('Column name does not exist'))

@@ -24,7 +24,9 @@ abstract class AbstractScope
      */
     protected function init(): void
     {
-        if (!$this->getOwner() instanceof self) {
+        /** @var Model\Scope|false $owner */
+        $owner = $this->getOwner();
+        if (!$owner instanceof self) {
             throw new Exception('Scope can only be added as element to scope');
         }
 
@@ -33,7 +35,7 @@ abstract class AbstractScope
         $this->onChangeModel();
     }
 
-    abstract protected function onChangeModel();
+    abstract protected function onChangeModel(): void;
 
     /**
      * Get the model this condition is associated with.

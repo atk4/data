@@ -9,7 +9,7 @@ use Atk4\Data\Persistence;
 
 class FieldHereditaryTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testDirty1()
+    public function testDirty1(): void
     {
         $p = new Persistence\Static_(['hello', 'world']);
 

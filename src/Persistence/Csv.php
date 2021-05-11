@@ -316,9 +316,7 @@ class Csv extends Persistence
 
         $this->putLine($line);
 
-        if ($model->id_field) {
-            return $data[$model->id_field];
-        }
+        return $model->id_field ? $data[$model->id_field] : null;
     }
 
     /**
@@ -326,7 +324,7 @@ class Csv extends Persistence
      *
      * @param mixed $id
      */
-    public function update(Model $model, $id, array $data)
+    public function update(Model $model, $id, array $data): void
     {
         throw new Exception('Updating records is not supported in CSV persistence.');
     }
@@ -336,7 +334,7 @@ class Csv extends Persistence
      *
      * @param mixed $id
      */
-    public function delete(Model $model, $id)
+    public function delete(Model $model, $id): void
     {
         throw new Exception('Deleting records is not supported in CSV persistence.');
     }

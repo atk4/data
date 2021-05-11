@@ -19,12 +19,12 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
     {
         parent::setUp();
 
-        $this->getMigrator()->table('account')->dropIfExists()
+        $this->createMigrator()->table('account')->dropIfExists()
             ->id()
             ->field('name')
             ->create();
 
-        $this->getMigrator()->table('document')->dropIfExists()
+        $this->createMigrator()->table('document')->dropIfExists()
             ->id()
             ->field('reference')
             ->field('contact_from_id')
@@ -33,7 +33,7 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
             ->field('amount', ['type' => 'float'])
             ->create();
 
-        $this->getMigrator()->table('payment')->dropIfExists()
+        $this->createMigrator()->table('payment')->dropIfExists()
             ->id()
             ->field('document_id', ['type' => 'integer'])
             ->field('account_id', ['type' => 'integer'])
@@ -47,7 +47,7 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Testing transfer between two accounts.
      */
-    public function testTransfer()
+    public function testTransfer(): void
     {
         $aib = (new Account($this->db))->createEntity()->save(['name' => 'AIB']);
         $boi = (new Account($this->db))->createEntity()->save(['name' => 'BOI']);
@@ -69,7 +69,7 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         ], $data);
     }
 
-    public function testRef()
+    public function testRef(): void
     {
         // create accounts and payments
         $a = new Account($this->db);
@@ -108,7 +108,7 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
     }
 
     /*
-    public function testBasicEntities()
+    public function testBasicEntities(): void
     {
         $db = Persistence::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
 

@@ -106,6 +106,10 @@ class Array_ extends Persistence
         return $rows;
     }
 
+    /**
+     * @param int|string|null $idFromRow
+     * @param int|string      $id
+     */
     private function assertNoIdMismatch($idFromRow, $id): void
     {
         if ($idFromRow !== null && (is_int($idFromRow) ? (string) $idFromRow : $idFromRow) !== (is_int($id) ? (string) $id : $id)) {
@@ -115,6 +119,9 @@ class Array_ extends Persistence
         }
     }
 
+    /**
+     * @param mixed $id
+     */
     private function saveRow(Model $model, array $rowData, $id): void
     {
         if ($model->id_field) {
@@ -249,18 +256,14 @@ class Array_ extends Persistence
      * Updates record in data array and returns record ID.
      *
      * @param mixed $id
-     *
-     * @return mixed
      */
-    public function update(Model $model, $id, array $data)
+    public function update(Model $model, $id, array $data): void
     {
         $table = $this->seedDataAndGetTable($model);
 
         $data = $this->typecastSaveRow($model, $data);
 
         $this->saveRow($model, array_merge($table->getRowById($model, $id)->getData(), $data), $id);
-
-        return $id;
     }
 
     /**
@@ -268,7 +271,7 @@ class Array_ extends Persistence
      *
      * @param mixed $id
      */
-    public function delete(Model $model, $id)
+    public function delete(Model $model, $id): void
     {
         $table = $this->seedDataAndGetTable($model);
 
@@ -366,7 +369,7 @@ class Array_ extends Persistence
     /**
      * Will set limit defined inside $model onto Action.
      */
-    protected function setLimitOrder(Model $model, Action $action)
+    protected function setLimitOrder(Model $model, Action $action): void
     {
         // first order by
         if ($model->order) {

@@ -21,9 +21,9 @@ class Account extends Model
     }
 
     /**
-     * create and return a trasnfer model.
+     * Create and return a transfer model.
      */
-    public function transfer(self $a, $amount)
+    public function transfer(self $a, float $amount): Transfer
     {
         $t = new Transfer($this->persistence, ['detached' => true]);
         $t = $t->createEntity();

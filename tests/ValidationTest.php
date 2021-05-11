@@ -19,7 +19,7 @@ class MyValidationModel extends Model
         $this->addField('domain');
     }
 
-    public function validate($intent = null): array
+    public function validate(string $intent = null): array
     {
         $errors = [];
         if ($this->get('name') === 'Python') {
@@ -42,7 +42,7 @@ class BadValidationModel extends Model
         $this->addField('name');
     }
 
-    public function validate($intent = null): array
+    public function validate(string $intent = null): array
     {
         return 'This should be array'; // @phpstan-ignore-line
     }
@@ -61,7 +61,7 @@ class ValidationTest extends AtkPhpunit\TestCase
         $this->m = new MyValidationModel($p);
     }
 
-    public function testValidate1()
+    public function testValidate1(): void
     {
         $m = $this->m->createEntity();
         $m->set('name', 'john');
@@ -70,7 +70,7 @@ class ValidationTest extends AtkPhpunit\TestCase
         $this->assertTrue(true); // no exception
     }
 
-    public function testValidate2()
+    public function testValidate2(): void
     {
         $m = $this->m->createEntity();
         $m->set('name', 'Python');
@@ -79,7 +79,7 @@ class ValidationTest extends AtkPhpunit\TestCase
         $m->save();
     }
 
-    public function testValidate3()
+    public function testValidate3(): void
     {
         $m = $this->m->createEntity();
         $m->set('name', 'Python');
@@ -89,7 +89,7 @@ class ValidationTest extends AtkPhpunit\TestCase
         $m->save();
     }
 
-    public function testValidate4()
+    public function testValidate4(): void
     {
         $m = $this->m->createEntity();
         try {
@@ -104,7 +104,7 @@ class ValidationTest extends AtkPhpunit\TestCase
         }
     }
 
-    public function testValidate5()
+    public function testValidate5(): void
     {
         $p = new Persistence\Array_();
         $m = new BadValidationModel($p);
@@ -115,7 +115,7 @@ class ValidationTest extends AtkPhpunit\TestCase
         $m->save();
     }
 
-    public function testValidateHook()
+    public function testValidateHook(): void
     {
         $m = $this->m->createEntity();
 

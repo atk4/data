@@ -33,13 +33,19 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         fclose($this->file2);
     }
 
+    /**
+     * @param resource $fileHandle
+     */
     protected function makeCsvPersistence($fileHandle, array $defaults = []): Persistence\Csv
     {
         return new class($fileHandle, $defaults) extends Persistence\Csv {
             /** @var resource */
             private $handleUnloaded;
 
-            public function __construct($fileHandle, $defaults)
+            /**
+             * @param resource $fileHandle
+             */
+            public function __construct($fileHandle, array $defaults)
             {
                 parent::__construct('', $defaults);
                 $this->handleUnloaded = $fileHandle;
@@ -61,7 +67,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         };
     }
 
-    protected function setDb($data): void
+    protected function setDb(array $data): void
     {
         ftruncate($this->file, 0);
         fputcsv($this->file, array_keys(reset($data)));
@@ -84,10 +90,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         return $data;
     }
 
-    /**
-     * Test constructor.
-     */
-    public function testTestcase()
+    public function testTestcase(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -99,7 +102,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $this->assertSame($data, $data2);
     }
 
-    public function testLoadAny()
+    public function testLoadAny(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -118,7 +121,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $this->assertSame('Smith', $m->get('surname'));
     }
 
-    public function testLoadAnyException()
+    public function testLoadAnyException(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -142,7 +145,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $this->assertFalse($mm->loaded());
     }
 
-    public function testLoadByIdNotSupportedException()
+    public function testLoadByIdNotSupportedException(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -157,7 +160,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
         $m = $m->tryLoad(1);
     }
 
-    public function testPersistenceCopy()
+    public function testPersistenceCopy(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
@@ -192,7 +195,7 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
     /**
      * Test export.
      */
-    public function testExport()
+    public function testExport(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],

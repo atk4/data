@@ -29,21 +29,29 @@ class FieldSqlExpression extends FieldSql
 
     /**
      * Specifies how to aggregate this.
+     *
+     * @var string
      */
     public $aggregate;
 
     /**
      * Aggregation by concatenation.
+     *
+     * @var string
      */
     public $concat;
 
     /**
      * When defining as aggregate, this will point to relation object.
+     *
+     * @var Reference\HasMany|null
      */
     public $aggregate_relation;
 
     /**
      * Specifies which field to use.
+     *
+     * @var string
      */
     public $field;
 
@@ -67,7 +75,7 @@ class FieldSqlExpression extends FieldSql
      * Possibly that user will attempt to insert values here. If that is the case, then
      * we would need to inject it into related hasMany relationship.
      */
-    public function afterSave()
+    public function afterSave(): void
     {
     }
 

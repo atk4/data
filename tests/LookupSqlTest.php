@@ -146,15 +146,15 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigrator(new LCountry($this->db))->dropIfExists()->create();
-        $this->getMigrator(new LUser($this->db))->dropIfExists()->create();
-        $this->getMigrator(new LFriend($this->db))->dropIfExists()->create();
+        $this->createMigrator(new LCountry($this->db))->dropIfExists()->create();
+        $this->createMigrator(new LUser($this->db))->dropIfExists()->create();
+        $this->createMigrator(new LFriend($this->db))->dropIfExists()->create();
     }
 
     /**
      * test various ways to import countries.
      */
-    public function testImportCountriesBasic()
+    public function testImportCountriesBasic(): void
     {
         $c = new LCountry($this->db);
 
@@ -229,7 +229,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['country']));
     }
 
-    public function testImportInternationalUsers()
+    public function testImportInternationalUsers(): void
     {
         $c = new LCountry($this->db);
 
@@ -283,7 +283,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['country', 'user']));
     }
 
-    public function testImportByLookup()
+    public function testImportByLookup(): void
     {
         $c = new LCountry($this->db);
 
@@ -358,7 +358,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
      *
      * TODO - that's left for hasMTM implementation..., to be coming later
      *
-    public function testImportInternationalFriends()
+    public function testImportInternationalFriends(): void
     {
         $c = new LCountry($this->db);
 
@@ -366,7 +366,7 @@ class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
         $c->insert(['Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
         // Inserting Users into Latvia can also specify Friends. In this case Friend name will be looked up
-        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain,Imants']]]);
+        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain, Imants']]]);
 
         // Inserting This time explicitly specify friend attributes
         $c->insert(['UK', 'Users' => [

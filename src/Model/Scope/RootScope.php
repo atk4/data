@@ -38,7 +38,7 @@ class RootScope extends Model\Scope
         return $this;
     }
 
-    public function getModel(): ?Model
+    public function getModel(): Model
     {
         return $this->model;
     }
@@ -48,17 +48,11 @@ class RootScope extends Model\Scope
         throw new Exception('Model Scope cannot be negated!');
     }
 
-    /**
-     * @return static
-     */
     public static function createAnd(...$conditions)
     {
         return (parent::class)::createAnd(...$conditions);
     }
 
-    /**
-     * @return static
-     */
     public static function createOr(...$conditions)
     {
         return (parent::class)::createOr(...$conditions);

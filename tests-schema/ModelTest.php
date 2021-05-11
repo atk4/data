@@ -15,18 +15,18 @@ class ModelTest extends PhpunitTestCase
     /**
      * @doesNotPerformAssertions
      */
-    public function testSetModelCreate()
+    public function testSetModelCreate(): void
     {
         $this->dropTableIfExists('user');
         $user = new TestUser($this->db);
 
-        $this->getMigrator($user)->create();
+        $this->createMigrator($user)->create();
 
         // now we can use user
         $user->createEntity()->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
     }
 
-    public function testImportTable()
+    public function testImportTable(): void
     {
         $this->assertTrue(true);
 
@@ -34,7 +34,7 @@ class ModelTest extends PhpunitTestCase
         // @phpstan-ignore-next-line
         $this->dropTableIfExists('user');
 
-        $migrator = $this->getMigrator();
+        $migrator = $this->createMigrator();
 
         $migrator->table('user')->id()
             ->field('foo')
@@ -68,7 +68,7 @@ class ModelTest extends PhpunitTestCase
                 'obj' => 'very long text value' . str_repeat('-=#', 1000), // 3000+ chars
             ])->insert();
 
-        $migrator2 = $this->getMigrator();
+        $migrator2 = $this->createMigrator();
         $migrator2->importTable('user');
 
         $migrator2->mode('create');
@@ -81,10 +81,10 @@ class ModelTest extends PhpunitTestCase
     /**
      * @doesNotPerformAssertions
      */
-    public function testMigrateTable()
+    public function testMigrateTable(): void
     {
         $this->dropTableIfExists('user');
-        $migrator = $this->getMigrator();
+        $migrator = $this->createMigrator();
         $migrator->table('user')->id()
             ->field('foo')
             ->field('bar', ['type' => 'integer'])
@@ -99,7 +99,7 @@ class ModelTest extends PhpunitTestCase
             ])->insert();
     }
 
-    public function testCreateModel()
+    public function testCreateModel(): void
     {
         $this->assertTrue(true);
 
@@ -107,9 +107,9 @@ class ModelTest extends PhpunitTestCase
         // @phpstan-ignore-next-line
         $this->dropTableIfExists('user');
 
-        $this->getMigrator(new TestUser($this->db))->create();
+        $this->createMigrator(new TestUser($this->db))->create();
 
-        $user_model = $this->getMigrator()->createModel($this->db, 'user');
+        $user_model = $this->createMigrator()->createModel($this->db, 'user');
 
         $this->assertSame(
             [
@@ -123,11 +123,11 @@ class ModelTest extends PhpunitTestCase
         );
     }
 
-    public function testStringFieldCaseInsensitive()
+    public function testStringFieldCaseInsensitive(): void
     {
         $this->dropTableIfExists('user');
 
-        $this->getMigrator()->table('user')->id()
+        $this->createMigrator()->table('user')->id()
             ->field('string')
             ->field('text', ['type' => 'text'])
             ->field('blob', ['type' => 'blob'])

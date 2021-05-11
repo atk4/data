@@ -12,7 +12,6 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
-// NOTE: This class should stay here in this namespace because other repos rely on it. For example, Atk4\Data tests
 class PhpunitTestCase extends AtkPhpunit\TestCase
 {
     /** @var Persistence|Persistence\Sql Persistence instance */
@@ -107,7 +106,7 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
         $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
-    public function getMigrator(Model $model = null): Migration
+    public function createMigrator(Model $model = null): Migration
     {
         return new \Atk4\Schema\Migration($model ?: $this->db);
     }
@@ -116,17 +115,19 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
      * Use this method to clean up tables after you have created them,
      * so that your database would be ready for the next test.
      */
-    public function dropTableIfExists(string $tableName)
+    public function dropTableIfExists(string $tableName): self
     {
         // we can not use SchemaManager::dropTable directly because of
         // our custom Oracle sequence for PK/AI
-        $this->getMigrator()->table($tableName)->dropIfExists();
+        $this->createMigrator()->table($tableName)->dropIfExists();
+
+        return $this;
     }
 
     /**
      * Sets database into a specific test.
      */
-    public function setDb(array $dbData, bool $importData = true)
+    public function setDb(array $dbData, bool $importData = true): void
     {
         $this->tables = array_keys($dbData);
 
@@ -136,7 +137,7 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
 
             $first_row = current($data);
             if ($first_row) {
-                $migrator = $this->getMigrator()->table($tableName);
+                $migrator = $this->createMigrator()->table($tableName);
 
                 $migrator->id('id');
 

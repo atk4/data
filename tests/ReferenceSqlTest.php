@@ -15,7 +15,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
  */
 class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testBasic()
+    public function testBasic(): void
     {
         $this->setDb([
             'user' => [
@@ -55,7 +55,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $oo = $u->addCondition('id', '>', '1')->ref('Orders');
 
         $this->assertSameSql(
-            'select "id","amount","user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)',
+            'select "id", "amount", "user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)',
             $oo->action('select')->render()
         );
     }
@@ -63,7 +63,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Tests to make sure refLink properly generates field links.
      */
-    public function testLink()
+    public function testLink(): void
     {
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
@@ -71,12 +71,12 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $u->hasMany('Orders', ['model' => $o]);
 
         $this->assertSameSql(
-            'select "id","amount","user_id" from "order" where "user_id" = "user"."id"',
+            'select "id", "amount", "user_id" from "order" where "user_id" = "user"."id"',
             $u->refLink('Orders')->action('select')->render()
         );
     }
 
-    public function testBasic2()
+    public function testBasic2(): void
     {
         $this->setDb([
             'user' => [
@@ -104,7 +104,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Pound', $cc->get('name'));
     }
 
-    public function testLink2()
+    public function testLink2(): void
     {
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['code', 'name']);
@@ -112,7 +112,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency_code', 'their_field' => 'code']);
 
         $this->assertSameSql(
-            'select "id","code","name" from "currency" where "code" = "user"."currency_code"',
+            'select "id", "code", "name" from "currency" where "code" = "user"."currency_code"',
             $u->refLink('cur')->action('select')->render()
         );
     }
@@ -121,7 +121,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
      * Tests that condition defined on the parent model is retained when traversing
      * through hasMany.
      */
-    public function testBasicOne()
+    public function testBasicOne(): void
     {
         $this->setDb([
             'user' => [
@@ -151,7 +151,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $o->addCondition('amount', '<', 9);
 
         $this->assertSameSql(
-            'select "id","name" from "user" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
+            'select "id", "name" from "user" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
             $o->ref('user_id')->action('select')->render()
         );
     }
@@ -159,7 +159,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Tests Join::addField's ability to create expressions from foreign fields.
      */
-    public function testAddOneField()
+    public function testAddOneField(): void
     {
         $this->setDb([
             'user' => [
@@ -198,7 +198,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('date'));
     }
 
-    public function testRelatedExpression()
+    public function testRelatedExpression(): void
     {
         $vat = 0.23;
 
@@ -223,12 +223,12 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
 
         $this->assertSameSql(
-            'select "invoice"."id","invoice"."ref_no",(select sum("total_net") from "invoice_line" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
+            'select "invoice"."id", "invoice"."ref_no", (select sum("total_net") from "invoice_line" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
             $i->action('select')->render()
         );
     }
 
-    public function testAggregateHasMany()
+    public function testAggregateHasMany(): void
     {
         $vat = 0.23;
 
@@ -291,7 +291,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals($n * ($vat + 1) + 1, $i->get('total_gross'));
     }
 
-    public function testOtherAggregates()
+    public function testOtherAggregates(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL does not support "SUM(variable)" syntax');
@@ -350,7 +350,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($ll->get('chicken5'));
     }
 
-    public function testReferenceHasOneTraversing()
+    public function testReferenceHasOneTraversing(): void
     {
         $this->setDb([
             'user' => [
@@ -405,7 +405,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $user->ref('Company')->ref('Orders')->setOrder('id')->export());
     }
 
-    public function testReferenceHook()
+    public function testReferenceHook(): void
     {
         $this->setDb([
             'user' => [
@@ -452,7 +452,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * test case hasOne::our_key == owner::id_field.
      */
-    public function testIdFieldReferenceOurFieldCase()
+    public function testIdFieldReferenceOurFieldCase(): void
     {
         $this->setDb([
             'player' => [
@@ -480,7 +480,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame(2, $p->ref('Stadium')->get('player_id'));
     }
 
-    public function testModelProperty()
+    public function testModelProperty(): void
     {
         $user = new Model($this->db, ['table' => 'user']);
         $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'their_field' => 'id']);
@@ -491,7 +491,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Few tests to test Reference\HasOneSql addTitle() method.
      */
-    public function testAddTitle()
+    public function testAddTitle(): void
     {
         $this->setDb([
             'user' => [
@@ -527,7 +527,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
      * Tests that if we change hasOne->addTitle() field value then it will also update
      * link field value when saved.
      */
-    public function testHasOneTitleSet()
+    public function testHasOneTitleSet(): void
     {
         $dbData = [
             'user' => [
@@ -615,7 +615,7 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
      * Tests that if we change hasOne->addTitle() field value then it will also update
      * link field value when saved.
      */
-    public function testHasOneReferenceCaption()
+    public function testHasOneReferenceCaption(): void
     {
         // restore DB
         $this->setDb([

@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 
 class ConditionTest extends AtkPhpunit\TestCase
 {
-    public function testException1()
+    public function testException1(): void
     {
         // not existing field in condition
         $m = new Model();
@@ -19,7 +19,7 @@ class ConditionTest extends AtkPhpunit\TestCase
         $m->addCondition('last_name', 'Smith');
     }
 
-    public function testBasicDiscrimination()
+    public function testBasicDiscrimination(): void
     {
         $m = new Model();
         $m->addField('name');
@@ -36,7 +36,7 @@ class ConditionTest extends AtkPhpunit\TestCase
         $this->assertCount(2, $m->scope()->getNestedConditions());
     }
 
-    public function testEditableAfterCondition()
+    public function testEditableAfterCondition(): void
     {
         $m = new Model();
         $m->addField('name');
@@ -48,7 +48,7 @@ class ConditionTest extends AtkPhpunit\TestCase
         $this->assertFalse($m->getField('gender')->isEditable());
     }
 
-    public function testEditableHasOne()
+    public function testEditableHasOne(): void
     {
         $gender = new Model();
         $gender->addField('name');

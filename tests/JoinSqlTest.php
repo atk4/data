@@ -13,7 +13,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testDirection()
+    public function testDirection(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
@@ -40,7 +40,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
-    public function testDirectionException()
+    public function testDirectionException(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
@@ -49,7 +49,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
     }
 
-    public function testJoinSaving1()
+    public function testJoinSaving1(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
@@ -97,7 +97,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['user', 'contact']));
     }
 
-    public function testJoinSaving2()
+    public function testJoinSaving2(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
@@ -159,7 +159,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['user', 'contact']));
     }
 
-    public function testJoinSaving3()
+    public function testJoinSaving3(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
@@ -191,7 +191,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['user', 'contact']));
     }
 
-    public function testJoinLoading()
+    public function testJoinLoading(): void
     {
         $this->setDb([
             'user' => [
@@ -226,7 +226,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $m_u2->get());
     }
 
-    public function testJoinUpdate()
+    public function testJoinUpdate(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
@@ -329,7 +329,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testJoinDelete()
+    public function testJoinDelete(): void
     {
         $this->setDb([
             'user' => [
@@ -369,7 +369,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testDoubleSaveHook()
+    public function testDoubleSaveHook(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
@@ -400,7 +400,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb(['user', 'contact']));
     }
 
-    public function testDoubleJoin()
+    public function testDoubleJoin(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
@@ -468,7 +468,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testDoubleReverseJoin()
+    public function testDoubleReverseJoin(): void
     {
         $this->setDb([
             'user' => [
@@ -523,7 +523,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test hasOne and hasMany trough Join.
      */
-    public function testJoinHasOneHasMany()
+    public function testJoinHasOneHasMany(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -594,7 +594,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         ], $m_u2->ref('Email')->export());
     }
 
-    public function testJoinReverseOneOnOne()
+    public function testJoinReverseOneOnOne(): void
     {
         $this->setDb([
             'user' => [
@@ -666,7 +666,7 @@ class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
 
-    public function testJoinActualFieldNamesAndPrefix()
+    public function testJoinActualFieldNamesAndPrefix(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 
 class StAccount extends Model
 {
@@ -28,7 +29,10 @@ class StAccount extends Model
         $this->hasMany('Transactions:TransferIn', ['model' => [StTransaction_TransferIn::class]]);
     }
 
-    public static function open($persistence, $name, $amount = 0)
+    /**
+     * @return static
+     */
+    public static function open(Persistence $persistence, string $name, float $amount = 0.0)
     {
         $m = new static($persistence);
         $m = $m->createEntity();
@@ -41,22 +45,27 @@ class StAccount extends Model
         return $m;
     }
 
-    public function deposit($amount)
+    public function deposit(float $amount): Model
     {
         return $this->ref('Transactions:Deposit')->createEntity()->save(['amount' => $amount]);
     }
 
-    public function withdraw($amount)
+    public function withdraw(float $amount): Model
     {
         return $this->ref('Transactions:Withdrawal')->createEntity()->save(['amount' => $amount]);
     }
 
-    public function transferTo(self $account, $amount)
+    /**
+     * @return array<int, Model>
+     */
+    public function transferTo(self $account, float $amount): array
     {
         $out = $this->ref('Transactions:TransferOut')->createEntity()->save(['amount' => $amount]);
         $in = $account->ref('Transactions:TransferIn')->createEntity()->save(['amount' => $amount, 'link_id' => $out->getId()]);
         $out->set('link_id', $in->getId());
         $out->save();
+
+        return [$in, $out];
     }
 }
 
@@ -89,7 +98,7 @@ class StGenericTransaction extends Model
         });
     }
 
-    public function getClassName()
+    public function getClassName(): string
     {
         return __NAMESPACE__ . '\StTransaction_' . $this->get('type');
     }
@@ -144,11 +153,11 @@ class SubTypesTest extends \Atk4\Schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigrator(new StAccount($this->db))->dropIfExists()->create();
-        $this->getMigrator(new StTransaction_TransferOut($this->db))->dropIfExists()->create();
+        $this->createMigrator(new StAccount($this->db))->dropIfExists()->create();
+        $this->createMigrator(new StTransaction_TransferOut($this->db))->dropIfExists()->create();
     }
 
-    public function testBasic()
+    public function testBasic(): void
     {
         $inheritance = StAccount::open($this->db, 'inheritance', 1000);
         $current = StAccount::open($this->db, 'current');

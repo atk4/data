@@ -198,6 +198,8 @@ class UserAction
 
     /**
      * Return confirmation message for action.
+     *
+     * @return string|false
      */
     public function getConfirmation()
     {

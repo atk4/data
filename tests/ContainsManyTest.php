@@ -28,8 +28,8 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
         parent::setUp();
 
         // populate database for our models
-        $this->getMigrator(new VatRate($this->db))->dropIfExists()->create();
-        $this->getMigrator(new Invoice($this->db))->dropIfExists()->create();
+        $this->createMigrator(new VatRate($this->db))->dropIfExists()->create();
+        $this->createMigrator(new Invoice($this->db))->dropIfExists()->create();
 
         // fill in some default values
         $m = new VatRate($this->db);
@@ -64,7 +64,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test caption of referenced model.
      */
-    public function testModelCaption()
+    public function testModelCaption(): void
     {
         $i = new Invoice($this->db);
 
@@ -77,7 +77,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test containsMany.
      */
-    public function testContainsMany()
+    public function testContainsMany(): void
     {
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
@@ -169,15 +169,13 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
         $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // =245.10
-
-        //var_dump($i->export(), $i->export(null,null,false));
     }
 
     /**
      * Model should be loaded before traversing to containsMany relation.
      */
     /* Imants: it looks that this is not actually required - disabling
-    public function testEx1()
+    public function testEx1(): void
     {
         $i = new Invoice($this->db);
         $this->expectException(Exception::class);
@@ -188,7 +186,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Nested containsMany tests.
      */
-    public function testNestedContainsMany()
+    public function testNestedContainsMany(): void
     {
         $i = new Invoice($this->db);
         $i = $i->loadBy($i->fieldName()->ref_no, 'A1');

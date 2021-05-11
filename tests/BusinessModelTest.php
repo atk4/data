@@ -14,10 +14,7 @@ use Atk4\Data\Tests\Model\User;
 
 class BusinessModelTest extends AtkPhpunit\TestCase
 {
-    /**
-     * Test constructor.
-     */
-    public function testConstructFields()
+    public function testConstructFields(): void
     {
         $m = new Model();
         $m->addField('name');
@@ -30,7 +27,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertSame('surname', $f->short_name);
     }
 
-    public function testFieldAccess()
+    public function testFieldAccess(): void
     {
         $m = new Model();
         $m->addField('name');
@@ -47,7 +44,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertSame(['name' => 5, 'surname' => 'Bilbo'], $m->get());
     }
 
-    public function testNoFieldException()
+    public function testNoFieldException(): void
     {
         $m = new Model();
         $m = $m->createEntity();
@@ -55,7 +52,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->set('name', 5);
     }
 
-    public function testDirty()
+    public function testDirty(): void
     {
         $m = new Model();
         $m->addField('name');
@@ -126,7 +123,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertSame('John', $m->get('name'));
     }
 
-    public function testDefaultInit()
+    public function testDefaultInit(): void
     {
         $p = new Persistence\Array_();
         $m = new Model($p);
@@ -138,7 +135,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertEquals(20, $m->getId());
     }
 
-    public function testException1()
+    public function testException1(): void
     {
         $m = new Model();
         $m->addField('name');
@@ -150,7 +147,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->set('name', 5);
     }
 
-    public function testException1Fixed()
+    public function testException1Fixed(): void
     {
         $m = new Model();
         $m->addField('name');
@@ -167,7 +164,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     /**
      * Sets title field.
      */
-    public function testSetTitle()
+    public function testSetTitle(): void
     {
         $m = new Model();
         $m->addField('name');
@@ -182,7 +179,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     /**
      * Fields can't be numeric.
      */
-    public function testException2()
+    public function testException2(): void
     {
         $m = new Model();
         $m = $m->createEntity();
@@ -190,7 +187,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->set(0, 'foo'); // @phpstan-ignore-line
     }
 
-    public function testException2a()
+    public function testException2a(): void
     {
         $m = new Model();
         $m = $m->createEntity();
@@ -198,7 +195,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->set('3', 'foo');
     }
 
-    public function testException2b()
+    public function testException2b(): void
     {
         $m = new Model();
         $m = $m->createEntity();
@@ -206,7 +203,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->set('3b', 'foo');
     }
 
-    public function testException2c()
+    public function testException2c(): void
     {
         $m = new Model();
         $m = $m->createEntity();
@@ -214,7 +211,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $m->set('', 'foo');
     }
 
-    public function testClass1()
+    public function testClass1(): void
     {
         $p = new Persistence\Array_();
         $c = new Client($p);
@@ -222,7 +219,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertEquals(10, $c->get('order'));
     }
 
-    public function testNormalize()
+    public function testNormalize(): void
     {
         $m = new Model();
         $m->addField('name', ['type' => 'string']);
@@ -240,7 +237,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $this->assertSame('', $m->get('data'));
     }
 
-    public function testExampleFromDoc()
+    public function testExampleFromDoc(): void
     {
         $m = new User();
 

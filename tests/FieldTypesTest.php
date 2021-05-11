@@ -27,7 +27,7 @@ class FieldTypesTest extends \Atk4\Schema\PhpunitTestCase
         ]);
     }
 
-    public function testEmailBasic()
+    public function testEmailBasic(): void
     {
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class]);
@@ -54,7 +54,7 @@ class FieldTypesTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('email', 'qq');
     }
 
-    public function testEmailMultipleValues()
+    public function testEmailMultipleValues(): void
     {
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class]);
@@ -69,7 +69,7 @@ class FieldTypesTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('email', 'bar@exampe.com, foo@example.com');
     }
 
-    public function testEmailValidateDns()
+    public function testEmailValidateDns(): void
     {
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class, 'dns_check' => true]);
@@ -82,7 +82,7 @@ class FieldTypesTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
 
-    public function testEmailWithName()
+    public function testEmailWithName(): void
     {
         $m = new Model($this->pers);
         $m->addField('email_name', [Field\Email::class, 'include_names' => true]);

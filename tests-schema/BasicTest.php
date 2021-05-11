@@ -9,15 +9,13 @@ use Atk4\Schema\PhpunitTestCase;
 class BasicTest extends PhpunitTestCase
 {
     /**
-     * Test constructor.
-     *
      * @doesNotPerformAssertions
      */
-    public function testCreate()
+    public function testCreate(): void
     {
         $this->dropTableIfExists('user');
 
-        $this->getMigrator()->table('user')->id()
+        $this->createMigrator()->table('user')->id()
             ->field('foo')
             ->field('bar', ['type' => 'integer'])
             ->field('baz', ['type' => 'text'])
@@ -36,11 +34,11 @@ class BasicTest extends PhpunitTestCase
      *
      * @doesNotPerformAssertions
      */
-    public function testCreateAndDrop()
+    public function testCreateAndDrop(): void
     {
         $this->dropTableIfExists('user');
 
-        $this->getMigrator()->table('user')->id()
+        $this->createMigrator()->table('user')->id()
             ->field('foo')
             ->field('bar', ['type' => 'integer'])
             ->field('baz', ['type' => 'text'])
@@ -53,6 +51,6 @@ class BasicTest extends PhpunitTestCase
 //            ->field('en', ['type' => 'enum'])
             ->create();
 
-        $this->getMigrator()->table('user')->drop();
+        $this->createMigrator()->table('user')->drop();
     }
 }

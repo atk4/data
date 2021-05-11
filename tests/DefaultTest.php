@@ -8,7 +8,7 @@ use Atk4\Data\Model;
 
 class DefaultTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testDefaultValue()
+    public function testDefaultValue(): void
     {
         $m = new Model();
         $m->addField('nodefault');

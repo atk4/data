@@ -13,19 +13,19 @@ use Atk4\Data\Persistence;
 
 class LocaleTest extends AtkPhpunit\TestCase
 {
-    public function testException()
+    public function testException(): void
     {
         $this->expectException(Exception::class);
         $exc = new Locale();
     }
 
-    public function testGetPath()
+    public function testGetPath(): void
     {
         $rootDir = realpath(dirname(__DIR__) . '/src/..');
         $this->assertSame($rootDir . \DIRECTORY_SEPARATOR . 'locale', realpath(Locale::getPath()));
     }
 
-    public function testLocaleIntegration()
+    public function testLocaleIntegration(): void
     {
         $trans = Translator::instance();
         $trans->setDefaultLocale('ru');

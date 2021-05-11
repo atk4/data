@@ -45,6 +45,9 @@ class Row
         return $this->rowIndex;
     }
 
+    /**
+     * @return mixed
+     */
     public function getValue(string $columnName)
     {
         return $this->data[$columnName];

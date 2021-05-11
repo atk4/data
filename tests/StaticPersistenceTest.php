@@ -10,10 +10,7 @@ use Atk4\Data\Persistence;
 
 class StaticPersistenceTest extends AtkPhpunit\TestCase
 {
-    /**
-     * Test constructor.
-     */
-    public function testBasicStatic()
+    public function testBasicStatic(): void
     {
         $p = new Persistence\Static_(['hello', 'world']);
 
@@ -28,7 +25,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $this->assertSame('world', $m->get('name')); // still 'name' here not 'foo'
     }
 
-    public function testArrayOfArrays()
+    public function testArrayOfArrays(): void
     {
         $p = new Persistence\Static_([['hello', 'xx', true], ['world', 'xy', false]]);
         $m = new Model($p);
@@ -40,7 +37,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $this->assertFalse($m->get('field2'));
     }
 
-    public function testArrayOfHashes()
+    public function testArrayOfHashes(): void
     {
         $p = new Persistence\Static_([['foo' => 'hello'], ['foo' => 'world']]);
         $m = new Model($p);
@@ -50,7 +47,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $this->assertSame('world', $m->get('foo'));
     }
 
-    public function testIdArg()
+    public function testIdArg(): void
     {
         $p = new Persistence\Static_([['id' => 20, 'foo' => 'hello'], ['id' => 21, 'foo' => 'world']]);
         $m = new Model($p);
@@ -60,7 +57,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $this->assertSame('world', $m->get('foo'));
     }
 
-    public function testIdKey()
+    public function testIdKey(): void
     {
         $p = new Persistence\Static_([20 => ['foo' => 'hello'], 21 => ['foo' => 'world']]);
         $m = new Model($p);
@@ -70,7 +67,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $this->assertSame('world', $m->get('foo'));
     }
 
-    public function testEmpty()
+    public function testEmpty(): void
     {
         $p = new Persistence\Static_([]);
         $m = new Model($p);
@@ -80,7 +77,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $this->assertFalse($m->loaded());
     }
 
-    public function testCustomField()
+    public function testCustomField(): void
     {
         $p = new Persistence\Static_([['foo' => 'hello'], ['foo' => 'world']]);
         $m = new StaticPersistenceModel($p);
@@ -92,7 +89,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $this->assertSame('foo', $m->title_field);
     }
 
-    public function testTitleOrName()
+    public function testTitleOrName(): void
     {
         $p = new Persistence\Static_([['foo' => 'hello', 'bar' => 'world']]);
         $m = new Model($p);
@@ -107,7 +104,7 @@ class StaticPersistenceTest extends AtkPhpunit\TestCase
         $this->assertSame('title', $m->title_field);
     }
 
-    public function testFieldTypes()
+    public function testFieldTypes(): void
     {
         $p = new Persistence\Static_([[
             'name' => 'hello',

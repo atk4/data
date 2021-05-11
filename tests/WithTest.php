@@ -11,7 +11,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class WithTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testWith()
+    public function testWith(): void
     {
         if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
             $this->markTestIncomplete('TODO - add WITH support for MSSQL');
@@ -47,7 +47,7 @@ class WithTest extends \Atk4\Schema\PhpunitTestCase
 
         // tests
         $this->assertSameSql(
-            'with "i" ("user_id","invoiced") as (select "user_id","net" from "invoice" where "net" > :a) select "user"."id","user"."name","user"."salary","_i"."invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
+            'with "i" ("user_id", "invoiced") as (select "user_id", "net" from "invoice" where "net" > :a) select "user"."id", "user"."name", "user"."salary", "_i"."invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
             $m->action('select')->render()
         );
         $this->assertCount(2, $m->export());
@@ -56,7 +56,7 @@ class WithTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Alias should be unique.
      */
-    public function testUniqueAliasException()
+    public function testUniqueAliasException(): void
     {
         $m1 = new Model();
         $m2 = new Model();

@@ -12,7 +12,7 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testNakedExpression()
+    public function testNakedExpression(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => false]);
@@ -21,7 +21,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(5, $m->get('x'));
     }
 
-    public function testBasic()
+    public function testBasic(): void
     {
         $this->setDb([
             'invoice' => [
@@ -36,7 +36,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
+                'select "id", "total_net", "total_vat", ("total_net"+"total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()
             );
         }
@@ -53,7 +53,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertEquals(
-                'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross",(("total_net"+"total_vat")*2) "double_total_gross" from "invoice"',
+                'select "id", "total_net", "total_vat", ("total_net"+"total_vat") "total_gross", (("total_net"+"total_vat")*2) "double_total_gross" from "invoice"',
                 $i->action('select')->render()
             );
         }
@@ -62,7 +62,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(($i->get('total_net') + $i->get('total_vat')) * 2, $i->get('double_total_gross'));
     }
 
-    public function testBasicCallback()
+    public function testBasicCallback(): void
     {
         $this->setDb([
             'invoice' => [
@@ -79,7 +79,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
+                'select "id", "total_net", "total_vat", ("total_net"+"total_vat") "total_gross" from "invoice"',
                 $i->action('select')->render()
             );
         }
@@ -93,7 +93,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
     }
 
-    public function testQuery()
+    public function testQuery(): void
     {
         $this->setDb([
             'invoice' => [
@@ -108,7 +108,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id","total_net","total_vat",(select sum("total_net") from "invoice") "sum_net" from "invoice"',
+                'select "id", "total_net", "total_vat", (select sum("total_net") from "invoice") "sum_net" from "invoice"',
                 $i->action('select')->render()
             );
         }
@@ -126,7 +126,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testExpressions()
+    public function testExpressions(): void
     {
         $this->setDb([
             'user' => [
@@ -151,17 +151,17 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where (("name" || " " || "surname") != "cached_name")',
+                'select "id", "name", "surname", "cached_name", ("name" || " " || "surname") "full_name" from "user" where (("name" || " " || "surname") != "cached_name")',
                 $m->action('select')->render()
             );
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->assertSame(
-                'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
+                'select "id", "name", "surname", "cached_name", ("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
                 $m->action('select')->render()
             );
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(
-                'select `id`,`name`,`surname`,`cached_name`,(CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
+                'select `id`, `name`, `surname`, `cached_name`, (CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
                 $m->action('select')->render()
             );
         }
@@ -172,7 +172,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('Sue', $mm->get('name'));
     }
 
-    public function testReloading()
+    public function testReloading(): void
     {
         $this->setDb($dbData = [
             'math' => [
@@ -209,7 +209,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
     }
 
-    public function testExpressionActionAlias()
+    public function testExpressionActionAlias(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => false]);
@@ -237,7 +237,7 @@ class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
     }
 
-    public function testNeverSaveNeverPersist()
+    public function testNeverSaveNeverPersist(): void
     {
         $this->setDb([
             'invoice' => [

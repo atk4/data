@@ -68,7 +68,7 @@ class Model_Item3 extends Model
 
 class RandomTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testRate()
+    public function testRate(): void
     {
         $this->setDb([
             'rate' => [
@@ -83,7 +83,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(2, $m->action('count')->getOne());
     }
 
-    public function testTitleImport()
+    public function testTitleImport(): void
     {
         $this->setDb([
             'user' => [
@@ -109,7 +109,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb());
     }
 
-    public function testAddFields()
+    public function testAddFields(): void
     {
         $this->setDb([
             'user' => [
@@ -133,7 +133,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ], $this->getDb());
     }
 
-    public function testAddFields2()
+    public function testAddFields2(): void
     {
         $this->setDb([
             'user' => [
@@ -165,7 +165,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue(is_float($m->get('vat')));
     }
 
-    public function testSameTable()
+    public function testSameTable(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -184,7 +184,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testSameTable2()
+    public function testSameTable2(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -208,7 +208,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testSameTable3()
+    public function testSameTable3(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -235,7 +235,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 
-    public function testUpdateCondition()
+    public function testUpdateCondition(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -283,7 +283,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals($dbData, $this->getDb());
     }
 
-    public function testHookBreakers()
+    public function testHookBreakers(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -322,7 +322,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $m->delete();
     }
 
-    public function testIssue220()
+    public function testIssue220(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Item($db);
@@ -332,7 +332,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 
-    public function testNonSqlFieldClass()
+    public function testNonSqlFieldClass(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -351,7 +351,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('y2', $m->get('x2'));
     }
 
-    public function testModelCaption()
+    public function testModelCaption(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
@@ -364,7 +364,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('test', $m->getModelCaption());
     }
 
-    public function testGetTitle()
+    public function testGetTitle(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
@@ -411,7 +411,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Test export.
      */
-    public function testExport()
+    public function testExport(): void
     {
         $this->setDb([
             'user' => [
@@ -486,7 +486,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ], $m2->export(['code', 'name'], 'code'));
     }
 
-    public function testDuplicateSaveNew()
+    public function testDuplicateSaveNew(): void
     {
         $this->setDb([
             'rate' => [
@@ -507,14 +507,14 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         ], $m->export());
     }
 
-    public function testDuplicateWithIdArgumentException()
+    public function testDuplicateWithIdArgumentException(): void
     {
         $m = new Model_Rate();
         $this->expectException(Exception::class);
         $m->duplicate(2)->save();
     }
 
-    public function testTableNameDots()
+    public function testTableNameDots(): void
     {
         $d = new Model($this->db, ['table' => 'db2.doc']);
         $d->addField('name');
@@ -528,7 +528,7 @@ class RandomTest extends \Atk4\Schema\PhpunitTestCase
         $d->addCondition('user', 'Sarah');
 
         $this->assertSameSql(
-            'select "id","name","user_id",(select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a',
+            'select "id", "name", "user_id", (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a',
             $d->action('select')->render()
         );
     }

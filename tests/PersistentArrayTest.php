@@ -29,10 +29,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         return $data;
     }
 
-    /**
-     * Test constructor.
-     */
-    public function testLoadArray()
+    public function testLoadArray(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -65,7 +62,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
-    public function testSaveAndUnload()
+    public function testSaveAndUnload(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -93,7 +90,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($p));
     }
 
-    public function testUpdateArray()
+    public function testUpdateArray(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -135,7 +132,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         ], $this->getInternalPersistenceData($p));
     }
 
-    public function testInsert()
+    public function testInsert(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -157,10 +154,10 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
             ],
         ], $this->getInternalPersistenceData($p));
 
-        $this->assertSame(3, $p->lastInsertID());
+        $this->assertSame(3, $p->lastInsertId());
     }
 
-    public function testIterator()
+    public function testIterator(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -184,7 +181,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test short format.
      */
-    public function testShortFormat()
+    public function testShortFormat(): void
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -212,7 +209,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test export.
      */
-    public function testExport()
+    public function testExport(): void
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -236,7 +233,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test Model->action('count').
      */
-    public function testActionCount()
+    public function testActionCount(): void
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -252,7 +249,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test Model->action('field').
      */
-    public function testActionField()
+    public function testActionField(): void
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -282,7 +279,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test Model->addCondition operator LIKE.
      */
-    public function testLike()
+    public function testLike(): void
     {
         $dbData = ['countries' => [
             1 => ['name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
@@ -393,7 +390,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test Model->addCondition operator REGEXP.
      */
-    public function testConditions()
+    public function testConditions(): void
     {
         $dbData = ['countries' => [
             1 => ['name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
@@ -497,7 +494,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         unset($result);
     }
 
-    public function testAggregates()
+    public function testAggregates(): void
     {
         $p = new Persistence\Array_(['invoices' => [
             1 => ['number' => 'ABC9', 'items' => 11, 'active' => 1],
@@ -522,7 +519,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame(135, $m->action('fx', ['sum', 'items'])->getOne());
     }
 
-    public function testExists()
+    public function testExists(): void
     {
         $p = new Persistence\Array_(['invoices' => [
             1 => ['number' => 'ABC9', 'items' => 11, 'active' => 1],
@@ -555,7 +552,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test Model->setOrder().
      */
-    public function testOrder()
+    public function testOrder(): void
     {
         $dbData = [
             1 => ['f1' => 'A', 'f2' => 'B'],
@@ -623,7 +620,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }
 
-    public function testNoKeyException()
+    public function testNoKeyException(): void
     {
         $p = new Persistence\Array_([
             ['id' => 3, 'f1' => 'A'],
@@ -632,7 +629,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = new Model($p);
     }
 
-    public function testImportAndAutoincrement()
+    public function testImportAndAutoincrement(): void
     {
         $p = new Persistence\Array_([]);
         $m = new Model($p);
@@ -693,7 +690,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test Model->setLimit().
      */
-    public function testLimit()
+    public function testLimit(): void
     {
         // order by one field ascending
         $p = new Persistence\Array_([
@@ -731,7 +728,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test Model->addCondition().
      */
-    public function testCondition()
+    public function testCondition(): void
     {
         $p = new Persistence\Array_($dbData = [
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -758,7 +755,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame(0, $m->action('count')->getOne());
     }
 
-    public function testUnsupportedAction()
+    public function testUnsupportedAction(): void
     {
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
@@ -767,7 +764,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->action('foo');
     }
 
-    public function testUnsupportedAggregate()
+    public function testUnsupportedAggregate(): void
     {
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
@@ -777,7 +774,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->action('fx', ['UNSUPPORTED', 'name']);
     }
 
-    public function testUnsupportedCondition1()
+    public function testUnsupportedCondition1(): void
     {
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
@@ -786,7 +783,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m->addCondition('name');
     }
 
-    public function testUnsupportedCondition2()
+    public function testUnsupportedCondition2(): void
     {
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
@@ -798,7 +795,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test Model->hasOne().
      */
-    public function testHasOne()
+    public function testHasOne(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -831,7 +828,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
     /**
      * Test Model->hasMany().
      */
-    public function testHasMany()
+    public function testHasMany(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -863,7 +860,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertSame(1, $cc->ref('Users')->action('count')->getOne());
     }
 
-    public function testLoadAnyThrowsExceptionOnRecordNotFound()
+    public function testLoadAnyThrowsExceptionOnRecordNotFound(): void
     {
         $p = new Persistence\Array_();
         $m = new Model($p);
@@ -872,7 +869,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $m = $m->loadAny();
     }
 
-    public function testTryLoadAnyNotThrowsExceptionOnRecordNotFound()
+    public function testTryLoadAnyNotThrowsExceptionOnRecordNotFound(): void
     {
         $p = new Persistence\Array_();
         $m = new Model($p);
@@ -882,7 +879,7 @@ class PersistentArrayTest extends AtkPhpunit\TestCase
         $this->assertFalse($m->loaded());
     }
 
-    public function testTryLoadAnyReturnsFirstRecord()
+    public function testTryLoadAnyReturnsFirstRecord(): void
     {
         $a = [
             2 => ['name' => 'John', 'surname' => 'Smith'],

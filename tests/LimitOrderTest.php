@@ -9,7 +9,7 @@ use Atk4\Data\Model;
 
 class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testBasic()
+    public function testBasic(): void
     {
         $this->setDb([
             'invoice' => [
@@ -33,7 +33,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         ], $i->export());
     }
 
-    public function testReverse()
+    public function testReverse(): void
     {
         $this->setDb([
             'invoice' => [
@@ -85,7 +85,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         ], $i->export());
     }
 
-    public function testArrayParameters()
+    public function testArrayParameters(): void
     {
         $this->setDb([
             'invoice' => [
@@ -99,7 +99,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         $ii->getField($ii->id_field)->system = false;
         $ii->id_field = null;
 
-        // pass parameters as array elements [field,order]
+        // pass parameters as array elements [field, order]
         $i = clone $ii;
         $i->setOrder([['net', 'desc'], ['vat']]);
         $i->onlyFields(['net', 'vat']);
@@ -130,7 +130,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         ], $i->export());
     }
 
-    public function testOrderByExpressions()
+    public function testOrderByExpressions(): void
     {
         $this->setDb([
             'invoice' => [
@@ -198,7 +198,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Unsupported order parameter.
      */
-    public function testExceptionUnsupportedOrderParam()
+    public function testExceptionUnsupportedOrderParam(): void
     {
         $this->setDb([
             'invoice' => [
@@ -212,7 +212,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         $i->export(); // executes query and throws exception because of DateTime object
     }
 
-    public function testLimit()
+    public function testLimit(): void
     {
         $this->setDb([
             'invoice' => [

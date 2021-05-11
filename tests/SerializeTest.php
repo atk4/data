@@ -10,7 +10,7 @@ use Atk4\Data\Persistence;
 
 class SerializeTest extends \Atk4\Schema\PhpunitTestCase
 {
-    public function testBasicSerialize()
+    public function testBasicSerialize(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'job']);
@@ -50,7 +50,7 @@ class SerializeTest extends \Atk4\Schema\PhpunitTestCase
         );
     }
 
-    public function testSerializeErrorJson()
+    public function testSerializeErrorJson(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'job']);
@@ -61,7 +61,7 @@ class SerializeTest extends \Atk4\Schema\PhpunitTestCase
         $db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
     }
 
-    public function testSerializeErrorJson2()
+    public function testSerializeErrorJson2(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'job']);
@@ -82,7 +82,7 @@ class SerializeTest extends \Atk4\Schema\PhpunitTestCase
      */
 
     /*
-    public function testSerializeErrorSerialize()
+    public function testSerializeErrorSerialize(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, 'job');
