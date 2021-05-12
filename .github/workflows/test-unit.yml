@@ -77,6 +77,13 @@ jobs:
           echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/custom-memory-limit.ini
           vendor/bin/phpstan analyse
 
+      - name: Run Static Analysis with DBAL 2.x (only for StaticAnalysis)
+        if: matrix.type == 'StaticAnalysis'
+        run: |
+          composer require "doctrine/dbal:^2.10" --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
+          echo '<?php require_once __DIR__ . "/MySqlPlatform.php";' > vendor/doctrine/dbal/lib/Doctrine/DBAL/Platforms/MySQLPlatform.php
+          vendor/bin/phpstan analyse
+
   unit-test:
     name: Unit
     runs-on: ubuntu-latest

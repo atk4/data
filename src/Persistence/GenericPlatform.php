@@ -12,7 +12,17 @@ class GenericPlatform extends Platforms\AbstractPlatform
     private function createNotSupportedException(): \Exception // DbalException once DBAL 2.x support is dropped
     {
         if (\Atk4\Dsql\Connection::isComposerDbal2x()) {
-            // @phpstan-ignore-next-line
+            // hack for PHPStan, keep ignored error count for DBAL 2.x and DBAL 3.x the same
+            if (\PHP_MAJOR_VERSION === 0) {
+                \Doctrine\DBAL\DBALException::notSupported('SQL');
+                \Doctrine\DBAL\DBALException::notSupported('SQL');
+                \Doctrine\DBAL\DBALException::notSupported('SQL');
+                \Doctrine\DBAL\DBALException::notSupported('SQL');
+                \Doctrine\DBAL\DBALException::notSupported('SQL');
+                \Doctrine\DBAL\DBALException::notSupported('SQL');
+                \Doctrine\DBAL\DBALException::notSupported('SQL');
+            }
+
             return \Doctrine\DBAL\DBALException::notSupported('SQL');
         }
 

@@ -554,7 +554,7 @@ class Expression implements Expressionable, \ArrayAccess
                 }
 
                 return $result;
-            } catch (DbalException | \Doctrine\DBAL\DBALException $e) { // @phpstan-ignore-line for DBAL 2.x
+            } catch (DbalException | \Doctrine\DBAL\DBALException $e) {
                 $firstException = $e;
                 while ($firstException->getPrevious() !== null) {
                     $firstException = $firstException->getPrevious();

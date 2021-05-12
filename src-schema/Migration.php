@@ -146,7 +146,7 @@ class Migration
     {
         try {
             $this->drop();
-        } catch (\Doctrine\DBAL\Exception | \Doctrine\DBAL\DBALException $e) { // @phpstan-ignore-line for DBAL 2.x
+        } catch (\Doctrine\DBAL\Exception | \Doctrine\DBAL\DBALException $e) {
         }
 
         return $this;
