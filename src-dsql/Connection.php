@@ -133,7 +133,7 @@ abstract class Connection
             /** @var \PDO */
             $pdo = self::isComposerDbal2x()
                 ? $dsn->getWrappedConnection()
-                : $dsn->getWrappedConnection()->getWrappedConnection(); // @phpstan-ignore-line
+                : $dsn->getWrappedConnection()->getWrappedConnection();
             $connectionClass = self::resolveConnectionClass($pdo->getAttribute(\PDO::ATTR_DRIVER_NAME));
             $connectionArg = $dsn;
         } else {
@@ -235,20 +235,20 @@ abstract class Connection
         // https://github.com/doctrine/dbal/pull/3912
         // TODO drop once DBAL 2.x support is dropped
         if (
-            in_array(get_class($dbalConnection->getDatabasePlatform()), [ // @phpstan-ignore-line
-                'Doctrine\DBAL\Platforms\SQLServerPlatform',
-                'Doctrine\DBAL\Platforms\SQLServer2005Platform',
-                'Doctrine\DBAL\Platforms\SQLServer2008Platform',
+            in_array(get_class($dbalConnection->getDatabasePlatform()) . 'ForPhpstan', [
+                'Doctrine\DBAL\Platforms\SQLServerPlatform' . 'ForPhpstan',
+                'Doctrine\DBAL\Platforms\SQLServer2005Platform' . 'ForPhpstan',
+                'Doctrine\DBAL\Platforms\SQLServer2008Platform' . 'ForPhpstan',
             ], true) && !($dbalConnection->getDatabasePlatform() instanceof SQLServer2012Platform)
         ) {
             \Closure::bind(function () use ($dbalConnection) {
                 $dbalConnection->platform = new SQLServer2012Platform();
             }, null, DbalConnection::class)();
         } elseif (
-            in_array(get_class($dbalConnection->getDatabasePlatform()), [ // @phpstan-ignore-line
-                'Doctrine\DBAL\Platforms\PostgreSqlPlatform',
-                'Doctrine\DBAL\Platforms\PostgreSQL91Platform',
-                'Doctrine\DBAL\Platforms\PostgreSQL92Platform',
+            in_array(get_class($dbalConnection->getDatabasePlatform()) . 'ForPhpstan', [
+                'Doctrine\DBAL\Platforms\PostgreSqlPlatform' . 'ForPhpstan',
+                'Doctrine\DBAL\Platforms\PostgreSQL91Platform' . 'ForPhpstan',
+                'Doctrine\DBAL\Platforms\PostgreSQL92Platform' . 'ForPhpstan',
             ], true) && !($dbalConnection->getDatabasePlatform() instanceof PostgreSQL94Platform)
         ) {
             \Closure::bind(function () use ($dbalConnection) {
