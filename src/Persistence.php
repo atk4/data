@@ -34,7 +34,7 @@ abstract class Persistence
     public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
     {
         // parse DSN string
-        $dsn = \Atk4\Dsql\Connection::normalizeDsn($dsn, $user, $password);
+        $dsn = \Atk4\Data\Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
 
         switch ($dsn['driverSchema']) {
             case 'mysql':
@@ -195,8 +195,8 @@ abstract class Persistence
 
             // Expression and null cannot be converted.
             if (
-                $value instanceof \Atk4\Dsql\Expression
-                || $value instanceof \Atk4\Dsql\Expressionable
+                $value instanceof \Atk4\Data\Persistence\Sql\Expression
+                || $value instanceof \Atk4\Data\Persistence\Sql\Expressionable
                 || $value === null
             ) {
                 $result[$field->getPersistenceName()] = $value;

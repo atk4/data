@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data;
 
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Expressionable;
+use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
 
 /**
  * @property Persistence\Sql\Join $join

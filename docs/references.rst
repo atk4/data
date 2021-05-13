@@ -245,7 +245,7 @@ Alternatively you may also specify either 'aggregate'::
 
 or 'field'::
 
-    ->addField('paid_amount', ['aggregate'=>'count', 'field'=>new \Atk4\Dsql\Expression('*')]);
+    ->addField('paid_amount', ['aggregate'=>'count', 'field'=>new \Atk4\Data\Persistence\Sql\Expression('*')]);
 
 .. note:: as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 

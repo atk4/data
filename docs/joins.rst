@@ -276,7 +276,7 @@ Implementation Details
 Specifying complex ON logic
 ---------------------------
 
-When you're dealing with SQL drivers, you can specify `\\Atk4\\Dsql\\Expression` for your
+When you're dealing with SQL drivers, you can specify `\Atk4\Data\Persistence\Sql\Expression` for your
 "on" clause::
 
     $stats = $user->join('stats', [
