@@ -37,9 +37,9 @@ the same transaction:
  - reload (see :php:attr:`Model::_reload_after_save`)
  - afterSave hook
  - commit transaction
- 
+
  In case of error:
- 
+
   - do rollback
   - call onRollback hook
 
@@ -165,7 +165,7 @@ For some examples, see :ref:`soft_delete`
 Hook execution sequence
 -----------------------
 
-- beforeSave 
+- beforeSave
 
   - beforeInsert [only if insert]
     - beforeInsertQuery [sql only] (query)
@@ -238,7 +238,7 @@ This can be used in various situations.
 
 Save information into auditLog about failure:
 
-    $m->onHook(Model::HOOK_ROLLBACK, function($m){ 
+    $m->onHook(Model::HOOK_ROLLBACK, function($m){
         $m->auditLog->registerFailure();
     });
 
@@ -246,7 +246,7 @@ Upgrade schema:
 
     use Atk4\Data\Persistence\Sql\Exception as DsqlException;
 
-    $m->onHook(Model::HOOK_ROLLBACK, function($m, $exception) { 
+    $m->onHook(Model::HOOK_ROLLBACK, function($m, $exception) {
         if ($exception instanceof DsqlException) {
             $m->schema->upgrade();
             $m->breakHook(false); // exception will not be thrown

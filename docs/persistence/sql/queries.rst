@@ -612,11 +612,11 @@ Use WITH cursors
     You can add more than one cursor in your query.
 
     Did you know: you can use these cursors when joining your query to other tables. Just join cursor instead.
-    
+
 .. php:method:: withRecursive(Query $cursor, string $alias, ?array $fields = null)
 
     Same as :php:meth:`with()`, but always sets it as recursive.
-    
+
     Keep in mind that if any of cursors added in your query will be recursive, then all cursors will
     be set recursive. That's how SQL want it to be.
 

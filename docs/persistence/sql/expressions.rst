@@ -324,7 +324,7 @@ parts of the query. You must not call them in normal circumstances.
 .. php:method:: escapeIdentifier($sql_code)
 
   Always surrounds `$sql code` with back-ticks.
-  
+
   This escaping method is automatically used for `{...}` expression template tags .
 
 .. php:method:: escapeIdentifierSoft($sql_code)
