@@ -12,7 +12,7 @@ use Atk4\Core\Factory;
 use Atk4\Core\HookTrait;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
-use Atk4\Dsql\Query;
+use Atk4\Data\Persistence\Sql\Query;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
@@ -783,7 +783,7 @@ class Model implements \IteratorAggregate
         $currentValue = array_key_exists($field, $dataRef)
             ? $dataRef[$field]
             : (array_key_exists($field, $dirtyRef) ? $dirtyRef[$field] : $f->default);
-        if (!$value instanceof \Atk4\Dsql\Expression && $f->compare($value, $currentValue)) {
+        if (!$value instanceof \Atk4\Data\Persistence\Sql\Expression && $f->compare($value, $currentValue)) {
             return $this;
         }
 
@@ -1965,7 +1965,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|\Atk4\Dsql\Expression|\Closure $expression
+     * @param string|array|\Atk4\Data\Persistence\Sql\Expression|\Closure $expression
      *
      * @return Field\Callback
      */

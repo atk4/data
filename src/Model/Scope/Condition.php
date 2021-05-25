@@ -8,8 +8,8 @@ use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Expressionable;
+use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
 
 class Condition extends AbstractScope
 {

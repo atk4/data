@@ -70,7 +70,6 @@
     "autoload": {
         "psr-4": {
             "Atk4\\Data\\": "src/",
-            "Atk4\\Dsql\\": "src-dsql/",
             "Atk4\\Schema\\": "src-schema/"
         },
         "files": [
@@ -80,7 +79,6 @@
     "autoload-dev": {
         "psr-4": {
             "Atk4\\Data\\Tests\\": "tests/",
-            "Atk4\\Dsql\\Tests\\": "tests-dsql/",
             "Atk4\\Schema\\Tests\\": "tests-schema/"
         }
     },

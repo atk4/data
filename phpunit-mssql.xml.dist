@@ -8,7 +8,6 @@
     <testsuites>
         <testsuite name="tests">
             <directory>tests</directory>
-            <directory>tests-dsql</directory>
             <directory>tests-schema</directory>
         </testsuite>
     </testsuites>
@@ -18,7 +17,6 @@
     <coverage>
         <include>
             <directory suffix=".php">src</directory>
-            <directory suffix=".php">src-dsql</directory>
             <directory suffix=".php">src-schema</directory>
         </include>
         <report>

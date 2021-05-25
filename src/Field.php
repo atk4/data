@@ -8,8 +8,8 @@ use Atk4\Core\DiContainerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Model\Scope;
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Expressionable;
+use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
 
 /**
  * @method Model getOwner()
