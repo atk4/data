@@ -195,7 +195,7 @@ keep making your query bigger and bigger::
 
 Imported fields will preserve format of the field they reference. In the example,
 if 'Invoice_line' field total_vat has type `money` then it will also be used
-for a sum. 
+for a sum.
 
 You can also specify a type yourself::
 
@@ -231,7 +231,7 @@ You can reference fields by using square brackets here. Also you may pass `args`
 containing your optional arguments::
 
     ->addField('len', [
-        'expr' => 'sum(if([date] = [exp_date], 1, 0))', 
+        'expr' => 'sum(if([date] = [exp_date], 1, 0))',
         'args'=>['exp_date'=>'2003-03-04]
         ]),
 
@@ -245,7 +245,7 @@ Alternatively you may also specify either 'aggregate'::
 
 or 'field'::
 
-    ->addField('paid_amount', ['aggregate'=>'count', 'field'=>new \Atk4\Dsql\Expression('*')]);
+    ->addField('paid_amount', ['aggregate'=>'count', 'field'=>new \Atk4\Data\Persistence\Sql\Expression('*')]);
 
 .. note:: as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 

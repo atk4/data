@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data;
 
 use Atk4\Core\InitializerTrait;
-use Atk4\Dsql\Expression;
+use Atk4\Data\Persistence\Sql\Expression;
 
 class FieldSqlExpression extends FieldSql
 {

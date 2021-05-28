@@ -53,7 +53,7 @@ $api->rest('/clients', new Client($db));
 
 ## Extensibility and Add-ons
 
-ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation/Reporting](https://github.com/atk4/report). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database. 
+ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation/Reporting](https://github.com/atk4/report). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database.
 
 Regardless of how your model is constructed and what database backend is used, it can easily be used in conjunction with any 3rd party add-on, like [Charts](https://github.com/atk4/chart).
 
@@ -73,7 +73,7 @@ Since the initial introduction of Agile Data back in [2016](https://www.reddit.c
 
 ### Getting Started
 
-Watch [Quick Start](http://agile-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](http://agile-data.readthedocs.io) ([PDF](https://media.readthedocs.org/pdf/agile-data/develop/agile-data.pdf)). 
+Watch [Quick Start](http://agile-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](http://agile-data.readthedocs.io) ([PDF](https://media.readthedocs.org/pdf/agile-data/develop/agile-data.pdf)).
 
 ATK Data relies on ATK Core and can be greatly complimented by ATK UI:
 
@@ -622,7 +622,7 @@ DSQL tries to do things differently:
 DSQL Is Simple and Powerful
 
 ``` php
-$query = new Atk4\Dsql\Query();
+$query = new Atk4\Data\Persistence\Sql\Query();
 $query  ->table('employees')
         ->where('birth_date','1961-05-02')
         ->field('count(*)')
@@ -634,7 +634,7 @@ If the basic query is not fun, how about more complex one?
 
 ``` php
 // Establish a query looking for a maximum salary
-$salary = new Atk4\Dsql\Query(['connection' => $pdo]);
+$salary = new Atk4\Data\Persistence\Sql\Query(['connection' => $pdo]);
 
 // Create few expression objects
 $e_ms = $salary->expr('max(salary)');

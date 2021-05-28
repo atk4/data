@@ -27,8 +27,8 @@ Do not hesitate to contribute to DSQL. We have made it safe and simple for you t
  - open docs/html/index.html in your browser and review documentation changes you have made
  - commit your code. Name your commits consistently. See [https://github.com/atk4/data/commits/develop](https://github.com/atk4/data/commits/develop)
  - use multiple comments if necessary. I recommend you to use "Github Desktop", where you can even perform partial file commits.
- - once commits are done run `git feature publish fix-psr-compatibility`. 
- 
+ - once commits are done run `git feature publish fix-psr-compatibility`.
+
 ## Create Pull Request
 
  - Go to [http://github.com/atk4/data](http://github.com/atk4/data) and create Pull Request
@@ -42,7 +42,7 @@ Do not hesitate to contribute to DSQL. We have made it safe and simple for you t
 
  - Fork atk4/data repository.
  - Follow same instructions as above, but use your own repository name
- - If you contribute a lot, it would make sense to [set up codeclimate.com for your repo](https://codeclimate.com/github/signup). 
+ - If you contribute a lot, it would make sense to [set up codeclimate.com for your repo](https://codeclimate.com/github/signup).
  - You can also enable Travis-CI for your repository easily.
 
 ## Verifying your code

@@ -7,7 +7,7 @@ namespace Atk4\Data\Model;
 use Atk4\Core\ContainerTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Dsql\Expressionable;
+use Atk4\Data\Persistence\Sql\Expressionable;
 
 /**
  * @property Scope\AbstractScope[] $elements

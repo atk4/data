@@ -40,7 +40,7 @@ SQL Field
 
     SQL Fields can be used inside other SQL expressions::
 
-        $q = new \Atk4\Dsql\Expression('[age] + [birth_year]', [
+        $q = new \Atk4\Data\Persistence\Sql\Expression('[age] + [birth_year]', [
                 'age'        => $m->getField('age'),
                 'birth_year' => $m->getField('birth_year'),
             ]);
@@ -200,14 +200,14 @@ Custom Expressions
     Persistence\Sql so the most convenient way to use this method is by calling
     `$model->expr('foo')`.
 
-This method is quite similar to \Atk4\Dsql\Query::expr() method explained here:
+This method is quite similar to \Atk4\Data\Persistence\Sql\Query::expr() method explained here:
 http://dsql.readthedocs.io/en/stable/expressions.html
 
 There is, however, one difference. Expression class requires all named arguments
 to be specified. Use of Model::expr() allows you to specify field names and those
 field expressions will be automatically substituted. Here is long / short format::
 
-    $q = new \Atk4\Dsql\Expression('[age] + [birth_year]', [
+    $q = new \Atk4\Data\Persistence\Sql\Expression('[age] + [birth_year]', [
             'age' => $m->getField('age'),
             'birth_year' => $m->getField('birth_year')
         ]);
