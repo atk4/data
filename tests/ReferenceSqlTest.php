@@ -667,11 +667,11 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
                         'name' => 'John',
                         'last_name' => 'Doe',
                         'some_number' => 3,
-                        'some_other_number' => 4
-                    ]
+                        'some_other_number' => 4,
+                    ],
                 ],
                 'order' => [
-                    1 => ['id' => 1, 'user_id' => 1]
+                    1 => ['id' => 1, 'user_id' => 1],
                 ],
             ]
         );
