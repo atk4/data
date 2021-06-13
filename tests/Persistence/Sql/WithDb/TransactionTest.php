@@ -84,6 +84,8 @@ class TransactionTest extends AtkPhpunit\TestCase
         $this->dropDbIfExists();
 
         $this->c = null; // @phpstan-ignore-line
+
+        parent::tearDown();
     }
 
     /**

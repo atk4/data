@@ -1,6 +1,6 @@
 <phpunit bootstrap="vendor/autoload.php" printerClass="Atk4\Core\AtkPhpunit\ResultPrinter" colors="true">
     <php>
-        <var name="DB_DSN" value="mysql:dbname=atk4_test__data;host=mariadb" />
+        <var name="DB_DSN" value="mysql:host=mariadb;dbname=atk4_test__data" />
         <var name="DB_USER" value="atk4_test" />
         <var name="DB_PASSWD" value="atk4_pass" />
         <var name="DB_DBNAME" value="atk4_test__data" />

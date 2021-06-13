@@ -61,6 +61,13 @@ class ValidationTest extends AtkPhpunit\TestCase
         $this->m = new MyValidationModel($p);
     }
 
+    protected function tearDown(): void
+    {
+        $this->m = null; // @phpstan-ignore-line
+
+        parent::tearDown();
+    }
+
     public function testValidate1(): void
     {
         $m = $this->m->createEntity();
