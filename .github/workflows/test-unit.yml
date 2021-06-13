@@ -105,6 +105,9 @@ jobs:
       mysql:
         image: mysql:8
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5 -e MYSQL_ROOT_PASSWORD=atk4_pass -e MYSQL_USER=atk4_test -e MYSQL_PASSWORD=atk4_pass -e MYSQL_DATABASE=atk4_test__data --entrypoint sh mysql:8 -c "exec docker-entrypoint.sh mysqld --default-authentication-plugin=mysql_native_password"
+      mariadb:
+        image: mariadb
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5 -e MYSQL_ROOT_PASSWORD=atk4_pass -e MYSQL_USER=atk4_test -e MYSQL_PASSWORD=atk4_pass -e MYSQL_DATABASE=atk4_test__data
       postgres:
         image: postgres:12-alpine
         env:
@@ -163,6 +166,10 @@ jobs:
       - name: "Run tests: MySQL (only for Phpunit)"
         if: startsWith(matrix.type, 'Phpunit')
         run: "vendor/bin/phpunit --configuration phpunit-mysql.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
+
+      - name: "Run tests: MariaDB (only for Phpunit)"
+        if: startsWith(matrix.type, 'Phpunit')
+        run: "vendor/bin/phpunit --configuration phpunit-mariadb.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
       - name: "Run tests: PostgreSQL (only for Phpunit)"
         if: startsWith(matrix.type, 'Phpunit')
