@@ -21,6 +21,7 @@ Contents:
     references
     expressions
     joins
+    aggregates
     hooks
     deriving
     advanced
