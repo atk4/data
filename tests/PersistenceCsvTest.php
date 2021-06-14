@@ -27,10 +27,10 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
 
     protected function tearDown(): void
     {
-        parent::tearDown();
-
         fclose($this->file);
         fclose($this->file2);
+
+        parent::tearDown();
     }
 
     /**

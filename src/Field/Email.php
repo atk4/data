@@ -101,7 +101,10 @@ class Email extends Field
                 'CNAME' => \DNS_CNAME,
             ];
 
-            $records = dns_get_record($domain . '.', $dnsConsts[$t]);
+            $records = @dns_get_record($domain . '.', $dnsConsts[$t]);
+            if ($records === false) { // retry once on failure
+                $records = dns_get_record($domain . '.', $dnsConsts[$t]);
+            }
             if ($records !== false && count($records) > 0) {
                 return true;
             }
