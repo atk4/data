@@ -223,7 +223,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
     {
         $m = new Model();
         $m->addField('name', ['type' => 'string']);
-        $m->addField('age', ['type' => 'int']);
+        $m->addField('age', ['type' => 'integer']);
         $m->addField('data');
         $m = $m->createEntity();
 

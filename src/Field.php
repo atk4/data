@@ -10,6 +10,8 @@ use Atk4\Core\TrackableTrait;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
+use Doctrine\DBAL\Platforms;
+use Doctrine\DBAL\Types\Type;
 
 /**
  * @method Model getOwner()
@@ -31,11 +33,7 @@ class Field implements Expressionable
     public $default;
 
     /**
-     * Field type.
-     *
-     * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'array', 'object'.
-     * Can also be set to unspecified type for your own custom handling.
+     * Field type. Name of type registered in \Doctrine\DBAL\Types\Type.
      *
      * @var string
      */
@@ -213,6 +211,11 @@ class Field implements Expressionable
         }
     }
 
+    public function getTypeObject(): Type
+    {
+        return Type::getType($this->type ?? 'string');
+    }
+
     protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->short_name; // use static function to allow this object to be GCed
@@ -254,6 +257,10 @@ class Field implements Expressionable
             }
 
             $f = $this;
+
+//            $platform = $this->getDatabasePlatform();
+            $type = $this->getTypeObject();
+//            TODO - breaking tests$value = $type->convertToPHPValue($type->convertToDatabaseValue($value, $platform), $platform);
 
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
@@ -485,6 +492,42 @@ class Field implements Expressionable
         return $this;
     }
 
+    private function getDatabasePlatform(): Platforms\AbstractPlatform
+    {
+        return $this->getOwner()->persistence !== null
+            ? $this->getOwner()->persistence->getDatabasePlatform()
+            : new Persistence\GenericPlatform();
+    }
+
+    /**
+     * @param mixed|void $value
+     */
+    public function getUnmanagedValue($value = null): ?string
+    {
+        if (func_num_args() === 0) {
+            $value = $this->get();
+        }
+
+        $unmanagedValue = $this->getTypeObject()
+            ->convertToDatabaseValue($value, $this->getDatabasePlatform());
+
+        if (is_int($unmanagedValue) || is_float($unmanagedValue)) {
+            return (string) $unmanagedValue;
+        } elseif (is_bool($unmanagedValue)) {
+            return $unmanagedValue ? '1' : '0';
+        }
+
+        return $unmanagedValue; // throw a type error if not null nor string
+    }
+
+    public function setUnmanagedValue(string $unmanagedValue = null): self
+    {
+        $value = $this->getTypeObject()
+            ->convertToPHPValue($unmanagedValue, $this->getDatabasePlatform());
+
+        return $this->set($value);
+    }
+
     /**
      * Compare new value of the field with existing one without retrieving.
      * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
@@ -501,33 +544,7 @@ class Field implements Expressionable
             $value2 = $this->get();
         }
 
-        // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
-        // compare if typecasted values are the same using strict comparison (===) or nor
-        $typecastFunc = function ($v) {
-            // do not typecast null values, because that implies calling normalize() which tries to validate that value can't be null in case field value is required
-            if ($v === null) {
-                return $v;
-            }
-
-            if ($this->getOwner()->persistence === null) {
-                $v = $this->normalize($v);
-
-                // without persistence, we can not do a lot with non-scalar types, but as DateTime
-                // is used often, fix the compare for them
-                // TODO probably create and use a default persistence
-                if (is_scalar($v)) {
-                    return (string) $v;
-                } elseif ($v instanceof \DateTimeInterface) {
-                    return $v->getTimestamp() . '.' . $v->format('u');
-                }
-
-                return serialize($v);
-            }
-
-            return (string) $this->getOwner()->persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
-        };
-
-        return $typecastFunc($value) === $typecastFunc($value2);
+        return $this->getUnmanagedValue($value) === $this->getUnmanagedValue($value2);
     }
 
     public function getReference(): ?Reference
