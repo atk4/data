@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Persistence\Sql;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
@@ -64,7 +64,7 @@ class DummyConnection4 extends Connection
 /**
  * @coversDefaultClass \Atk4\Data\Persistence\Sql\Connection
  */
-class ConnectionTest extends AtkPhpunit\TestCase
+class ConnectionTest extends TestCase
 {
     public function testInit(): void
     {

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-class ReferenceTest extends AtkPhpunit\TestCase
+class ReferenceTest extends TestCase
 {
     public function testBasicReferences(): void
     {

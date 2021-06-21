@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Tests\Model\Female as Female;
 use Atk4\Data\Tests\Model\Male as Male;
 
-class PersistentArrayTest extends AtkPhpunit\TestCase
+class PersistentArrayTest extends TestCase
 {
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {

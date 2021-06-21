@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
 
-class ConditionTest extends AtkPhpunit\TestCase
+class ConditionTest extends TestCase
 {
     public function testException1(): void
     {

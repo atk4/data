@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-class StaticPersistenceTest extends AtkPhpunit\TestCase
+class StaticPersistenceTest extends TestCase
 {
     public function testBasicStatic(): void
     {

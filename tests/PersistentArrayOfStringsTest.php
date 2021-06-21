@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
+class PersistentArrayOfStringsTest extends TestCase
 {
     /**
      * Test typecasting.

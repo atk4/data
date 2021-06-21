@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Schema;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Doctrine\DBAL\Logging\SQLLogger;
@@ -12,7 +12,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
-class PhpunitTestCase extends AtkPhpunit\TestCase
+class PhpunitTestCase extends TestCase
 {
     /** @var Persistence|Persistence\Sql Persistence instance */
     public $db;
@@ -68,21 +68,6 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
                 }
             );
         }
-    }
-
-    protected function tearDown(): void
-    {
-        // remove once https://github.com/sebastianbergmann/phpunit/issues/4705 is fixed
-        foreach (array_keys(array_diff_key(get_object_vars($this), get_class_vars(\PHPUnit\Framework\TestCase::class))) as $k) {
-            if (!is_scalar($this->{$k})) {
-                unset($this->{$k});
-            }
-        }
-
-        // once PHP 8.0 support is dropped, needed only once, see:
-        // https://github.com/php/php-src/commit/b58d74547f7700526b2d7e632032ed808abab442
-        gc_collect_cycles();
-        gc_collect_cycles();
     }
 
     protected function getDatabasePlatform(): AbstractPlatform
