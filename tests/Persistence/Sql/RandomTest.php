@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Persistence\Sql;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\Sql\Mysql;
 use Atk4\Data\Persistence\Sql\Oracle;
 use Atk4\Data\Persistence\Sql\Postgresql;
@@ -14,7 +14,7 @@ use Atk4\Data\Persistence\Sql\Sqlite;
 /**
  * @coversDefaultClass \Atk4\Data\Persistence\Sql\Query
  */
-class RandomTest extends AtkPhpunit\TestCase
+class RandomTest extends TestCase
 {
     /**
      * @param string|array ...$args

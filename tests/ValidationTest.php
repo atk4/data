@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\ValidationException;
@@ -48,7 +48,7 @@ class BadValidationModel extends Model
     }
 }
 
-class ValidationTest extends AtkPhpunit\TestCase
+class ValidationTest extends TestCase
 {
     /** @var Model */
     public $m;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Persistence\Sql;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Mssql;
@@ -17,7 +17,7 @@ use Atk4\Data\Persistence\Sql\Sqlite;
 /**
  * @coversDefaultClass \Atk4\Data\Persistence\Sql\Query
  */
-class QueryTest extends AtkPhpunit\TestCase
+class QueryTest extends TestCase
 {
     /**
      * @param string|array ...$args

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Persistence\Sql;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
@@ -14,7 +14,7 @@ use Atk4\Data\Persistence\Sql\Query;
 /**
  * @coversDefaultClass \Atk4\Data\Persistence\Sql\Expression
  */
-class ExpressionTest extends AtkPhpunit\TestCase
+class ExpressionTest extends TestCase
 {
     /**
      * @param mixed ...$args

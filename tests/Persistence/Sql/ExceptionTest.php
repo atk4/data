@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Persistence\Sql;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\Sql\Expression;
 
 /**
  * @coversDefaultClass \Atk4\Data\Persistence\Sql\Exception
  */
-class ExceptionTest extends AtkPhpunit\TestCase
+class ExceptionTest extends TestCase
 {
     /**
      * @covers ::__construct

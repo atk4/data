@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 
 /**
  * @coversDefaultClass \Atk4\Data\Persistence\Sql\Query
  */
-class ConnectionTest extends AtkPhpunit\TestCase
+class ConnectionTest extends TestCase
 {
     public function testServerConnection(): void
     {

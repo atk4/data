@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Core\Translator\Translator;
 use Atk4\Data\Exception;
 use Atk4\Data\Locale;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-class LocaleTest extends AtkPhpunit\TestCase
+class LocaleTest extends TestCase
 {
     public function testException(): void
     {

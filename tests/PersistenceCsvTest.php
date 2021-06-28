@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Tests\Model\Person;
 
-class PersistenceCsvTest extends AtkPhpunit\TestCase
+class PersistenceCsvTest extends TestCase
 {
     /** @var resource */
     protected $file;
@@ -28,7 +28,9 @@ class PersistenceCsvTest extends AtkPhpunit\TestCase
     protected function tearDown(): void
     {
         fclose($this->file);
+        $this->file = null; // @phpstan-ignore-line
         fclose($this->file2);
+        $this->file2 = null; // @phpstan-ignore-line
 
         parent::tearDown();
     }
