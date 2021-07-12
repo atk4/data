@@ -11,7 +11,7 @@ jobs:
     name: Smoke
     runs-on: ubuntu-latest
     container:
-      image: atk4/image:${{ matrix.php }}
+      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}
     strategy:
       fail-fast: false
       matrix:
@@ -88,7 +88,7 @@ jobs:
     name: Unit
     runs-on: ubuntu-latest
     container:
-      image: atk4/image:${{ matrix.php }}
+      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}
     strategy:
       fail-fast: false
       matrix:

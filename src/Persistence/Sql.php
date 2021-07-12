@@ -830,7 +830,7 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
-        if ($model->id_field && isset($data[$model->id_field]) && $model->getDirtyRef()[$model->id_field]) {
+        if (isset($data[$model->id_field]) && $model->getDirtyRef()[$model->id_field]) {
             // ID was changed
             $model->setId($data[$model->id_field]);
         }
