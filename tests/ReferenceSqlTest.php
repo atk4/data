@@ -651,4 +651,44 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         // caption will be passed to Order field user_last_name
         $this->assertSame('Surname', $referenced_caption);
     }
+
+    /**
+     * HasOne: Test if field type is taken from referenced Model if not set in HasOne::addField().
+     * Test if field type is set in HasOne::addField(), it has priority.
+     */
+    public function testHasOneReferenceType(): void
+    {
+        // restore DB
+        $this->setDb(
+            [
+                'user' => [
+                    1 => [
+                        'id' => 1,
+                        'name' => 'John',
+                        'last_name' => 'Doe',
+                        'some_number' => 3,
+                        'some_other_number' => 4,
+                    ],
+                ],
+                'order' => [
+                    1 => ['id' => 1, 'user_id' => 1],
+                ],
+            ]
+        );
+        $user = (new Model($this->db, ['table' => 'user']))->addFields(
+            ['name', 'last_name', 'some_number', 'some_other_number']
+        );
+        $user->getField('some_number')->type = 'integer';
+        $user->getField('some_other_number')->type = 'integer';
+        $order = (new Model($this->db, ['table' => 'order']));
+        $order_UserRef = $order->hasOne('my_user', ['model' => $user, 'our_field' => 'user_id']);
+
+        //no type set in defaults, should pull type integer from user model
+        $order_UserRef->addField('some_number');
+        $this->assertSame('integer', $order->getField('some_number')->type);
+
+        //set type in defaults, this should have higher priority than type set in Model
+        $order_UserRef->addField(['some_other_number', 'type' => 'string']);
+        $this->assertSame('string', $order->getField('some_other_number')->type);
+    }
 }
