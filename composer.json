@@ -56,10 +56,10 @@
     "require-dev": {
         "ergebnis/composer-normalize": "^2.13",
         "friendsofphp/php-cs-fixer": "^3.0",
-        "johnkary/phpunit-speedtrap": "^3.2",
+        "johnkary/phpunit-speedtrap": "^3.3",
         "phpstan/phpstan": "^0.12.82",
         "phpunit/phpcov": "*",
-        "phpunit/phpunit": ">=9.3"
+        "phpunit/phpunit": ">=9.5"
     },
     "suggest": {
         "jdorn/sql-formatter": "*"
