@@ -554,7 +554,7 @@ class Expression implements Expressionable, \ArrayAccess
                 }
 
                 return $result;
-            } catch (DbalException | \Doctrine\DBAL\DBALException $e) {
+            } catch (DbalException|\Doctrine\DBAL\DBALException $e) {
                 $firstException = $e;
                 while ($firstException->getPrevious() !== null) {
                     $firstException = $firstException->getPrevious();

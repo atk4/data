@@ -146,7 +146,7 @@ class Migration
     {
         try {
             $this->drop();
-        } catch (\Doctrine\DBAL\Exception | \Doctrine\DBAL\DBALException $e) {
+        } catch (\Doctrine\DBAL\Exception|\Doctrine\DBAL\DBALException $e) {
         }
 
         return $this;
