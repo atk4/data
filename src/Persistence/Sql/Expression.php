@@ -142,6 +142,7 @@ class Expression implements Expressionable, \ArrayAccess
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->args['custom'][$offset];
