@@ -396,7 +396,15 @@ class Field implements Expressionable
             $value2 = $this->get();
         }
 
-        return $this->getUnmanagedValue($value) === $this->getUnmanagedValue($value2);
+        try {
+            return $this->getUnmanagedValue($value) === $this->getUnmanagedValue($value2);
+        } catch (\TypeError $e) { // like https://github.com/atk4/data/pull/894, TODO, then no try/catch should be needed
+            if ($e->getMessage() === 'Return value of Atk4\Data\Field::getUnmanagedValue() must be of the type string or null, object returned') {
+                return serialize($value) === serialize($value2);
+            }
+
+            throw $e;
+        }
     }
 
     public function getReference(): ?Reference
