@@ -311,6 +311,25 @@ class Field implements Expressionable
     }
 
     /**
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    private function typecastSaveField($value, bool $allowDummyPersistence = false)
+    {
+        $persistence = $this->getOwner()->persistence;
+        if ($persistence === null) {
+            if ($allowDummyPersistence) {
+                $persistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
+            } else {
+                $this->getOwner()->checkPersistence();
+            }
+        }
+
+        return $persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $value])[$this->getPersistenceName()];
+    }
+
+    /**
      * Compare new value of the field with existing one without retrieving.
      * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
      *  - comparing values that can't be received - passwords, encrypted data
@@ -326,32 +345,17 @@ class Field implements Expressionable
             $value2 = $this->get();
         }
 
-        // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
-        // compare if typecasted values are the same using strict comparison (===) or nor
-        $typecastFunc = function ($v) {
-            // do not typecast null values, because that implies calling normalize() which tries to validate that value can't be null in case field value is required
-            if ($v === null) {
-                return $v;
+        $typecastFunc = function ($value): ?string {
+            // do not typecast null values, because that implies calling normalize()
+            // which tries to validate if value is not null in case field value is required
+            if ($value === null) {
+                return null;
             }
 
-            if ($this->getOwner()->persistence === null) {
-                $v = $this->normalize($v);
-
-                // without persistence, we can not do a lot with non-scalar types, but as DateTime
-                // is used often, fix the compare for them
-                // TODO probably create and use a default persistence
-                if (is_scalar($v)) {
-                    return (string) $v;
-                } elseif ($v instanceof \DateTimeInterface) {
-                    return $v->getTimestamp() . '.' . $v->format('u');
-                }
-
-                return serialize($v);
-            }
-
-            return (string) $this->getOwner()->persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
+            return (string) $this->typecastSaveField($value, true);
         };
 
+        // compare if typecasted values are the same using strict comparison
         return $typecastFunc($value) === $typecastFunc($value2);
     }
 
@@ -388,6 +392,7 @@ class Field implements Expressionable
     public function getQueryArguments($operator, $value): array
     {
         $typecastField = $this;
+        $allowArray = true;
         if (in_array($operator, [
             Scope\Condition::OPERATOR_LIKE,
             Scope\Condition::OPERATOR_NOT_LIKE,
@@ -395,17 +400,18 @@ class Field implements Expressionable
             Scope\Condition::OPERATOR_NOT_REGEXP,
         ], true)) {
             $typecastField = new self(['type' => 'string']);
+            $typecastField->setOwner(new Model($this->getOwner()->persistence, ['table' => false]));
+            $typecastField->short_name = $this->short_name;
+            $allowArray = false;
         }
 
-        if (is_array($value)) {
-            $value = array_map(function ($option) use ($typecastField) {
-                return $this->getOwner()->persistence->typecastSaveField($typecastField, $option);
-            }, $value);
-        } else {
-            $value = $this->getOwner()->persistence->typecastSaveField($typecastField, $value);
-        }
-
-        return [$this, $operator, $value];
+        return [
+            $this,
+            $operator,
+            is_array($value) && $allowArray
+                ? array_map(fn ($value) => $typecastField->typecastSaveField($value), $value)
+                : $typecastField->typecastSaveField($value),
+        ];
     }
 
     // }}}
