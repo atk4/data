@@ -7,11 +7,7 @@ namespace Atk4\Data\Model;
 trait FieldPropertiesTrait
 {
     /**
-     * Field type.
-     *
-     * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'array', 'object'.
-     * Can also be set to unspecified type for your own custom handling.
+     * Field type. Name of type registered in \Doctrine\DBAL\Types\Type.
      *
      * @var string
      */

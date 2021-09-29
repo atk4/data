@@ -10,6 +10,8 @@ use Atk4\Core\TrackableTrait;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
+use Doctrine\DBAL\Platforms;
+use Doctrine\DBAL\Types\Type;
 
 /**
  * @method Model getOwner()
@@ -36,6 +38,11 @@ class Field implements Expressionable
                 $this->{$key} = $val;
             }
         }
+    }
+
+    public function getTypeObject(): Type
+    {
+        return Type::getType($this->type ?? 'string');
     }
 
     protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -79,6 +86,13 @@ class Field implements Expressionable
             }
 
             $f = $this;
+
+//            // POC only - we still need to solve unsigned, not null, see how Doctrine handle Type options
+//            // then all code below should not be needed
+//            $platform = new \Doctrine\DBAL\Platforms\MySqlPlatform(); // should be provided by a Persistence (and DSQL Connection)
+//            $type = $this->getTypeObject();
+//
+//            return $type->convertToPHPValue($type->convertToDatabaseValue($value, $platform));
 
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
@@ -310,6 +324,13 @@ class Field implements Expressionable
         return $this;
     }
 
+    private function getDatabasePlatform(): Platforms\AbstractPlatform
+    {
+        return $this->getOwner()->persistence !== null
+            ? $this->getOwner()->persistence->getDatabasePlatform()
+            : new Persistence\GenericPlatform();
+    }
+
     /**
      * @param mixed $value
      *
@@ -330,6 +351,35 @@ class Field implements Expressionable
     }
 
     /**
+     * @param mixed|void $value
+     */
+    public function getUnmanagedValue($value = null): ?string
+    {
+        if (func_num_args() === 0) {
+            $value = $this->get();
+        }
+
+        $unmanagedValue = $this->getTypeObject()
+            ->convertToDatabaseValue($value, $this->getDatabasePlatform());
+
+        if (is_int($unmanagedValue) || is_float($unmanagedValue)) {
+            return (string) $unmanagedValue;
+        } elseif (is_bool($unmanagedValue)) {
+            return $unmanagedValue ? '1' : '0';
+        }
+
+        return $unmanagedValue; // throw a type error if not null nor string
+    }
+
+    public function setUnmanagedValue(string $unmanagedValue = null): self
+    {
+        $value = $this->getTypeObject()
+            ->convertToPHPValue($unmanagedValue, $this->getDatabasePlatform());
+
+        return $this->set($value);
+    }
+
+    /**
      * Compare new value of the field with existing one without retrieving.
      * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
      *  - comparing values that can't be received - passwords, encrypted data
@@ -345,18 +395,7 @@ class Field implements Expressionable
             $value2 = $this->get();
         }
 
-        $typecastFunc = function ($value): ?string {
-            // do not typecast null values, because that implies calling normalize()
-            // which tries to validate if value is not null in case field value is required
-            if ($value === null) {
-                return null;
-            }
-
-            return (string) $this->typecastSaveField($value, true);
-        };
-
-        // compare if typecasted values are the same using strict comparison
-        return $typecastFunc($value) === $typecastFunc($value2);
+        return $this->getUnmanagedValue($value) === $this->getUnmanagedValue($value2);
     }
 
     public function getReference(): ?Reference
