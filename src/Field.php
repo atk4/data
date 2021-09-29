@@ -352,7 +352,9 @@ class Field implements Expressionable
                 return null;
             }
 
-            return (string) $this->typecastSaveField($value, true);
+            $valueDb = $this->typecastSaveField($value, true);
+
+            return is_object($valueDb) ? serialize($valueDb) : (string) $valueDb;
         };
 
         // compare if typecasted values are the same using strict comparison
