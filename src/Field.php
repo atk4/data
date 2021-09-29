@@ -392,7 +392,6 @@ class Field implements Expressionable
     public function getQueryArguments($operator, $value): array
     {
         $typecastField = $this;
-        $allowArray = true;
         if (in_array($operator, [
             Scope\Condition::OPERATOR_LIKE,
             Scope\Condition::OPERATOR_NOT_LIKE,
@@ -400,9 +399,14 @@ class Field implements Expressionable
             Scope\Condition::OPERATOR_NOT_REGEXP,
         ], true)) {
             $typecastField = new self(['type' => 'string']);
-            $typecastField->setOwner(new Model($this->getOwner()->persistence, ['table' => false]));
-            $typecastField->short_name = $this->short_name;
-            $allowArray = false;
+        }
+
+        if (is_array($value)) {
+            $value = array_map(function ($option) use ($typecastField) {
+                return $this->getOwner()->persistence->typecastSaveField($typecastField, $option);
+            }, $value);
+        } else {
+            $value = $this->getOwner()->persistence->typecastSaveField($typecastField, $value);
         }
 
         return [
