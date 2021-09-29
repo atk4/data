@@ -1530,9 +1530,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Model::save() with 2nd param $to_persistence is no longer supported');
         }
 
-        if (!$this->persistence) {
-            throw new Exception('Model is not associated with any persistence');
-        }
+        $this->checkPersistence();
 
         if ($this->read_only) {
             throw new Exception('Model is read-only and cannot be saved');

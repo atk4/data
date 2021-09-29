@@ -10,9 +10,6 @@ use Atk4\Data\FieldSqlExpression;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-/**
- * Reference\HasOneSql class.
- */
 class HasOneSql extends HasOne
 {
     /**

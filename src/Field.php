@@ -17,185 +17,10 @@ use Atk4\Data\Persistence\Sql\Expressionable;
 class Field implements Expressionable
 {
     use DiContainerTrait;
+    use Model\FieldPropertiesTrait;
     use Model\JoinLinkTrait;
     use ReadableCaptionTrait;
     use TrackableTrait;
-
-    // {{{ Properties
-
-    /**
-     * Default value of field.
-     *
-     * @var mixed
-     */
-    public $default;
-
-    /**
-     * Field type.
-     *
-     * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'array', 'object'.
-     * Can also be set to unspecified type for your own custom handling.
-     *
-     * @var string
-     */
-    public $type;
-
-    /**
-     * For several types enum can provide list of available options. ['blue', 'red'].
-     *
-     * @var array|null
-     */
-    public $enum;
-
-    /**
-     * For fields that can be selected, values can represent interpretation of the values,
-     * for instance ['F' => 'Female', 'M' => 'Male'];.
-     *
-     * @var array|null
-     */
-    public $values;
-
-    /**
-     * If value of this field is defined by a model, this property
-     * will contain reference link.
-     *
-     * @var string|null
-     */
-    protected $referenceLink;
-
-    /**
-     * Actual field name.
-     *
-     * @var string|null
-     */
-    public $actual;
-
-    /**
-     * Is it system field?
-     * System fields will be always loaded and saved.
-     *
-     * @var bool
-     */
-    public $system = false;
-
-    /**
-     * Setting this to true will never actually load or store
-     * the field in the database. It will action as normal,
-     * but will be skipped by load/iterate/update/insert.
-     *
-     * @var bool
-     */
-    public $never_persist = false;
-
-    /**
-     * Setting this to true will never actually store
-     * the field in the database. It will action as normal,
-     * but will be skipped by update/insert.
-     *
-     * @var bool
-     */
-    public $never_save = false;
-
-    /**
-     * Is field read only?
-     * Field value may not be changed. It'll never be saved.
-     * For example, expressions are read only.
-     *
-     * @var bool
-     */
-    public $read_only = false;
-
-    /**
-     * Defines a label to go along with this field. Use getCaption() which
-     * will always return meaningful label (even if caption is null). Set
-     * this property to any string.
-     *
-     * @var string
-     */
-    public $caption;
-
-    /**
-     * Array with UI flags like editable, visible and hidden.
-     *
-     * @var array
-     */
-    public $ui = [];
-
-    /**
-     * Mandatory field must not be null. The value must be set, even if
-     * it's an empty value.
-     *
-     * Can contain error message for UI.
-     *
-     * @var bool|string
-     */
-    public $mandatory = false;
-
-    /**
-     * Required field must have non-empty value. A null value is considered empty too.
-     *
-     * Can contain error message for UI.
-     *
-     * @var bool|string
-     */
-    public $required = false;
-
-    /**
-     * Should we use typecasting when saving/loading data to/from persistence.
-     *
-     * Value can be array [$typecast_save_callback, $typecast_load_callback].
-     *
-     * @var bool|array|null
-     */
-    public $typecast;
-
-    /**
-     * Should we use serialization when saving/loading data to/from persistence.
-     *
-     * Value can be array [$encode_callback, $decode_callback].
-     *
-     * @var bool|array|string|null
-     */
-    public $serialize;
-
-    /**
-     * Persisting format for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.
-     *
-     * @var string
-     */
-    public $persist_format;
-
-    /**
-     * Persisting timezone for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, 'IST', 'UTC', 'Europe/Riga' etc.
-     *
-     * @var string
-     */
-    public $persist_timezone = 'UTC';
-
-    /**
-     * DateTime class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTime', 'Carbon\Carbon' etc.
-     *
-     * @var string
-     */
-    public $dateTimeClass = \DateTime::class;
-
-    /**
-     * Timezone class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTimeZone', 'Carbon\CarbonTimeZone' etc.
-     *
-     * @var string
-     */
-    public $dateTimeZoneClass = \DateTimeZone::class;
-
-    // }}}
 
     // {{{ Core functionality
 
@@ -486,6 +311,25 @@ class Field implements Expressionable
     }
 
     /**
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    private function typecastSaveField($value, bool $allowDummyPersistence = false)
+    {
+        $persistence = $this->getOwner()->persistence;
+        if ($persistence === null) {
+            if ($allowDummyPersistence) {
+                $persistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
+            } else {
+                $this->getOwner()->checkPersistence();
+            }
+        }
+
+        return $persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $value])[$this->getPersistenceName()];
+    }
+
+    /**
      * Compare new value of the field with existing one without retrieving.
      * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
      *  - comparing values that can't be received - passwords, encrypted data
@@ -501,32 +345,17 @@ class Field implements Expressionable
             $value2 = $this->get();
         }
 
-        // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
-        // compare if typecasted values are the same using strict comparison (===) or nor
-        $typecastFunc = function ($v) {
-            // do not typecast null values, because that implies calling normalize() which tries to validate that value can't be null in case field value is required
-            if ($v === null) {
-                return $v;
+        $typecastFunc = function ($value): ?string {
+            // do not typecast null values, because that implies calling normalize()
+            // which tries to validate if value is not null in case field value is required
+            if ($value === null) {
+                return null;
             }
 
-            if ($this->getOwner()->persistence === null) {
-                $v = $this->normalize($v);
-
-                // without persistence, we can not do a lot with non-scalar types, but as DateTime
-                // is used often, fix the compare for them
-                // TODO probably create and use a default persistence
-                if (is_scalar($v)) {
-                    return (string) $v;
-                } elseif ($v instanceof \DateTimeInterface) {
-                    return $v->getTimestamp() . '.' . $v->format('u');
-                }
-
-                return serialize($v);
-            }
-
-            return (string) $this->getOwner()->persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
+            return (string) $this->typecastSaveField($value, true);
         };
 
+        // compare if typecasted values are the same using strict comparison
         return $typecastFunc($value) === $typecastFunc($value2);
     }
 
@@ -562,24 +391,27 @@ class Field implements Expressionable
      */
     public function getQueryArguments($operator, $value): array
     {
-        $skipValueTypecast = [
+        $typecastField = $this;
+        $allowArray = true;
+        if (in_array($operator, [
             Scope\Condition::OPERATOR_LIKE,
             Scope\Condition::OPERATOR_NOT_LIKE,
             Scope\Condition::OPERATOR_REGEXP,
             Scope\Condition::OPERATOR_NOT_REGEXP,
-        ];
-
-        if (!in_array($operator, $skipValueTypecast, true)) {
-            if (is_array($value)) {
-                $value = array_map(function ($option) {
-                    return $this->getOwner()->persistence->typecastSaveField($this, $option);
-                }, $value);
-            } else {
-                $value = $this->getOwner()->persistence->typecastSaveField($this, $value);
-            }
+        ], true)) {
+            $typecastField = new self(['type' => 'string']);
+            $typecastField->setOwner(new Model($this->getOwner()->persistence, ['table' => false]));
+            $typecastField->short_name = $this->short_name;
+            $allowArray = false;
         }
 
-        return [$this, $operator, $value];
+        return [
+            $this,
+            $operator,
+            is_array($value) && $allowArray
+                ? array_map(fn ($value) => $typecastField->typecastSaveField($value), $value)
+                : $typecastField->typecastSaveField($value),
+        ];
     }
 
     // }}}
