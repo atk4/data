@@ -68,7 +68,7 @@ class Reference
     protected $their_field;
 
     /**
-     * Caption of the reeferenced model. Can be used in UI components, for example.
+     * Caption of the referenced model. Can be used in UI components, for example.
      * Should be in plain English and ready for proper localization.
      *
      * @var string
