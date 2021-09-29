@@ -69,7 +69,7 @@ The next example might be a bit too complex for you, but still read through and
 try to understand what each section does to your base query::
 
     // Establish a query looking for a maximum salary
-    $salary = new Query(['connection'=>$pdo]);
+    $salary = new Query(['connection' => $pdo]);
 
     // Create few expression objects
     $e_ms = $salary->expr('max(salary)');
@@ -78,7 +78,7 @@ try to understand what each section does to your base query::
     // Configure our basic query
     $salary
         ->table('salary')
-        ->field(['emp_no', 'max_salary'=>$e_ms, 'months'=>$e_df])
+        ->field(['emp_no', 'max_salary' => $e_ms, 'months' => $e_df])
         ->group('emp_no')
         ->order('-max_salary')
 

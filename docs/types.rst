@@ -19,7 +19,7 @@ Specifying one of supported types will ensure that your field format is
 recognized universally, can be stored, loaded, presented to user through UI
 inside a Table or Form and can be exported through RestAPI::
 
-    $this->addField('is_vip', ['type'=>'boolean']);
+    $this->addField('is_vip', ['type' => 'boolean']);
 
 We also allow use of custom Field implementation::
 
@@ -44,19 +44,19 @@ incompatible database/persistence.
 Serialization abilities allow us to get rid of many arbitrary types such as "array_json"
 and simply use this::
 
-    $model->addField('selection', ['type'=>'array', 'serialize'=>'json']);
+    $model->addField('selection', ['type' => 'array', 'serialize' => 'json']);
 
 Field configuration
 ===================
 
 Fields can be further configured. For numeric fields it's possible to provide
 precision. For instance, when user specifies `type=money` it is represented
-as `['Number', 'precision'=>2, 'prefix'=>'€']`
+as `['Number', 'precision' => 2, 'prefix' => '€']`
 
 Not only this allows us make a flexible and re-usable functionality for fields,
 but also allows for an easy way to override::
 
-    $model->addField('salary', ['type'=>'money', 'precision'=>4', 'prefix'=>false, 'postfix'=>'Rub']);
+    $model->addField('salary', ['type' => 'money', 'precision' => 4', 'prefix' => false, 'postfix' => 'Rub']);
 
 Although some configuration of the field may appear irrelevant (prefix/postfix)
 to operations with data from inside PHP, those properties can be used by
@@ -80,9 +80,9 @@ ATK Data prior to 1.5 supports the following types:
 
  - string
  - boolean ([':php:class:`Boolean`'])
- - integer ([':php:class:`Number`', 'precision'=>0])
- - money ([':php:class:`Number`', 'prefix'=>'€', 'precision'=>2])
- - float ([':php:class:`Number`', 'type'=>'float'])
+ - integer ([':php:class:`Number`', 'precision' => 0])
+ - money ([':php:class:`Number`', 'prefix' => '€', 'precision' => 2])
+ - float ([':php:class:`Number`', 'type' => 'float'])
  - date ([':php:class:`DateTime`'])
  - datetime ([':php:class:`DateTime`'])
  - time ([':php:class:`DateTime`'])
@@ -92,18 +92,18 @@ ATK Data prior to 1.5 supports the following types:
 
 In ATK Data the number of supported types has been extended with:
 
- - percent (34.2%) ([':php:class:`Number`', 'format'=>function($v){ return $v*100; }, 'postfix'=>'%'])
- - rating (3 out of 5) ([':php:class:`Number`', 'max'=>5, 'precision'=>0])
- - uuid (xxxxxxxx-xxxx-...) ([':php:class:`Number`', 'base'=>16, 'mask'=>'########-##..'])
- - hex (number with base 16) ([':php:class:`Number`', 'base'=>16])
- - ip (123.2.44.1) ([':php:class:`Number`', 'base'=>256, 'mask'=>'#.#.#.#'])
- - ipv6 ([':php:class:`Number`', 'base'=>16', 'mask'=>'####:####:..']);
+ - percent (34.2%) ([':php:class:`Number`', 'format' => function($v){ return $v*100; }, 'postfix' => '%'])
+ - rating (3 out of 5) ([':php:class:`Number`', 'max' => 5, 'precision' => 0])
+ - uuid (xxxxxxxx-xxxx-...) ([':php:class:`Number`', 'base' => 16, 'mask' => '########-##..'])
+ - hex (number with base 16) ([':php:class:`Number`', 'base' => 16])
+ - ip (123.2.44.1) ([':php:class:`Number`', 'base' => 256, 'mask' => '#.#.#.#'])
+ - ipv6 ([':php:class:`Number`', 'base' => 16', 'mask' => '####:####:..']);
  - model (used for containment)
  - fraction (5/7) ([':php:class:`Fraction`'])
 
 Additionally there is a support for
 
- - distance ([':php:class:`Units`', 'scale'=>['m'=>1, 'km'=>1000, 'mm'=>0.001])
+ - distance ([':php:class:`Units`', 'scale' => ['m' => 1, 'km' => 1000, 'mm' => 0.001])
  - duration
  - mass
  - area
@@ -111,7 +111,7 @@ Additionally there is a support for
 
 All measurements are implemented with :php:class:`Units` and can be further extended::
 
-    $model->addField('speed', ['Units', 'postfix'=>'/s', 'scale'=>['m'=>1, 'km'=>1000]]);
+    $model->addField('speed', ['Units', 'postfix' => '/s', 'scale' => ['m' => 1, 'km' => 1000]]);
     $model->set('speed', '30km/s');
 
     echo $model->get('speed'); // 30000

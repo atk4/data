@@ -140,7 +140,7 @@ class JobReport extends Job {
 
     // Build relation between job and invoice line
     $this->hasMany('InvoiceLines', ['model' => $invoice_lines])
-      ->addField('invoiced', ['aggregate'=>'sum', 'field'=>'total', 'type'=>'money']);
+      ->addField('invoiced', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'money']);
 
     // Next we need to see how much is reported through timesheets
     $timesheet = new Timesheet($this->persistence);
@@ -153,7 +153,7 @@ class JobReport extends Job {
 
     // Build relation between Job and Timesheets
     $this->hasMany('Timesheets', ['model' => $timesheet])
-      ->addField('reported', ['aggregate'=>'sum', 'field'=>'cost', 'type'=>'money']);
+      ->addField('reported', ['aggregate' => 'sum', 'field' => 'cost', 'type' => 'money']);
 
 	// Finally lets calculate profit
     $this->addExpression('profit', '[invoiced]-[reported]');
@@ -188,7 +188,7 @@ $data = new JobReport($db);
 // BarChart wants aggregated data
 $data->addExpression('month', 'month([date])');
 $aggregate = new \Atk4\Report\GroupModel($data);
-$aggregate->groupBy('month', ['profit_margin'=>'sum']);
+$aggregate->groupBy('month', ['profit_margin' => 'sum']);
 
 // Associate presentation with data
 $chart->setModel($aggregate, ['month', 'profit_margin']);
@@ -319,10 +319,10 @@ My next example demonstrates how simple and clean your code looks when you store
 $m = new Client($db);
 $m->loadBy('name', 'Pear Company');
 $m->ref('Order')
-   ->save(['ref'=>'TBL1', 'delivery'=>new DateTime('+1 month')])
+   ->save(['ref' => 'TBL1', 'delivery' => new DateTime('+1 month')])
    ->ref('Lines')->import([
-      ['Table', 'category'=>'furniture', 'qty'=>2, 'price'=>10.50],
-      ['Chair', 'category'=>'furniture', 'qty'=>10, 'price'=>3.25],
+      ['Table', 'category' => 'furniture', 'qty' => 2, 'price' => 10.50],
+      ['Chair', 'category' => 'furniture', 'qty' => 10, 'price' => 3.25],
 ]);
 ```
 

@@ -64,7 +64,7 @@ Model class can be seen as a "gateway" between your code and many other features
 
 For example - you may define fields and relations for the model::
 
-   $model->addField('age', ['type'=>'number']);
+   $model->addField('age', ['type' => 'number']);
    $model->hasMany('Children', ['model' => [Person::class]]);
 
 Methods `addField` and `hasMany` will ultimatelly create and link model with a corresponding
@@ -99,7 +99,7 @@ Model object = meta information
 By design, Model object does not have direct knowledge of higher level objects or specific
 implementations. Still - Model will be a good place to deposit some meta-information::
 
-   $model->addField('age', ['ui'=>['caption'=>'Put your age here']]);
+   $model->addField('age', ['ui' => ['caption' => 'Put your age here']]);
 
 Model and Field class will simply store the "ui" property which may (or may not) be used by ATK UI
 component or some add-on.
@@ -110,13 +110,13 @@ Domain vs Persistence
 When you declare a model Field you can also store some persistence-related meta-information::
 
    // override how your persistence formats date field
-   $model->addField('date_of_birth', ['type'=>'date', 'persistence'=>['format'=>'Ymd']]);
+   $model->addField('date_of_birth', ['type' => 'date', 'persistence' => ['format' => 'Ymd']]);
 
    // declare field which is not saved
-   $model->addField('secret', ['never_persist'=>true]);
+   $model->addField('secret', ['never_persist' => true]);
 
    // rellocate into a different field
-   $model->addField('old_field', ['actual'=>'new_field']);
+   $model->addField('old_field', ['actual' => 'new_field']);
 
    // or even into a different table
    $model->join('new_table')->addField('extra_field');
@@ -228,12 +228,12 @@ The fields are implemented on top of Containers from Agile Core.
 
 Second argument to addField() will contain a seed for the Field class::
 
-   $this->addField('surname', ['default'=>'Smith']);
+   $this->addField('surname', ['default' => 'Smith']);
 
 Additionally, `type` property can be used to determine the best `Field` class to handle
 the type::
 
-   $field = $this->addField('is_married', ['type'=>'boolean']);
+   $field = $this->addField('is_married', ['type' => 'boolean']);
 
    // $field class now will be Field\Boolean
 
@@ -252,9 +252,9 @@ Creates multiple field objects in one method call. See multiple syntax examples:
     $m->addFields([
         'last_name',
         'login' => ['default' => 'unknown'],
-        'salary' => ['type'=>'money', CustomField::class, 'default' => 100],
-        ['tax', CustomField::class, 'type'=>'money', 'default' => 20],
-        'vat' => new CustomField(['type'=>'money', 'default' => 15]),
+        'salary' => ['type' => 'money', CustomField::class, 'default' => 100],
+        ['tax', CustomField::class, 'type' => 'money', 'default' => 20],
+        'vat' => new CustomField(['type' => 'money', 'default' => 15]),
     ]);
 
 
@@ -262,7 +262,7 @@ Read-only Fields
 ^^^^^^^^^^^^^^^^
 Although you may make any field read-only::
 
-   $this->addField('name', ['read_only'=>true]);
+   $this->addField('name', ['read_only' => true]);
 
 There are two methods for adding dynamically calculated fields.
 
@@ -293,8 +293,8 @@ For the times when you are not working with SQL persistence, you can calculate f
 Creates new field object inside your model. Field value will be automatically
 calculated by your callback method right after individual record is loaded by the model::
 
-   $this->addField('term', ['caption'=>'Repayment term in months', 'default'=>36]);
-   $this->addField('rate', ['caption'=>'APR %', 'default'=>5]);
+   $this->addField('term', ['caption' => 'Repayment term in months', 'default' => 36]);
+   $this->addField('rate', ['caption' => 'APR %', 'default' => 5]);
 
    $this->addCalculatedField('interest', function($m) {
       return $m->calculateInterest();
@@ -345,7 +345,7 @@ a user invokable actions::
 
          $this->addField('name');
          $this->addField('email');
-         $this->addField('password', ['type'=>'password']);
+         $this->addField('password', ['type' => 'password']);
 
          $this->addUserAction('send_new_password');
 
@@ -355,7 +355,7 @@ a user invokable actions::
       {
          // .. code here
 
-         $this->save(['password'=> .. ]);
+         $this->save(['password' => .. ]);
 
          return 'generated and sent password to '.$m->get('name');
       }
@@ -393,7 +393,7 @@ a hook::
 
    $this->onHookShort(Model::HOOK_VALIDATE, function() {
       if ($this->get('name') === 'C#') {
-         return ['name'=>'No sharp objects are allowed'];
+         return ['name' => 'No sharp objects are allowed'];
       }
    });
 
@@ -636,7 +636,7 @@ Full example::
     $m = new Model_User($db, 'user');
 
     // Fields can be added after model is created
-    $m->addField('salary', ['default'=>1000]);
+    $m->addField('salary', ['default' => 1000]);
 
     echo $m->_isset('salary');  // false
     echo $m->get('salary');          // 1000
@@ -678,7 +678,7 @@ defaults::
 
 or as defaults::
 
-    $m = new MyModel($db, ['title_field'=>'full_name']);
+    $m = new MyModel($db, ['title_field' => 'full_name']);
 
 
 .. _id_field:
@@ -761,8 +761,8 @@ Setting limit and sort order
 
         $m->setOrder('name, salary desc');
         $m->setOrder(['name', 'salary desc']);
-        $m->setOrder(['name', 'salary'=>true]);
-        $m->setOrder(['name'=>false, 'salary'=>true]);
+        $m->setOrder(['name', 'salary' => true]);
+        $m->setOrder(['name' => false, 'salary' => true]);
         $m->setOrder([ ['name'], ['salary','desc'] ]);
         $m->setOrder([ ['name'], ['salary',true] ]);
         $m->setOrder([ ['name'], ['salary desc'] ]);

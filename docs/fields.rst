@@ -53,7 +53,7 @@ Field Type
 
 Probably a most useful quality of Field is that it has a clear type::
 
-    $model->addField('age', ['type'=>'integer']);
+    $model->addField('age', ['type' => 'integer']);
     $model->set('age', "123");
 
     var_dump($model->get('age'));   // int(123)

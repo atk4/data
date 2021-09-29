@@ -61,7 +61,7 @@ Class: Field
 ------------
 
  - Represent logical data column (e.g. "date_of_birth")
- - Stores column meta-information (e.g. "type" => "date", "caption"=>"Birth Date")
+ - Stores column meta-information (e.g. "type" => "date", "caption" => "Birth Date")
  - Handles value normalization
  - Documentation: :php:class:`Field`
 
@@ -238,8 +238,8 @@ You can use :php:class:`Persistence\Static_` for that::
     $htmltable->invokeInit();
 
     $htmltable->setModel(new User(new Persistence\Static_([
-        ['name'=>'John', 'is_admin'=>false, 'salary'=>34400.00],
-        ['name'=>'Peter', 'is_admin'=>false, 'salary'=>42720.00],
+        ['name' => 'John', 'is_admin' => false, 'salary' => 34400.00],
+        ['name' => 'Peter', 'is_admin' => false, 'salary' => 42720.00],
     ])));
 
     echo $htmltable->render();
@@ -251,8 +251,8 @@ model class to display VAT breakdown table::
     $htmltable->invokeInit();
 
     $htmltable->setModel(new Model(new Persistence\Static_([
-        ['VAT_rate'=>'12.0%', 'VAT'=>'36.00', 'Net'=>'300.00'],
-        ['VAT_rate'=>'10.0%', 'VAT'=>'52.00', 'Net'=>'520.00'],
+        ['VAT_rate' => '12.0%', 'VAT' => '36.00', 'Net' => '300.00'],
+        ['VAT_rate' => '10.0%', 'VAT' => '52.00', 'Net' => '520.00'],
     ])));
 
     echo $htmltable->render();

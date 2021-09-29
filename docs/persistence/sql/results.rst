@@ -14,7 +14,7 @@ for streaming results.
 The only requirement for such an object is that it has to be a
 `Generator <http://php.net/manual/en/language.generators.syntax.php>`_.
 In most cases developers will expect your generator to return sequence
-of id=>hash representing a key/value result set.
+of id => hash representing a key/value result set.
 
 
 .. todo::

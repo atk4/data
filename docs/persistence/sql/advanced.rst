@@ -44,7 +44,7 @@ a PDO object which you can use. In Laravel you can optimize some of your queries
 by switching to DSQL::
 
     $pdo = DB::connection()->getPdo();
-    $c = new Connection(['connection'=>$pdo]);
+    $c = new Connection(['connection' => $pdo]);
 
     $user_ids = $c->dsql()->table('expired_users')->field('user_id');
     $c->dsql()->table('user')->where('id', 'in', $user_ids)->set('active', 0)->update();
@@ -70,7 +70,7 @@ results too.
 If you are creating :php:class:`Connection` through constructor, you may have
 to explicitly specify property :php:attr:`Connection::query_class`::
 
-    $c = new Connection(['connection'=>$pdo, 'query_class'=>Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
+    $c = new Connection(['connection' => $pdo, 'query_class' => Atk4\Data\Persistence\Sql\Sqlite\Query::class]);
 
 This is also useful, if you have created your own Query class in a different
 namespace and wish to use it.
@@ -103,7 +103,7 @@ Let's say you want to add support for new SQL vendor::
 Now that our custom query class is complete, we would like to use it by default
 on the connection::
 
-    $c = \Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, ['query_class'=>'Query_MyVendor']);
+    $c = \Atk4\Data\Persistence\Sql\Connection::connect($dsn, $user, $pass, ['query_class' => 'Query_MyVendor']);
 
 .. _new_vendor:
 
@@ -164,7 +164,7 @@ So to implement our task, you might need a class like this::
         public function file($file)
         {
             if (!is_readable($file)) {
-                throw Exception(['File is not readable', 'file'=>$file]);
+                throw Exception(['File is not readable', 'file' => $file]);
             }
             $this['file'] = $file;
         }

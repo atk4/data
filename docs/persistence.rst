@@ -62,7 +62,7 @@ There are several ways to link your model up with the persistence::
     You can pass argument to save() to set() and save()::
 
         $m->unload();
-        $m->save(['name'=>'John']);
+        $m->save(['name' => 'John']);
 
 .. php:method:: tryLoad
 
@@ -98,7 +98,7 @@ explicitly::
     $m->set('id', 123);
     $m->save();
 
-    // or $m->insert(['Record with ID=123', 'id'=>123']);
+    // or $m->insert(['Record with ID=123', 'id' => 123']);
 
 However if you change the ID for record that was loaded, then your database
 record will also have its ID changed. Here is example::
@@ -119,7 +119,7 @@ more useful types.
 Agile Data ensures that regardless of the selected database, types are converted
 correctly for saving and restored as they were when loading::
 
-    $m->addField('is_admin', ['type'=>'boolean']);
+    $m->addField('is_admin', ['type' => 'boolean']);
     $m->set('is_admin', false);
     $m->save();
 
@@ -328,11 +328,11 @@ Type Matrix
 |    |    |                                                          |      | 4  |     |
 +----+----+----------------------------------------------------------+------+----+-----+
 | bo | bo | true / false type value. Optionally specify              | true | 1  | tru |
-| ol | ol | 'enum'=>['N','Y'] to store true as 'Y' and false as 'N'. |      |    | e   |
+| ol | ol | 'enum' => ['N','Y'] to store true as 'Y' and false as 'N'. |      |    | e   |
 |    | ea | By default uses [0,1].                                   |      |    |     |
 |    | n  |                                                          |      |    |     |
 +----+----+----------------------------------------------------------+------+----+-----+
-| ar |    | Optionally pass 'fmt' option, which is 'json' by         | [2=> | {2 | sto |
+| ar |    | Optionally pass 'fmt' option, which is 'json' by         | [2 => | {2 | sto |
 | ra |    | default. Will json\_encode and json\_decode(..., true)   | "bar | :" | red |
 | y  |    | the value if database does not support array storage.    | "]   | ba | as- |
 |    |    |                                                          |      | r" | is  |
@@ -471,7 +471,7 @@ We have a model 'Order' with a field 'ref', which must be unique within
 the context of a client. However, orders are also stored in a 'Basket'.
 Consider the following code::
 
-    $basket->ref('Order')->insert(['ref'=>123]);
+    $basket->ref('Order')->insert(['ref' => 123]);
 
 You need to verify that the specific client wouldn't have another order with
 this ref, how do you do it?
@@ -682,7 +682,7 @@ replica may not propagate to read replica, you can simply reset the dirty flags.
 If you need further optimization, make sure `reload_after_save` is disabled
 for the write replica::
 
-    $m->withPersistence($write_replica, null, ['reload_after_save'=>false])->save();
+    $m->withPersistence($write_replica, null, ['reload_after_save' => false])->save();
 
 or use::
 
@@ -786,7 +786,7 @@ executing::
     $id_query_action = $m->action('getOne',['id']);
 
     $m = Model_Invoice($db);
-    $m->insert(['qty'=>20, 'product_id'=>$id_query_action]);
+    $m->insert(['qty' => 20, 'product_id' => $id_query_action]);
 
 Insert operation will check if you are using same persistence.
 If the persistence object is different, it will execute action and will use
@@ -849,7 +849,7 @@ In conjunction with Model::refLink() you can produce expressions for creating
 sub-selects. The functionality is nicely wrapped inside FieldSql_Many::addField()::
 
     $client->hasMany('Invoice')
-        ->addField('total_gross', ['aggregate'=>'sum', 'field'=>'gross']);
+        ->addField('total_gross', ['aggregate' => 'sum', 'field' => 'gross']);
 
 This operation is actually consisting of 3 following operations::
 

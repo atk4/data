@@ -9,7 +9,7 @@ Typecasting is evoked when you are attempting to save or load the record.
 Unlike strict types and normalization, typecasting is a persistence-specific
 operation. Here is the sequence and sample::
 
-    $m->addField('birthday', ['type'=>'date']);
+    $m->addField('birthday', ['type' => 'date']);
     // type has a number of pre-defined values. Using 'date'
     // instructs AD that we will be using it for staring dates
     // through 'DateTime' class.
@@ -41,9 +41,9 @@ Some formats such as `date`, `time` and `datetime` may have additional options
 to it::
 
     $m->addField('registered', [
-        'type'=>'date',
-        'persist_format'=>'d/m/Y',
-        'persist_timezone'=>'IST'
+        'type' => 'date',
+        'persist_format' => 'd/m/Y',
+        'persist_timezone' => 'IST'
     ]);
 
 Here is another example with booleans::
@@ -71,8 +71,8 @@ Any type can have a value of `null`::
 If value is passed which is not compatible with field type, Agile Data will try
 to normalize value::
 
-    $m->addField('age', ['type'=>'integer']);
-    $m->addField('name', ['type'=>'string']);
+    $m->addField('age', ['type' => 'integer']);
+    $m->addField('name', ['type' => 'string']);
 
     $m->set('age', '49.80');
     $m->set('name', '       John');
@@ -166,8 +166,8 @@ have no native type in SQL database. This is where serialization feature is used
 Field may use serialization to further encode field value for the storage purpose::
 
     $this->addField('private_key', [
-        'serialize'=>'base64',
-        'system'=>true,
+        'serialize' => 'base64',
+        'system' => true,
     ]);
 
 This is one way to store binary data. Type is unspecified but the binary value

@@ -15,7 +15,7 @@ unions but only if the database server supports those operations.
 
 Developer would normally create a declaration like this::
 
-    $user->hasMany('Order')->addField('total', ['aggregate'=>'sum']);
+    $user->hasMany('Order')->addField('total', ['aggregate' => 'sum']);
 
 It is up to Agile Data to decide what's the most efficient way to implement
 the aggregation. Currently only SQL persistence is capable of constructing
@@ -258,7 +258,7 @@ some other parameters such as:
 
 You can also define your own parameters like this::
 
-    $m = new Model_User($db, ['audit'=>false]);
+    $m = new Model_User($db, ['audit' => false]);
 
     $m->audit
 
@@ -298,7 +298,7 @@ class. All the properties defined inside your model class are considered
 
     $m = new Model_User($db, 'user2'); // will use a different table
 
-    $m = new Model_User($db, ['table'=>'user2']); // same
+    $m = new Model_User($db, ['table' => 'user2']); // same
 
 .. note:: If you're trying those lines, you will also have to
     create this new table inside your MySQL database::
@@ -315,7 +315,7 @@ later::
 
 You cannot add conditions just yet, although you can pass in some of the defaults::
 
-    $m = new Model_User(null, ['table'=>'user2']);
+    $m = new Model_User(null, ['table' => 'user2']);
 
     $db->add($m); // will use table user2
 
@@ -387,8 +387,8 @@ The `$dsn` can also be using the PEAR-style DSN format, such as:
 For some persistence classes, you should use constructor directly::
 
     $array = [];
-    $array[1] = ['name'=>'John'];
-    $array[2] = ['name'=>'Peter'];
+    $array[1] = ['name' => 'John'];
+    $array[2] = ['name' => 'Peter'];
 
     $db = new \Atk4\Data\Persistence\Array_($array);
     $m = new \Atk4\Data\Model($db);
@@ -399,7 +399,7 @@ For some persistence classes, you should use constructor directly::
 There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
 
-    $a=['user'=>[],'contact_info'=>[]];
+    $a=['user' => [],'contact_info' => []];
     $ar = new \Atk4\Data\Persistence\Array_($a);
     $m = new Model_User($ar);
     $m->set('username', 'test');
@@ -537,8 +537,8 @@ Aggregation actions can be used in Expressions with hasMany references and they
 can be brought into the original model as fields::
 
     $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('max_delivery', ['aggregate'=>'max', 'field'=>'shipping']);
-    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
+    $m->getRef('Invoice')->addField('max_delivery', ['aggregate' => 'max', 'field' => 'shipping']);
+    $m->getRef('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
     $m->export(['name','max_delivery','total_paid']);
 
 The above code is more concise and can be used together with reference declaration,
@@ -636,8 +636,8 @@ will continue to work even without SQL (although might be more performance-expen
 however if you're stuck with SQL you can use free-form pattern-based expressions::
 
     $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('total_purchase', ['aggregate'=>'sum', 'field'=>'total']);
-    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
+    $m->getRef('Invoice')->addField('total_purchase', ['aggregate' => 'sum', 'field' => 'total']);
+    $m->getRef('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
     $m->addExpression('balance','[total_purchase]+[total_paid]');
     $m->export(['name','balance']);

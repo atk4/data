@@ -160,17 +160,17 @@ abstract class Persistence
      *
      * In:
      *  [
-     *    'name'=>' John Smith',
-     *    'age'=>30,
-     *    'password'=>'abc',
-     *    'is_married'=>true,
+     *    'name' => ' John Smith',
+     *    'age' => 30,
+     *    'password' => 'abc',
+     *    'is_married' => true,
      *  ]
      *
      *  Out:
      *   [
-     *     'first_name'=>'John Smith',
-     *     'age'=>30,
-     *     'is_married'=>1
+     *     'first_name' => 'John Smith',
+     *     'age' => 30,
+     *     'is_married' => 1
      *   ]
      */
     public function typecastSaveRow(Model $model, array $row): array

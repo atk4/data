@@ -175,7 +175,7 @@ SQL Expression Matching
     value inside $arguments and replace it with the field::
 
         $m->expr('[age] > 20'); // same as
-        $m->expr('[age] > 20', ['age'=>$m->getField('age')); // same as
+        $m->expr('[age] > 20', ['age' => $m->getField('age')); // same as
 
 
 
@@ -197,7 +197,7 @@ Usage::
 
     $m->addCondition(
         $m->expr('[age] between [min_age] and [max_age]'),
-        ['min_age'=>10, 'max_age'=>30]
+        ['min_age' => 10, 'max_age' => 30]
     );
 
 Allow you to pass parameters into expressions. Those can be nested and consist
@@ -207,8 +207,8 @@ of objects as well as actions::
     $m->addCondition(
         $m->expr('[age] between [min_age] and [max_age]'),
         [
-            'min_age'=>$m->action('min', ['age']),
-            'max_age'=>$m->expr('(20 + [])', [20])
+            'min_age' => $m->action('min', ['age']),
+            'max_age' => $m->expr('(20 + [])', [20])
         ]
     );
 

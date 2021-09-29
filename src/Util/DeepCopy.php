@@ -36,19 +36,19 @@ class DeepCopy
     protected $destination;
 
     /**
-     * @var array containing references which we need to copy. May contain sub-arrays: ['Invoices'=>['Lines']]
+     * @var array containing references which we need to copy. May contain sub-arrays: ['Invoices' => ['Lines']]
      */
     protected $references = [];
 
     /**
      * @var array contains array similar to references but containing list of excluded fields:
-     *            e.g. ['Invoices'=>['Lines'=>['vat_rate_id']]]
+     *            e.g. ['Invoices' => ['Lines' => ['vat_rate_id']]]
      */
     protected $exclusions = [];
 
     /**
      * @var array contains array similar to references but containing list of callback methods to transform fields/values:
-     *            e.g. ['Invoices'=>['Lines'=>function($data){
+     *            e.g. ['Invoices' => ['Lines' => function($data){
      *            $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
      *            return $data;
      *            }]]
@@ -56,7 +56,7 @@ class DeepCopy
     protected $transforms = [];
 
     /**
-     * @var array while copying, will record mapped records in format [$table => ['old_id'=>'new_id']]
+     * @var array while copying, will record mapped records in format [$table => ['old_id' => 'new_id']]
      */
     public $mapping = [];
 
@@ -103,7 +103,7 @@ class DeepCopy
     /**
      * Specifies which fields shouldn't be copied. May also contain arrays
      * for related entries.
-     * ->excluding(['name', 'address_id'=>['city']]);.
+     * ->excluding(['name', 'address_id' => ['city']]);.
      *
      * @return $this
      */
@@ -124,7 +124,7 @@ class DeepCopy
      *          unset($data['first_name'], $data['last_name']);
      *          return $data;
      *      }],
-     *      'Invoices' => ['Lines'=>function($data){ // for nested Client->Invoices->Lines hasMany entity
+     *      'Invoices' => ['Lines' => function($data){ // for nested Client->Invoices->Lines hasMany entity
      *              $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
      *              return $data;
      *          }]

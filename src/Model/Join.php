@@ -62,7 +62,7 @@ class Join
 
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
-     * You can specify your own type of join by passing ['kind'=>'right']
+     * You can specify your own type of join by passing ['kind' => 'right']
      * as second argument to join().
      *
      * @var string
@@ -357,7 +357,7 @@ class Join
      *  - conditions.
      *
      * and then will apply them locally. If you think that any fields
-     * could clash, then use ['prefix'=>'m2'] which will be pre-pended
+     * could clash, then use ['prefix' => 'm2'] which will be pre-pended
      * to all the fields. Conditions will be automatically mapped.
      *
      * @todo NOT IMPLEMENTED !
