@@ -82,7 +82,7 @@ class HasOneSql extends HasOne
      * may contain 3 types of elements:.
      *
      * [ 'name', 'surname' ] - will import those fields as-is
-     * [ 'full_name' => 'name', 'day_of_birth' => ['dob', 'type'=>'date'] ] - use alias and options
+     * [ 'full_name' => 'name', 'day_of_birth' => ['dob', 'type' => 'date'] ] - use alias and options
      * [ ['dob', 'type' => 'date'] ]  - use options
      *
      * You may also use second param to specify parameters:
@@ -182,7 +182,7 @@ class HasOneSql extends HasOne
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
 
         if ($ourModel->hasField($fieldName)) {
-            throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))
+            throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\' => \'field_name\'])'))
                 ->addMoreInfo('field', $fieldName);
         }
 

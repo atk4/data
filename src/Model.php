@@ -123,7 +123,7 @@ class Model implements \IteratorAggregate
      * You can define this field as associative array where "key" is used
      * as the name of persistence driver. Here is example for mysql and default:
      *
-     * $table = ['user', 'mysql'=>'tbl_user'];
+     * $table = ['user', 'mysql' => 'tbl_user'];
      *
      * @var string|array<0|string, string>|false
      */
@@ -184,7 +184,7 @@ class Model implements \IteratorAggregate
 
     /**
      * Currently loaded record data. This record is associative array
-     * that contain field=>data pairs. It may contain data for un-defined
+     * that contain field => data pairs. It may contain data for un-defined
      * fields only if $onlyFields mode is false.
      *
      * Avoid accessing $data directly, use set() / get() instead.
@@ -453,7 +453,7 @@ class Model implements \IteratorAggregate
         ]);
 
         $this->addUserAction('validate', [
-            //'appliesTo'=> any!
+            //'appliesTo' => any!
             'description' => 'Provided with modified values will validate them but will not save',
             'modifier' => Model\UserAction::MODIFIER_READ,
             'fields' => true,
@@ -521,10 +521,10 @@ class Model implements \IteratorAggregate
 
     /**
      * Perform validation on a currently loaded values, must return Array in format:
-     *  ['field'=>'must be 4 digits exactly'] or empty array if no errors were present.
+     *  ['field' => 'must be 4 digits exactly'] or empty array if no errors were present.
      *
      * You may also use format:
-     *  ['field'=>['must not have character [ch]', 'ch'=>$bad_character']] for better localization of error message.
+     *  ['field' => ['must not have character [ch]', 'ch' => $bad_character']] for better localization of error message.
      *
      * Always use
      *   return array_merge(parent::validate($intent), $errors);

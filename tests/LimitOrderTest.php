@@ -109,7 +109,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ['net' => 10, 'vat' => 5],
         ], $i->export());
 
-        // pass parameters as array elements [field=>order]
+        // pass parameters as array elements [field => order]
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat' => 'asc']);
         $i->onlyFields(['net', 'vat']);
@@ -119,7 +119,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ['net' => 10, 'vat' => 5],
         ], $i->export());
 
-        // pass parameters as array elements [field=>order], same as above but use 'desc' instead of true
+        // pass parameters as array elements [field => order], same as above but use 'desc' instead of true
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
         $i->onlyFields(['net', 'vat']);

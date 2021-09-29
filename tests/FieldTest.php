@@ -526,7 +526,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m = new Model($db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true]);
         $m->addField('secret', [
-            //'password'  => 'bonkers',
+            //'password' => 'bonkers',
             'typecast' => [$encrypt, $decrypt],
         ]);
         $m = $m->createEntity();

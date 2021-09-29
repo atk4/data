@@ -66,10 +66,10 @@ but you wouldn't want that adding a new user would create a new country::
 
     $user->addField('username');
     $user->addField('country_id');
-    $j_country = $user->weakJoin('country', ['prefix'=>'country_']);
+    $j_country = $user->weakJoin('country', ['prefix' => 'country_']);
     $j_country->addField('code');
     $j_country->addField('name');
-    $j_country->addField('default_currency', ['prefix'=>false]);
+    $j_country->addField('default_currency', ['prefix' => false]);
 
 After this you will have the following fields in your model:
 
@@ -129,8 +129,8 @@ like this: foreign_table.'_id'. Here is usage example::
 
     $user->addField('username');
     $j_cc = $user->join('credit_card', [
-        'prefix'=>'cc_',
-        'master_field'=>'default_credit_card_id'
+        'prefix' => 'cc_',
+        'master_field' => 'default_credit_card_id'
     ]);
     $j_cc->addField('number');  // creates cc_number
     $j_cc->addField('name');    // creates cc_name
@@ -280,11 +280,11 @@ When you're dealing with SQL drivers, you can specify `\Atk4\Data\Persistence\Sq
 "on" clause::
 
     $stats = $user->join('stats', [
-        'on'=>$user->expr('year({}) = _st.year'),
-        'foreign_alias'=>'_st'
+        'on' => $user->expr('year({}) = _st.year'),
+        'foreign_alias' => '_st'
     ]);
 
-You can also specify ``'on'=>false`` then the ON clause will not be used at all
+You can also specify ``'on' => false`` then the ON clause will not be used at all
 and you'll have to add additional where() condition yourself.
 
 ``foreign_alias`` can be specified and will be used as table alias and prefix

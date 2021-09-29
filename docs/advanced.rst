@@ -48,7 +48,7 @@ code pattern when dealing with multiple types::
 
 You can then use type-specific reference::
 
-    $account->ref('Transaction:Deposit')->insert(['amount'=>10]);
+    $account->ref('Transaction:Deposit')->insert(['amount' => 10]);
 
 and the code would be clean. If you introduce new type, you would have to add
 extra line to your "Account" model, but it will not be impacting anything, so
@@ -107,7 +107,7 @@ of the record. Finally to help with performance, you can implement a switch::
 Now, every time you iterate (or load) you can decide if you want to invoke type
 substitution::
 
-    foreach($account->ref('Transactions', ['typeSubstitution'=>true]) as $tr) {
+    foreach($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
 
         $tr->verify();  // verify() method can be overloaded!
     }
@@ -155,7 +155,7 @@ which I want to define like this::
             return;
         }
 
-        $this->getOwner()->addField('created_dts', ['type'=>'datetime', 'default'=>new \DateTime()]);
+        $this->getOwner()->addField('created_dts', ['type' => 'datetime', 'default' => new \DateTime()]);
 
         $this->getOwner()->hasOne('created_by_user_id', 'User');
         if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
@@ -164,7 +164,7 @@ which I want to define like this::
 
         $this->getOwner()->hasOne('updated_by_user_id', 'User');
 
-        $this->getOwner()->addField('updated_dts', ['type'=>'datetime']);
+        $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
         $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
             if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
@@ -227,7 +227,7 @@ Start by creating a class::
                 return;
             }
 
-            $this->getOwner()->addField('is_deleted', ['type'=>'boolean']);
+            $this->getOwner()->addField('is_deleted', ['type' => 'boolean']);
 
             if (isset($this->getOwner()->deleted_only)) {
                 $this->getOwner()->addCondition('is_deleted', true);
@@ -250,7 +250,7 @@ Start by creating a class::
 
             $rs = $m->reload_after_save;
             $m->reload_after_save = false;
-            $m->save(['is_deleted'=>true])->unload();
+            $m->save(['is_deleted' => true])->unload();
             $m->reload_after_save = $rs;
 
             $m->hook('afterSoftDelete', [$id]);
@@ -269,7 +269,7 @@ Start by creating a class::
 
             $rs = $m->reload_after_save;
             $m->reload_after_save = false;
-            $m->save(['is_deleted'=>false])->unload();
+            $m->save(['is_deleted' => false])->unload();
             $m->reload_after_save = $rs;
 
             $m->hook('afterRestore', [$id]);
@@ -309,7 +309,7 @@ After softDelete active record is unloaded, mimicking behavior of delete().
 It's also possible for you to easily look at deleted records and even restore
 them::
 
-    $m = new Model_Invoice($db, ['deleted_only'=>true]);
+    $m = new Model_Invoice($db, ['deleted_only' => true]);
     $m = $m->load(10);
     $m->restore();
 
@@ -336,7 +336,7 @@ before and just slightly modifying it::
                 return;
             }
 
-            $this->getOwner()->addField('is_deleted', ['type'=>'boolean']);
+            $this->getOwner()->addField('is_deleted', ['type' => 'boolean']);
 
             if (isset($this->getOwner()->deleted_only)) {
                 $this->getOwner()->addCondition('is_deleted', true);
@@ -356,7 +356,7 @@ before and just slightly modifying it::
 
             $rs = $m->reload_after_save;
             $m->reload_after_save = false;
-            $m->save(['is_deleted'=>true])->unload();
+            $m->save(['is_deleted' => true])->unload();
             $m->reload_after_save = $rs;
 
             $m->hook(Model::HOOK_AFTER_DELETE, [$id]);
@@ -376,7 +376,7 @@ before and just slightly modifying it::
 
             $rs = $m->reload_after_save;
             $m->reload_after_save = false;
-            $m->save(['is_deleted'=>false])->unload();
+            $m->save(['is_deleted' => false])->unload();
             $m->reload_after_save = $rs;
 
             $m->hook('afterRestore', [$id]);
@@ -391,7 +391,7 @@ the record is marked as deleted and unloaded.
 
 You can still access the deleted records::
 
-    $m = new Model_Invoice($db, ['deleted_only'=>true]);
+    $m = new Model_Invoice($db, ['deleted_only' => true]);
     $m = $m->load(10);
     $m->restore();
 
@@ -463,7 +463,7 @@ and even delete statements.
     $invoices = new Invoice();
 
     $contacts = new Contact();
-    $contacts->addWith($invoices, 'inv', ['contact_id'=>'cid', 'ref_no', 'total_net'=>'invoiced'], false);
+    $contacts->addWith($invoices, 'inv', ['contact_id' => 'cid', 'ref_no', 'total_net' => 'invoiced'], false);
     $contacts->join('inv.cid');
 
 .. code-block:: sql
@@ -535,9 +535,9 @@ Here are some use-cases. First lets add payment to existing invoice. Obviously
 we cannot close amount that is bigger than invoice's total::
 
     $i->ref('Payment')->insert([
-        'amount'=>$paid,
-        'amount_closed'=> min($paid, $i->get('total')),
-        'payment_code'=>'XYZ'
+        'amount' => $paid,
+        'amount_closed' => min($paid, $i->get('total')),
+        'payment_code' => 'XYZ'
     ]);
 
 Having some calculated fields for the invoice is handy. I'm adding `total_payments`
@@ -545,7 +545,7 @@ that shows how much amount is closed and `amount_due`::
 
     // define field to see closed amount on invoice
     $this->hasMany('InvoicePayment')
-        ->addField('total_payments', ['aggregate'=>'sum', 'field'=>'amount_closed']);
+        ->addField('total_payments', ['aggregate' => 'sum', 'field' => 'amount_closed']);
     $this->addExpression('amount_due', '[total]-coalesce([total_payments],0)');
 
 Note that I'm using coalesce because without InvoicePayments the aggregate sum
@@ -584,7 +584,7 @@ payment towards a most suitable invoice::
 
             // How much we can allocate to this invoice
             $alloc = min($this->get('amount_due'), $invoices->get('amount_due'))
-            $this->ref('InvoicePayment')->insert(['amount_closed'=>$alloc, 'invoice_id'=>$invoices->getId()]);
+            $this->ref('InvoicePayment')->insert(['amount_closed' => $alloc, 'invoice_id' => $invoices->getId()]);
 
             // Reload ourselves to refresh amount_due
             $this->reload();
@@ -621,16 +621,16 @@ category_id::
     }
 
     $m = new Model_Invoice($db);
-    $m->insert(['total'=>20, 'client_id'=>402, 'category_id'=>6]);
+    $m->insert(['total' => 20, 'client_id' => 402, 'category_id' => 6]);
 
 So in situations when client_id and category_id is not known (such as import or
 API call) this approach will require us to perform 2 extra queries::
 
     $m = new Model_Invoice($db);
     $m->insert([
-        'total'=>20,
-        'client_id'=>$m->ref('client_id')->loadBy('code', $client_code)->getId(),
-        'category_id'=>$m->ref('category_id')->loadBy('name', $category)->getId(),
+        'total' => 20,
+        'client_id' => $m->ref('client_id')->loadBy('code', $client_code)->getId(),
+        'category_id' => $m->ref('category_id')->loadBy('name', $category)->getId(),
     ]);
 
 The ideal way would be to create some "non-persistable" fields that can be used
@@ -638,16 +638,16 @@ to make things easier::
 
     $m = new Model_Invoice($db);
     $m->insert([
-        'total'=>20,
-        'client_code'=>$client_code,
-        'category'=>$category
+        'total' => 20,
+        'client_code' => $client_code,
+        'category' => $category
     ]);
 
 Here is how to add them. First you need to create fields::
 
-    $this->addField('client_code', ['never_persist'=>true]);
-    $this->addField('client_name', ['never_persist'=>true]);
-    $this->addField('category', ['never_persist'=>true]);
+    $this->addField('client_code', ['never_persist' => true]);
+    $this->addField('client_name', ['never_persist' => true]);
+    $this->addField('category', ['never_persist' => true]);
 
 I have declared those fields with never_persist so they will never be used by
 persistence layer to load or save anything. Next I need a beforeSave handler::
@@ -718,15 +718,15 @@ In this example I'll be building API that allows me to insert multi-model
 information. Here is usage example::
 
     $invoice->insert([
-        'client'=>'Joe Smith',
-        'payment'=>[
-            'amount'=>15,
-            'ref'=>'half upfront',
+        'client' => 'Joe Smith',
+        'payment' => [
+            'amount' => 15,
+            'ref' => 'half upfront',
         ],
-        'lines'=>[
-            ['descr'=>'Book','qty'=>3, 'price'=>5]
-            ['descr'=>'Pencil','qty'=>1, 'price'=>10]
-            ['descr'=>'Eraser','qty'=>2, 'price'=>2.5]
+        'lines' => [
+            ['descr' => 'Book','qty' => 3, 'price' => 5]
+            ['descr' => 'Pencil','qty' => 1, 'price' => 10]
+            ['descr' => 'Eraser','qty' => 2, 'price' => 2.5]
         ],
     ]);
 
@@ -735,8 +735,8 @@ Not only 'insert' but 'set' and 'save' should be able to use those fields for
 If you curious about client lookup by-name, I have explained it in the previous
 section. Add this into your Invoice Model::
 
-    $this->addField('payment',['never_persist'=>true]);
-    $this->addField('lines',['never_persist'=>true]);
+    $this->addField('payment',['never_persist' => true]);
+    $this->addField('lines',['never_persist' => true]);
 
 Next both payment and lines need to be added after invoice is actually created,
 so::
@@ -757,7 +757,7 @@ further manipulation, you can reload a clone::
     $mm = clone $m;
     $mm->reload();
     if ($mm->get('amount_due') == 0) {
-        $mm->save(['status'=>'paid']);
+        $mm->save(['status' => 'paid']);
     }
 
 Related Record Conditioning
@@ -785,7 +785,7 @@ Alternatively you can replace model in the init() method of Model_Invoice::
 You can also use array here if you wish to pass additional information into
 related model::
 
-    $this->getRef('client_id')->model = ['Model_Client', 'no_audit'=>true];
+    $this->getRef('client_id')->model = ['Model_Client', 'no_audit' => true];
 
 Combined with our "Audit" handler above, this should allow you to relate
 with deleted clients.

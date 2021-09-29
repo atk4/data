@@ -169,12 +169,12 @@ your expression. Before you do, however, you need to have :php:attr:`$connection
 property set. (See `Connecting to Database` on more details). In short the
 following code will connect your expression with the database::
 
-    $expr = new Expression('connection'=>$pdo_dbh);
+    $expr = new Expression('connection' => $pdo_dbh);
 
 If you are looking to use connection :php:class:`Query` class, you may want to
 consider using a proper vendor-specific subclass::
 
-    $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection'=>$pdo_dbh);
+    $query = new \Atk4\Data\Persistence\Sql\Mysql\Query('connection' => $pdo_dbh);
 
 
 If your expression already exist and you wish to associate it with connection
@@ -214,7 +214,7 @@ Finally, you can pass connection class into :php:meth:`execute` directly.
 
         $data = new Expression([
                 'connection' => $pdo_dbh,
-                'template'   => 'show databases'
+                'template' => 'show databases'
             ])->getRows();
         echo json_encode($data);
 
@@ -235,7 +235,7 @@ Finally, you can pass connection class into :php:meth:`execute` directly.
 
         $data = new Expression([
                 'connection' => $pdo_dbh,
-                'template'   => 'SELECT @@global.time_zone, @@session.time_zone'
+                'template' => 'SELECT @@global.time_zone, @@session.time_zone'
             ])->getRow()
 
         echo json_encode($data);
@@ -253,7 +253,7 @@ Finally, you can pass connection class into :php:meth:`execute` directly.
 
         $time = new Expression([
                 'connection' => $pdo_dbh,
-                'template'   => 'now()'
+                'template' => 'now()'
             ])->getOne();
 
 Magic an Debug Methods

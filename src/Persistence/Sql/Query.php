@@ -297,7 +297,7 @@ class Query extends Expression
     /**
      * Specify WITH query to be used.
      *
-     * @param Query  $cursor    Specifies cursor query or array [alias=>query] for adding multiple
+     * @param Query  $cursor    Specifies cursor query or array [alias => query] for adding multiple
      * @param string $alias     Specify alias for this cursor
      * @param array  $fields    Optional array of field names used in cursor
      * @param bool   $recursive Is it recursive?
@@ -319,7 +319,7 @@ class Query extends Expression
     /**
      * Recursive WITH query.
      *
-     * @param Query  $cursor Specifies cursor query or array [alias=>query] for adding multiple
+     * @param Query  $cursor Specifies cursor query or array [alias => query] for adding multiple
      * @param string $alias  Specify alias for this cursor
      * @param array  $fields Optional array of field names used in cursor
      *
@@ -374,7 +374,7 @@ class Query extends Expression
      *  $q->join('address');         // on user.address_id=address.id
      *  $q->join('address.user_id'); // on address.user_id=user.id
      *  $q->join('address a');       // With alias
-     *  $q->join(array('a'=>'address')); // Also alias
+     *  $q->join(array('a' => 'address')); // Also alias
      *
      * Second argument may specify the field of the master table
      *  $q->join('address', 'billing_id');
@@ -386,7 +386,7 @@ class Query extends Expression
      *  $q->join('address.code', 'user.code', 'inner');
      *
      * Using array syntax you can join multiple tables too
-     *  $q->join(array('a'=>'address', 'p'=>'portfolio'));
+     *  $q->join(array('a' => 'address', 'p' => 'portfolio'));
      *
      * You can use expression for more complex joins
      *  $q->join('address',
@@ -1156,11 +1156,11 @@ class Query extends Expression
         $arr = [
             'R' => false,
             'mode' => $this->mode,
-            //'template'   => $this->template,
-            //'params'     => $this->params,
+            //'template' => $this->template,
+            //'params' => $this->params,
             //'connection' => $this->connection,
             //'main_table' => $this->main_table,
-            //'args'       => $this->args,
+            //'args' => $this->args,
         ];
 
         try {

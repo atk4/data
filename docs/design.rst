@@ -492,19 +492,19 @@ While with MongoDB, the query could be different::
 Finally the code above will work even if you use a simple Array as a data source::
 
     $db = new \Atk4\Data\Persistence\Array_([
-        'client'=>[
+        'client' => [
             [
-                'name'=>'Joe',
-                'email'=>'joe@yahoo.com',
-                'Orders'=>[
-                    ['amount'=>10],
-                    ['amount'=>20]
+                'name' => 'Joe',
+                'email' => 'joe@yahoo.com',
+                'Orders' => [
+                    ['amount' => 10],
+                    ['amount' => 20]
                 ]
             ],[
-                'name'=>'Bill',
-                'email'=>'bill@yahoo.com',
-                'Orders'=>[
-                    ['amount'=>35]
+                'name' => 'Bill',
+                'email' => 'bill@yahoo.com',
+                'Orders' => [
+                    ['amount' => 35]
                 ]
             ]
         ]

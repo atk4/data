@@ -57,9 +57,9 @@ This one will update field values just before record is saved::
         $m->set('surname', strtoupper($m->get('surname')));
     });
 
-    $m->insert(['name'=>'John', 'surname'=>'Smith']);
+    $m->insert(['name' => 'John', 'surname' => 'Smith']);
 
-    // Will save into DB:  ['name'=>'JOHN', 'surname'=>'SMITH'];
+    // Will save into DB:  ['name' => 'JOHN', 'surname' => 'SMITH'];
 
 Arguments
 ---------
@@ -108,7 +108,7 @@ state of :php:meth:`Model::loaded`:
  - beforeUpdate($m, &$data) (updating existing records only. Not executed if model is not dirty)
  - afterUpdate($m)
 
-The $data argument will contain array of actual data (field=>value) to be saved,
+The $data argument will contain array of actual data (field => value) to be saved,
 which you can use to withdraw certain fields from actually being saved into the
 database (by unsetting it's value).
 

@@ -141,7 +141,7 @@ available. Both models will relate through ``currency.code = exchange.currency_c
     $c = new Model_Currency();
     $e = new Model_ExchangeRate();
 
-    $c->hasMany('Exchanges', ['model' => $e, 'their_field'=>'currency_code', 'our_field'=>'code']);
+    $c->hasMany('Exchanges', ['model' => $e, 'their_field' => 'currency_code', 'our_field' => 'code']);
 
     $c->addCondition('is_convertable',true);
     $e = $c->ref('Exchanges');
@@ -161,7 +161,7 @@ Concatenating Fields
 You may want to display want to list your related entities by concatenating. For example::
 
     $user->hasMany('Tags', ['model' => [Tag::class]])
-        ->addField('tags', ['concat'=>',', 'field'=>'name']);
+        ->addField('tags', ['concat' => ',', 'field' => 'name']);
 
 This will create a new field for your user, ``tags`` which will contain all comma-separated
 tag names.
@@ -174,23 +174,23 @@ Reference hasMany makes it a little simpler for you to define an aggregate field
     $u = new Model_User($db_array_cache, 'user');
 
     $u->hasMany('Orders', ['model' => [Model_Order::class]])
-        ->addField('amount', ['aggregate'=>'sum']);
+        ->addField('amount', ['aggregate' => 'sum']);
 
 It's important to define aggregation functions here. This will add another field
 inside ``$m`` that will correspond to the sum of all the orders. Here is another
 example::
 
     $u->hasMany('PaidOrders', (new Model_Order())->addCondition('is_paid', true))
-        ->addField('paid_amount', ['aggregate'=>'sum', 'field'=>'amount']);
+        ->addField('paid_amount', ['aggregate' => 'sum', 'field' => 'amount']);
 
 You can also define multiple fields, although you must remember that this will
 keep making your query bigger and bigger::
 
     $invoice->hasMany('Invoice_Line', ['model' => [Model_Invoice_Line::class]])
         ->addFields([
-            ['total_vat', 'aggregate'=>'sum'],
-            ['total_net', 'aggregate'=>'sum'],
-            ['total_gross', 'aggregate'=>'sum'],
+            ['total_vat', 'aggregate' => 'sum'],
+            ['total_net', 'aggregate' => 'sum'],
+            ['total_gross', 'aggregate' => 'sum'],
         ]);
 
 Imported fields will preserve format of the field they reference. In the example,
@@ -199,7 +199,7 @@ for a sum.
 
 You can also specify a type yourself::
 
-    ->addField('paid_amount', ['aggregate'=>'sum', 'field'=>'amount', 'type'=>'money']);
+    ->addField('paid_amount', ['aggregate' => 'sum', 'field' => 'amount', 'type' => 'money']);
 
 Aggregate fields are always declared read-only, and if you try to
 change them (`$m->set('paid_amount', 123);`), you will receive exception.
@@ -217,7 +217,7 @@ For other functions, such as `min`, `max`, `avg` and non mathematical aggregates
 as `group_concat` no zero-coalesce will be used. Expect that result could be zero or
 null.
 
-When you specify `'aggregate'=>'count'` field defaults to `*`.
+When you specify `'aggregate' => 'count'` field defaults to `*`.
 
 Aggregate Expressions
 ---------------------
@@ -232,20 +232,20 @@ containing your optional arguments::
 
     ->addField('len', [
         'expr' => 'sum(if([date] = [exp_date], 1, 0))',
-        'args'=>['exp_date'=>'2003-03-04]
+        'args' => ['exp_date' => '2003-03-04]
         ]),
 
 Alternatively you may also specify either 'aggregate'::
 
     $book->hasMany('Pages', ['model' => [Page::class]])
         ->addField('page_list', [
-            'aggregate'=>$book->refModel('Pages')->expr('group_concat([number], [])', ['-'])
+            'aggregate' => $book->refModel('Pages')->expr('group_concat([number], [])', ['-'])
         ]);
 
 
 or 'field'::
 
-    ->addField('paid_amount', ['aggregate'=>'count', 'field'=>new \Atk4\Data\Persistence\Sql\Expression('*')]);
+    ->addField('paid_amount', ['aggregate' => 'count', 'field' => new \Atk4\Data\Persistence\Sql\Expression('*')]);
 
 .. note:: as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 
@@ -376,7 +376,7 @@ be renamed, just as we did above::
             'address_1',
             'address_2',
             'address_3',
-            'address_notes'=>['notes', 'type'=>'text']
+            'address_notes' => ['notes', 'type' => 'text']
         ]);
 
 Above, all ``address_`` fields are copied with the same name, however field
@@ -423,7 +423,7 @@ of hasOne field, but to override this, you can specify name of the title field
 explicitly::
 
     $i->hasOne('currency_id', ['model' => [Currency::class]])
-        ->addTitle(['field'=>'currency_name']);
+        ->addTitle(['field' => 'currency_name']);
 
 User-defined Reference
 ======================
@@ -546,11 +546,11 @@ that relate to itself. Here is example::
             $this->addField('name');
             $this->addField('age');
             $i2 = $this->join('item2.item_id');
-            $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias'=>'parent'])
+            $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
                 ->addTitle();
 
-            $this->hasMany('Child', ['model' => $m, 'their_field'=>'parent_item_id', 'table_alias'=>'child'])
-                ->addField('child_age',['aggregate'=>'sum', 'field'=>'age']);
+            $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
+                ->addField('child_age',['aggregate' => 'sum', 'field' => 'age']);
         }
     }
 
@@ -582,13 +582,13 @@ When calling `hasOne()->addFields()` there are various ways to pass options:
 - `addFields(['first_name' => 'name'])` - this indicates aliasing. Field `name`
   will be added as `first_name`.
 
-- `addFields([['dob', 'type'=>'date']])` - wrap inside array to pass options to
+- `addFields([['dob', 'type' => 'date']])` - wrap inside array to pass options to
   field
 
-- `addFields(['the_date' => ['dob', 'type'=>'date']])` - combination of aliasing
+- `addFields(['the_date' => ['dob', 'type' => 'date']])` - combination of aliasing
   and options
 
-- `addFields(['dob', 'dod'], ['type'=>'date'])` - passing defaults for multiple
+- `addFields(['dob', 'dod'], ['type' => 'date'])` - passing defaults for multiple
   fields
 
 
@@ -632,7 +632,7 @@ to null. The next example will traverse into the contact to set it up::
     $m = new Model_User($db);
 
     $m->set('name', 'John');
-    $m->ref('address_id')->save(['address'=>'street']);
+    $m->ref('address_id')->save(['address' => 'street']);
     $m->save();
 
 When entity which you have referenced through ref() is saved, it will automatically

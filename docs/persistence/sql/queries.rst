@@ -115,7 +115,7 @@ fetch results from it anytime.
 The pattern of defining arguments for your Query and then executing allow you
 to re-use your query efficiently::
 
-    $data = ['name'=>'John', 'surname'=>'Smith']
+    $data = ['name' => 'John', 'surname' => 'Smith']
 
     $query = $c->dsql();
     $query
@@ -244,7 +244,7 @@ Basic Examples::
         // identical to previous example
         // SELECT * from `user`, `salary`
 
-    $c->dsql()->table(['u'=>'user','s'=>'salary']);
+    $c->dsql()->table(['u' => 'user','s' => 'salary']);
         // specify aliases for multiple tables
         // SELECT * from `user` `u`, `salary` `s`
 
@@ -305,10 +305,10 @@ Basic Examples::
     $query->field('first_name','name')
         // SELECT `first_name` `name` from `user`
 
-    $query->field(['name'=>'first_name'])
+    $query->field(['name' => 'first_name'])
         // SELECT `first_name` `name` from `user`
 
-    $query->field(['name'=>'employee.first_name']);
+    $query->field(['name' => 'employee.first_name']);
         // SELECT `employee`.`first_name` `name` from `user`
 
 If the first parameter of field() method contains non-alphanumeric values
@@ -322,7 +322,7 @@ expression::
 You may also pass array as first argument. In such case array keys will be
 used as aliases (if they are specified)::
 
-    $query->field(['time_now'=>'now()', 'time_created']);
+    $query->field(['time_now' => 'now()', 'time_created']);
         // SELECT now() `time_now`, `time_created` ...
 
     $query->field($query->dsql()->table('user')->field('max(age)'), 'max_age');
@@ -539,7 +539,7 @@ specify the table to join, but may contain more information::
 You can also pass array as a first argument, to join multiple tables::
 
     $q->table('user u');
-    $q->join(['a'=>'address', 'c'=>'credit_card', 'preferences']);
+    $q->join(['a' => 'address', 'c' => 'credit_card', 'preferences']);
 
 The above code will join 3 tables using the following query syntax:
 
@@ -555,8 +555,8 @@ tables so you need a different syntax::
 
     $q->table('user u');
     $q->join([
-        'a'=>'address.user_id',
-        'c'=>'credit_card.user_id',
+        'a' => 'address.user_id',
+        'c' => 'credit_card.user_id',
         'preferences.user_id'
     ]);
 
