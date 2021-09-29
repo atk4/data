@@ -408,6 +408,8 @@ class Field implements Expressionable
         }
 
         try {
+            // see https://stackoverflow.com/questions/48382457/mysql-json-column-change-array-order-after-saving
+            // at least MySQL sorts the JSON keys if stored natively, TODO
             return $this->getUnmanagedValue($value) === $this->getUnmanagedValue($value2);
         } catch (\TypeError $e) { // like https://github.com/atk4/data/pull/894, TODO, then no try/catch should be needed
             if ($e->getMessage() === 'Return value of Atk4\Data\Field::getUnmanagedValue() must be of the type string or null, object returned') {
