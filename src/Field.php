@@ -42,6 +42,10 @@ class Field implements Expressionable
 
     public function getTypeObject(): Type
     {
+        if ($this->type === 'array') { // remove in 2022-mar
+            throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
+        }
+
         return Type::getType($this->type ?? 'string');
     }
 
@@ -209,9 +213,9 @@ class Field implements Expressionable
                     }
 
                     break;
-                case 'array':
+                case 'json':
                     if (is_string($value) && $f->issetOwner() && $f->getOwner()->persistence) {
-                        $value = $f->getOwner()->persistence->jsonDecode($f, $value, true);
+                        $value = $f->getOwner()->persistence->typecastLoadField($f, $value);
                     }
 
                     if (!is_array($value)) {
@@ -221,7 +225,7 @@ class Field implements Expressionable
                     break;
                 case 'object':
                    if (is_string($value) && $f->issetOwner() && $f->getOwner()->persistence) {
-                       $value = $f->getOwner()->persistence->jsonDecode($f, $value, false);
+                       $value = $f->getOwner()->persistence->typecastLoadField($f, $value);
                    }
 
                     if (!is_object($value)) {
@@ -275,10 +279,10 @@ class Field implements Expressionable
                     }
 
                     return (string) $v;
-                case 'array':
-                    return json_encode($v); // todo use Persistence->jsonEncode() instead
+                case 'json':
+                    return json_encode($v);
                 case 'object':
-                    return json_encode($v); // todo use Persistence->jsonEncode() instead
+                    return serialize($v);
                 default:
                     return (string) $v;
             }

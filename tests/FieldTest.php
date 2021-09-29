@@ -545,8 +545,6 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
 
-        // Field types: 'string', 'text', 'integer', 'money', 'float', 'boolean',
-        //              'date', 'datetime', 'time', 'array', 'object'
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
         $m->addField('integer', ['type' => 'integer']);
@@ -557,7 +555,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
-        $m->addField('array', ['type' => 'array']);
+        $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
         $m = $m->createEntity();
 
@@ -725,7 +723,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     public function testNormalizeException12(): void
     {
         $m = new Model(null, ['strict_types' => true]);
-        $m->addField('foo', ['type' => 'array']);
+        $m->addField('foo', ['type' => 'json']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', 'ABC');
@@ -753,8 +751,6 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
 
-        // Field types: 'string', 'text', 'integer', 'money', 'float', 'boolean',
-        //              'date', 'datetime', 'time', 'array', 'object'
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
         $m->addField('integer', ['type' => 'integer']);
@@ -765,7 +761,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
-        $m->addField('array', ['type' => 'array']);
+        $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
         $m = $m->createEntity();
 
@@ -781,8 +777,8 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
         $this->assertSame('2019-01-20T12:23:34+00:00', $m->getField('datetime')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
         $this->assertSame('12:23:34', $m->getField('time')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
-        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('array')->toString(['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
-        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('object')->toString((object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
+        $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('json')->toString(['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
+        $this->assertSame('O:8:"stdClass":3:{s:3:"foo";s:3:"bar";s:3:"int";i:123;s:4:"rows";a:2:{i:0;s:1:"a";i:1;s:1:"b";}}', $m->getField('object')->toString((object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
     }
 
     public function testAddFieldDirectly(): void

@@ -133,15 +133,6 @@ trait FieldPropertiesTrait
     public $typecast;
 
     /**
-     * Should we use serialization when saving/loading data to/from persistence.
-     *
-     * Value can be array [$encode_callback, $decode_callback].
-     *
-     * @var bool|array|string|null
-     */
-    public $serialize;
-
-    /**
      * Persisting format for type = 'date', 'datetime', 'time' fields.
      *
      * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.

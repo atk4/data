@@ -463,8 +463,8 @@ class Sql extends Persistence
                 break;
             case 'array':
             case 'object':
-                // don't encode if we already use some kind of serialization
-                $v = $field->serialize ? $v : $this->jsonEncode($field, $v);
+            case 'json':
+                $v = parent::_typecastSaveField($field, $v); // TODO typecast everything, not only this type
 
                 break;
         }
@@ -564,13 +564,9 @@ class Sql extends Persistence
 
                 break;
             case 'array':
-                // don't decode if we already use some kind of serialization
-                $v = $field->serialize ? $v : $this->jsonDecode($field, $v, true);
-
-                break;
             case 'object':
-                // don't decode if we already use some kind of serialization
-                $v = $field->serialize ? $v : $this->jsonDecode($field, $v, false);
+            case 'json':
+                $v = parent::_typecastLoadField($field, $v); // TODO typecast everything, not only this type
 
                 break;
         }

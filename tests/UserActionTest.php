@@ -236,7 +236,7 @@ class UserActionTest extends \Atk4\Schema\PhpunitTestCase
 
         $this->assertNotSame('Peter', $client->get('name'));
         $client->set('name', 'Peter');
-        $this->expectExceptionMessage('array');
+        $this->expectExceptionMessage('must be either array or boolean');
         $client->getUserAction('change_details')->execute();
         $this->assertSame('Peter', $client->get('name'));
     }

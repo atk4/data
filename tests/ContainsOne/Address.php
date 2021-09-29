@@ -25,7 +25,7 @@ class Address extends Model
 
         $this->addField($this->fieldName()->address);
         $this->addField($this->fieldName()->built_date, ['type' => 'datetime']);
-        $this->addField($this->fieldName()->tags, ['type' => 'array', 'default' => []]);
+        $this->addField($this->fieldName()->tags, ['type' => 'json', 'default' => []]);
 
         // will contain one door code
         $this->containsOne($this->fieldName()->door_code, ['model' => [DoorCode::class], 'caption' => 'Secret Code']);

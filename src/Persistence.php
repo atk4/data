@@ -204,15 +204,7 @@ abstract class Persistence
                 continue;
             }
 
-            // typecast if we explicitly want that or there is not serialization enabled
-            if ($field->typecast || ($field->typecast === null && $field->serialize === null)) {
-                $value = $this->typecastSaveField($field, $value);
-            }
-
-            // serialize if we explicitly want that
-            if ($field->serialize) {
-                $value = $this->serializeSaveField($field, $value);
-            }
+            $value = $this->typecastSaveField($field, $value);
 
             // store converted value
             $result[$field->getPersistenceName()] = $value;
@@ -251,15 +243,7 @@ abstract class Persistence
                 continue;
             }
 
-            // serialize if we explicitly want that
-            if ($field->serialize) {
-                $value = $this->serializeLoadField($field, $value);
-            }
-
-            // typecast if we explicitly want that or there is not serialization enabled
-            if ($field->typecast || ($field->typecast === null && $field->serialize === null)) {
-                $value = $this->typecastLoadField($field, $value);
-            }
+            $value = $this->typecastLoadField($field, $value);
 
             // store converted value
             $result[$fieldName] = $value;
@@ -342,7 +326,7 @@ abstract class Persistence
      */
     public function _typecastSaveField(Field $f, $value)
     {
-        return $value;
+        return $f->getTypeObject()->convertToDatabaseValue($value, $this->getDatabasePlatform());
     }
 
     /**
@@ -355,124 +339,6 @@ abstract class Persistence
      */
     public function _typecastLoadField(Field $f, $value)
     {
-        return $value;
-    }
-
-    /**
-     * Provided with a value, will perform field serialization.
-     * Can be used for the purposes of encryption or storing unsupported formats.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function serializeSaveField(Field $f, $value)
-    {
-        try {
-            // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[0]) && ($t = $f->serialize[0]) instanceof \Closure) {
-                return $t($f, $value, $this);
-            }
-
-            // run persistence-specific serialization of field value
-            return $this->_serializeSaveField($f, $value);
-        } catch (\Exception $e) {
-            throw (new Exception('Unable to serialize field value on save', 0, $e))
-                ->addMoreInfo('field', $f->short_name);
-        }
-    }
-
-    /**
-     * Provided with a value, will perform field un-serialization.
-     * Can be used for the purposes of encryption or storing unsupported formats.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function serializeLoadField(Field $f, $value)
-    {
-        try {
-            // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[1]) && ($t = $f->serialize[1]) instanceof \Closure) {
-                return $t($f, $value, $this);
-            }
-
-            // run persistence-specific un-serialization of field value
-            return $this->_serializeLoadField($f, $value);
-        } catch (\Exception $e) {
-            throw (new Exception('Unable to serialize field value on load', 0, $e))
-                ->addMoreInfo('field', $f->short_name);
-        }
-    }
-
-    /**
-     * Override this to fine-tune serialization for your persistence.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function _serializeSaveField(Field $f, $value)
-    {
-        switch ($f->serialize === true ? 'serialize' : $f->serialize) {
-            case 'serialize':
-                return serialize($value);
-            case 'json':
-                return $this->jsonEncode($f, $value);
-            case 'base64':
-                if (!is_string($value)) {
-                    throw (new Exception('Field value can not be base64 encoded because it is not of string type'))
-                        ->addMoreInfo('field', $f)
-                        ->addMoreInfo('value', $value);
-                }
-
-                return base64_encode($value);
-        }
-
-        throw (new Exception('Invalid serialize type'))
-            ->addMoreInfo('serialize_type', $f->serialize);
-    }
-
-    /**
-     * Override this to fine-tune un-serialization for your persistence.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function _serializeLoadField(Field $f, $value)
-    {
-        switch ($f->serialize === true ? 'serialize' : $f->serialize) {
-            case 'serialize':
-                return unserialize($value);
-            case 'json':
-                return $this->jsonDecode($f, $value, $f->type === 'array');
-            case 'base64':
-                return base64_decode($value, true);
-        }
-
-        throw (new Exception('Invalid serialize type'))
-            ->addMoreInfo('serialize_type', $f->serialize);
-    }
-
-    /**
-     * JSON decoding with proper error treatment.
-     *
-     * @return mixed
-     */
-    public function jsonDecode(Field $f, string $json, bool $assoc = true)
-    {
-        return json_decode($json, $assoc, 512, \JSON_THROW_ON_ERROR);
-    }
-
-    /**
-     * JSON encoding with proper error treatment.
-     *
-     * @param mixed $value
-     */
-    public function jsonEncode(Field $f, $value): string
-    {
-        return json_encode($value, \JSON_THROW_ON_ERROR, 512);
+        return $f->getTypeObject()->convertToPHPValue($value, $this->getDatabasePlatform());
     }
 }

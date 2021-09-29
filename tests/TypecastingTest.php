@@ -65,7 +65,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
                     'integer' => '2940',
                     'money' => '8.20',
                     'float' => '8.202343',
-                    'array' => '[1,2,3]',
+                    'json' => '[1,2,3]',
                 ],
             ],
         ];
@@ -84,7 +84,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('array', ['type' => 'array']);
+        $m->addField('json', ['type' => 'json']);
         $mm = $m->load(1);
 
         $this->assertSame('foo', $mm->get('string'));
@@ -94,7 +94,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
         $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $mm->get('time'));
         $this->assertSame(2940, $mm->get('integer'));
-        $this->assertSame([1, 2, 3], $mm->get('array'));
+        $this->assertSame([1, 2, 3], $mm->get('json'));
         $this->assertSame(8.202343, $mm->get('float'));
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
@@ -111,7 +111,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
                     'integer' => 2940,
                     'money' => 8.20,
                     'float' => 8.202343,
-                    'array' => '[1,2,3]',
+                    'json' => '[1,2,3]',
                 ],
                 2 => [
                     'id' => '2',
@@ -123,7 +123,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
                     'integer' => '2940',
                     'money' => '8.2',
                     'float' => '8.202343',
-                    'array' => '[1,2,3]',
+                    'json' => '[1,2,3]',
                 ],
             ],
         ];
@@ -156,7 +156,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
                     'integer' => '',
                     'money' => '',
                     'float' => '',
-                    'array' => '',
+                    'json' => '',
                     'object' => '',
                 ],
             ],
@@ -177,7 +177,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
-        $m->addField('array', ['type' => 'array']);
+        $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
         $mm = $m->load(1);
 
@@ -191,7 +191,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($mm->get('integer'));
         $this->assertNull($mm->get('money'));
         $this->assertNull($mm->get('float'));
-        $this->assertNull($mm->get('array'));
+        $this->assertNull($mm->get('json'));
         $this->assertNull($mm->get('object'));
 
         unset($row['id']);
@@ -206,7 +206,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($mm->get('integer'));
         $this->assertNull($mm->get('money'));
         $this->assertNull($mm->get('float'));
-        $this->assertNull($mm->get('array'));
+        $this->assertNull($mm->get('json'));
         $this->assertNull($mm->get('object'));
         if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
             $this->assertSame([], $mm->getDirtyRef());
@@ -228,7 +228,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
             'integer' => null,
             'money' => null,
             'float' => null,
-            'array' => null,
+            'json' => null,
             'object' => null,
         ];
 

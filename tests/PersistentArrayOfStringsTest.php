@@ -29,7 +29,8 @@ class PersistentArrayOfStringsTest extends TestCase
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
-        $m->addField('array', ['type' => 'array']);
+        $m->addField('json_arr', ['type' => 'json']);
+        $m->addField('json_obj', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
 
         $mm = $m->createEntity();
@@ -44,7 +45,8 @@ class PersistentArrayOfStringsTest extends TestCase
             'date' => new \DateTime('2019-01-20T12:23:34+00:00'),
             'datetime' => new \DateTime('2019-01-20T12:23:34+00:00'),
             'time' => new \DateTime('2019-01-20T12:23:34+00:00'),
-            'array' => ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
+            'json_arr' => ['bar', 123, ['a', 'b']],
+            'json_obj' => ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
             'object' => (object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
         ]);
         $mm->saveAndUnload();
@@ -63,8 +65,9 @@ class PersistentArrayOfStringsTest extends TestCase
             'date' => '2019-01-20',
             'datetime' => '2019-01-20 12:23:34.000000',
             'time' => '12:23:34.000000',
-            'array' => '{"foo":"bar","int":123,"rows":["a","b"]}',
-            'object' => '{"foo":"bar","int":123,"rows":["a","b"]}',
+            'json_arr' => '["bar",123,["a","b"]]',
+            'json_obj' => '{"foo":"bar","int":123,"rows":["a","b"]}',
+            'object' => 'O:8:"stdClass":3:{s:3:"foo";s:3:"bar";s:3:"int";i:123;s:4:"rows";a:2:{i:0;s:1:"a";i:1;s:1:"b";}}',
         ]], $data);
 
         // typecasting enabled in export()
@@ -72,7 +75,8 @@ class PersistentArrayOfStringsTest extends TestCase
         $this->assertInstanceOf('DateTime', $data[1]['date']);
         $this->assertInstanceOf('DateTime', $data[1]['datetime']);
         $this->assertInstanceOf('DateTime', $data[1]['time']);
-        $this->assertTrue(is_array($data[1]['array']));
+        $this->assertTrue(is_array($data[1]['json_arr']));
+        $this->assertTrue(is_array($data[1]['json_obj']));
         $this->assertTrue(is_object($data[1]['object']));
     }
 }

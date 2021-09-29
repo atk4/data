@@ -48,6 +48,7 @@ class ModelTest extends PhpunitTestCase
             ->field('time', ['type' => 'time'])
             ->field('txt', ['type' => 'text'])
             ->field('arr', ['type' => 'array'])
+            ->field('json', ['type' => 'json'])
             ->field('obj', ['type' => 'object'])
             ->create();
 
@@ -65,6 +66,7 @@ class ModelTest extends PhpunitTestCase
                 'time' => (new \DateTime())->format('H:i:s'),
                 'txt' => 'very long text value' . str_repeat('-=#', 1000), // 3000+ chars
                 'arr' => 'very long text value' . str_repeat('-=#', 1000), // 3000+ chars
+                'json' => 'very long text value' . str_repeat('-=#', 1000), // 3000+ chars
                 'obj' => 'very long text value' . str_repeat('-=#', 1000), // 3000+ chars
             ])->insert();
 

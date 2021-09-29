@@ -44,7 +44,7 @@ incompatible database/persistence.
 Serialization abilities allow us to get rid of many arbitrary types such as "array_json"
 and simply use this::
 
-    $model->addField('selection', ['type' => 'array', 'serialize' => 'json']);
+    $model->addField('selection', ['type' => 'json']);
 
 Field configuration
 ===================
@@ -118,21 +118,6 @@ All measurements are implemented with :php:class:`Units` and can be further exte
     echo $model->getField('speed')->format(); // 30km/s
     echo $model->getField('speed')->format('m'); // 30000m/s
 
-
-Supported Serialization
-=======================
-
-ATK Data prior to 1.5 supported:
-
- - 'serialize' - for storing PHP objects, uses `serialize`, `unserialize`
- - 'json' - for storing objects and arrays, uses `json_encode`, `json_decode`
- - 'base64' - for storing encoded strings, uses `base64_encode`, `base64_decode`
- - [serialize_callback, unserialize_callback] - for custom serialization
-
-In 1.5 we have added support for more:
-
- - list - separate values with comma, good for storing IDs
- - binary - incredibly compact format for numbers
 
 List of Field Classes
 =====================

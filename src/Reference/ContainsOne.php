@@ -18,7 +18,7 @@ class ContainsOne extends Reference
      *
      * @var string
      */
-    public $type = 'array';
+    public $type = 'json';
 
     /**
      * Is it system field?

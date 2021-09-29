@@ -117,7 +117,7 @@ Supported types
 - 'date' - normalize will convert value to DateTime object.
 - 'datetime' - normalize will convert value to DateTime object.
 - 'time' - normalize will convert value to DateTime object.
-- 'array' - no normalization by default
+- 'json' - no normalization by default
 - 'object' - no normalization by default
 
 Types and UI
@@ -166,48 +166,15 @@ have no native type in SQL database. This is where serialization feature is used
 Field may use serialization to further encode field value for the storage purpose::
 
     $this->addField('private_key', [
-        'serialize' => 'base64',
+        'type' => 'object',
         'system' => true,
-    ]);
-
-This is one way to store binary data. Type is unspecified but the binary value
-of a field will be encoded with base64 before storing an automatically decoded
-when you load this value back from persistence.
-
-Supported algorithms
---------------------
-
-- 'serialize' - for storing PHP objects, uses `serialize`, `unserialize`
-- 'json' - for storing objects and arrays, uses `json_encode`, `json_decode`
-- 'base64' - for storing encoded strings, uses `base64_encode`, `base64_decode`
-- [serialize_callback, unserialize_callback] - for custom serialization
-
-Storing unsupported types
--------------------------
-
-Here is another example defining the field that stores monetary value containing
-both the amount and the currency. The domain model will use an object and we are
-specifying our callbacks for converting::
-
-    $money_encode = function($x) {
-        return $x->amount.' '.$x->currency;
-    }
-
-    $money_decode = function($x) {
-        list($amount, $currency) = explode(' ', $x, 2);
-        return new MyMoney($amount, $currency);
-    }
-
-    $this->addField('money', [
-        'serialize' => [$money_encode, $money_decode],
     ]);
 
 Array and Object types
 ----------------------
 
 Some types may require serialization for some persistences, for instance types
-'array' and 'object' cannot be stored in SQL natively. That's why they will
-use `json_encode` and `json_decode` by default. If you specify a different
-serialization technique, then it will be used instead of JSON.
+'json' and 'object' cannot be stored in SQL natively. `json` type can be used
+to store these in JSON.
 
 This is handy when mapping JSON data into native PHP structures.
