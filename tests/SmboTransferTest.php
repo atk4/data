@@ -115,9 +115,9 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         // Create a new company
         $company = new Company($db);
         $company->set([
-            'name'           => 'Test Company 1',
-            'director_name'  => 'Tester Little',
-            'type'           => 'Limited Company',
+            'name' => 'Test Company 1',
+            'director_name' => 'Tester Little',
+            'type' => 'Limited Company',
             'vat_registered' => true,
         ]);
         $company->save();
@@ -135,9 +135,9 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         $john = $company->load($john_id);
         $john_invoices = $john->ref('Invoice');
         $john_invoices->insertInvoice([
-            'ref_no'   => 'INV1',
+            'ref_no' => 'INV1',
             'due_date' => (new Date())->add(new DateInterval('2w')), // due in 2 weeks
-            'lines'    => [
+            'lines' => [
                 ['descr' => 'Sold some sweets', 'total_gross' => 100.00],
                 ['descr' => 'Delivery', 'total_gross' => 10.00],
             ],
@@ -150,16 +150,16 @@ class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
         $company->ref('Client')->load($agile_id)->refSet('Invoice')->insertInvoice([
             'lines' => [
                 [
-                    'item_id'   => $john->ref('Product')->insert('Cat Food'),
-                    'nominal'   => 'Sales:Discounted',
+                    'item_id' => $john->ref('Product')->insert('Cat Food'),
+                    'nominal' => 'Sales:Discounted',
                     'total_net' => 50.00,
-                    'vat_rate'  => 23,
+                    'vat_rate' => 23,
                     // calculates total_gross at 61.50.
                 ],
                 [
-                    'item_id'   => $john->ref('Service')->insert('Delivery'),
+                    'item_id' => $john->ref('Service')->insert('Delivery'),
                     'total_net' => 10.00,
-                    'vat_rate'  => '23%',
+                    'vat_rate' => '23%',
                     // calculates total_gross at 12.30
                 ],
             ],

@@ -41,7 +41,7 @@ SQL Field
     SQL Fields can be used inside other SQL expressions::
 
         $q = new \Atk4\Data\Persistence\Sql\Expression('[age] + [birth_year]', [
-                'age'        => $m->getField('age'),
+                'age' => $m->getField('age'),
                 'birth_year' => $m->getField('birth_year'),
             ]);
 
@@ -373,7 +373,7 @@ the data::
             }
 
             return $this->expr("call get_client_report_data([client_id, arg])", [
-                'arg'       => $arg,
+                'arg' => $arg,
                 'client_id' => $client_id,
             ])->getRows();
         }
@@ -392,7 +392,7 @@ Here is another example using PHP generator::
             }
 
             foreach($this->expr("call get_client_report_data([client_id, arg])", [
-                'arg'       => $arg,
+                'arg' => $arg,
                 'client_id' => $client_id,
             ]) as $row) {
                 yield $row;

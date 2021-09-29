@@ -214,7 +214,7 @@ Finally, you can pass connection class into :php:meth:`execute` directly.
 
         $data = new Expression([
                 'connection' => $pdo_dbh,
-                'template'   => 'show databases'
+                'template' => 'show databases'
             ])->getRows();
         echo json_encode($data);
 
@@ -235,7 +235,7 @@ Finally, you can pass connection class into :php:meth:`execute` directly.
 
         $data = new Expression([
                 'connection' => $pdo_dbh,
-                'template'   => 'SELECT @@global.time_zone, @@session.time_zone'
+                'template' => 'SELECT @@global.time_zone, @@session.time_zone'
             ])->getRow()
 
         echo json_encode($data);
@@ -253,7 +253,7 @@ Finally, you can pass connection class into :php:meth:`execute` directly.
 
         $time = new Expression([
                 'connection' => $pdo_dbh,
-                'template'   => 'now()'
+                'template' => 'now()'
             ])->getOne();
 
 Magic an Debug Methods
