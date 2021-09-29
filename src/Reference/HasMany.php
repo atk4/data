@@ -9,9 +9,6 @@ use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Reference;
 
-/**
- * Reference\HasMany class.
- */
 class HasMany extends Reference
 {
     public function getTheirFieldName(): string
