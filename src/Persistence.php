@@ -172,6 +172,8 @@ abstract class Persistence
      *     'age' => 30,
      *     'is_married' => 1
      *   ]
+     *
+     * @return array<scalar|Persistence\Sql\Expressionable|null>
      */
     public function typecastSaveRow(Model $model, array $row): array
     {
@@ -237,7 +239,7 @@ abstract class Persistence
      *
      * @param mixed $value
      *
-     * @return mixed
+     * @return scalar|Persistence\Sql\Expressionable|null
      */
     public function typecastSaveField(Field $field, $value)
     {
@@ -246,7 +248,13 @@ abstract class Persistence
         }
 
         try {
-            return $this->_typecastSaveField($field, $value);
+            $v = $this->_typecastSaveField($field, $value);
+            if ($v !== null && !is_scalar($v) && !$v instanceof Persistence\Sql\Expressionable) { // @phpstan-ignore-line
+                throw (new Exception('Unexpected non-scalar value'))
+                    ->addMoreInfo('type', get_debug_type($v));
+            }
+
+            return $v;
         } catch (\Exception $e) {
             throw (new Exception('Unable to typecast field value on save', 0, $e))
                 ->addMoreInfo('field', $field->short_name);
@@ -287,7 +295,7 @@ abstract class Persistence
      *
      * @param mixed $value
      *
-     * @return mixed
+     * @return scalar|Persistence\Sql\Expressionable|null
      */
     protected function _typecastSaveField(Field $field, $value)
     {
