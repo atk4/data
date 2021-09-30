@@ -10,7 +10,6 @@ use Atk4\Core\TrackableTrait;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
-use Doctrine\DBAL\Platforms;
 use Doctrine\DBAL\Types\Type;
 
 /**
@@ -102,9 +101,12 @@ class Field implements Expressionable
 
             $f = $this;
 
-//            $platform = $this->getDatabasePlatform();
             $type = $this->getTypeObject();
-//            TODO - breaking tests$value = $type->convertToPHPValue($type->convertToDatabaseValue($value, $platform), $platform);
+            // TODO - breaking tests
+            /*$platform = $this->getOwner()->persistence !== null
+                ? $this->getOwner()->persistence->getDatabasePlatform()
+                : new Persistence\GenericPlatform();
+            $value = $type->convertToPHPValue($type->convertToDatabaseValue($value, $platform), $platform);*/
 
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
@@ -189,27 +191,17 @@ class Field implements Expressionable
 
                     break;
                 case 'boolean':
-                    throw (new Exception('Use Field\Boolean for type=boolean'))
-                        ->addMoreInfo('this', $this);
+                    throw new Exception('Use Field\Boolean for type=boolean');
                 case 'date':
                 case 'datetime':
                 case 'time':
-                    // we allow http://php.net/manual/en/datetime.formats.relative.php
-                    $class = \DateTime::class;
-
-                    if (is_numeric($value)) {
-                        $value = new $class('@' . $value);
-                    } elseif (is_string($value)) {
-                        $value = new $class($value);
-                    } elseif (!$value instanceof $class) {
+                    if (is_string($value)) {
+                        $value = new \DateTime($value);
+                    } elseif (!$value instanceof \DateTime) {
                         if ($value instanceof \DateTimeInterface) {
-                            $value = new $class($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
+                            $value = new \DateTime($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
                         } else {
-                            if (is_object($value)) {
-                                throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value class' => get_class($value)], $this->getOwner());
-                            }
-
-                            throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value type' => gettype($value)], $this->getOwner());
+                            throw new ValidationException(['Must be an instance of DateTimeInterface', 'value type' => get_debug_type($value)], $this->getOwner());
                         }
                     }
 
@@ -251,6 +243,11 @@ class Field implements Expressionable
                         ->addMoreInfo('type', $f->type);
             }
 
+            /*if ($f->issetOwner() && $f->getOwner()->persistence) {
+                $value = $f->getOwner()->persistence->typecastSaveField($f, $value);
+                $value = $f->getOwner()->persistence->typecastLoadField($f, $value);
+            }*/
+
             return $value;
         } catch (Exception $e) {
             $e->addMoreInfo('field', $this);
@@ -266,42 +263,9 @@ class Field implements Expressionable
      */
     public function toString($value = null): string
     {
-        $v = ($value === null ? $this->get() : $this->normalize($value));
-        try {
-            switch ($this->type) {
-                case 'boolean':
-                    throw (new Exception('Use Field\Boolean for type=boolean'))
-                        ->addMoreInfo('this', $this);
-                case 'date':
-                case 'datetime':
-                case 'time':
-                    if ($v instanceof \DateTimeInterface) {
-                        $dateFormat = 'Y-m-d';
-                        $timeFormat = 'H:i:s' . ($v->format('u') > 0 ? '.u' : ''); // add microseconds if presented
-                        if ($this->type === 'date') {
-                            $format = $dateFormat;
-                        } elseif ($this->type === 'time') {
-                            $format = $timeFormat;
-                        } else {
-                            $format = $dateFormat . '\T' . $timeFormat . 'P'; // ISO 8601 format 2004-02-12T15:19:21+00:00
-                        }
+        $value = ($value === null /* why not func_num_args() === 1 */ ? $this->get() : $this->normalize($value));
 
-                        return $v->format($format);
-                    }
-
-                    return (string) $v;
-                case 'json':
-                    return json_encode($v);
-                case 'object':
-                    return serialize($v);
-                default:
-                    return (string) $v;
-            }
-        } catch (Exception $e) {
-            $e->addMoreInfo('field', $this);
-
-            throw $e;
-        }
+        return (string) $this->typecastSaveField($value, true);
     }
 
     /**
@@ -336,59 +300,39 @@ class Field implements Expressionable
         return $this;
     }
 
-    private function getDatabasePlatform(): Platforms\AbstractPlatform
-    {
-        return $this->getOwner()->persistence !== null
-            ? $this->getOwner()->persistence->getDatabasePlatform()
-            : new Persistence\GenericPlatform();
-    }
-
     /**
      * @param mixed $value
      *
      * @return mixed
      */
-    private function typecastSaveField($value, bool $allowDummyPersistence = false)
+    private function typecastSaveField($value, bool $allowGenericPersistence = false)
     {
         $persistence = $this->getOwner()->persistence;
         if ($persistence === null) {
-            if ($allowDummyPersistence) {
-                $persistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
+            if ($allowGenericPersistence) {
+                $persistence = new class() extends Persistence {
+                    public function __construct()
+                    {
+                    }
+                };
             } else {
                 $this->getOwner()->checkPersistence();
             }
         }
 
-        return $persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $value])[$this->getPersistenceName()];
+        return $persistence->typecastSaveField($this, $value);
     }
 
     /**
      * @param mixed|void $value
      */
-    public function getUnmanagedValue($value = null): ?string
+    private function getScalarValueForCompare($value): ?string
     {
-        if (func_num_args() === 0) {
-            $value = $this->get();
+        if ($value === null) {
+            return null;
         }
 
-        $unmanagedValue = $this->getTypeObject()
-            ->convertToDatabaseValue($value, $this->getDatabasePlatform());
-
-        if (is_int($unmanagedValue) || is_float($unmanagedValue)) {
-            return (string) $unmanagedValue;
-        } elseif (is_bool($unmanagedValue)) {
-            return $unmanagedValue ? '1' : '0';
-        }
-
-        return $unmanagedValue; // throw a type error if not null nor string
-    }
-
-    public function setUnmanagedValue(string $unmanagedValue = null): self
-    {
-        $value = $this->getTypeObject()
-            ->convertToPHPValue($unmanagedValue, $this->getDatabasePlatform());
-
-        return $this->set($value);
+        return (string) $this->typecastSaveField($value, true);
     }
 
     /**
@@ -410,9 +354,9 @@ class Field implements Expressionable
         try {
             // see https://stackoverflow.com/questions/48382457/mysql-json-column-change-array-order-after-saving
             // at least MySQL sorts the JSON keys if stored natively, TODO
-            return $this->getUnmanagedValue($value) === $this->getUnmanagedValue($value2);
+            return $this->getScalarValueForCompare($value) === $this->getScalarValueForCompare($value2);
         } catch (\TypeError $e) { // like https://github.com/atk4/data/pull/894, TODO, then no try/catch should be needed
-            if ($e->getMessage() === 'Return value of Atk4\Data\Field::getUnmanagedValue() must be of the type string or null, object returned') {
+            if ($e->getMessage() === 'Return value of Atk4\Data\Field::getScalarValueForCompare() must be of the type string or null, object returned') {
                 return serialize($value) === serialize($value2);
             }
 

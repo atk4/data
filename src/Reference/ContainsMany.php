@@ -14,7 +14,7 @@ class ContainsMany extends ContainsOne
 {
     protected function getDefaultPersistence(Model $theirModel): Persistence
     {
-        return new Persistence\ArrayOfStrings([
+        return new Persistence\ArrayScalar([
             $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? $this->getOurFieldValue() : [],
         ]);
     }

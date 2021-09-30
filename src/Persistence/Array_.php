@@ -11,7 +11,6 @@ use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Array_\Action;
 use Atk4\Data\Persistence\Array_\Db\Row;
 use Atk4\Data\Persistence\Array_\Db\Table;
-use Doctrine\DBAL\Platforms;
 
 /**
  * Implements persistence driver that can save data into array and load
@@ -153,38 +152,6 @@ class Array_ extends Persistence
         } else {
             $row = $table->addRow(Row::class, $rowData);
         }
-    }
-
-    public function typecastSaveRow(Model $model, array $row): array
-    {
-        $genericPersistence = new class() extends Persistence {
-            public function __construct()
-            {
-            }
-
-            public function getDatabasePlatform(): Platforms\AbstractPlatform
-            {
-                return new Persistence\GenericPlatform();
-            }
-        };
-
-        return $genericPersistence->typecastSaveRow($model, $row);
-    }
-
-    public function typecastLoadRow(Model $model, array $row): array
-    {
-        $genericPersistence = new class() extends Persistence {
-            public function __construct()
-            {
-            }
-
-            public function getDatabasePlatform(): Platforms\AbstractPlatform
-            {
-                return new Persistence\GenericPlatform();
-            }
-        };
-
-        return $genericPersistence->typecastLoadRow($model, $row);
     }
 
     /**

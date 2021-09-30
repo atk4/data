@@ -544,24 +544,12 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertTrue($m->get('boolean_enum'));
 
         // date, datetime, time
-        $m->set('date', 123);
-        $this->assertInstanceOf('DateTime', $m->get('date'));
-        $m->set('date', '123');
-        $this->assertInstanceOf('DateTime', $m->get('date'));
         $m->set('date', '2018-05-31');
-        $this->assertInstanceOf('DateTime', $m->get('date'));
-        $m->set('datetime', 123);
-        $this->assertInstanceOf('DateTime', $m->get('datetime'));
-        $m->set('datetime', '123');
-        $this->assertInstanceOf('DateTime', $m->get('datetime'));
+        $this->assertInstanceOf(\DateTime::class, $m->get('date'));
         $m->set('datetime', '2018-05-31 12:13:14');
-        $this->assertInstanceOf('DateTime', $m->get('datetime'));
-        $m->set('time', 123);
-        $this->assertInstanceOf('DateTime', $m->get('time'));
-        $m->set('time', '123');
-        $this->assertInstanceOf('DateTime', $m->get('time'));
+        $this->assertInstanceOf(\DateTime::class, $m->get('datetime'));
         $m->set('time', '12:13:14');
-        $this->assertInstanceOf('DateTime', $m->get('time'));
+        $this->assertInstanceOf(\DateTime::class, $m->get('time'));
     }
 
     public function testNormalizeException1(): void
@@ -717,9 +705,9 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('0', $m->getField('boolean')->toString(false));
         $this->assertSame('1', $m->getField('boolean_enum')->toString('Y'));
         $this->assertSame('0', $m->getField('boolean_enum')->toString('N'));
-        $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
-        $this->assertSame('2019-01-20T12:23:34+00:00', $m->getField('datetime')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
-        $this->assertSame('12:23:34', $m->getField('time')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
+        $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34 UTC')));
+        $this->assertSame('2019-01-20 12:23:34.000000', $m->getField('datetime')->toString(new \DateTime('2019-01-20 12:23:34 UTC')));
+        $this->assertSame('12:23:34.000000', $m->getField('time')->toString(new \DateTime('2019-01-20 12:23:34 UTC')));
         $this->assertSame('{"foo":"bar","int":123,"rows":["a","b"]}', $m->getField('json')->toString(['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
         $this->assertSame('O:8:"stdClass":3:{s:3:"foo";s:3:"bar";s:3:"int";i:123;s:4:"rows";a:2:{i:0;s:1:"a";i:1;s:1:"b";}}', $m->getField('object')->toString((object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']]));
     }
@@ -774,25 +762,24 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertSame('', $model->getField('datetime')->toString());
 
         // datetime without microseconds
-        $dt = new \DateTime('2020-01-21 21:09:42');
+        $dt = new \DateTime('2020-01-21 21:09:42 UTC');
         $model->set('date', $dt);
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
         $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertSame($dt->format('H:i:s'), $model->getField('time')->toString());
-        $this->assertSame($dt->format('c'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
+        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString());
 
         // datetime with microseconds
-        $dt = new \DateTime('2020-01-21 21:09:42.895623');
+        $dt = new \DateTime('2020-01-21 21:09:42.895623 UTC');
         $model->set('date', $dt);
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
         $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
-        // not supported by default DBAL "datetime" Type
-        // $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
-        // $this->assertSame($dt->format('Y-m-d\TH:i:s.uP'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
+        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString());
     }
 
     public function testSetNull(): void

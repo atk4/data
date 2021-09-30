@@ -8,14 +8,11 @@ use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-class PersistentArrayOfStringsTest extends TestCase
+class PersistentArrayScalarTest extends TestCase
 {
-    /**
-     * Test typecasting.
-     */
     public function testTypecasting(): void
     {
-        $p = new Persistence\ArrayOfStrings([
+        $p = new Persistence\ArrayScalar([
             'user' => [],
         ]);
         $m = new Model($p, ['table' => 'user']);

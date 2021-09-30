@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data;
 
-use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
 
 /**
@@ -21,8 +20,7 @@ class FieldSql extends Field implements Expressionable
      */
     public function normalize($value)
     {
-        if ($value instanceof Expression
-            || $value instanceof Expressionable) {
+        if ($value instanceof Expressionable) {
             return $value;
         }
 
