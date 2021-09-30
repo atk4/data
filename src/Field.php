@@ -18,7 +18,9 @@ use Doctrine\DBAL\Types\Type;
  */
 class Field implements Expressionable
 {
-    use DiContainerTrait;
+    use DiContainerTrait {
+        setDefaults as _setDefaults;
+    }
     use Model\FieldPropertiesTrait;
     use Model\JoinLinkTrait;
     use ReadableCaptionTrait;
@@ -38,6 +40,15 @@ class Field implements Expressionable
                 $this->{$key} = $val;
             }
         }
+    }
+
+    public function setDefaults(array $properties, bool $passively = false)
+    {
+        $this->_setDefaults($properties, $passively);
+
+        $this->getTypeObject(); // assert type exists
+
+        return $this;
     }
 
     public function getTypeObject(): Type
