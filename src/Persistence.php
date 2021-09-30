@@ -314,9 +314,59 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function _typecastSaveField(Field $f, $value)
+    public function _typecastSaveField(Field $field, $value)
     {
-        return $f->getTypeObject()->convertToDatabaseValue($value, $this->getDatabasePlatform());
+        // work only on copied value not real one !!!
+        $v = is_object($value) ? clone $value : $value;
+
+        switch ($field->type) {
+            case 'boolean':
+                // if enum is not set, then simply cast value to boolean
+                if (!isset($field->enum) || !$field->enum) {
+                    $v = (bool) $v;
+
+                    break;
+                }
+
+                // if enum is set, first lets see if it matches one of those precisely
+                if ($v === $field->enum[1]) {
+                    $v = true;
+                } elseif ($v === $field->enum[0]) {
+                    $v = false;
+                }
+
+                // finally, convert into appropriate value
+                $v = $v ? $field->enum[1] : $field->enum[0];
+
+                break;
+            case 'date':
+            case 'datetime':
+            case 'time':
+                $dt_class = \DateTime::class;
+                $tz_class = \DateTimeZone::class;
+
+                if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
+                    $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
+                    $format = $field->persist_format ?: $format[$field->type];
+
+                    // datetime only - set to persisting timezone
+                    if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+                        $v = new \DateTime($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
+                        $v->setTimezone(new $tz_class($field->persist_timezone));
+                    }
+                    $v = $v->format($format);
+                }
+
+                break;
+            case 'array':
+            case 'object':
+            case 'json':
+                $v = $field->getTypeObject()->convertToDatabaseValue($value, $this->getDatabasePlatform()); // TODO typecast everything, not only this type
+
+                break;
+        }
+
+        return $v;
     }
 
     /**
@@ -327,8 +377,97 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function _typecastLoadField(Field $f, $value)
+    public function _typecastLoadField(Field $field, $value)
     {
-        return $f->getTypeObject()->convertToPHPValue($value, $this->getDatabasePlatform());
+        // work only on copied value not real one !!!
+        $v = is_object($value) ? clone $value : $value;
+
+        switch ($field->type) {
+            case 'string':
+            case 'text':
+                // do nothing - it's ok as it is
+                break;
+            case 'integer':
+                $v = (int) $v;
+
+                break;
+            case 'float':
+                $v = (float) $v;
+
+                break;
+            case 'money':
+                $v = round((float) $v, 4);
+
+                break;
+            case 'boolean':
+                if (is_array($field->enum ?? null)) {
+                    if (isset($field->enum[0]) && $v === $field->enum[0]) {
+                        $v = false;
+                    } elseif (isset($field->enum[1]) && $v === $field->enum[1]) {
+                        $v = true;
+                    } else {
+                        $v = null;
+                    }
+                } elseif ($v === '') {
+                    $v = null;
+                } else {
+                    $v = (bool) $v;
+                }
+
+                break;
+            case 'date':
+            case 'datetime':
+            case 'time':
+                $dt_class = \DateTime::class;
+                $tz_class = \DateTimeZone::class;
+
+                if (is_numeric($v)) {
+                    $v = new $dt_class('@' . $v);
+                } elseif (is_string($v)) {
+                    // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
+                    $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
+                    if ($field->persist_format) {
+                        $format = $field->persist_format;
+                    } else {
+                        $format = $format[$field->type];
+                        if (strpos($v, '.') !== false) { // time possibly with microseconds, otherwise invalid format
+                            $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
+                        }
+                    }
+
+                    // datetime only - set from persisting timezone
+                    if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+                        $v = $dt_class::createFromFormat($format, $v, new $tz_class($field->persist_timezone));
+                        if ($v !== false) {
+                            $v->setTimezone(new $tz_class(date_default_timezone_get()));
+                        }
+                    } else {
+                        $v = $dt_class::createFromFormat($format, $v);
+                    }
+
+                    if ($v === false) {
+                        throw (new Exception('Incorrectly formatted date/time'))
+                            ->addMoreInfo('format', $format)
+                            ->addMoreInfo('value', $value)
+                            ->addMoreInfo('field', $field);
+                    }
+
+                    // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
+                    // this is what Carbon::instance(DateTime $dt) method does for example
+                    if ($dt_class !== \DateTime::class) { // @phpstan-ignore-line
+                        $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
+                    }
+                }
+
+                break;
+            case 'array':
+            case 'object':
+            case 'json':
+                $v = $field->getTypeObject()->convertToPHPValue($value, $this->getDatabasePlatform()); // TODO typecast everything, not only this type
+
+                break;
+        }
+
+        return $v;
     }
 }

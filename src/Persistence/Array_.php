@@ -157,7 +157,7 @@ class Array_ extends Persistence
 
     public function typecastSaveRow(Model $model, array $row): array
     {
-        $sqlPersistence = new class() extends Sql {
+        $genericPersistence = new class() extends Persistence {
             public function __construct()
             {
             }
@@ -168,12 +168,12 @@ class Array_ extends Persistence
             }
         };
 
-        return $sqlPersistence->typecastSaveRow($model, $row);
+        return $genericPersistence->typecastSaveRow($model, $row);
     }
 
     public function typecastLoadRow(Model $model, array $row): array
     {
-        $sqlPersistence = new class() extends Sql {
+        $genericPersistence = new class() extends Persistence {
             public function __construct()
             {
             }
@@ -184,7 +184,7 @@ class Array_ extends Persistence
             }
         };
 
-        return $sqlPersistence->typecastLoadRow($model, $row);
+        return $genericPersistence->typecastLoadRow($model, $row);
     }
 
     /**
