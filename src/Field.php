@@ -88,7 +88,7 @@ class Field implements Expressionable
     public function normalize($value)
     {
         try {
-            if (!$this->getOwner()->strict_types || $this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
+            if ($this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
             }
 

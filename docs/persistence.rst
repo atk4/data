@@ -174,14 +174,11 @@ complex logic::
     // 'balance_currency_id' for example.
 
 The process of converting field values as indicated above is called
-"normalization" and it is controlled by two model properties::
+"normalization" and it is controlled by one model property:
 
-    $m->strict_types = true;
     $m->load_normalization = false;
 
-Setting :php:attr:`Model::strict_types` to false, will still disable any
-type-casting and store exact values you specify regardless of type. If you
-switch on :php:attr:`Model::load_normalization` then the values will also be
+If you switch on :php:attr:`Model::load_normalization` then the values will also be
 normalized as they are loaded from the database. Normally you should only
 do that if you're storing values into database by other means and not through
 Agile Data.

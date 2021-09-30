@@ -486,7 +486,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalize(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
 
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
@@ -566,7 +566,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException1(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'string']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -575,7 +575,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException2(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'text']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -584,7 +584,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException3(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'integer']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -593,7 +593,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException4(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'money']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -602,7 +602,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException5(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'float']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -611,7 +611,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException6(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'date']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -620,7 +620,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException7(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'datetime']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -629,7 +629,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException8(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'time']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -638,7 +638,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException9(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'integer']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -647,7 +647,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException10(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'money']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -656,7 +656,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException11(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'float']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -665,7 +665,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException12(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'json']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -674,7 +674,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException13(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'object']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -683,7 +683,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testNormalizeException14(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
         $m->addField('foo', ['type' => 'boolean']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
@@ -692,7 +692,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testToString(): void
     {
-        $m = new Model(null, ['strict_types' => true]);
+        $m = new Model();
 
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
