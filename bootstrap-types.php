@@ -12,7 +12,6 @@ use Doctrine\DBAL\Types as DbalTypes;
 final class Types
 {
     public const MONEY = 'money';
-    public const PASSWORD = 'password';
 }
 
 class MoneyType extends DbalTypes\Type
@@ -28,18 +27,4 @@ class MoneyType extends DbalTypes\Type
     }
 }
 
-class PasswordType extends DbalTypes\Type
-{
-    public function getName(): string
-    {
-        return Types::PASSWORD;
-    }
-
-    public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
-    {
-        return DbalTypes\Type::getType(DbalTypes\Types::STRING)->getSQLDeclaration($fieldDeclaration, $platform);
-    }
-}
-
 DbalTypes\Type::addType(Types::MONEY, MoneyType::class);
-DbalTypes\Type::addType(Types::PASSWORD, PasswordType::class);

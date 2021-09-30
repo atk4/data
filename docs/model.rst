@@ -345,7 +345,7 @@ a user invokable actions::
 
          $this->addField('name');
          $this->addField('email');
-         $this->addField('password', ['type' => 'password']);
+         $this->addField('password');
 
          $this->addUserAction('send_new_password');
 
