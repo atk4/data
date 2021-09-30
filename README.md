@@ -565,6 +565,7 @@ Define your first model class:
 
 ``` php
 namespace my;
+
 class User extends \Atk4\Data\Model
 {
     public $table = 'user';
@@ -572,7 +573,7 @@ class User extends \Atk4\Data\Model
     {
         parent::init();
 
-        $this->addFields(['email','name','password']);
+        $this->addFields(['email', 'name', 'password']);
         // use your table fields here
     }
 }
@@ -599,7 +600,7 @@ Now you can explore. Try typing:
 > $m = new \my\User($db);
 > $m->loadBy('email', 'example@example.com')
 > $m->get()
-> $m->export(['email','name'])
+> $m->export(['email', 'name'])
 > $m->action('count')
 > $m->action('count')->getOne()
 ```

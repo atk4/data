@@ -320,18 +320,6 @@ This can also be useful for calculating relative times::
    }
 
 
-Strict Fields
-^^^^^^^^^^^^^
-
-.. php:property:: strict_fields
-
-By default model will only allow you to operate with values for the fields
-that have been defined through addField(). If you attempt to get, set or
-otherwise access the value of any other field that has not been properly
-defined, you'll get an exception. Read more about :php:class:`Field`
-
-If you set `strict_fields` to false, then the check will not be performed.
-
 Actions
 -------
 Another common thing to define inside :php:meth:`Model::init()` would be
@@ -357,7 +345,7 @@ a user invokable actions::
 
          $this->save(['password' => .. ]);
 
-         return 'generated and sent password to '.$m->get('name');
+         return 'generated and sent password to ' . $m->get('name');
       }
    }
 

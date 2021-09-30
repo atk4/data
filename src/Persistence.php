@@ -156,22 +156,7 @@ abstract class Persistence
     /**
      * Will convert one row of data from native PHP types into
      * persistence types. This will also take care of the "actual"
-     * field keys. Example:.
-     *
-     * In:
-     *  [
-     *    'name' => ' John Smith',
-     *    'age' => 30,
-     *    'password' => 'abc',
-     *    'is_married' => true,
-     *  ]
-     *
-     *  Out:
-     *   [
-     *     'first_name' => 'John Smith',
-     *     'age' => 30,
-     *     'is_married' => 1
-     *   ]
+     * field keys.
      *
      * @return array<scalar|Persistence\Sql\Expressionable|null>
      */

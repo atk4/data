@@ -51,7 +51,7 @@ which fields you would like to see in the CSV::
 
     foreach (new Model_User($db) as $m) {
         $m->withPersistence($csv)
-            ->onlyFields(['id','name','password'])
+            ->onlyFields(['id', 'name', 'password'])
             ->save();
     }
 
