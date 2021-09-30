@@ -273,7 +273,6 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
                     'integer' => '2940',
                     'money' => '8.20',
                     'float' => '8.202343',
-                    'rot13' => 'uryyb jbeyq',
                 ],
             ],
         ];
@@ -293,15 +292,8 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
 
-        $rot = function ($v) {
-            return str_rot13($v);
-        };
-
-        $m->addField('rot13', ['typecast' => [$rot, $rot]]);
-
         $mm = $m->load(1);
 
-        $this->assertSame('hello world', $mm->get('rot13'));
         $this->assertSame(1, (int) $mm->getId());
         $this->assertSame(1, (int) $mm->get('id'));
         $this->assertSame('2013-02-21 05:00:12.235689', (string) $mm->get('datetime'));

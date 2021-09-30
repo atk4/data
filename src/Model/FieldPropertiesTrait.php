@@ -124,15 +124,6 @@ trait FieldPropertiesTrait
     public $required = false;
 
     /**
-     * Should we use typecasting when saving/loading data to/from persistence.
-     *
-     * Value can be array [$typecast_save_callback, $typecast_load_callback].
-     *
-     * @var bool|array|null
-     */
-    public $typecast;
-
-    /**
      * Persisting format for type = 'date', 'datetime', 'time' fields.
      *
      * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.

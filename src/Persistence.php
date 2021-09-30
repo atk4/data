@@ -263,11 +263,6 @@ abstract class Persistence
     public function typecastSaveField(Field $f, $value)
     {
         try {
-            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[0]) && ($t = $f->typecast[0]) instanceof \Closure) {
-                return $t($value, $f, $this);
-            }
-
             // we respect null values
             if ($value === null) {
                 return;
@@ -292,11 +287,6 @@ abstract class Persistence
     public function typecastLoadField(Field $f, $value)
     {
         try {
-            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[1]) && ($t = $f->typecast[1]) instanceof \Closure) {
-                return $t($value, $f, $this);
-            }
-
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
             if ($f->type && $f->type !== 'string' && $value === '') {

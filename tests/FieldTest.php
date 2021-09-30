@@ -484,63 +484,6 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         // TODO: build a query and see if the field is there
     }
 
-    public function testEncryptedField(): void
-    {
-        $db = new Persistence\Sql($this->db->connection);
-        $this->setDb([
-            'user' => [
-                '_' => ['id' => 1, 'name' => 'John', 'secret' => 'Smith'],
-            ],
-        ]);
-
-        $encrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof Persistence\Sql) {
-                return $value;
-            }
-
-            /*
-            $algorithm = 'rijndael-128';
-            $key = md5($field->password, true);
-            $iv_length = mcrypt_get_iv_size( $algorithm, MCRYPT_MODE_CBC );
-            $iv = mcrypt_create_iv( $iv_length, MCRYPT_RAND );
-            return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
-             */
-            return base64_encode($value);
-        };
-
-        $decrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof Persistence\Sql) {
-                return $value;
-            }
-
-            /*
-            $algorithm = 'rijndael-128';
-            $key = md5($field->password, true);
-            $iv_length = mcrypt_get_iv_size( $algorithm, MCRYPT_MODE_CBC );
-            $iv = mcrypt_create_iv( $iv_length, MCRYPT_RAND );
-            return mcrypt_encrypt( $algorithm, $key, $value, MCRYPT_MODE_CBC, $iv );
-             */
-            return base64_decode($value, true);
-        };
-
-        $m = new Model($db, ['table' => 'user']);
-        $m->addField('name', ['mandatory' => true]);
-        $m->addField('secret', [
-            //'password' => 'bonkers',
-            'typecast' => [$encrypt, $decrypt],
-        ]);
-        $m = $m->createEntity();
-        $m->save(['name' => 'John', 'secret' => 'i am a woman']);
-
-        $dbData = $this->getDb();
-        $this->assertNotNull($dbData['user'][1]['secret']);
-        $this->assertNotSame('i am a woman', $dbData['user'][1]['secret']);
-
-        $m->set('secret', 'unload');
-        $m->reload();
-        $this->assertSame('i am a woman', $m->get('secret'));
-    }
-
     public function testNormalize(): void
     {
         $m = new Model(null, ['strict_types' => true]);
