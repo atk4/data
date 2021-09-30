@@ -265,14 +265,6 @@ class Model implements \IteratorAggregate
     public $only_fields = false;
 
     /**
-     * When set to true, all the field types will be enforced and
-     * normalized when setting.
-     *
-     * @var bool
-     */
-    public $strict_types = true;
-
-    /**
      * When set to true, loading model from database will also
      * perform value normalization. Use this if you think that
      * persistence may contain badly formatted data that may

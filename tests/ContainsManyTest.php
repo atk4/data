@@ -261,7 +261,7 @@ class ContainsManyTest extends \Atk4\Schema\PhpunitTestCase
 
             return $dt->format('Y-m-d H:i:s.u');
         };
-        $this->assertSame(
+        $this->assertJsonStringEqualsJsonString(
             json_encode([
                 1 => [
                     $i->lines->fieldName()->id => 1,

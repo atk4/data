@@ -73,7 +73,7 @@
             "Atk4\\Schema\\": "src-schema/"
         },
         "files": [
-            "bootstrap-atk-types.php"
+            "bootstrap-types.php"
         ]
     },
     "autoload-dev": {

@@ -122,7 +122,7 @@ class StaticPersistenceTest extends TestCase
         $this->assertSame('integer', $m->getField('test_int')->type);
         $this->assertSame('float', $m->getField('test_float')->type);
         // $this->assertSame('datetime', $m->getField('test_date')->type);
-        // $this->assertSame('array', $m->getField('test_array')->type);
+        // $this->assertSame('json', $m->getField('test_array')->type);
         // $this->assertSame('object', $m->getField('test_object')->type);
 
         // string is default type, so it is null

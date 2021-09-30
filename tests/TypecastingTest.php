@@ -9,30 +9,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 
-class MyDate extends \DateTime
-{
-    public function __toString()
-    {
-        return $this->format('Y-m-d');
-    }
-}
-
-class MyTime extends \DateTime
-{
-    public function __toString()
-    {
-        return $this->format('H:i:s.u');
-    }
-}
-
-class MyDateTime extends \DateTime
-{
-    public function __toString()
-    {
-        return $this->format('Y-m-d H:i:s.u');
-    }
-}
-
 class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 {
     /** @var string */
@@ -65,7 +41,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
                     'integer' => '2940',
                     'money' => '8.20',
                     'float' => '8.202343',
-                    'array' => '[1,2,3]',
+                    'json' => '[1,2,3]',
                 ],
             ],
         ];
@@ -84,7 +60,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('array', ['type' => 'array']);
+        $m->addField('json', ['type' => 'json']);
         $mm = $m->load(1);
 
         $this->assertSame('foo', $mm->get('string'));
@@ -94,7 +70,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertEquals(new \DateTime('2013-02-20 20:00:12 UTC'), $mm->get('datetime'));
         $this->assertEquals(new \DateTime('1970-01-01 12:00:50'), $mm->get('time'));
         $this->assertSame(2940, $mm->get('integer'));
-        $this->assertSame([1, 2, 3], $mm->get('array'));
+        $this->assertSame([1, 2, 3], $mm->get('json'));
         $this->assertSame(8.202343, $mm->get('float'));
 
         $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
@@ -111,7 +87,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
                     'integer' => 2940,
                     'money' => 8.20,
                     'float' => 8.202343,
-                    'array' => '[1,2,3]',
+                    'json' => '[1,2,3]',
                 ],
                 2 => [
                     'id' => '2',
@@ -123,7 +99,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
                     'integer' => '2940',
                     'money' => '8.2',
                     'float' => '8.202343',
-                    'array' => '[1,2,3]',
+                    'json' => '[1,2,3]',
                 ],
             ],
         ];
@@ -156,7 +132,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
                     'integer' => '',
                     'money' => '',
                     'float' => '',
-                    'array' => '',
+                    'json' => '',
                     'object' => '',
                 ],
             ],
@@ -177,7 +153,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
-        $m->addField('array', ['type' => 'array']);
+        $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
         $mm = $m->load(1);
 
@@ -191,7 +167,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($mm->get('integer'));
         $this->assertNull($mm->get('money'));
         $this->assertNull($mm->get('float'));
-        $this->assertNull($mm->get('array'));
+        $this->assertNull($mm->get('json'));
         $this->assertNull($mm->get('object'));
 
         unset($row['id']);
@@ -206,7 +182,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertNull($mm->get('integer'));
         $this->assertNull($mm->get('money'));
         $this->assertNull($mm->get('float'));
-        $this->assertNull($mm->get('array'));
+        $this->assertNull($mm->get('json'));
         $this->assertNull($mm->get('object'));
         if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
             $this->assertSame([], $mm->getDirtyRef());
@@ -228,7 +204,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
             'integer' => null,
             'money' => null,
             'float' => null,
-            'array' => null,
+            'json' => null,
             'object' => null,
         ];
 
@@ -273,7 +249,6 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
                     'integer' => '2940',
                     'money' => '8.20',
                     'float' => '8.202343',
-                    'rot13' => 'uryyb jbeyq',
                 ],
             ],
         ];
@@ -284,29 +259,22 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
-        $m->addField('datetime', ['type' => 'datetime', 'dateTimeClass' => MyDateTime::class]);
-        $m->addField('time', ['type' => 'time', 'dateTimeClass' => MyTime::class]);
+        $m->addField('date', ['type' => 'date']);
+        $m->addField('datetime', ['type' => 'datetime']);
+        $m->addField('time', ['type' => 'time']);
         $m->addField('b1', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('b2', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
 
-        $rot = function ($v) {
-            return str_rot13($v);
-        };
-
-        $m->addField('rot13', ['typecast' => [$rot, $rot]]);
-
         $mm = $m->load(1);
 
-        $this->assertSame('hello world', $mm->get('rot13'));
-        $this->assertSame(1, (int) $mm->getId());
-        $this->assertSame(1, (int) $mm->get('id'));
-        $this->assertSame('2013-02-21 05:00:12.235689', (string) $mm->get('datetime'));
-        $this->assertSame('2013-02-20', (string) $mm->get('date'));
-        $this->assertSame('12:00:50.235689', (string) $mm->get('time'));
+        $this->assertSame(1, $mm->getId());
+        $this->assertSame(1, $mm->get('id'));
+        $this->assertSame('2013-02-21 05:00:12.235689', $mm->get('datetime')->format('Y-m-d H:i:s.u'));
+        $this->assertSame('2013-02-20', $mm->get('date')->format('Y-m-d'));
+        $this->assertSame('12:00:50.235689', $mm->get('time')->format('H:i:s.u'));
 
         $this->assertTrue($mm->get('b1'));
         $this->assertFalse($mm->get('b2'));
@@ -334,11 +302,11 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => 'date']);
 
         $m = $m->tryLoad(1);
 
-        $this->assertTrue($m->get('date') instanceof MyDate);
+        $this->assertInstanceOf(\DateTime::class, $m->get('date'));
     }
 
     public function testTryLoadAny(): void
@@ -354,11 +322,11 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => 'date']);
 
         $m = $m->tryLoadAny();
 
-        $this->assertTrue($m->get('date') instanceof MyDate);
+        $this->assertInstanceOf(\DateTime::class, $m->get('date'));
     }
 
     public function testTryLoadBy(): void
@@ -374,11 +342,11 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => 'date']);
 
         $m = $m->loadBy('id', 1);
 
-        $this->assertTrue($m->get('date') instanceof MyDate);
+        $this->assertInstanceOf(\DateTime::class, $m->get('date'));
     }
 
     public function testLoadBy(): void
@@ -393,7 +361,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => 'date']);
 
         $m2 = $m->loadOne();
         $this->assertTrue($m2->loaded());

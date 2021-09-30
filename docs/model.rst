@@ -64,7 +64,7 @@ Model class can be seen as a "gateway" between your code and many other features
 
 For example - you may define fields and relations for the model::
 
-   $model->addField('age', ['type' => 'number']);
+   $model->addField('age', ['type' => 'integer']);
    $model->hasMany('Children', ['model' => [Person::class]]);
 
 Methods `addField` and `hasMany` will ultimatelly create and link model with a corresponding

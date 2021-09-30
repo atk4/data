@@ -85,7 +85,7 @@ class Static_ extends Array_
             } elseif (is_float($value)) {
                 $def_types[] = ['type' => 'float'];
             } elseif (is_array($value)) {
-                $def_types[] = ['type' => 'array'];
+                $def_types[] = ['type' => 'json'];
             } elseif (is_object($value)) {
                 $def_types[] = ['type' => 'object'];
             } else {

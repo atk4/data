@@ -7,11 +7,7 @@ namespace Atk4\Data\Model;
 trait FieldPropertiesTrait
 {
     /**
-     * Field type.
-     *
-     * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'array', 'object'.
-     * Can also be set to unspecified type for your own custom handling.
+     * Field type. Name of type registered in \Doctrine\DBAL\Types\Type.
      *
      * @var string
      */
@@ -128,24 +124,6 @@ trait FieldPropertiesTrait
     public $required = false;
 
     /**
-     * Should we use typecasting when saving/loading data to/from persistence.
-     *
-     * Value can be array [$typecast_save_callback, $typecast_load_callback].
-     *
-     * @var bool|array|null
-     */
-    public $typecast;
-
-    /**
-     * Should we use serialization when saving/loading data to/from persistence.
-     *
-     * Value can be array [$encode_callback, $decode_callback].
-     *
-     * @var bool|array|string|null
-     */
-    public $serialize;
-
-    /**
      * Persisting format for type = 'date', 'datetime', 'time' fields.
      *
      * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.
@@ -162,22 +140,4 @@ trait FieldPropertiesTrait
      * @var string
      */
     public $persist_timezone = 'UTC';
-
-    /**
-     * DateTime class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTime', 'Carbon\Carbon' etc.
-     *
-     * @var string
-     */
-    public $dateTimeClass = \DateTime::class;
-
-    /**
-     * Timezone class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTimeZone', 'Carbon\CarbonTimeZone' etc.
-     *
-     * @var string
-     */
-    public $dateTimeZoneClass = \DateTimeZone::class;
 }

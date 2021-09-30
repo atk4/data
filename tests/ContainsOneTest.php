@@ -133,7 +133,7 @@ class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
 
             return $dt->format('Y-m-d H:i:s.u');
         };
-        $this->assertSame(
+        $this->assertJsonStringEqualsJsonString(
             json_encode([
                 $i->addr->fieldName()->id => 1,
                 $i->addr->fieldName()->country_id => 2,

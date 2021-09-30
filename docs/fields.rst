@@ -97,12 +97,6 @@ Those are responsible for converting PHP native types to persistence specific
 formats as defined in fields. Those methods will also change name of the field
 if needed (see Field::actual)
 
-.. php:attr:: typecast
-
-This property can be used to override typecasting for your field. See
-:ref:`Typecasting`
-
-
 Basic Properties
 ----------------
 

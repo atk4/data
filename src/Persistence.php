@@ -172,49 +172,33 @@ abstract class Persistence
      *     'age' => 30,
      *     'is_married' => 1
      *   ]
+     *
+     * @return array<scalar|Persistence\Sql\Expressionable|null>
      */
     public function typecastSaveRow(Model $model, array $row): array
     {
         $result = [];
         foreach ($row as $fieldName => $value) {
-            // We have no knowledge of the field, it wasn't defined, so
-            // we will leave it as-is.
+            // we have no knowledge of the field, it wasn't defined, leave it as-is
+            // TODO better to never happen
             if (!$model->hasField($fieldName)) {
                 $result[$fieldName] = $value;
 
                 continue;
             }
 
-            // Look up field object
             $field = $model->getField($fieldName);
 
-            // check null values for mandatory fields
-            if ($value === null && $field->mandatory) {
-                throw new ValidationException([$fieldName => 'Mandatory field value cannot be null'], $model);
-            }
-
-            // Expression and null cannot be converted.
-            if (
-                $value instanceof \Atk4\Data\Persistence\Sql\Expression
-                || $value instanceof \Atk4\Data\Persistence\Sql\Expressionable
-                || $value === null
-            ) {
-                $result[$field->getPersistenceName()] = $value;
-
-                continue;
-            }
-
-            // typecast if we explicitly want that or there is not serialization enabled
-            if ($field->typecast || ($field->typecast === null && $field->serialize === null)) {
+            // SQL Expression cannot be converted
+            if (!$value instanceof \Atk4\Data\Persistence\Sql\Expressionable) {
                 $value = $this->typecastSaveField($field, $value);
             }
 
-            // serialize if we explicitly want that
-            if ($field->serialize) {
-                $value = $this->serializeSaveField($field, $value);
+            // check null values for mandatory fields
+            if ($value === null && $field->mandatory) {
+                throw new ValidationException([$field->short_name => 'Mandatory field value cannot be null'], $field->getOwner());
             }
 
-            // store converted value
             $result[$field->getPersistenceName()] = $value;
         }
 
@@ -233,36 +217,17 @@ abstract class Persistence
     {
         $result = [];
         foreach ($row as $fieldName => $value) {
-            // We have no knowledge of the field, it wasn't defined, so
-            // we will leave it as-is.
+            // we have no knowledge of the field, it wasn't defined, leave it as-is
+            // TODO better to never happen
             if (!$model->hasField($fieldName)) {
                 $result[$fieldName] = $value;
 
                 continue;
             }
 
-            // Look up field object
             $field = $model->getField($fieldName);
 
-            // ignore null values
-            if ($value === null) {
-                $result[$fieldName] = $value;
-
-                continue;
-            }
-
-            // serialize if we explicitly want that
-            if ($field->serialize) {
-                $value = $this->serializeLoadField($field, $value);
-            }
-
-            // typecast if we explicitly want that or there is not serialization enabled
-            if ($field->typecast || ($field->typecast === null && $field->serialize === null)) {
-                $value = $this->typecastLoadField($field, $value);
-            }
-
-            // store converted value
-            $result[$fieldName] = $value;
+            $result[$fieldName] = $this->typecastLoadField($field, $value);
         }
 
         return $result;
@@ -274,26 +239,25 @@ abstract class Persistence
      *
      * @param mixed $value
      *
-     * @return mixed
+     * @return scalar|Persistence\Sql\Expressionable|null
      */
-    public function typecastSaveField(Field $f, $value)
+    public function typecastSaveField(Field $field, $value)
     {
+        if ($value === null) {
+            return null;
+        }
+
         try {
-            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[0]) && ($t = $f->typecast[0]) instanceof \Closure) {
-                return $t($value, $f, $this);
+            $v = $this->_typecastSaveField($field, $value);
+            if ($v !== null && !is_scalar($v) && !$v instanceof Persistence\Sql\Expressionable) { // @phpstan-ignore-line
+                throw (new Exception('Unexpected non-scalar value'))
+                    ->addMoreInfo('type', get_debug_type($v));
             }
 
-            // we respect null values
-            if ($value === null) {
-                return;
-            }
-
-            // run persistence-specific typecasting of field value
-            return $this->_typecastSaveField($f, $value);
+            return $v;
         } catch (\Exception $e) {
             throw (new Exception('Unable to typecast field value on save', 0, $e))
-                ->addMoreInfo('field', $f->short_name);
+                ->addMoreInfo('field', $field->short_name);
         }
     }
 
@@ -305,30 +269,23 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function typecastLoadField(Field $f, $value)
+    public function typecastLoadField(Field $field, $value)
     {
-        try {
-            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[1]) && ($t = $f->typecast[1]) instanceof \Closure) {
-                return $t($value, $f, $this);
-            }
+        if ($value === null) {
+            return null;
+        }
 
+        try {
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
-            if ($f->type && $f->type !== 'string' && $value === '') {
-                return;
+            if ($field->type && $field->type !== 'string' && $value === '') {
+                return null;
             }
 
-            // we respect null values
-            if ($value === null) {
-                return;
-            }
-
-            // run persistence-specific typecasting of field value
-            return $this->_typecastLoadField($f, $value);
+            return $this->_typecastLoadField($field, $value);
         } catch (\Exception $e) {
             throw (new Exception('Unable to typecast field value on load', 0, $e))
-                ->addMoreInfo('field', $f->short_name);
+                ->addMoreInfo('field', $field->short_name);
         }
     }
 
@@ -338,141 +295,155 @@ abstract class Persistence
      *
      * @param mixed $value
      *
-     * @return mixed
+     * @return scalar|Persistence\Sql\Expressionable|null
      */
-    public function _typecastSaveField(Field $f, $value)
+    protected function _typecastSaveField(Field $field, $value)
     {
-        return $value;
-    }
+        // work only on cloned value
+        $value = is_object($value) ? clone $value : $value;
 
-    /**
-     * This is the actual field typecasting, which you can override in your
-     * persistence to implement necessary typecasting.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function _typecastLoadField(Field $f, $value)
-    {
-        return $value;
-    }
+        switch ($field->type) {
+            case 'boolean':
+                // if enum is not set, then simply cast value to boolean
+                if (!is_array($field->enum)) {
+                    $value = (bool) $value;
 
-    /**
-     * Provided with a value, will perform field serialization.
-     * Can be used for the purposes of encryption or storing unsupported formats.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function serializeSaveField(Field $f, $value)
-    {
-        try {
-            // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[0]) && ($t = $f->serialize[0]) instanceof \Closure) {
-                return $t($f, $value, $this);
-            }
-
-            // run persistence-specific serialization of field value
-            return $this->_serializeSaveField($f, $value);
-        } catch (\Exception $e) {
-            throw (new Exception('Unable to serialize field value on save', 0, $e))
-                ->addMoreInfo('field', $f->short_name);
-        }
-    }
-
-    /**
-     * Provided with a value, will perform field un-serialization.
-     * Can be used for the purposes of encryption or storing unsupported formats.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function serializeLoadField(Field $f, $value)
-    {
-        try {
-            // use $f->serialize = [encode_callback, decode_callback]
-            if (is_array($f->serialize) && isset($f->serialize[1]) && ($t = $f->serialize[1]) instanceof \Closure) {
-                return $t($f, $value, $this);
-            }
-
-            // run persistence-specific un-serialization of field value
-            return $this->_serializeLoadField($f, $value);
-        } catch (\Exception $e) {
-            throw (new Exception('Unable to serialize field value on load', 0, $e))
-                ->addMoreInfo('field', $f->short_name);
-        }
-    }
-
-    /**
-     * Override this to fine-tune serialization for your persistence.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function _serializeSaveField(Field $f, $value)
-    {
-        switch ($f->serialize === true ? 'serialize' : $f->serialize) {
-            case 'serialize':
-                return serialize($value);
-            case 'json':
-                return $this->jsonEncode($f, $value);
-            case 'base64':
-                if (!is_string($value)) {
-                    throw (new Exception('Field value can not be base64 encoded because it is not of string type'))
-                        ->addMoreInfo('field', $f)
-                        ->addMoreInfo('value', $value);
+                    break;
                 }
 
-                return base64_encode($value);
-        }
+                // if enum is set, first lets see if it matches one of those precisely
+                if ($value === $field->enum[1]) {
+                    $value = true;
+                } elseif ($value === $field->enum[0]) {
+                    $value = false;
+                }
 
-        throw (new Exception('Invalid serialize type'))
-            ->addMoreInfo('serialize_type', $f->serialize);
-    }
+                // finally, convert into appropriate value
+                $value = $value ? $field->enum[1] : $field->enum[0];
 
-    /**
-     * Override this to fine-tune un-serialization for your persistence.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function _serializeLoadField(Field $f, $value)
-    {
-        switch ($f->serialize === true ? 'serialize' : $f->serialize) {
-            case 'serialize':
-                return unserialize($value);
+                break;
+            case 'date':
+            case 'datetime':
+            case 'time':
+                if ($value instanceof \DateTimeInterface) {
+                    $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
+                    $format = $field->persist_format ?: $format[$field->type];
+
+                    // datetime only - set to persisting timezone
+                    if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+                        $value = new \DateTime($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
+                        $value->setTimezone(new \DateTimeZone($field->persist_timezone));
+                    }
+                    $value = $value->format($format);
+                }
+
+                break;
+            case 'array':
+            case 'object':
             case 'json':
-                return $this->jsonDecode($f, $value, $f->type === 'array');
-            case 'base64':
-                return base64_decode($value, true);
+                $value = $field->getTypeObject()->convertToDatabaseValue($value, $this->getDatabasePlatform()); // TODO typecast everything, not only this type
+
+                break;
         }
 
-        throw (new Exception('Invalid serialize type'))
-            ->addMoreInfo('serialize_type', $f->serialize);
+        return $value;
     }
 
     /**
-     * JSON decoding with proper error treatment.
+     * This is the actual field typecasting, which you can override in your
+     * persistence to implement necessary typecasting.
+     *
+     * @param mixed $value
      *
      * @return mixed
      */
-    public function jsonDecode(Field $f, string $json, bool $assoc = true)
+    protected function _typecastLoadField(Field $field, $value)
     {
-        return json_decode($json, $assoc, 512, \JSON_THROW_ON_ERROR);
-    }
+        // work only on cloned value
+        $value = is_object($value) ? clone $value : $value;
 
-    /**
-     * JSON encoding with proper error treatment.
-     *
-     * @param mixed $value
-     */
-    public function jsonEncode(Field $f, $value): string
-    {
-        return json_encode($value, \JSON_THROW_ON_ERROR, 512);
+        switch ($field->type) {
+            case 'string':
+            case 'text':
+                // do nothing - it's ok as it is
+                break;
+            case 'integer':
+                $value = (int) $value;
+
+                break;
+            case 'float':
+                $value = (float) $value;
+
+                break;
+            case 'money':
+                $value = round((float) $value, 4);
+
+                break;
+            case 'boolean':
+                if (is_array($field->enum)) {
+                    if ($value === $field->enum[0]) {
+                        $value = false;
+                    } elseif ($value === $field->enum[1]) {
+                        $value = true;
+                    } else {
+                        $value = null;
+                    }
+                } elseif ($value === '') {
+                    $value = null;
+                } else {
+                    $value = (bool) $value;
+                }
+
+                break;
+            case 'date':
+            case 'datetime':
+            case 'time':
+                $dt_class = \DateTime::class;
+                $tz_class = \DateTimeZone::class;
+
+                // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
+                $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
+                if ($field->persist_format) {
+                    $format = $field->persist_format;
+                } else {
+                    $format = $format[$field->type];
+                    if (strpos($value, '.') !== false) { // time possibly with microseconds, otherwise invalid format
+                        $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
+                    }
+                }
+
+                // datetime only - set from persisting timezone
+                if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+                    $value = $dt_class::createFromFormat($format, $value, new $tz_class($field->persist_timezone));
+                    if ($value !== false) {
+                        $value->setTimezone(new $tz_class(date_default_timezone_get()));
+                    }
+                } else {
+                    $value = $dt_class::createFromFormat($format, $value);
+                }
+
+                if ($value === false) {
+                    throw (new Exception('Incorrectly formatted date/time'))
+                        ->addMoreInfo('format', $format)
+                        ->addMoreInfo('value', $value)
+                        ->addMoreInfo('field', $field);
+                }
+
+                // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
+                // this is what Carbon::instance(DateTime $dt) method does for example
+                if ($dt_class !== \DateTime::class) { // @phpstan-ignore-line
+                    $value = new $dt_class($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
+                }
+
+                break;
+            case 'array':
+            case 'object':
+            case 'json':
+                $value = $field->getTypeObject()->convertToPHPValue($value, $this->getDatabasePlatform()); // TODO typecast everything, not only this type
+
+                break;
+        }
+
+        return $value;
     }
 }

@@ -10,13 +10,16 @@ use Atk4\Core\TrackableTrait;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
+use Doctrine\DBAL\Types\Type;
 
 /**
  * @method Model getOwner()
  */
 class Field implements Expressionable
 {
-    use DiContainerTrait;
+    use DiContainerTrait {
+        setDefaults as _setDefaults;
+    }
     use Model\FieldPropertiesTrait;
     use Model\JoinLinkTrait;
     use ReadableCaptionTrait;
@@ -36,6 +39,24 @@ class Field implements Expressionable
                 $this->{$key} = $val;
             }
         }
+    }
+
+    public function setDefaults(array $properties, bool $passively = false): self
+    {
+        $this->_setDefaults($properties, $passively);
+
+        $this->getTypeObject(); // assert type exists
+
+        return $this;
+    }
+
+    public function getTypeObject(): Type
+    {
+        if ($this->type === 'array') { // remove in 2022-mar
+            throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
+        }
+
+        return Type::getType($this->type ?? 'string');
     }
 
     protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -66,7 +87,7 @@ class Field implements Expressionable
     public function normalize($value)
     {
         try {
-            if (!$this->getOwner()->strict_types || $this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
+            if ($this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
             }
 
@@ -79,6 +100,13 @@ class Field implements Expressionable
             }
 
             $f = $this;
+
+            $type = $this->getTypeObject();
+            // TODO - breaking tests
+            /*$platform = $this->getOwner()->persistence !== null
+                ? $this->getOwner()->persistence->getDatabasePlatform()
+                : new Persistence\GenericPlatform();
+            $value = $type->convertToPHPValue($type->convertToDatabaseValue($value, $platform), $platform);*/
 
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
@@ -163,27 +191,17 @@ class Field implements Expressionable
 
                     break;
                 case 'boolean':
-                    throw (new Exception('Use Field\Boolean for type=boolean'))
-                        ->addMoreInfo('this', $this);
+                    throw new Exception('Use Field\Boolean for type=boolean');
                 case 'date':
                 case 'datetime':
                 case 'time':
-                    // we allow http://php.net/manual/en/datetime.formats.relative.php
-                    $class = $f->dateTimeClass ?? \DateTime::class;
-
-                    if (is_numeric($value)) {
-                        $value = new $class('@' . $value);
-                    } elseif (is_string($value)) {
-                        $value = new $class($value);
-                    } elseif (!$value instanceof $class) {
+                    if (is_string($value)) {
+                        $value = new \DateTime($value);
+                    } elseif (!$value instanceof \DateTime) {
                         if ($value instanceof \DateTimeInterface) {
-                            $value = new $class($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
+                            $value = new \DateTime($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
                         } else {
-                            if (is_object($value)) {
-                                throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value class' => get_class($value)], $this->getOwner());
-                            }
-
-                            throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value type' => gettype($value)], $this->getOwner());
+                            throw new ValidationException(['Must be an instance of DateTimeInterface', 'value type' => get_debug_type($value)], $this->getOwner());
                         }
                     }
 
@@ -198,9 +216,9 @@ class Field implements Expressionable
                     }
 
                     break;
-                case 'array':
+                case 'json':
                     if (is_string($value) && $f->issetOwner() && $f->getOwner()->persistence) {
-                        $value = $f->getOwner()->persistence->jsonDecode($f, $value, true);
+                        $value = $f->getOwner()->persistence->typecastLoadField($f, $value);
                     }
 
                     if (!is_array($value)) {
@@ -210,7 +228,7 @@ class Field implements Expressionable
                     break;
                 case 'object':
                    if (is_string($value) && $f->issetOwner() && $f->getOwner()->persistence) {
-                       $value = $f->getOwner()->persistence->jsonDecode($f, $value, false);
+                       $value = $f->getOwner()->persistence->typecastLoadField($f, $value);
                    }
 
                     if (!is_object($value)) {
@@ -224,6 +242,11 @@ class Field implements Expressionable
                     throw (new Exception('Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.'))
                         ->addMoreInfo('type', $f->type);
             }
+
+            /*if ($f->issetOwner() && $f->getOwner()->persistence) {
+                $value = $f->getOwner()->persistence->typecastSaveField($f, $value);
+                $value = $f->getOwner()->persistence->typecastLoadField($f, $value);
+            }*/
 
             return $value;
         } catch (Exception $e) {
@@ -240,42 +263,9 @@ class Field implements Expressionable
      */
     public function toString($value = null): string
     {
-        $v = ($value === null ? $this->get() : $this->normalize($value));
-        try {
-            switch ($this->type) {
-                case 'boolean':
-                    throw (new Exception('Use Field\Boolean for type=boolean'))
-                        ->addMoreInfo('this', $this);
-                case 'date':
-                case 'datetime':
-                case 'time':
-                    if ($v instanceof \DateTimeInterface) {
-                        $dateFormat = 'Y-m-d';
-                        $timeFormat = 'H:i:s' . ($v->format('u') > 0 ? '.u' : ''); // add microseconds if presented
-                        if ($this->type === 'date') {
-                            $format = $dateFormat;
-                        } elseif ($this->type === 'time') {
-                            $format = $timeFormat;
-                        } else {
-                            $format = $dateFormat . '\T' . $timeFormat . 'P'; // ISO 8601 format 2004-02-12T15:19:21+00:00
-                        }
+        $value = ($value === null /* why not func_num_args() === 1 */ ? $this->get() : $this->normalize($value));
 
-                        return $v->format($format);
-                    }
-
-                    return (string) $v;
-                case 'array':
-                    return json_encode($v); // todo use Persistence->jsonEncode() instead
-                case 'object':
-                    return json_encode($v); // todo use Persistence->jsonEncode() instead
-                default:
-                    return (string) $v;
-            }
-        } catch (Exception $e) {
-            $e->addMoreInfo('field', $this);
-
-            throw $e;
-        }
+        return (string) $this->typecastSaveField($value, true);
     }
 
     /**
@@ -315,18 +305,34 @@ class Field implements Expressionable
      *
      * @return mixed
      */
-    private function typecastSaveField($value, bool $allowDummyPersistence = false)
+    private function typecastSaveField($value, bool $allowGenericPersistence = false)
     {
         $persistence = $this->getOwner()->persistence;
         if ($persistence === null) {
-            if ($allowDummyPersistence) {
-                $persistence = (new \ReflectionClass(Persistence\Sql::class))->newInstanceWithoutConstructor();
+            if ($allowGenericPersistence) {
+                $persistence = new class() extends Persistence {
+                    public function __construct()
+                    {
+                    }
+                };
             } else {
                 $this->getOwner()->checkPersistence();
             }
         }
 
-        return $persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $value])[$this->getPersistenceName()];
+        return $persistence->typecastSaveField($this, $value);
+    }
+
+    /**
+     * @param mixed|void $value
+     */
+    private function getValueForCompare($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return (string) $this->typecastSaveField($value, true);
     }
 
     /**
@@ -345,20 +351,9 @@ class Field implements Expressionable
             $value2 = $this->get();
         }
 
-        $typecastFunc = function ($value): ?string {
-            // do not typecast null values, because that implies calling normalize()
-            // which tries to validate if value is not null in case field value is required
-            if ($value === null) {
-                return null;
-            }
-
-            $valueDb = $this->typecastSaveField($value, true);
-
-            return is_object($valueDb) ? serialize($valueDb) : (string) $valueDb;
-        };
-
-        // compare if typecasted values are the same using strict comparison
-        return $typecastFunc($value) === $typecastFunc($value2);
+        // TODO, see https://stackoverflow.com/questions/48382457/mysql-json-column-change-array-order-after-saving
+        // at least MySQL sorts the JSON keys if stored natively
+        return $this->getValueForCompare($value) === $this->getValueForCompare($value2);
     }
 
     public function getReference(): ?Reference
@@ -407,13 +402,15 @@ class Field implements Expressionable
             $allowArray = false;
         }
 
-        return [
-            $this,
-            $operator,
-            is_array($value) && $allowArray
-                ? array_map(fn ($value) => $typecastField->typecastSaveField($value), $value)
-                : $typecastField->typecastSaveField($value),
-        ];
+        if ($value instanceof Persistence\Array_\Action) { // needed to pass hintable tests
+            $v = $value;
+        } elseif (is_array($value) && $allowArray) {
+            $v = array_map(fn ($value) => $typecastField->typecastSaveField($value), $value);
+        } else {
+            $v = $typecastField->typecastSaveField($value);
+        }
+
+        return [$this, $operator, $v];
     }
 
     // }}}

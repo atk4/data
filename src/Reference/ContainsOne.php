@@ -18,7 +18,7 @@ class ContainsOne extends Reference
      *
      * @var string
      */
-    public $type = 'array';
+    public $type = 'json';
 
     /**
      * Is it system field?
@@ -75,7 +75,7 @@ class ContainsOne extends Reference
 
     protected function getDefaultPersistence(Model $theirModel): Persistence
     {
-        return new Persistence\ArrayOfStrings([
+        return new Persistence\Array_([
             $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],
         ]);
     }
