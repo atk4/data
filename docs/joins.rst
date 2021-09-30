@@ -132,7 +132,7 @@ like this: foreign_table.'_id'. Here is usage example::
         'prefix' => 'cc_',
         'master_field' => 'default_credit_card_id'
     ]);
-    $j_cc->addField('number');  // creates cc_number
+    $j_cc->addField('integer');  // creates cc_number
     $j_cc->addField('name');    // creates cc_name
 
 Master field can also be specified as an object of a Field class.
