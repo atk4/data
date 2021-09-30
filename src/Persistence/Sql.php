@@ -445,8 +445,8 @@ class Sql extends Persistence
             case 'date':
             case 'datetime':
             case 'time':
-                $dt_class = $field->dateTimeClass ?? \DateTime::class;
-                $tz_class = $field->dateTimeZoneClass ?? \DateTimeZone::class;
+                $dt_class = \DateTime::class;
+                $tz_class = \DateTimeZone::class;
 
                 if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
                     $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
@@ -521,8 +521,8 @@ class Sql extends Persistence
             case 'date':
             case 'datetime':
             case 'time':
-                $dt_class = $field->dateTimeClass ?? \DateTime::class;
-                $tz_class = $field->dateTimeZoneClass ?? \DateTimeZone::class;
+                $dt_class = \DateTime::class;
+                $tz_class = \DateTimeZone::class;
 
                 if (is_numeric($v)) {
                     $v = new $dt_class('@' . $v);
@@ -557,7 +557,7 @@ class Sql extends Persistence
 
                     // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
                     // this is what Carbon::instance(DateTime $dt) method does for example
-                    if ($dt_class !== 'DateTime') {
+                    if ($dt_class !== \DateTime::class) { // @phpstan-ignore-line
                         $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                     }
                 }
