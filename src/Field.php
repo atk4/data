@@ -42,7 +42,7 @@ class Field implements Expressionable
         }
     }
 
-    public function setDefaults(array $properties, bool $passively = false)
+    public function setDefaults(array $properties, bool $passively = false): self
     {
         $this->_setDefaults($properties, $passively);
 
