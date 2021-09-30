@@ -6,8 +6,9 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 
-class PersistentSqlTest extends \Atk4\Schema\PhpunitTestCase
+class PersistentSqlTest extends TestCase
 {
     public function testLoadArray(): void
     {

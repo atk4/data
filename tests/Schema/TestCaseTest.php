@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Schema\Tests;
+namespace Atk4\Data\Tests\Schema;
 
-use Atk4\Schema\PhpunitTestCase;
+use Atk4\Data\Schema\TestCase;
 
-class PhpunitTestCaseTest extends PhpunitTestCase
+class TestCaseTest extends TestCase
 {
     public function testInit(): void
     {

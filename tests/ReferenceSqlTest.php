@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
@@ -13,7 +14,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
  * also that the original model can be re-loaded with a different
  * value without making any condition stick.
  */
-class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
+class ReferenceSqlTest extends TestCase
 {
     public function testBasic(): void
     {

@@ -6,11 +6,12 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
-class ExpressionSqlTest extends \Atk4\Schema\PhpunitTestCase
+class ExpressionSqlTest extends TestCase
 {
     public function testNakedExpression(): void
     {

@@ -8,9 +8,10 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Atk4\Data\ValidationException;
 
-class FieldTest extends \Atk4\Schema\PhpunitTestCase
+class FieldTest extends TestCase
 {
     public function testDirty1(): void
     {

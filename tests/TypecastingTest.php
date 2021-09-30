@@ -7,9 +7,10 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 
-class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
+class TypecastingTest extends TestCase
 {
     /** @var string */
     private $defaultTzBackup;

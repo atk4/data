@@ -7,8 +7,9 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 
-class SerializeTest extends \Atk4\Schema\PhpunitTestCase
+class SerializeTest extends TestCase
 {
     public function testBasicSerialize(): void
     {

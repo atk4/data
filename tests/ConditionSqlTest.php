@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
-class ConditionSqlTest extends \Atk4\Schema\PhpunitTestCase
+class ConditionSqlTest extends TestCase
 {
     public function testBasic(): void
     {

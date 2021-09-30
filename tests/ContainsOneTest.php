@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
+use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\ContainsOne\Country;
 use Atk4\Data\Tests\ContainsOne\Invoice;
 
@@ -21,7 +22,7 @@ use Atk4\Data\Tests\ContainsOne\Invoice;
  * ATK Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
  */
-class ContainsOneTest extends \Atk4\Schema\PhpunitTestCase
+class ContainsOneTest extends TestCase
 {
     protected function setUp(): void
     {

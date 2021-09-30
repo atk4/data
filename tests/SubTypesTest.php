@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 
 class StAccount extends Model
 {
@@ -146,7 +147,7 @@ class StTransaction_TransferIn extends StGenericTransaction
 /**
  * Implements various tests for deep copying objects.
  */
-class SubTypesTest extends \Atk4\Schema\PhpunitTestCase
+class SubTypesTest extends TestCase
 {
     protected function setUp(): void
     {

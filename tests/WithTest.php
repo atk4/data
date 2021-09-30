@@ -7,9 +7,10 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
-class WithTest extends \Atk4\Schema\PhpunitTestCase
+class WithTest extends TestCase
 {
     public function testWith(): void
     {

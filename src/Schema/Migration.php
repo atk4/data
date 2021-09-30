@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Schema;
+namespace Atk4\Data\Schema;
 
 use Atk4\Core\Exception;
 use Atk4\Data\Field;

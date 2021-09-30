@@ -37,7 +37,7 @@ parameters:
             count: 11
 
         # TODO these rules are generated, this ignores should be fixed in the code
-        # for src-schema/PhpunitTestCase.php
+        # for src/Schema/TestCase.php
         - '~^Access to an undefined property Atk4\\Data\\Persistence::\$connection\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence::dsql\(\)\.$~'
         # for src/FieldSqlExpression.php

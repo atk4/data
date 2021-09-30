@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Util\DeepCopy;
 use Atk4\Data\Util\DeepCopyException;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
@@ -137,7 +138,7 @@ class DcPayment extends Model
 /**
  * Implements various tests for deep copying objects.
  */
-class DeepCopyTest extends \Atk4\Schema\PhpunitTestCase
+class DeepCopyTest extends TestCase
 {
     protected function setUp(): void
     {

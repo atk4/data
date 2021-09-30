@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Static_ as Persistence_Static;
+use Atk4\Data\Schema\TestCase;
 
 trait UaReminder
 {
@@ -43,7 +44,7 @@ class UaClient extends Model
     }
 }
 
-class UserActionTest extends \Atk4\Schema\PhpunitTestCase
+class UserActionTest extends TestCase
 {
     /** @var Persistence_Static */
     public $pers;

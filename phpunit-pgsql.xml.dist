@@ -8,7 +8,6 @@
     <testsuites>
         <testsuite name="tests">
             <directory>tests</directory>
-            <directory>tests-schema</directory>
         </testsuite>
     </testsuites>
     <listeners>
@@ -17,7 +16,6 @@
     <coverage>
         <include>
             <directory suffix=".php">src</directory>
-            <directory suffix=".php">src-schema</directory>
         </include>
         <report>
             <php outputFile="build/logs/clover-pgsql.cov" />

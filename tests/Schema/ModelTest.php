@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Schema\Tests;
+namespace Atk4\Data\Tests\Schema;
 
 use Atk4\Data\Model;
-use Atk4\Schema\PhpunitTestCase;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
-class ModelTest extends PhpunitTestCase
+class ModelTest extends TestCase
 {
     /**
      * @doesNotPerformAssertions
