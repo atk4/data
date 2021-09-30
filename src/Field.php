@@ -402,13 +402,15 @@ class Field implements Expressionable
             $allowArray = false;
         }
 
-        return [
-            $this,
-            $operator,
-            is_array($value) && $allowArray
-                ? array_map(fn ($value) => $typecastField->typecastSaveField($value), $value)
-                : $typecastField->typecastSaveField($value),
-        ];
+        if ($value instanceof Persistence\Array_\Action) { // needed to pass hintable tests
+            $v = $value;
+        } elseif (is_array($value) && $allowArray) {
+            $v = array_map(fn ($value) => $typecastField->typecastSaveField($value), $value);
+        } else {
+            $v = $typecastField->typecastSaveField($value);
+        }
+
+        return [$this, $operator, $v];
     }
 
     // }}}
