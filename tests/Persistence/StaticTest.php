@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data\Tests;
+namespace Atk4\Data\Tests\Persistence;
 
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-class StaticPersistenceTest extends TestCase
+class StaticTest extends TestCase
 {
     public function testBasicStatic(): void
     {

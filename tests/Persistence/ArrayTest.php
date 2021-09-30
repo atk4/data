@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data\Tests;
+namespace Atk4\Data\Tests\Persistence;
 
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
@@ -11,7 +11,7 @@ use Atk4\Data\Persistence;
 use Atk4\Data\Tests\Model\Female as Female;
 use Atk4\Data\Tests\Model\Male as Male;
 
-class PersistentArrayTest extends TestCase
+class ArrayTest extends TestCase
 {
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {

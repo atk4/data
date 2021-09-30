@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data\Tests;
+namespace Atk4\Data\Tests\Persistence;
 
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
@@ -10,7 +10,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Tests\Model\Person;
 
-class PersistenceCsvTest extends TestCase
+class CsvTest extends TestCase
 {
     /** @var resource */
     protected $file;
