@@ -252,9 +252,9 @@ Creates multiple field objects in one method call. See multiple syntax examples:
     $m->addFields([
         'last_name',
         'login' => ['default' => 'unknown'],
-        'salary' => ['type' => 'money', CustomField::class, 'default' => 100],
-        ['tax', CustomField::class, 'type' => 'money', 'default' => 20],
-        'vat' => new CustomField(['type' => 'money', 'default' => 15]),
+        'salary' => ['type' => 'atk4_money', CustomField::class, 'default' => 100],
+        ['tax', CustomField::class, 'type' => 'atk4_money', 'default' => 20],
+        'vat' => new CustomField(['type' => 'atk4_money', 'default' => 15]),
     ]);
 
 
@@ -320,18 +320,6 @@ This can also be useful for calculating relative times::
    }
 
 
-Strict Fields
-^^^^^^^^^^^^^
-
-.. php:property:: strict_fields
-
-By default model will only allow you to operate with values for the fields
-that have been defined through addField(). If you attempt to get, set or
-otherwise access the value of any other field that has not been properly
-defined, you'll get an exception. Read more about :php:class:`Field`
-
-If you set `strict_fields` to false, then the check will not be performed.
-
 Actions
 -------
 Another common thing to define inside :php:meth:`Model::init()` would be
@@ -357,7 +345,7 @@ a user invokable actions::
 
          $this->save(['password' => .. ]);
 
-         return 'generated and sent password to '.$m->get('name');
+         return 'generated and sent password to ' . $m->get('name');
       }
    }
 

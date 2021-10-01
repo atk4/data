@@ -39,7 +39,7 @@
         "ext-pdo": "*",
         "atk4/core": "dev-develop",
         "doctrine/dbal": "^2.13.3 || ^3.0",
-        "mahalux/atk4-hintable": "~1.3.2"
+        "mvorisek/atk4-hintable": "~1.5.0"
     },
     "require-release": {
         "php": ">=7.4.0",
@@ -47,11 +47,7 @@
         "ext-pdo": "*",
         "atk4/core": "~3.1.0",
         "doctrine/dbal": "^2.13.3 || ^3.0",
-        "mahalux/atk4-hintable": "~1.3.2"
-    },
-    "conflict": {
-        "atk4/dsql": "*",
-        "atk4/schema": "*"
+        "mvorisek/atk4-hintable": "~1.5.0"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.13",
@@ -69,8 +65,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Atk4\\Data\\": "src/",
-            "Atk4\\Schema\\": "src-schema/"
+            "Atk4\\Data\\": "src/"
         },
         "files": [
             "bootstrap-types.php"
@@ -78,8 +73,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Atk4\\Data\\Tests\\": "tests/",
-            "Atk4\\Schema\\Tests\\": "tests-schema/"
+            "Atk4\\Data\\Tests\\": "tests/"
         }
     },
     "minimum-stability": "dev",

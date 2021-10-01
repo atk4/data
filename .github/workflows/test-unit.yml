@@ -64,8 +64,8 @@ jobs:
       - name: "Run tests: SQLite Hintable (only for Phpunit)"
         if: matrix.type == 'Phpunit'
         run: |
-          sed -i 's~"psr-4": {~"psr-4": { "Mvorisek\\\\Atk4\\\\Hintable\\\\Tests\\\\": "vendor/mahalux/atk4-hintable/tests/",~' composer.json && composer dump
-          vendor/bin/phpunit --configuration vendor/mahalux/atk4-hintable/phpunit.xml.dist --bootstrap vendor/autoload.php --no-coverage -v
+          sed -i 's~"psr-4": {~"psr-4": { "Mvorisek\\\\Atk4\\\\Hintable\\\\Tests\\\\": "vendor/mvorisek/atk4-hintable/tests/",~' composer.json && composer dump
+          vendor/bin/phpunit --configuration vendor/mvorisek/atk4-hintable/phpunit.xml.dist --bootstrap vendor/autoload.php --no-coverage -v
 
       - name: Check Coding Style (only for CodingStyle)
         if: matrix.type == 'CodingStyle'

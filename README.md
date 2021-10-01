@@ -140,7 +140,7 @@ class JobReport extends Job {
 
     // Build relation between job and invoice line
     $this->hasMany('InvoiceLines', ['model' => $invoice_lines])
-      ->addField('invoiced', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'money']);
+      ->addField('invoiced', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'atk4_money']);
 
     // Next we need to see how much is reported through timesheets
     $timesheet = new Timesheet($this->persistence);
@@ -153,7 +153,7 @@ class JobReport extends Job {
 
     // Build relation between Job and Timesheets
     $this->hasMany('Timesheets', ['model' => $timesheet])
-      ->addField('reported', ['aggregate' => 'sum', 'field' => 'cost', 'type' => 'money']);
+      ->addField('reported', ['aggregate' => 'sum', 'field' => 'cost', 'type' => 'atk4_money']);
 
 	// Finally lets calculate profit
     $this->addExpression('profit', '[invoiced]-[reported]');
@@ -565,6 +565,7 @@ Define your first model class:
 
 ``` php
 namespace my;
+
 class User extends \Atk4\Data\Model
 {
     public $table = 'user';
@@ -572,7 +573,7 @@ class User extends \Atk4\Data\Model
     {
         parent::init();
 
-        $this->addFields(['email','name','password']);
+        $this->addFields(['email', 'name', 'password']);
         // use your table fields here
     }
 }
@@ -599,7 +600,7 @@ Now you can explore. Try typing:
 > $m = new \my\User($db);
 > $m->loadBy('email', 'example@example.com')
 > $m->get()
-> $m->export(['email','name'])
+> $m->export(['email', 'name'])
 > $m->action('count')
 > $m->action('count')->getOne()
 ```

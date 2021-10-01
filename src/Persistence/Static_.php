@@ -12,7 +12,7 @@ use Atk4\Data\Model;
  * $m = new Model(Persistence\Static_(['hello', 'world']));
  * $m->load(1);
  *
- * echo $m['name'];  // world
+ * echo $m->get('name'); // world
  */
 class Static_ extends Array_
 {

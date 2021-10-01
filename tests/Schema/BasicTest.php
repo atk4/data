@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Schema\Tests;
+namespace Atk4\Data\Tests\Schema;
 
-use Atk4\Schema\PhpunitTestCase;
+use Atk4\Data\Schema\TestCase;
 
-class BasicTest extends PhpunitTestCase
+class BasicTest extends TestCase
 {
     /**
      * @doesNotPerformAssertions
@@ -24,7 +24,7 @@ class BasicTest extends PhpunitTestCase
             ->field('dt', ['type' => 'date'])
             ->field('dttm', ['type' => 'datetime'])
             ->field('fl', ['type' => 'float'])
-            ->field('mn', ['type' => 'money'])
+            ->field('mn', ['type' => 'atk4_money'])
             ->create();
     }
 
@@ -46,7 +46,7 @@ class BasicTest extends PhpunitTestCase
             ->field('dt', ['type' => 'date'])
             ->field('dttm', ['type' => 'datetime'])
             ->field('fl', ['type' => 'float'])
-            ->field('mn', ['type' => 'money'])
+            ->field('mn', ['type' => 'atk4_money'])
             ->create();
 
         $this->createMigrator()->table('user')->drop();

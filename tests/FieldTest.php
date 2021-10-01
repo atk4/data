@@ -8,9 +8,10 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Atk4\Data\ValidationException;
 
-class FieldTest extends \Atk4\Schema\PhpunitTestCase
+class FieldTest extends TestCase
 {
     public function testDirty1(): void
     {
@@ -216,14 +217,27 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     public function testEnum2(): void
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => [1, 'bar']]);
+        $m->addField('foo', ['enum' => ['1', 'bar']]);
+        $m = $m->createEntity();
+        $m->set('foo', '1');
+
+        $this->assertSame('1', $m->get('foo'));
+
+        $m->set('foo', 'bar');
+        $this->assertSame('bar', $m->get('foo'));
+    }
+
+    public function testEnum2b(): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['type' => 'integer', 'enum' => [1, 2]]);
         $m = $m->createEntity();
         $m->set('foo', 1);
 
         $this->assertSame(1, $m->get('foo'));
 
-        $m->set('foo', 'bar');
-        $this->assertSame('bar', $m->get('foo'));
+        $m->set('foo', '2');
+        $this->assertSame(2, $m->get('foo'));
     }
 
     public function testEnum3(): void
@@ -260,7 +274,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     public function testValues2(): void
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [3 => 'bar']]);
+        $m->addField('foo', ['type' => 'integer', 'values' => [3 => 'bar']]);
         $m = $m->createEntity();
         $m->set('foo', 3);
 
@@ -271,15 +285,6 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     }
 
     public function testValues3(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['values' => [1 => 'bar']]);
-        $m = $m->createEntity();
-        $this->expectException(Exception::class);
-        $m->set('foo', true);
-    }
-
-    public function testValues3a(): void
     {
         $m = new Model();
         $m->addField('foo', ['values' => [1 => 'bar']]);
@@ -456,8 +461,8 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $m = new Model($db, ['table' => 'invoice']);
-        $m->addField('net', ['type' => 'money']);
-        $m->addField('vat', ['type' => 'money']);
+        $m->addField('net', ['type' => 'atk4_money']);
+        $m->addField('vat', ['type' => 'atk4_money']);
         $m->addCalculatedField('total', function ($m) {
             return $m->get('net') + $m->get('vat');
         });
@@ -491,7 +496,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
         $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
@@ -542,14 +547,6 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $this->assertFalse($m->get('boolean_enum'));
         $m->set('boolean_enum', 'Y');
         $this->assertTrue($m->get('boolean_enum'));
-
-        // date, datetime, time
-        $m->set('date', '2018-05-31');
-        $this->assertInstanceOf(\DateTime::class, $m->get('date'));
-        $m->set('datetime', '2018-05-31 12:13:14');
-        $this->assertInstanceOf(\DateTime::class, $m->get('datetime'));
-        $m->set('time', '12:13:14');
-        $this->assertInstanceOf(\DateTime::class, $m->get('time'));
     }
 
     public function testNormalizeException1(): void
@@ -582,7 +579,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     public function testNormalizeException4(): void
     {
         $m = new Model();
-        $m->addField('foo', ['type' => 'money']);
+        $m->addField('foo', ['type' => 'atk4_money']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', []);
@@ -636,7 +633,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
     public function testNormalizeException10(): void
     {
         $m = new Model();
-        $m->addField('foo', ['type' => 'money']);
+        $m->addField('foo', ['type' => 'atk4_money']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', '123---456');
@@ -685,7 +682,7 @@ class FieldTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
         $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);

@@ -7,8 +7,9 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 
-class IteratorTest extends \Atk4\Schema\PhpunitTestCase
+class IteratorTest extends TestCase
 {
     /**
      * If first argument is array, then second argument should not be used.

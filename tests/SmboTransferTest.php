@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\Model\Smbo\Account;
 use Atk4\Data\Tests\Model\Smbo\Company;
 use Atk4\Data\Tests\Model\Smbo\Payment;
 use Atk4\Data\Tests\Model\Smbo\Transfer;
 
-/**
- * Practical test contributed by Sortmybooks.com.
- */
-class SmboTransferTest extends \Atk4\Schema\PhpunitTestCase
+class SmboTransferTest extends TestCase
 {
     protected function setUp(): void
     {

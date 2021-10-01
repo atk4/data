@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Schema;
+namespace Atk4\Data\Schema;
 
 use Atk4\Core\Exception;
 use Atk4\Data\Field;
@@ -154,11 +154,6 @@ class Migration
 
     public function field(string $fieldName, array $options = []): self
     {
-        // TODO remove once we no longer support "money" database type
-        if (($options['type'] ?? null) === 'money') {
-            $options['type'] = 'float';
-        }
-
         $refType = $options['ref_type'] ?? self::REF_TYPE_NONE;
         unset($options['ref_type']);
 

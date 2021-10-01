@@ -112,7 +112,7 @@ Supported types
 - 'text' - for storing long strings, suchas notes or description. Normalize will trim the value.
 - 'boolean' - normalize will cast value to boolean.
 - 'integer' - normalize will cast value to integer.
-- 'money' - normalize will round value with 4 digits after dot.
+- 'atk4_money' - normalize will round value with 4 digits after dot.
 - 'float' - normalize will cast value to float.
 - 'date' - normalize will convert value to DateTime object.
 - 'datetime' - normalize will convert value to DateTime object.

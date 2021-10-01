@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
@@ -13,7 +14,7 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
  * also that the original model can be re-loaded with a different
  * value without making any condition stick.
  */
-class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
+class ReferenceSqlTest extends TestCase
 {
     public function testBasic(): void
     {
@@ -249,20 +250,20 @@ class ReferenceSqlTest extends \Atk4\Schema\PhpunitTestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
         $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields([
             'invoice_id',
-            ['total_net', 'type' => 'money'],
-            ['total_vat', 'type' => 'money'],
-            ['total_gross', 'type' => 'money'],
+            ['total_net', 'type' => 'atk4_money'],
+            ['total_vat', 'type' => 'atk4_money'],
+            ['total_gross', 'type' => 'atk4_money'],
         ]);
         $i->hasMany('line', ['model' => $l])
             ->addFields([
-                ['total_vat', 'aggregate' => 'sum', 'type' => 'money'],
+                ['total_vat', 'aggregate' => 'sum', 'type' => 'atk4_money'],
                 ['total_net', 'aggregate' => 'sum'],
                 ['total_gross', 'aggregate' => 'sum'],
             ]);
         $i = $i->load('1');
 
         // type was set explicitly
-        $this->assertSame('money', $i->getField('total_vat')->type);
+        $this->assertSame('atk4_money', $i->getField('total_vat')->type);
 
         // type was not set and is not inherited
         $this->assertNull($i->getField('total_net')->type);

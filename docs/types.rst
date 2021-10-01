@@ -56,7 +56,7 @@ as `['Number', 'precision' => 2, 'prefix' => '€']`
 Not only this allows us make a flexible and re-usable functionality for fields,
 but also allows for an easy way to override::
 
-    $model->addField('salary', ['type' => 'money', 'precision' => 4', 'prefix' => false, 'postfix' => 'Rub']);
+    $model->addField('salary', ['type' => 'atk4_money', 'precision' => 4', 'prefix' => false, 'postfix' => 'Rub']);
 
 Although some configuration of the field may appear irrelevant (prefix/postfix)
 to operations with data from inside PHP, those properties can be used by

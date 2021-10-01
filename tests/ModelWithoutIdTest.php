@@ -7,12 +7,13 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 
 /**
  * Tests cases when model have to work with data that does not have ID field.
  */
-class ModelWithoutIdTest extends \Atk4\Schema\PhpunitTestCase
+class ModelWithoutIdTest extends TestCase
 {
     /** @var Model */
     public $m;

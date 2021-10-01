@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 
 /**
  * Country.
@@ -136,10 +137,7 @@ class LFriend extends Model
     }
 }
 
-/**
- * ATK Data has an option to lookup ID values if their "lookup" values are specified.
- */
-class LookupSqlTest extends \Atk4\Schema\PhpunitTestCase
+class LookupSqlTest extends TestCase
 {
     protected function setUp(): void
     {

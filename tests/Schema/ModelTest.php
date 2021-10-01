@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Schema\Tests;
+namespace Atk4\Data\Tests\Schema;
 
 use Atk4\Data\Model;
-use Atk4\Schema\PhpunitTestCase;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
-class ModelTest extends PhpunitTestCase
+class ModelTest extends TestCase
 {
     /**
      * @doesNotPerformAssertions
@@ -41,7 +41,7 @@ class ModelTest extends PhpunitTestCase
             ->field('str', ['type' => 'string'])
             ->field('bool', ['type' => 'boolean'])
             ->field('int', ['type' => 'integer'])
-            ->field('mon', ['type' => 'money'])
+            ->field('mon', ['type' => 'atk4_money'])
             ->field('flt', ['type' => 'float'])
             ->field('date', ['type' => 'date'])
             ->field('datetime', ['type' => 'datetime'])

@@ -14,7 +14,7 @@ class ReferenceTest extends TestCase
     public function testBasicReferences(): void
     {
         $user = new Model(null, ['table' => 'user']);
-        $user->addField('id');
+        $user->addField('id', ['type' => 'integer']);
         $user->addField('name');
         $user = $user->createEntity();
         $user->setId(1);
@@ -22,7 +22,7 @@ class ReferenceTest extends TestCase
         $order = new Model();
         $order->addField('id');
         $order->addField('amount', ['default' => 20]);
-        $order->addField('user_id');
+        $order->addField('user_id', ['type' => 'integer']);
 
         $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders')->createEntity();

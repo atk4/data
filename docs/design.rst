@@ -162,7 +162,7 @@ Code::
     class Model_Client extends Model_User {
         public function sendPasswordReminder() {
 
-            mail($this->get('email'), 'Your password is: '.$this->get('password'));
+            mail($this->get('email'), 'Your password is: ' . $this->get('password'));
         }
     }
 
@@ -206,7 +206,7 @@ Code to declare fields::
             parent::init();
 
             $this->addField('description');
-            $this->addField('amount')->type('money');
+            $this->addField('amount')->type('atk4_money');
             $this->addField('is_paid')->type('boolean');
         }
     }

@@ -25,7 +25,7 @@ class Line extends Model
 
         $this->hasOne($this->fieldName()->vat_rate_id, ['model' => [VatRate::class]]);
 
-        $this->addField($this->fieldName()->price, ['type' => 'money', 'required' => true]);
+        $this->addField($this->fieldName()->price, ['type' => 'atk4_money', 'required' => true]);
         $this->addField($this->fieldName()->qty, ['type' => 'float', 'required' => true]);
         $this->addField($this->fieldName()->add_date, ['type' => 'datetime']);
 

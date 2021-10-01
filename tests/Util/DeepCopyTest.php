@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data\Tests;
+namespace Atk4\Data\Tests\Util;
 
 use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Util\DeepCopy;
 use Atk4\Data\Util\DeepCopyException;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
@@ -88,7 +89,7 @@ class DcInvoiceLine extends Model
         $this->addCondition('type', '=', 'invoice');
 
         $this->addField('qty', ['type' => 'integer', 'mandatory' => true]);
-        $this->addField('price', ['type' => 'money']);
+        $this->addField('price', ['type' => 'atk4_money']);
         $this->addField('vat', ['type' => 'float', 'default' => 0.21]);
 
         // total is calculated with VAT
@@ -112,7 +113,7 @@ class DcQuoteLine extends Model
         $this->addCondition('type', '=', 'quote');
 
         $this->addField('qty', ['type' => 'integer']);
-        $this->addField('price', ['type' => 'money']);
+        $this->addField('price', ['type' => 'atk4_money']);
 
         // total is calculated WITHOUT VAT
         $this->addExpression('total', '[qty]*[price]');
@@ -130,14 +131,14 @@ class DcPayment extends Model
 
         $this->hasOne('invoice_id', ['model' => [DcInvoice::class]]);
 
-        $this->addField('amount', ['type' => 'money']);
+        $this->addField('amount', ['type' => 'atk4_money']);
     }
 }
 
 /**
  * Implements various tests for deep copying objects.
  */
-class DeepCopyTest extends \Atk4\Schema\PhpunitTestCase
+class DeepCopyTest extends TestCase
 {
     protected function setUp(): void
     {

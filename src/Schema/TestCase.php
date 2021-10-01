@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Schema;
+namespace Atk4\Data\Schema;
 
-use Atk4\Core\Phpunit\TestCase;
+use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Doctrine\DBAL\Logging\SQLLogger;
@@ -12,7 +12,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
-class PhpunitTestCase extends TestCase
+class TestCase extends BaseTestCase
 {
     /** @var Persistence|Persistence\Sql Persistence instance */
     public $db;
@@ -45,10 +45,10 @@ class PhpunitTestCase extends TestCase
         if ($this->debug) {
             $this->db->connection->connection()->getConfiguration()->setSQLLogger(
                 new class($this) implements SQLLogger {
-                    /** @var PhpunitTestCase */
+                    /** @var TestCase */
                     public $testCase;
 
-                    public function __construct(PhpunitTestCase $testCase)
+                    public function __construct(TestCase $testCase)
                     {
                         $this->testCase = $testCase;
                     }
@@ -103,7 +103,7 @@ class PhpunitTestCase extends TestCase
 
     public function createMigrator(Model $model = null): Migration
     {
-        return new \Atk4\Schema\Migration($model ?: $this->db);
+        return new Migration($model ?: $this->db);
     }
 
     /**

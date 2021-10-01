@@ -9,6 +9,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 
 class SCountry extends Model
@@ -68,7 +69,7 @@ class STicket extends Model
     }
 }
 
-class ScopeTest extends \Atk4\Schema\PhpunitTestCase
+class ScopeTest extends TestCase
 {
     protected function setUp(): void
     {

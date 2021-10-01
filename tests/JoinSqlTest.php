@@ -7,11 +7,12 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
-class JoinSqlTest extends \Atk4\Schema\PhpunitTestCase
+class JoinSqlTest extends TestCase
 {
     public function testDirection(): void
     {

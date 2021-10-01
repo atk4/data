@@ -35,13 +35,13 @@ class BusinessModelTest extends TestCase
         $m = $m->createEntity();
 
         $m->set('name', 5);
-        $this->assertSame(5, $m->get('name'));
+        $this->assertSame('5', $m->get('name'));
 
         $m->set('surname', 'Bilbo');
-        $this->assertSame(5, $m->get('name'));
+        $this->assertSame('5', $m->get('name'));
         $this->assertSame('Bilbo', $m->get('surname'));
 
-        $this->assertSame(['name' => 5, 'surname' => 'Bilbo'], $m->get());
+        $this->assertSame(['name' => '5', 'surname' => 'Bilbo'], $m->get());
     }
 
     public function testNoFieldException(): void
@@ -76,7 +76,7 @@ class BusinessModelTest extends TestCase
         $this->assertSame([], $m->getDirtyRef());
 
         $m->set('name', '6');
-        $this->assertSame(['name' => 5], $m->getDirtyRef());
+        $this->assertSame(['name' => '5'], $m->getDirtyRef());
         $m->set('name', '5');
         $this->assertSame([], $m->getDirtyRef());
 
@@ -158,12 +158,9 @@ class BusinessModelTest extends TestCase
         $m->allFields();
 
         $m->set('name', 5);
-        $this->assertSame(5, $m->get('name'));
+        $this->assertSame('5', $m->get('name'));
     }
 
-    /**
-     * Sets title field.
-     */
     public function testSetTitle(): void
     {
         $m = new Model();
@@ -241,7 +238,7 @@ class BusinessModelTest extends TestCase
     {
         $m = new User();
 
-        $m->addField('salary', ['default' => 1000]);
+        $m->addField('salary', ['type' => 'integer', 'default' => 1000]);
         $m = $m->createEntity();
 
         $this->assertSame(1000, $m->get('salary'));

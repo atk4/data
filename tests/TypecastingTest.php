@@ -7,9 +7,10 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 
-class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
+class TypecastingTest extends TestCase
 {
     /** @var string */
     private $defaultTzBackup;
@@ -57,7 +58,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('json', ['type' => 'json']);
@@ -151,7 +152,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('time', ['type' => 'time']);
         $m->addField('boolean', ['type' => 'boolean']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
@@ -264,7 +265,7 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
         $m->addField('time', ['type' => 'time']);
         $m->addField('b1', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('b2', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
 
@@ -549,13 +550,13 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testDirtyTime(): void
     {
-        $sql_time = '11:44:08';
-        $sql_time_new = '12:34:56';
+        $sql_time = new \DateTime('11:44:08 GMT');
+        $sql_time_new = new \DateTime('12:34:56 GMT');
 
         $this->setDb([
             'types' => [
                 [
-                    'date' => $sql_time,
+                    'date' => $sql_time->format('H:i:s'),
                 ],
             ],
         ]);
@@ -577,8 +578,8 @@ class TypecastingTest extends \Atk4\Schema\PhpunitTestCase
 
     public function testDirtyTimeAfterSave(): void
     {
-        $sql_time = '11:44:08';
-        $sql_time_new = '12:34:56';
+        $sql_time = new \DateTime('11:44:08 GMT');
+        $sql_time_new = new \DateTime('12:34:56 GMT');
 
         $this->setDb([
             'types' => [

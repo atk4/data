@@ -20,6 +20,6 @@ class Document extends Model
 
         $this->addField('doc_type', ['enum' => ['invoice', 'payment']]);
 
-        $this->addField('amount', ['type' => 'money']);
+        $this->addField('amount', ['type' => 'atk4_money']);
     }
 }
