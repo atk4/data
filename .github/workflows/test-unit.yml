@@ -93,10 +93,8 @@ jobs:
       fail-fast: false
       matrix:
         php: ['7.4', '8.0', '8.1']
-        type: ['Phpunit']
+        type: ['Phpunit', 'Phpunit Lowest']
         include:
-          - php: 'latest'
-            type: 'Phpunit Lowest'
           - php: 'latest'
             type: 'Phpunit Burn'
     env:
