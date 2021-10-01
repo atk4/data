@@ -62,7 +62,7 @@ SQL Reference
     Second argument could be array containing additional settings for the field::
 
         $model->hasOne('account_id', ['model' => [Account::class]])
-            ->addField('account_balance', ['balance', 'type' => 'money']);
+            ->addField('account_balance', ['balance', 'type' => 'atk4_money']);
 
     Returns new field object.
 
@@ -79,7 +79,7 @@ SQL Reference
             ->addFields([
                 'opening_balance',
                 'balance'
-            ], ['type' => 'money']);
+            ], ['type' => 'atk4_money']);
 
     You can also specify aliases::
 
@@ -87,7 +87,7 @@ SQL Reference
             ->addFields([
                 'opening_balance',
                 'account_balance' => 'balance'
-            ], ['type' => 'money']);
+            ], ['type' => 'atk4_money']);
 
     If you need to pass more details to individual field, you can also use sub-array::
 
@@ -96,7 +96,7 @@ SQL Reference
             [
                 ['opening_balance', 'caption' => 'The Opening Balance'],
                 'account_balance' => 'balance'
-            ], ['type' => 'money']);
+            ], ['type' => 'atk4_money']);
 
     Returns $this.
 

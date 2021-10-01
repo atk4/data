@@ -457,8 +457,8 @@ class FieldTest extends TestCase
         ]);
 
         $m = new Model($db, ['table' => 'invoice']);
-        $m->addField('net', ['type' => 'money']);
-        $m->addField('vat', ['type' => 'money']);
+        $m->addField('net', ['type' => 'atk4_money']);
+        $m->addField('vat', ['type' => 'atk4_money']);
         $m->addCalculatedField('total', function ($m) {
             return $m->get('net') + $m->get('vat');
         });
@@ -492,7 +492,7 @@ class FieldTest extends TestCase
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
         $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
@@ -583,7 +583,7 @@ class FieldTest extends TestCase
     public function testNormalizeException4(): void
     {
         $m = new Model();
-        $m->addField('foo', ['type' => 'money']);
+        $m->addField('foo', ['type' => 'atk4_money']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', []);
@@ -637,7 +637,7 @@ class FieldTest extends TestCase
     public function testNormalizeException10(): void
     {
         $m = new Model();
-        $m->addField('foo', ['type' => 'money']);
+        $m->addField('foo', ['type' => 'atk4_money']);
         $m = $m->createEntity();
         $this->expectException(ValidationException::class);
         $m->set('foo', '123---456');
@@ -686,7 +686,7 @@ class FieldTest extends TestCase
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
         $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);

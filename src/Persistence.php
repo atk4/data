@@ -372,11 +372,8 @@ abstract class Persistence
 
                 break;
             case 'float':
+            case 'atk4_money':
                 $value = (float) $value;
-
-                break;
-            case 'money':
-                $value = round((float) $value, 4);
 
                 break;
             case 'boolean':

@@ -206,7 +206,7 @@ Code to declare fields::
             parent::init();
 
             $this->addField('description');
-            $this->addField('amount')->type('money');
+            $this->addField('amount')->type('atk4_money');
             $this->addField('is_paid')->type('boolean');
         }
     }

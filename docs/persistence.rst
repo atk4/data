@@ -158,7 +158,7 @@ It's not only the 'type' property, but 'enum' can also imply restrictions::
 
 There are also non-trivial types in Agile Data::
 
-    $m->addField('salary', ['type' => 'money']);
+    $m->addField('salary', ['type' => 'atk4_money']);
     $m->set('salary', "20");  // converts to 20.00
 
     $m->addField('date', ['type' => 'date']);
@@ -273,7 +273,7 @@ Your init() method for a Field_Currency might look like this::
 
         $this->getOwner()->addField(
             $f.'_amount',
-            ['type' => 'money', 'system' => true]
+            ['type' => 'atk4_money', 'system' => true]
         );
 
         $this->getOwner()->hasOne(

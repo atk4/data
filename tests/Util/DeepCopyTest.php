@@ -89,7 +89,7 @@ class DcInvoiceLine extends Model
         $this->addCondition('type', '=', 'invoice');
 
         $this->addField('qty', ['type' => 'integer', 'mandatory' => true]);
-        $this->addField('price', ['type' => 'money']);
+        $this->addField('price', ['type' => 'atk4_money']);
         $this->addField('vat', ['type' => 'float', 'default' => 0.21]);
 
         // total is calculated with VAT
@@ -113,7 +113,7 @@ class DcQuoteLine extends Model
         $this->addCondition('type', '=', 'quote');
 
         $this->addField('qty', ['type' => 'integer']);
-        $this->addField('price', ['type' => 'money']);
+        $this->addField('price', ['type' => 'atk4_money']);
 
         // total is calculated WITHOUT VAT
         $this->addExpression('total', '[qty]*[price]');
@@ -131,7 +131,7 @@ class DcPayment extends Model
 
         $this->hasOne('invoice_id', ['model' => [DcInvoice::class]]);
 
-        $this->addField('amount', ['type' => 'money']);
+        $this->addField('amount', ['type' => 'atk4_money']);
     }
 }
 

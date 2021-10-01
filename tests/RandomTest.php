@@ -148,9 +148,9 @@ class RandomTest extends TestCase
         $m->addFields([
             'last_name',
             'login' => ['default' => 'unknown'],
-            'salary' => ['type' => 'money', CustomField::class, 'default' => 100],
-            ['tax', CustomField::class, 'type' => 'money', 'default' => 20],
-            'vat' => new CustomField(['type' => 'money', 'default' => 15]),
+            'salary' => ['type' => 'atk4_money', CustomField::class, 'default' => 100],
+            ['tax', CustomField::class, 'type' => 'atk4_money', 'default' => 20],
+            'vat' => new CustomField(['type' => 'atk4_money', 'default' => 15]),
         ]);
 
         $m->insert([]);

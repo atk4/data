@@ -199,7 +199,7 @@ for a sum.
 
 You can also specify a type yourself::
 
-    ->addField('paid_amount', ['aggregate' => 'sum', 'field' => 'amount', 'type' => 'money']);
+    ->addField('paid_amount', ['aggregate' => 'sum', 'field' => 'amount', 'type' => 'atk4_money']);
 
 Aggregate fields are always declared read-only, and if you try to
 change them (`$m->set('paid_amount', 123);`), you will receive exception.

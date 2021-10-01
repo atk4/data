@@ -33,10 +33,10 @@ class WithTest extends TestCase
         // setup models
         $m_user = new Model($db, ['table' => 'user']);
         $m_user->addField('name');
-        $m_user->addField('salary', ['type' => 'money']);
+        $m_user->addField('salary', ['type' => 'atk4_money']);
 
         $m_invoice = new Model($db, ['table' => 'invoice']);
-        $m_invoice->addField('net', ['type' => 'money']);
+        $m_invoice->addField('net', ['type' => 'atk4_money']);
         $m_invoice->hasOne('user_id', ['model' => $m_user]);
         $m_invoice->addCondition('net', '>', 100);
 

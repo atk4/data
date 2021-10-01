@@ -24,7 +24,7 @@ class BasicTest extends TestCase
             ->field('dt', ['type' => 'date'])
             ->field('dttm', ['type' => 'datetime'])
             ->field('fl', ['type' => 'float'])
-            ->field('mn', ['type' => 'money'])
+            ->field('mn', ['type' => 'atk4_money'])
             ->create();
     }
 
@@ -46,7 +46,7 @@ class BasicTest extends TestCase
             ->field('dt', ['type' => 'date'])
             ->field('dttm', ['type' => 'datetime'])
             ->field('fl', ['type' => 'float'])
-            ->field('mn', ['type' => 'money'])
+            ->field('mn', ['type' => 'atk4_money'])
             ->create();
 
         $this->createMigrator()->table('user')->drop();

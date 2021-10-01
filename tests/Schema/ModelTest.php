@@ -41,7 +41,7 @@ class ModelTest extends TestCase
             ->field('str', ['type' => 'string'])
             ->field('bool', ['type' => 'boolean'])
             ->field('int', ['type' => 'integer'])
-            ->field('mon', ['type' => 'money'])
+            ->field('mon', ['type' => 'atk4_money'])
             ->field('flt', ['type' => 'float'])
             ->field('date', ['type' => 'date'])
             ->field('datetime', ['type' => 'datetime'])

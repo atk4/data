@@ -26,7 +26,7 @@ class Invoice extends Model
         $this->title_field = $this->fieldName()->ref_no;
 
         $this->addField($this->fieldName()->ref_no, ['required' => true]);
-        $this->addField($this->fieldName()->amount, ['type' => 'money']);
+        $this->addField($this->fieldName()->amount, ['type' => 'atk4_money']);
 
         // will contain many Lines
         $this->containsMany($this->fieldName()->lines, ['model' => [Line::class], 'caption' => 'My Invoice Lines']);

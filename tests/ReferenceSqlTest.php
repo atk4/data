@@ -250,20 +250,20 @@ class ReferenceSqlTest extends TestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
         $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields([
             'invoice_id',
-            ['total_net', 'type' => 'money'],
-            ['total_vat', 'type' => 'money'],
-            ['total_gross', 'type' => 'money'],
+            ['total_net', 'type' => 'atk4_money'],
+            ['total_vat', 'type' => 'atk4_money'],
+            ['total_gross', 'type' => 'atk4_money'],
         ]);
         $i->hasMany('line', ['model' => $l])
             ->addFields([
-                ['total_vat', 'aggregate' => 'sum', 'type' => 'money'],
+                ['total_vat', 'aggregate' => 'sum', 'type' => 'atk4_money'],
                 ['total_net', 'aggregate' => 'sum'],
                 ['total_gross', 'aggregate' => 'sum'],
             ]);
         $i = $i->load('1');
 
         // type was set explicitly
-        $this->assertSame('money', $i->getField('total_vat')->type);
+        $this->assertSame('atk4_money', $i->getField('total_vat')->type);
 
         // type was not set and is not inherited
         $this->assertNull($i->getField('total_net')->type);

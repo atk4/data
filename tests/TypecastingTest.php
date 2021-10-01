@@ -58,7 +58,7 @@ class TypecastingTest extends TestCase
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('json', ['type' => 'json']);
@@ -152,7 +152,7 @@ class TypecastingTest extends TestCase
         $m->addField('time', ['type' => 'time']);
         $m->addField('boolean', ['type' => 'boolean']);
         $m->addField('integer', ['type' => 'integer']);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
@@ -265,7 +265,7 @@ class TypecastingTest extends TestCase
         $m->addField('time', ['type' => 'time']);
         $m->addField('b1', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('b2', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
-        $m->addField('money', ['type' => 'money']);
+        $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
 

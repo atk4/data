@@ -86,7 +86,7 @@ class StGenericTransaction extends Model
         if ($this->type) {
             $this->addCondition('type', $this->type);
         }
-        $this->addField('amount', ['type' => 'money']);
+        $this->addField('amount', ['type' => 'atk4_money']);
 
         $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
             if (static::class !== $this->getClassName()) {

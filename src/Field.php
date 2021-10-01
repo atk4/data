@@ -119,7 +119,7 @@ class Field implements Expressionable
             }
 
             // validate scalar values
-            if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float'], true)) {
+            if (in_array($f->type, ['string', 'text', 'integer', 'float', 'atk4_money'], true)) {
                 if (!is_scalar($value)) {
                     throw new ValidationException([$this->name => 'Must use scalar value'], $this->getOwner());
                 }
@@ -167,24 +167,13 @@ class Field implements Expressionable
 
                     break;
                 case 'float':
+                case 'atk4_money':
                     $value = trim(str_replace(["\r", "\n"], '', $value));
-                    $value = preg_replace('/[,`\']/', '', $value);
+                    $value = preg_replace('/[,`\'](?=.*\.)/', '', $value);
                     if (!is_numeric($value)) {
                         throw new ValidationException([$this->name => 'Must be numeric'], $this->getOwner());
                     }
-                    $value = (float) $value;
-                    if ($this->required && empty($value)) {
-                        throw new ValidationException([$this->name => 'Must not be a zero'], $this->getOwner());
-                    }
-
-                    break;
-                case 'money':
-                    $value = trim(str_replace(["\r", "\n"], '', $value));
-                    $value = preg_replace('/[,`\']/', '', $value);
-                    if (!is_numeric($value)) {
-                        throw new ValidationException([$this->name => 'Must be numeric'], $this->getOwner());
-                    }
-                    $value = round((float) $value, 4);
+                    $value = $this->getTypeObject()->convertToPHPValue($value, new Persistence\GenericPlatform());
                     if ($this->required && empty($value)) {
                         throw new ValidationException([$this->name => 'Must not be a zero'], $this->getOwner());
                     }
