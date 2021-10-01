@@ -550,13 +550,13 @@ class TypecastingTest extends TestCase
 
     public function testDirtyTime(): void
     {
-        $sql_time = '11:44:08';
-        $sql_time_new = '12:34:56';
+        $sql_time = new \DateTime('11:44:08 GMT');
+        $sql_time_new = new \DateTime('12:34:56 GMT');
 
         $this->setDb([
             'types' => [
                 [
-                    'date' => $sql_time,
+                    'date' => $sql_time->format('H:i:s'),
                 ],
             ],
         ]);
@@ -578,8 +578,8 @@ class TypecastingTest extends TestCase
 
     public function testDirtyTimeAfterSave(): void
     {
-        $sql_time = '11:44:08';
-        $sql_time_new = '12:34:56';
+        $sql_time = new \DateTime('11:44:08 GMT');
+        $sql_time_new = new \DateTime('12:34:56 GMT');
 
         $this->setDb([
             'types' => [

@@ -86,6 +86,8 @@ class Field implements Expressionable
      */
     public function normalize($value)
     {
+        $this->getTypeObject(); // assert type exists
+
         try {
             if ($this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
@@ -96,30 +98,21 @@ class Field implements Expressionable
                     throw new ValidationException([$this->name => 'Must not be null'], $this->getOwner());
                 }
 
-                return;
+                return null;
             }
-
-            $f = $this;
-
-            $type = $this->getTypeObject();
-            // TODO - breaking tests
-            /*$platform = $this->getOwner()->persistence !== null
-                ? $this->getOwner()->persistence->getDatabasePlatform()
-                : new Persistence\GenericPlatform();
-            $value = $type->convertToPHPValue($type->convertToDatabaseValue($value, $platform), $platform);*/
 
             // only string type fields can use empty string as legit value, for all
             // other field types empty value is the same as no-value, nothing or null
-            if ($f->type && $f->type !== 'string' && $value === '') {
+            if ($this->type && $this->type !== 'string' && $value === '') {
                 if ($this->required && empty($value)) {
                     throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
                 }
 
-                return;
+                return null;
             }
 
             // validate scalar values
-            if (in_array($f->type, [null, 'string', 'text', 'integer', 'float', 'atk4_money'], true)) {
+            if (in_array($this->type, [null, 'string', 'text', 'integer', 'float', 'atk4_money'], true)) {
                 if (!is_scalar($value)) {
                     throw new ValidationException([$this->name => 'Must use scalar value'], $this->getOwner());
                 }
@@ -128,19 +121,17 @@ class Field implements Expressionable
             }
 
             // normalize
-            switch ($f->type) {
+            switch ($this->type) {
                 case null:
                 case 'string':
-                    // remove all line-ends and trim
-                    $value = trim(str_replace(["\r", "\n"], '', $value));
+                    $value = trim(str_replace(["\r", "\n"], '', $value)); // remove all line-ends and trim
                     if ($this->required && empty($value)) {
                         throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
                     }
 
                     break;
                 case 'text':
-                    // normalize line-ends to LF and trim
-                    $value = trim(str_replace(["\r\n", "\r"], "\n", $value));
+                    $value = trim(str_replace(["\r\n", "\r"], "\n", $value)); // normalize line-ends to LF and trim
                     if ($this->required && empty($value)) {
                         throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
                     }
@@ -174,58 +165,38 @@ class Field implements Expressionable
                 case 'date':
                 case 'datetime':
                 case 'time':
-                    if (is_string($value)) {
-                        $value = new \DateTime($value);
-                    } elseif (!$value instanceof \DateTime) {
-                        if ($value instanceof \DateTimeInterface) {
-                            $value = new \DateTime($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
-                        } else {
-                            throw new ValidationException(['Must be an instance of DateTimeInterface', 'value type' => get_debug_type($value)], $this->getOwner());
-                        }
-                    }
-
-                    if ($f->type === 'date' && $value->format('H:i:s.u') !== '00:00:00.000000') {
-                        // remove time portion from date type value
-                        $value = (clone $value)->setTime(0, 0, 0);
-                    }
-                    if ($f->type === 'time' && $value->format('Y-m-d') !== '1970-01-01') {
-                        // remove date portion from date type value
-                        // need 1970 in place of 0 - DB
-                        $value = (clone $value)->setDate(1970, 1, 1);
+                    if (!$value instanceof \DateTimeInterface) {
+                        throw new ValidationException(['Must be an instance of DateTimeInterface', 'type' => get_debug_type($value)], $this->getOwner());
                     }
 
                     break;
                 case 'json':
-                    if (is_string($value) && $f->issetOwner() && $f->getOwner()->persistence) {
-                        $value = $f->getOwner()->persistence->typecastLoadField($f, $value);
-                    }
-
                     if (!is_array($value)) {
                         throw new ValidationException([$this->name => 'Must be an array'], $this->getOwner());
                     }
 
                     break;
                 case 'object':
-                   if (is_string($value) && $f->issetOwner() && $f->getOwner()->persistence) {
-                       $value = $f->getOwner()->persistence->typecastLoadField($f, $value);
-                   }
-
                     if (!is_object($value)) {
                         throw new ValidationException([$this->name => 'Must be an object'], $this->getOwner());
                     }
 
                     break;
-                case 'int':
-                case 'str':
-                case 'bool':
-                    throw (new Exception('Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.'))
-                        ->addMoreInfo('type', $f->type);
             }
 
-            /*if ($f->issetOwner() && $f->getOwner()->persistence) {
-                $value = $f->getOwner()->persistence->typecastSaveField($f, $value);
-                $value = $f->getOwner()->persistence->typecastLoadField($f, $value);
-            }*/
+            // normalize using DBAL type
+            $persistence = $this->getOwner()->persistence
+                ?? new class() extends Persistence {
+                    public function __construct()
+                    {
+                    }
+                };
+            try {
+                $value = $persistence->typecastSaveField($this, $value);
+                $value = $persistence->typecastLoadField($this, $value);
+            } catch (\Exception $e) {
+                throw new ValidationException([$this->name => 'Invalid value: ' . $e->getMessage()], $this->getOwner());
+            }
 
             return $value;
         } catch (Exception $e) {

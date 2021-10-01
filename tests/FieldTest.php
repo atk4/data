@@ -547,14 +547,6 @@ class FieldTest extends TestCase
         $this->assertFalse($m->get('boolean_enum'));
         $m->set('boolean_enum', 'Y');
         $this->assertTrue($m->get('boolean_enum'));
-
-        // date, datetime, time
-        $m->set('date', '2018-05-31');
-        $this->assertInstanceOf(\DateTime::class, $m->get('date'));
-        $m->set('datetime', '2018-05-31 12:13:14');
-        $this->assertInstanceOf(\DateTime::class, $m->get('datetime'));
-        $m->set('time', '12:13:14');
-        $this->assertInstanceOf(\DateTime::class, $m->get('time'));
     }
 
     public function testNormalizeException1(): void
