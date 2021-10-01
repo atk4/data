@@ -119,7 +119,7 @@ class Field implements Expressionable
             }
 
             // validate scalar values
-            if (in_array($f->type, ['string', 'text', 'integer', 'float', 'atk4_money'], true)) {
+            if (in_array($f->type, [null, 'string', 'text', 'integer', 'float', 'atk4_money'], true)) {
                 if (!is_scalar($value)) {
                     throw new ValidationException([$this->name => 'Must use scalar value'], $this->getOwner());
                 }
@@ -129,12 +129,7 @@ class Field implements Expressionable
 
             // normalize
             switch ($f->type) {
-                case null: // loose comparison, but is OK here
-                    if ($this->required && empty($value)) {
-                        throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
-                    }
-
-                    break;
+                case null:
                 case 'string':
                     // remove all line-ends and trim
                     $value = trim(str_replace(["\r", "\n"], '', $value));
@@ -152,11 +147,7 @@ class Field implements Expressionable
 
                     break;
                 case 'integer':
-                    // we clear out thousand separator, but will change to
-                    // http://php.net/manual/en/numberformatter.parse.php
-                    // in the future with the introduction of locale
-                    $value = trim(str_replace(["\r", "\n"], '', $value));
-                    $value = preg_replace('/[,`\']/', '', $value);
+                    $value = preg_replace('/\s+|[,`\']/', '', $value);
                     if (!is_numeric($value)) {
                         throw new ValidationException([$this->name => 'Must be numeric'], $this->getOwner());
                     }
@@ -168,8 +159,7 @@ class Field implements Expressionable
                     break;
                 case 'float':
                 case 'atk4_money':
-                    $value = trim(str_replace(["\r", "\n"], '', $value));
-                    $value = preg_replace('/[,`\'](?=.*\.)/', '', $value);
+                    $value = preg_replace('/\s+|[,`\'](?=.*\.)/', '', $value);
                     if (!is_numeric($value)) {
                         throw new ValidationException([$this->name => 'Must be numeric'], $this->getOwner());
                     }

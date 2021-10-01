@@ -217,14 +217,27 @@ class FieldTest extends TestCase
     public function testEnum2(): void
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => [1, 'bar']]);
+        $m->addField('foo', ['enum' => ['1', 'bar']]);
+        $m = $m->createEntity();
+        $m->set('foo', '1');
+
+        $this->assertSame('1', $m->get('foo'));
+
+        $m->set('foo', 'bar');
+        $this->assertSame('bar', $m->get('foo'));
+    }
+
+    public function testEnum2b(): void
+    {
+        $m = new Model();
+        $m->addField('foo', ['type' => 'integer', 'enum' => [1, 2]]);
         $m = $m->createEntity();
         $m->set('foo', 1);
 
         $this->assertSame(1, $m->get('foo'));
 
-        $m->set('foo', 'bar');
-        $this->assertSame('bar', $m->get('foo'));
+        $m->set('foo', '2');
+        $this->assertSame(2, $m->get('foo'));
     }
 
     public function testEnum3(): void
@@ -261,7 +274,7 @@ class FieldTest extends TestCase
     public function testValues2(): void
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [3 => 'bar']]);
+        $m->addField('foo', ['type' => 'integer', 'values' => [3 => 'bar']]);
         $m = $m->createEntity();
         $m->set('foo', 3);
 
@@ -272,15 +285,6 @@ class FieldTest extends TestCase
     }
 
     public function testValues3(): void
-    {
-        $m = new Model();
-        $m->addField('foo', ['values' => [1 => 'bar']]);
-        $m = $m->createEntity();
-        $this->expectException(Exception::class);
-        $m->set('foo', true);
-    }
-
-    public function testValues3a(): void
     {
         $m = new Model();
         $m->addField('foo', ['values' => [1 => 'bar']]);
