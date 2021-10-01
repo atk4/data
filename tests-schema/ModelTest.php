@@ -175,7 +175,7 @@ class TestUser extends \Atk4\Data\Model
         parent::init();
 
         $this->addField('name');
-        $this->addField('password', ['type' => 'password']);
+        $this->addField('password');
         $this->addField('is_admin', ['type' => 'boolean']);
         $this->addField('notes', ['type' => 'text']);
 
