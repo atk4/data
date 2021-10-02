@@ -124,7 +124,7 @@ class Field implements Expressionable
                         if ($value === '') {
                             $value = null;
                         } elseif (!is_numeric($value)) {
-                            throw new ValidationException([$this->name => 'Must be numeric'], $this->getOwner());
+                            throw new Exception('Must be numeric');
                         }
 
                         break;
@@ -141,12 +141,12 @@ class Field implements Expressionable
                             if ($this->type === 'boolean') {
                                 $value = $value ? '1' : '0';
                             } else {
-                                throw new ValidationException([$this->name => 'Must not be boolean type'], $this->getOwner());
+                                throw new Exception('Must not be boolean type');
                             }
                         } elseif (is_scalar($value)) {
                             $value = (string) $value;
                         } else {
-                            throw new ValidationException([$this->name => 'Must be scalar'], $this->getOwner());
+                            throw new Exception('Must be scalar');
                         }
 
                         break;
@@ -160,28 +160,19 @@ class Field implements Expressionable
                     {
                     }
                 };
-            try {
-                $value = $persistence->typecastSaveField($this, $value);
-                $value = $persistence->typecastLoadField($this, $value);
-            } catch (\Exception $e) {
-                $messages = [];
-                do {
-                    $messages[] = $e->getMessage();
-                } while ($e = $e->getPrevious());
-
-                throw new ValidationException([$this->name => implode(': ', $messages)], $this->getOwner());
-            }
+            $value = $persistence->typecastSaveField($this, $value);
+            $value = $persistence->typecastLoadField($this, $value);
 
             if ($value === null) {
                 if ($this->required/* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576 || $this->mandatory*/) {
-                    throw new ValidationException([$this->name => 'Must not be null'], $this->getOwner());
+                    throw new Exception('Must not be null');
                 }
 
                 return null;
             }
 
             if ($value === '' && $this->required) {
-                throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
+                throw new Exception('Must not be empty');
             }
 
             switch ($this->type) {
@@ -189,13 +180,13 @@ class Field implements Expressionable
                 case 'string':
                 case 'text':
                     if ($this->required && empty($value)) {
-                        throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
+                        throw new Exception('Must not be empty');
                     }
 
                     break;
                 case 'boolean':
                     if ($this->required && empty($value)) {
-                        throw new ValidationException([$this->name => 'Must be true'], $this->getOwner());
+                        throw new Exception('Must be true');
                     }
 
                     break;
@@ -203,7 +194,7 @@ class Field implements Expressionable
                 case 'float':
                 case 'atk4_money':
                     if ($this->required && empty($value)) {
-                        throw new ValidationException([$this->name => 'Must not be a zero'], $this->getOwner());
+                        throw new Exception('Must not be a zero');
                     }
 
                     break;
@@ -211,19 +202,19 @@ class Field implements Expressionable
                 case 'datetime':
                 case 'time':
                     if (!$value instanceof \DateTimeInterface) {
-                        throw new ValidationException(['Must be an instance of DateTimeInterface', 'type' => get_debug_type($value)], $this->getOwner());
+                        throw new Exception('Must be an instance of DateTimeInterface');
                     }
 
                     break;
                 case 'json':
                     if (!is_array($value)) {
-                        throw new ValidationException([$this->name => 'Must be an array'], $this->getOwner());
+                        throw new Exception('Must be an array');
                     }
 
                     break;
                 case 'object':
                     if (!is_object($value)) {
-                        throw new ValidationException([$this->name => 'Must be an object'], $this->getOwner());
+                        throw new Exception('Must be an object');
                     }
 
                     break;
@@ -233,7 +224,7 @@ class Field implements Expressionable
                 if ($value === null || $value === '') {
                     $value = null;
                 } elseif (!in_array($value, $this->enum, true)) {
-                    throw new ValidationException([$this->name => 'Value is not one of the allowed values: ' . implode(', ', $this->enum)], $this->getOwner());
+                    throw new Exception('Value is not one of the allowed values: ' . implode(', ', $this->enum));
                 }
             }
 
@@ -241,15 +232,19 @@ class Field implements Expressionable
                 if ($value === null || $value === '') {
                     $value = null;
                 } elseif ((!is_string($value) && !is_int($value)) || !array_key_exists($value, $this->values)) {
-                    throw new ValidationException([$this->name => 'Value is not one of the allowed values: ' . implode(', ', array_keys($this->values))], $this->getOwner());
+                    throw new Exception('Value is not one of the allowed values: ' . implode(', ', array_keys($this->values)));
                 }
             }
 
             return $value;
-        } catch (Exception $e) {
-            $e->addMoreInfo('field', $this);
+        } catch (\Exception $e) {
+            $messages = [];
+            do {
+                $messages[] = $e->getMessage();
+            } while ($e = $e->getPrevious());
 
-            throw $e;
+            throw (new ValidationException([$this->name => implode(': ', $messages)], $this->getOwner()))
+                ->addMoreInfo('field', $this);
         }
     }
 
