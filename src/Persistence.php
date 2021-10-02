@@ -174,10 +174,7 @@ abstract class Persistence
 
             $field = $model->getField($fieldName);
 
-            // SQL Expression cannot be converted
-            if (!$value instanceof \Atk4\Data\Persistence\Sql\Expressionable) {
-                $value = $this->typecastSaveField($field, $value);
-            }
+            $value = $this->typecastSaveField($field, $value);
 
             // check null values for mandatory fields
             if ($value === null && $field->mandatory) {
@@ -197,6 +194,10 @@ abstract class Persistence
      * NOTE: Please DO NOT perform "actual" field mapping here, because data
      * may be "aliased" from SQL persistencies or mapped depending on persistence
      * driver.
+     *
+     * @param array<string, scalar|null> $row
+     *
+     * @return array<string, mixed>
      */
     public function typecastLoadRow(Model $model, array $row): array
     {
@@ -232,11 +233,15 @@ abstract class Persistence
             return null;
         }
 
+        // SQL Expression cannot be converted
+        if ($value instanceof Persistence\Sql\Expressionable) {
+            return $value;
+        }
+
         try {
             $v = $this->_typecastSaveField($field, $value);
-            if ($v !== null && !is_scalar($v) && !$v instanceof Persistence\Sql\Expressionable) { // @phpstan-ignore-line
-                throw (new Exception('Unexpected non-scalar value'))
-                    ->addMoreInfo('type', get_debug_type($v));
+            if ($v !== null && !is_scalar($v)) { // @phpstan-ignore-line
+                throw new Exception('Unexpected non-scalar value');
             }
 
             return $v;
@@ -250,7 +255,7 @@ abstract class Persistence
      * Cast specific field value from the way how it's stored inside
      * persistence to a PHP format.
      *
-     * @param mixed $value
+     * @param scalar|null $value
      *
      * @return mixed
      */
@@ -258,6 +263,8 @@ abstract class Persistence
     {
         if ($value === null) {
             return null;
+        } elseif (!is_scalar($value)) {
+            throw new Exception('Unexpected non-scalar value');
         }
 
         try {
@@ -274,7 +281,7 @@ abstract class Persistence
      *
      * @param mixed $value
      *
-     * @return scalar|Persistence\Sql\Expressionable|null
+     * @return scalar|null
      */
     protected function _typecastSaveField(Field $field, $value)
     {
@@ -310,7 +317,7 @@ abstract class Persistence
      * This is the actual field typecasting, which you can override in your
      * persistence to implement necessary typecasting.
      *
-     * @param mixed $value
+     * @param scalar|null $value
      *
      * @return mixed
      */
