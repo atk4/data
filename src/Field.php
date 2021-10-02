@@ -229,6 +229,22 @@ class Field implements Expressionable
                     break;
             }
 
+            if ($this->enum) {
+                if ($value === null || $value === '') {
+                    $value = null;
+                } elseif (!in_array($value, $this->enum, true)) {
+                    throw new ValidationException([$this->name => 'Value is not one of the allowed values: ' . implode(', ', $this->enum)], $this->getOwner());
+                }
+            }
+
+            if ($this->values) {
+                if ($value === null || $value === '') {
+                    $value = null;
+                } elseif ((!is_string($value) && !is_int($value)) || !array_key_exists($value, $this->values)) {
+                    throw new ValidationException([$this->name => 'Value is not one of the allowed values: ' . implode(', ', array_keys($this->values))], $this->getOwner());
+                }
+            }
+
             return $value;
         } catch (Exception $e) {
             $e->addMoreInfo('field', $this);

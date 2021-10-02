@@ -761,9 +761,8 @@ class Model implements \IteratorAggregate
         try {
             $value = $f->normalize($value);
         } catch (Exception $e) {
-            $e->addMoreInfo('field', $field);
+            $e->addMoreInfo('field', $f);
             $e->addMoreInfo('value', $value);
-            $e->addMoreInfo('f', $f);
 
             throw $e;
         }
@@ -778,46 +777,10 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        // perform bunch of standard validation here. This can be re-factored in the future.
         if ($f->read_only) {
             throw (new Exception('Attempting to change read-only field'))
                 ->addMoreInfo('field', $field)
                 ->addMoreInfo('model', $this);
-        }
-
-        // enum property support
-        if ($f->enum) {
-            if ($value === '') {
-                $value = null;
-            }
-            if ($value !== null && !in_array($value, $f->enum, true)) {
-                throw (new Exception('This is not one of the allowed values for the field'))
-                    ->addMoreInfo('field', $field)
-                    ->addMoreInfo('model', $this)
-                    ->addMoreInfo('value', $value)
-                    ->addMoreInfo('enum', $f->enum);
-            }
-        }
-
-        // values property support
-        if ($f->values) {
-            if ($value === '') {
-                $value = null;
-            } elseif ($value === null) {
-                // all is good
-            } elseif (!is_string($value) && !is_int($value)) {
-                throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
-                    ->addMoreInfo('field', $field)
-                    ->addMoreInfo('model', $this)
-                    ->addMoreInfo('value', $value)
-                    ->addMoreInfo('values', $f->values);
-            } elseif (!array_key_exists($value, $f->values)) {
-                throw (new Exception('This is not one of the allowed values for the field'))
-                    ->addMoreInfo('field', $field)
-                    ->addMoreInfo('model', $this)
-                    ->addMoreInfo('value', $value)
-                    ->addMoreInfo('values', $f->values);
-            }
         }
 
         if (array_key_exists($field, $dirtyRef) && $f->compare($dirtyRef[$field], $value)) {
