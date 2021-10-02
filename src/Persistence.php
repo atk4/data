@@ -172,14 +172,6 @@ abstract class Persistence
     {
         $result = [];
         foreach ($row as $fieldName => $value) {
-            // we have no knowledge of the field, it wasn't defined, leave it as-is
-            // TODO better to never happen
-            if (!$model->hasField($fieldName)) {
-                $result[$fieldName] = $value;
-
-                continue;
-            }
-
             $field = $model->getField($fieldName);
 
             $value = $this->typecastSaveField($field, $value);
@@ -211,14 +203,6 @@ abstract class Persistence
     {
         $result = [];
         foreach ($row as $fieldName => $value) {
-            // we have no knowledge of the field, it wasn't defined, leave it as-is
-            // TODO better to never happen
-            if (!$model->hasField($fieldName)) {
-                $result[$fieldName] = $value;
-
-                continue;
-            }
-
             $field = $model->getField($fieldName);
 
             $result[$fieldName] = $this->typecastLoadField($field, $value);
