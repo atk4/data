@@ -47,7 +47,7 @@ basic functionality is divided into 3 major areas:
 
  - Fields (or Columns)
  - DataSets (or Rows)
- - Databases (or Persistences)
+ - Databases (or Persistencies)
 
 Each of the above corresponds to a PHP class, which may use composition principle
 to hide implementation details.
@@ -171,7 +171,7 @@ MongoDB), you would need to define the field differently::
     });
 
 When you use persistence-specific code, you must be aware that it will not map
-into persistences that does not support features you have used.
+into persistencies that does not support features you have used.
 
 In most cases that is OK as if you prefer to stay with same database type, for
 instance, the above expression will still be usable with any SQL vendor, but if
@@ -217,7 +217,7 @@ Persistence Scaling
 ===================
 
 Although in most cases you would be executing operation against SQL persistence,
-Agile Data makes it very easy to use models with a simpler persistences.
+Agile Data makes it very easy to use models with a simpler persistencies.
 
 For example, consider you want to output a "table" to the user using HTML by
 using Agile UI::
@@ -229,7 +229,7 @@ using Agile UI::
 
     echo $htmltable->render();
 
-Class `\\Atk4\\Ui\\Table` here is designed to work with persistences and models -
+Class `\\Atk4\\Ui\\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
 You can use :php:class:`Persistence\Static_` for that::

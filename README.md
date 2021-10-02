@@ -229,7 +229,7 @@ Agile Data has a usage patters that will automatically restrict access by this c
 
 With Agile Data you can move your data from one persistence to another seamlessly. If you rely on some feature that your new persistence does not support (e.g. Expression) you can replace them a callback calculation, that executes on your App server.
 
-As usual - the rest of your application is not affected and you can even use multiple types of different persistences and still navigate through references.
+As usual - the rest of your application is not affected and you can even use multiple types of different persistencies and still navigate through references.
 
 #### Support
 

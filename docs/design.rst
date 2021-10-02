@@ -516,7 +516,7 @@ So getting back to the operation above, lets look at it in more details::
 
 While "vip_orders" is actually a DataSet, executing count() will cross you over
 into persistence layer. However this method is returning a new object, which is then
-executed when you call getOne(). For SQL persistences it returns \Atk4\Data\Persistence\Sql\Query
+executed when you call getOne(). For SQL persistencies it returns \Atk4\Data\Persistence\Sql\Query
 object, for example.
 
 Even though for a brief moment you had your hands on a "database-vendor specific"

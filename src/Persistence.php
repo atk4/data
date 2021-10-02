@@ -103,7 +103,7 @@ abstract class Persistence
 
     /**
      * Atomic executes operations within one begin/end transaction. Not all
-     * persistences will support atomic operations, so by default we just
+     * persistencies will support atomic operations, so by default we just
      * don't do anything.
      *
      * @return mixed
@@ -195,7 +195,7 @@ abstract class Persistence
      * types to PHP native types.
      *
      * NOTE: Please DO NOT perform "actual" field mapping here, because data
-     * may be "aliased" from SQL persistences or mapped depending on persistence
+     * may be "aliased" from SQL persistencies or mapped depending on persistence
      * driver.
      */
     public function typecastLoadRow(Model $model, array $row): array

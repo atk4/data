@@ -544,7 +544,7 @@ The other, more appropriate option is to re-use a vanilla Order record::
     }
 
 
-Working with Multiple Persistences
+Working with Multiple Persistencies
 ==================================
 
 Normally when you load the model and save it later, it ends up in the same
@@ -573,7 +573,7 @@ Agile Data, so you will have to create logic yourself, which is actually quite
 simple.
 
 You can use several designs. I will create a method inside my application class
-to load records from two persistences that are stored inside properties of my
+to load records from two persistencies that are stored inside properties of my
 application::
 
     function loadQuick($class, $id) {
