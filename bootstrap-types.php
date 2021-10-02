@@ -33,7 +33,7 @@ class MoneyType extends DbalTypes\Type
         return (string) round((float) $value, 4);
     }
 
-    public function convertToPHPValue($value, AbstractPlatform $platform): float
+    public function convertToPHPValue($value, AbstractPlatform $platform): ?float
     {
         $v = $this->convertToDatabaseValue($value, $platform);
 

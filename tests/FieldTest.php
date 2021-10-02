@@ -499,7 +499,6 @@ class FieldTest extends TestCase
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -542,11 +541,6 @@ class FieldTest extends TestCase
         $this->assertFalse($m->get('boolean'));
         $m->set('boolean', 1);
         $this->assertTrue($m->get('boolean'));
-
-        $m->set('boolean_enum', 'N');
-        $this->assertFalse($m->get('boolean_enum'));
-        $m->set('boolean_enum', 'Y');
-        $this->assertTrue($m->get('boolean_enum'));
     }
 
     public function testNormalizeException1(): void
@@ -685,7 +679,6 @@ class FieldTest extends TestCase
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -700,8 +693,6 @@ class FieldTest extends TestCase
         $this->assertSame('123.456789', $m->getField('float')->toString(123.456789));
         $this->assertSame('1', $m->getField('boolean')->toString(true));
         $this->assertSame('0', $m->getField('boolean')->toString(false));
-        $this->assertSame('1', $m->getField('boolean_enum')->toString('Y'));
-        $this->assertSame('0', $m->getField('boolean_enum')->toString('N'));
         $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34 UTC')));
         $this->assertSame('2019-01-20 12:23:34.000000', $m->getField('datetime')->toString(new \DateTime('2019-01-20 12:23:34 UTC')));
         $this->assertSame('12:23:34.000000', $m->getField('time')->toString(new \DateTime('2019-01-20 12:23:34 UTC')));
@@ -817,40 +808,16 @@ class FieldTest extends TestCase
     public function testBoolean(): void
     {
         $m = new Model();
-        $m->addField('is_vip_1', ['type' => 'boolean', 'enum' => ['No', 'Yes']]);
-        $m->addField('is_vip_2', ['type' => 'boolean', 'valueTrue' => 1, 'valueFalse' => 0]);
-        $m->addField('is_vip_3', ['type' => 'boolean', 'valueTrue' => 'Y', 'valueFalse' => 'N']);
+        $m->addField('is_vip', ['type' => 'boolean']);
         $m = $m->createEntity();
 
-        $m->set('is_vip_1', 'No');
-        $this->assertFalse($m->get('is_vip_1'));
-        $m->set('is_vip_1', 'Yes');
-        $this->assertTrue($m->get('is_vip_1'));
-        $m->set('is_vip_1', false);
-        $this->assertFalse($m->get('is_vip_1'));
-        $m->set('is_vip_1', true);
-        $this->assertTrue($m->get('is_vip_1'));
-        $m->set('is_vip_1', 0);
-        $this->assertFalse($m->get('is_vip_1'));
-        $m->set('is_vip_1', 1);
-        $this->assertTrue($m->get('is_vip_1'));
-
-        $m->set('is_vip_2', 0);
-        $this->assertFalse($m->get('is_vip_2'));
-        $m->set('is_vip_2', 1);
-        $this->assertTrue($m->get('is_vip_2'));
-        $m->set('is_vip_2', false);
-        $this->assertFalse($m->get('is_vip_2'));
-        $m->set('is_vip_2', true);
-        $this->assertTrue($m->get('is_vip_2'));
-
-        $m->set('is_vip_3', 'N');
-        $this->assertFalse($m->get('is_vip_3'));
-        $m->set('is_vip_3', 'Y');
-        $this->assertTrue($m->get('is_vip_3'));
-        $m->set('is_vip_3', false);
-        $this->assertFalse($m->get('is_vip_3'));
-        $m->set('is_vip_3', true);
-        $this->assertTrue($m->get('is_vip_3'));
+        $m->set('is_vip', false);
+        $this->assertFalse($m->get('is_vip'));
+        $m->set('is_vip', true);
+        $this->assertTrue($m->get('is_vip'));
+        $m->set('is_vip', 0);
+        $this->assertFalse($m->get('is_vip'));
+        $m->set('is_vip', 1);
+        $this->assertTrue($m->get('is_vip'));
     }
 }

@@ -574,7 +574,7 @@ class Model implements \IteratorAggregate
     {
         $seed = Factory::mergeSeeds(
             $seed,
-            isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
+            isset($seed['type']) ? ($this->fieldSeedByType[$seed['type']] ?? null) : null,
             $this->_default_seed_addField
         );
 
@@ -582,8 +582,7 @@ class Model implements \IteratorAggregate
     }
 
     /** @var array<string, array> */
-    protected $typeToFieldSeed = [
-        'boolean' => [Field\Boolean::class],
+    protected $fieldSeedByType = [
     ];
 
     /**
@@ -787,7 +786,7 @@ class Model implements \IteratorAggregate
         }
 
         // enum property support
-        if (isset($f->enum) && $f->enum && $f->type !== 'boolean') {
+        if ($f->enum) {
             if ($value === '') {
                 $value = null;
             }

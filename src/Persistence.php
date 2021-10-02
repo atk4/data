@@ -261,12 +261,6 @@ abstract class Persistence
         }
 
         try {
-            // only string type fields can use empty string as legit value, for all
-            // other field types empty value is the same as no-value, nothing or null
-            if ($field->type && $field->type !== 'string' && $value === '') {
-                return null;
-            }
-
             return $this->_typecastLoadField($field, $value);
         } catch (\Exception $e) {
             throw (new Exception('Unable to typecast field value on load', 0, $e))
@@ -284,54 +278,32 @@ abstract class Persistence
      */
     protected function _typecastSaveField(Field $field, $value)
     {
-        // work only on cloned value
-        $value = is_object($value) ? clone $value : $value;
-
-        switch ($field->type) {
-            case 'boolean':
-                // if enum is not set, then simply cast value to boolean
-                if (!is_array($field->enum)) {
-                    $value = (bool) $value;
-
-                    break;
-                }
-
-                // if enum is set, first lets see if it matches one of those precisely
-                if ($value === $field->enum[1]) {
-                    $value = true;
-                } elseif ($value === $field->enum[0]) {
-                    $value = false;
-                }
-
-                // finally, convert into appropriate value
-                $value = $value ? $field->enum[1] : $field->enum[0];
-
-                break;
-            case 'date':
-            case 'datetime':
-            case 'time':
-                if ($value instanceof \DateTimeInterface) {
-                    $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
-                    $format = $field->persist_format ?: $format[$field->type];
-
-                    // datetime only - set to persisting timezone
-                    if ($field->type === 'datetime' && isset($field->persist_timezone)) {
-                        $value = new \DateTime($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
-                        $value->setTimezone(new \DateTimeZone($field->persist_timezone));
-                    }
-                    $value = $value->format($format);
-                }
-
-                break;
-            case 'array':
-            case 'object':
-            case 'json':
-                $value = $field->getTypeObject()->convertToDatabaseValue($value, $this->getDatabasePlatform()); // TODO typecast everything, not only this type
-
-                break;
+        if (in_array($field->type, ['json', 'object'], true) && $value === '') { // TODO remove later
+            return null;
         }
 
-        return $value;
+        // native DBAL DT types have no microseconds support
+        if (in_array($field->type, ['datetime', 'date', 'time'], true)
+            && str_starts_with(get_class($field->getTypeObject()), 'Doctrine\DBAL\Types\\')) {
+            if ($value === '') {
+                return null;
+            } elseif (!$value instanceof \DateTimeInterface) {
+                throw new Exception('Must be instance of DateTimeInterface');
+            }
+
+            if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+                $value = new \DateTime($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
+                $value->setTimezone(new \DateTimeZone($field->persist_timezone));
+            }
+
+            $formats = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
+            $format = $field->persist_format ?: $formats[$field->type];
+            $value = $value->format($format);
+
+            return $value;
+        }
+
+        return $field->getTypeObject()->convertToDatabaseValue($value, $this->getDatabasePlatform());
     }
 
     /**
@@ -344,88 +316,44 @@ abstract class Persistence
      */
     protected function _typecastLoadField(Field $field, $value)
     {
-        // work only on cloned value
-        $value = is_object($value) ? clone $value : $value;
-
-        switch ($field->type) {
-            case 'string':
-            case 'text':
-                // do nothing - it's ok as it is
-                break;
-            case 'integer':
-                $value = (int) $value;
-
-                break;
-            case 'float':
-            case 'atk4_money':
-                $value = (float) $value;
-
-                break;
-            case 'boolean':
-                if (is_array($field->enum)) {
-                    if ($value === $field->enum[0]) {
-                        $value = false;
-                    } elseif ($value === $field->enum[1]) {
-                        $value = true;
-                    } else {
-                        $value = null;
-                    }
-                } elseif ($value === '') {
-                    $value = null;
-                } else {
-                    $value = (bool) $value;
-                }
-
-                break;
-            case 'date':
-            case 'datetime':
-            case 'time':
-                $dt_class = \DateTime::class;
-                $tz_class = \DateTimeZone::class;
-
-                // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
-                $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
-                if ($field->persist_format) {
-                    $format = $field->persist_format;
-                } else {
-                    $format = $format[$field->type];
-                    if (strpos($value, '.') !== false) { // time possibly with microseconds, otherwise invalid format
-                        $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
-                    }
-                }
-
-                // datetime only - set from persisting timezone
-                if ($field->type === 'datetime' && isset($field->persist_timezone)) {
-                    $value = $dt_class::createFromFormat($format, $value, new $tz_class($field->persist_timezone));
-                    if ($value !== false) {
-                        $value->setTimezone(new $tz_class(date_default_timezone_get()));
-                    }
-                } else {
-                    $value = $dt_class::createFromFormat($format, $value);
-                }
-
-                if ($value === false) {
-                    throw (new Exception('Incorrectly formatted date/time'))
-                        ->addMoreInfo('format', $format)
-                        ->addMoreInfo('value', $value)
-                        ->addMoreInfo('field', $field);
-                }
-
-                // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
-                // this is what Carbon::instance(DateTime $dt) method does for example
-                if ($dt_class !== \DateTime::class) { // @phpstan-ignore-line
-                    $value = new $dt_class($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
-                }
-
-                break;
-            case 'array':
-            case 'object':
-            case 'json':
-                $value = $field->getTypeObject()->convertToPHPValue($value, $this->getDatabasePlatform()); // TODO typecast everything, not only this type
-
-                break;
+        // TODO casting optionally to null should be handled by type itself solely
+        if ($value === '' && in_array($field->type, ['boolean', 'integer', 'float', 'datetime', 'date', 'time', 'json', 'object'], true)) {
+            return null;
         }
 
-        return $value;
+        // native DBAL DT types have no microseconds support
+        if (in_array($field->type, ['datetime', 'date', 'time'], true)
+            && str_starts_with(get_class($field->getTypeObject()), 'Doctrine\DBAL\Types\\')) {
+            if ($field->persist_format) {
+                $format = $field->persist_format;
+            } else {
+                // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
+                $formats = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
+                $format = $formats[$field->type];
+                if (strpos($value, '.') !== false) { // time possibly with microseconds, otherwise invalid format
+                    $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
+                }
+            }
+
+            if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+                $value = \DateTime::createFromFormat($format, $value, new \DateTimeZone($field->persist_timezone));
+                if ($value !== false) {
+                    $value->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+                }
+            } else {
+                $value = \DateTime::createFromFormat($format, $value);
+            }
+
+            if ($value === false) {
+                throw (new Exception('Incorrectly formatted date/time'))
+                    ->addMoreInfo('format', $format)
+                    ->addMoreInfo('value', $value)
+                    ->addMoreInfo('field', $field);
+            }
+
+            return $value;
+        }
+
+        return $field->getTypeObject()->convertToPHPValue($value, $this->getDatabasePlatform());
     }
 }

@@ -245,8 +245,8 @@ class TypecastingTest extends TestCase
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.235689',
                     'time' => '12:00:50.235689',
-                    'b1' => 'Y',
-                    'b2' => 'N',
+                    'b1' => '1',
+                    'b2' => '0',
                     'integer' => '2940',
                     'money' => '8.20',
                     'float' => '8.202343',
@@ -263,8 +263,8 @@ class TypecastingTest extends TestCase
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
-        $m->addField('b1', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
-        $m->addField('b2', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
+        $m->addField('b1', ['type' => 'boolean']);
+        $m->addField('b2', ['type' => 'boolean']);
         $m->addField('money', ['type' => 'atk4_money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
@@ -375,16 +375,6 @@ class TypecastingTest extends TestCase
 
         $m2 = $m->addCondition('date', $d)->loadOne();
         $this->assertTrue($m2->loaded());
-    }
-
-    public function testTypecastBoolean(): void
-    {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'job']);
-
-        $f = $m->addField('closed', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
-
-        $this->assertSame('N', $db->typecastSaveField($f, 'N'));
     }
 
     public function testTypecastTimezone(): void

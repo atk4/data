@@ -15,8 +15,6 @@ use Atk4\Data\ValidationException;
  *  $user->addField('email_mx_check', [Field\Email::class, 'dns_check' => true]);
  *  $user->addField('email_with_name', [Field\Email::class, 'include_names' => true]);
  *  $user->addField('emails', [Field\Email::class, 'allow_multiple' => true, 'separator' => [',',';']]);
- *
- * Various options can also be combined.
  */
 class Email extends Field
 {
@@ -40,13 +38,6 @@ class Email extends Field
      */
     public $separator = [','];
 
-    /**
-     * Perform normalization.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
     public function normalize($value)
     {
         if ($value === null) {

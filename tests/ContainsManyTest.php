@@ -267,7 +267,7 @@ class ContainsManyTest extends TestCase
                 1 => [
                     $i->lines->fieldName()->id => 1,
                     $i->lines->fieldName()->vat_rate_id => 1,
-                    $i->lines->fieldName()->price => 10,
+                    $i->lines->fieldName()->price => '10',
                     $i->lines->fieldName()->qty => 2,
                     $i->lines->fieldName()->add_date => $formatDtForCompareFunc(new \DateTime('2019-06-01')),
                     $i->lines->fieldName()->discounts => json_encode([
@@ -286,7 +286,7 @@ class ContainsManyTest extends TestCase
                 2 => [
                     $i->lines->fieldName()->id => 2,
                     $i->lines->fieldName()->vat_rate_id => 2,
-                    $i->lines->fieldName()->price => 15,
+                    $i->lines->fieldName()->price => '15',
                     $i->lines->fieldName()->qty => 5,
                     $i->lines->fieldName()->add_date => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
                     $i->lines->fieldName()->discounts => json_encode([
