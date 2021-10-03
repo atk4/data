@@ -65,11 +65,8 @@ class FieldTest extends TestCase
         $m->set('foo', 'abc');
         $m->set('foo', '');
 
-        /* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576
-        $this->expectException(ValidationException::class);*/
+        $this->expectException(ValidationException::class);
         $m->set('foo', null);
-
-        $this->assertTrue(true); // no exceptions
     }
 
     public function testRequired1(): void

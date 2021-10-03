@@ -164,7 +164,7 @@ class Field implements Expressionable
             $value = $persistence->typecastLoadField($this, $value);
 
             if ($value === null) {
-                if ($this->required/* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576 || $this->mandatory*/) {
+                if ($this->required || $this->mandatory) {
                     throw new Exception('Must not be null');
                 }
 

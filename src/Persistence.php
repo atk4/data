@@ -174,14 +174,7 @@ abstract class Persistence
         foreach ($row as $fieldName => $value) {
             $field = $model->getField($fieldName);
 
-            $value = $this->typecastSaveField($field, $value);
-
-            // check null values for mandatory fields
-            if ($value === null && $field->mandatory) {
-                throw new ValidationException([$field->short_name => 'Mandatory field value cannot be null'], $field->getOwner());
-            }
-
-            $result[$field->getPersistenceName()] = $value;
+            $result[$field->getPersistenceName()] = $this->typecastSaveField($field, $value);
         }
 
         return $result;
