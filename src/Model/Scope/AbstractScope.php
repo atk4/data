@@ -6,6 +6,7 @@ namespace Atk4\Data\Model\Scope;
 
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
+use Atk4\Core\WarnDynamicPropertyTrait;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 
@@ -18,6 +19,7 @@ abstract class AbstractScope
         init as _init;
     }
     use TrackableTrait;
+    use WarnDynamicPropertyTrait;
 
     /**
      * Method is executed when the scope is added to parent scope using Scope::add().
