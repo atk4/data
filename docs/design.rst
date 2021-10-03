@@ -534,7 +534,7 @@ will not violate SRP (Single Responsibility Principle)
 
 Unique Features of Persistence Layer
 ------------------------------------
-More often than not, your application is designed and built with a specific
+More often thannot, your application is designed and built with a specific
 persistence layer in mind. If you are using SQL database, you want to
 
 

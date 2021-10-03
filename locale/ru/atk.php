@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'Field value can not be base64 encoded because it is not of string type' => 'Значение поля не может быть закодировано в base64, поскольку оно не имеет строкового типа ({{field}})',
+    'Field value cannot be base64 encoded because it is not of string type' => 'Значение поля не может быть закодировано в base64, поскольку оно не имеет строкового типа ({{field}})',
     'Mandatory field value cannot be null' => 'Обязательное значение поля не может быть пустым ({{field}})',
     'Model is already related to another persistence' => 'Модель уже связана с другим постоянством',
     'Test with plural' => [

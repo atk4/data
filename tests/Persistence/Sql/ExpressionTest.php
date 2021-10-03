@@ -487,7 +487,7 @@ class ExpressionTest extends TestCase
      */
     public function testIteratorAggregate(): void
     {
-        // TODO can not test this without actual DB connection and executing expression
+        // TODO cannot test this without actual DB connection and executing expression
     }
 
     /**

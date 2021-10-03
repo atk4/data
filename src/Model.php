@@ -478,7 +478,7 @@ class Model implements \IteratorAggregate
         } elseif (!$this->compare($this->id_field, $this->_entityId)) {
             $this->unload(); // data for different ID were loaded, make sure to discard them
 
-            throw (new Exception('Model instance is an entity, ID can not be changed to a different one'))
+            throw (new Exception('Model instance is an entity, ID cannot be changed to a different one'))
                 ->addMoreInfo('entityId', $this->_entityId)
                 ->addMoreInfo('newId', $id);
         }

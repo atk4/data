@@ -40,7 +40,7 @@ class Connection extends BaseConnection
         // TODO remove once atk4/data tests can be run consistently without errors
         if (class_exists(\PHPUnit\Framework\TestCase::class, false)) { // called from phpunit
             $notReusableFunc = function (string $message): void {
-                echo "\n" . 'connection for CI can not be reused:' . "\n" . $message . "\n";
+                echo "\n" . 'connection for CI cannot be reused:' . "\n" . $message . "\n";
                 self::$ciLastConnectPdo = null;
             };
 
