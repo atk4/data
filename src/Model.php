@@ -30,9 +30,20 @@ class Model implements \IteratorAggregate
     use ContainerTrait {
         add as _add;
     }
-    use DiContainerTrait;
+    use DiContainerTrait {
+        warnPropertyDoesNotExist as private __di_warnPropertyDoesNotExist;
+        DiContainerTrait::__isset as private __di_isset;
+        DiContainerTrait::__get as private __di_get;
+        DiContainerTrait::__set as private __di_set;
+        DiContainerTrait::__unset as private __di_unset;
+    }
     use DynamicMethodTrait;
-    use HintableModelTrait;
+    use HintableModelTrait {
+        HintableModelTrait::__isset as private __hintable_isset;
+        HintableModelTrait::__get as private __hintable_get;
+        HintableModelTrait::__set as private __hintable_set;
+        HintableModelTrait::__unset as private __hintable_unset;
+    }
     use HookTrait;
     use InitializerTrait {
         init as _init;
@@ -1962,6 +1973,39 @@ class Model implements \IteratorAggregate
     }
 
     // }}}
+
+    protected function warnPropertyDoesNotExist(string $name): void
+    {
+        if (!isset($this->getHintableProps()[$name])) {
+            $this->__di_warnPropertyDoesNotExist($name);
+        }
+    }
+
+    public function __isset(string $name): bool
+    {
+        return $this->__hintable_isset($name);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function &__get(string $name)
+    {
+        return $this->__hintable_get($name);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function __set(string $name, $value): void
+    {
+        $this->__hintable_set($name, $value);
+    }
+
+    public function __unset(string $name): void
+    {
+        $this->__hintable_unset($name);
+    }
 
     // {{{ Debug Methods
 
