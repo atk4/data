@@ -1,6 +1,5 @@
 ignore:
   - docs
-  - locale
 comment: false
 coverage:
   status:
