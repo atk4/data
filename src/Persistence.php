@@ -270,7 +270,7 @@ abstract class Persistence
         try {
             return $this->_typecastLoadField($field, $value);
         } catch (\Exception $e) {
-            throw (new Exception('Typecast load error', 0, $e))
+            throw (new Exception('Typecast parse error', 0, $e))
                 ->addMoreInfo('field', $field->short_name);
         }
     }
