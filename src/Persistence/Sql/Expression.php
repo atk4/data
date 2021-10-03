@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql;
 
+use Atk4\Core\WarnDynamicPropertyTrait;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
@@ -14,6 +15,8 @@ use Doctrine\DBAL\Result as DbalResult;
  */
 class Expression implements Expressionable, \ArrayAccess
 {
+    use WarnDynamicPropertyTrait;
+
     /** @const string "[]" in template, escape as parameter */
     protected const ESCAPE_PARAM = 'param';
     /** @const string "{}" in template, escape as identifier */

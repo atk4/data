@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Util;
 
+use Atk4\Core\DebugTrait;
 use Atk4\Data\Model;
 use Atk4\Data\Reference\HasMany;
 use Atk4\Data\Reference\HasOne;
@@ -20,7 +21,7 @@ use Atk4\Data\Reference\HasOne;
  */
 class DeepCopy
 {
-    use \Atk4\Core\DebugTrait;
+    use DebugTrait;
 
     /** @const string */
     public const HOOK_AFTER_COPY = self::class . '@afterCopy';

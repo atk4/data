@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace Atk4\Data;
 
+use Atk4\Core\ContainerTrait;
+use Atk4\Core\DiContainerTrait;
+use Atk4\Core\DynamicMethodTrait;
 use Atk4\Core\Factory;
+use Atk4\Core\HookTrait;
+use Atk4\Core\NameTrait;
 use Doctrine\DBAL\Platforms;
 
 abstract class Persistence
 {
-    use \Atk4\Core\ContainerTrait {
+    use ContainerTrait {
         add as _add;
     }
-    use \Atk4\Core\DiContainerTrait;
-    use \Atk4\Core\DynamicMethodTrait;
-    use \Atk4\Core\HookTrait;
-    use \Atk4\Core\NameTrait;
+    use DiContainerTrait;
+    use DynamicMethodTrait;
+    use HookTrait;
+    use NameTrait;
 
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
