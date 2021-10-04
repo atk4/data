@@ -1200,7 +1200,7 @@ class Query extends Expression
     {
         $prop = 'template_' . $mode;
 
-        if (isset($this->{$prop})) {
+        if (@isset($this->{$prop})) { // @ is needed to pass phpunit without a deprecation warning
             $this->mode = $mode;
             $this->template = $this->{$prop};
         } else {

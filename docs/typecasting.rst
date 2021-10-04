@@ -144,7 +144,7 @@ Field may use serialization to further encode field value for the storage purpos
 Array and Object types
 ----------------------
 
-Some types may require serialization for some persistences, for instance types
+Some types may require serialization for some persistencies, for instance types
 'json' and 'object' cannot be stored in SQL natively. `json` type can be used
 to store these in JSON.
 

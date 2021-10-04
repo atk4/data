@@ -230,16 +230,9 @@ Second argument to addField() will contain a seed for the Field class::
 
    $this->addField('surname', ['default' => 'Smith']);
 
-Additionally, `type` property can be used to determine the best `Field` class to handle
-the type::
-
-   $field = $this->addField('is_married', ['type' => 'boolean']);
-
-   // $field class now will be Field\Boolean
-
 You may also specify your own Field implementation::
 
-   $field = $this->addField('amount_and_currency', new MyAmountCurrencyField());
+   $field = $this->addField('amount_and_currency', [MyAmountCurrencyField::class]);
 
 Read more about :php:class:`Field`
 

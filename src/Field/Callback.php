@@ -16,30 +16,14 @@ class Callback extends \Atk4\Data\Field
         init as _init;
     }
 
-    /**
-     * Method to execute for evaluation.
-     *
-     * @var \Closure
-     */
-    public $expr;
-
-    /**
-     * Expressions are always read_only.
-     *
-     * @var bool
-     */
+    /** @var bool Expressions are always read_only. */
     public $read_only = true;
-
-    /**
-     * Never persist this field.
-     *
-     * @var bool
-     */
+    /** @var bool Never persist this field. */
     public $never_persist = true;
 
-    /**
-     * Initialization.
-     */
+    /** @var \Closure Method to execute for evaluation. */
+    public $expr;
+
     protected function init(): void
     {
         $this->_init();

@@ -79,7 +79,7 @@ Supported Types
 ATK Data prior to 1.5 supports the following types:
 
  - string
- - boolean ([':php:class:`Boolean`'])
+ - boolean
  - integer ([':php:class:`Number`', 'precision' => 0])
  - money ([':php:class:`Number`', 'prefix' => '€', 'precision' => 2])
  - float ([':php:class:`Number`', 'type' => 'float'])
@@ -117,18 +117,4 @@ All measurements are implemented with :php:class:`Units` and can be further exte
     echo $model->get('speed'); // 30000
     echo $model->getField('speed')->format(); // 30km/s
     echo $model->getField('speed')->format('m'); // 30000m/s
-
-
-List of Field Classes
-=====================
-
-.. toctree::
-    :maxdepth: 1
-
-    field_boolean
-    field_text
-    field_number
-    field_datetime
-    field_units
-
 

@@ -51,7 +51,7 @@ model that has a persistence set. (See Reference::getModel())
 Persistence
 -----------
 
-Agile Data supports traversal between persistences. The code above does not
+Agile Data supports traversal between persistencies. The code above does not
 explicitly assign database to Model_Order. But what if destination model does
 not reside inside the same database?
 

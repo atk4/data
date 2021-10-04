@@ -22,7 +22,7 @@ trait FieldPropertiesTrait
 
     /**
      * For fields that can be selected, values can represent interpretation of the values,
-     * for instance ['F' => 'Female', 'M' => 'Male'];.
+     * for instance ['F' => 'Female', 'M' => 'Male'].
      *
      * @var array|null
      */

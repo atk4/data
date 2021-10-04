@@ -93,116 +93,158 @@ class Field implements Expressionable
                 return $value;
             }
 
-            if ($value === null) {
-                if ($this->required/* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576 || $this->mandatory*/) {
-                    throw new ValidationException([$this->name => 'Must not be null'], $this->getOwner());
+            if (is_string($value)) {
+                switch ($this->type) {
+                    case null:
+                    case 'string':
+                        $value = trim(str_replace(["\r", "\n"], '', $value)); // remove all line-ends and trim
+
+                        break;
+                    case 'text':
+                        $value = trim(str_replace(["\r\n", "\r"], "\n", $value)); // normalize line-ends to LF and trim
+
+                        break;
+                    case 'boolean':
+                    case 'integer':
+                        $value = preg_replace('/\s+|[,`\']/', '', $value);
+
+                        break;
+                    case 'float':
+                    case 'atk4_money':
+                        $value = preg_replace('/\s+|[,`\'](?=.*\.)/', '', $value);
+
+                        break;
                 }
 
-                return null;
-            }
+                switch ($this->type) {
+                    case 'boolean':
+                    case 'integer':
+                    case 'float':
+                    case 'atk4_money':
+                        if ($value === '') {
+                            $value = null;
+                        } elseif (!is_numeric($value)) {
+                            throw new Exception('Must be numeric');
+                        }
 
-            // only string type fields can use empty string as legit value, for all
-            // other field types empty value is the same as no-value, nothing or null
-            if ($this->type && $this->type !== 'string' && $value === '') {
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
+                        break;
                 }
+            } elseif ($value !== null) {
+                switch ($this->type) {
+                    case null:
+                    case 'string':
+                    case 'text':
+                    case 'integer':
+                    case 'float':
+                    case 'atk4_money':
+                        if (is_bool($value)) {
+                            if ($this->type === 'boolean') {
+                                $value = $value ? '1' : '0';
+                            } else {
+                                throw new Exception('Must not be boolean type');
+                            }
+                        } elseif (is_scalar($value)) {
+                            $value = (string) $value;
+                        } else {
+                            throw new Exception('Must be scalar');
+                        }
 
-                return null;
-            }
-
-            // validate scalar values
-            if (in_array($this->type, [null, 'string', 'text', 'integer', 'float', 'atk4_money'], true)) {
-                if (!is_scalar($value)) {
-                    throw new ValidationException([$this->name => 'Must use scalar value'], $this->getOwner());
+                        break;
                 }
-
-                $value = (string) $value;
             }
 
-            // normalize
-            switch ($this->type) {
-                case null:
-                case 'string':
-                    $value = trim(str_replace(["\r", "\n"], '', $value)); // remove all line-ends and trim
-                    if ($this->required && empty($value)) {
-                        throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
-                    }
-
-                    break;
-                case 'text':
-                    $value = trim(str_replace(["\r\n", "\r"], "\n", $value)); // normalize line-ends to LF and trim
-                    if ($this->required && empty($value)) {
-                        throw new ValidationException([$this->name => 'Must not be empty'], $this->getOwner());
-                    }
-
-                    break;
-                case 'integer':
-                    $value = preg_replace('/\s+|[,`\']/', '', $value);
-                    if (!is_numeric($value)) {
-                        throw new ValidationException([$this->name => 'Must be numeric'], $this->getOwner());
-                    }
-                    $value = (int) $value;
-                    if ($this->required && empty($value)) {
-                        throw new ValidationException([$this->name => 'Must not be a zero'], $this->getOwner());
-                    }
-
-                    break;
-                case 'float':
-                case 'atk4_money':
-                    $value = preg_replace('/\s+|[,`\'](?=.*\.)/', '', $value);
-                    if (!is_numeric($value)) {
-                        throw new ValidationException([$this->name => 'Must be numeric'], $this->getOwner());
-                    }
-                    $value = $this->getTypeObject()->convertToPHPValue($value, new Persistence\GenericPlatform());
-                    if ($this->required && empty($value)) {
-                        throw new ValidationException([$this->name => 'Must not be a zero'], $this->getOwner());
-                    }
-
-                    break;
-                case 'boolean':
-                    throw new Exception('Use Field\Boolean for type=boolean');
-                case 'date':
-                case 'datetime':
-                case 'time':
-                    if (!$value instanceof \DateTimeInterface) {
-                        throw new ValidationException(['Must be an instance of DateTimeInterface', 'type' => get_debug_type($value)], $this->getOwner());
-                    }
-
-                    break;
-                case 'json':
-                    if (!is_array($value)) {
-                        throw new ValidationException([$this->name => 'Must be an array'], $this->getOwner());
-                    }
-
-                    break;
-                case 'object':
-                    if (!is_object($value)) {
-                        throw new ValidationException([$this->name => 'Must be an object'], $this->getOwner());
-                    }
-
-                    break;
-            }
-
-            // normalize using DBAL type
+            // normalize using persistence typecasting
             $persistence = $this->getOwner()->persistence
                 ?? new class() extends Persistence {
                     public function __construct()
                     {
                     }
                 };
-            try {
-                $value = $persistence->typecastSaveField($this, $value);
-                $value = $persistence->typecastLoadField($this, $value);
-            } catch (\Exception $e) {
-                throw new ValidationException([$this->name => 'Invalid value: ' . $e->getMessage()], $this->getOwner());
+            $value = $persistence->typecastSaveField($this, $value);
+            $value = $persistence->typecastLoadField($this, $value);
+
+            if ($value === null) {
+                if ($this->required/* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576 || $this->mandatory*/) {
+                    throw new Exception('Must not be null');
+                }
+
+                return null;
+            }
+
+            if ($value === '' && $this->required) {
+                throw new Exception('Must not be empty');
+            }
+
+            switch ($this->type) {
+                case null:
+                case 'string':
+                case 'text':
+                    if ($this->required && empty($value)) {
+                        throw new Exception('Must not be empty');
+                    }
+
+                    break;
+                case 'boolean':
+                    if ($this->required && empty($value)) {
+                        throw new Exception('Must be true');
+                    }
+
+                    break;
+                case 'integer':
+                case 'float':
+                case 'atk4_money':
+                    if ($this->required && empty($value)) {
+                        throw new Exception('Must not be a zero');
+                    }
+
+                    break;
+                case 'date':
+                case 'datetime':
+                case 'time':
+                    if (!$value instanceof \DateTimeInterface) {
+                        throw new Exception('Must be an instance of DateTimeInterface');
+                    }
+
+                    break;
+                case 'json':
+                    if (!is_array($value)) {
+                        throw new Exception('Must be an array');
+                    }
+
+                    break;
+                case 'object':
+                    if (!is_object($value)) {
+                        throw new Exception('Must be an object');
+                    }
+
+                    break;
+            }
+
+            if ($this->enum) {
+                if ($value === null || $value === '') {
+                    $value = null;
+                } elseif (!in_array($value, $this->enum, true)) {
+                    throw new Exception('Value is not one of the allowed values: ' . implode(', ', $this->enum));
+                }
+            }
+
+            if ($this->values) {
+                if ($value === null || $value === '') {
+                    $value = null;
+                } elseif ((!is_string($value) && !is_int($value)) || !array_key_exists($value, $this->values)) {
+                    throw new Exception('Value is not one of the allowed values: ' . implode(', ', array_keys($this->values)));
+                }
             }
 
             return $value;
-        } catch (Exception $e) {
-            $e->addMoreInfo('field', $this);
+        } catch (\Exception $e) {
+            $messages = [];
+            do {
+                $messages[] = $e->getMessage();
+            } while ($e = $e->getPrevious());
 
-            throw $e;
+            throw (new ValidationException([$this->name => implode(': ', $messages)], $this->getOwner()))
+                ->addMoreInfo('field', $this);
         }
     }
 
@@ -214,6 +256,9 @@ class Field implements Expressionable
     public function toString($value = null): string
     {
         $value = ($value === null /* why not func_num_args() === 1 */ ? $this->get() : $this->normalize($value));
+        if (is_bool($value)) {
+            $value = $value ? '1' : '0';
+        }
 
         return (string) $this->typecastSaveField($value, true);
     }

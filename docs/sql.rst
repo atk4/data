@@ -329,7 +329,7 @@ procedures you will loose portability of your application.
 
 We do have our legacy applications to maintain, so Stored Procedures and SQL
 extensions are here to stay. By making your Model rely on those extensions you
-will loose ability to use the same model with non-sql persistences.
+will loose ability to use the same model with non-sql persistencies.
 
 Sometimes you can fence the code like this::
 
@@ -338,7 +338,7 @@ Sometimes you can fence the code like this::
     }
 
 Or define your pure model, then extend it to add SQL capabilities. Note that
-using single model with cross-persistences should still be possible, so you
+using single model with cross-persistencies should still be possible, so you
 should be able to retrieve model data from stored procedure then cache it.
 
 as a Model method

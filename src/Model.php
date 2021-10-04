@@ -30,9 +30,20 @@ class Model implements \IteratorAggregate
     use ContainerTrait {
         add as _add;
     }
-    use DiContainerTrait;
+    use DiContainerTrait {
+        warnPropertyDoesNotExist as private __di_warnPropertyDoesNotExist;
+        DiContainerTrait::__isset as private __di_isset;
+        DiContainerTrait::__get as private __di_get;
+        DiContainerTrait::__set as private __di_set;
+        DiContainerTrait::__unset as private __di_unset;
+    }
     use DynamicMethodTrait;
-    use HintableModelTrait;
+    use HintableModelTrait {
+        HintableModelTrait::__isset as private __hintable_isset;
+        HintableModelTrait::__get as private __hintable_get;
+        HintableModelTrait::__set as private __hintable_set;
+        HintableModelTrait::__unset as private __hintable_unset;
+    }
     use HookTrait;
     use InitializerTrait {
         init as _init;
@@ -467,7 +478,7 @@ class Model implements \IteratorAggregate
         } elseif (!$this->compare($this->id_field, $this->_entityId)) {
             $this->unload(); // data for different ID were loaded, make sure to discard them
 
-            throw (new Exception('Model instance is an entity, ID can not be changed to a different one'))
+            throw (new Exception('Model instance is an entity, ID cannot be changed to a different one'))
                 ->addMoreInfo('entityId', $this->_entityId)
                 ->addMoreInfo('newId', $id);
         }
@@ -574,7 +585,7 @@ class Model implements \IteratorAggregate
     {
         $seed = Factory::mergeSeeds(
             $seed,
-            isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
+            isset($seed['type']) ? ($this->fieldSeedByType[$seed['type']] ?? null) : null,
             $this->_default_seed_addField
         );
 
@@ -582,8 +593,7 @@ class Model implements \IteratorAggregate
     }
 
     /** @var array<string, array> */
-    protected $typeToFieldSeed = [
-        'boolean' => [Field\Boolean::class],
+    protected $fieldSeedByType = [
     ];
 
     /**
@@ -762,9 +772,8 @@ class Model implements \IteratorAggregate
         try {
             $value = $f->normalize($value);
         } catch (Exception $e) {
-            $e->addMoreInfo('field', $field);
+            $e->addMoreInfo('field', $f);
             $e->addMoreInfo('value', $value);
-            $e->addMoreInfo('f', $f);
 
             throw $e;
         }
@@ -779,46 +788,10 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        // perform bunch of standard validation here. This can be re-factored in the future.
         if ($f->read_only) {
             throw (new Exception('Attempting to change read-only field'))
                 ->addMoreInfo('field', $field)
                 ->addMoreInfo('model', $this);
-        }
-
-        // enum property support
-        if (isset($f->enum) && $f->enum && $f->type !== 'boolean') {
-            if ($value === '') {
-                $value = null;
-            }
-            if ($value !== null && !in_array($value, $f->enum, true)) {
-                throw (new Exception('This is not one of the allowed values for the field'))
-                    ->addMoreInfo('field', $field)
-                    ->addMoreInfo('model', $this)
-                    ->addMoreInfo('value', $value)
-                    ->addMoreInfo('enum', $f->enum);
-            }
-        }
-
-        // values property support
-        if ($f->values) {
-            if ($value === '') {
-                $value = null;
-            } elseif ($value === null) {
-                // all is good
-            } elseif (!is_string($value) && !is_int($value)) {
-                throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
-                    ->addMoreInfo('field', $field)
-                    ->addMoreInfo('model', $this)
-                    ->addMoreInfo('value', $value)
-                    ->addMoreInfo('values', $f->values);
-            } elseif (!array_key_exists($value, $f->values)) {
-                throw (new Exception('This is not one of the allowed values for the field'))
-                    ->addMoreInfo('field', $field)
-                    ->addMoreInfo('model', $this)
-                    ->addMoreInfo('value', $value)
-                    ->addMoreInfo('values', $f->values);
-            }
         }
 
         if (array_key_exists($field, $dirtyRef) && $f->compare($dirtyRef[$field], $value)) {
@@ -2000,6 +1973,39 @@ class Model implements \IteratorAggregate
     }
 
     // }}}
+
+    protected function warnPropertyDoesNotExist(string $name): void
+    {
+        if (!isset($this->getHintableProps()[$name])) {
+            $this->__di_warnPropertyDoesNotExist($name);
+        }
+    }
+
+    public function __isset(string $name): bool
+    {
+        return $this->__hintable_isset($name);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function &__get(string $name)
+    {
+        return $this->__hintable_get($name);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function __set(string $name, $value): void
+    {
+        $this->__hintable_set($name, $value);
+    }
+
+    public function __unset(string $name): void
+    {
+        $this->__hintable_unset($name);
+    }
 
     // {{{ Debug Methods
 

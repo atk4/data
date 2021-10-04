@@ -297,48 +297,48 @@ Type Matrix
 
 .. todo:: this section might need cleanup
 
-+----+----+----------------------------------------------------------+------+----+-----+
-| ty | al | description                                              | nati | sq | mon |
-| pe | ia |                                                          | ve   | l  | go  |
-|    | s( |                                                          |      |    |     |
-|    | es |                                                          |      |    |     |
-|    | )  |                                                          |      |    |     |
-+====+====+==========================================================+======+====+=====+
-| st |    | Will be trim() ed.                                       |      |    |     |
-| ri |    |                                                          |      |    |     |
-| ng |    |                                                          |      |    |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| in | in | will cast to int make sure it's not passed as a string.  | -394 | 49 | 49  |
-| t  | te |                                                          | ,    |    |     |
-|    | ge |                                                          | "49" |    |     |
-|    | r  |                                                          |      |    |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| fl |    | decimal number with floating point                       | 3.28 |    |     |
-| oa |    |                                                          | 84,  |    |     |
-| t  |    |                                                          |      |    |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| mo |    | Will convert loosly-specified currency into float or     | "£3, | 38 |     |
-| ne |    | dedicated format for storage. Optionally support 'fmt'   | 294. | 29 |     |
-| y  |    | property.                                                | 48", | 4. |     |
-|    |    |                                                          | 3.99 | 48 |     |
-|    |    |                                                          | 999  | ,  |     |
-|    |    |                                                          |      | 4  |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| bo | bo | true / false type value. Optionally specify              | true | 1  | tru |
-| ol | ol | 'enum' => ['N','Y'] to store true as 'Y' and false as 'N'. |      |    | e   |
-|    | ea | By default uses [0,1].                                   |      |    |     |
-|    | n  |                                                          |      |    |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| ar |    | Optionally pass 'fmt' option, which is 'json' by         | [2 => | {2 | sto |
-| ra |    | default. Will json\_encode and json\_decode(..., true)   | "bar | :" | red |
-| y  |    | the value if database does not support array storage.    | "]   | ba | as- |
-|    |    |                                                          |      | r" | is  |
-|    |    |                                                          |      | }  |     |
-+----+----+----------------------------------------------------------+------+----+-----+
-| bi |    | Supports storage of binary data like BLOBs               |      |    |     |
-| na |    |                                                          |      |    |     |
-| ry |    |                                                          |      |    |     |
-+----+----+----------------------------------------------------------+------+----+-----+
++----+----------------------------------------------------------+------+----+-----+
+| ty | description                                              | nati | sq | mon |
+| pe |                                                          | ve   | l  | go  |
+|    |                                                          |      |    |     |
+|    |                                                          |      |    |     |
+|    |                                                          |      |    |     |
++====+==========================================================+======+====+=====+
+| st | Will be trim() ed.                                       |      |    |     |
+| ri |                                                          |      |    |     |
+| ng |                                                          |      |    |     |
++----+----------------------------------------------------------+------+----+-----+
+| in | will cast to int make sure it's not passed as a string.  | -394 | 49 | 49  |
+| te |                                                          | ,    |    |     |
+| ge |                                                          | "49" |    |     |
+| r  |                                                          |      |    |     |
++----+----------------------------------------------------------+------+----+-----+
+| fl | decimal number with floating point                       | 3.28 |    |     |
+| oa |                                                          | 84,  |    |     |
+| t  |                                                          |      |    |     |
++----+----------------------------------------------------------+------+----+-----+
+| at | Will convert loosly-specified currency into float or     | "£3, | 38 |     |
+| k4 | dedicated format for storage. Optionally support 'fmt'   | 294. | 29 |     |
+| _m | property.                                                | 48", | 4. |     |
+| on |                                                          | 3.99 | 48 |     |
+| y  |                                                          | 999  | ,  |     |
+|    |                                                          |      | 4  |     |
++----+----------------------------------------------------------+------+----+-----+
+| bo | true / false type value.                                 | true | 1  | tru |
+| ol |                                                          |      |    | e   |
+| ea |                                                          |      |    |     |
+| n  |                                                          |      |    |     |
++----+----------------------------------------------------------+------+----+-----+
+| js | Optionally pass 'fmt' option, which is 'json' by         | [2 => | {2 | sto |
+| on | default. Will json_encode and json_decode(..., true)     | "bar | :" | red |
+|    | the value if database does not support array storage.    | "]   | ba | as- |
+|    |                                                          |      | r" | is  |
+|    |                                                          |      | }  |     |
++----+----------------------------------------------------------+------+----+-----+
+| bi | Supports storage of binary data like BLOBs               |      |    |     |
+| na |                                                          |      |    |     |
+| ry |                                                          |      |    |     |
++----+----------------------------------------------------------+------+----+-----+
 
 -  Money: http://php.net/manual/en/numberformatter.parsecurrency.php.
 -  money: See also
@@ -544,7 +544,7 @@ The other, more appropriate option is to re-use a vanilla Order record::
     }
 
 
-Working with Multiple Persistences
+Working with Multiple Persistencies
 ==================================
 
 Normally when you load the model and save it later, it ends up in the same
@@ -573,7 +573,7 @@ Agile Data, so you will have to create logic yourself, which is actually quite
 simple.
 
 You can use several designs. I will create a method inside my application class
-to load records from two persistences that are stored inside properties of my
+to load records from two persistencies that are stored inside properties of my
 application::
 
     function loadQuick($class, $id) {

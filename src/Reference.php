@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Atk4\Data;
 
+use Atk4\Core\DiContainerTrait;
 use Atk4\Core\Factory;
+use Atk4\Core\InitializerTrait;
+use Atk4\Core\TrackableTrait;
 
 /**
  * Reference implements a link between one model and another. The basic components for
@@ -17,11 +20,11 @@ use Atk4\Core\Factory;
  */
 class Reference
 {
-    use \Atk4\Core\DiContainerTrait;
-    use \Atk4\Core\InitializerTrait {
+    use DiContainerTrait;
+    use InitializerTrait {
         init as _init;
     }
-    use \Atk4\Core\TrackableTrait;
+    use TrackableTrait;
 
     /**
      * Use this alias for related entity by default. This can help you
