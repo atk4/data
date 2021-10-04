@@ -174,6 +174,10 @@ abstract class Persistence
         foreach ($row as $fieldName => $value) {
             $field = $model->getField($fieldName);
 
+            // TODO move to value (instead of row) typecast
+            // TODO should we drop field normalization completely?
+            $value = $field->normalize($value);
+
             $result[$field->getPersistenceName()] = $this->typecastSaveField($field, $value);
         }
 
