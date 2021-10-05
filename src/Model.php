@@ -1382,7 +1382,7 @@ class Model implements \IteratorAggregate
      */
     public function withPersistence(Persistence $persistence, $id = null, string $class = null)
     {
-        $class = $class ?? static::class;
+        $class ??= static::class;
 
         /** @var self $model */
         $model = new $class($persistence, ['table' => $this->table]);
