@@ -151,7 +151,7 @@ jobs:
           if [ "${{ matrix.type }}" != "StaticAnalysis" ]; then composer remove --no-interaction --no-update phpstan/phpstan --dev ; fi
           composer update --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
           if [ "${{ matrix.type }}" == "Phpunit Lowest" ]; then composer update --ansi --prefer-dist --prefer-lowest --prefer-stable --no-interaction --no-progress --optimize-autoloader ; fi
-          if [ "${{ matrix.type }}" == "Phpunit Burn" ]; then sed -i 's/ *public function runBare(): void/public function runBare(): void { gc_collect_cycles(); gc_collect_cycles(); $mem0 = memory_get_usage(); for ($i = 0; $i < '"$(if [ \"$GITHUB_EVENT_NAME\" == \"schedule\" ]; then echo 50; else echo 5; fi)"'; ++$i) { $this->_runBare(); gc_collect_cycles(); gc_collect_cycles(); if ($i === 0) { $mem1 = memory_get_usage(); } } $mem2 = memory_get_usage(); if ($mem2 - 3072 * 1024 > $mem0 || $mem2 > $mem1) { $this->onNotSuccessfulTest(new AssertionFailedError("Memory leak detected! (" . round($mem0 \/ (1024 * 1024), 3) . " MB + " . round(($mem1 - $mem0) \/ (1024 * 1024), 3) . " MB + " . round(($mem2 - $mem1) \/ 1024, 3) . " KB, " . $i . " iterations)")); } } private function _runBare(): void/' vendor/phpunit/phpunit/src/Framework/TestCase.php && cat vendor/phpunit/phpunit/src/Framework/TestCase.php | grep '_runBare(' ; fi
+          if [ "${{ matrix.type }}" == "Phpunit Burn" ]; then sed -i 's~ *public function runBare(): void~public function runBare(): void { gc_collect_cycles(); gc_collect_cycles(); $memDiffs = array_fill(0, '"$(if [ \"$GITHUB_EVENT_NAME\" == \"schedule\" ]; then echo 64; else echo 16; fi)"', 0); for ($i = -1; $i < count($memDiffs); ++$i) { $this->_runBare(); gc_collect_cycles(); gc_collect_cycles(); $mem = memory_get_usage(); if ($i !== -1) { $memDiffs[$i] = $mem - $memPrev; } $memPrev = $mem; rsort($memDiffs); if (array_sum($memDiffs) >= 4096 * 1024 || $memDiffs[2] > 0) { $this->onNotSuccessfulTest(new AssertionFailedError( "Memory leak detected! (" . implode(" + ", array_map(fn ($v) => number_format($v / 1024, 3, ".", " "), array_filter($memDiffs))) . " KB, " . ($i + 2) . " iterations)" )); } } } private function _runBare(): void~' vendor/phpunit/phpunit/src/Framework/TestCase.php && cat vendor/phpunit/phpunit/src/Framework/TestCase.php | grep '_runBare(' ; fi
 
       - name: Init
         run: |
@@ -184,13 +184,13 @@ jobs:
         if: startsWith(matrix.type, 'Phpunit')
         run: "vendor/bin/phpunit --configuration phpunit-oracle.xml.dist \"$(if [ -n \"$LOG_COVERAGE\" ]; then echo '--coverage-text'; else echo '--no-coverage'; fi)\" -v"
 
-      - name: Upload coverage logs 1/2 (only for "latest" Phpunit)
+      - name: Upload coverage logs 1/2 (only for latest Phpunit)
         if: env.LOG_COVERAGE
         run: |
           echo "memory_limit = 1G" > /usr/local/etc/php/conf.d/custom-memory-limit.ini
           vendor/bin/phpcov merge build/logs/ --clover build/logs/cc.xml
 
-      - name: Upload coverage logs 2/2 (only for "latest" Phpunit)
+      - name: Upload coverage logs 2/2 (only for latest Phpunit)
         if: env.LOG_COVERAGE
         uses: codecov/codecov-action@v1
         with:
