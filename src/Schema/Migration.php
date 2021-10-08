@@ -154,6 +154,10 @@ class Migration
 
     public function field(string $fieldName, array $options = []): self
     {
+        if ($options['type'] === 'time' && $this->getDatabasePlatform() instanceof OraclePlatform) {
+            $options['type'] = 'string';
+        }
+
         $refType = $options['ref_type'] ?? self::REF_TYPE_NONE;
         unset($options['ref_type']);
 
