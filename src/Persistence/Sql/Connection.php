@@ -88,8 +88,8 @@ abstract class Connection
             $dsn = $parts['scheme'] . ':host=' . $parts['host']
                 . (isset($parts['port']) ? ';port=' . $parts['port'] : '')
                 . ';dbname=' . substr($parts['path'], 1);
-            $user = $user ?? ($parts['user'] ?? null);
-            $pass = $pass ?? ($parts['pass'] ?? null);
+            $user ??= $parts['user'] ?? null;
+            $pass ??= $parts['pass'] ?? null;
         }
 
         // If it's still array, then simply use it

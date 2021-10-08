@@ -154,7 +154,7 @@ class Reference
     public function createTheirModel(array $defaults = []): Model
     {
         // set table_alias
-        $defaults['table_alias'] = $defaults['table_alias'] ?? $this->table_alias;
+        $defaults['table_alias'] ??= $this->table_alias;
 
         if (is_object($this->model)) {
             if ($this->model instanceof \Closure) {

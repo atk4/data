@@ -18,7 +18,7 @@ class Invoice extends Model
 
     protected function init(): void
     {
-        parent:: init();
+        parent::init();
 
         $this->title_field = $this->fieldName()->ref_no;
 
