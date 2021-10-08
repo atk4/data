@@ -166,7 +166,7 @@ class Migration
 
     public function field(string $fieldName, array $options = []): self
     {
-        if ($options['type'] === 'time' && $this->getDatabasePlatform() instanceof OraclePlatform) {
+        if (($options['type'] ?? null) === 'time' && $this->getDatabasePlatform() instanceof OraclePlatform) {
             $options['type'] = 'string';
         }
 
