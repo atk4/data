@@ -31,9 +31,9 @@ class TestCase extends BaseTestCase
         parent::setUp();
 
         // establish connection
-        $dsn = $GLOBALS['DB_DSN'] ?? 'sqlite::memory:';
-        $user = $GLOBALS['DB_USER'] ?? null;
-        $pass = $GLOBALS['DB_PASSWD'] ?? null;
+        $dsn = $_ENV['DB_DSN'] ?? 'sqlite::memory:';
+        $user = $_ENV['DB_USER'] ?? null;
+        $pass = $_ENV['DB_PASSWD'] ?? null;
 
         $this->db = Persistence::connect($dsn, $user, $pass);
 

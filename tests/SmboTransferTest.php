@@ -108,7 +108,7 @@ class SmboTransferTest extends TestCase
     /*
     public function testBasicEntities(): void
     {
-        $db = Persistence::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
+        $db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWD']);
 
         // Create a new company
         $company = new Company($db);
