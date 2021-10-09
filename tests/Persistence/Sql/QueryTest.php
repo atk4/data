@@ -1205,9 +1205,6 @@ class QueryTest extends TestCase
         $q = new Oracle\Query();
         $this->assertSame('listagg("foo", :a) within group (order by "foo")', $q->groupConcat('foo', '-')->render());
 
-        $q = new Oracle\Version12\Query();
-        $this->assertSame('listagg("foo", :a) within group (order by "foo")', $q->groupConcat('foo', '-')->render());
-
         $q = new Postgresql\Query();
         $this->assertSame('string_agg("foo", :a)', $q->groupConcat('foo', '-')->render());
 

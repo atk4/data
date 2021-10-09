@@ -15,7 +15,7 @@ class ConnectionTest extends TestCase
 {
     public function testServerConnection(): void
     {
-        $c = Connection::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
+        $c = Connection::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWD']);
 
         $this->assertSame('1', $c->expr('SELECT 1' . ($c->getDatabasePlatform() instanceof OraclePlatform ? ' FROM DUAL' : ''))->getOne());
     }
