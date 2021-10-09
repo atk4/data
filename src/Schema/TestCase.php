@@ -9,7 +9,6 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 class TestCase extends BaseTestCase
@@ -31,11 +30,6 @@ class TestCase extends BaseTestCase
         parent::setUp();
 
         $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWD']);
-
-        // reset DB autoincrement to 1, tests rely on it
-        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->db->connection->expr('SET @@auto_increment_offset=1, @@auto_increment_increment=1')->execute();
-        }
 
         if ($this->debug) {
             $this->db->connection->connection()->getConfiguration()->setSQLLogger(
