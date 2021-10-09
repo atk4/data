@@ -239,7 +239,7 @@ abstract class Connection
             }, null, \Doctrine\DBAL\Connection::class)();
         }
 
-        // postConnect event is not dispatched when PDO is passed, call it manually
+        // postConnect event is not dispatched when PDO is passed, dispatch it manually
         if ($dbalConnection->getEventManager()->hasListeners(Events::postConnect)) {
             $dbalConnection->getEventManager()->dispatchEvent(
                 Events::postConnect,
