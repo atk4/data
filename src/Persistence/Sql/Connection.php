@@ -15,6 +15,7 @@ use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Doctrine\DBAL\Result as DbalResult;
+use Doctrine\DBAL\Schema\Sequence;
 
 /**
  * Class for establishing and maintaining connection with your database.
@@ -273,11 +274,12 @@ abstract class Connection
             }, null, DbalConnection::class)();
         }
 
-        // SQL Server DBAL platform has buggy identifier escaping, fix until fixed officially, see:
-        // https://github.com/doctrine/dbal/pull/4360
         if ($dbalConnection->getDatabasePlatform() instanceof SQLServer2012Platform) {
             \Closure::bind(function () use ($dbalConnection) {
                 $dbalConnection->platform = new class() extends SQLServer2012Platform {
+                    // SQL Server DBAL platform has buggy identifier escaping, fix until fixed officially, see:
+                    // https://github.com/doctrine/dbal/pull/4360
+
                     protected function getCreateColumnCommentSQL($tableName, $columnName, $comment)
                     {
                         if (strpos($tableName, '.') !== false) {
@@ -434,12 +436,13 @@ abstract class Connection
             }, null, DbalConnection::class)();
         }
 
-        // Oracle CLOB/BLOB has limited SQL support, see:
-        // https://stackoverflow.com/questions/12980038/ora-00932-inconsistent-datatypes-expected-got-clob#12980560
-        // fix this Oracle inconsistency by using VARCHAR/VARBINARY instead (but limited to 4000 bytes)
         if ($dbalConnection->getDatabasePlatform() instanceof OraclePlatform) {
             \Closure::bind(function () use ($dbalConnection) {
                 $dbalConnection->platform = new class() extends OraclePlatform {
+                    // Oracle CLOB/BLOB has limited SQL support, see:
+                    // https://stackoverflow.com/questions/12980038/ora-00932-inconsistent-datatypes-expected-got-clob#12980560
+                    // fix this Oracle inconsistency by using VARCHAR/VARBINARY instead (but limited to 4000 bytes)
+
                     private function forwardTypeDeclarationSQL(string $targetMethodName, array $column): string
                     {
                         $backtrace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS);
@@ -465,6 +468,59 @@ abstract class Connection
                         $column['length'] = $this->getBinaryMaxLength();
 
                         return $this->forwardTypeDeclarationSQL('getBinaryTypeDeclarationSQL', $column);
+                    }
+
+                    // Oracle DBAL platform autoincrement does not increment like
+                    // for Sqlite or MySQL, unify the behaviour
+
+                    public function getCreateSequenceSQL(Sequence $sequence)
+                    {
+                        $sequence->setCache(0);
+
+                        return parent::getCreateSequenceSQL($sequence);
+                    }
+
+                    public function getCreateAutoincrementSql($name, $table, $start = 1)
+                    {
+                        $sqls = parent::getCreateAutoincrementSql($name, $table, $start);
+
+                        // replace https://github.com/doctrine/dbal/blob/3.1.3/src/Platforms/OraclePlatform.php#L526-L546
+                        $tableIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($table), $this, OraclePlatform::class)();
+                        $nameIdentifier = \Closure::bind(fn () => $this->normalizeIdentifier($name), $this, OraclePlatform::class)();
+                        $aiTriggerName = \Closure::bind(fn () => $this->getAutoincrementIdentifierName($tableIdentifier), $this, OraclePlatform::class)();
+                        $aiSequenceName = $this->getIdentitySequenceName($tableIdentifier->getQuotedName($this), $nameIdentifier->getQuotedName($this));
+                        assert(str_starts_with($sqls[count($sqls) - 1], 'CREATE TRIGGER ' . $aiTriggerName . "\n"));
+
+                        $oracleConn = new Oracle\Connection();
+                        $pkSeq = \Closure::bind(fn () => $this->normalizeIdentifier($aiSequenceName), $this, OraclePlatform::class)()->getName();
+                        $sqls[count($sqls) - 1] = $oracleConn->expr(
+                            str_replace('[pk_seq]', '\'' . $pkSeq . '\'', <<<'EOT'
+                                create or replace trigger {trigger}
+                                    before insert on {table}
+                                    for each row
+                                declare
+                                    pk_seq_last {table}.{pk}%type;
+                                begin
+                                    if (NVL(:NEW.{pk}, 0) = 0) then
+                                        select {pk_seq}.NEXTVAL into :NEW.{pk} from DUAL;
+                                    else
+                                        select NVL(LAST_NUMBER, 0) into pk_seq_last from USER_SEQUENCES where SEQUENCE_NAME = [pk_seq];
+                                        while pk_seq_last <= :NEW.{pk}
+                                        loop
+                                            select {pk_seq}.NEXTVAL + 1 into pk_seq_last from DUAL;
+                                        end loop;
+                                    end if;
+                                end;
+                                EOT),
+                            [
+                                'trigger' => \Closure::bind(fn () => $this->normalizeIdentifier($aiTriggerName), $this, OraclePlatform::class)()->getName(),
+                                'table' => $tableIdentifier->getName(),
+                                'pk' => $nameIdentifier->getName(),
+                                'pk_seq' => $pkSeq,
+                            ]
+                        )->render();
+
+                        return $sqls;
                     }
                 };
             }, null, DbalConnection::class)();

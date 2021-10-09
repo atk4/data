@@ -91,18 +91,10 @@ class Connection extends BaseConnection
 
     /// }}}
 
-    /**
-     * Return last inserted ID value.
-     *
-     * Drivers like PostgreSQL need to receive sequence name to get ID because PDO doesn't support this method.
-     */
     public function lastInsertId(string $sequence = null): string
     {
         if ($sequence) {
-            /** @var AbstractQuery */
-            $query = $this->dsql()->mode('seq_currval');
-
-            return $query->sequence($sequence)->getOne();
+            return $this->dsql()->field($this->expr('{}.CURRVAL', [$sequence]))->getOne();
         }
 
         // fallback

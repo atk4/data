@@ -584,6 +584,7 @@ class ArrayTest extends TestCase
         // order by one field descending
         $p = new Persistence\Array_($dbData);
         $m = new Model($p);
+        $m->getField('id')->actual = 'myid';
         $m->addField('f1');
         $m->addField('f2');
         $m->addField('f3');
@@ -670,8 +671,12 @@ class ArrayTest extends TestCase
 
         $m->import([
             ['f1' => 'K'],
+            ['f1' => 'L'],
         ]);
-        $this->assertSame(10, $m->action('count')->getOne());
+        $this->assertSame(11, $m->action('count')->getOne());
+
+        $m->delete(100);
+        $m->createEntity()->set('f1', 'M')->save();
 
         $this->assertSame([
             1 => ['id' => 1, 'f1' => 'A'],
@@ -683,7 +688,8 @@ class ArrayTest extends TestCase
             9 => ['id' => 9, 'f1' => 'H'],
             99 => ['id' => 99, 'f1' => 'I'],
             20 => ['id' => 20, 'f1' => 'J'],
-            100 => ['id' => 100, 'f1' => 'K'],
+            101 => ['id' => 101, 'f1' => 'L'],
+            102 => ['id' => 102, 'f1' => 'M'],
         ], $m->export());
     }
 

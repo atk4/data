@@ -313,4 +313,103 @@ class SelectTest extends TestCase
             throw $e;
         }
     }
+
+    public function testImportAndAutoincrement(): void
+    {
+        if ($this->c->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+            $this->markTestSkipped('TODO PostgreSQL');
+        }
+
+        $p = new \Atk4\Data\Persistence\Sql($this->c);
+        $m = new \Atk4\Data\Model($p, ['table' => 'test']);
+        $m->getField('id')->actual = 'myid';
+        $m->setOrder('id');
+        $m->addField('f1');
+        (new \Atk4\Data\Schema\Migration($m))->dropIfExists()->create();
+
+        $getLastAiFx = function (): int {
+            $table = 'test';
+            $pk = 'myid';
+            $maxIdExpr = $this->c->dsql()->table($table)->field($this->c->expr('max({})', [$pk]));
+            if ($this->c->getDatabasePlatform() instanceof MySQLPlatform) {
+                $query = $this->c->dsql()->table('INFORMATION_SCHEMA.TABLES')
+                    ->field($this->c->expr('greatest({} - 1, (' . $maxIdExpr->render() . '))', ['AUTO_INCREMENT']))
+                    ->where('TABLE_NAME', $table);
+            } elseif ($this->c->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+                $query = $this->c->dsql()->table($table . '_' . $pk . '_seq')->field('last_value');
+            } elseif ($this->c->getDatabasePlatform() instanceof SQLServer2012Platform) {
+                $query = $this->c->dsql()->field($this->c->expr('IDENT_CURRENT([])', [$table]));
+            } elseif ($this->c->getDatabasePlatform() instanceof OraclePlatform) {
+                $query = $this->c->dsql()->field($this->c->expr('{}.CURRVAL', [$table . '_SEQ']));
+            } else {
+                $query = $this->c->dsql()->table('sqlite_sequence')->field('seq')->where('name', $table);
+            }
+
+            return (int) $query->getOne();
+        };
+
+        $m->import([
+            ['id' => 1, 'f1' => 'A'],
+            ['id' => 2, 'f1' => 'B'],
+        ]);
+        $this->assertSame('2', $m->action('count')->getOne());
+        $this->assertSame(2, $getLastAiFx());
+
+        $m->import([
+            ['f1' => 'C'],
+            ['f1' => 'D'],
+        ]);
+        $this->assertSame('4', $m->action('count')->getOne());
+        $this->assertSame(4, $getLastAiFx());
+
+        $m->import([
+            ['id' => 6, 'f1' => 'E'],
+            ['id' => 7, 'f1' => 'F'],
+        ]);
+        $this->assertSame('6', $m->action('count')->getOne());
+        $this->assertSame(7, $getLastAiFx());
+
+        $m->delete(6);
+        $this->assertSame('5', $m->action('count')->getOne());
+        $this->assertSame(7, $getLastAiFx());
+
+        $m->import([
+            ['f1' => 'G'],
+            ['f1' => 'H'],
+        ]);
+        $this->assertSame('7', $m->action('count')->getOne());
+        $this->assertSame(9, $getLastAiFx());
+
+        $m->import([
+            ['id' => 99, 'f1' => 'I'],
+            ['id' => 20, 'f1' => 'J'],
+        ]);
+        $this->assertSame('9', $m->action('count')->getOne());
+        $this->assertSame(99, $getLastAiFx());
+
+        $m->import([
+            ['f1' => 'K'],
+            ['f1' => 'L'],
+        ]);
+        $this->assertSame('11', $m->action('count')->getOne());
+        $this->assertSame(101, $getLastAiFx());
+
+        $m->delete(100);
+        $m->createEntity()->set('f1', 'M')->save();
+        $this->assertSame(102, $getLastAiFx());
+
+        $this->assertSame([
+            ['id' => 1, 'f1' => 'A'],
+            ['id' => 2, 'f1' => 'B'],
+            ['id' => 3, 'f1' => 'C'],
+            ['id' => 4, 'f1' => 'D'],
+            ['id' => 7, 'f1' => 'F'],
+            ['id' => 8, 'f1' => 'G'],
+            ['id' => 9, 'f1' => 'H'],
+            ['id' => 20, 'f1' => 'J'],
+            ['id' => 99, 'f1' => 'I'],
+            ['id' => 101, 'f1' => 'L'],
+            ['id' => 102, 'f1' => 'M'],
+        ], $m->export());
+    }
 }
