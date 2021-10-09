@@ -30,12 +30,7 @@ class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        // establish connection
-        $dsn = $_ENV['DB_DSN'] ?? 'sqlite::memory:';
-        $user = $_ENV['DB_USER'] ?? null;
-        $pass = $_ENV['DB_PASSWD'] ?? null;
-
-        $this->db = Persistence::connect($dsn, $user, $pass);
+        $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWD']);
 
         // reset DB autoincrement to 1, tests rely on it
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
