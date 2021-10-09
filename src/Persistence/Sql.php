@@ -565,8 +565,6 @@ class Sql extends Persistence
 
         if ($model->id_field && !isset($data[$model->id_field])) {
             unset($data[$model->id_field]);
-
-            $this->syncPkSequence($model);
         }
 
         $insert->set($this->typecastSaveRow($model, $data));
@@ -585,8 +583,6 @@ class Sql extends Persistence
 
         if ($model->id_field && isset($data[$model->id_field])) {
             $id = (string) $data[$model->id_field];
-
-            $this->syncPkSequence($model);
         } else {
             $id = $this->lastInsertId($model);
         }
@@ -752,16 +748,5 @@ class Sql extends Persistence
     public function lastInsertId(Model $model): string
     {
         return $this->connection->lastInsertId($this->getPkSequenceName($model));
-    }
-
-    protected function syncPkSequence(Model $model): void
-    {
-        // PostgreSQL sequence must be manually synchronized if a row with explicit ID was inserted
-        if ($this->connection instanceof \Atk4\Data\Persistence\Sql\Postgresql\Connection) {
-            $this->connection->expr(
-                'select setval([], coalesce(max({}), 0) + 1, false) from {}',
-                [$this->getPkSequenceName($model), $model->getField($model->id_field)->getPersistenceName(), $model->table]
-            )->execute();
-        }
     }
 }
