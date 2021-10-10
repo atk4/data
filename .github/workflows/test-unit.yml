@@ -116,8 +116,8 @@ jobs:
           SA_PASSWORD: atk4_pass
       oracle:
         image: wnameless/oracle-xe-11g-r2
-        env:
-          ORACLE_ALLOW_REMOTE: true
+        options: |
+          -e ORACLE_ALLOW_REMOTE=true --entrypoint sh wnameless/oracle-xe-11g-r2 -c "echo \"alter system set processes=200 scope=spfile;\" > /docker-entrypoint-initdb.d/ci.sql && /usr/sbin/startup.sh && service oracle-xe restart && tail -f /dev/null"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -154,6 +154,8 @@ jobs:
           php -r '(new PDO("mysql:host=mysql", "root", "atk4_pass_root"))->exec("ALTER USER '"'"'atk4_test'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 5");'
           php -r '(new PDO("mysql:host=mariadb", "root", "atk4_pass_root"))->exec("ALTER USER '"'"'atk4_test'"'"'@'"'"'%'"'"' WITH MAX_USER_CONNECTIONS 5");'
           php -r '(new PDO("pgsql:host=postgres;dbname=atk4_test", "atk4_test", "atk4_pass"))->exec("ALTER ROLE atk4_test CONNECTION LIMIT 1");'
+          sleep 40
+          php -r 'for ($i = 0; $i < 300_000; $i++) { if (($i%1000)==0) {echo $i . "\n";} $c = new PDO("oci:dbname=oracle/xe;charset=UTF8", "system", "oracle"); $c->query("select 22 from dual")->execute(); }'
           if [ -n "$LOG_COVERAGE" ]; then mkdir coverage; fi
 
       - name: "Run tests: SQLite (only for Phpunit)"
