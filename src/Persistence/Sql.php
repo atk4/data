@@ -13,8 +13,9 @@ use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception as DsqlException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
-use Doctrine\DBAL\Platforms;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class Sql extends Persistence
@@ -134,7 +135,7 @@ class Sql extends Persistence
         return $this->connection->atomic($fx);
     }
 
-    public function getDatabasePlatform(): Platforms\AbstractPlatform
+    public function getDatabasePlatform(): AbstractPlatform
     {
         return $this->connection->getDatabasePlatform();
     }
@@ -168,11 +169,6 @@ class Sql extends Persistence
             //} else {
             // SQL databases use ID of int by default
             //$m->getField($m->id_field)->type = 'integer';
-        }
-
-        // Sequence support
-        if ($model->sequence && $model->hasField($model->id_field)) {
-            $model->getField($model->id_field)->default = $this->dsql()->mode('seq_nextval')->sequence($model->sequence);
         }
 
         return $model;
@@ -565,8 +561,6 @@ class Sql extends Persistence
 
         if ($model->id_field && !isset($data[$model->id_field])) {
             unset($data[$model->id_field]);
-
-            $this->syncIdSequence($model);
         }
 
         $insert->set($this->typecastSaveRow($model, $data));
@@ -585,8 +579,6 @@ class Sql extends Persistence
 
         if ($model->id_field && isset($data[$model->id_field])) {
             $id = (string) $data[$model->id_field];
-
-            $this->syncIdSequence($model);
         } else {
             $id = $this->lastInsertId($model);
         }
@@ -732,47 +724,20 @@ class Sql extends Persistence
         return $expression->expr($mask, $prop);
     }
 
-    private function getIdSequenceName(Model $model): ?string
-    {
-        $sequenceName = $model->sequence ?: null;
-
-        if ($sequenceName === null) {
-            // PostgreSQL uses sequence internally for PK autoincrement,
-            // use default name if not set explicitly
-            if ($this->connection instanceof \Atk4\Data\Persistence\Sql\Postgresql\Connection) {
-                $sequenceName = $model->table . '_' . $model->getField($model->id_field)->getPersistenceName() . '_seq';
-            }
-        }
-
-        return $sequenceName;
-    }
-
     public function lastInsertId(Model $model): string
     {
-        // TODO: Oracle does not support lastInsertId(), only for testing
-        // as this does not support concurrent inserts
-        if ($this->connection instanceof \Atk4\Data\Persistence\Sql\Oracle\Connection) {
-            if (!$model->id_field) {
-                return ''; // TODO code should never call lastInsertId() if id field is not defined
-            }
-
-            $query = $this->connection->dsql()->table($model->table);
-            $query->field($query->expr('max({id_col})', ['id_col' => $model->getField($model->id_field)->getPersistenceName()]), 'max_id');
-
-            return $query->getOne();
+        // PostgreSQL and Oracle DBAL platforms use sequence internally for PK autoincrement,
+        // use default name if not set explicitly
+        $sequenceName = null;
+        if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+            $sequenceName = $this->connection->getDatabasePlatform()->getIdentitySequenceName(
+                $model->table,
+                $model->getField($model->id_field)->getPersistenceName()
+            );
+        } elseif ($this->connection->getDatabasePlatform() instanceof OraclePlatform) {
+            $sequenceName = $model->table . '_SEQ';
         }
 
-        return $this->connection->lastInsertId($this->getIdSequenceName($model));
-    }
-
-    protected function syncIdSequence(Model $model): void
-    {
-        // PostgreSQL sequence must be manually synchronized if a row with explicit ID was inserted
-        if ($this->connection instanceof \Atk4\Data\Persistence\Sql\Postgresql\Connection) {
-            $this->connection->expr(
-                'select setval([], coalesce(max({}), 0) + 1, false) from {}',
-                [$this->getIdSequenceName($model), $model->getField($model->id_field)->getPersistenceName(), $model->table]
-            )->execute();
-        }
+        return $this->connection->lastInsertId($sequenceName);
     }
 }

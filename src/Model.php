@@ -148,13 +148,6 @@ class Model implements \IteratorAggregate
     public $table_alias;
 
     /**
-     * Sequence name. Some DB engines use sequence for generating auto_increment IDs.
-     *
-     * @var string
-     */
-    public $sequence;
-
-    /**
      * Persistence driver inherited from Atk4\Data\Persistence.
      *
      * @var Persistence|Persistence\Sql|null

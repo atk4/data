@@ -9,6 +9,7 @@ use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Schema\Migration;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
@@ -21,18 +22,7 @@ class TransactionTest extends TestCase
 
     private function dropDbIfExists(): void
     {
-        if ($this->c->getDatabasePlatform() instanceof OraclePlatform) {
-            $this->c->connection()->executeQuery('begin
-                execute immediate \'drop table "employee"\';
-            exception
-                when others then
-                    if sqlcode != -942 then
-                        raise;
-                    end if;
-            end;');
-        } else {
-            $this->c->connection()->executeQuery('DROP TABLE IF EXISTS employee');
-        }
+        (new Migration($this->c))->table('employee')->dropIfExists();
     }
 
     protected function setUp(): void
