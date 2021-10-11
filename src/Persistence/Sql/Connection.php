@@ -273,199 +273,26 @@ abstract class Connection
             }, null, DbalConnection::class)();
         }
 
-        // SQL Server DBAL platform has buggy identifier escaping, fix until fixed officially, see:
-        // https://github.com/doctrine/dbal/pull/4360
-        if ($dbalConnection->getDatabasePlatform() instanceof SQLServer2012Platform) {
+        if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends SQLServer2012Platform {
-                    protected function getCreateColumnCommentSQL($tableName, $columnName, $comment)
-                    {
-                        if (strpos($tableName, '.') !== false) {
-                            [$schemaName, $tableName] = explode('.', $tableName, 2);
-                        } else {
-                            $schemaName = $this->getDefaultSchemaName();
-                        }
-
-                        return $this->getAddExtendedPropertySQL(
-                            'MS_Description',
-                            (string) $comment,
-                            'SCHEMA',
-                            $schemaName,
-                            'TABLE',
-                            $tableName,
-                            'COLUMN',
-                            $columnName
-                        );
-                    }
-
-                    protected function getAlterColumnCommentSQL($tableName, $columnName, $comment)
-                    {
-                        if (strpos($tableName, '.') !== false) {
-                            [$schemaName, $tableName] = explode('.', $tableName, 2);
-                        } else {
-                            $schemaName = $this->getDefaultSchemaName();
-                        }
-
-                        return $this->getUpdateExtendedPropertySQL(
-                            'MS_Description',
-                            (string) $comment,
-                            'SCHEMA',
-                            $schemaName,
-                            'TABLE',
-                            $tableName,
-                            'COLUMN',
-                            $columnName
-                        );
-                    }
-
-                    protected function getDropColumnCommentSQL($tableName, $columnName)
-                    {
-                        if (strpos($tableName, '.') !== false) {
-                            [$schemaName, $tableName] = explode('.', $tableName, 2);
-                        } else {
-                            $schemaName = $this->getDefaultSchemaName();
-                        }
-
-                        return $this->getDropExtendedPropertySQL(
-                            'MS_Description',
-                            'SCHEMA',
-                            $schemaName,
-                            'TABLE',
-                            $tableName,
-                            'COLUMN',
-                            $columnName
-                        );
-                    }
-
-                    private function quoteSingleIdentifierAsStringLiteral(string $levelName): string
-                    {
-                        return $this->quoteStringLiteral(preg_replace('~^\[|\]$~s', '', $levelName));
-                    }
-
-                    public function getAddExtendedPropertySQL(
-                        $name,
-                        $value = null,
-                        $level0Type = null,
-                        $level0Name = null,
-                        $level1Type = null,
-                        $level1Name = null,
-                        $level2Type = null,
-                        $level2Name = null
-                    ) {
-                        return 'EXEC sp_addextendedproperty'
-                            . ' N' . $this->quoteStringLiteral($name) . ', N' . $this->quoteStringLiteral((string) $value)
-                            . ', N' . $this->quoteStringLiteral((string) $level0Type)
-                            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level0Name)
-                            . ', N' . $this->quoteStringLiteral((string) $level1Type)
-                            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level1Name)
-                            . (
-                                $level2Type !== null || $level2Name !== null
-                                ? ', N' . $this->quoteStringLiteral((string) $level2Type)
-                                  . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level2Name)
-                                : ''
-                            );
-                    }
-
-                    public function getDropExtendedPropertySQL(
-                        $name,
-                        $level0Type = null,
-                        $level0Name = null,
-                        $level1Type = null,
-                        $level1Name = null,
-                        $level2Type = null,
-                        $level2Name = null
-                    ) {
-                        return 'EXEC sp_dropextendedproperty'
-                            . ' N' . $this->quoteStringLiteral($name)
-                            . ', N' . $this->quoteStringLiteral((string) $level0Type)
-                            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level0Name)
-                            . ', N' . $this->quoteStringLiteral((string) $level1Type)
-                            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level1Name)
-                            . (
-                                $level2Type !== null || $level2Name !== null
-                                ? ', N' . $this->quoteStringLiteral((string) $level2Type)
-                                  . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level2Name)
-                                : ''
-                            );
-                    }
-
-                    public function getUpdateExtendedPropertySQL(
-                        $name,
-                        $value = null,
-                        $level0Type = null,
-                        $level0Name = null,
-                        $level1Type = null,
-                        $level1Name = null,
-                        $level2Type = null,
-                        $level2Name = null
-                    ) {
-                        return 'EXEC sp_updateextendedproperty'
-                            . ' N' . $this->quoteStringLiteral($name) . ', N' . $this->quoteStringLiteral((string) $value)
-                            . ', N' . $this->quoteStringLiteral((string) $level0Type)
-                            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level0Name)
-                            . ', N' . $this->quoteStringLiteral((string) $level1Type)
-                            . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level1Name)
-                            . (
-                                $level2Type !== null || $level2Name !== null
-                                ? ', N' . $this->quoteStringLiteral((string) $level2Type)
-                                  . ', ' . $this->quoteSingleIdentifierAsStringLiteral((string) $level2Name)
-                                : ''
-                            );
-                    }
-
-                    protected function getCommentOnTableSQL(string $tableName, ?string $comment): string
-                    {
-                        if (strpos($tableName, '.') !== false) {
-                            [$schemaName, $tableName] = explode('.', $tableName, 2);
-                        } else {
-                            $schemaName = $this->getDefaultSchemaName();
-                        }
-
-                        return $this->getAddExtendedPropertySQL(
-                            'MS_Description',
-                            (string) $comment,
-                            'SCHEMA',
-                            $schemaName,
-                            'TABLE',
-                            $tableName
-                        );
-                    }
+                $dbalConnection->platform = new class() extends PostgreSQL94Platform {
+                    use Postgresql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();
         }
 
-        // Oracle CLOB/BLOB has limited SQL support, see:
-        // https://stackoverflow.com/questions/12980038/ora-00932-inconsistent-datatypes-expected-got-clob#12980560
-        // fix this Oracle inconsistency by using VARCHAR/VARBINARY instead (but limited to 4000 bytes)
+        if ($dbalConnection->getDatabasePlatform() instanceof SQLServer2012Platform) {
+            \Closure::bind(function () use ($dbalConnection) {
+                $dbalConnection->platform = new class() extends SQLServer2012Platform {
+                    use Mssql\PlatformTrait;
+                };
+            }, null, DbalConnection::class)();
+        }
+
         if ($dbalConnection->getDatabasePlatform() instanceof OraclePlatform) {
             \Closure::bind(function () use ($dbalConnection) {
                 $dbalConnection->platform = new class() extends OraclePlatform {
-                    private function forwardTypeDeclarationSQL(string $targetMethodName, array $column): string
-                    {
-                        $backtrace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS);
-                        foreach ($backtrace as $frame) {
-                            if ($this === ($frame['object'] ?? null)
-                                && $targetMethodName === ($frame['function'] ?? null)) {
-                                throw new Exception('Long CLOB/TEXT (4000+ bytes) is not supported for Oracle');
-                            }
-                        }
-
-                        return $this->{$targetMethodName}($column);
-                    }
-
-                    public function getClobTypeDeclarationSQL(array $column)
-                    {
-                        $column['length'] = $this->getVarcharMaxLength();
-
-                        return $this->forwardTypeDeclarationSQL('getVarcharTypeDeclarationSQL', $column);
-                    }
-
-                    public function getBlobTypeDeclarationSQL(array $column)
-                    {
-                        $column['length'] = $this->getBinaryMaxLength();
-
-                        return $this->forwardTypeDeclarationSQL('getBinaryTypeDeclarationSQL', $column);
-                    }
+                    use Oracle\PlatformTrait;
                 };
             }, null, DbalConnection::class)();
         }

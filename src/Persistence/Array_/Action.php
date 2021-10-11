@@ -51,7 +51,7 @@ class Action
     }
 
     /**
-     * Calculates SUM|AVG|MIN|MAX aggragate values for $field.
+     * Calculates SUM|AVG|MIN|MAX aggregate values for $field.
      *
      * @param string $fx
      * @param string $field
