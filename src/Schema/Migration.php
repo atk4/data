@@ -82,51 +82,6 @@ class Migration
 
     public function drop(): self
     {
-        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            // drop trigger if exists
-            // see https://stackoverflow.com/questions/1799128/oracle-if-table-exists
-            $this->connection->expr(
-                <<<'EOT'
-                    begin
-                        execute immediate [];
-                    exception
-                        when others then
-                            if sqlcode != -4080 then
-                                raise;
-                            end if;
-                    end;
-                    EOT,
-                [
-                    $this->connection->expr(
-                        'drop trigger {name}',
-                        [
-                            'name' => $this->table->getName() . '_AI_PK',
-                        ]
-                    )->render(),
-                ]
-            )->execute();
-            $this->connection->expr(
-                <<<'EOT'
-                    begin
-                        execute immediate [];
-                    exception
-                        when others then
-                            if sqlcode != -2289 then
-                                raise;
-                            end if;
-                    end;
-                    EOT,
-                [
-                    $this->connection->expr(
-                        'drop sequence {name}',
-                        [
-                            'name' => $this->table->getName() . '_SEQ',
-                        ]
-                    )->render(),
-                ]
-            )->execute();
-        }
-
         $this->getSchemaManager()->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
 
         return $this;

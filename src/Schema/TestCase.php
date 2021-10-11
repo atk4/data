@@ -101,8 +101,6 @@ class TestCase extends BaseTestCase
      */
     public function dropTableIfExists(string $tableName): self
     {
-        // we cannot use SchemaManager::dropTable directly because of
-        // our custom Oracle sequence for PK/AI
         $this->createMigrator()->table($tableName)->dropIfExists();
 
         return $this;
