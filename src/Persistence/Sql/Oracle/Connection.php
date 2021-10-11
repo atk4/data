@@ -97,7 +97,6 @@ class Connection extends BaseConnection
             return $this->dsql()->field($this->expr('{}.CURRVAL', [$sequence]))->getOne();
         }
 
-        // fallback
         return parent::lastInsertId($sequence);
     }
 }

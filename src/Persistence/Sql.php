@@ -13,7 +13,8 @@ use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception as DsqlException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
-use Doctrine\DBAL\Platforms;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
@@ -134,7 +135,7 @@ class Sql extends Persistence
         return $this->connection->atomic($fx);
     }
 
-    public function getDatabasePlatform(): Platforms\AbstractPlatform
+    public function getDatabasePlatform(): AbstractPlatform
     {
         return $this->connection->getDatabasePlatform();
     }
@@ -168,11 +169,6 @@ class Sql extends Persistence
             //} else {
             // SQL databases use ID of int by default
             //$m->getField($m->id_field)->type = 'integer';
-        }
-
-        // Sequence support
-        if ($model->sequence && $model->hasField($model->id_field)) {
-            $model->getField($model->id_field)->default = $this->dsql()->mode('seq_nextval')->sequence($model->sequence);
         }
 
         return $model;
@@ -728,25 +724,20 @@ class Sql extends Persistence
         return $expression->expr($mask, $prop);
     }
 
-    private function getPkSequenceName(Model $model): ?string
-    {
-        $sequenceName = $model->sequence ?: null;
-
-        // PostgreSQL and Oracle DBAL platforms use sequence internally for PK autoincrement,
-        // use default name if not set explicitly
-        if ($sequenceName === null) {
-            if ($this->connection instanceof \Atk4\Data\Persistence\Sql\Postgresql\Connection) {
-                $sequenceName = $model->table . '_' . $model->getField($model->id_field)->getPersistenceName() . '_seq';
-            } elseif ($this->connection instanceof \Atk4\Data\Persistence\Sql\Oracle\Connection) {
-                $sequenceName = $model->table . '_SEQ';
-            }
-        }
-
-        return $sequenceName;
-    }
-
     public function lastInsertId(Model $model): string
     {
-        return $this->connection->lastInsertId($this->getPkSequenceName($model));
+        // PostgreSQL and Oracle DBAL platforms use sequence internally for PK autoincrement,
+        // use default name if not set explicitly
+        $sequenceName = null;
+        if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+            $sequenceName = $this->connection->getDatabasePlatform()->getIdentitySequenceName(
+                $model->table,
+                $model->getField($model->id_field)->getPersistenceName()
+            );
+        } elseif ($this->connection->getDatabasePlatform() instanceof OraclePlatform) {
+            $sequenceName = $model->table . '_SEQ';
+        }
+
+        return $this->connection->lastInsertId($sequenceName);
     }
 }

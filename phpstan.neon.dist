@@ -52,7 +52,6 @@ parameters:
         # for src/Model/ReferencesTrait.php (in context of class Atk4\Data\Model)
         - '~^Call to an undefined method Atk4\\Data\\Reference::refLink\(\)\.$~'
         # for src/Persistence/Sql.php
-        - '~^Call to an undefined method Atk4\\Data\\Persistence\\Sql\\Query::sequence\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence::expr\(\)\.$~'
         - '~^Call to an undefined method Atk4\\Data\\Persistence::exprNow\(\)\.$~'
         # for src/Persistence/Sql/Join.php
