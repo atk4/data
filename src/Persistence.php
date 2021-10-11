@@ -90,6 +90,9 @@ abstract class Persistence
         $m->persistence = $this;
         $m->persistence_data = [];
         $this->initPersistence($m);
+
+        // invokes Model::init()
+        // model is not added to elements as it does not implement TrackableTrait trait
         $m = $this->_add($m);
 
         $this->hook(self::HOOK_AFTER_ADD, [$m]);
