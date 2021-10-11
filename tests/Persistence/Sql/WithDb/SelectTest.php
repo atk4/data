@@ -27,7 +27,7 @@ class SelectTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->c = Connection::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWD']);
+        $this->c = Connection::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
 
         $this->dropDbIfExists();
 
