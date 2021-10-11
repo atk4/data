@@ -316,10 +316,6 @@ class SelectTest extends TestCase
 
     public function testImportAndAutoincrement(): void
     {
-        if ($this->c->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-            $this->markTestSkipped('TODO PostgreSQL');
-        }
-
         $p = new \Atk4\Data\Persistence\Sql($this->c);
         $m = new \Atk4\Data\Model($p, ['table' => 'test']);
         $m->getField('id')->actual = 'myid';
@@ -336,7 +332,7 @@ class SelectTest extends TestCase
                     ->field($this->c->expr('greatest({} - 1, (' . $maxIdExpr->render() . '))', ['AUTO_INCREMENT']))
                     ->where('TABLE_NAME', $table);
             } elseif ($this->c->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-                $query = $this->c->dsql()->table($table . '_' . $pk . '_seq')->field('last_value');
+                $query = $this->c->dsql()->field($this->c->expr('currval(pg_get_serial_sequence([], []))', [$table, $pk]));
             } elseif ($this->c->getDatabasePlatform() instanceof SQLServer2012Platform) {
                 $query = $this->c->dsql()->field($this->c->expr('IDENT_CURRENT([])', [$table]));
             } elseif ($this->c->getDatabasePlatform() instanceof OraclePlatform) {
