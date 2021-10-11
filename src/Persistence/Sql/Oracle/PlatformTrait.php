@@ -67,7 +67,7 @@ trait PlatformTrait
         $sqls[count($sqls) - 1] = $conn->expr(
             // else branch should be maybe (because of concurrency) put into after update trigger
             str_replace('[pk_seq]', '\'' . $pkSeq . '\'', <<<'EOT'
-                CREATE OR REPLACE TRIGGER {trigger}
+                CREATE TRIGGER {trigger}
                     BEFORE INSERT OR UPDATE
                     ON {table}
                     FOR EACH ROW
