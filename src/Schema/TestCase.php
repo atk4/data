@@ -29,7 +29,7 @@ class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWD']);
+        $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
 
         if ($this->debug) {
             $this->db->connection->connection()->getConfiguration()->setSQLLogger(

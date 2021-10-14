@@ -177,9 +177,9 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         $query->mode('insert');
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
-        $query->set($this->foreign_field, null);
+        // $query->set($this->foreign_field, null);
         $query->insert();
-        $this->id = $model->persistence->lastInsertId($model);
+        $this->id = $model->persistence->lastInsertId(new Model($model->persistence, ['table' => $this->foreign_table]));
 
         if ($this->hasJoin()) {
             $this->getJoin()->set($this->master_field, $this->id);
