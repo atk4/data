@@ -296,7 +296,7 @@ class ArrayTest extends TestCase
 
         $dbDataCountries = $dbData['countries'];
         foreach ($dbDataCountries as $k => $v) {
-            $dbDataCountries[$k] = array_merge(['id' => $k], $v);
+            $dbDataCountries[$k] = array_merge(['id' => $k], array_diff_key($v, ['name' => true]));
         }
 
         $p = new Persistence\Array_($dbData);
@@ -406,7 +406,7 @@ class ArrayTest extends TestCase
 
         $dbDataCountries = $dbData['countries'];
         foreach ($dbDataCountries as $k => $v) {
-            $dbDataCountries[$k] = array_merge(['id' => $k], $v);
+            $dbDataCountries[$k] = array_merge(['id' => $k], array_diff_key($v, ['name' => true]));
         }
 
         $p = new Persistence\Array_($dbData);

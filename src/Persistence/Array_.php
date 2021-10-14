@@ -6,6 +6,7 @@ namespace Atk4\Data\Persistence;
 
 use Atk4\Data\Action\RenameColumnIterator;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Array_\Action;
@@ -188,6 +189,11 @@ class Array_ extends Persistence
         return $model;
     }
 
+    private function getOnlyModelFieldsFromRowData(Model $model, array $rowData): array
+    {
+        return array_intersect_key($rowData, array_map(fn (Field $f) => $f->name, $model->getFields()));
+    }
+
     public function tryLoad(Model $model, $id): ?array
     {
         $table = $this->seedDataAndGetTable($model);
@@ -217,7 +223,7 @@ class Array_ extends Persistence
             return null;
         }
 
-        return $this->typecastLoadRow($model, $row->getData());
+        return $this->typecastLoadRow($model, $this->getOnlyModelFieldsFromRowData($model, $row->getData()));
     }
 
     /**
@@ -249,7 +255,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $this->saveRow($model, array_merge($table->getRowById($model, $id)->getData(), $data), $id);
+        $this->saveRow($model, array_merge($this->getOnlyModelFieldsFromRowData($model, $table->getRowById($model, $id)->getData()), $data), $id);
     }
 
     /**
@@ -340,7 +346,7 @@ class Array_ extends Persistence
 
         $rows = [];
         foreach ($table->getRows() as $row) {
-            $rows[$row->getValue($model->id_field)] = $row->getData();
+            $rows[$row->getValue($model->id_field)] = $this->getOnlyModelFieldsFromRowData($model, $row->getData());
         }
 
         if ($fields !== null) {
