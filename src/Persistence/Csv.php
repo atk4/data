@@ -228,9 +228,7 @@ class Csv extends Persistence
                 continue;
             }
 
-            if ($model->hasField($key)) {
-                $row[$key] = $this->typecastLoadField($model->getField($key), $value);
-            }
+            $row[$key] = $this->typecastLoadField($model->getField($key), $value);
         }
 
         return $row;

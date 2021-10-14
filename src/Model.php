@@ -1511,10 +1511,6 @@ class Model implements \IteratorAggregate
                 $data = [];
                 $dirty_join = false;
                 foreach ($dirtyRef as $name => $ignore) {
-                    if (!$this->hasField($name)) {
-                        continue;
-                    }
-
                     $field = $this->getField($name);
                     if ($field->read_only || $field->never_persist || $field->never_save) {
                         continue;
@@ -1547,10 +1543,6 @@ class Model implements \IteratorAggregate
             } else {
                 $data = [];
                 foreach ($this->get() as $name => $value) {
-                    if (!$this->hasField($name)) {
-                        continue;
-                    }
-
                     $field = $this->getField($name);
                     if ($field->read_only || $field->never_persist || $field->never_save) {
                         continue;
@@ -2009,7 +2001,7 @@ class Model implements \IteratorAggregate
     {
         if ($this->isEntity()) {
             return [
-                'entityId' => $this->id_field && $this->hasField('id')
+                'entityId' => $this->id_field && $this->hasField($this->id_field)
                     ? (($this->_entityId !== null ? $this->_entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null'))
                     : 'no id field',
                 'model' => $this->getModel()->__debugInfo(),
