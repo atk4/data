@@ -305,7 +305,7 @@ class FieldTest extends TestCase
         $this->assertSame('1a', $m->get('foo'));
     }
 
-    public function testPersist(): void
+    public function testNeverPersist(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $this->setDb($dbData = [
