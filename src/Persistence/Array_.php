@@ -189,7 +189,7 @@ class Array_ extends Persistence
         return $model;
     }
 
-    private function getOnlyModelFieldsFromRowData(Model $model, array $rowData): array
+    private function filterRowDataOnlyModelFields(Model $model, array $rowData): array
     {
         return array_intersect_key($rowData, array_map(fn (Field $f) => $f->name, $model->getFields()));
     }
@@ -223,7 +223,7 @@ class Array_ extends Persistence
             return null;
         }
 
-        return $this->typecastLoadRow($model, $this->getOnlyModelFieldsFromRowData($model, $row->getData()));
+        return $this->typecastLoadRow($model, $this->filterRowDataOnlyModelFields($model, $row->getData()));
     }
 
     /**
@@ -255,7 +255,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $this->saveRow($model, array_merge($this->getOnlyModelFieldsFromRowData($model, $table->getRowById($model, $id)->getData()), $data), $id);
+        $this->saveRow($model, array_merge($this->filterRowDataOnlyModelFields($model, $table->getRowById($model, $id)->getData()), $data), $id);
     }
 
     /**
@@ -346,7 +346,7 @@ class Array_ extends Persistence
 
         $rows = [];
         foreach ($table->getRows() as $row) {
-            $rows[$row->getValue($model->id_field)] = $this->getOnlyModelFieldsFromRowData($model, $row->getData());
+            $rows[$row->getValue($model->id_field)] = $this->filterRowDataOnlyModelFields($model, $row->getData());
         }
 
         if ($fields !== null) {
