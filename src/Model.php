@@ -553,6 +553,23 @@ class Model implements \IteratorAggregate
         return $this->_add($obj, $defaults);
     }
 
+    /** @var array<string, array> */
+    protected $fieldSeedByType = [];
+
+    /**
+     * Given a field seed, return a field object.
+     */
+    public function fieldFactory(array $seed = null): Field
+    {
+        $seed = Factory::mergeSeeds(
+            $seed,
+            isset($seed['type']) ? ($this->fieldSeedByType[$seed['type']] ?? null) : null,
+            $this->_default_seed_addField
+        );
+
+        return Field::fromSeed($seed);
+    }
+
     /**
      * Adds new field into model.
      *
@@ -570,24 +587,6 @@ class Model implements \IteratorAggregate
 
         return $this->_addIntoCollection($name, $field, 'fields');
     }
-
-    /**
-     * Given a field seed, return a field object.
-     */
-    public function fieldFactory(array $seed = null): Field
-    {
-        $seed = Factory::mergeSeeds(
-            $seed,
-            isset($seed['type']) ? ($this->fieldSeedByType[$seed['type']] ?? null) : null,
-            $this->_default_seed_addField
-        );
-
-        return Field::fromSeed($seed);
-    }
-
-    /** @var array<string, array> */
-    protected $fieldSeedByType = [
-    ];
 
     /**
      * Adds multiple fields into model.
