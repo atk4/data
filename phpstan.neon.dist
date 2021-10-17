@@ -1,3 +1,7 @@
+includes:
+    # remove once https://github.com/phpstan/extension-installer/issues/36 is fixed
+    - phpstan-ext.neon
+
 parameters:
     level: 6
     paths:

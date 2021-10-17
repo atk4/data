@@ -1,0 +1,13 @@
+services:
+    -
+        factory: Mvorisek\Atk4\Hintable\Phpstan\SeedDmrtExtension(Atk4\Data\Model, fieldFactory, 0)
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension
+    -
+        factory: Mvorisek\Atk4\Hintable\Phpstan\SeedDmrtExtension(Atk4\Data\Model, addField, 1)
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension
+    -
+        factory: Mvorisek\Atk4\Hintable\Phpstan\SeedDmrtExtension(Atk4\Data\Model, addExpression, 1)
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension
