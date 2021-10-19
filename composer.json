@@ -55,7 +55,6 @@
         "johnkary/phpunit-speedtrap": "^3.3",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan": "^0.12.82",
-        "phpunit/phpcov": "*",
         "phpunit/phpunit": "^9.5.5"
     },
     "suggest": {
