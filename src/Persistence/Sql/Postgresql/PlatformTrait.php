@@ -16,11 +16,10 @@ trait PlatformTrait
     {
         $sqls = [];
 
-        $sqls[] = 'CREATE EXTENSION IF NOT EXISTS citext';
-
         $sqls[] = 'DO' . "\n"
             . '$$' . "\n"
             . 'BEGIN' . "\n"
+            . '    CREATE EXTENSION IF NOT EXISTS citext;' . "\n"
             . implode("\n", array_map(function (string $domain): string {
                 return '    IF to_regtype(\'' . $domain . '\') IS NULL THEN' . "\n"
                     . '        CREATE DOMAIN ' . $domain . ' AS citext;' . "\n"
