@@ -9,8 +9,8 @@ use Doctrine\DBAL\Schema\Table;
 
 trait PlatformTrait
 {
-    // PostgreSQL string/text column types are case sensitive, unify the behaviour with other
-    // databases and make them case insensitive
+    // PostgreSQL character types are case sensitive, unify the behaviour with other databases
+    // to be case insensitive
 
     private function getCreateCaseInsensitiveDomainsSql(): array
     {
