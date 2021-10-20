@@ -24,7 +24,7 @@ trait PlatformTrait
                 return '    IF to_regtype(\'' . $domain . '\') IS NULL THEN' . "\n"
                     . '        CREATE DOMAIN ' . $domain . ' AS citext;' . "\n"
                     . '    END IF;';
-            }, ['atk4__ci_char', 'atk4__ci_varchar', 'atk4__ci_text'])) . "\n"
+            }, ['atk4__cichar', 'atk4__civarchar'])) . "\n"
             . 'END' . "\n"
             . '$$';
 
@@ -33,12 +33,12 @@ trait PlatformTrait
 
     protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed)
     {
-        return $fixed ? 'ATK4__CI_CHAR' : 'ATK4__CI_TEXT';
+        return $fixed ? 'ATK4__CICHAR' : 'ATK4__CIVARCHAR';
     }
 
     public function getClobTypeDeclarationSQL(array $column)
     {
-        return 'ATK4__CI_TEXT';
+        return 'CITEXT';
     }
 
     // PostgreSQL DBAL platform uses SERIAL column type for autoincrement which does not increment
