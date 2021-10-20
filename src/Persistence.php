@@ -303,8 +303,6 @@ abstract class Persistence
         }
 
         $res = $field->getTypeObject()->convertToDatabaseValue($value, $this->getDatabasePlatform());
-
-        // for binary/blob DBAL types
         if (is_resource($res) && get_resource_type($res) === 'stream') {
             $res = stream_get_contents($res);
         }
@@ -361,8 +359,6 @@ abstract class Persistence
         }
 
         $res = $field->getTypeObject()->convertToPHPValue($value, $this->getDatabasePlatform());
-
-        // for binary/blob DBAL types
         if (is_resource($res) && get_resource_type($res) === 'stream') {
             $res = stream_get_contents($res);
         }
