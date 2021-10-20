@@ -7,7 +7,6 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class ModelTest extends TestCase
@@ -157,10 +156,6 @@ class ModelTest extends TestCase
             ['text', 'MIXEDcase'],
             ['blob', 'MIXEDcase'],
         ));
-
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-            $this->markTestIncomplete('PostgreSQL does not support case insensitive column types');
-        }
 
         $this->assertSame([['id' => 1], ['id' => 2]], $model->export(['id']));
     }

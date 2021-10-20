@@ -9,6 +9,39 @@ use Doctrine\DBAL\Schema\Table;
 
 trait PlatformTrait
 {
+    // PostgreSQL string/text column types are case sensitive, unify the behaviour with other
+    // databases and make them case insensitive
+
+    private function getCreateCaseInsensitiveDomainsSql(): array
+    {
+        $sqls = [];
+
+        $sqls[] = 'CREATE EXTENSION IF NOT EXISTS citext';
+
+        $sqls[] = 'DO' . "\n"
+            . '$$' . "\n"
+            . 'BEGIN' . "\n"
+            . implode("\n", array_map(function (string $domain): string {
+                return '    IF to_regtype(\'' . $domain . '\') IS NULL THEN' . "\n"
+                    . '        CREATE DOMAIN ' . $domain . ' AS citext;' . "\n"
+                    . '    END IF;';
+            }, ['atk4__ci_char', 'atk4__ci_varchar', 'atk4__ci_text'])) . "\n"
+            . 'END' . "\n"
+            . '$$';
+
+        return $sqls;
+    }
+
+    protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed)
+    {
+        return $fixed ? 'ATK4__CI_CHAR' : 'ATK4__CI_TEXT';
+    }
+
+    public function getClobTypeDeclarationSQL(array $column)
+    {
+        return 'ATK4__CI_TEXT';
+    }
+
     // PostgreSQL DBAL platform uses SERIAL column type for autoincrement which does not increment
     // when a row with a not-null PK is inserted like Sqlite or MySQL does, unify the behaviour
 
@@ -48,13 +81,13 @@ trait PlatformTrait
                     END IF;
                     RETURN NEW;
                 END;
-                $$ LANGUAGE plpgsql;
+                $$ LANGUAGE plpgsql
                 EOF),
             [
                 'table' => $table->getName(),
                 'pk' => $pkColumn->getName(),
                 'pk_seq' => $pkSeqName,
-                'trigger_func' => $table->getName() . '_AI_FUNC',
+                'trigger_func' => $table->getName() . '_AI_FUNC', // TODO create only one function per schema
             ]
         )->render();
 
@@ -64,7 +97,7 @@ trait PlatformTrait
                     BEFORE INSERT OR UPDATE
                     ON {table}
                     FOR EACH ROW
-                EXECUTE PROCEDURE {trigger_func}();
+                EXECUTE PROCEDURE {trigger_func}()
                 EOF,
             [
                 'table' => $table->getName(),
@@ -78,7 +111,10 @@ trait PlatformTrait
 
     public function getCreateTableSQL(Table $table, $createFlags = self::CREATE_INDEXES)
     {
-        $sqls = parent::getCreateTableSQL($table, $createFlags);
+        $sqls = array_merge(
+            $this->getCreateCaseInsensitiveDomainsSql(),
+            parent::getCreateTableSQL($table, $createFlags)
+        );
 
         $pkColumn = $this->getPrimaryKeyColumn($table);
         if ($pkColumn !== null) {
