@@ -302,7 +302,12 @@ abstract class Persistence
             return $value;
         }
 
-        return $field->getTypeObject()->convertToDatabaseValue($value, $this->getDatabasePlatform());
+        $res = $field->getTypeObject()->convertToDatabaseValue($value, $this->getDatabasePlatform());
+        if (is_resource($res) && get_resource_type($res) === 'stream') {
+            $res = stream_get_contents($res);
+        }
+
+        return $res;
     }
 
     /**
@@ -353,6 +358,11 @@ abstract class Persistence
             return $value;
         }
 
-        return $field->getTypeObject()->convertToPHPValue($value, $this->getDatabasePlatform());
+        $res = $field->getTypeObject()->convertToPHPValue($value, $this->getDatabasePlatform());
+        if (is_resource($res) && get_resource_type($res) === 'stream') {
+            $res = stream_get_contents($res);
+        }
+
+        return $res;
     }
 }

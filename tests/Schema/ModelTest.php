@@ -7,7 +7,6 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class ModelTest extends TestCase
@@ -125,44 +124,41 @@ class ModelTest extends TestCase
         );
     }
 
-    public function testStringFieldCaseInsensitive(): void
+    /**
+     * @dataProvider providerCharacterTypeFieldCaseSensitivityData
+     */
+    public function testCharacterTypeFieldCaseSensitivity(string $type, bool $isBinary): void
     {
-        $this->dropTableIfExists('user');
-
-        $this->createMigrator()->table('user')->id()
-            ->field('string')
-            ->field('text', ['type' => 'text'])
-            ->field('blob', ['type' => 'blob'])
-            ->create();
-
-        if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
-            $this->markTestIncomplete('TODO MSSQL: Implicit conversion from data type char to varbinary(max) is not allowed. Use the CONVERT function to run this query');
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $this->markTestIncomplete('TODO Oracle: ORA-01465: invalid hex number');
-        }
-
         $model = new Model($this->db, ['table' => 'user']);
-        $model->addField('string');
-        $model->addField('text');
-        $model->addField('blob');
-        $model->setOrder('id');
-        $model->import([
-            ['id' => 1, 'string' => 'MixedCase'],
-            ['id' => 2, 'text' => 'MixedCase'],
-            ['id' => 3, 'blob' => 'MixedCase'],
-        ]);
+        $model->addField('v', ['type' => $type]);
 
-        $model->addCondition(Model\Scope::createOr(
-            ['string', 'MIXEDcase'],
-            ['text', 'MIXEDcase'],
-            ['blob', 'MIXEDcase'],
-        ));
+        $this->createMigrator($model)->dropIfExists()->create();
 
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-            $this->markTestIncomplete('PostgreSQL does not support case insensitive column types');
+        if ($isBinary) {
+            // TODO insert/update of binary character types must be supported, maybe fix using trigger or store data in hex for MSSQL & Oracle?
+            if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
+                $this->markTestIncomplete('TODO MSSQL: Implicit conversion from data type char to varbinary(max) is not allowed. Use the CONVERT function to run this query');
+            } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+                $this->markTestIncomplete('TODO Oracle: ORA-01465: invalid hex number');
+            }
         }
 
-        $this->assertSame([['id' => 1], ['id' => 2]], $model->export(['id']));
+        $model->import([['v' => 'mixedcase'], ['v' => 'MIXEDCASE'], ['v' => 'MixedCase']]);
+
+        $model->addCondition('v', 'MixedCase');
+        $model->setOrder('v');
+
+        $this->assertSame($isBinary ? [['id' => 3]] : [['id' => 1], ['id' => 2], ['id' => 3]], $model->export(['id']));
+    }
+
+    public function providerCharacterTypeFieldCaseSensitivityData(): array
+    {
+        return [
+            ['string', false],
+            ['binary', true],
+            ['text', false],
+            ['blob', true],
+        ];
     }
 }
 
