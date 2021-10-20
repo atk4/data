@@ -17,6 +17,7 @@ class Connection extends BaseConnection
         $evm = new EventManager();
 
         // setup connection globalization to use standard datetime format incl. microseconds support
+        // and make comparison of character types case insensitive
         $dateFormat = 'YYYY-MM-DD';
         $timeFormat = 'HH24:MI:SS.FF6';
         $tzFormat = 'TZH:TZM';
@@ -26,6 +27,8 @@ class Connection extends BaseConnection
             'NLS_TIMESTAMP_FORMAT' => $dateFormat . ' ' . $timeFormat,
             'NLS_TIME_TZ_FORMAT' => $timeFormat . ' ' . $tzFormat,
             'NLS_TIMESTAMP_TZ_FORMAT' => $dateFormat . ' ' . $timeFormat . ' ' . $tzFormat,
+            'NLS_COMP' => 'LINGUISTIC',
+            'NLS_SORT' => 'BINARY_CI',
         ]));
 
         return $evm;
