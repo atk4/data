@@ -286,7 +286,7 @@ class Query extends Expression
     protected function _render_table_noalias(): ?string
     {
         $this->deAliasMainTable = true;
-        
+
         return $this->_render_table(false);
     }
 
