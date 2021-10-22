@@ -280,9 +280,7 @@ class Query extends Expression
         return implode(', ', $ret);
     }
 
-    /**
-     * @var bool Should we de-alias the main table in [where] and [having] clauses?
-     */
+    /** @var bool Should we de-alias the main table in [where] and [having] clauses? */
     private $deAliasMainTable = false;
 
     protected function _render_table_noalias(): ?string
@@ -678,7 +676,8 @@ class Query extends Expression
             throw new \InvalidArgumentException();
         }
 
-        $oldMainAlias = $owner = null;
+        $oldMainAlias = null;
+        $owner = null;
         if ($field instanceof \Atk4\Data\Field) {
             $owner = $field->getOwner();
             $oldMainAlias = $owner->table_alias;
