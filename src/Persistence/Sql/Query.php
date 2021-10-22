@@ -279,7 +279,7 @@ class Query extends Expression
 
         return implode(', ', $ret);
     }
-    
+
     /**
      * @var bool Should we de-alias the main table in [where] and [having] clauses?
      */
@@ -288,6 +288,7 @@ class Query extends Expression
     protected function _render_table_noalias(): ?string
     {
         $this->deAliasMainTable = true;
+        
         return $this->_render_table(false);
     }
 
