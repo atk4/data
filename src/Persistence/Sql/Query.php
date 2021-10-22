@@ -279,9 +279,15 @@ class Query extends Expression
 
         return implode(', ', $ret);
     }
+    
+    /**
+     * @var boolean $deAliasMainTable   Should we de-alias the main table in [where] and [having] clauses?
+     */
+    private $deAliasMainTable = false;
 
     protected function _render_table_noalias(): ?string
     {
+        $this->deAliasMainTable = true;
         return $this->_render_table(false);
     }
 
@@ -671,7 +677,17 @@ class Query extends Expression
             throw new \InvalidArgumentException();
         }
 
+        $oldMainAlias = null;
+        if ($field instanceof \Atk4\data\Field)
+        {
+            $owner = $field->getOwner();
+            $oldMainAlias = $owner->table_alias;
+            if ($this->deAliasMainTable && $oldMainAlias !== null && $oldMainAlias == $this->main_table)
+                $owner->table_alias = $owner->table;
+        }
         $field = $this->consume($field, self::ESCAPE_IDENTIFIER_SOFT);
+        if ($oldMainAlias !== null)
+            $owner->table_alias = $oldMainAlias;
 
         if (count($row) === 1) {
             // Only a single parameter was passed, so we simply include all
