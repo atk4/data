@@ -205,7 +205,7 @@ class Reference
             $aliasFull = $this->link;
             $alias = preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $aliasFull);
             $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
-            if (isset($ourModel->table_alias)) {
+            if ($ourModel->table_alias !== null) {
                 $aliasFull = $ourModel->table_alias . '_' . $aliasFull;
                 $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->table_alias) . '_' . $alias;
             }
@@ -280,7 +280,7 @@ class Reference
         $arr = [];
         foreach ($this->__debug_fields as $k => $v) {
             $k = is_int($k) ? $v : $k;
-            if (isset($this->{$v})) {
+            if ($this->{$v} !== null) {
                 $arr[$k] = $this->{$v};
             }
         }

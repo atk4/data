@@ -368,7 +368,7 @@ class Field implements Expressionable
      */
     public function useAlias(): bool
     {
-        return isset($this->actual);
+        return $this->actual !== null;
     }
 
     // }}}
@@ -475,7 +475,7 @@ class Field implements Expressionable
         foreach ([
             'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
         ] as $key) {
-            if (isset($this->{$key})) {
+            if ($this->{$key} !== null) {
                 $arr[$key] = $this->{$key};
             }
         }
