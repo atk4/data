@@ -180,7 +180,7 @@ class Join
             // split by LAST dot in foreign_table name
             [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
 
-            if (!isset($this->reverse)) {
+            if ($this->reverse === null) { // @phpstan-ignore-line
                 $this->reverse = true;
             }
         }
@@ -211,6 +211,11 @@ class Join
         }
 
         $this->onHookShortToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+
+        // if kind is not specified, figure out join type
+        if (!$this->kind) {
+            $this->kind = $this->weak ? 'left' : 'inner';
+        }
     }
 
     /**

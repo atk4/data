@@ -243,7 +243,7 @@ class SelectTest extends TestCase
         // That's why we add usort here.
         $data = $this->q('employee')->field('id,name')->getRows();
         usort($data, function ($a, $b) {
-            return $a['id'] - $b['id'];
+            return $a['id'] - $b['id']; // @phpstan-ignore-line
         });
         $this->assertSame(
             [['id' => '1', 'name' => 'Peter'], ['id' => '2', 'name' => 'Jane']],

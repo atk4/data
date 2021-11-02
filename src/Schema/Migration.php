@@ -180,7 +180,7 @@ class Migration
                 return $reference->their_field;
             }, null, \Atk4\Data\Reference::class)();
 
-            $referenceField = $referenceTheirField ?? $reference->getOwner()->id_field;
+            $referenceField = $referenceTheirField ?? $reference->getOwner()->id_field; // TODO migrate to $reference->getTheirFieldName()
 
             $modelSeed = is_array($reference->model)
                 ? $reference->model

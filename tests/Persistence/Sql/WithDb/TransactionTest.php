@@ -94,15 +94,6 @@ class TransactionTest extends TestCase
         return $q;
     }
 
-    /**
-     * @param string|array $template
-     * @param array        $args
-     */
-    private function e($template = [], array $args = null): Expression
-    {
-        return $this->c->expr($template, $args);
-    }
-
     public function testCommitException1(): void
     {
         // try to commit when not in transaction
