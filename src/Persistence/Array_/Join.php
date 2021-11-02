@@ -21,7 +21,7 @@ class Join extends Model\Join
         parent::init();
 
         // If kind is not specified, figure out join type
-        if (!isset($this->kind)) {
+        if (!$this->kind) {
             $this->kind = $this->weak ? 'left' : 'inner';
         }
 

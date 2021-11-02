@@ -54,10 +54,10 @@ class UserAction
     /** @var \Closure|string code, identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
-    /** @var string caption to put on the button */
+    /** @var string|null caption to put on the button */
     public $caption;
 
-    /** @var string|\Closure a longer description of this action. Closure must return string. */
+    /** @var string|\Closure|null a longer description of this action. Closure must return string. */
     public $description;
 
     /** @var bool Specifies that the action is dangerous. Should be displayed in red. */
