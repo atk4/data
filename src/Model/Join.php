@@ -180,7 +180,7 @@ class Join
             // split by LAST dot in foreign_table name
             [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
 
-            if ($this->reverse === null) { // @phpstan-ignore-line
+            if ($this->reverse === null) {
                 $this->reverse = true;
             }
         }
