@@ -66,7 +66,7 @@ class Reference
      * This is an optional property which can be used by your implementation
      * to store field-level relationship based on a common field matching.
      *
-     * @var string
+     * @var string|null
      */
     protected $their_field;
 
@@ -74,7 +74,7 @@ class Reference
      * Caption of the referenced model. Can be used in UI components, for example.
      * Should be in plain English and ready for proper localization.
      *
-     * @var string
+     * @var string|null
      */
     public $caption;
 
@@ -205,7 +205,7 @@ class Reference
             $aliasFull = $this->link;
             $alias = preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $aliasFull);
             $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
-            if (isset($ourModel->table_alias)) {
+            if ($ourModel->table_alias !== null) {
                 $aliasFull = $ourModel->table_alias . '_' . $aliasFull;
                 $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->table_alias) . '_' . $alias;
             }
@@ -280,7 +280,7 @@ class Reference
         $arr = [];
         foreach ($this->__debug_fields as $k => $v) {
             $k = is_int($k) ? $v : $k;
-            if (isset($this->{$v})) {
+            if ($this->{$v} !== null) {
                 $arr[$k] = $this->{$v};
             }
         }

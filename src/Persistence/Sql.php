@@ -157,7 +157,7 @@ class Sql extends Persistence
 
         $model = parent::add($model, $defaults);
 
-        if (!isset($model->table) || (!is_string($model->table) && $model->table !== false)) {
+        if ($model->table === null) {
             throw (new Exception('Property $table must be specified for a model'))
                 ->addMoreInfo('model', $model);
         }

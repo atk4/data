@@ -53,19 +53,14 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
         $this->getOwner()->persistence_data['use_table_prefixes'] = true;
 
-        // If kind is not specified, figure out join type
-        if (!isset($this->kind)) {
-            $this->kind = $this->weak ? 'left' : 'inner';
-        }
-
-        // Our short name will be unique
+        // our short name will be unique
         if (!$this->foreign_alias) {
             $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
         $this->onHookShortToOwner(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
 
-        // Add necessary hooks
+        // add necessary hooks
         if ($this->reverse) {
             $this->onHookShortToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
             $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));

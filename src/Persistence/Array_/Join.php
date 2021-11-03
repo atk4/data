@@ -20,12 +20,7 @@ class Join extends Model\Join
     {
         parent::init();
 
-        // If kind is not specified, figure out join type
-        if (!isset($this->kind)) {
-            $this->kind = $this->weak ? 'left' : 'inner';
-        }
-
-        // Add necessary hooks
+        // add necessary hooks
         if ($this->reverse) {
             $this->onHookShortToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
             $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);

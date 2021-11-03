@@ -131,19 +131,14 @@ class Model implements \IteratorAggregate
      * model normally lives. The interpretation of the table will be decoded
      * by persistence driver.
      *
-     * You can define this field as associative array where "key" is used
-     * as the name of persistence driver. Here is example for mysql and default:
-     *
-     * $table = ['user', 'mysql' => 'tbl_user'];
-     *
-     * @var string|array<0|string, string>|false
+     * @var string|false
      */
     public $table;
 
     /**
      * Use alias for $table.
      *
-     * @var string
+     * @var string|null
      */
     public $table_alias;
 

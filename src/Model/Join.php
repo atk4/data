@@ -180,13 +180,13 @@ class Join
             // split by LAST dot in foreign_table name
             [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
 
-            if (!isset($this->reverse)) {
+            if ($this->reverse === null) {
                 $this->reverse = true;
             }
         }
 
         if ($this->reverse === true) {
-            if (isset($this->master_field) && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
+            if ($this->master_field && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
                     ->addMoreInfo('condition', $this->getOwner()->table . '.' . $this->master_field . ' = ' . $this->foreign_table . '.' . $this->foreign_field);
             }
@@ -211,6 +211,11 @@ class Join
         }
 
         $this->onHookShortToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+
+        // if kind is not specified, figure out join type
+        if (!$this->kind) {
+            $this->kind = $this->weak ? 'left' : 'inner';
+        }
     }
 
     /**

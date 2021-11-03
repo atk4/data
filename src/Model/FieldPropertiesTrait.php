@@ -9,7 +9,7 @@ trait FieldPropertiesTrait
     /**
      * Field type. Name of type registered in \Doctrine\DBAL\Types\Type.
      *
-     * @var string
+     * @var string|null
      */
     public $type;
 
@@ -90,7 +90,7 @@ trait FieldPropertiesTrait
      * will always return meaningful label (even if caption is null). Set
      * this property to any string.
      *
-     * @var string
+     * @var string|null
      */
     public $caption;
 

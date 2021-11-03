@@ -290,7 +290,7 @@ abstract class Persistence
                 throw new Exception('Must be instance of DateTimeInterface');
             }
 
-            if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+            if ($field->type === 'datetime') {
                 $value = new \DateTime($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
                 $value->setTimezone(new \DateTimeZone($field->persist_timezone));
             }
@@ -339,7 +339,7 @@ abstract class Persistence
                 }
             }
 
-            if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+            if ($field->type === 'datetime') {
                 $value = \DateTime::createFromFormat($format, $value, new \DateTimeZone($field->persist_timezone));
                 if ($value !== false) {
                     $value->setTimezone(new \DateTimeZone(date_default_timezone_get()));
