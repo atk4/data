@@ -210,7 +210,7 @@ abstract class Persistence
      */
     final public function typecastSaveField(Field $field, $value)
     {
-        $prevFrame = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? [];
+        $prevFrame = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? [];
         if (($prevFrame['object'] ?? null) !== $field || ($prevFrame['function'] ?? null) !== 'normalize') {
             $value = $field->normalize($value);
         }

@@ -383,7 +383,7 @@ class Model implements \IteratorAggregate
         // they will emit undefined warning then if accessed then
         // unset($model->table);
         // unset($model->table_alias);
-        unset($model->scope);
+        unset($model->{'scope'});
 
         return $model;
     }
