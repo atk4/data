@@ -1984,6 +1984,8 @@ class Model implements \IteratorAggregate
     {
         if (isset($this->getHintableProps()[$name])) {
             $this->__hintable_set($name, $value);
+
+            return;
         }
 
         $this->__di_set($name, $value);
@@ -1993,6 +1995,8 @@ class Model implements \IteratorAggregate
     {
         if (isset($this->getHintableProps()[$name])) {
             $this->__hintable_unset($name);
+
+            return;
         }
 
         $this->__di_unset($name);
