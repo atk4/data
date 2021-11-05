@@ -254,7 +254,7 @@ class FieldTest extends TestCase
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
         $m = $m->createEntity();
-        $m->set('foo', null);
+        $m->setNull('foo');
 
         $this->assertNull($m->get('foo'));
     }
