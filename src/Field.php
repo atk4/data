@@ -74,6 +74,35 @@ class Field implements Expressionable
         );
     }
 
+    /*
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    private function normalizeUsingTypecast($value)
+    {
+        $persistence = $this->getOwner()->persistence
+            ?? new class() extends Persistence {
+                public function __construct()
+                {
+                }
+            };
+
+        $persistenceSetSkipNormalizeFx = \Closure::bind(static function(bool $value) use ($persistence) {
+            $persistence->typecastSaveSkipNormalize = $value;
+        }, null, Persistence::class);
+
+        $persistenceSetSkipNormalizeFx(true); // prevent recursion
+        try {
+            $value = $persistence->typecastSaveField($this, $value);
+        } finally {
+            $persistenceSetSkipNormalizeFx(false);
+        }
+        $value = $persistence->typecastLoadField($this, $value);
+
+        return $value;
+    }
+
     /**
      * Depending on the type of a current field, this will perform
      * some normalization for strict types. This method must also make
@@ -101,7 +130,7 @@ class Field implements Expressionable
 
                         break;
                     case 'text':
-                        $value = trim(str_replace(["\r\n", "\r"], "\n", $value)); // normalize line-ends to LF and trim
+                        $value = rtrim(str_replace(["\r\n", "\r"], "\n", $value)); // normalize line-ends to LF and rtrim
 
                         break;
                     case 'boolean':
@@ -153,23 +182,7 @@ class Field implements Expressionable
                 }
             }
 
-            // normalize using persistence typecasting
-            $persistence = $this->getOwner()->persistence
-                ?? new class() extends Persistence {
-                    public function __construct()
-                    {
-                    }
-                };
-            $persistenceSetSkipNormalizeFx = \Closure::bind(static function(bool $value) use ($persistence) {
-                $persistence->typecastSaveSkipNormalize = $value;
-            }, null, Persistence::class);
-            $persistenceSetSkipNormalizeFx(true);
-            try {
-                $value = $persistence->typecastSaveField($this, $value);
-            } finally {
-                $persistenceSetSkipNormalizeFx(false);
-            }
-            $value = $persistence->typecastLoadField($this, $value);
+            $value = $this->normalizeUsingTypecast($value);
 
             if ($value === null) {
                 if ($this->required || $this->mandatory) {
