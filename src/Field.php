@@ -74,7 +74,7 @@ class Field implements Expressionable
         );
     }
 
-    /*
+    /**
      * @param mixed $value
      *
      * @return mixed
@@ -88,7 +88,7 @@ class Field implements Expressionable
                 }
             };
 
-        $persistenceSetSkipNormalizeFx = \Closure::bind(static function(bool $value) use ($persistence) {
+        $persistenceSetSkipNormalizeFx = \Closure::bind(function (bool $value) use ($persistence) {
             $persistence->typecastSaveSkipNormalize = $value;
         }, null, Persistence::class);
 

@@ -30,7 +30,7 @@ abstract class Persistence
     /** @const string */
     public const ID_LOAD_ANY = self::class . '@idLoadAny';
 
-    /** @const bool internal only, prevent recursion */
+    /** @var bool internal only, prevent recursion */
     private $typecastSaveSkipNormalize = false;
 
     /**
