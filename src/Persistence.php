@@ -143,11 +143,7 @@ abstract class Persistence
      */
     public function load(Model $model, $id): array
     {
-        $data = $this->tryLoad(
-            $model,
-            $id,
-            ...array_slice(func_get_args(), 2, null, true)
-        );
+        $data = $this->tryLoad($model, $id);
 
         if (!$data) {
             $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;

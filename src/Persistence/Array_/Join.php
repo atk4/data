@@ -58,7 +58,7 @@ class Join extends Model\Join
 
         try {
             $data = Persistence\Array_::assertInstanceOf($model->persistence)
-                ->load($this->makeFakeModelWithForeignTable(), $this->id, $this->foreign_table);
+                ->load($this->makeFakeModelWithForeignTable(), $this->id);
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
                 ->addMoreInfo('table', $this->foreign_table)
