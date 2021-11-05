@@ -75,6 +75,35 @@ class Field implements Expressionable
     }
 
     /**
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    private function normalizeUsingTypecast($value)
+    {
+        $persistence = $this->getOwner()->persistence
+            ?? new class() extends Persistence {
+                public function __construct()
+                {
+                }
+            };
+
+        $persistenceSetSkipNormalizeFx = \Closure::bind(function (bool $value) use ($persistence) {
+            $persistence->typecastSaveSkipNormalize = $value;
+        }, null, Persistence::class);
+
+        $persistenceSetSkipNormalizeFx(true); // prevent recursion
+        try {
+            $value = $persistence->typecastSaveField($this, $value);
+        } finally {
+            $persistenceSetSkipNormalizeFx(false);
+        }
+        $value = $persistence->typecastLoadField($this, $value);
+
+        return $value;
+    }
+
+    /**
      * Depending on the type of a current field, this will perform
      * some normalization for strict types. This method must also make
      * sure that $f->required is respected when setting the value, e.g.
@@ -101,7 +130,7 @@ class Field implements Expressionable
 
                         break;
                     case 'text':
-                        $value = trim(str_replace(["\r\n", "\r"], "\n", $value)); // normalize line-ends to LF and trim
+                        $value = rtrim(str_replace(["\r\n", "\r"], "\n", $value)); // normalize line-ends to LF and rtrim
 
                         break;
                     case 'boolean':
@@ -153,18 +182,10 @@ class Field implements Expressionable
                 }
             }
 
-            // normalize using persistence typecasting
-            $persistence = $this->getOwner()->persistence
-                ?? new class() extends Persistence {
-                    public function __construct()
-                    {
-                    }
-                };
-            $value = $persistence->typecastSaveField($this, $value);
-            $value = $persistence->typecastLoadField($this, $value);
+            $value = $this->normalizeUsingTypecast($value);
 
             if ($value === null) {
-                if ($this->required/* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576 || $this->mandatory*/) {
+                if ($this->required || $this->mandatory) {
                     throw new Exception('Must not be null');
                 }
 

@@ -559,7 +559,7 @@ class Sql extends Persistence
     {
         $insert = $model->action('insert');
 
-        if ($model->id_field && !isset($data[$model->id_field])) {
+        if ($model->id_field && ($data[$model->id_field] ?? null) === null) {
             unset($data[$model->id_field]);
         }
 
@@ -577,7 +577,7 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
-        if ($model->id_field && isset($data[$model->id_field])) {
+        if ($model->id_field && ($data[$model->id_field] ?? null) !== null) {
             $id = (string) $data[$model->id_field];
         } else {
             $id = $this->lastInsertId($model);

@@ -123,7 +123,7 @@ class ContainsManyTest extends TestCase
 
         // now let's delete line with id=2 and add one more line
         $i->lines
-            ->load(2)->delete()
+            ->load(2)->delete()->getModel()
             ->insert([
                 $l->fieldName()->vat_rate_id => 2,
                 $l->fieldName()->price => 50,

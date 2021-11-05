@@ -332,7 +332,6 @@ class DeepCopyTest extends TestCase
         $dc = new DeepCopy();
 
         $this->expectException(DeepCopyException::class);
-
         try {
             $invoice = $dc
                 ->from($quote)
@@ -340,8 +339,8 @@ class DeepCopyTest extends TestCase
                 ->to($invoice)
                 ->with(['Lines'])
                 ->copy();
-        } catch (\Atk4\Data\Util\DeepCopyException $e) {
-            $this->assertSame('Mandatory field value cannot be null', $e->getPrevious()->getMessage());
+        } catch (DeepCopyException $e) {
+            $this->assertSame('Must not be null', $e->getPrevious()->getMessage());
 
             throw $e;
         }

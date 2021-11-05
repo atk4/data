@@ -19,10 +19,10 @@ class SerializeTest extends TestCase
         $f = $m->addField('data', ['type' => 'object']);
 
         $this->assertSame(
-            ['data' => 'a:1:{s:3:"foo";s:3:"bar";}'],
+            ['data' => 'O:8:"stdClass":1:{s:3:"foo";s:3:"bar";}'],
             $db->typecastSaveRow(
                 $m,
-                ['data' => ['foo' => 'bar']]
+                ['data' => (object) ['foo' => 'bar']]
             )
         );
         $this->assertSame(

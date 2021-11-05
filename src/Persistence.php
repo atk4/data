@@ -30,6 +30,9 @@ abstract class Persistence
     /** @const string */
     public const ID_LOAD_ANY = self::class . '@idLoadAny';
 
+    /** @var bool internal only, prevent recursion */
+    private $typecastSaveSkipNormalize = false;
+
     /**
      * Connects database.
      *
@@ -143,11 +146,7 @@ abstract class Persistence
      */
     public function load(Model $model, $id): array
     {
-        $data = $this->tryLoad(
-            $model,
-            $id,
-            ...array_slice(func_get_args(), 2, null, true)
-        );
+        $data = $this->tryLoad($model, $id);
 
         if (!$data) {
             $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
@@ -174,14 +173,7 @@ abstract class Persistence
         foreach ($row as $fieldName => $value) {
             $field = $model->getField($fieldName);
 
-            $value = $this->typecastSaveField($field, $value);
-
-            // check null values for mandatory fields
-            if ($value === null && $field->mandatory) {
-                throw new ValidationException([$field->short_name => 'Mandatory field value cannot be null'], $field->getOwner());
-            }
-
-            $result[$field->getPersistenceName()] = $value;
+            $result[$field->getPersistenceName()] = $this->typecastSaveField($field, $value);
         }
 
         return $result;
@@ -221,6 +213,10 @@ abstract class Persistence
      */
     public function typecastSaveField(Field $field, $value)
     {
+        if (!$this->typecastSaveSkipNormalize) {
+            $value = $field->normalize($value);
+        }
+
         if ($value === null) {
             return null;
         }

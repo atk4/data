@@ -258,8 +258,7 @@ class RandomTest extends TestCase
                 throw (new \Atk4\Core\Exception('Update didn\'t affect any records'))
                     ->addMoreInfo('query', $update->getDebugQuery())
                     ->addMoreInfo('statement', $st)
-                    ->addMoreInfo('model', $m)
-                    ->addMoreInfo('conditions', $m->conditions);
+                    ->addMoreInfo('model', $m);
             }
         });
 

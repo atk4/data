@@ -219,7 +219,7 @@ class Csv extends Persistence
         }
 
         $row = array_combine($this->header, $row);
-        if ($model->id_field && isset($id)) {
+        if ($model->id_field && $id !== null) {
             $row[$model->id_field] = $id;
         }
 
@@ -301,6 +301,8 @@ class Csv extends Persistence
         } elseif ($this->mode === 'r') {
             throw new Exception('Currently reading records, so writing is not possible.');
         }
+
+        $data = $this->typecastSaveRow($model, $data);
 
         if (!$this->handle) {
             $this->saveHeader($model);

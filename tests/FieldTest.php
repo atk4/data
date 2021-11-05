@@ -65,11 +65,8 @@ class FieldTest extends TestCase
         $m->set('foo', 'abc');
         $m->set('foo', '');
 
-        /* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576
-        $this->expectException(ValidationException::class);*/
+        $this->expectException(ValidationException::class);
         $m->set('foo', null);
-
-        $this->assertTrue(true); // no exceptions
     }
 
     public function testRequired1(): void
@@ -257,7 +254,7 @@ class FieldTest extends TestCase
         $m = new Model();
         $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
         $m = $m->createEntity();
-        $m->set('foo', null);
+        $m->setNull('foo');
 
         $this->assertNull($m->get('foo'));
     }
@@ -389,7 +386,7 @@ class FieldTest extends TestCase
         $this->assertSame('John', $m->get('name'));
         $this->assertSame('Programmer', $m->get('category'));
 
-        $m->insert(['name' => 'Peter', 'category' => 'Sales']);
+        $m->getModel()->insert(['name' => 'Peter', 'category' => 'Sales']);
 
         $this->assertEquals([
             'user' => [

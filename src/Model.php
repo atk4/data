@@ -31,7 +31,6 @@ class Model implements \IteratorAggregate
         add as _add;
     }
     use DiContainerTrait {
-        warnPropertyDoesNotExist as private __di_warnPropertyDoesNotExist;
         DiContainerTrait::__isset as private __di_isset;
         DiContainerTrait::__get as private __di_get;
         DiContainerTrait::__set as private __di_set;
@@ -379,7 +378,12 @@ class Model implements \IteratorAggregate
             $this->_model = null;
         }
         $model->_entityId = null;
-        $model->scope = null; // @phpstan-ignore-line
+
+        // TODO unset properties that should work only on model,
+        // they will emit undefined warning then if accessed then
+        // unset($model->table);
+        // unset($model->table_alias);
+        unset($model->{'scope'});
 
         return $model;
     }
@@ -1641,8 +1645,7 @@ class Model implements \IteratorAggregate
      */
     public function insert(array $row)
     {
-        $model = ($this->isEntity() ? $this->getModel() : $this)
-            ->createEntity();
+        $model = $this->createEntity();
         $model->_rawInsert($row);
 
         return $this->id_field ? $model->getId() : null;
@@ -1953,16 +1956,13 @@ class Model implements \IteratorAggregate
 
     // }}}
 
-    protected function warnPropertyDoesNotExist(string $name): void
-    {
-        if (!isset($this->getHintableProps()[$name])) {
-            $this->__di_warnPropertyDoesNotExist($name);
-        }
-    }
-
     public function __isset(string $name): bool
     {
-        return $this->__hintable_isset($name);
+        if (isset($this->getHintableProps()[$name])) {
+            return $this->__hintable_isset($name);
+        }
+
+        return $this->__di_isset($name);
     }
 
     /**
@@ -1970,7 +1970,11 @@ class Model implements \IteratorAggregate
      */
     public function &__get(string $name)
     {
-        return $this->__hintable_get($name);
+        if (isset($this->getHintableProps()[$name])) {
+            return $this->__hintable_get($name);
+        }
+
+        return $this->__di_get($name);
     }
 
     /**
@@ -1978,12 +1982,24 @@ class Model implements \IteratorAggregate
      */
     public function __set(string $name, $value): void
     {
-        $this->__hintable_set($name, $value);
+        if (isset($this->getHintableProps()[$name])) {
+            $this->__hintable_set($name, $value);
+
+            return;
+        }
+
+        $this->__di_set($name, $value);
     }
 
     public function __unset(string $name): void
     {
-        $this->__hintable_unset($name);
+        if (isset($this->getHintableProps()[$name])) {
+            $this->__hintable_unset($name);
+
+            return;
+        }
+
+        $this->__di_unset($name);
     }
 
     // {{{ Debug Methods

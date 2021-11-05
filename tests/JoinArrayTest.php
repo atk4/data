@@ -122,7 +122,7 @@ class JoinArrayTest extends TestCase
         $m_u->addField('name');
         $j = $m_u->join('contact.test_id');
         $j->addField('contact_phone');
-        $j->addField('test_id');
+        $j->addField('test_id', ['type' => 'integer']);
 
         $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'John');
@@ -174,7 +174,7 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
-        $m_u->addField('test_id');
+        $m_u->addField('test_id', ['type' => 'integer']);
         $j = $m_u->join('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');
         $m_u = $m_u->createEntity();
@@ -225,7 +225,7 @@ class JoinArrayTest extends TestCase
             ],
         ]);
         $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id');
+        $m_u->addField('contact_id', ['type' => 'integer']);
         $m_u->addField('name');
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
@@ -259,7 +259,7 @@ class JoinArrayTest extends TestCase
             ],
         ]);
         $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id');
+        $m_u->addField('contact_id', ['type' => 'integer']);
         $m_u->addField('name');
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
@@ -330,7 +330,7 @@ class JoinArrayTest extends TestCase
             ],
         ]);
         $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id');
+        $m_u->addField('contact_id', ['type' => 'integer']);
         $m_u->addField('name');
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
@@ -363,7 +363,7 @@ class JoinArrayTest extends TestCase
             ],
         ]);
         $m_u = new Model($db, ['table' => 'user']);
-        $m_u->addField('contact_id');
+        $m_u->addField('contact_id', ['type' => 'integer']);
         $m_u->addField('name');
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
