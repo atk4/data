@@ -378,8 +378,12 @@ class Model implements \IteratorAggregate
             $this->_model = null;
         }
         $model->_entityId = null;
+
+        // TODO unset properties that should work only on model,
+        // they will emit undefined warning then if accessed then
+        // unset($model->table);
+        // unset($model->table_alias);
         unset($model->scope);
-        // TODO unset($model->table);
 
         return $model;
     }
