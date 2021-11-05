@@ -235,6 +235,9 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
+        if ($model->id_field && ($data[$model->id_field] ?? null) === null) {
+            unset($data[$model->id_field]);
+        }
         $data = $this->typecastSaveRow($model, $data);
 
         $id = $data[$model->id_field] ?? $this->generateNewId($model);

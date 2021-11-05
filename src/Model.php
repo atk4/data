@@ -1641,6 +1641,7 @@ class Model implements \IteratorAggregate
      */
     public function insert(array $row)
     {
+        // TODO insert on entity should not be supported
         $model = ($this->isEntity() ? $this->getModel() : $this)
             ->createEntity();
         $model->_rawInsert($row);

@@ -219,7 +219,7 @@ class Csv extends Persistence
         }
 
         $row = array_combine($this->header, $row);
-        if ($model->id_field && isset($id)) {
+        if ($model->id_field && $id !== null) {
             $row[$model->id_field] = $id;
         }
 
