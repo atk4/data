@@ -31,7 +31,6 @@ class Model implements \IteratorAggregate
         add as _add;
     }
     use DiContainerTrait {
-        warnPropertyDoesNotExist as private __di_warnPropertyDoesNotExist;
         DiContainerTrait::__isset as private __di_isset;
         DiContainerTrait::__get as private __di_get;
         DiContainerTrait::__set as private __di_set;
@@ -379,7 +378,8 @@ class Model implements \IteratorAggregate
             $this->_model = null;
         }
         $model->_entityId = null;
-        $model->scope = null; // @phpstan-ignore-line
+        unset($model->scope);
+        // TODO unset($model->table);
 
         return $model;
     }
@@ -1954,16 +1954,13 @@ class Model implements \IteratorAggregate
 
     // }}}
 
-    protected function warnPropertyDoesNotExist(string $name): void
-    {
-        if (!isset($this->getHintableProps()[$name])) {
-            $this->__di_warnPropertyDoesNotExist($name);
-        }
-    }
-
     public function __isset(string $name): bool
     {
-        return $this->__hintable_isset($name);
+        if (isset($this->getHintableProps()[$name])) {
+            return $this->__hintable_isset($name);
+        }
+
+        return $this->__di_isset($name);
     }
 
     /**
@@ -1971,7 +1968,11 @@ class Model implements \IteratorAggregate
      */
     public function &__get(string $name)
     {
-        return $this->__hintable_get($name);
+        if (isset($this->getHintableProps()[$name])) {
+            return $this->__hintable_get($name);
+        }
+
+        return $this->__di_get($name);
     }
 
     /**
@@ -1979,12 +1980,20 @@ class Model implements \IteratorAggregate
      */
     public function __set(string $name, $value): void
     {
-        $this->__hintable_set($name, $value);
+        if (isset($this->getHintableProps()[$name])) {
+            $this->__hintable_set($name, $value);
+        }
+
+        $this->__di_set($name, $value);
     }
 
     public function __unset(string $name): void
     {
-        $this->__hintable_unset($name);
+        if (isset($this->getHintableProps()[$name])) {
+            $this->__hintable_unset($name);
+        }
+
+        $this->__di_unset($name);
     }
 
     // {{{ Debug Methods
