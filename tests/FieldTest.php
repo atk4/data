@@ -386,7 +386,7 @@ class FieldTest extends TestCase
         $this->assertSame('John', $m->get('name'));
         $this->assertSame('Programmer', $m->get('category'));
 
-        $m->insert(['name' => 'Peter', 'category' => 'Sales']);
+        $m->getModel()->insert(['name' => 'Peter', 'category' => 'Sales']);
 
         $this->assertEquals([
             'user' => [
