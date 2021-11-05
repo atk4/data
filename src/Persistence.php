@@ -30,6 +30,9 @@ abstract class Persistence
     /** @const string */
     public const ID_LOAD_ANY = self::class . '@idLoadAny';
 
+    /** @const bool internal only, prevent recursion */
+    private $typecastSaveSkipNormalize = false;
+
     /**
      * Connects database.
      *
@@ -208,10 +211,9 @@ abstract class Persistence
      *
      * @return scalar|Persistence\Sql\Expressionable|null
      */
-    final public function typecastSaveField(Field $field, $value)
+    public function typecastSaveField(Field $field, $value)
     {
-        $prevFrame = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? [];
-        if (($prevFrame['object'] ?? null) !== $field || ($prevFrame['function'] ?? null) !== 'normalize') {
+        if (!$this->typecastSaveSkipNormalize) {
             $value = $field->normalize($value);
         }
 

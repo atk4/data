@@ -160,7 +160,15 @@ class Field implements Expressionable
                     {
                     }
                 };
-            $value = $persistence->typecastSaveField($this, $value);
+            $persistenceSetSkipNormalizeFx = \Closure::bind(static function(bool $value) use ($persistence) {
+                $persistence->typecastSaveSkipNormalize = $value;
+            }, null, Persistence::class);
+            $persistenceSetSkipNormalizeFx(true);
+            try {
+                $value = $persistence->typecastSaveField($this, $value);
+            } finally {
+                $persistenceSetSkipNormalizeFx(false);
+            }
             $value = $persistence->typecastLoadField($this, $value);
 
             if ($value === null) {
