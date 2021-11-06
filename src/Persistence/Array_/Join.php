@@ -77,14 +77,17 @@ class Join extends Model\Join
             return;
         }
 
-        if ($this->getOwner()->hasField($this->master_field) && $this->getOwner()->get($this->master_field)) {
+        $entity = $this->getOwner();
+        $model = $entity->getModel();
+
+        if ($model->hasField($this->master_field) && $entity->get($this->master_field)) {
             // The value for the master_field is set,
             // we are going to use existing record.
             return;
         }
 
         // Figure out where are we going to save data
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
+        $persistence = $this->persistence ?: $model->persistence;
 
         $this->id = $persistence->insert(
             $this->makeFakeModelWithForeignTable(),
@@ -93,7 +96,7 @@ class Join extends Model\Join
 
         $data[$this->master_field] = $this->id;
 
-        //$this->getOwner()->set($this->master_field, $this->id);
+        //$entity->set($this->master_field, $this->id);
     }
 
     /**

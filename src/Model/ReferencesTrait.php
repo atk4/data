@@ -52,6 +52,8 @@ trait ReferencesTrait
      */
     protected function _hasReference(array $seed, string $link, array $defaults = []): Reference
     {
+        $this->assertIsModel();
+
         $defaults[0] = $link;
 
         $reference = Reference::fromSeed($seed, $defaults);

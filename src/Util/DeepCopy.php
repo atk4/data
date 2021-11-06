@@ -215,7 +215,7 @@ class DeepCopy
                 // Copy fields as they are
                 $destination = $destination->createEntity();
                 foreach ($data as $key => $val) {
-                    if ($destination->hasField($key) && $destination->getField($key)->isEditable()) {
+                    if ($destination->getModel()->hasField($key) && $destination->getModel()->getField($key)->isEditable()) {
                         $destination->set($key, $val);
                     }
                 }

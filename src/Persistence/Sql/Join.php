@@ -161,10 +161,11 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
             return;
         }
 
-        $model = $this->getOwner();
+        $entity = $this->getOwner();
+        $model = $entity->getModel();
 
         // The value for the master_field is set, so we are going to use existing record anyway
-        if ($model->hasField($this->master_field) && $model->get($this->master_field)) {
+        if ($model->hasField($this->master_field) && $entity->get($this->master_field)) {
             return;
         }
 

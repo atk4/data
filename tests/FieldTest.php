@@ -722,7 +722,7 @@ class FieldTest extends TestCase
         $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
         $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
 
-        $model->onlyFields(['system', 'visible', 'not_editable']);
+        $model->getModel()->onlyFields(['system', 'visible', 'not_editable']);
 
         // getFields() is unaffected by only_fields, will always return all fields
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));

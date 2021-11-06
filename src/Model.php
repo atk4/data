@@ -232,7 +232,7 @@ class Model implements \IteratorAggregate
      * Title field is used typically by UI components for a simple human
      * readable row title/description.
      *
-     * @var string
+     * @var string|null
      */
     public $title_field = 'name';
 
@@ -389,6 +389,8 @@ class Model implements \IteratorAggregate
         // unset($model->table);
         // unset($model->table_alias);
         unset($model->{'scope'});
+//        unset($model->{'id_field'});
+        unset($model->{'title_field'});
         unset($model->{'only_fields'});
 
         return $model;
@@ -584,10 +586,6 @@ class Model implements \IteratorAggregate
      */
     public function addField(string $name, $seed = []): Field
     {
-        if ($this->isEntity()) { // TODO dev only
-            return $this->getModel()->addField($name, $seed);
-        }
-
         $this->assertIsModel();
 
         if (is_object($seed)) {
@@ -637,12 +635,6 @@ class Model implements \IteratorAggregate
      */
     public function removeField(string $name)
     {
-        if ($this->isEntity()) { // TODO dev only
-            $this->getModel()->removeField($name);
-
-            return $this;
-        }
-
         $this->assertIsModel();
 
         $this->getField($name); // better exception if field does not exist
@@ -654,10 +646,6 @@ class Model implements \IteratorAggregate
 
     public function hasField(string $name): bool
     {
-        if ($this->isEntity()) { // TODO dev only
-            return $this->getModel()->hasField($name);
-        }
-
         $this->assertIsModel();
 
         return $this->_hasInCollection($name, 'fields');
@@ -691,12 +679,6 @@ class Model implements \IteratorAggregate
      */
     public function onlyFields(array $fields = [])
     {
-        if ($this->isEntity()) { // TODO dev only
-            $this->getModel()->onlyFields($fields);
-
-            return $this;
-        }
-
         $this->assertIsModel();
 
         $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
@@ -712,12 +694,6 @@ class Model implements \IteratorAggregate
      */
     public function allFields()
     {
-        if ($this->isEntity()) { // TODO dev only
-            $this->getModel()->allFields();
-
-            return $this;
-        }
-
         $this->assertIsModel();
 
         $this->only_fields = false;
@@ -727,12 +703,6 @@ class Model implements \IteratorAggregate
 
     private function checkOnlyFieldsField(string $field): void
     {
-        if ($this->isEntity()) { // TODO dev only
-            $this->getModel()->checkOnlyFieldsField($field);
-
-            return;
-        }
-
         $this->assertIsModel();
 
         $this->getField($field); // test if field exists
@@ -751,9 +721,7 @@ class Model implements \IteratorAggregate
      */
     public function isDirty(string $field): bool
     {
-        $this->assertIsEntity();
-
-        $this->checkOnlyFieldsField($field);
+        $this->getModel()->checkOnlyFieldsField($field);
 
         $dirtyRef = &$this->getDirtyRef();
         if (array_key_exists($field, $dirtyRef)) {
@@ -819,9 +787,7 @@ class Model implements \IteratorAggregate
      */
     public function set(string $field, $value)
     {
-        $this->assertIsEntity();
-
-        $this->checkOnlyFieldsField($field);
+        $this->getModel()->checkOnlyFieldsField($field);
 
         $f = $this->getField($field);
 
@@ -902,8 +868,6 @@ class Model implements \IteratorAggregate
      */
     public function get(string $field = null)
     {
-        $this->assertIsEntity();
-
         if ($field === null) {
             // Collect list of eligible fields
             $data = [];
@@ -914,7 +878,7 @@ class Model implements \IteratorAggregate
             return $data;
         }
 
-        $this->checkOnlyFieldsField($field);
+        $this->getModel()->checkOnlyFieldsField($field);
 
         $dataRef = &$this->getDataRef();
         if (array_key_exists($field, $dataRef)) {
@@ -936,7 +900,7 @@ class Model implements \IteratorAggregate
      */
     public function getId()
     {
-        $this->assertHasIdField();
+        $this->getModel()->assertHasIdField();
 
         return $this->get($this->id_field);
     }
@@ -948,7 +912,7 @@ class Model implements \IteratorAggregate
      */
     public function setId($value)
     {
-        $this->assertHasIdField();
+        $this->getModel()->assertHasIdField();
 
         if ($value === null) {
             $this->setNull($this->id_field);
@@ -959,6 +923,18 @@ class Model implements \IteratorAggregate
         $this->initEntityIdAndAssertUnchanged();
 
         return $this;
+    }
+
+    // TODO dev only reference added to model after entity was forked
+    public function getRef(string $link): Reference
+    {
+        if ($this->isEntity() && !$this->hasRef($link)) {
+            $entityRef = clone $this->getModel()->getRef($link);
+            $entityRef->unsetOwner();
+            $this->add($entityRef);
+        }
+
+        return $this->getElement('#ref_' . $link);
     }
 
     /**
@@ -979,8 +955,8 @@ class Model implements \IteratorAggregate
      */
     public function getTitle()
     {
-        if ($this->title_field && $this->hasField($this->title_field)) {
-            return $this->get($this->title_field);
+        if ($this->getModel()->title_field && $this->getModel()->hasField($this->getModel()->title_field)) {
+            return $this->get($this->getModel()->title_field);
         }
 
         return $this->getId();
@@ -991,6 +967,8 @@ class Model implements \IteratorAggregate
      */
     public function getTitles(): array
     {
+        $this->assertIsModel();
+
         $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
 
         return array_map(function ($row) use ($field) {
@@ -1011,7 +989,7 @@ class Model implements \IteratorAggregate
      */
     public function _isset(string $name): bool
     {
-        $this->checkOnlyFieldsField($name);
+        $this->getModel()->checkOnlyFieldsField($name);
 
         $dirtyRef = &$this->getDirtyRef();
 
@@ -1025,7 +1003,7 @@ class Model implements \IteratorAggregate
      */
     public function _unset(string $name)
     {
-        $this->checkOnlyFieldsField($name);
+        $this->getModel()->checkOnlyFieldsField($name);
 
         $dataRef = &$this->getDataRef();
         $dirtyRef = &$this->getDirtyRef();
@@ -2071,7 +2049,7 @@ class Model implements \IteratorAggregate
     {
         if ($this->isEntity()) {
             return [
-                'entityId' => $this->id_field && $this->hasField($this->id_field)
+                'entityId' => $this->getModel()->id_field && $this->getModel()->hasField($this->getModel()->id_field)
                     ? (($this->_entityId !== null ? $this->_entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null'))
                     : 'no id field',
                 'model' => $this->getModel()->__debugInfo(),

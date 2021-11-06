@@ -24,13 +24,13 @@ class ReferenceTest extends TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id', ['type' => 'integer']);
 
-        $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders')->createEntity();
 
         $this->assertSame(20, $o->get('amount'));
         $this->assertSame(1, $o->get('user_id'));
 
-        $user->hasMany('BigOrders', ['model' => function () {
+        $user->getModel()->hasMany('BigOrders', ['model' => function () {
             $m = new Model();
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id');
@@ -57,7 +57,7 @@ class ReferenceTest extends TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
         $this->assertSame('My Orders', $user->refModel('Orders')->getModelCaption());
@@ -70,7 +70,7 @@ class ReferenceTest extends TestCase
         $user = new Model($db, ['table' => 'user']);
         $user = $user->createEntity();
         $user->setId(1);
-        $user->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
+        $user->getModel()->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
         $o = $user->ref('order_id');
         $this->assertSame('order', $o->table);
     }
