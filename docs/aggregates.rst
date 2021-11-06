@@ -23,7 +23,7 @@ in various ways to fine-tune aggregation. Below is one sample use::
 
    $aggregate = $orders->withAggregateField('country')->groupBy(['country_id'], [
          'count' => ['expr' => 'count(*)', 'type' => 'integer'],
-         'total_amount' => ['expr' => 'sum([amount])', 'type' => 'money']
+         'total_amount' => ['expr' => 'sum([amount])', 'type' => 'atk4_money']
       ],
    );
 
@@ -38,6 +38,6 @@ Below is how opening balance can be built::
    
    // we actually need grouping by nominal
    $ledger->groupBy(['nominal_id'], [
-      'opening_balance' => ['expr' => 'sum([amount])', 'type' => 'money']   
+      'opening_balance' => ['expr' => 'sum([amount])', 'type' => 'atk4_money']   
    ]);
 

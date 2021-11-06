@@ -35,7 +35,7 @@ use Atk4\Dsql\Query;
  * Union model implements identical grouping rule on its own.
  *
  * You can also pass seed (for example field type) when aggregating:
- * $aggregate->groupBy(['first','last'], ['salary' => ['sum([])', 'type'=>'money']];
+ * $aggregate->groupBy(['first', 'last'], ['salary' => ['sum([])', 'type' => 'atk4_']];
  *
  * @property \Atk4\Data\Persistence\Sql $persistence
  *
@@ -246,7 +246,7 @@ class Aggregate extends Model
 
     protected function initQueryConditions(Query $query, Model\Scope\AbstractScope $condition = null): void
     {
-        $condition = $condition ?? $this->scope();
+        $condition ??= $this->scope();
 
         if (!$condition->isEmpty()) {
             // peel off the single nested scopes to convert (((field = value))) to field = value
@@ -274,7 +274,7 @@ class Aggregate extends Model
     {
         if ($this->limit && ($this->limit[0] || $this->limit[1])) {
             if ($this->limit[0] === null) {
-                $this->limit[0] = PHP_INT_MAX;
+                $this->limit[0] = \PHP_INT_MAX;
             }
 
             $query->limit($this->limit[0], $this->limit[1]);

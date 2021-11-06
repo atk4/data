@@ -81,7 +81,7 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
         $this->assertSame(
@@ -98,10 +98,10 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'min' => ['expr' => 'min([amount])', 'type' => 'money'],
-            'max' => ['expr' => 'max([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'], // same as `s`, but reuse name `amount`
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'min' => ['expr' => 'min([amount])', 'type' => 'atk4_money'],
+            'max' => ['expr' => 'max([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'], // same as `s`, but reuse name `amount`
         ]);
 
         $this->assertSame(
@@ -118,11 +118,11 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'money']);
+        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
 
         $this->assertSame(
             [
@@ -140,11 +140,11 @@ class ModelAggregateTest extends TestCase
         $aggregate->baseModel->addCondition('name', 'chair purchase');
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'money']);
+        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
 
         $this->assertSame(
             [
@@ -160,11 +160,11 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'money']);
+        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition('double', '>', 10);
 
         $this->assertSame(
@@ -180,11 +180,11 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'money']);
+        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition('double', 38);
 
         $this->assertSame(
@@ -200,11 +200,11 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            's' => ['expr' => 'sum([amount])', 'type' => 'money'],
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            's' => ['expr' => 'sum([amount])', 'type' => 'atk4_money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
-        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'money']);
+        $aggregate->addExpression('double', ['[s]+[amount]', 'type' => 'atk4_money']);
         $aggregate->addCondition('client_id', 2);
 
         $this->assertSame(
@@ -220,7 +220,7 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
         $scope = Scope::createAnd(new Condition('client_id', 2), new Condition('amount', 4));
@@ -240,7 +240,7 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
         $aggregate->setOrder('client_id', 'asc');
@@ -256,7 +256,7 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
         $aggregate->setLimit(1);
 
@@ -273,7 +273,7 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
         $aggregate->setLimit(1, 1);
 
@@ -290,7 +290,7 @@ class ModelAggregateTest extends TestCase
         $aggregate = $this->createInvoiceAggregate();
 
         $aggregate->groupBy(['client_id'], [
-            'amount' => ['expr' => 'sum([])', 'type' => 'money'],
+            'amount' => ['expr' => 'sum([])', 'type' => 'atk4_money'],
         ]);
 
         $this->assertSameSql(
