@@ -14,6 +14,8 @@ trait AggregatesTrait
     /**
      * @param array|object $seed
      *
+     * @return Aggregate
+     *
      * @see Aggregate::withAggregateField.
      */
     public function withAggregateField(string $name, $seed = []): Model
@@ -22,9 +24,11 @@ trait AggregatesTrait
     }
 
     /**
+     * @return Aggregate
+     *
      * @see Aggregate::groupBy.
      */
-    public function groupBy(array $fields, array $aggregateExpressions = [])
+    public function groupBy(array $fields, array $aggregateExpressions = []): Model
     {
         return (new Aggregate($this))->groupBy($fields, $aggregateExpressions);
     }

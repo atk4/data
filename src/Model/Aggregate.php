@@ -83,7 +83,7 @@ class Aggregate extends Model
      *
      * @return $this
      */
-    public function groupBy(array $fields, array $aggregateExpressions = [])
+    public function groupBy(array $fields, array $aggregateExpressions = []): Model
     {
         $this->groupByFields = array_unique(array_merge($this->groupByFields, $fields));
 
@@ -125,6 +125,8 @@ class Aggregate extends Model
      * and
      *
      * $model->withAggregateField('xyz')->groupBy(['abc']);
+     *
+     * @return $this
      */
     public function withAggregateField(string $name, $seed = []): Model
     {
@@ -270,7 +272,7 @@ class Aggregate extends Model
         }
     }
 
-    protected function initQueryLimit(Query $query)
+    protected function initQueryLimit(Query $query): void
     {
         if ($this->limit && ($this->limit[0] || $this->limit[1])) {
             if ($this->limit[0] === null) {

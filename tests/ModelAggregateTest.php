@@ -32,7 +32,7 @@ class ModelAggregateTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->setDB($this->init_db);
+        $this->setDb($this->init_db);
     }
 
     protected function createInvoice(): Model\Invoice
@@ -43,7 +43,7 @@ class ModelAggregateTest extends TestCase
         return $invoice;
     }
 
-    protected function createInvoiceAggregate()
+    protected function createInvoiceAggregate(): Aggregate
     {
         return $this->createInvoice()->withAggregateField('client');
     }
@@ -135,7 +135,6 @@ class ModelAggregateTest extends TestCase
 
     public function testGroupSelectCondition(): void
     {
-        /** @var Aggregate $aggregate */
         $aggregate = $this->createInvoiceAggregate();
         $aggregate->baseModel->addCondition('name', 'chair purchase');
 
