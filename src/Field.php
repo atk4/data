@@ -29,9 +29,6 @@ class Field implements Expressionable
 
     // {{{ Core functionality
 
-    /**
-     * Constructor. You can pass field properties as array.
-     */
     public function __construct(array $defaults = [])
     {
         foreach ($defaults as $key => $val) {
@@ -41,6 +38,11 @@ class Field implements Expressionable
                 $this->{$key} = $val;
             }
         }
+    }
+
+    private function assertIsOwnerEntity(Model $entity): void
+    {
+        $entity->assertIsEntity(/* TODO $this->getOwner() valid once not rebound to insatnce in Model */);
     }
 
     /**
@@ -132,7 +134,7 @@ class Field implements Expressionable
         $this->getTypeObject(); // assert type exists
 
         try {
-            if ($this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
+            if ($this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) { // TODO should be called on model or entity?
                 return $value;
             }
 
@@ -286,12 +288,12 @@ class Field implements Expressionable
     /**
      * Casts field value to string.
      *
-     * @param mixed $value Optional value
+     * @param mixed $value
      */
-    public function toString($value = null): string
+    public function toString($value): string
     {
-        $value = ($value === null /* why not func_num_args() === 1 */ ? $this->get() : $this->normalize($value));
-        if (is_bool($value)) {
+        $value = $this->normalize($value); // TODO normalize should not be needed, called also in typecast
+        if (is_bool($value)) { // TODO typecast should be enough
             $value = $value ? '1' : '0';
         }
 
@@ -303,9 +305,11 @@ class Field implements Expressionable
      *
      * @return mixed
      */
-    public function get()
+    final public function get(Model $entity)
     {
-        return $this->getOwner()->get($this->short_name);
+        $this->assertIsOwnerEntity($entity);
+
+        return $entity->get($this->short_name);
     }
 
     /**
@@ -313,7 +317,7 @@ class Field implements Expressionable
      *
      * @param mixed $value
      */
-    public function set($value): self
+    final public function set($value): self
     {
         $this->getOwner()->set($this->short_name, $value);
 
@@ -323,7 +327,7 @@ class Field implements Expressionable
     /**
      * Unset field value even if null value is not allowed.
      */
-    public function setNull(): self
+    final public function setNull(): self
     {
         $this->getOwner()->setNull($this->short_name);
 
@@ -367,20 +371,12 @@ class Field implements Expressionable
 
     /**
      * Compare new value of the field with existing one without retrieving.
-     * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
-     *  - comparing values that can't be received - passwords, encrypted data
-     *  - comparing images
-     *  - if get() is expensive (e.g. retrieve object).
      *
-     * @param mixed      $value
-     * @param mixed|void $value2
+     * @param mixed $value
+     * @param mixed $value2
      */
-    public function compare($value, $value2 = null): bool
+    public function compare($value, $value2): bool
     {
-        if (func_num_args() === 1) {
-            $value2 = $this->get();
-        }
-
         // TODO, see https://stackoverflow.com/questions/48382457/mysql-json-column-change-array-order-after-saving
         // at least MySQL sorts the JSON keys if stored natively
         return $this->getValueForCompare($value) === $this->getValueForCompare($value2);
@@ -388,6 +384,8 @@ class Field implements Expressionable
 
     public function getReference(): ?Reference
     {
+        // TODO needs probably also care as unbound now
+
         return $this->referenceLink !== null
             ? $this->getOwner()->getRef($this->referenceLink)
             : null;
@@ -495,20 +493,15 @@ class Field implements Expressionable
         return $this->getOwner()->persistence->getFieldSqlExpression($this, $expression);
     }
 
-    // {{{ Debug Methods
-
-    /**
-     * Returns array with useful debug info for var_dump.
-     */
     public function __debugInfo(): array
     {
         $arr = [
             'short_name' => $this->short_name,
-            'value' => $this->get(),
+            'type' => $this->type,
         ];
 
         foreach ([
-            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
+            'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
         ] as $key) {
             if ($this->{$key} !== null) {
                 $arr[$key] = $this->{$key};
@@ -517,6 +510,4 @@ class Field implements Expressionable
 
         return $arr;
     }
-
-    // }}}
 }

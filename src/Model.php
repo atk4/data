@@ -343,10 +343,14 @@ class Model implements \IteratorAggregate
         }
     }
 
-    public function assertIsEntity(): void
+    public function assertIsEntity(self $expectedModelInstance = null): void
     {
         if (!$this->isEntity()) {
             throw new Exception('Expected entity, but instance is a model');
+        }
+
+        if ($expectedModelInstance !== null && $expectedModelInstance !== $this->getModel()) {
+            throw new Exception('Unexpected entity model instance');
         }
     }
 
@@ -976,7 +980,7 @@ class Model implements \IteratorAggregate
     public function getTitle()
     {
         if ($this->title_field && $this->hasField($this->title_field)) {
-            return $this->getField($this->title_field)->get();
+            return $this->get($this->title_field);
         }
 
         return $this->getId();
@@ -999,7 +1003,7 @@ class Model implements \IteratorAggregate
      */
     public function compare(string $name, $value): bool
     {
-        return $this->getField($name)->compare($value);
+        return $this->getField($name)->compare($this->get($name), $value);
     }
 
     /**
@@ -2063,11 +2067,6 @@ class Model implements \IteratorAggregate
         $this->__di_unset($name);
     }
 
-    // {{{ Debug Methods
-
-    /**
-     * Returns array with useful debug info for var_dump.
-     */
     public function __debugInfo(): array
     {
         if ($this->isEntity()) {
@@ -2084,6 +2083,4 @@ class Model implements \IteratorAggregate
             'scope' => $this->scope()->toWords(),
         ];
     }
-
-    // }}}
 }

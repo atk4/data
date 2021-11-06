@@ -742,9 +742,9 @@ class FieldTest extends TestCase
         $model->addField('datetime', ['type' => 'datetime']);
         $model = $model->createEntity();
 
-        $this->assertSame('', $model->getField('date')->toString());
-        $this->assertSame('', $model->getField('time')->toString());
-        $this->assertSame('', $model->getField('datetime')->toString());
+        $this->assertSame('', $model->getField('date')->toString($model->get('date')));
+        $this->assertSame('', $model->getField('time')->toString($model->get('time')));
+        $this->assertSame('', $model->getField('datetime')->toString($model->get('datetime')));
 
         // datetime without microseconds
         $dt = new \DateTime('2020-01-21 21:09:42 UTC');
@@ -752,9 +752,9 @@ class FieldTest extends TestCase
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
-        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
-        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString($model->get('date')));
+        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString($model->get('time')));
+        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString($model->get('datetime')));
 
         // datetime with microseconds
         $dt = new \DateTime('2020-01-21 21:09:42.895623 UTC');
@@ -762,9 +762,9 @@ class FieldTest extends TestCase
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
-        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
-        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString($model->get('date')));
+        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString($model->get('time')));
+        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString($model->get('datetime')));
     }
 
     public function testSetNull(): void

@@ -179,14 +179,14 @@ class Reference
         return $theirModel;
     }
 
-    protected function getOurField(): Field
-    {
-        return $this->getOurModel()->getField($this->getOurFieldName());
-    }
-
     protected function getOurFieldName(): string
     {
         return $this->our_field ?: $this->getOurModel()->id_field;
+    }
+
+    protected function getOurField(): Field
+    {
+        return $this->getOurModel()->getField($this->getOurFieldName());
     }
 
     /**
@@ -194,7 +194,7 @@ class Reference
      */
     protected function getOurFieldValue()
     {
-        return $this->getOurField()->get();
+        return $this->getOurModel()->get($this->getOurFieldName());
     }
 
     protected function initTableAlias(): void
@@ -263,8 +263,6 @@ class Reference
         return $this->createTheirModel($defaults);
     }
 
-    // {{{ Debug Methods
-
     /**
      * List of properties to show in var_dump.
      *
@@ -287,6 +285,4 @@ class Reference
 
         return $arr;
     }
-
-    // }}}
 }
