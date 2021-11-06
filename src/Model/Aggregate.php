@@ -9,9 +9,9 @@ use Atk4\Data\Field;
 use Atk4\Data\FieldSqlExpression;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Reference;
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Query;
 
 /**
  * Aggregate model allows you to query using "group by" clause on your existing model.
