@@ -7,8 +7,9 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Model\Aggregate;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Model\Scope\Condition;
+use Atk4\Data\Schema\TestCase;
 
-class ModelAggregateTest extends \Atk4\Schema\PhpunitTestCase
+class ModelAggregateTest extends TestCase
 {
     /** @var array */
     private $init_db =
