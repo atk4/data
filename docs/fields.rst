@@ -53,7 +53,7 @@ Field Type
 
 Probably a most useful quality of Field is that it has a clear type::
 
-    $model->addField('age', ['type'=>'integer']);
+    $model->addField('age', ['type' => 'integer']);
     $model->set('age', "123");
 
     var_dump($model->get('age'));   // int(123)
@@ -96,12 +96,6 @@ Persistence implements two methods:
 Those are responsible for converting PHP native types to persistence specific
 formats as defined in fields. Those methods will also change name of the field
 if needed (see Field::actual)
-
-.. php:attr:: typecast
-
-This property can be used to override typecasting for your field. See
-:ref:`Typecasting`
-
 
 Basic Properties
 ----------------
@@ -265,45 +259,3 @@ views by default.
 .. php:method:: isHidden
 
 Returns true if UI should not render this field in views.
-
-
-Password (after 1.5.0 release)
-==============================
-
-.. php:namespace:: Atk4\Data\Field
-
-.. php:class:: Password
-
-`Field\\Password` is a class that implements proper handling of data passwords.
-Without this class your password will be stored **unencrypted**.
-Here is how to use it properly::
-
-    $user->addField('mypass', [\Atk4\Ui\FormField\Password::class]);
-
-    $user->set('mypass', 'secret');
-    $user->save();
-
-Password is automatically hashed with `password_encrypt` before storing. If you
-attempt to load existing record from database and `$user->get('mypass')` you
-will always get `NULL`.
-
-There is another way to verify passwords using :php:meth:`Model::compare`::
-
-    $user->loadBy('email', $email);
-    return $user->compare('password', $password);
-
-This should return `true` if your supplied password matches the one that is
-stored. Final example::
-
-    // class User extends Model
-
-    function changePass($old_pass, $new_pass) {
-
-        if (!$this->compare('password', $old_pass)) {
-            throw new Exception('Old password is incorrect');
-        }
-
-        $this->set('password', $new_pass);
-        $this->save();
-    }
-

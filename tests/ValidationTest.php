@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\ValidationException;
@@ -19,7 +19,7 @@ class MyValidationModel extends Model
         $this->addField('domain');
     }
 
-    public function validate($intent = null): array
+    public function validate(string $intent = null): array
     {
         $errors = [];
         if ($this->get('name') === 'Python') {
@@ -42,14 +42,15 @@ class BadValidationModel extends Model
         $this->addField('name');
     }
 
-    public function validate($intent = null): array
+    public function validate(string $intent = null): array
     {
         return 'This should be array'; // @phpstan-ignore-line
     }
 }
 
-class ValidationTests extends AtkPhpunit\TestCase
+class ValidationTest extends TestCase
 {
+    /** @var Model */
     public $m;
 
     protected function setUp(): void
@@ -60,37 +61,48 @@ class ValidationTests extends AtkPhpunit\TestCase
         $this->m = new MyValidationModel($p);
     }
 
-    public function testValidate1()
+    protected function tearDown(): void
     {
-        $this->m->set('name', 'john');
-        $this->m->set('domain', 'gmail.com');
-        $this->m->save();
+        $this->m = null; // @phpstan-ignore-line
+
+        parent::tearDown();
+    }
+
+    public function testValidate1(): void
+    {
+        $m = $this->m->createEntity();
+        $m->set('name', 'john');
+        $m->set('domain', 'gmail.com');
+        $m->save();
         $this->assertTrue(true); // no exception
     }
 
-    public function testValidate2()
+    public function testValidate2(): void
     {
-        $this->m->set('name', 'Python');
+        $m = $this->m->createEntity();
+        $m->set('name', 'Python');
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Snakes');
-        $this->m->save();
+        $m->save();
     }
 
-    public function testValidate3()
+    public function testValidate3(): void
     {
-        $this->m->set('name', 'Python');
-        $this->m->set('domain', 'example.com');
+        $m = $this->m->createEntity();
+        $m->set('name', 'Python');
+        $m->set('domain', 'example.com');
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('Multiple');
-        $this->m->save();
+        $m->save();
     }
 
-    public function testValidate4()
+    public function testValidate4(): void
     {
+        $m = $this->m->createEntity();
         try {
-            $this->m->set('name', 'Python');
-            $this->m->set('domain', 'example.com');
-            $this->m->save();
+            $m->set('name', 'Python');
+            $m->set('domain', 'example.com');
+            $m->save();
             $this->fail('Expected exception');
         } catch (\Atk4\Data\ValidationException $e) {
             $this->assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
@@ -99,42 +111,45 @@ class ValidationTests extends AtkPhpunit\TestCase
         }
     }
 
-    public function testValidate5()
+    public function testValidate5(): void
     {
         $p = new Persistence\Array_();
         $m = new BadValidationModel($p);
+        $m = $m->createEntity();
 
         $this->expectException(\TypeError::class);
         $m->set('name', 'john');
         $m->save();
     }
 
-    public function testValidateHook()
+    public function testValidateHook(): void
     {
-        $this->m->onHook(Model::HOOK_VALIDATE, static function ($m) {
+        $m = $this->m->createEntity();
+
+        $m->onHook(Model::HOOK_VALIDATE, static function ($m) {
             if ($m->get('name') === 'C#') {
                 return ['name' => 'No sharp objects allowed'];
             }
         });
 
-        $this->m->set('name', 'Swift');
-        $this->m->save();
+        $m->set('name', 'Swift');
+        $m->save();
 
         try {
-            $this->m->set('name', 'C#');
-            $this->m->save();
+            $m->set('name', 'C#');
+            $m->save();
             $this->fail('Expected exception');
         } catch (\Atk4\Data\ValidationException $e) {
             $this->assertSame('No sharp objects allowed', $e->errors['name']);
         }
 
         try {
-            $this->m->set('name', 'Python');
-            $this->m->set('domain', 'example.com');
-            $this->m->save();
+            $m->set('name', 'Python');
+            $m->set('domain', 'example.com');
+            $m->save();
             $this->fail('Expected exception');
         } catch (\Atk4\Data\ValidationException $e) {
-            $this->assertSame(2, count($e->errors));
+            $this->assertCount(2, $e->errors);
         }
     }
 }

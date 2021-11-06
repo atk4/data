@@ -6,13 +6,11 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Schema\TestCase;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
-class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
+class LimitOrderTest extends TestCase
 {
-    public function testBasic()
+    public function testBasic(): void
     {
         $this->setDb([
             'invoice' => [
@@ -22,9 +20,10 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
         $i->getField($i->id_field)->system = false;
+        $i->id_field = null;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);
@@ -35,7 +34,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         ], $i->export());
     }
 
-    public function testReverse()
+    public function testReverse(): void
     {
         $this->setDb([
             'invoice' => [
@@ -45,9 +44,10 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $ii = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
         $ii->getField($ii->id_field)->system = false;
+        $ii->id_field = null;
 
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross' => 'desc']);
@@ -86,7 +86,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         ], $i->export());
     }
 
-    public function testArrayParameters()
+    public function testArrayParameters(): void
     {
         $this->setDb([
             'invoice' => [
@@ -96,10 +96,11 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $ii = (new Model($this->db, 'invoice'))->addFields(['net', 'vat']);
+        $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['net', 'vat']);
         $ii->getField($ii->id_field)->system = false;
+        $ii->id_field = null;
 
-        // pass parameters as array elements [field,order]
+        // pass parameters as array elements [field, order]
         $i = clone $ii;
         $i->setOrder([['net', 'desc'], ['vat']]);
         $i->onlyFields(['net', 'vat']);
@@ -109,7 +110,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ['net' => 10, 'vat' => 5],
         ], $i->export());
 
-        // pass parameters as array elements [field=>order]
+        // pass parameters as array elements [field => order]
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat' => 'asc']);
         $i->onlyFields(['net', 'vat']);
@@ -119,7 +120,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ['net' => 10, 'vat' => 5],
         ], $i->export());
 
-        // pass parameters as array elements [field=>order], same as above but use 'desc' instead of true
+        // pass parameters as array elements [field => order], same as above but use 'desc' instead of true
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
         $i->onlyFields(['net', 'vat']);
@@ -130,7 +131,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         ], $i->export());
     }
 
-    public function testOrderByExpressions()
+    public function testOrderByExpressions(): void
     {
         $this->setDb([
             'invoice' => [
@@ -141,9 +142,10 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         // order by expression field
-        $i = (new Model($this->db, 'invoice'))->addFields(['code', 'net', 'vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['code', 'net', 'vat']);
         $i->addExpression('gross', '[net]+[vat]');
         $i->getField($i->id_field)->system = false;
+        $i->id_field = null;
 
         $i->setOrder('gross');
         $i->onlyFields(['gross']);
@@ -197,7 +199,7 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Unsupported order parameter.
      */
-    public function testExceptionUnsupportedOrderParam()
+    public function testExceptionUnsupportedOrderParam(): void
     {
         $this->setDb([
             'invoice' => [
@@ -205,13 +207,13 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $i = (new Model($this->db, 'invoice'))->addFields(['net']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['net']);
         $i->setOrder(new \DateTime()); // @phpstan-ignore-line
         $this->expectException(Exception::class);
         $i->export(); // executes query and throws exception because of DateTime object
     }
 
-    public function testLimit()
+    public function testLimit(): void
     {
         $this->setDb([
             'invoice' => [
@@ -221,9 +223,10 @@ class LimitOrderTest extends \Atk4\Schema\PhpunitTestCase
             ],
         ]);
 
-        $i = (new Model($this->db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
         $i->getField($i->id_field)->system = false;
+        $i->id_field = null;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);

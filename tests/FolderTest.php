@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 
 class Folder extends Model
 {
@@ -16,10 +17,10 @@ class Folder extends Model
         parent::init();
         $this->addField('name');
 
-        $this->hasMany('SubFolder', [new self(), 'their_field' => 'parent_id'])
+        $this->hasMany('SubFolder', ['model' => [self::class], 'their_field' => 'parent_id'])
             ->addField('count', ['aggregate' => 'count', 'field' => $this->persistence->expr($this, '*')]);
 
-        $this->hasOne('parent_id', new self())
+        $this->hasOne('parent_id', ['model' => [self::class]])
             ->addTitle();
 
         $this->addField('is_deleted', ['type' => 'boolean']);
@@ -27,12 +28,9 @@ class Folder extends Model
     }
 }
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
-class FolderTest extends \Atk4\Schema\PhpunitTestCase
+class FolderTest extends TestCase
 {
-    public function testRate()
+    public function testRate(): void
     {
         $this->setDb([
             'folder' => [
@@ -49,7 +47,7 @@ class FolderTest extends \Atk4\Schema\PhpunitTestCase
 
         $db = new Persistence\Sql($this->db->connection);
         $f = new Folder($db);
-        $f->load(4);
+        $f = $f->load(4);
 
         $this->assertEquals([
             'id' => 4,

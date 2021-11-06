@@ -48,17 +48,10 @@ trait ReferencesTrait
     public $_default_seed_containsMany = [Reference\ContainsMany::class];
 
     /**
-     * @param array|\Closure $defaults Properties which we will pass to Reference object constructor
+     * @param array<string, mixed> $defaults Properties which we will pass to Reference object constructor
      */
-    protected function _hasReference(array $seed, string $link, $defaults = []): Reference
+    protected function _hasReference(array $seed, string $link, array $defaults = []): Reference
     {
-        if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults];
-        } elseif (isset($defaults[0])) {
-            $defaults['model'] = $defaults[0];
-            unset($defaults[0]);
-        }
-
         $defaults[0] = $link;
 
         $reference = Reference::fromSeed($seed, $defaults);
@@ -76,22 +69,18 @@ trait ReferencesTrait
 
     /**
      * Add generic relation. Provide your own call-back that will return the model.
-     *
-     * @param array|\Closure $fx Callback
      */
-    public function addRef(string $link, $fx): Reference
+    public function addRef(string $link, array $defaults): Reference
     {
-        return $this->_hasReference($this->_default_seed_addRef, $link, $fx);
+        return $this->_hasReference($this->_default_seed_addRef, $link, $defaults);
     }
 
     /**
      * Add hasOne reference.
      *
-     * @param array $defaults
-     *
-     * @return Reference\HasOne
+     * @return Reference\HasOne|Reference\HasOneSql
      */
-    public function hasOne(string $link, $defaults = []): Reference
+    public function hasOne(string $link, array $defaults = []) //: Reference
     {
         return $this->_hasReference($this->_default_seed_hasOne, $link, $defaults); // @phpstan-ignore-line
     }
@@ -99,11 +88,9 @@ trait ReferencesTrait
     /**
      * Add hasMany reference.
      *
-     * @param array $defaults
-     *
      * @return Reference\HasMany
      */
-    public function hasMany(string $link, $defaults = []): Reference
+    public function hasMany(string $link, array $defaults = []) //: Reference
     {
         return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults); // @phpstan-ignore-line
     }
@@ -111,11 +98,9 @@ trait ReferencesTrait
     /**
      * Add containsOne reference.
      *
-     * @param array $defaults
-     *
      * @return Reference\ContainsOne
      */
-    public function containsOne(string $link, $defaults = []): Reference
+    public function containsOne(string $link, array $defaults = []) //: Reference
     {
         return $this->_hasReference($this->_default_seed_containsOne, $link, $defaults); // @phpstan-ignore-line
     }
@@ -123,11 +108,9 @@ trait ReferencesTrait
     /**
      * Add containsMany reference.
      *
-     * @param array $defaults
-     *
      * @return Reference\ContainsMany
      */
-    public function containsMany(string $link, $defaults = []): Reference
+    public function containsMany(string $link, array $defaults = []) //: Reference
     {
         return $this->_hasReference($this->_default_seed_containsMany, $link, $defaults); // @phpstan-ignore-line
     }
@@ -135,11 +118,9 @@ trait ReferencesTrait
     /**
      * Traverse to related model.
      *
-     * @param array $defaults
-     *
      * @return \Atk4\Data\Model
      */
-    public function ref(string $link, $defaults = []): self
+    public function ref(string $link, array $defaults = []): self
     {
         return $this->getRef($link)->ref($defaults);
     }
@@ -147,11 +128,9 @@ trait ReferencesTrait
     /**
      * Return related model.
      *
-     * @param array $defaults
-     *
      * @return \Atk4\Data\Model
      */
-    public function refModel(string $link, $defaults = []): self
+    public function refModel(string $link, array $defaults = []): self
     {
         return $this->getRef($link)->refModel($defaults);
     }
@@ -159,11 +138,9 @@ trait ReferencesTrait
     /**
      * Returns model that can be used for generating sub-query actions.
      *
-     * @param array $defaults
-     *
      * @return \Atk4\Data\Model
      */
-    public function refLink(string $link, $defaults = []): self
+    public function refLink(string $link, array $defaults = []): self
     {
         return $this->getRef($link)->refLink($defaults);
     }

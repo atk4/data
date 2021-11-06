@@ -8,6 +8,7 @@ use Atk4\Core\DiContainerTrait;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Reference;
@@ -61,7 +62,7 @@ class Join
 
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
-     * You can specify your own type of join by passing ['kind'=>'right']
+     * You can specify your own type of join by passing ['kind' => 'right']
      * as second argument to join().
      *
      * @var string
@@ -93,8 +94,9 @@ class Join
     protected $reverse;
 
     /**
-     * Field to be used for matching inside master field. By default
+     * Field to be used for matching inside master table. By default
      * it's $foreign_table.'_id'.
+     * Note that it should be actual field name in master table.
      *
      * @var string
      */
@@ -103,6 +105,7 @@ class Join
     /**
      * Field to be used for matching in a foreign table. By default
      * it's 'id'.
+     * Note that it should be actual field name in foreign table.
      *
      * @var string
      */
@@ -130,11 +133,9 @@ class Join
      */
     protected $save_buffer = [];
 
-    public function __construct($foreign_table = null)
+    public function __construct(string $foreign_table = null)
     {
-        if ($foreign_table !== null) {
-            $this->foreign_table = $foreign_table;
-        }
+        $this->foreign_table = $foreign_table;
     }
 
     protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -175,17 +176,17 @@ class Join
         }
 
         // handle foreign table containing a dot - that will be reverse join
-        if (is_string($this->foreign_table) && strpos($this->foreign_table, '.') !== false) {
+        if (strpos($this->foreign_table, '.') !== false) {
             // split by LAST dot in foreign_table name
             [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
 
-            if (!isset($this->reverse)) {
+            if ($this->reverse === null) {
                 $this->reverse = true;
             }
         }
 
         if ($this->reverse === true) {
-            if (isset($this->master_field) && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
+            if ($this->master_field && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
                     ->addMoreInfo('condition', $this->getOwner()->table . '.' . $this->master_field . ' = ' . $this->foreign_table . '.' . $this->foreign_field);
             }
@@ -210,23 +211,20 @@ class Join
         }
 
         $this->onHookShortToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+
+        // if kind is not specified, figure out join type
+        if (!$this->kind) {
+            $this->kind = $this->weak ? 'left' : 'inner';
+        }
     }
 
     /**
      * Adding field into join will automatically associate that field
      * with this join. That means it won't be loaded from $table, but
      * form the join instead.
-     *
-     * @param string $name
-     * @param array  $seed
-     *
-     * @return \Atk4\Data\Field
      */
-    public function addField($name, $seed = [])
+    public function addField(string $name, array $seed = []): Field
     {
-        if ($seed && !is_array($seed)) {
-            $seed = [$seed];
-        }
         $seed['joinName'] = $this->short_name;
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
@@ -235,11 +233,9 @@ class Join
     /**
      * Adds multiple fields.
      *
-     * @param array $fields
-     *
      * @return $this
      */
-    public function addFields($fields = [])
+    public function addFields(array $fields = [])
     {
         foreach ($fields as $field) {
             if (is_array($field)) {
@@ -257,15 +253,10 @@ class Join
     /**
      * Another join will be attached to a current join.
      *
-     * @param array $defaults
-     *
      * @return self
      */
-    public function join(string $foreign_table, $defaults = [])
+    public function join(string $foreign_table, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        }
         $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->join($foreign_table, $defaults);
@@ -274,15 +265,10 @@ class Join
     /**
      * Another leftJoin will be attached to a current join.
      *
-     * @param array $defaults
-     *
      * @return self
      */
-    public function leftJoin(string $foreign_table, $defaults = [])
+    public function leftJoin(string $foreign_table, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = ['master_field' => $defaults];
-        }
         $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->leftJoin($foreign_table, $defaults);
@@ -292,8 +278,6 @@ class Join
      * weakJoin will be attached to a current join.
      *
      * @todo NOT IMPLEMENTED! weakJoin method does not exist!
-     *
-     * @param array $defaults
      *
      * @return
      */
@@ -309,16 +293,10 @@ class Join
     /**
      * Creates reference based on a field from the join.
      *
-     * @param array $defaults
-     *
      * @return Reference\HasOne
      */
-    public function hasOne(string $link, $defaults = [])
+    public function hasOne(string $link, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults];
-        }
-
         $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->hasOne($link, $defaults);
@@ -327,16 +305,10 @@ class Join
     /**
      * Creates reference based on the field from the join.
      *
-     * @param array $defaults
-     *
      * @return Reference\HasMany
      */
-    public function hasMany(string $link, $defaults = [])
+    public function hasMany(string $link, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = ['model' => $defaults];
-        }
-
         $defaults = array_merge([
             'our_field' => $this->id_field,
             'their_field' => $this->getOwner()->table . '_' . $this->id_field,
@@ -351,18 +323,11 @@ class Join
      *
      * @todo NOT IMPLEMENTED !
      *
-     * @param Model $model
-     * @param array $defaults
-     *
      * @return ???
      */
     /*
-    public function containsOne($model, $defaults = [])
+    public function containsOne(Model $model, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = [$defaults];
-        }
-
         if (is_string($defaults[0])) {
             $defaults[0] = $this->addField($defaults[0], ['system' => true]);
         }
@@ -377,18 +342,11 @@ class Join
      *
      * @todo NOT IMPLEMENTED !
      *
-     * @param Model $model
-     * @param array $defaults
-     *
      * @return ???
      */
     /*
-    public function containsMany($model, $defaults = [])
+    public function containsMany(Model $model, array $defaults = [])
     {
-        if (!is_array($defaults)) {
-            $defaults = [$defaults];
-        }
-
         if (is_string($defaults[0])) {
             $defaults[0] = $this->addField($defaults[0], ['system' => true]);
         }
@@ -404,16 +362,13 @@ class Join
      *  - conditions.
      *
      * and then will apply them locally. If you think that any fields
-     * could clash, then use ['prefix'=>'m2'] which will be pre-pended
+     * could clash, then use ['prefix' => 'm2'] which will be pre-pended
      * to all the fields. Conditions will be automatically mapped.
      *
      * @todo NOT IMPLEMENTED !
-     *
-     * @param Model $model
-     * @param array $defaults
      */
     /*
-    public function importModel($model, $defaults = [])
+    public function importModel(Model $model, array $defaults = [])
     {
         // not implemented yet !!!
     }
@@ -424,12 +379,9 @@ class Join
      * then import all of the data into our model.
      *
      * @todo NOT IMPLEMENTED!
-     *
-     * @param Model $model
-     * @param array $fields
      */
     /*
-    public function weakJoinModel($model, $fields = [])
+    public function weakJoinModel(Model $model, array $fields = [])
     {
         if (!is_object($model)) {
             $model = $this->getOwner()->connection->add($model);
@@ -460,7 +412,7 @@ class Join
     /**
      * Clears id and save buffer.
      */
-    protected function afterUnload()
+    protected function afterUnload(): void
     {
         $this->id = null;
         $this->save_buffer = [];

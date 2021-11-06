@@ -10,9 +10,6 @@ use Atk4\Data\FieldSqlExpression;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 
-/**
- * Reference\HasOneSql class.
- */
 class HasOneSql extends HasOne
 {
     /**
@@ -42,8 +39,9 @@ class HasOneSql extends HasOne
 
         $ourModel = $this->getOurModel();
 
-        // if caption is not defined in $defaults -> get it directly from the linked model field $theirFieldName
-        $defaults['caption'] = $defaults['caption'] ?? $ourModel->refModel($this->link)->getField($theirFieldName)->getCaption();
+        // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
+        $defaults['caption'] ??= $ourModel->refModel($this->link)->getField($theirFieldName)->getCaption();
+        $defaults['type'] ??= $ourModel->refModel($this->link)->getField($theirFieldName)->type;
 
         /** @var FieldSqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
@@ -84,7 +82,7 @@ class HasOneSql extends HasOne
      * may contain 3 types of elements:.
      *
      * [ 'name', 'surname' ] - will import those fields as-is
-     * [ 'full_name' => 'name', 'day_of_birth' => ['dob', 'type'=>'date'] ] - use alias and options
+     * [ 'full_name' => 'name', 'day_of_birth' => ['dob', 'type' => 'date'] ] - use alias and options
      * [ ['dob', 'type' => 'date'] ]  - use options
      *
      * You may also use second param to specify parameters:
@@ -106,7 +104,7 @@ class HasOneSql extends HasOne
 
             $theirFieldName = $ourFieldDefaults[0];
 
-            if (is_numeric($ourFieldName)) {
+            if (is_int($ourFieldName)) {
                 $ourFieldName = $theirFieldName;
             }
 
@@ -152,16 +150,20 @@ class HasOneSql extends HasOne
         // if our_field is the id_field and is being used in the reference
         // we should persist the relation in condtition
         // example - $model->load(1)->ref('refLink')->import($rows);
-        if ($ourModel->loaded() && !$theirModel->loaded()) {
+        if ($ourModel->isEntity() && $ourModel->loaded() && !$theirModel->loaded()) {
             if ($ourModel->id_field === $this->getOurFieldName()) {
-                return $theirModel->addCondition($theirField, $this->getOurFieldValue());
+                return $theirModel->getModel()
+                    ->addCondition($theirField, $this->getOurFieldValue());
             }
         }
 
         // handles the deep traversal using an expression
         $ourFieldExpression = $ourModel->action('field', [$ourField]);
 
-        return $theirModel->addCondition($theirField, $ourFieldExpression);
+        $theirModel->getModel(true)
+            ->addCondition($theirField, $ourFieldExpression);
+
+        return $theirModel;
     }
 
     /**
@@ -177,10 +179,10 @@ class HasOneSql extends HasOne
     {
         $ourModel = $this->getOurModel();
 
-        $fieldName = $defaults['field'] ?? preg_replace('/_' . $ourModel->id_field . '$/i', '', $this->link);
+        $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
 
         if ($ourModel->hasField($fieldName)) {
-            throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))
+            throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\' => \'field_name\'])'))
                 ->addMoreInfo('field', $fieldName);
         }
 

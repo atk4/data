@@ -37,9 +37,9 @@ the same transaction:
  - reload (see :php:attr:`Model::_reload_after_save`)
  - afterSave hook
  - commit transaction
- 
+
  In case of error:
- 
+
   - do rollback
   - call onRollback hook
 
@@ -57,9 +57,9 @@ This one will update field values just before record is saved::
         $m->set('surname', strtoupper($m->get('surname')));
     });
 
-    $m->insert(['name'=>'John', 'surname'=>'Smith']);
+    $m->insert(['name' => 'John', 'surname' => 'Smith']);
 
-    // Will save into DB:  ['name'=>'JOHN', 'surname'=>'SMITH'];
+    // Will save into DB:  ['name' => 'JOHN', 'surname' => 'SMITH'];
 
 Arguments
 ---------
@@ -108,7 +108,7 @@ state of :php:meth:`Model::loaded`:
  - beforeUpdate($m, &$data) (updating existing records only. Not executed if model is not dirty)
  - afterUpdate($m)
 
-The $data argument will contain array of actual data (field=>value) to be saved,
+The $data argument will contain array of actual data (field => value) to be saved,
 which you can use to withdraw certain fields from actually being saved into the
 database (by unsetting it's value).
 
@@ -165,7 +165,7 @@ For some examples, see :ref:`soft_delete`
 Hook execution sequence
 -----------------------
 
-- beforeSave 
+- beforeSave
 
   - beforeInsert [only if insert]
     - beforeInsertQuery [sql only] (query)
@@ -214,7 +214,8 @@ the database. Here is how you can implement this functionality::
     $m->onHook(Model::HOOK_BEFORE_LOAD, function($m, $id) {
         $data = $m->getApp()->cacheFetch($m->table, $id);
         if ($data) {
-            $m->data = $data;
+            $dataRef = &$m->getDataRef();
+            $dataRef = $data;
             $m->setId($id);
             $m->breakHook(false);
         }
@@ -237,15 +238,15 @@ This can be used in various situations.
 
 Save information into auditLog about failure:
 
-    $m->onHook(Model::HOOK_ROLLBACK, function($m){ 
+    $m->onHook(Model::HOOK_ROLLBACK, function($m){
         $m->auditLog->registerFailure();
     });
 
 Upgrade schema:
 
-    use Atk4\Dsql\Exception as DsqlException;
+    use Atk4\Data\Persistence\Sql\Exception as DsqlException;
 
-    $m->onHook(Model::HOOK_ROLLBACK, function($m, $exception) { 
+    $m->onHook(Model::HOOK_ROLLBACK, function($m, $exception) {
         if ($exception instanceof DsqlException) {
             $m->schema->upgrade();
             $m->breakHook(false); // exception will not be thrown

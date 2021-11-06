@@ -23,7 +23,7 @@ Example will calculate "total_gross" by adding up values for "net" and "vat"::
     $m->addFields(['total_net', 'total_vat']);
 
     $m->addExpression('total_gross', '[total_net]+[total_vat]');
-    $m->load(1);
+    $m = $m->load(1);
 
     echo $m->get('total_gross');
 
@@ -46,7 +46,7 @@ values for the other fields including other expressions.
 There are other ways how you can specify expression::
 
     $m->addExpression('total_gross',
-        $m->expr('[total_net]+[total_vat] + [fee]', ['fee'=>$fee])
+        $m->expr('[total_net]+[total_vat] + [fee]', ['fee' => $fee])
     );
 
 This format allow you to supply additional parameters inside expression.
@@ -65,7 +65,7 @@ example::
 
     $m = new Model($db, ['table' => false]);
     $m->addExpression('now', 'now()');
-    $m->loadAny();
+    $m = $m->loadAny();
     echo $m->get('now');
 
 In this example the query will look like this:
@@ -84,7 +84,7 @@ database at once::
     $m->addExpression('total_payments', (new Model_Payment($db))->action('count'));
     $m->addExpression('total_received', (new Model_Payment($db))->action('fx0', ['sum', 'amount']));
 
-    $data = $m->loadAny()->get();
+    $data = $m->loadOne()->get();
 
 Of course you can also use a DSQL for this::
 

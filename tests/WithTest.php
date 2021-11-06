@@ -7,14 +7,12 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
-class WithTest extends \Atk4\Schema\PhpunitTestCase
+class WithTest extends TestCase
 {
-    public function testWith()
+    public function testWith(): void
     {
         if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
             $this->markTestIncomplete('TODO - add WITH support for MSSQL');
@@ -33,13 +31,13 @@ class WithTest extends \Atk4\Schema\PhpunitTestCase
         $db = new Persistence\Sql($this->db->connection);
 
         // setup models
-        $m_user = new Model($db, 'user');
+        $m_user = new Model($db, ['table' => 'user']);
         $m_user->addField('name');
-        $m_user->addField('salary', ['type' => 'money']);
+        $m_user->addField('salary', ['type' => 'atk4_money']);
 
-        $m_invoice = new Model($db, 'invoice');
-        $m_invoice->addField('net', ['type' => 'money']);
-        $m_invoice->hasOne('user_id', $m_user);
+        $m_invoice = new Model($db, ['table' => 'invoice']);
+        $m_invoice->addField('net', ['type' => 'atk4_money']);
+        $m_invoice->hasOne('user_id', ['model' => $m_user]);
         $m_invoice->addCondition('net', '>', 100);
 
         // setup test model
@@ -50,16 +48,16 @@ class WithTest extends \Atk4\Schema\PhpunitTestCase
 
         // tests
         $this->assertSameSql(
-            'with "i" ("user_id","invoiced") as (select "user_id","net" from "invoice" where "net" > :a) select "user"."id","user"."name","user"."salary","_i"."invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
+            'with "i" ("user_id", "invoiced") as (select "user_id", "net" from "invoice" where "net" > :a) select "user"."id", "user"."name", "user"."salary", "_i"."invoiced" from "user" inner join "i" "_i" on "_i"."user_id" = "user"."id"',
             $m->action('select')->render()
         );
-        $this->assertSame(2, count($m->export()));
+        $this->assertCount(2, $m->export());
     }
 
     /**
      * Alias should be unique.
      */
-    public function testUniqueAliasException()
+    public function testUniqueAliasException(): void
     {
         $m1 = new Model();
         $m2 = new Model();

@@ -7,16 +7,14 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
-class IteratorTest extends \Atk4\Schema\PhpunitTestCase
+class IteratorTest extends TestCase
 {
     /**
      * If first argument is array, then second argument should not be used.
      */
-    public function testException1()
+    public function testException1(): void
     {
         $m = new Model();
         $m->addFields(['name', 'salary']);
@@ -27,47 +25,47 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException2()
+    public function testException2(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->tryLoad(1);
+        $m = $m->tryLoad(1);
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException3()
+    public function testException3(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->tryLoadAny();
+        $m = $m->tryLoadAny();
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException4()
+    public function testException4(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->load(1);
+        $m = $m->load(1);
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException5()
+    public function testException5(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->loadAny();
+        $m = $m->loadAny();
     }
 
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException6()
+    public function testException6(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
@@ -77,14 +75,14 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
     /**
      * Model is not associated with any database - persistence should be set.
      */
-    public function testException7()
+    public function testException7(): void
     {
         $m = new Model();
         $this->expectException(Exception::class);
         $m->action('insert');
     }
 
-    public function testBasic()
+    public function testBasic(): void
     {
         $this->setDb([
             'invoice' => [
@@ -95,7 +93,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -128,7 +126,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
         ], $data);
     }
 
-    public function testRawIterator()
+    public function testRawIterator(): void
     {
         $this->setDb([
             'invoice' => [
@@ -139,7 +137,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -172,7 +170,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
         ], $data);
     }
 
-    public function testBasicId()
+    public function testBasicId(): void
     {
         $this->setDb([
             'invoice' => [
@@ -183,7 +181,7 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, 'invoice'))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -191,12 +189,12 @@ class IteratorTest extends \Atk4\Schema\PhpunitTestCase
 
         $data = [];
         foreach ($i as $id => $item) {
-            $data[$id] = clone $item;
+            $data[$id] = $item;
         }
 
         $this->assertEquals(10, $data[1]->get('total_net'));
         $this->assertEquals(20, $data[2]->get('total_net'));
         $this->assertEquals(15, $data[3]->get('total_net'));
-        $this->assertNull($i->get('total_net'));
+        $this->assertNull($i->createEntity()->get('total_net'));
     }
 }

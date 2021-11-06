@@ -1,26 +1,23 @@
-<phpunit bootstrap="vendor/autoload.php" printerClass="Atk4\Core\AtkPhpunit\ResultPrinter" colors="true">
+<phpunit bootstrap="vendor/autoload.php" printerClass="Atk4\Core\Phpunit\ResultPrinter" colors="true">
     <php>
-        <var name="DB_DSN" value="sqlite::memory:" />
-        <var name="DB_USER" value="" />
-        <var name="DB_PASSWD" value="" />
-        <var name="DB_DBNAME" value="" />
+        <env name="DB_DSN" value="sqlite::memory:" />
+        <env name="DB_USER" value="" />
+        <env name="DB_PASSWORD" value="" />
     </php>
     <testsuites>
         <testsuite name="tests">
             <directory>tests</directory>
-            <directory>tests-schema</directory>
         </testsuite>
     </testsuites>
     <listeners>
         <listener class="JohnKary\PHPUnit\Listener\SpeedTrapListener" />
     </listeners>
-    <coverage processUncoveredFiles="true">
+    <coverage>
         <include>
             <directory suffix=".php">src</directory>
-            <directory suffix=".php">src-schema</directory>
         </include>
         <report>
-            <php outputFile="build/logs/clover.cov" />
+            <php outputFile="coverage/phpunit.cov" />
         </report>
     </coverage>
 </phpunit>

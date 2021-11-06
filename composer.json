@@ -1,85 +1,81 @@
 {
-  "name": "atk4/data",
-  "type": "library",
-  "description": "Agile Data - Database access abstraction framework",
-  "keywords": [
-    "framework",
-    "orm",
-    "query",
-    "active record",
-    "sql",
-    "builder",
-    "nosql",
-    "mongodb",
-    "mysql",
-    "oracle",
-    "postgresql"
-  ],
-  "homepage": "https://github.com/atk4/data",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Romans Malinovskis",
-      "email": "romans@agiletoolkit.org",
-      "homepage": "https://nearly.guru/"
+    "name": "atk4/data",
+    "type": "library",
+    "description": "Agile Data - Database access abstraction framework",
+    "keywords": [
+        "framework",
+        "orm",
+        "query",
+        "active record",
+        "sql",
+        "builder",
+        "nosql",
+        "mongodb",
+        "mysql",
+        "oracle",
+        "postgresql"
+    ],
+    "homepage": "https://github.com/atk4/data",
+    "version": "dev-develop",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Romans Malinovskis",
+            "email": "romans@agiletoolkit.org",
+            "homepage": "https://nearly.guru/"
+        },
+        {
+            "name": "Imants Horsts",
+            "homepage": "https://darkside.lv/"
+        },
+        {
+            "name": "Michael Voříšek",
+            "homepage": "https://mvorisek.cz/"
+        }
+    ],
+    "require": {
+        "php": ">=7.4 <8.2",
+        "ext-intl": "*",
+        "ext-pdo": "*",
+        "atk4/core": "dev-develop",
+        "doctrine/dbal": "^2.13.3 || ^3.0",
+        "mvorisek/atk4-hintable": "~1.7.0"
     },
-    {
-      "name": "Imants Horsts",
-      "homepage": "https://darkside.lv/"
+    "require-release": {
+        "php": ">=7.4 <8.2",
+        "ext-intl": "*",
+        "ext-pdo": "*",
+        "atk4/core": "~3.1.0",
+        "doctrine/dbal": "^2.13.3 || ^3.0",
+        "mvorisek/atk4-hintable": "~1.7.0"
     },
-    {
-      "name": "Michael Voříšek",
-      "homepage": "https://mvorisek.cz/"
-    }
-  ],
-  "version": "dev-develop",
-  "minimum-stability": "dev",
-  "prefer-stable": true,
-  "config": {
-    "sort-packages": true
-  },
-  "require": {
-    "php": ">=7.3.0",
-    "ext-intl": "*",
-    "atk4/dsql": "dev-develop",
-    "mahalux/atk4-hintable": "^1.1.4"
-  },
-  "require-release": {
-    "php": ">=7.3.0",
-    "ext-intl": "*",
-    "atk4/dsql": "~2.3.0",
-    "mahalux/atk4-hintable": "^1.1.4"
-  },
-  "require-dev": {
-    "friendsofphp/php-cs-fixer": "^2.17",
-    "johnkary/phpunit-speedtrap": "^3.2",
-    "phpstan/phpstan": "^0.12.58",
-    "phpunit/phpcov": "*",
-    "phpunit/phpunit": ">=9.0"
-  },
-  "require-dev-release": {
-    "friendsofphp/php-cs-fixer": "^2.17",
-    "johnkary/phpunit-speedtrap": "^3.2",
-    "phpstan/phpstan": "^0.12.58",
-    "phpunit/phpcov": "*",
-    "phpunit/phpunit": ">=9.0"
-  },
-  "conflict": {
-    "atk4/schema": "*"
-  },
-  "autoload": {
-    "psr-4": {
-      "Atk4\\Data\\": "src/",
-      "Atk4\\Schema\\": "src-schema/"
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.13",
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "johnkary/phpunit-speedtrap": "^3.3",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan": "^1.0",
+        "phpunit/phpunit": "^9.5.5"
     },
-    "files": [
-        "bootstrap-atk-types.php"
-    ]
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Atk4\\Data\\Tests\\": "tests/",
-      "Atk4\\Schema\\Tests\\": "tests-schema/"
-    }
-  }
+    "suggest": {
+        "jdorn/sql-formatter": "*"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Atk4\\Data\\": "src/"
+        },
+        "files": [
+            "bootstrap-types.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Atk4\\Data\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

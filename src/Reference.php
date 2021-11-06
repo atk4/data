@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Atk4\Data;
 
+use Atk4\Core\DiContainerTrait;
 use Atk4\Core\Factory;
+use Atk4\Core\InitializerTrait;
+use Atk4\Core\TrackableTrait;
 
 /**
  * Reference implements a link between one model and another. The basic components for
@@ -17,11 +20,11 @@ use Atk4\Core\Factory;
  */
 class Reference
 {
-    use \Atk4\Core\DiContainerTrait;
-    use \Atk4\Core\InitializerTrait {
+    use DiContainerTrait;
+    use InitializerTrait {
         init as _init;
     }
-    use \Atk4\Core\TrackableTrait;
+    use TrackableTrait;
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -63,15 +66,15 @@ class Reference
      * This is an optional property which can be used by your implementation
      * to store field-level relationship based on a common field matching.
      *
-     * @var string
+     * @var string|null
      */
     protected $their_field;
 
     /**
-     * Caption of the reeferenced model. Can be used in UI components, for example.
+     * Caption of the referenced model. Can be used in UI components, for example.
      * Should be in plain English and ready for proper localization.
      *
-     * @var string
+     * @var string|null
      */
     public $caption;
 
@@ -151,7 +154,7 @@ class Reference
     public function createTheirModel(array $defaults = []): Model
     {
         // set table_alias
-        $defaults['table_alias'] = $defaults['table_alias'] ?? $this->table_alias;
+        $defaults['table_alias'] ??= $this->table_alias;
 
         if (is_object($this->model)) {
             if ($this->model instanceof \Closure) {
@@ -171,7 +174,9 @@ class Reference
             $theirModel = Factory::factory($theirModelSeed, $defaults);
         }
 
-        return $this->addToPersistence($theirModel, $defaults);
+        $this->addToPersistence($theirModel, $defaults);
+
+        return $theirModel;
     }
 
     protected function getOurField(): Field
@@ -184,6 +189,9 @@ class Reference
         return $this->our_field ?: $this->getOurModel()->id_field;
     }
 
+    /**
+     * @return mixed
+     */
     protected function getOurFieldValue()
     {
         return $this->getOurField()->get();
@@ -194,19 +202,18 @@ class Reference
         if (!$this->table_alias) {
             $ourModel = $this->getOurModel();
 
-            $this->table_alias = $this->link;
-            $this->table_alias = preg_replace('/_' . ($ourModel->id_field ?: 'id') . '/', '', $this->table_alias);
-            $this->table_alias = preg_replace('/([a-zA-Z])[a-zA-Z]*[^a-zA-Z]*/', '\1', $this->table_alias);
-            if (isset($ourModel->table_alias)) {
-                $this->table_alias = $ourModel->table_alias . '_' . $this->table_alias;
+            $aliasFull = $this->link;
+            $alias = preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $aliasFull);
+            $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
+            if ($ourModel->table_alias !== null) {
+                $aliasFull = $ourModel->table_alias . '_' . $aliasFull;
+                $alias = preg_replace('~^_(.+)_[0-9a-f]{12}$~', '$1', $ourModel->table_alias) . '_' . $alias;
             }
+            $this->table_alias = '_' . $alias . '_' . substr(md5($aliasFull), 0, 12);
         }
     }
 
-    /**
-     * Adds model to persistence.
-     */
-    protected function addToPersistence(Model $theirModel, array $defaults = []): Model
+    protected function addToPersistence(Model $theirModel, array $defaults = []): void
     {
         if (!$theirModel->persistence && $persistence = $this->getDefaultPersistence($theirModel)) {
             $persistence->add($theirModel, $defaults);
@@ -216,8 +223,6 @@ class Reference
         if ($this->caption !== null) {
             $theirModel->caption = $this->caption;
         }
-
-        return $theirModel;
     }
 
     /**
@@ -262,6 +267,8 @@ class Reference
 
     /**
      * List of properties to show in var_dump.
+     *
+     * @var array<int|string, string>
      */
     protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
 
@@ -272,8 +279,8 @@ class Reference
     {
         $arr = [];
         foreach ($this->__debug_fields as $k => $v) {
-            $k = is_numeric($k) ? $v : $k;
-            if (isset($this->{$v})) {
+            $k = is_int($k) ? $v : $k;
+            if ($this->{$v} !== null) {
                 $arr[$k] = $this->{$v};
             }
         }

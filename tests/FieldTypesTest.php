@@ -7,13 +7,12 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Static_ as Persistence_Static;
+use Atk4\Data\Schema\TestCase;
 use Atk4\Data\ValidationException;
 
-/**
- * Test various Field.
- */
-class FieldTypesTest extends \Atk4\Schema\PhpunitTestCase
+class FieldTypesTest extends TestCase
 {
+    /** @var Persistence_Static */
     public $pers;
 
     protected function setUp(): void
@@ -26,10 +25,11 @@ class FieldTypesTest extends \Atk4\Schema\PhpunitTestCase
         ]);
     }
 
-    public function testEmailBasic()
+    public function testEmailBasic(): void
     {
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class]);
+        $m = $m->createEntity();
 
         // null value
         $m->set('email', null);
@@ -52,11 +52,12 @@ class FieldTypesTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('email', 'qq');
     }
 
-    public function testEmailMultipleValues()
+    public function testEmailMultipleValues(): void
     {
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class]);
         $m->addField('emails', [Field\Email::class, 'allow_multiple' => true]);
+        $m = $m->createEntity();
 
         $m->set('emails', 'bar@exampe.com, foo@example.com');
         $this->assertSame('bar@exampe.com, foo@example.com', $m->get('emails'));
@@ -66,10 +67,11 @@ class FieldTypesTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('email', 'bar@exampe.com, foo@example.com');
     }
 
-    public function testEmailValidateDns()
+    public function testEmailValidateDns(): void
     {
         $m = new Model($this->pers);
         $m->addField('email', [Field\Email::class, 'dns_check' => true]);
+        $m = $m->createEntity();
 
         $m->set('email', ' foo@gmail.com');
 
@@ -78,13 +80,14 @@ class FieldTypesTest extends \Atk4\Schema\PhpunitTestCase
         $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
 
-    public function testEmailWithName()
+    public function testEmailWithName(): void
     {
         $m = new Model($this->pers);
         $m->addField('email_name', [Field\Email::class, 'include_names' => true]);
         $m->addField('email_names', [Field\Email::class, 'include_names' => true, 'allow_multiple' => true, 'dns_check' => true, 'separator' => [',', ';']]);
         $m->addField('email_idn', [Field\Email::class, 'dns_check' => true]);
         $m->addField('email', [Field\Email::class]);
+        $m = $m->createEntity();
 
         $m->set('email_name', 'Romans <me@gmail.com>');
         $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans Žlutý Kůň <me3@gmail.com>');

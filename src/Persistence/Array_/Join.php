@@ -6,9 +6,10 @@ namespace Atk4\Data\Persistence\Array_;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
 
 /**
- * Provides model joining functionality specific for the Array_ persistence.
+ * @property Persistence\Array_|null $persistence
  */
 class Join extends Model\Join
 {
@@ -19,12 +20,7 @@ class Join extends Model\Join
     {
         parent::init();
 
-        // If kind is not specified, figure out join type
-        if (!isset($this->kind)) {
-            $this->kind = $this->weak ? 'left' : 'inner';
-        }
-
-        // Add necessary hooks
+        // add necessary hooks
         if ($this->reverse) {
             $this->onHookShortToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
             $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
@@ -37,6 +33,16 @@ class Join extends Model\Join
         }
     }
 
+    protected function makeFakeModelWithForeignTable(): Model
+    {
+        $modelCloned = clone $this->getOwner();
+        $modelCloned->table = $this->foreign_table;
+
+        // @TODO hooks will be fixed on a cloned model, Join should be replaced later by supporting unioned table as a table model
+
+        return $modelCloned;
+    }
+
     /**
      * Called from afterLoad hook.
      */
@@ -45,19 +51,21 @@ class Join extends Model\Join
         $model = $this->getOwner();
 
         // we need to collect ID
-        $this->id = $model->data[$this->master_field];
+        $this->id = $model->getDataRef()[$this->master_field];
         if (!$this->id) {
             return;
         }
 
         try {
-            $data = $model->persistence->load($model, $this->id, $this->foreign_table);
+            $data = Persistence\Array_::assertInstanceOf($model->persistence)
+                ->load($this->makeFakeModelWithForeignTable(), $this->id);
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
                 ->addMoreInfo('table', $this->foreign_table)
                 ->addMoreInfo('id', $this->id);
         }
-        $model->data = array_merge($data, $model->data);
+        $dataRef = &$model->getDataRef();
+        $dataRef = array_merge($data, $model->getDataRef());
     }
 
     /**
@@ -79,9 +87,8 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->insert(
-            $this->getOwner(),
-            $this->save_buffer,
-            $this->foreign_table
+            $this->makeFakeModelWithForeignTable(),
+            $this->save_buffer
         );
 
         $data[$this->master_field] = $this->id;
@@ -105,9 +112,8 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->insert(
-            $this->getOwner(),
-            $this->save_buffer,
-            $this->foreign_table
+            $this->makeFakeModelWithForeignTable(),
+            $this->save_buffer
         );
     }
 
@@ -123,7 +129,7 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $this->id = $persistence->update(
-            $this->getOwner(),
+            $this->makeFakeModelWithForeignTable(),
             $this->id,
             $this->save_buffer,
             $this->foreign_table
@@ -144,9 +150,8 @@ class Join extends Model\Join
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
         $persistence->delete(
-            $this->getOwner(),
-            $this->id,
-            $this->foreign_table
+            $this->makeFakeModelWithForeignTable(),
+            $this->id
         );
 
         $this->id = null;

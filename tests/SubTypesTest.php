@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
+use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 
 class StAccount extends Model
 {
@@ -16,78 +18,88 @@ class StAccount extends Model
 
         $this->addField('name');
 
-        $this->hasMany('Transactions', new StGenericTransaction())
+        $this->hasMany('Transactions', ['model' => [StGenericTransaction::class]])
             ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount']);
 
-        $this->hasMany('Transactions:Deposit', new StTransaction_Deposit());
-        $this->hasMany('Transactions:Withdrawal', new StTransaction_Withdrawal());
-        $this->hasMany('Transactions:Ob', new StTransaction_Ob())
+        $this->hasMany('Transactions:Deposit', ['model' => [StTransaction_Deposit::class]]);
+        $this->hasMany('Transactions:Withdrawal', ['model' => [StTransaction_Withdrawal::class]]);
+        $this->hasMany('Transactions:Ob', ['model' => [StTransaction_Ob::class]])
             ->addField('opening_balance', ['aggregate' => 'sum', 'field' => 'amount']);
 
-        $this->hasMany('Transactions:TransferOut', new StTransaction_TransferOut());
-        $this->hasMany('Transactions:TransferIn', new StTransaction_TransferIn());
+        $this->hasMany('Transactions:TransferOut', ['model' => [StTransaction_TransferOut::class]]);
+        $this->hasMany('Transactions:TransferIn', ['model' => [StTransaction_TransferIn::class]]);
     }
 
-    public static function open($persistence, $name, $amount = 0)
+    /**
+     * @return static
+     */
+    public static function open(Persistence $persistence, string $name, float $amount = 0.0)
     {
-        $m = new self($persistence);
+        $m = new static($persistence);
+        $m = $m->createEntity();
         $m->save(['name' => $name]);
 
         if ($amount) {
-            $m->ref('Transactions:Ob')->save(['amount' => $amount]);
+            $m->ref('Transactions:Ob')->createEntity()->save(['amount' => $amount]);
         }
 
         return $m;
     }
 
-    public function deposit($amount)
+    public function deposit(float $amount): Model
     {
-        return $this->ref('Transactions:Deposit')->save(['amount' => $amount]);
+        return $this->ref('Transactions:Deposit')->createEntity()->save(['amount' => $amount]);
     }
 
-    public function withdraw($amount)
+    public function withdraw(float $amount): Model
     {
-        return $this->ref('Transactions:Withdrawal')->save(['amount' => $amount]);
+        return $this->ref('Transactions:Withdrawal')->createEntity()->save(['amount' => $amount]);
     }
 
-    public function transferTo(self $account, $amount)
+    /**
+     * @return array<int, Model>
+     */
+    public function transferTo(self $account, float $amount): array
     {
-        $out = $this->ref('Transactions:TransferOut')->save(['amount' => $amount]);
-        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->getId()]);
+        $out = $this->ref('Transactions:TransferOut')->createEntity()->save(['amount' => $amount]);
+        $in = $account->ref('Transactions:TransferIn')->createEntity()->save(['amount' => $amount, 'link_id' => $out->getId()]);
         $out->set('link_id', $in->getId());
         $out->save();
+
+        return [$in, $out];
     }
 }
 
 class StGenericTransaction extends Model
 {
     public $table = 'transaction';
+    /** @var string */
     public $type;
 
     protected function init(): void
     {
         parent::init();
 
-        $this->hasOne('account_id', new StAccount());
+        $this->hasOne('account_id', ['model' => [StAccount::class]]);
         $this->addField('type', ['enum' => ['Ob', 'Deposit', 'Withdrawal', 'TransferOut', 'TransferIn']]);
 
         if ($this->type) {
             $this->addCondition('type', $this->type);
         }
-        $this->addField('amount', ['type' => 'money']);
+        $this->addField('amount', ['type' => 'atk4_money']);
 
         $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
             if (static::class !== $this->getClassName()) {
                 $cl = $this->getClassName();
                 $cl = new $cl($this->persistence);
-                $cl->load($this->getId());
+                $cl = $cl->load($this->getId());
 
                 $this->breakHook($cl);
             }
         });
     }
 
-    public function getClassName()
+    public function getClassName(): string
     {
         return __NAMESPACE__ . '\StTransaction_' . $this->get('type');
     }
@@ -115,7 +127,7 @@ class StTransaction_TransferOut extends StGenericTransaction
     protected function init(): void
     {
         parent::init();
-        $this->hasOne('link_id', new StTransaction_TransferIn());
+        $this->hasOne('link_id', ['model' => [StTransaction_TransferIn::class]]);
 
         //$this->join('transaction','linked_transaction');
     }
@@ -128,25 +140,25 @@ class StTransaction_TransferIn extends StGenericTransaction
     protected function init(): void
     {
         parent::init();
-        $this->hasOne('link_id', new StTransaction_TransferOut());
+        $this->hasOne('link_id', ['model' => [StTransaction_TransferOut::class]]);
     }
 }
 
 /**
  * Implements various tests for deep copying objects.
  */
-class SubTypesTest extends \Atk4\Schema\PhpunitTestCase
+class SubTypesTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
         // populate database for our three models
-        $this->getMigrator(new StAccount($this->db))->dropIfExists()->create();
-        $this->getMigrator(new StTransaction_TransferOut($this->db))->dropIfExists()->create();
+        $this->createMigrator(new StAccount($this->db))->dropIfExists()->create();
+        $this->createMigrator(new StTransaction_TransferOut($this->db))->dropIfExists()->create();
     }
 
-    public function testBasic()
+    public function testBasic(): void
     {
         $inheritance = StAccount::open($this->db, 'inheritance', 1000);
         $current = StAccount::open($this->db, 'current');
@@ -154,10 +166,10 @@ class SubTypesTest extends \Atk4\Schema\PhpunitTestCase
         $inheritance->transferTo($current, 500);
         $current->withdraw(350);
 
-        $this->assertSame(StTransaction_Ob::class, get_class($inheritance->ref('Transactions')->load(1)));
-        $this->assertSame(StTransaction_TransferOut::class, get_class($inheritance->ref('Transactions')->load(2)));
-        $this->assertSame(StTransaction_TransferIn::class, get_class($current->ref('Transactions')->load(3)));
-        $this->assertSame(StTransaction_Withdrawal::class, get_class($current->ref('Transactions')->load(4)));
+        $this->assertInstanceOf(StTransaction_Ob::class, $inheritance->ref('Transactions')->load(1));
+        $this->assertInstanceOf(StTransaction_TransferOut::class, $inheritance->ref('Transactions')->load(2));
+        $this->assertInstanceOf(StTransaction_TransferIn::class, $current->ref('Transactions')->load(3));
+        $this->assertInstanceOf(StTransaction_Withdrawal::class, $current->ref('Transactions')->load(4));
 
         $cl = [];
         foreach ($current->ref('Transactions') as $tr) {

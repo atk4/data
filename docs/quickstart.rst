@@ -15,7 +15,7 @@ unions but only if the database server supports those operations.
 
 Developer would normally create a declaration like this::
 
-    $user->hasMany('Order')->addField('total', ['aggregate'=>'sum']);
+    $user->hasMany('Order')->addField('total', ['aggregate' => 'sum']);
 
 It is up to Agile Data to decide what's the most efficient way to implement
 the aggregation. Currently only SQL persistence is capable of constructing
@@ -136,7 +136,7 @@ inside console::
     $m = new \Atk4\Data\Model($db, 'contact_info');
     $m->addFields(['address_1','address_2']);
     $m->addCondition('address_1', 'not', null);
-    $m->loadAny();
+    $m = $m->loadAny();
     $m->get();
     $m->action('count')->getOne();
 
@@ -158,7 +158,7 @@ Next, exit and create file `src/Model_ContactInfo.php`::
 Save, exit and run console again. You can now type this::
 
     $m = new Model_ContactInfo($db);
-    $m->loadAny();
+    $m = $m->loadAny();
     $m->get();
 
 .. note:: Should the "addCondition" be located inside model definition or
@@ -220,7 +220,7 @@ Active Record is a third essential piece of information that your model stores.
 You can load / unload records like this::
 
     $m = new Model_User($db);
-    $m->loadAny();
+    $m = $m->loadAny();
 
     $m->get();     // inside console, this will show you what's inside your model
 
@@ -258,7 +258,7 @@ some other parameters such as:
 
 You can also define your own parameters like this::
 
-    $m = new Model_User($db, ['audit'=>false]);
+    $m = new Model_User($db, ['audit' => false]);
 
     $m->audit
 
@@ -298,7 +298,7 @@ class. All the properties defined inside your model class are considered
 
     $m = new Model_User($db, 'user2'); // will use a different table
 
-    $m = new Model_User($db, ['table'=>'user2']); // same
+    $m = new Model_User($db, ['table' => 'user2']); // same
 
 .. note:: If you're trying those lines, you will also have to
     create this new table inside your MySQL database::
@@ -315,7 +315,7 @@ later::
 
 You cannot add conditions just yet, although you can pass in some of the defaults::
 
-    $m = new Model_User(['table'=>'user2']);
+    $m = new Model_User(null, ['table' => 'user2']);
 
     $db->add($m); // will use table user2
 
@@ -353,7 +353,7 @@ Lets once again load up the console for some exercises::
 
     $m = new Model_User($db);
 
-    $m->loadBy('username','john');
+    $m = $m->loadBy('username','john');
     $m->get();
 
 At this point you'll see that address has also been loaded for the user.
@@ -387,19 +387,19 @@ The `$dsn` can also be using the PEAR-style DSN format, such as:
 For some persistence classes, you should use constructor directly::
 
     $array = [];
-    $array[1] = ['name'=>'John'];
-    $array[2] = ['name'=>'Peter'];
+    $array[1] = ['name' => 'John'];
+    $array[2] = ['name' => 'Peter'];
 
     $db = new \Atk4\Data\Persistence\Array_($array);
     $m = new \Atk4\Data\Model($db);
     $m->addField('name');
-    $m->load(2);
+    $m = $m->load(2);
     echo $m->get('name');  // Peter
 
 There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
 
-    $a=['user'=>[],'contact_info'=>[]];
+    $a=['user' => [],'contact_info' => []];
     $ar = new \Atk4\Data\Persistence\Array_($a);
     $m = new Model_User($ar);
     $m->set('username', 'test');
@@ -441,7 +441,7 @@ As per our database design - one user can have multiple 'system' records::
 
 Next you can load a specific user and traverse into System model::
 
-    $m->loadBy('username', 'john');
+    $m = $m->loadBy('username', 'john');
     $s = $m->ref('System');
 
 Unlike most ORM and ActiveRecord implementations today - instead of returning
@@ -537,8 +537,8 @@ Aggregation actions can be used in Expressions with hasMany references and they
 can be brought into the original model as fields::
 
     $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('max_delivery', ['aggregate'=>'max', 'field'=>'shipping']);
-    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
+    $m->getRef('Invoice')->addField('max_delivery', ['aggregate' => 'max', 'field' => 'shipping']);
+    $m->getRef('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
     $m->export(['name','max_delivery','total_paid']);
 
 The above code is more concise and can be used together with reference declaration,
@@ -573,7 +573,7 @@ This is useful with hasMany references::
 
     $m = new Model_User($db);
     $m->getRef('country_id')->addField('country', 'name');
-    $m->loadAny();
+    $m = $m->loadAny();
     $m->get();  // look for 'country' field
 
 hasMany::addField() again is a short-cut for creating expression, which you can
@@ -590,7 +590,7 @@ to change Client/Supplier status to 'suspended' for a specific user. Fire up a
 console once away::
 
     $m = new Model_User($db);
-    $m->loadBy('username','john');
+    $m = $m->loadBy('username','john');
     $m->hasMany('System');
     $c = $m->ref('System')->ref('Client');
     $s = $m->ref('System')->ref('Supplier');
@@ -636,8 +636,8 @@ will continue to work even without SQL (although might be more performance-expen
 however if you're stuck with SQL you can use free-form pattern-based expressions::
 
     $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('total_purchase', ['aggregate'=>'sum', 'field'=>'total']);
-    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
+    $m->getRef('Invoice')->addField('total_purchase', ['aggregate' => 'sum', 'field' => 'total']);
+    $m->getRef('Payment')->addField('total_paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
     $m->addExpression('balance','[total_purchase]+[total_paid]');
     $m->export(['name','balance']);

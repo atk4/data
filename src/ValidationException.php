@@ -15,10 +15,10 @@ class ValidationException extends Exception
      *
      * @return \Exception
      */
-    public function __construct(array $errors, $model = null, $intent = null)
+    public function __construct(array $errors, Model $model = null, $intent = null)
     {
         if (count($errors) === 0) {
-            throw new Exception('Incorrect use of ValidationException, at least one error must be given');
+            throw new Exception('At least one error must be given');
         }
 
         $this->errors = $errors;

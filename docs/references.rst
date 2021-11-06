@@ -18,8 +18,8 @@ possible to add other reference types. The basic ones are really easy to
 use::
 
     $m = new Model_User($db, 'user');
-    $m->hasMany('Orders', new Model_Order());
-    $m->load(13);
+    $m->hasMany('Orders', ['model' => [Model_Order::class]]);
+    $m = $m->load(13);
 
     $orders_for_user_13 = $m->ref('Orders');
 
@@ -28,11 +28,11 @@ so that you could only access orders for the user with ID=13. The following is
 also possible::
 
     $m = new Model_User($db, 'user');
-    $m->hasMany('Orders', new Model_Order());
+    $m->hasMany('Orders', ['model' => [Model_Order::class]]);
     $m->addCondition('is_vip', true);
 
     $orders_for_vips = $m->ref('Orders');
-    $orders_for_vips->loadAny();
+    $orders_for_vips = $orders_for_vips->loadAny();
 
 Condition on the base model will be carried over to the orders and you will
 only be able to access orders that belong to VIP users. The query for loading
@@ -51,14 +51,14 @@ model that has a persistence set. (See Reference::getModel())
 Persistence
 -----------
 
-Agile Data supports traversal between persistences. The code above does not
+Agile Data supports traversal between persistencies. The code above does not
 explicitly assign database to Model_Order. But what if destination model does
 not reside inside the same database?
 
 You can specify it like this::
 
     $m = new Model_User($db_array_cache, 'user');
-    $m->hasMany('Orders', new Model_Order($db_sql));
+    $m->hasMany('Orders', ['model' => [Model_Order::class, $db_sql]]);
     $m->addCondition('is_vip', true);
 
     $orders_for_vips = $m->ref('Orders');
@@ -89,7 +89,7 @@ If you are worried about performance you can keep 2 models in memory::
     $client = $order->refModel('client_id');
 
     foreach($order as $o) {
-        $client->load($o->get('client_id'));
+        $client = $client->load($o->get('client_id'));
     }
 
 .. warning:: This code is seriously flawed and is called "N+1 Problem".
@@ -100,17 +100,15 @@ If you are worried about performance you can keep 2 models in memory::
 hasMany Reference
 =================
 
-.. php:method:: hasMany($link, $model);
+.. php:method:: hasMany($link, ['model' => $model]);
 
 There are several ways how to link models with hasMany::
 
-    $m->hasMany('Orders', new Model_Order()); // using object
+    $m->hasMany('Orders', ['model' => [Model_Order::class]]); // using seed
 
-    $m->hasMany('Order', function($m, $r) {   // using callback
+    $m->hasMany('Order', ['model' => function($m, $r) {   // using callback
         return new Model_Order();
-    });
-
-    $m->hasMany('Order'); // will use factory new Model_Order
+    }]);
 
 
 Dealing with many-to-many references
@@ -127,7 +125,7 @@ It is possible to perform reference through an 3rd party table::
         ->join('invoice_payment.payment_id')
         ->addFields(['amount_allocated','invoice_id']);
 
-    $i->hasMany('Payments', $p);
+    $i->hasMany('Payments', ['model' => $p]);
 
 Now you can fetch all the payments associated with the invoice through::
 
@@ -143,7 +141,7 @@ available. Both models will relate through ``currency.code = exchange.currency_c
     $c = new Model_Currency();
     $e = new Model_ExchangeRate();
 
-    $c->hasMany('Exchanges', [$e, 'their_field'=>'currency_code', 'our_field'=>'code']);
+    $c->hasMany('Exchanges', ['model' => $e, 'their_field' => 'currency_code', 'our_field' => 'code']);
 
     $c->addCondition('is_convertable',true);
     $e = $c->ref('Exchanges');
@@ -162,8 +160,8 @@ Concatenating Fields
 
 You may want to display want to list your related entities by concatenating. For example::
 
-    $user->hasMany('Tags', new Tag())
-        ->addField('tags', ['concat'=>',', 'field'=>'name']);
+    $user->hasMany('Tags', ['model' => [Tag::class]])
+        ->addField('tags', ['concat' => ',', 'field' => 'name']);
 
 This will create a new field for your user, ``tags`` which will contain all comma-separated
 tag names.
@@ -175,33 +173,33 @@ Reference hasMany makes it a little simpler for you to define an aggregate field
 
     $u = new Model_User($db_array_cache, 'user');
 
-    $u->hasMany('Orders', new Model_Order())
-        ->addField('amount', ['aggregate'=>'sum']);
+    $u->hasMany('Orders', ['model' => [Model_Order::class]])
+        ->addField('amount', ['aggregate' => 'sum']);
 
 It's important to define aggregation functions here. This will add another field
 inside ``$m`` that will correspond to the sum of all the orders. Here is another
 example::
 
     $u->hasMany('PaidOrders', (new Model_Order())->addCondition('is_paid', true))
-        ->addField('paid_amount', ['aggregate'=>'sum', 'field'=>'amount']);
+        ->addField('paid_amount', ['aggregate' => 'sum', 'field' => 'amount']);
 
 You can also define multiple fields, although you must remember that this will
 keep making your query bigger and bigger::
 
-    $invoice->hasMany('Invoice_Line', new Model_Invoice_Line())
+    $invoice->hasMany('Invoice_Line', ['model' => [Model_Invoice_Line::class]])
         ->addFields([
-            ['total_vat', 'aggregate'=>'sum'],
-            ['total_net', 'aggregate'=>'sum'],
-            ['total_gross', 'aggregate'=>'sum'],
+            ['total_vat', 'aggregate' => 'sum'],
+            ['total_net', 'aggregate' => 'sum'],
+            ['total_gross', 'aggregate' => 'sum'],
         ]);
 
 Imported fields will preserve format of the field they reference. In the example,
 if 'Invoice_line' field total_vat has type `money` then it will also be used
-for a sum. 
+for a sum.
 
 You can also specify a type yourself::
 
-    ->addField('paid_amount', ['aggregate'=>'sum', 'field'=>'amount', 'type'=>'money']);
+    ->addField('paid_amount', ['aggregate' => 'sum', 'field' => 'amount', 'type' => 'atk4_money']);
 
 Aggregate fields are always declared read-only, and if you try to
 change them (`$m->set('paid_amount', 123);`), you will receive exception.
@@ -219,7 +217,7 @@ For other functions, such as `min`, `max`, `avg` and non mathematical aggregates
 as `group_concat` no zero-coalesce will be used. Expect that result could be zero or
 null.
 
-When you specify `'aggregate'=>'count'` field defaults to `*`.
+When you specify `'aggregate' => 'count'` field defaults to `*`.
 
 Aggregate Expressions
 ---------------------
@@ -233,21 +231,21 @@ You can reference fields by using square brackets here. Also you may pass `args`
 containing your optional arguments::
 
     ->addField('len', [
-        'expr' => 'sum(if([date] = [exp_date], 1, 0))', 
-        'args'=>['exp_date'=>'2003-03-04]
+        'expr' => 'sum(if([date] = [exp_date], 1, 0))',
+        'args' => ['exp_date' => '2003-03-04]
         ]),
 
 Alternatively you may also specify either 'aggregate'::
 
-    $book->hasMany('Pages', new Page())
+    $book->hasMany('Pages', ['model' => [Page::class]])
         ->addField('page_list', [
-            'aggregate'=>$book->refModel('Pages')->expr('group_concat([number], [])', ['-'])
+            'aggregate' => $book->refModel('Pages')->expr('group_concat([number], [])', ['-'])
         ]);
 
 
 or 'field'::
 
-    ->addField('paid_amount', ['aggregate'=>'count', 'field'=>new \Atk4\Dsql\Expression('*')]);
+    ->addField('paid_amount', ['aggregate' => 'count', 'field' => new \Atk4\Data\Persistence\Sql\Expression('*')]);
 
 .. note:: as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 
@@ -261,7 +259,7 @@ the conditioning will be done differently. refLink is useful when defining
 sub-queries::
 
     $m = new Model_User($db_array_cache, 'user');
-    $m->hasMany('Orders', new Model_Order($db_sql));
+    $m->hasMany('Orders', ['model' => [Model_Order::class]]);
     $m->addCondition('is_vip', true);
 
     $sum = $m->refLink('Orders')->action('fx0', ['sum', 'amount']);
@@ -292,7 +290,7 @@ reference itself. In such case refModel() comes in as handy shortcut of doing
 hasOne reference
 ================
 
-.. php:method:: hasOne($link, $model)
+.. php:method:: hasOne($link, ['model' => $model])
 
     $model can be an array containing options: [$model, ...]
 
@@ -302,7 +300,7 @@ This reference allows you to attach a related model to a foreign key::
     $o = new Model_Order($db, 'order');
     $u = new Model_User($db, 'user');
 
-    $o->hasOne('user_id', $u);
+    $o->hasOne('user_id', ['model' => $u]);
 
 This reference is similar to hasMany, but it does behave slightly different.
 Also this reference will define a system new field ``user_id`` if you haven't
@@ -328,7 +326,7 @@ DataSet of the user model::
     $u = $o->ref('user_id');
 
 
-    $u->loadAny();  // will load some user who has at least one failed order
+    $u = $u->loadAny();  // will load some user who has at least one failed order
 
 The important point here is that no additional queries are generated in the
 process and the loadAny() will look like this:
@@ -341,7 +339,7 @@ process and the loadAny() will look like this:
 By passing options to hasOne() you can also differentiate field name::
 
     $o->addField('user_id');
-    $o->hasOne('User', [$u, 'our_field'=>'user_id']);
+    $o->hasOne('User', ['model' => $u, 'our_field' => 'user_id']);
 
     $o->load(1)->ref('User')['name'];
 
@@ -359,7 +357,7 @@ the field::
     $i = new Model_Invoice($db)
     $c = new Model_Currency($db);
 
-    $i->hasOne('currency_id', $c)
+    $i->hasOne('currency_id', ['model' => $c])
         ->addField('currency_name', 'name');
 
 
@@ -373,12 +371,12 @@ be renamed, just as we did above::
     $u = new Model_User($db)
     $a = new Model_Address($db);
 
-    $u->hasOne('address_id', $a)
+    $u->hasOne('address_id', ['model' => $a])
         ->addFields([
             'address_1',
             'address_2',
             'address_3',
-            'address_notes'=>['notes', 'type'=>'text']
+            'address_notes' => ['notes', 'type' => 'text']
         ]);
 
 Above, all ``address_`` fields are copied with the same name, however field
@@ -400,12 +398,12 @@ easier way how to define currency title::
 
     $i = new Invoice($db)
 
-    $i->hasOne('currency_id', new Currency())
+    $i->hasOne('currency_id', ['model' => [Currency::class]])
         ->addTitle();
 
 This would create 'currency' field containing name of the currency::
 
-    $i->load(20);
+    $i = $i->load(20);
 
     echo "Currency for invoice 20 is ".$i->get('currency');   // EUR
 
@@ -424,8 +422,8 @@ By default name of the field will be calculated by removing "_id" from the end
 of hasOne field, but to override this, you can specify name of the title field
 explicitly::
 
-    $i->hasOne('currency_id', new Currency())
-        ->addTitle(['field'=>'currency_name']);
+    $i->hasOne('currency_id', ['model' => [Currency::class]])
+        ->addTitle(['field' => 'currency_name']);
 
 User-defined Reference
 ======================
@@ -435,9 +433,9 @@ User-defined Reference
 Sometimes you would want to have a different type of relation between models,
 so with `addRef` you can define whatever reference you want::
 
-    $m->addRef('Archive', function($m) {
+    $m->addRef('Archive', ['model' => function($m) {
         return $m->newInstance(null, ['table' => $m->table.'_archive']);
-    });
+    }]);
 
 The above example will work for a table structure where a main table `user` is
 shadowed by a archive table `user_archive`. Structure of both tables are same,
@@ -449,16 +447,16 @@ Note that you can create one-to-many or many-to-one relations, by using your
 custom logic.
 No condition will be applied by default so it's all up to you::
 
-    $m->addRef('Archive', function($m) {
+    $m->addRef('Archive', ['model' => function($m) {
         $archive = $m->newInstance(null, ['table' => $m->table.'_archive']);
 
-        $m->addField('original_id', ['type' => 'int']);
+        $m->addField('original_id', ['type' => 'integer']);
 
         if ($m->loaded)) {
             $archive->addCondition('original_id', $m->getId());
             // only show record of currently loaded record
         }
-    });
+    }]);
 
 Reference Discovery
 ===================
@@ -524,14 +522,14 @@ when SQL is confused about which table to use.
 To avoid this problem Agile Data will automatically alias tables in sub-queries.
 Here is how it works::
 
-    $item->hasMany('parent_item_id', new Model_Item())
+    $item->hasMany('parent_item_id', ['model' => [Model_Item::class]])
         ->addField('parent', 'name');
 
 When generating expression for 'parent', the sub-query will use alias ``pi``
 consisting of first letters in 'parent_item_id'. (except _id). You can actually
 specify a custom table alias if you want::
 
-    $item->hasMany('parent_item_id', [new Model_Item(), 'table_alias'=>'mypi'])
+    $item->hasMany('parent_item_id', ['model' => [Model_Item::class], 'table_alias' => 'mypi'])
         ->addField('parent', 'name');
 
 Additionally you can pass table_alias as second argument into :php:meth:`Model::ref()`
@@ -548,11 +546,11 @@ that relate to itself. Here is example::
             $this->addField('name');
             $this->addField('age');
             $i2 = $this->join('item2.item_id');
-            $i2->hasOne('parent_item_id', [$m, 'table_alias'=>'parent'])
+            $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
                 ->addTitle();
 
-            $this->hasMany('Child', [$m, 'their_field'=>'parent_item_id', 'table_alias'=>'child'])
-                ->addField('child_age',['aggregate'=>'sum', 'field'=>'age']);
+            $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
+                ->addField('child_age',['aggregate' => 'sum', 'field' => 'age']);
         }
     }
 
@@ -584,13 +582,13 @@ When calling `hasOne()->addFields()` there are various ways to pass options:
 - `addFields(['first_name' => 'name'])` - this indicates aliasing. Field `name`
   will be added as `first_name`.
 
-- `addFields([['dob', 'type'=>'date']])` - wrap inside array to pass options to
+- `addFields([['dob', 'type' => 'date']])` - wrap inside array to pass options to
   field
 
-- `addFields(['the_date' => ['dob', 'type'=>'date']])` - combination of aliasing
+- `addFields(['the_date' => ['dob', 'type' => 'date']])` - combination of aliasing
   and options
 
-- `addFields(['dob', 'dod'], ['type'=>'date'])` - passing defaults for multiple
+- `addFields(['dob', 'dod'], ['type' => 'date'])` - passing defaults for multiple
   fields
 
 
@@ -607,7 +605,7 @@ Consider the following two models::
             parent::init();
             $this->addField('name');
 
-            $this->hasOne('contact_id', new Model_Contact());
+            $this->hasOne('contact_id', ['model' => [Model_Contact::class]]);
         }
     }
 
@@ -634,7 +632,7 @@ to null. The next example will traverse into the contact to set it up::
     $m = new Model_User($db);
 
     $m->set('name', 'John');
-    $m->ref('address_id')->save(['address'=>'street']);
+    $m->ref('address_id')->save(['address' => 'street']);
     $m->save();
 
 When entity which you have referenced through ref() is saved, it will automatically

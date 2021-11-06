@@ -12,7 +12,7 @@ use Atk4\Data\Model;
  * $m = new Model(Persistence\Static_(['hello', 'world']));
  * $m->load(1);
  *
- * echo $m['name'];  // world
+ * echo $m->get('name'); // world
  */
 class Static_ extends Array_
 {
@@ -47,7 +47,7 @@ class Static_ extends Array_
         if (!is_array($row1)) {
             // convert array of strings into array of hashes
             foreach ($data as $k => $str) {
-                $data[$k] = ['id' => $k, 'name' => $str];
+                $data[$k] = ['name' => $str];
             }
             unset($str);
 
@@ -85,7 +85,7 @@ class Static_ extends Array_
             } elseif (is_float($value)) {
                 $def_types[] = ['type' => 'float'];
             } elseif (is_array($value)) {
-                $def_types[] = ['type' => 'array'];
+                $def_types[] = ['type' => 'json'];
             } elseif (is_object($value)) {
                 $def_types[] = ['type' => 'object'];
             } else {
@@ -137,7 +137,7 @@ class Static_ extends Array_
      *
      * Called by HOOK_AFTER_ADD hook.
      */
-    public function afterAdd(Model $model)
+    public function afterAdd(Model $model): void
     {
         if ($this->titleForModel) {
             $model->title_field = $this->titleForModel;

@@ -6,10 +6,11 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Schema\TestCase;
 
-class FieldHereditaryTest extends \Atk4\Schema\PhpunitTestCase
+class FieldHereditaryTest extends TestCase
 {
-    public function testDirty1()
+    public function testDirty1(): void
     {
         $p = new Persistence\Static_(['hello', 'world']);
 
@@ -19,7 +20,7 @@ class FieldHereditaryTest extends \Atk4\Schema\PhpunitTestCase
             return strtoupper($m->get('name'));
         });
 
-        $m->load(1);
+        $m = $m->load(1);
         $this->assertSame('world', $m->get('name'));
         $this->assertSame('WORLD', $m->get('caps'));
     }

@@ -6,22 +6,17 @@ namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Query;
 
 /**
- * Provides model joining functionality specific for the Sql persistence.
- *
  * @property Persistence\Sql $persistence
- * @property static          $join
  */
-class Join extends Model\Join implements \Atk4\Dsql\Expressionable
+class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionable
 {
     /**
      * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
      *
-     * @var \Atk4\Dsql\Expression|string|null
+     * @var \Atk4\Data\Persistence\Sql\Expression|string|null
      */
     protected $on;
 
@@ -58,19 +53,14 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
 
         $this->getOwner()->persistence_data['use_table_prefixes'] = true;
 
-        // If kind is not specified, figure out join type
-        if (!isset($this->kind)) {
-            $this->kind = $this->weak ? 'left' : 'inner';
-        }
-
-        // Our short name will be unique
+        // our short name will be unique
         if (!$this->foreign_alias) {
             $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
         $this->onHookShortToOwner(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
 
-        // Add necessary hooks
+        // add necessary hooks
         if ($this->reverse) {
             $this->onHookShortToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
             $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
@@ -82,14 +72,12 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
             // so you can use expressions or fields inside joined entities.
             // If string specified here does not point to an existing model field
             // a new basic field is inserted and marked hidden.
-            if (is_string($this->master_field)) {
-                if (!$this->getOwner()->hasField($this->master_field)) {
-                    $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
+            if (!$this->getOwner()->hasField($this->master_field)) {
+                $owner = $this->hasJoin() ? $this->getJoin() : $this->getOwner();
 
-                    $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
+                $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
 
-                    $this->master_field = $field->short_name;
-                }
+                $this->master_field = $field->short_name;
             }
 
             $this->onHookShortToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
@@ -118,7 +106,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
         if ($this->on) {
             $query->join(
                 $this->foreign_table,
-                $this->on instanceof \Atk4\Dsql\Expression ? $this->on : $this->getOwner()->expr($this->on),
+                $this->on instanceof \Atk4\Data\Persistence\Sql\Expression ? $this->on : $this->getOwner()->expr($this->on),
                 $this->kind,
                 $this->foreign_alias
             );
@@ -158,9 +146,9 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
         $model = $this->getOwner();
 
         // we need to collect ID
-        if (isset($model->data[$this->short_name])) {
-            $this->id = $model->data[$this->short_name];
-            unset($model->data[$this->short_name]);
+        if (isset($model->getDataRef()[$this->short_name])) {
+            $this->id = $model->getDataRef()[$this->short_name];
+            unset($model->getDataRef()[$this->short_name]);
         }
     }
 
@@ -184,9 +172,9 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
         $query->mode('insert');
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
-        $query->set($this->foreign_field, null);
+        // $query->set($this->foreign_field, null);
         $query->insert();
-        $this->id = $model->persistence->lastInsertId($model);
+        $this->id = $model->persistence->lastInsertId(new Model($model->persistence, ['table' => $this->foreign_table]));
 
         if ($this->hasJoin()) {
             $this->getJoin()->set($this->master_field, $this->id);
@@ -250,8 +238,10 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
             return;
         }
 
-        $id = $this->reverse ? $this->getOwner()->getId() : $this->getOwner()->get($this->master_field);
+        $model = $this->getOwner();
+        $query = $this->dsql();
+        $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
 
-        $this->dsql()->where($this->foreign_field, $id)->delete();
+        $query->where($this->foreign_field, $id)->delete();
     }
 }

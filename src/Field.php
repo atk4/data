@@ -8,196 +8,22 @@ use Atk4\Core\DiContainerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Model\Scope;
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Expressionable;
+use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
+use Doctrine\DBAL\Types\Type;
 
 /**
  * @method Model getOwner()
  */
 class Field implements Expressionable
 {
-    use DiContainerTrait;
+    use DiContainerTrait {
+        setDefaults as _setDefaults;
+    }
+    use Model\FieldPropertiesTrait;
     use Model\JoinLinkTrait;
     use ReadableCaptionTrait;
     use TrackableTrait;
-
-    // {{{ Properties
-
-    /**
-     * Default value of field.
-     *
-     * @var mixed
-     */
-    public $default;
-
-    /**
-     * Field type.
-     *
-     * Values are: 'string', 'text', 'boolean', 'integer', 'money', 'float',
-     *             'date', 'datetime', 'time', 'array', 'object'.
-     * Can also be set to unspecified type for your own custom handling.
-     *
-     * @var string
-     */
-    public $type;
-
-    /**
-     * For several types enum can provide list of available options. ['blue', 'red'].
-     *
-     * @var array|null
-     */
-    public $enum;
-
-    /**
-     * For fields that can be selected, values can represent interpretation of the values,
-     * for instance ['F'=>'Female', 'M'=>'Male'];.
-     *
-     * @var array|null
-     */
-    public $values;
-
-    /**
-     * If value of this field can be described by a model, this property
-     * will contain reference to that model.
-     *
-     * It's used more in atk4/ui repository. See there.
-     *
-     * @var Reference|null
-     */
-    public $reference;
-
-    /**
-     * Actual field name.
-     *
-     * @var string|null
-     */
-    public $actual;
-
-    /**
-     * Is it system field?
-     * System fields will be always loaded and saved.
-     *
-     * @var bool
-     */
-    public $system = false;
-
-    /**
-     * Setting this to true will never actually load or store
-     * the field in the database. It will action as normal,
-     * but will be skipped by load/iterate/update/insert.
-     *
-     * @var bool
-     */
-    public $never_persist = false;
-
-    /**
-     * Setting this to true will never actually store
-     * the field in the database. It will action as normal,
-     * but will be skipped by update/insert.
-     *
-     * @var bool
-     */
-    public $never_save = false;
-
-    /**
-     * Is field read only?
-     * Field value may not be changed. It'll never be saved.
-     * For example, expressions are read only.
-     *
-     * @var bool
-     */
-    public $read_only = false;
-
-    /**
-     * Defines a label to go along with this field. Use getCaption() which
-     * will always return meaningful label (even if caption is null). Set
-     * this property to any string.
-     *
-     * @var string
-     */
-    public $caption;
-
-    /**
-     * Array with UI flags like editable, visible and hidden.
-     *
-     * @var array
-     */
-    public $ui = [];
-
-    /**
-     * Mandatory field must not be null. The value must be set, even if
-     * it's an empty value.
-     *
-     * Can contain error message for UI.
-     *
-     * @var bool|string
-     */
-    public $mandatory = false;
-
-    /**
-     * Required field must have non-empty value. A null value is considered empty too.
-     *
-     * Can contain error message for UI.
-     *
-     * @var bool|string
-     */
-    public $required = false;
-
-    /**
-     * Should we use typecasting when saving/loading data to/from persistence.
-     *
-     * Value can be array [$typecast_save_callback, $typecast_load_callback].
-     *
-     * @var bool|array|null
-     */
-    public $typecast;
-
-    /**
-     * Should we use serialization when saving/loading data to/from persistence.
-     *
-     * Value can be array [$encode_callback, $decode_callback].
-     *
-     * @var bool|array|string|null
-     */
-    public $serialize;
-
-    /**
-     * Persisting format for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.
-     *
-     * @var string
-     */
-    public $persist_format;
-
-    /**
-     * Persisting timezone for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, 'IST', 'UTC', 'Europe/Riga' etc.
-     *
-     * @var string
-     */
-    public $persist_timezone = 'UTC';
-
-    /**
-     * DateTime class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTime', 'Carbon\Carbon' etc.
-     *
-     * @var string
-     */
-    public $dateTimeClass = \DateTime::class;
-
-    /**
-     * Timezone class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTimeZone', 'Carbon\CarbonTimeZone' etc.
-     *
-     * @var string
-     */
-    public $dateTimeZoneClass = \DateTimeZone::class;
-
-    // }}}
 
     // {{{ Core functionality
 
@@ -213,6 +39,24 @@ class Field implements Expressionable
                 $this->{$key} = $val;
             }
         }
+    }
+
+    public function setDefaults(array $properties, bool $passively = false): self
+    {
+        $this->_setDefaults($properties, $passively);
+
+        $this->getTypeObject(); // assert type exists
+
+        return $this;
+    }
+
+    public function getTypeObject(): Type
+    {
+        if ($this->type === 'array') { // remove in 2022-mar
+            throw new Exception('Atk4 "array" type is no longer supported, originally, it serialized value to JSON, to keep this behaviour, use "json" type');
+        }
+
+        return Type::getType($this->type ?? 'string');
     }
 
     protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -231,6 +75,35 @@ class Field implements Expressionable
     }
 
     /**
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    private function normalizeUsingTypecast($value)
+    {
+        $persistence = $this->getOwner()->persistence
+            ?? new class() extends Persistence {
+                public function __construct()
+                {
+                }
+            };
+
+        $persistenceSetSkipNormalizeFx = \Closure::bind(function (bool $value) use ($persistence) {
+            $persistence->typecastSaveSkipNormalize = $value;
+        }, null, Persistence::class);
+
+        $persistenceSetSkipNormalizeFx(true); // prevent recursion
+        try {
+            $value = $persistence->typecastSaveField($this, $value);
+        } finally {
+            $persistenceSetSkipNormalizeFx(false);
+        }
+        $value = $persistence->typecastLoadField($this, $value);
+
+        return $value;
+    }
+
+    /**
      * Depending on the type of a current field, this will perform
      * some normalization for strict types. This method must also make
      * sure that $f->required is respected when setting the value, e.g.
@@ -242,171 +115,157 @@ class Field implements Expressionable
      */
     public function normalize($value)
     {
+        $this->getTypeObject(); // assert type exists
+
         try {
-            if (!$this->getOwner()->strict_types || $this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
+            if ($this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
             }
 
-            if ($value === null) {
-                if ($this->required/* known bug, see https://github.com/atk4/data/issues/575, fix in https://github.com/atk4/data/issues/576 || $this->mandatory*/) {
-                    throw new ValidationException([$this->name => 'Must not be null']);
+            if (is_string($value)) {
+                switch ($this->type) {
+                    case null:
+                    case 'string':
+                        $value = trim(str_replace(["\r", "\n"], '', $value)); // remove all line-ends and trim
+
+                        break;
+                    case 'text':
+                        $value = rtrim(str_replace(["\r\n", "\r"], "\n", $value)); // normalize line-ends to LF and rtrim
+
+                        break;
+                    case 'boolean':
+                    case 'integer':
+                        $value = preg_replace('/\s+|[,`\']/', '', $value);
+
+                        break;
+                    case 'float':
+                    case 'atk4_money':
+                        $value = preg_replace('/\s+|[,`\'](?=.*\.)/', '', $value);
+
+                        break;
                 }
 
-                return;
-            }
-
-            $f = $this;
-
-            // only string type fields can use empty string as legit value, for all
-            // other field types empty value is the same as no-value, nothing or null
-            if ($f->type && $f->type !== 'string' && $value === '') {
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
-                }
-
-                return;
-            }
-
-            // validate scalar values
-            if (in_array($f->type, ['string', 'text', 'integer', 'money', 'float'], true)) {
-                if (!is_scalar($value)) {
-                    throw new ValidationException([$this->name => 'Must use scalar value']);
-                }
-
-                $value = (string) $value;
-            }
-
-            // normalize
-            switch ($f->type) {
-            case null: // loose comparison, but is OK here
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
-                }
-
-                break;
-            case 'string':
-                // remove all line-ends and trim
-                $value = trim(str_replace(["\r", "\n"], '', $value));
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
-                }
-
-                break;
-            case 'text':
-                // normalize line-ends to LF and trim
-                $value = trim(str_replace(["\r\n", "\r"], "\n", $value));
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be empty']);
-                }
-
-                break;
-            case 'integer':
-                // we clear out thousand separator, but will change to
-                // http://php.net/manual/en/numberformatter.parse.php
-                // in the future with the introduction of locale
-                $value = trim(str_replace(["\r", "\n"], '', $value));
-                $value = preg_replace('/[,`\']/', '', $value);
-                if (!is_numeric($value)) {
-                    throw new ValidationException([$this->name => 'Must be numeric']);
-                }
-                $value = (int) $value;
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a zero']);
-                }
-
-                break;
-            case 'float':
-                $value = trim(str_replace(["\r", "\n"], '', $value));
-                $value = preg_replace('/[,`\']/', '', $value);
-                if (!is_numeric($value)) {
-                    throw new ValidationException([$this->name => 'Must be numeric']);
-                }
-                $value = (float) $value;
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a zero']);
-                }
-
-                break;
-            case 'money':
-                $value = trim(str_replace(["\r", "\n"], '', $value));
-                $value = preg_replace('/[,`\']/', '', $value);
-                if (!is_numeric($value)) {
-                    throw new ValidationException([$this->name => 'Must be numeric']);
-                }
-                $value = round((float) $value, 4);
-                if ($this->required && empty($value)) {
-                    throw new ValidationException([$this->name => 'Must not be a zero']);
-                }
-
-                break;
-            case 'boolean':
-                throw (new Exception('Use Field\Boolean for type=boolean'))
-                    ->addMoreInfo('this', $this);
-            case 'date':
-            case 'datetime':
-            case 'time':
-                // we allow http://php.net/manual/en/datetime.formats.relative.php
-                $class = $f->dateTimeClass ?? \DateTime::class;
-
-                if (is_numeric($value)) {
-                    $value = new $class('@' . $value);
-                } elseif (is_string($value)) {
-                    $value = new $class($value);
-                } elseif (!$value instanceof $class) {
-                    if ($value instanceof \DateTimeInterface) {
-                        $value = new $class($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
-                    } else {
-                        if (is_object($value)) {
-                            throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value class' => get_class($value)]);
+                switch ($this->type) {
+                    case 'boolean':
+                    case 'integer':
+                    case 'float':
+                    case 'atk4_money':
+                        if ($value === '') {
+                            $value = null;
+                        } elseif (!is_numeric($value)) {
+                            throw new Exception('Must be numeric');
                         }
 
-                        throw new ValidationException(['must be a ' . $f->type, 'class' => $class, 'value type' => gettype($value)]);
+                        break;
+                }
+            } elseif ($value !== null) {
+                switch ($this->type) {
+                    case null:
+                    case 'string':
+                    case 'text':
+                    case 'integer':
+                    case 'float':
+                    case 'atk4_money':
+                        if (is_bool($value)) {
+                            if ($this->type === 'boolean') {
+                                $value = $value ? '1' : '0';
+                            } else {
+                                throw new Exception('Must not be boolean type');
+                            }
+                        } elseif (is_scalar($value)) {
+                            $value = (string) $value;
+                        } else {
+                            throw new Exception('Must be scalar');
+                        }
+
+                        break;
+                }
+            }
+
+            $value = $this->normalizeUsingTypecast($value);
+
+            if ($value === null) {
+                if ($this->required || $this->mandatory) {
+                    throw new Exception('Must not be null');
+                }
+
+                return null;
+            }
+
+            if ($value === '' && $this->required) {
+                throw new Exception('Must not be empty');
+            }
+
+            switch ($this->type) {
+                case null:
+                case 'string':
+                case 'text':
+                    if ($this->required && empty($value)) {
+                        throw new Exception('Must not be empty');
                     }
-                }
 
-                if ($f->type === 'date' && $value->format('H:i:s.u') !== '00:00:00.000000') {
-                    // remove time portion from date type value
-                    $value = (clone $value)->setTime(0, 0, 0);
-                }
-                if ($f->type === 'time' && $value->format('Y-m-d') !== '1970-01-01') {
-                    // remove date portion from date type value
-                    // need 1970 in place of 0 - DB
-                    $value = (clone $value)->setDate(1970, 1, 1);
-                }
+                    break;
+                case 'boolean':
+                    if ($this->required && empty($value)) {
+                        throw new Exception('Must be true');
+                    }
 
-                break;
-            case 'array':
-                if (is_string($value) && $f->issetOwner() && $f->getOwner()->persistence) {
-                    $value = $f->getOwner()->persistence->jsonDecode($f, $value, true);
+                    break;
+                case 'integer':
+                case 'float':
+                case 'atk4_money':
+                    if ($this->required && empty($value)) {
+                        throw new Exception('Must not be a zero');
+                    }
+
+                    break;
+                case 'date':
+                case 'datetime':
+                case 'time':
+                    if (!$value instanceof \DateTimeInterface) {
+                        throw new Exception('Must be an instance of DateTimeInterface');
+                    }
+
+                    break;
+                case 'json':
+                    if (!is_array($value)) {
+                        throw new Exception('Must be an array');
+                    }
+
+                    break;
+                case 'object':
+                    if (!is_object($value)) {
+                        throw new Exception('Must be an object');
+                    }
+
+                    break;
+            }
+
+            if ($this->enum) {
+                if ($value === null || $value === '') {
+                    $value = null;
+                } elseif (!in_array($value, $this->enum, true)) {
+                    throw new Exception('Value is not one of the allowed values: ' . implode(', ', $this->enum));
                 }
+            }
 
-                if (!is_array($value)) {
-                    throw new ValidationException([$this->name => 'Must be an array']);
+            if ($this->values) {
+                if ($value === null || $value === '') {
+                    $value = null;
+                } elseif ((!is_string($value) && !is_int($value)) || !array_key_exists($value, $this->values)) {
+                    throw new Exception('Value is not one of the allowed values: ' . implode(', ', array_keys($this->values)));
                 }
-
-                break;
-            case 'object':
-               if (is_string($value) && $f->issetOwner() && $f->getOwner()->persistence) {
-                   $value = $f->getOwner()->persistence->jsonDecode($f, $value, false);
-               }
-
-                if (!is_object($value)) {
-                    throw new ValidationException([$this->name => 'Must be an object']);
-                }
-
-                break;
-            case 'int':
-            case 'str':
-            case 'bool':
-                throw (new Exception('Use of obsolete field type abbreviation. Use "integer", "string", "boolean" etc.'))
-                    ->addMoreInfo('type', $f->type);
             }
 
             return $value;
-        } catch (Exception $e) {
-            $e->addMoreInfo('field', $this);
+        } catch (\Exception $e) {
+            $messages = [];
+            do {
+                $messages[] = $e->getMessage();
+            } while ($e = $e->getPrevious());
 
-            throw $e;
+            throw (new ValidationException([$this->name => implode(': ', $messages)], $this->getOwner()))
+                ->addMoreInfo('field', $this);
         }
     }
 
@@ -417,42 +276,12 @@ class Field implements Expressionable
      */
     public function toString($value = null): string
     {
-        $v = ($value === null ? $this->get() : $this->normalize($value));
-        try {
-            switch ($this->type) {
-                case 'boolean':
-                    throw (new Exception('Use Field\Boolean for type=boolean'))
-                        ->addMoreInfo('this', $this);
-                case 'date':
-                case 'datetime':
-                case 'time':
-                    if ($v instanceof \DateTimeInterface) {
-                        $dateFormat = 'Y-m-d';
-                        $timeFormat = 'H:i:s' . ($v->format('u') > 0 ? '.u' : ''); // add microseconds if presented
-                        if ($this->type === 'date') {
-                            $format = $dateFormat;
-                        } elseif ($this->type === 'time') {
-                            $format = $timeFormat;
-                        } else {
-                            $format = $dateFormat . '\T' . $timeFormat . 'P'; // ISO 8601 format 2004-02-12T15:19:21+00:00
-                        }
-
-                        return $v->format($format);
-                    }
-
-                    return (string) $v;
-                case 'array':
-                    return json_encode($v); // todo use Persistence->jsonEncode() instead
-                case 'object':
-                    return json_encode($v); // todo use Persistence->jsonEncode() instead
-                default:
-                    return (string) $v;
-            }
-        } catch (Exception $e) {
-            $e->addMoreInfo('field', $this);
-
-            throw $e;
+        $value = ($value === null /* why not func_num_args() === 1 */ ? $this->get() : $this->normalize($value));
+        if (is_bool($value)) {
+            $value = $value ? '1' : '0';
         }
+
+        return (string) $this->typecastSaveField($value, true);
     }
 
     /**
@@ -488,6 +317,41 @@ class Field implements Expressionable
     }
 
     /**
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    private function typecastSaveField($value, bool $allowGenericPersistence = false)
+    {
+        $persistence = $this->getOwner()->persistence;
+        if ($persistence === null) {
+            if ($allowGenericPersistence) {
+                $persistence = new class() extends Persistence {
+                    public function __construct()
+                    {
+                    }
+                };
+            } else {
+                $this->getOwner()->checkPersistence();
+            }
+        }
+
+        return $persistence->typecastSaveField($this, $value);
+    }
+
+    /**
+     * @param mixed|void $value
+     */
+    private function getValueForCompare($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return (string) $this->typecastSaveField($value, true);
+    }
+
+    /**
      * Compare new value of the field with existing one without retrieving.
      * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
      *  - comparing values that can't be received - passwords, encrypted data
@@ -503,33 +367,16 @@ class Field implements Expressionable
             $value2 = $this->get();
         }
 
-        // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
-        // compare if typecasted values are the same using strict comparison (===) or nor
-        $typecastFunc = function ($v) {
-            // do not typecast null values, because that implies calling normalize() which tries to validate that value can't be null in case field value is required
-            if ($v === null) {
-                return $v;
-            }
+        // TODO, see https://stackoverflow.com/questions/48382457/mysql-json-column-change-array-order-after-saving
+        // at least MySQL sorts the JSON keys if stored natively
+        return $this->getValueForCompare($value) === $this->getValueForCompare($value2);
+    }
 
-            if ($this->getOwner()->persistence === null) {
-                $v = $this->normalize($v);
-
-                // without persistence, we can not do a lot with non-scalar types, but as DateTime
-                // is used often, fix the compare for them
-                // TODO probably create and use a default persistence
-                if (is_scalar($v)) {
-                    return (string) $v;
-                } elseif ($v instanceof \DateTimeInterface) {
-                    return $v->getTimestamp() . '.' . $v->format('u');
-                }
-
-                return serialize($v);
-            }
-
-            return (string) $this->getOwner()->persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
-        };
-
-        return $typecastFunc($value) === $typecastFunc($value2);
+    public function getReference(): ?Reference
+    {
+        return $this->referenceLink !== null
+            ? $this->getOwner()->getRef($this->referenceLink)
+            : null;
     }
 
     public function getPersistenceName(): string
@@ -542,7 +389,7 @@ class Field implements Expressionable
      */
     public function useAlias(): bool
     {
-        return isset($this->actual);
+        return $this->actual !== null;
     }
 
     // }}}
@@ -557,24 +404,29 @@ class Field implements Expressionable
      */
     public function getQueryArguments($operator, $value): array
     {
-        $skipValueTypecast = [
+        $typecastField = $this;
+        $allowArray = true;
+        if (in_array($operator, [
             Scope\Condition::OPERATOR_LIKE,
             Scope\Condition::OPERATOR_NOT_LIKE,
             Scope\Condition::OPERATOR_REGEXP,
             Scope\Condition::OPERATOR_NOT_REGEXP,
-        ];
-
-        if (!in_array($operator, $skipValueTypecast, true)) {
-            if (is_array($value)) {
-                $value = array_map(function ($option) {
-                    return $this->getOwner()->persistence->typecastSaveField($this, $option);
-                }, $value);
-            } else {
-                $value = $this->getOwner()->persistence->typecastSaveField($this, $value);
-            }
+        ], true)) {
+            $typecastField = new self(['type' => 'string']);
+            $typecastField->setOwner(new Model($this->getOwner()->persistence, ['table' => false]));
+            $typecastField->short_name = $this->short_name;
+            $allowArray = false;
         }
 
-        return [$this, $operator, $value];
+        if ($value instanceof Persistence\Array_\Action) { // needed to pass hintable tests
+            $v = $value;
+        } elseif (is_array($value) && $allowArray) {
+            $v = array_map(fn ($value) => $typecastField->typecastSaveField($value), $value);
+        } else {
+            $v = $typecastField->typecastSaveField($value);
+        }
+
+        return [$this, $operator, $v];
     }
 
     // }}}
@@ -644,7 +496,7 @@ class Field implements Expressionable
         foreach ([
             'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
         ] as $key) {
-            if (isset($this->{$key})) {
+            if ($this->{$key} !== null) {
                 $arr[$key] = $this->{$key};
             }
         }

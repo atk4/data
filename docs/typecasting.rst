@@ -9,7 +9,7 @@ Typecasting is evoked when you are attempting to save or load the record.
 Unlike strict types and normalization, typecasting is a persistence-specific
 operation. Here is the sequence and sample::
 
-    $m->addField('birthday', ['type'=>'date']);
+    $m->addField('birthday', ['type' => 'date']);
     // type has a number of pre-defined values. Using 'date'
     // instructs AD that we will be using it for staring dates
     // through 'DateTime' class.
@@ -41,9 +41,9 @@ Some formats such as `date`, `time` and `datetime` may have additional options
 to it::
 
     $m->addField('registered', [
-        'type'=>'date',
-        'persist_format'=>'d/m/Y',
-        'persist_timezone'=>'IST'
+        'type' => 'date',
+        'persist_format' => 'd/m/Y',
+        'persist_timezone' => 'IST'
     ]);
 
 Here is another example with booleans::
@@ -71,8 +71,8 @@ Any type can have a value of `null`::
 If value is passed which is not compatible with field type, Agile Data will try
 to normalize value::
 
-    $m->addField('age', ['type'=>'integer']);
-    $m->addField('name', ['type'=>'string']);
+    $m->addField('age', ['type' => 'integer']);
+    $m->addField('name', ['type' => 'string']);
 
     $m->set('age', '49.80');
     $m->set('name', '       John');
@@ -112,12 +112,12 @@ Supported types
 - 'text' - for storing long strings, suchas notes or description. Normalize will trim the value.
 - 'boolean' - normalize will cast value to boolean.
 - 'integer' - normalize will cast value to integer.
-- 'money' - normalize will round value with 4 digits after dot.
+- 'atk4_money' - normalize will round value with 4 digits after dot.
 - 'float' - normalize will cast value to float.
 - 'date' - normalize will convert value to DateTime object.
 - 'datetime' - normalize will convert value to DateTime object.
 - 'time' - normalize will convert value to DateTime object.
-- 'array' - no normalization by default
+- 'json' - no normalization by default
 - 'object' - no normalization by default
 
 Types and UI
@@ -126,35 +126,6 @@ Types and UI
 UI framework such as Agile Toolkit will typically rely on field type information
 to properly present data for views (forms and tables) without you having to
 explicitly specify the `ui` property.
-
-Typecast by callbacks
----------------------
-You can also use callbacks for typecasting.
-
-    // encrypt data if SQL persistence
-    $encrypt = function ($value, $field, $persistence) {
-        if ($persistence instanceof \Atk4\Data\Persistence\Sql) {
-            return mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $field->key, $value);
-        }
-        return $value;
-    }
-
-    // decrypt data if SQL persistence
-    $decrypt = function ($value, $field, $persistence) {
-        if ($persistence instanceof \Atk4\Data\Persistence\Sql) {
-            return mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $field->key, $value);
-        }
-        return $value;
-    }
-
-    $field = $this->addField('rot_encoded', [
-        'typecast' => [
-            $encrypt, // encode before saving
-            $decrypt, // decode after loading
-        ],
-    ]);
-    $field->key = 'secret-key-here';
-
 
 
 Serialization
@@ -166,48 +137,15 @@ have no native type in SQL database. This is where serialization feature is used
 Field may use serialization to further encode field value for the storage purpose::
 
     $this->addField('private_key', [
-        'serialize'=>'base64',
-        'system'=>true,
-    ]);
-
-This is one way to store binary data. Type is unspecified but the binary value
-of a field will be encoded with base64 before storing an automatically decoded
-when you load this value back from persistence.
-
-Supported algorithms
---------------------
-
-- 'serialize' - for storing PHP objects, uses `serialize`, `unserialize`
-- 'json' - for storing objects and arrays, uses `json_encode`, `json_decode`
-- 'base64' - for storing encoded strings, uses `base64_encode`, `base64_decode`
-- [serialize_callback, unserialize_callback] - for custom serialization
-
-Storing unsupported types
--------------------------
-
-Here is another example defining the field that stores monetary value containing
-both the amount and the currency. The domain model will use an object and we are
-specifying our callbacks for converting::
-
-    $money_encode = function($x) {
-        return $x->amount.' '.$x->currency;
-    }
-
-    $money_decode = function($x) {
-        list($amount, $currency) = explode(' ', $x, 2);
-        return new MyMoney($amount, $currency);
-    }
-
-    $this->addField('money', [
-        'serialize' => [$money_encode, $money_decode],
+        'type' => 'object',
+        'system' => true,
     ]);
 
 Array and Object types
 ----------------------
 
-Some types may require serialization for some persistences, for instance types
-'array' and 'object' cannot be stored in SQL natively. That's why they will
-use `json_encode` and `json_decode` by default. If you specify a different
-serialization technique, then it will be used instead of JSON.
+Some types may require serialization for some persistencies, for instance types
+'json' and 'object' cannot be stored in SQL natively. `json` type can be used
+to store these in JSON.
 
 This is handy when mapping JSON data into native PHP structures.

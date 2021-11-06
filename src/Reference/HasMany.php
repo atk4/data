@@ -9,11 +9,26 @@ use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Reference;
 
-/**
- * Reference\HasMany class.
- */
 class HasMany extends Reference
 {
+    public function getTheirFieldName(): string
+    {
+        if ($this->their_field) {
+            return $this->their_field;
+        }
+
+        // this is pure guess, verify if such field exist, otherwise throw
+        // TODO probably remove completely in the future
+        $ourModel = $this->getOurModel();
+        $theirFieldName = $ourModel->table . '_' . $ourModel->id_field;
+        if (!$this->createTheirModel()->hasField($theirFieldName)) {
+            throw (new Exception('Their model does not contain fallback field'))
+                ->addMoreInfo('their_fallback_field', $theirFieldName);
+        }
+
+        return $theirFieldName;
+    }
+
     /**
      * Returns our field value or id.
      *
@@ -23,7 +38,7 @@ class HasMany extends Reference
     {
         $ourModel = $this->getOurModel();
 
-        if ($ourModel->loaded()) {
+        if ($ourModel->isEntity() && $ourModel->loaded()) {
             return $this->our_field
                 ? $ourModel->get($this->our_field)
                 : $ourModel->getId();
@@ -55,7 +70,7 @@ class HasMany extends Reference
         $ourModel = $this->getOurModel();
 
         return $this->createTheirModel($defaults)->addCondition(
-            $this->their_field ?: ($ourModel->table . '_' . $ourModel->id_field),
+            $this->getTheirFieldName(),
             $this->getOurValue()
         );
     }
@@ -68,7 +83,7 @@ class HasMany extends Reference
         $ourModel = $this->getOurModel();
 
         $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
-            $this->their_field ?: ($ourModel->table . '_' . $ourModel->id_field),
+            $this->getTheirFieldName(),
             $this->referenceOurValue()
         );
 

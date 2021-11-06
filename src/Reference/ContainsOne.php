@@ -18,7 +18,7 @@ class ContainsOne extends Reference
      *
      * @var string
      */
-    public $type = 'array';
+    public $type = 'json';
 
     /**
      * Is it system field?
@@ -62,7 +62,7 @@ class ContainsOne extends Reference
         if (!$ourModel->hasElement($ourField)) {
             $ourModel->addField($ourField, [
                 'type' => $this->type,
-                'reference' => $this,
+                'referenceLink' => $this->link,
                 'system' => $this->system,
                 'caption' => $this->caption, // it's ref models caption, but we can use it here for field too
                 'ui' => array_merge([
@@ -73,10 +73,10 @@ class ContainsOne extends Reference
         }
     }
 
-    protected function getDefaultPersistence(Model $theirModel)
+    protected function getDefaultPersistence(Model $theirModel): Persistence
     {
-        return new Persistence\ArrayOfStrings([
-            $this->table_alias => $this->getOurFieldValue() ? [1 => $this->getOurFieldValue()] : [],
+        return new Persistence\Array_([
+            $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],
         ]);
     }
 
@@ -100,8 +100,7 @@ class ContainsOne extends Reference
             });
         }
 
-        // try to load any (actually only one possible) record
-        $theirModel->tryLoadAny();
+        $theirModel = $theirModel->tryLoadOne();
 
         return $theirModel;
     }

@@ -82,7 +82,8 @@ trait UserActionsTrait
     /**
      * Execute specified action with specified arguments.
      *
-     * @param string $name UserAction name
+     * @param string $name    UserAction name
+     * @param mixed  ...$args
      *
      * @return mixed
      */
