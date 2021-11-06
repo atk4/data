@@ -634,7 +634,9 @@ class Model implements \IteratorAggregate
     public function removeField(string $name)
     {
         if ($this->isEntity()) { // TODO dev only
-            return $this->getModel()->removeField($name);
+            $this->getModel()->removeField($name);
+
+            return $this;
         }
 
         $this->assertIsModel();
@@ -686,7 +688,9 @@ class Model implements \IteratorAggregate
     public function onlyFields(array $fields = [])
     {
         if ($this->isEntity()) { // TODO dev only
-            return $this->getModel()->onlyFields($fields);
+            $this->getModel()->onlyFields($fields);
+
+            return $this;
         }
 
         $this->assertIsModel();
@@ -705,7 +709,9 @@ class Model implements \IteratorAggregate
     public function allFields()
     {
         if ($this->isEntity()) { // TODO dev only
-            return $this->getModel()->allFields();
+            $this->getModel()->allFields();
+
+            return $this;
         }
 
         $this->assertIsModel();
