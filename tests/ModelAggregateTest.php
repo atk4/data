@@ -48,7 +48,7 @@ class ModelAggregateTest extends TestCase
         return $this->createInvoice()->withAggregateField('client');
     }
 
-    public function testGroupBy()
+    public function testGroupBy(): void
     {
         $invoiceAggregate = $this->createInvoice()->groupBy(['client_id'], ['c' => ['expr' => 'count(*)', 'type' => 'integer']]);
 
@@ -61,7 +61,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupSelect()
+    public function testGroupSelect(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -76,7 +76,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupSelect2()
+    public function testGroupSelect2(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -93,7 +93,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupSelect3()
+    public function testGroupSelect3(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -113,7 +113,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupSelectExpr()
+    public function testGroupSelectExpr(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -133,7 +133,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupSelectCondition()
+    public function testGroupSelectCondition(): void
     {
         /** @var Aggregate $aggregate */
         $aggregate = $this->createInvoiceAggregate();
@@ -155,7 +155,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupSelectCondition2()
+    public function testGroupSelectCondition2(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -175,7 +175,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupSelectCondition3()
+    public function testGroupSelectCondition3(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -195,7 +195,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupSelectCondition4()
+    public function testGroupSelectCondition4(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -215,7 +215,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupSelectScope()
+    public function testGroupSelectScope(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -235,7 +235,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupOrder()
+    public function testGroupOrder(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -251,7 +251,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupLimit()
+    public function testGroupLimit(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -268,7 +268,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupLimit2()
+    public function testGroupLimit2(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -285,7 +285,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testGroupCount()
+    public function testGroupCount(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
@@ -299,7 +299,7 @@ class ModelAggregateTest extends TestCase
         );
     }
 
-    public function testAggregateFieldExpression()
+    public function testAggregateFieldExpression(): void
     {
         $aggregate = $this->createInvoiceAggregate();
 
