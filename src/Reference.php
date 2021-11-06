@@ -184,7 +184,7 @@ class Reference
         return $this->our_field ?: $this->getOurModel()->id_field;
     }
 
-    protected function getOurField(): Field
+    final protected function getOurField(): Field
     {
         return $this->getOurModel()->getField($this->getOurFieldName());
     }
@@ -192,7 +192,7 @@ class Reference
     /**
      * @return mixed
      */
-    protected function getOurFieldValue()
+    final protected function getOurFieldValue()
     {
         return $this->getOurModel()->get($this->getOurFieldName());
     }

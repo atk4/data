@@ -143,8 +143,7 @@ class HasOneSql extends HasOne
             return $theirModel;
         }
 
-        $theirField = $this->their_field ?: $theirModel->id_field;
-        $ourField = $this->getOurField();
+        $theirFieldName = $this->their_field ?? $theirModel->id_field; // TODO why not $this->getTheirFieldName() ?
 
         // At this point the reference
         // if our_field is the id_field and is being used in the reference
@@ -153,15 +152,15 @@ class HasOneSql extends HasOne
         if ($ourModel->isEntity() && $ourModel->loaded() && !$theirModel->loaded()) {
             if ($ourModel->id_field === $this->getOurFieldName()) {
                 return $theirModel->getModel()
-                    ->addCondition($theirField, $this->getOurFieldValue());
+                    ->addCondition($theirFieldName, $this->getOurFieldValue());
             }
         }
 
         // handles the deep traversal using an expression
-        $ourFieldExpression = $ourModel->action('field', [$ourField]);
+        $ourFieldExpression = $ourModel->action('field', [$this->getOurField()]);
 
         $theirModel->getModel(true)
-            ->addCondition($theirField, $ourFieldExpression);
+            ->addCondition($theirFieldName, $ourFieldExpression);
 
         return $theirModel;
     }

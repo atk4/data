@@ -792,7 +792,7 @@ class FieldTest extends TestCase
         // null must pass
         $m->setNull('a');
         $m->setNull('b');
-        $m->getField('c')->setNull();
+        $m->getField('c')->setNull($m);
         $this->assertNull($m->get('a'));
         $this->assertNull($m->get('b'));
         $this->assertNull($m->get('c'));

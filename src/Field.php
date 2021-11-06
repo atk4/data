@@ -317,9 +317,11 @@ class Field implements Expressionable
      *
      * @param mixed $value
      */
-    final public function set($value): self
+    final public function set(Model $entity, $value): self
     {
-        $this->getOwner()->set($this->short_name, $value);
+        $this->assertIsOwnerEntity($entity);
+
+        $entity->set($this->short_name, $value);
 
         return $this;
     }
@@ -327,9 +329,11 @@ class Field implements Expressionable
     /**
      * Unset field value even if null value is not allowed.
      */
-    final public function setNull(): self
+    final public function setNull(Model $entity): self
     {
-        $this->getOwner()->setNull($this->short_name);
+        $this->assertIsOwnerEntity($entity);
+
+        $entity->setNull($this->short_name);
 
         return $this;
     }
