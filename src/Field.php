@@ -292,11 +292,6 @@ class Field implements Expressionable
      */
     public function toString($value): string
     {
-        $value = $this->normalize($value); // TODO normalize should not be needed, called also in typecast
-        if (is_bool($value)) { // TODO typecast should be enough
-            $value = $value ? '1' : '0';
-        }
-
         return (string) $this->typecastSaveField($value, true);
     }
 
