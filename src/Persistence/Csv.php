@@ -177,7 +177,7 @@ class Csv extends Persistence
         $this->openFile('w');
 
         $header = [];
-        foreach (array_keys($model->getFields()) as $name) {
+        foreach ($model->getFields() as $name => $field) {
             if ($model->id_field && $name === $model->id_field) {
                 continue;
             }
@@ -302,10 +302,10 @@ class Csv extends Persistence
             throw new Exception('Currently reading records, so writing is not possible.');
         }
 
-        $data = $this->typecastSaveRow($model->getModel(), $data);
+        $data = $this->typecastSaveRow($model, $data);
 
         if (!$this->handle) {
-            $this->saveHeader($model->getModel(true));
+            $this->saveHeader($model);
         }
 
         $line = [];
@@ -316,7 +316,7 @@ class Csv extends Persistence
 
         $this->putLine($line);
 
-        return $model->getModel(true)->id_field ? $data[$model->getModel(true)->id_field] : null;
+        return $model->id_field ? $data[$model->id_field] : null;
     }
 
     /**

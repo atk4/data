@@ -169,8 +169,6 @@ abstract class Persistence
      */
     public function typecastSaveRow(Model $model, array $row): array
     {
-        $model->assertIsModel();
-
         $result = [];
         foreach ($row as $fieldName => $value) {
             $field = $model->getField($fieldName);
@@ -195,8 +193,6 @@ abstract class Persistence
      */
     public function typecastLoadRow(Model $model, array $row): array
     {
-        $model->assertIsModel();
-
         $result = [];
         foreach ($row as $fieldName => $value) {
             $field = $model->getField($fieldName);

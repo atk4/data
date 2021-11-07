@@ -68,9 +68,9 @@ class ContainsOneTest extends TestCase
         $a = (new Invoice($this->db))->addr;
 
         // test caption of containsOne reference
-        $this->assertSame('Secret Code', $a->getModel()->getField($a->fieldName()->door_code)->getCaption());
+        $this->assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
         $this->assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getModelCaption());
-        $this->assertSame('Secret Code', $a->door_code->getModel()->getModelCaption());
+        $this->assertSame('Secret Code', $a->door_code->getModelCaption());
     }
 
     /**
@@ -184,7 +184,7 @@ class ContainsOneTest extends TestCase
         $a->save();
 
         // now let's add one more field in address model and save
-        $a->getModel()->addField('post_index');
+        $a->addField('post_index');
         $a->set('post_index', 'LV-1234');
         $a->save();
 
@@ -192,7 +192,7 @@ class ContainsOneTest extends TestCase
 
         // now this one is a bit tricky
         // each time you call ref() it returns you new model object so it will not have post_index field
-        $this->assertFalse($i->addr->getModel()->hasField('post_index'));
+        $this->assertFalse($i->addr->hasField('post_index'));
 
         // now reload invoice just in case
         $i->reload();

@@ -387,15 +387,15 @@ class RandomTest extends TestCase
         $this->assertSame('Sue', $mm->getTitle()); // loaded returns title_field value
 
         // set custom title_field
-        $m->title_field = 'parent_item_id';
+        $mm->title_field = 'parent_item_id';
         $this->assertEquals(1, $mm->getTitle()); // returns parent_item_id value
 
         // set custom title_field as title_field from linked model
-        $m->title_field = 'parent_item';
+        $mm->title_field = 'parent_item';
         $this->assertSame('John', $mm->getTitle()); // returns parent record title_field
 
         // no title_field set - return id value
-        $m->title_field = null;
+        $mm->title_field = null; // @phpstan-ignore-line
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field

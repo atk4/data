@@ -39,7 +39,7 @@
         "ext-pdo": "*",
         "atk4/core": "dev-develop",
         "doctrine/dbal": "^2.13.3 || ^3.0",
-        "mvorisek/atk4-hintable": "~1.7.1"
+        "mvorisek/atk4-hintable": "~1.7.0"
     },
     "require-release": {
         "php": ">=7.4 <8.2",
@@ -47,7 +47,7 @@
         "ext-pdo": "*",
         "atk4/core": "~3.1.0",
         "doctrine/dbal": "^2.13.3 || ^3.0",
-        "mvorisek/atk4-hintable": "~1.7.1"
+        "mvorisek/atk4-hintable": "~1.7.0"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.13",

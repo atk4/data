@@ -23,12 +23,13 @@ class Field implements Expressionable
     use Model\FieldPropertiesTrait;
     use Model\JoinLinkTrait;
     use ReadableCaptionTrait;
-    use TrackableTrait {
-        setOwner as private _setOwner;
-    }
+    use TrackableTrait;
 
     // {{{ Core functionality
 
+    /**
+     * Constructor. You can pass field properties as array.
+     */
     public function __construct(array $defaults = [])
     {
         foreach ($defaults as $key => $val) {
@@ -38,23 +39,6 @@ class Field implements Expressionable
                 $this->{$key} = $val;
             }
         }
-    }
-
-    private function assertIsOwnerEntity(Model $entity): void
-    {
-        $entity->assertIsEntity($this->getOwner());
-    }
-
-    /**
-     * @param Model $owner
-     *
-     * @return static
-     */
-    public function setOwner(object $owner)
-    {
-        $owner->assertIsModel();
-
-        return $this->_setOwner($owner);
     }
 
     public function setDefaults(array $properties, bool $passively = false): self
@@ -75,14 +59,14 @@ class Field implements Expressionable
         return Type::getType($this->type ?? 'string');
     }
 
-    protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->short_name; // use static function to allow this object to be GCed
 
-        return $this->getOwner()->onHookDynamic(
+        return $this->getOwner()->onHookDynamicShort(
             $spot,
             static function (Model $owner) use ($name) {
-                return $owner->getModel()->getField($name);
+                return $owner->getField($name);
             },
             $fx,
             $args,
@@ -134,7 +118,7 @@ class Field implements Expressionable
         $this->getTypeObject(); // assert type exists
 
         try {
-            if ($this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) { // TODO should be called on model or entity?
+            if ($this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
             }
 
@@ -288,10 +272,15 @@ class Field implements Expressionable
     /**
      * Casts field value to string.
      *
-     * @param mixed $value
+     * @param mixed $value Optional value
      */
-    public function toString($value): string
+    public function toString($value = null): string
     {
+        $value = ($value === null /* why not func_num_args() === 1 */ ? $this->get() : $this->normalize($value));
+        if (is_bool($value)) {
+            $value = $value ? '1' : '0';
+        }
+
         return (string) $this->typecastSaveField($value, true);
     }
 
@@ -300,11 +289,9 @@ class Field implements Expressionable
      *
      * @return mixed
      */
-    final public function get(Model $entity)
+    public function get()
     {
-        $this->assertIsOwnerEntity($entity);
-
-        return $entity->get($this->short_name);
+        return $this->getOwner()->get($this->short_name);
     }
 
     /**
@@ -312,11 +299,9 @@ class Field implements Expressionable
      *
      * @param mixed $value
      */
-    final public function set(Model $entity, $value): self
+    public function set($value): self
     {
-        $this->assertIsOwnerEntity($entity);
-
-        $entity->set($this->short_name, $value);
+        $this->getOwner()->set($this->short_name, $value);
 
         return $this;
     }
@@ -324,11 +309,9 @@ class Field implements Expressionable
     /**
      * Unset field value even if null value is not allowed.
      */
-    final public function setNull(Model $entity): self
+    public function setNull(): self
     {
-        $this->assertIsOwnerEntity($entity);
-
-        $entity->setNull($this->short_name);
+        $this->getOwner()->setNull($this->short_name);
 
         return $this;
     }
@@ -370,12 +353,20 @@ class Field implements Expressionable
 
     /**
      * Compare new value of the field with existing one without retrieving.
+     * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
+     *  - comparing values that can't be received - passwords, encrypted data
+     *  - comparing images
+     *  - if get() is expensive (e.g. retrieve object).
      *
-     * @param mixed $value
-     * @param mixed $value2
+     * @param mixed      $value
+     * @param mixed|void $value2
      */
-    public function compare($value, $value2): bool
+    public function compare($value, $value2 = null): bool
     {
+        if (func_num_args() === 1) {
+            $value2 = $this->get();
+        }
+
         // TODO, see https://stackoverflow.com/questions/48382457/mysql-json-column-change-array-order-after-saving
         // at least MySQL sorts the JSON keys if stored natively
         return $this->getValueForCompare($value) === $this->getValueForCompare($value2);
@@ -383,8 +374,6 @@ class Field implements Expressionable
 
     public function getReference(): ?Reference
     {
-        // TODO needs probably also care as unbound now
-
         return $this->referenceLink !== null
             ? $this->getOwner()->getRef($this->referenceLink)
             : null;
@@ -492,15 +481,20 @@ class Field implements Expressionable
         return $this->getOwner()->persistence->getFieldSqlExpression($this, $expression);
     }
 
+    // {{{ Debug Methods
+
+    /**
+     * Returns array with useful debug info for var_dump.
+     */
     public function __debugInfo(): array
     {
         $arr = [
             'short_name' => $this->short_name,
-            'type' => $this->type,
+            'value' => $this->get(),
         ];
 
         foreach ([
-            'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
+            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
         ] as $key) {
             if ($this->{$key} !== null) {
                 $arr[$key] = $this->{$key};
@@ -509,4 +503,6 @@ class Field implements Expressionable
 
         return $arr;
     }
+
+    // }}}
 }

@@ -39,7 +39,7 @@ trait UserActionsTrait
         }
 
         /** @var Model\UserAction $action */
-        $action = Factory::factory($this->getModel(true)->_default_seed_action, $defaults);
+        $action = Factory::factory($this->_default_seed_action, $defaults);
 
         $this->_addIntoCollection($name, $action, 'userActions');
 

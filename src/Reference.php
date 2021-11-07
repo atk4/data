@@ -179,22 +179,22 @@ class Reference
         return $theirModel;
     }
 
-    protected function getOurFieldName(): string
+    protected function getOurField(): Field
     {
-        return $this->our_field ?: $this->getOurModel()->getModel(true)->id_field;
+        return $this->getOurModel()->getField($this->getOurFieldName());
     }
 
-    final protected function getOurField(): Field
+    protected function getOurFieldName(): string
     {
-        return $this->getOurModel()->getModel(true)->getField($this->getOurFieldName());
+        return $this->our_field ?: $this->getOurModel()->id_field;
     }
 
     /**
      * @return mixed
      */
-    final protected function getOurFieldValue()
+    protected function getOurFieldValue()
     {
-        return $this->getOurModel()->get($this->getOurFieldName());
+        return $this->getOurField()->get();
     }
 
     protected function initTableAlias(): void
@@ -232,13 +232,13 @@ class Reference
      */
     protected function getDefaultPersistence(Model $theirModel)
     {
-        $ourModel = $this->getOurModel()->getModel(true);
+        $ourModel = $this->getOurModel();
 
         // this will be useful for containsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
         // from Array persistence used in containsOne model
-        if ($ourModel->contained_in_root_model && $ourModel->contained_in_root_model->getModel(true)->persistence) {
-            return $ourModel->contained_in_root_model->getModel(true)->persistence;
+        if ($ourModel->contained_in_root_model && $ourModel->contained_in_root_model->persistence) {
+            return $ourModel->contained_in_root_model->persistence;
         }
 
         return $ourModel->persistence ?: false;
@@ -263,6 +263,8 @@ class Reference
         return $this->createTheirModel($defaults);
     }
 
+    // {{{ Debug Methods
+
     /**
      * List of properties to show in var_dump.
      *
@@ -285,4 +287,6 @@ class Reference
 
         return $arr;
     }
+
+    // }}}
 }

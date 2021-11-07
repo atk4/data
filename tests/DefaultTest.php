@@ -18,5 +18,8 @@ class DefaultTest extends TestCase
 
         $this->assertNull($m->get('nodefault'));
         $this->assertSame('abc', $m->get('withdefault'));
+
+        $this->assertNull($m->getField('nodefault')->get());
+        $this->assertSame('abc', $m->getField('withdefault')->get());
     }
 }

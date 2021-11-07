@@ -139,28 +139,29 @@ class HasOneSql extends HasOne
         $theirModel = parent::ref($defaults);
         $ourModel = $this->getOurModel();
 
-        if (!isset($ourModel->getModel(true)->persistence) || !($ourModel->getModel(true)->persistence instanceof Persistence\Sql)) {
+        if (!isset($ourModel->persistence) || !($ourModel->persistence instanceof Persistence\Sql)) {
             return $theirModel;
         }
 
-        $theirFieldName = $this->their_field ?? $theirModel->getModel(true)->id_field; // TODO why not $this->getTheirFieldName() ?
+        $theirField = $this->their_field ?: $theirModel->id_field;
+        $ourField = $this->getOurField();
 
         // At this point the reference
         // if our_field is the id_field and is being used in the reference
         // we should persist the relation in condtition
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->isEntity() && $ourModel->loaded() && !$theirModel->loaded()) {
-            if ($ourModel->getModel()->id_field === $this->getOurFieldName()) {
+            if ($ourModel->id_field === $this->getOurFieldName()) {
                 return $theirModel->getModel()
-                    ->addCondition($theirFieldName, $this->getOurFieldValue());
+                    ->addCondition($theirField, $this->getOurFieldValue());
             }
         }
 
         // handles the deep traversal using an expression
-        $ourFieldExpression = $ourModel->action('field', [$this->getOurField()]);
+        $ourFieldExpression = $ourModel->action('field', [$ourField]);
 
         $theirModel->getModel(true)
-            ->addCondition($theirFieldName, $ourFieldExpression);
+            ->addCondition($theirField, $ourFieldExpression);
 
         return $theirModel;
     }

@@ -92,7 +92,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
      */
     public function dsql(): Query
     {
-        $dsql = $this->getOwner()->getModel(true)->persistence->initQuery($this->getOwner());
+        $dsql = $this->getOwner()->persistence->initQuery($this->getOwner());
 
         return $dsql->reset('table')->table($this->foreign_table, $this->foreign_alias);
     }
@@ -116,10 +116,10 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
         $query->join(
             $this->foreign_table,
-            $this->getOwner()->getModel(true)->expr('{{}}.{} = {}', [
+            $this->getOwner()->expr('{{}}.{} = {}', [
                 ($this->foreign_alias ?: $this->foreign_table),
                 $this->foreign_field,
-                $this->getOwner()->getModel(true)->getField($this->master_field),
+                $this->getOwner()->getField($this->master_field),
             ]),
             $this->kind,
             $this->foreign_alias
@@ -161,11 +161,10 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
             return;
         }
 
-        $entity = $this->getOwner();
-        $model = $entity->getModel();
+        $model = $this->getOwner();
 
         // The value for the master_field is set, so we are going to use existing record anyway
-        if ($model->hasField($this->master_field) && $entity->get($this->master_field)) {
+        if ($model->hasField($this->master_field) && $model->get($this->master_field)) {
             return;
         }
 
@@ -195,7 +194,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
             return;
         }
 
-        $model = $this->getOwner()->getModel();
+        $model = $this->getOwner();
 
         $query = $this->dsql();
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
@@ -218,14 +217,12 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
             return;
         }
 
-        $entity = $this->getOwner();
-        $model = $entity->getModel();
-
+        $model = $this->getOwner();
         $query = $this->dsql();
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
 
-        $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
+        $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
 
         $query->where($this->foreign_field, $id)->update();
     }

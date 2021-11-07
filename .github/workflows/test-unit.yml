@@ -198,15 +198,13 @@ jobs:
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) -v
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-mssql.cov; fi
 
-      - name: "Run tests: Oracle (only for coverage or cron)"
-        if: env.LOG_COVERAGE || github.event_name == 'schedule'
+      - name: "Run tests: Oracle"
         env:
           DB_DSN: "oci:dbname=oracle/xe;charset=UTF8"
           DB_USER: system
           DB_PASSWORD: oracle
         run: |
-          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) -v \
-          || php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) -v
+          php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) -v
           if [ -n "$LOG_COVERAGE" ]; then mv coverage/phpunit.cov coverage/phpunit-oracle.cov; fi
 
       - name: Upload coverage logs 1/2 (only for latest Phpunit)

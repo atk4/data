@@ -263,10 +263,10 @@ class ReferenceSqlTest extends TestCase
         $i = $i->load('1');
 
         // type was set explicitly
-        $this->assertSame('atk4_money', $i->getModel()->getField('total_vat')->type);
+        $this->assertSame('atk4_money', $i->getField('total_vat')->type);
 
         // type was not set and is not inherited
-        $this->assertNull($i->getModel()->getField('total_net')->type);
+        $this->assertNull($i->getField('total_net')->type);
 
         $this->assertEquals(40, $i->get('total_net'));
         $this->assertEquals(9.2, $i->get('total_vat'));

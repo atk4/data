@@ -35,7 +35,7 @@ class Transfer extends Payment
 
                 $m2->_unset('destination_account_id');
 
-                $m2->getModel()->reload_after_save = false; // avoid check
+                $m2->reload_after_save = false; // avoid check
 
                 $this->set('transfer_document_id', $m2->save()->getId());
             }
