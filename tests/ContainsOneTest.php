@@ -68,7 +68,7 @@ class ContainsOneTest extends TestCase
         $a = (new Invoice($this->db))->addr;
 
         // test caption of containsOne reference
-        $this->assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
+        $this->assertSame('Secret Code', $a->getModel()->getField($a->fieldName()->door_code)->getCaption());
         $this->assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getModelCaption());
         $this->assertSame('Secret Code', $a->door_code->getModelCaption());
     }

@@ -126,7 +126,7 @@ class Array_ extends Persistence
     private function saveRow(Model $model, array $rowData, $id): void
     {
         if ($model->id_field) {
-            $idField = $model->getField($model->id_field);
+            $idField = $model->getModel(true)->getField($model->id_field);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $rowData)) {
                 $this->assertNoIdMismatch($rowData[$idColumnName], $id);
@@ -238,7 +238,7 @@ class Array_ extends Persistence
         if ($model->id_field && ($data[$model->id_field] ?? null) === null) {
             unset($data[$model->id_field]);
         }
-        $data = $this->typecastSaveRow($model, $data);
+        $data = $this->typecastSaveRow($model->getModel(true), $data);
 
         $id = $data[$model->id_field] ?? $this->generateNewId($model);
 
@@ -256,7 +256,7 @@ class Array_ extends Persistence
     {
         $table = $this->seedDataAndGetTable($model);
 
-        $data = $this->typecastSaveRow($model, $data);
+        $data = $this->typecastSaveRow($model->getModel(true), $data);
 
         $this->saveRow($model, array_merge($this->filterRowDataOnlyModelFields($model, $table->getRowById($model, $id)->getData()), $data), $id);
     }
@@ -282,7 +282,7 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        $type = $model->id_field ? $model->getField($model->id_field)->type : 'integer';
+        $type = $model->id_field ? $model->getModel(true)->getField($model->id_field)->type : 'integer';
 
         switch ($type) {
             case 'integer':

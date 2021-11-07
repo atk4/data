@@ -653,13 +653,13 @@ class Model implements \IteratorAggregate
 
     public function getField(string $name): Field
     {
-        if ($this->isEntity()) { // TODO dev only
-            $entityField = clone $this->getModel()->getField($name);
-            $entityField->unsetOwner();
-            $entityField->_setOwner($this);
-
-            return $entityField;
-        }
+//        if ($this->isEntity()) { // TODO dev only
+//            $entityField = clone $this->getModel()->getField($name);
+//            $entityField->unsetOwner();
+//            $entityField->_setOwner($this);
+//
+//            return $entityField;
+//        }
 
         $this->assertIsModel();
 
@@ -780,7 +780,7 @@ class Model implements \IteratorAggregate
     {
         $this->getModel()->checkOnlyFieldsField($field);
 
-        $f = $this->getField($field);
+        $f = $this->getModel()->getField($field);
 
         try {
             $value = $f->normalize($value);
@@ -825,13 +825,13 @@ class Model implements \IteratorAggregate
     public function setNull(string $field)
     {
         // set temporary hook to disable any normalization (null validation)
-        $hookIndex = $this->onHookShort(self::HOOK_NORMALIZE, static function () {
+        $hookIndex = $this->getModel()->onHookShort(self::HOOK_NORMALIZE, static function () {
             throw new \Atk4\Core\HookBreaker(false);
         }, [], \PHP_INT_MIN);
         try {
             return $this->set($field, null);
         } finally {
-            $this->removeHook(self::HOOK_NORMALIZE, $hookIndex, true);
+            $this->getModel()->removeHook(self::HOOK_NORMALIZE, $hookIndex, true);
         }
     }
 
@@ -876,7 +876,7 @@ class Model implements \IteratorAggregate
             return $dataRef[$field];
         }
 
-        return $this->getField($field)->default;
+        return $this->getModel()->getField($field)->default;
     }
 
     private function assertHasIdField(): void
@@ -972,7 +972,7 @@ class Model implements \IteratorAggregate
      */
     public function compare(string $name, $value): bool
     {
-        return $this->getField($name)->compare($this->get($name), $value);
+        return $this->getModel()->getField($name)->compare($this->get($name), $value);
     }
 
     /**
@@ -1350,7 +1350,7 @@ class Model implements \IteratorAggregate
      */
     public function duplicate()
     {
-        // deprecated, TODO remove in v3.1
+        // deprecated, TODO remove in v3.2
         if (func_num_args() > 0) {
             throw new Exception('Duplicating using existing ID is no longer supported');
         }
@@ -1515,11 +1515,6 @@ class Model implements \IteratorAggregate
      */
     public function save(array $data = [])
     {
-        // deprecated, TODO remove in v3.1
-        if (func_num_args() > 1) {
-            throw new Exception('Model::save() with 2nd param $to_persistence is no longer supported');
-        }
-
         $this->checkPersistence();
 
         if ($this->read_only) {
@@ -1543,7 +1538,7 @@ class Model implements \IteratorAggregate
                 $data = [];
                 $dirty_join = false;
                 foreach ($dirtyRef as $name => $ignore) {
-                    $field = $this->getField($name);
+                    $field = $this->getModel()->getField($name);
                     if ($field->read_only || $field->never_persist || $field->never_save) {
                         continue;
                     }
@@ -1554,7 +1549,7 @@ class Model implements \IteratorAggregate
                     if ($field->hasJoin()) {
                         $dirty_join = true;
                         // storing into a different table join
-                        $field->getJoin()->set($name, $value);
+                        $field->getJoin($this)->set($name, $value);
                     } else {
                         $data[$name] = $value;
                     }
@@ -1575,14 +1570,14 @@ class Model implements \IteratorAggregate
             } else {
                 $data = [];
                 foreach ($this->get() as $name => $value) {
-                    $field = $this->getField($name);
+                    $field = $this->getModel()->getField($name);
                     if ($field->read_only || $field->never_persist || $field->never_save) {
                         continue;
                     }
 
                     if ($field->hasJoin()) {
                         // storing into a different table join
-                        $field->getJoin()->set($name, $value);
+                        $field->getJoin($this)->set($name, $value);
                     } else {
                         $data[$name] = $value;
                     }
@@ -1902,11 +1897,6 @@ class Model implements \IteratorAggregate
      */
     public function atomic(\Closure $fx)
     {
-        // deprecated, TODO remove in v3.1
-        if (func_num_args() > 1) {
-            throw new Exception('Model::atomic() with 2nd param $persistence is no longer supported');
-        }
-
         try {
             return $this->persistence->atomic($fx);
         } catch (\Exception $e) {

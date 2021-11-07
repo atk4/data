@@ -119,7 +119,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
             $this->getOwner()->expr('{{}}.{} = {}', [
                 ($this->foreign_alias ?: $this->foreign_table),
                 $this->foreign_field,
-                $this->getOwner()->getField($this->master_field),
+                $this->getOwner()->getModel(true)->getField($this->master_field),
             ]),
             $this->kind,
             $this->foreign_alias
@@ -198,11 +198,11 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         $model = $this->getOwner();
 
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+        $query->set($model->persistence->typecastSaveRow($model->getModel(), $this->save_buffer));
         $this->save_buffer = [];
         $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
         $query->insert();
-        $this->id = $model->persistence->lastInsertId($model);
+        $this->id = $model->persistence->lastInsertId($model->getModel());
     }
 
     /**
@@ -220,7 +220,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
         $model = $this->getOwner();
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+        $query->set($model->persistence->typecastSaveRow($model->getModel(), $this->save_buffer));
         $this->save_buffer = [];
 
         $id = $this->reverse ? $model->getId() : $model->get($this->master_field);

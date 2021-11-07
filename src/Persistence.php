@@ -195,7 +195,7 @@ abstract class Persistence
     {
         $result = [];
         foreach ($row as $fieldName => $value) {
-            $field = $model->getField($fieldName);
+            $field = $model->getModel(true)->getField($fieldName);
 
             $result[$fieldName] = $this->typecastLoadField($field, $value);
         }

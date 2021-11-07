@@ -186,7 +186,7 @@ class Reference
 
     final protected function getOurField(): Field
     {
-        return $this->getOurModel()->getField($this->getOurFieldName());
+        return $this->getOurModel()->getModel(true)->getField($this->getOurFieldName());
     }
 
     /**

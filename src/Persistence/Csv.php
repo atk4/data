@@ -302,7 +302,7 @@ class Csv extends Persistence
             throw new Exception('Currently reading records, so writing is not possible.');
         }
 
-        $data = $this->typecastSaveRow($model, $data);
+        $data = $this->typecastSaveRow($model->getModel(), $data);
 
         if (!$this->handle) {
             $this->saveHeader($model);

@@ -129,7 +129,7 @@ class BusinessModelTest extends TestCase
         $m = new Model($p);
         $m = $m->createEntity();
 
-        $this->assertNotNull($m->getField('id'));
+        $this->assertNotNull($m->getModel()->getField('id'));
 
         $m->set('id', 20);
         $this->assertEquals(20, $m->getId());

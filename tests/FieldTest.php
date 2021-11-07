@@ -681,7 +681,6 @@ class FieldTest extends TestCase
         $m->addField('time', ['type' => 'time']);
         $m->addField('json', ['type' => 'json']);
         $m->addField('object', ['type' => 'object']);
-        $m = $m->createEntity();
 
         $this->assertSame('TwoLines', $m->getField('string')->toString("Two\r\nLines  "));
         $this->assertSame("Two\nLines", $m->getField('text')->toString("Two\r\nLines  "));
@@ -741,9 +740,9 @@ class FieldTest extends TestCase
         $model->addField('datetime', ['type' => 'datetime']);
         $model = $model->createEntity();
 
-        $this->assertSame('', $model->getField('date')->toString($model->get('date')));
-        $this->assertSame('', $model->getField('time')->toString($model->get('time')));
-        $this->assertSame('', $model->getField('datetime')->toString($model->get('datetime')));
+        $this->assertSame('', $model->getModel()->getField('date')->toString($model->get('date')));
+        $this->assertSame('', $model->getModel()->getField('time')->toString($model->get('time')));
+        $this->assertSame('', $model->getModel()->getField('datetime')->toString($model->get('datetime')));
 
         // datetime without microseconds
         $dt = new \DateTime('2020-01-21 21:09:42 UTC');
@@ -751,9 +750,9 @@ class FieldTest extends TestCase
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
-        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString($model->get('date')));
-        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString($model->get('time')));
-        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString($model->get('datetime')));
+        $this->assertSame($dt->format('Y-m-d'), $model->getModel()->getField('date')->toString($model->get('date')));
+        $this->assertSame($dt->format('H:i:s.u'), $model->getModel()->getField('time')->toString($model->get('time')));
+        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getModel()->getField('datetime')->toString($model->get('datetime')));
 
         // datetime with microseconds
         $dt = new \DateTime('2020-01-21 21:09:42.895623 UTC');
@@ -761,9 +760,9 @@ class FieldTest extends TestCase
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
-        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString($model->get('date')));
-        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString($model->get('time')));
-        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString($model->get('datetime')));
+        $this->assertSame($dt->format('Y-m-d'), $model->getModel()->getField('date')->toString($model->get('date')));
+        $this->assertSame($dt->format('H:i:s.u'), $model->getModel()->getField('time')->toString($model->get('time')));
+        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getModel()->getField('datetime')->toString($model->get('datetime')));
     }
 
     public function testSetNull(): void
@@ -791,7 +790,7 @@ class FieldTest extends TestCase
         // null must pass
         $m->setNull('a');
         $m->setNull('b');
-        $m->getField('c')->setNull($m);
+        $m->getModel()->getField('c')->setNull($m);
         $this->assertNull($m->get('a'));
         $this->assertNull($m->get('b'));
         $this->assertNull($m->get('c'));
