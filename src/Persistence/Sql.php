@@ -462,7 +462,7 @@ class Sql extends Persistence
                     $query->reset('field')->field($field);
                 }
                 $this->initQueryConditions($model, $query);
-                $this->setLimitOrder($model, $query);
+                $this->setLimitOrder($model->getModel(true), $query);
 
                 if ($model->isEntity() && $model->loaded()) {
                     $query->where($model->getModel(true)->getField($model->getModel(true)->id_field), $model->getId());
@@ -504,7 +504,7 @@ class Sql extends Persistence
         }
 
         $this->initQueryConditions($model, $query);
-        $this->setLimitOrder($model, $query);
+        $this->setLimitOrder($model->getModel(true), $query);
         $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
 
         return $query;
@@ -665,10 +665,12 @@ class Sql extends Persistence
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
 
         // if any rows were updated in database, and we had expressions, reload
-        if ($model->reload_after_save === true && (!$st || $st->rowCount())) {
+        if ($model->getModel(true)->reload_after_save === true && (!$st || $st->rowCount())) {
             $d = $model->getDirtyRef();
             $model->reload();
-            $model->_dirty_after_reload = $model->getDirtyRef();
+            \Closure::bind(function () use ($model) {
+                $model->dirtyAfterReload = $model->getDirtyRef();
+            }, null, Model::class)();
             $dirtyRef = &$model->getDirtyRef();
             $dirtyRef = $d;
         }

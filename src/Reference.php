@@ -232,7 +232,7 @@ class Reference
      */
     protected function getDefaultPersistence(Model $theirModel)
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel()->getModel(true);
 
         // this will be useful for containsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence

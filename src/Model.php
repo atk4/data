@@ -26,9 +26,11 @@ use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
  */
 class Model implements \IteratorAggregate
 {
-    use CollectionTrait;
+    use CollectionTrait {
+        _addIntoCollection as private __addIntoCollection;
+    }
     use ContainerTrait {
-        add as _add;
+        add as private _add;
     }
     use DiContainerTrait {
         DiContainerTrait::__isset as private __di_isset;
@@ -207,6 +209,9 @@ class Model implements \IteratorAggregate
      */
     private $dirty = [];
 
+    /** @var array */
+    private $dirtyAfterReload = [];
+
     /**
      * Setting model as read_only will protect you from accidentally
      * updating the model. This property is intended for UI and other code
@@ -368,6 +373,21 @@ class Model implements \IteratorAggregate
         return $this->_model;
     }
 
+    public function __clone()
+    {
+        if (!$this->isEntity()) {
+            $this->scope = (clone $this->scope)->setModel($this);
+        }
+        $this->_cloneCollection('elements');
+        if (!$this->isEntity()) {
+            $this->_cloneCollection('fields');
+        }
+        $this->_cloneCollection('userActions');
+
+        // check for clone errors immediately, otherwise not strictly needed
+        $this->_rebindHooksIfCloned();
+    }
+
     /**
      * @return static
      */
@@ -384,33 +404,33 @@ class Model implements \IteratorAggregate
         $model->_entityId = null;
 
         // unset non-entity properties, undefined warning will be emit if accessed
-        unset($model->{'fields'});
-        unset($model->{'table'});
-        unset($model->{'table_alias'});
-        unset($model->{'scope'});
-        unset($model->{'id_field'});
-        unset($model->{'title_field'});
-        unset($model->{'only_fields'});
+        foreach (array_diff(
+            array_map(fn (\ReflectionProperty $v) => $v->getName(), (new \ReflectionClass(self::class))->getProperties()),
+            [
+                '_model',
+                '_entityId',
+                'data',
+                'dirty',
+                'dirtyAfterReload',
+
+                '_hintableProps', // should be optimized in hintable to be present on non-entity only
+
+                'elements',
+                '_element_name_counts',
+
+                'hooks',
+                '_hookIndexCounter',
+                '_hookOrigThis',
+
+                'persistence', // TODO should be not available from entity
+                'ownerReference', // should removed once references/joins are non-entity
+                'userActions', // should removed once user actions are non-entity
+            ]
+        ) as $name) {
+            unset($model->{$name});
+        }
 
         return $model;
-    }
-
-    /**
-     * Clones model object.
-     */
-    public function __clone()
-    {
-        if (!$this->isEntity()) {
-            $this->scope = (clone $this->scope)->setModel($this);
-        }
-        $this->_cloneCollection('elements');
-        if (!$this->isEntity()) {
-            $this->_cloneCollection('fields');
-        }
-        $this->_cloneCollection('userActions');
-
-        // check for clone errors immediately, otherwise not strictly needed
-        $this->_rebindHooksIfCloned();
     }
 
     /**
@@ -503,6 +523,25 @@ class Model implements \IteratorAggregate
         $this->onHookShort(self::HOOK_AFTER_SAVE, $fx, [], -10);
     }
 
+    public function add(object $obj, array $defaults = []): object
+    {
+        $this->assertIsModel();
+
+        // TEMPORARY to spot any use of $model->add(new Field(), ['bleh']); form.
+        if ($obj instanceof Field) {
+            throw new Exception('You should always use addField() for adding fields, not add()');
+        }
+
+        return $this->_add($obj, $defaults);
+    }
+
+    public function _addIntoCollection(string $name, object $item, string $collection): object
+    {
+        // TODO $this->assertIsModel();
+
+        return $this->__addIntoCollection($name, $item, $collection);
+    }
+
     /**
      * @internal should be not used outside atk4/data
      */
@@ -547,18 +586,6 @@ class Model implements \IteratorAggregate
         }
 
         return $errors;
-    }
-
-    /**
-     * TEMPORARY to spot any use of $model->add(new Field(), ['bleh']); form.
-     */
-    public function add(object $obj, array $defaults = []): object
-    {
-        if ($obj instanceof Field) {
-            throw new Exception('You should always use addField() for adding fields, not add()');
-        }
-
-        return $this->_add($obj, $defaults);
     }
 
     /** @var array<string, array> */
@@ -921,7 +948,7 @@ class Model implements \IteratorAggregate
         if ($this->isEntity() && !$this->hasRef($link)) {
             $entityRef = clone $this->getModel()->getRef($link);
             $entityRef->unsetOwner();
-            $this->add($entityRef);
+            $this->_add($entityRef);
         }
 
         return $this->getElement('#ref_' . $link);
@@ -1374,12 +1401,12 @@ class Model implements \IteratorAggregate
      */
     public function saveAndUnload(array $data = [])
     {
-        $reloadAfterSaveBackup = $this->reload_after_save;
+        $reloadAfterSaveBackup = $this->getModel()->reload_after_save;
         try {
-            $this->reload_after_save = false;
+            $this->getModel()->reload_after_save = false;
             $this->save($data);
         } finally {
-            $this->reload_after_save = $reloadAfterSaveBackup;
+            $this->getModel()->reload_after_save = $reloadAfterSaveBackup;
         }
 
         $this->unload();
@@ -1504,9 +1531,6 @@ class Model implements \IteratorAggregate
         }
     }
 
-    /** @var array */
-    public $_dirty_after_reload = [];
-
     /**
      * Save record.
      *
@@ -1516,7 +1540,7 @@ class Model implements \IteratorAggregate
     {
         $this->checkPersistence();
 
-        if ($this->read_only) {
+        if ($this->getModel()->read_only) {
             throw new Exception('Model is read-only and cannot be saved');
         }
 
@@ -1597,18 +1621,18 @@ class Model implements \IteratorAggregate
                     $this->setId($id);
                     $this->hook(self::HOOK_AFTER_INSERT, [$this->getId()]);
 
-                    if ($this->reload_after_save !== false) {
+                    if ($this->getModel()->reload_after_save !== false) {
                         $d = $dirtyRef;
                         $dirtyRef = [];
                         $this->reload();
-                        $this->_dirty_after_reload = $dirtyRef;
+                        $this->dirtyAfterReload = $dirtyRef;
                         $dirtyRef = $d;
                     }
                 }
             }
 
             if ($this->loaded()) {
-                $dirtyRef = $this->_dirty_after_reload;
+                $dirtyRef = $this->dirtyAfterReload;
             }
 
             $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
@@ -1645,12 +1669,12 @@ class Model implements \IteratorAggregate
         }
 
         // save data fields
-        $reloadAfterSaveBackup = $this->reload_after_save;
+        $reloadAfterSaveBackup = $this->getModel()->reload_after_save;
         try {
-            $this->reload_after_save = false;
+            $this->getModel()->reload_after_save = false;
             $this->save($row);
         } finally {
-            $this->reload_after_save = $reloadAfterSaveBackup;
+            $this->getModel()->reload_after_save = $reloadAfterSaveBackup;
         }
 
         // store id value
@@ -1869,7 +1893,7 @@ class Model implements \IteratorAggregate
 
         $this->assertIsEntity();
 
-        if ($this->read_only) {
+        if ($this->getModel()->read_only) {
             throw new Exception('Model is read-only and cannot be deleted');
         } elseif (!$this->loaded()) {
             throw new Exception('No active record is set, unable to delete.');

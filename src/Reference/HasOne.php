@@ -98,7 +98,7 @@ class HasOne extends Reference
         }
 
         // their model will be reloaded after saving our model to reflect changes in referenced fields
-        $theirModel->reload_after_save = false;
+        $theirModel->getModel(true)->reload_after_save = false;
 
         $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) {
             $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->getId();
