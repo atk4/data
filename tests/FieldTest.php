@@ -713,7 +713,6 @@ class FieldTest extends TestCase
         $model->addField('visible', ['ui' => ['visible' => true]]);
         $model->addField('visible_system', ['ui' => ['visible' => true], 'system' => true]);
         $model->addField('not_editable', ['ui' => ['editable' => false]]);
-        $model = $model->createEntity();
 
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
         $this->assertSame(['system', 'editable_system', 'visible_system'], array_keys($model->getFields('system')));
@@ -722,7 +721,7 @@ class FieldTest extends TestCase
         $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
         $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
 
-        $model->getModel()->onlyFields(['system', 'visible', 'not_editable']);
+        $model->onlyFields(['system', 'visible', 'not_editable']);
 
         // getFields() is unaffected by only_fields, will always return all fields
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));

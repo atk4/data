@@ -738,15 +738,6 @@ class Model implements \IteratorAggregate
      */
     public function getFields($filter = null): array
     {
-        if ($this->isEntity()) { // TODO dev only
-            $entityFields = [];
-            foreach (array_keys($this->getModel()->getFields($filter)) as $k) {
-                $entityFields[$k] = $this->getField($k);
-            }
-
-            return $entityFields;
-        }
-
         $this->assertIsModel();
 
         if ($filter === null) {
@@ -757,7 +748,7 @@ class Model implements \IteratorAggregate
 
         return array_filter($this->fields, function (Field $field, $name) use ($filter) {
             // do not return fields outside of "only_fields" scope
-            if ($this->only_fields && !in_array($name, $this->only_fields, true)) {
+            if ($this->only_fields && !in_array($name, $this->only_fields, true)) { // TODO also without filter?
                 return false;
             }
             foreach ($filter as $f) {
@@ -871,7 +862,7 @@ class Model implements \IteratorAggregate
         if ($field === null) {
             // Collect list of eligible fields
             $data = [];
-            foreach ($this->getModel()->only_fields ?: array_keys($this->getFields()) as $field) {
+            foreach ($this->getModel()->only_fields ?: array_keys($this->getModel()->getFields()) as $field) {
                 $data[$field] = $this->get($field);
             }
 

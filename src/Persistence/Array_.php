@@ -68,7 +68,7 @@ class Array_ extends Persistence
         }
 
         // for array persistence join which accept table directly (without model initialization)
-        foreach ($model->getFields() as $field) {
+        foreach ($model->getModel(true)->getFields() as $field) {
             if ($field->hasJoin()) {
                 $join = $field->getJoin();
                 $joinTableName = \Closure::bind(function () use ($join) {
@@ -191,7 +191,7 @@ class Array_ extends Persistence
 
     private function filterRowDataOnlyModelFields(Model $model, array $rowData): array
     {
-        return array_intersect_key($rowData, array_map(fn (Field $f) => $f->name, $model->getFields()));
+        return array_intersect_key($rowData, array_map(fn (Field $f) => $f->name, $model->getModel(true)->getFields()));
     }
 
     public function tryLoad(Model $model, $id): ?array

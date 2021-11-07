@@ -177,7 +177,7 @@ class Csv extends Persistence
         $this->openFile('w');
 
         $header = [];
-        foreach ($model->getFields() as $name => $field) {
+        foreach (array_keys($model->getModel()->getFields()) as $name) {
             if ($model->id_field && $name === $model->id_field) {
                 continue;
             }
