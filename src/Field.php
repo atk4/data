@@ -42,7 +42,7 @@ class Field implements Expressionable
 
     private function assertIsOwnerEntity(Model $entity): void
     {
-        $entity->assertIsEntity(/* TODO $this->getOwner() valid once not rebound to insatnce in Model */);
+        $entity->assertIsEntity($this->getOwner());
     }
 
     /**

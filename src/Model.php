@@ -679,14 +679,6 @@ class Model implements \IteratorAggregate
 
     public function getField(string $name): Field
     {
-//        if ($this->isEntity()) { // TODO dev only
-//            $entityField = clone $this->getModel()->getField($name);
-//            $entityField->unsetOwner();
-//            $entityField->_setOwner($this);
-//
-//            return $entityField;
-//        }
-
         $this->assertIsModel();
 
         try {
