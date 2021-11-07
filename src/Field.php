@@ -23,7 +23,9 @@ class Field implements Expressionable
     use Model\FieldPropertiesTrait;
     use Model\JoinLinkTrait;
     use ReadableCaptionTrait;
-    use TrackableTrait;
+    use TrackableTrait {
+        setOwner as _setOwner;
+    }
 
     // {{{ Core functionality
 
@@ -39,6 +41,18 @@ class Field implements Expressionable
                 $this->{$key} = $val;
             }
         }
+    }
+
+    /**
+     * @param Model $owner
+     *
+     * @return static
+     */
+    public function setOwner(object $owner)
+    {
+        $owner->assertIsModel();
+
+        return $this->_setOwner($owner);
     }
 
     public function setDefaults(array $properties, bool $passively = false): self

@@ -326,7 +326,7 @@ class FieldTest extends TestCase
 
         $m->reload();
         $this->assertSame('Smith', $m->get('surname'));
-        $m->getField('surname')->never_save = false;
+        $m->getModel()->getField('surname')->never_save = false;
         $m->set('surname', 'Stalker');
         $m->save();
         $dbData['item'][1]['surname'] = 'Stalker';

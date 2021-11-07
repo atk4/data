@@ -381,9 +381,11 @@ class Model implements \IteratorAggregate
 
         // TODO unset properties that should work only on model,
         // they will emit undefined warning then if accessed then
+        unset($model->{'fields'});
         // unset($model->table);
         // unset($model->table_alias);
         unset($model->{'scope'});
+        unset($model->{'only_fields'});
 
         return $model;
     }
@@ -397,7 +399,9 @@ class Model implements \IteratorAggregate
             $this->scope = (clone $this->scope)->setModel($this);
         }
         $this->_cloneCollection('elements');
-        $this->_cloneCollection('fields');
+        if (!$this->isEntity()) {
+            $this->_cloneCollection('fields');
+        }
         $this->_cloneCollection('userActions');
 
         // check for clone errors immediately, otherwise not strictly needed
@@ -576,7 +580,11 @@ class Model implements \IteratorAggregate
      */
     public function addField(string $name, $seed = []): Field
     {
-//        $this->assertIsModel();
+        if ($this->isEntity()) { // TODO dev only
+            return $this->getModel()->addField($name, $seed);
+        }
+
+        $this->assertIsModel();
 
         if (is_object($seed)) {
             $field = $seed;
@@ -625,6 +633,10 @@ class Model implements \IteratorAggregate
      */
     public function removeField(string $name)
     {
+        if ($this->isEntity()) { // TODO dev only
+            return $this->getModel()->removeField($name);
+        }
+
         $this->assertIsModel();
 
         $this->getField($name); // better exception if field does not exist
@@ -636,14 +648,26 @@ class Model implements \IteratorAggregate
 
     public function hasField(string $name): bool
     {
-//        $this->assertIsModel();
+        if ($this->isEntity()) { // TODO dev only
+            return $this->getModel()->hasField($name);
+        }
+
+        $this->assertIsModel();
 
         return $this->_hasInCollection($name, 'fields');
     }
 
     public function getField(string $name): Field
     {
-//        $this->assertIsModel();
+        if ($this->isEntity()) { // TODO dev only
+            $entityField = clone $this->getModel()->getField($name);
+            $entityField->unsetOwner();
+            $entityField->_setOwner($this);
+
+            return $entityField;
+        }
+
+        $this->assertIsModel();
 
         try {
             return $this->_getFromCollection($name, 'fields');
@@ -661,6 +685,12 @@ class Model implements \IteratorAggregate
      */
     public function onlyFields(array $fields = [])
     {
+        if ($this->isEntity()) { // TODO dev only
+            return $this->getModel()->onlyFields($fields);
+        }
+
+        $this->assertIsModel();
+
         $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
         $this->only_fields = $fields;
 
@@ -674,6 +704,12 @@ class Model implements \IteratorAggregate
      */
     public function allFields()
     {
+        if ($this->isEntity()) { // TODO dev only
+            return $this->getModel()->allFields();
+        }
+
+        $this->assertIsModel();
+
         $this->only_fields = false;
 
         return $this;
@@ -681,6 +717,14 @@ class Model implements \IteratorAggregate
 
     private function checkOnlyFieldsField(string $field): void
     {
+        if ($this->isEntity()) { // TODO dev only
+            $this->getModel()->checkOnlyFieldsField($field);
+
+            return;
+        }
+
+        $this->assertIsModel();
+
         $this->getField($field); // test if field exists
 
         if ($this->only_fields) {
@@ -716,6 +760,17 @@ class Model implements \IteratorAggregate
      */
     public function getFields($filter = null): array
     {
+        if ($this->isEntity()) { // TODO dev only
+            $entityFields = [];
+            foreach (array_keys($this->getModel()->getFields($filter)) as $k) {
+                $entityFields[$k] = $this->getField($k);
+            }
+
+            return $entityFields;
+        }
+
+        $this->assertIsModel();
+
         if ($filter === null) {
             return $this->fields;
         } elseif (is_string($filter)) {
@@ -842,7 +897,7 @@ class Model implements \IteratorAggregate
         if ($field === null) {
             // Collect list of eligible fields
             $data = [];
-            foreach ($this->only_fields ?: array_keys($this->getFields()) as $field) {
+            foreach ($this->getModel()->only_fields ?: array_keys($this->getFields()) as $field) {
                 $data[$field] = $this->get($field);
             }
 
