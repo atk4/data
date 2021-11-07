@@ -413,8 +413,6 @@ class Model implements \IteratorAggregate
                 'dirty',
                 'dirtyAfterReload',
 
-                '_hintableProps', // should be optimized in hintable to be present on non-entity only
-
                 'elements',
                 '_element_name_counts',
 
@@ -1997,7 +1995,7 @@ class Model implements \IteratorAggregate
 
     public function __isset(string $name): bool
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             return $this->__hintable_isset($name);
         }
 
@@ -2009,7 +2007,7 @@ class Model implements \IteratorAggregate
      */
     public function &__get(string $name)
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             return $this->__hintable_get($name);
         }
 
@@ -2021,7 +2019,7 @@ class Model implements \IteratorAggregate
      */
     public function __set(string $name, $value): void
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             $this->__hintable_set($name, $value);
 
             return;
@@ -2032,7 +2030,7 @@ class Model implements \IteratorAggregate
 
     public function __unset(string $name): void
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             $this->__hintable_unset($name);
 
             return;

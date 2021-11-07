@@ -24,7 +24,7 @@ class Field implements Expressionable
     use Model\JoinLinkTrait;
     use ReadableCaptionTrait;
     use TrackableTrait {
-        setOwner as _setOwner;
+        setOwner as private _setOwner;
     }
 
     // {{{ Core functionality
