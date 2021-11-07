@@ -51,7 +51,7 @@ class Array_ extends Persistence
 
     private function seedData(Model $model): void
     {
-        $tableName = $model->table;
+        $tableName = $model->getModel(true)->table;
         if (isset($this->data[$tableName])) {
             return;
         }
@@ -86,7 +86,7 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        return $this->data[$model->table];
+        return $this->data[$model->getModel(true)->table];
     }
 
     /**
@@ -101,7 +101,7 @@ class Array_ extends Persistence
 
         $rows = [];
         foreach ($this->data[$table]->getRows() as $row) {
-            $rows[$row->getValue($model->id_field)] = $row->getData();
+            $rows[$row->getValue($model->getModel(true)->id_field)] = $row->getData();
         }
 
         return $rows;
@@ -125,8 +125,8 @@ class Array_ extends Persistence
      */
     private function saveRow(Model $model, array $rowData, $id): void
     {
-        if ($model->id_field) {
-            $idField = $model->getModel(true)->getField($model->id_field);
+        if ($model->getModel(true)->id_field) {
+            $idField = $model->getModel(true)->getField($model->getModel(true)->id_field);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $rowData)) {
                 $this->assertNoIdMismatch($rowData[$idColumnName], $id);
@@ -136,13 +136,13 @@ class Array_ extends Persistence
             $rowData = [$idColumnName => $id] + $rowData;
         }
 
-        if ($id > ($this->maxSeenIdByTable[$model->table] ?? 0)) {
-            $this->maxSeenIdByTable[$model->table] = $id;
+        if ($id > ($this->maxSeenIdByTable[$model->getModel(true)->table] ?? 0)) {
+            $this->maxSeenIdByTable[$model->getModel(true)->table] = $id;
         }
 
-        $table = $this->data[$model->table];
+        $table = $this->data[$model->getModel(true)->table];
 
-        $row = $table->getRowById($model, $id);
+        $row = $table->getRowById($model->getModel(true), $id);
         if ($row !== null) {
             foreach (array_keys($rowData) as $columnName) {
                 if (!$table->hasColumnName($columnName)) {
@@ -218,7 +218,7 @@ class Array_ extends Persistence
             return $row;
         }
 
-        $row = $table->getRowById($model, $id);
+        $row = $table->getRowById($model->getModel(true), $id);
         if ($row === null) {
             return null;
         }
@@ -235,12 +235,12 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        if ($model->id_field && ($data[$model->id_field] ?? null) === null) {
-            unset($data[$model->id_field]);
+        if ($model->getModel(true)->id_field && ($data[$model->getModel(true)->id_field] ?? null) === null) {
+            unset($data[$model->getModel(true)->id_field]);
         }
         $data = $this->typecastSaveRow($model->getModel(true), $data);
 
-        $id = $data[$model->id_field] ?? $this->generateNewId($model);
+        $id = $data[$model->getModel(true)->id_field] ?? $this->generateNewId($model);
 
         $this->saveRow($model, $data, $id);
 
@@ -258,7 +258,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($model->getModel(true), $data);
 
-        $this->saveRow($model, array_merge($this->filterRowDataOnlyModelFields($model, $table->getRowById($model, $id)->getData()), $data), $id);
+        $this->saveRow($model, array_merge($this->filterRowDataOnlyModelFields($model, $table->getRowById($model->getModel(true), $id)->getData()), $data), $id);
     }
 
     /**
@@ -270,7 +270,7 @@ class Array_ extends Persistence
     {
         $table = $this->seedDataAndGetTable($model);
 
-        $table->deleteRow($table->getRowById($model, $id));
+        $table->deleteRow($table->getRowById($model->getModel(true), $id));
     }
 
     /**
@@ -282,12 +282,12 @@ class Array_ extends Persistence
     {
         $this->seedData($model);
 
-        $type = $model->id_field ? $model->getModel(true)->getField($model->id_field)->type : 'integer';
+        $type = $model->getModel(true)->id_field ? $model->getModel(true)->getField($model->getModel(true)->id_field)->type : 'integer';
 
         switch ($type) {
             case 'integer':
-                $nextId = ($this->maxSeenIdByTable[$model->table] ?? 0) + 1;
-                $this->maxSeenIdByTable[$model->table] = $nextId;
+                $nextId = ($this->maxSeenIdByTable[$model->getModel(true)->table] ?? 0) + 1;
+                $this->maxSeenIdByTable[$model->getModel(true)->table] = $nextId;
 
                 break;
             case 'string':
@@ -299,8 +299,8 @@ class Array_ extends Persistence
                     ->addMoreInfo('type', $type);
         }
 
-        $this->lastInsertIdByTable[$model->table] = $nextId;
-        $this->lastInsertIdTable = $model->table;
+        $this->lastInsertIdByTable[$model->getModel(true)->table] = $nextId;
+        $this->lastInsertIdTable = $model->getModel(true)->table;
 
         return $nextId;
     }

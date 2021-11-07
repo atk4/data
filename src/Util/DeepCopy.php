@@ -185,10 +185,10 @@ class DeepCopy
     {
         try {
             // Perhaps source was already copied, then simply load destination model and return
-            if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->getId()])) {
+            if (isset($this->mapping[$source->getModel()->table]) && isset($this->mapping[$source->getModel()->table][$source->getId()])) {
                 $this->debug('Skipping ' . get_class($source));
 
-                $destination = $destination->load($this->mapping[$source->table][$source->getId()]);
+                $destination = $destination->load($this->mapping[$source->getModel()->table][$source->getId()]);
             } else {
                 $this->debug('Copying ' . get_class($source));
 
@@ -210,7 +210,7 @@ class DeepCopy
                 // foreach($destination->unique fields) { try load by
 
                 // if we still have id field, then remove it
-                unset($data[$source->id_field]);
+                unset($data[$source->getModel()->id_field]);
 
                 // Copy fields as they are
                 $destination = $destination->createEntity();
@@ -274,7 +274,7 @@ class DeepCopy
             $destination->save();
 
             // Store mapping
-            $this->mapping[$source->table][$source->getId()] = $destination->getId();
+            $this->mapping[$source->getModel()->table][$source->getId()] = $destination->getId();
             $this->debug(' .. copied ' . get_class($source) . ' ' . $source->getId() . ' ' . $destination->getId());
 
             // Next look for hasMany relationships and copy those too

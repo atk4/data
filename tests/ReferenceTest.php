@@ -72,7 +72,7 @@ class ReferenceTest extends TestCase
         $user->setId(1);
         $user->getModel()->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
         $o = $user->ref('order_id');
-        $this->assertSame('order', $o->table);
+        $this->assertSame('order', $o->getModel()->table);
     }
 
     public function testRefName1(): void

@@ -143,14 +143,14 @@ class HasOneSql extends HasOne
             return $theirModel;
         }
 
-        $theirFieldName = $this->their_field ?? $theirModel->id_field; // TODO why not $this->getTheirFieldName() ?
+        $theirFieldName = $this->their_field ?? $theirModel->getModel(true)->id_field; // TODO why not $this->getTheirFieldName() ?
 
         // At this point the reference
         // if our_field is the id_field and is being used in the reference
         // we should persist the relation in condtition
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->isEntity() && $ourModel->loaded() && !$theirModel->loaded()) {
-            if ($ourModel->id_field === $this->getOurFieldName()) {
+            if ($ourModel->getModel()->id_field === $this->getOurFieldName()) {
                 return $theirModel->getModel()
                     ->addCondition($theirFieldName, $this->getOurFieldValue());
             }

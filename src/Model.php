@@ -383,13 +383,12 @@ class Model implements \IteratorAggregate
         }
         $model->_entityId = null;
 
-        // TODO unset properties that should work only on model,
-        // they will emit undefined warning then if accessed then
+        // unset non-entity properties, undefined warning will be emit if accessed
         unset($model->{'fields'});
-        // unset($model->table);
-        // unset($model->table_alias);
+        unset($model->{'table'});
+        unset($model->{'table_alias'});
         unset($model->{'scope'});
-//        unset($model->{'id_field'});
+        unset($model->{'id_field'});
         unset($model->{'title_field'});
         unset($model->{'only_fields'});
 
@@ -477,7 +476,7 @@ class Model implements \IteratorAggregate
         if ($this->_entityId === null) {
             // set entity ID to the first seen ID
             $this->_entityId = $id;
-        } elseif (!$this->compare($this->id_field, $this->_entityId)) {
+        } elseif (!$this->compare($this->getModel()->id_field, $this->_entityId)) {
             $this->unload(); // data for different ID were loaded, make sure to discard them
 
             throw (new Exception('Model instance is an entity, ID cannot be changed to a different one'))
@@ -893,7 +892,7 @@ class Model implements \IteratorAggregate
     {
         $this->getModel()->assertHasIdField();
 
-        return $this->get($this->id_field);
+        return $this->get($this->getModel()->id_field);
     }
 
     /**
@@ -906,9 +905,9 @@ class Model implements \IteratorAggregate
         $this->getModel()->assertHasIdField();
 
         if ($value === null) {
-            $this->setNull($this->id_field);
+            $this->setNull($this->getModel()->id_field);
         } else {
-            $this->set($this->id_field, $value);
+            $this->set($this->getModel()->id_field, $value);
         }
 
         $this->initEntityIdAndAssertUnchanged();
@@ -1176,7 +1175,7 @@ class Model implements \IteratorAggregate
      */
     public function loaded(): bool
     {
-        return $this->id_field && $this->getId() !== null && $this->_entityId !== null;
+        return $this->getModel()->id_field && $this->getId() !== null && $this->_entityId !== null;
     }
 
     /**
@@ -1192,7 +1191,7 @@ class Model implements \IteratorAggregate
         $dataRef = &$this->getDataRef();
         $dirtyRef = &$this->getDirtyRef();
         $dataRef = [];
-        if ($this->id_field) {
+        if ($this->getModel()->id_field) {
             $this->setId(null);
         }
         $dirtyRef = [];
@@ -1241,7 +1240,7 @@ class Model implements \IteratorAggregate
             $dataRef = [];
             $this->unload();
         } else {
-            if ($this->id_field) {
+            if ($this->getModel()->id_field) {
                 $this->setId($this->getId());
             }
 
@@ -1590,7 +1589,7 @@ class Model implements \IteratorAggregate
                 // Collect all data of a new record
                 $id = $this->persistence->insert($this, $data);
 
-                if (!$this->id_field) {
+                if (!$this->getModel()->id_field) {
                     $this->hook(self::HOOK_AFTER_INSERT, [null]);
 
                     $dirtyRef = [];
@@ -1655,8 +1654,8 @@ class Model implements \IteratorAggregate
         }
 
         // store id value
-        if ($this->id_field) {
-            $this->getDataRef()[$this->id_field] = $this->getId();
+        if ($this->getModel()->id_field) {
+            $this->getDataRef()[$this->getModel()->id_field] = $this->getId();
         }
 
         // if there was referenced data, then import it
@@ -1811,7 +1810,7 @@ class Model implements \IteratorAggregate
             }
 
             if (is_object($ret)) {
-                if ($ret->id_field) {
+                if ($ret->getModel()->id_field) {
                     yield $ret->getId() => $ret; // @phpstan-ignore-line
                 } else {
                     yield $ret; // @phpstan-ignore-line

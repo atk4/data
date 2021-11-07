@@ -35,7 +35,7 @@ class Join extends Model\Join
 
     protected function makeFakeModelWithForeignTable(): Model
     {
-        $modelCloned = clone $this->getOwner();
+        $modelCloned = clone $this->getOwner()->getModel();
         $modelCloned->table = $this->foreign_table;
 
         // @TODO hooks will be fixed on a cloned model, Join should be replaced later by supporting unioned table as a table model

@@ -229,6 +229,10 @@ class Sql extends Persistence
      */
     public function initQuery(Model $model): Query
     {
+        if ($model->isEntity()) { // TODO entity should never be passed
+            $model = $model->getModel();
+        }
+
         $query = $model->persistence_data['dsql'] = $this->dsql();
 
         if ($model->table) {
@@ -369,15 +373,15 @@ class Sql extends Persistence
         $this->_initQueryConditions($query, $model->getModel(true)->scope());
 
         // add entity ID to scope to allow easy traversal
-        if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
-            $query->group($model->getModel(true)->getField($model->id_field));
+        if ($model->isEntity() && $model->getModel()->id_field && $model->getId() !== null) {
+            $query->group($model->getModel(true)->getField($model->getModel()->id_field));
             if ($this->getDatabasePlatform() instanceof SQLServer2012Platform
                 || $this->getDatabasePlatform() instanceof OraclePlatform) {
                 foreach ($query->args['field'] as $alias => $field) {
                     $query->group(is_int($alias) ? $field : $alias);
                 }
             }
-            $query->having($model->getModel(true)->getField($model->id_field), $model->getId());
+            $query->having($model->getModel(true)->getField($model->getModel()->id_field), $model->getId());
         }
     }
 
@@ -461,7 +465,7 @@ class Sql extends Persistence
                 $this->setLimitOrder($model, $query);
 
                 if ($model->isEntity() && $model->loaded()) {
-                    $query->where($model->getModel(true)->getField($model->id_field), $model->getId());
+                    $query->where($model->getModel(true)->getField($model->getModel(true)->id_field), $model->getId());
                 }
 
                 return $query;
@@ -559,8 +563,8 @@ class Sql extends Persistence
     {
         $insert = $model->action('insert');
 
-        if ($model->id_field && ($data[$model->id_field] ?? null) === null) {
-            unset($data[$model->id_field]);
+        if ($model->getModel(true)->id_field && ($data[$model->getModel(true)->id_field] ?? null) === null) {
+            unset($data[$model->getModel(true)->id_field]);
         }
 
         $insert->set($this->typecastSaveRow($model->getModel(true), $data));
@@ -577,8 +581,8 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
-        if ($model->id_field && ($data[$model->id_field] ?? null) !== null) {
-            $id = (string) $data[$model->id_field];
+        if ($model->getModel(true)->id_field && ($data[$model->getModel(true)->id_field] ?? null) !== null) {
+            $id = (string) $data[$model->getModel(true)->id_field];
         } else {
             $id = $this->lastInsertId($model->getModel(true));
         }
@@ -626,7 +630,7 @@ class Sql extends Persistence
      */
     public function update(Model $model, $id, array $data): void
     {
-        if (!$model->id_field) {
+        if (!$model->getModel(true)->id_field) {
             throw new Exception('id_field of a model is not set. Unable to update record.');
         }
 
@@ -637,7 +641,7 @@ class Sql extends Persistence
 
         // only apply fields that has been modified
         $update->set($data);
-        $update->where($model->getModel()->getField($model->id_field), $id);
+        $update->where($model->getModel()->getField($model->getModel(true)->id_field), $id);
 
         $st = null;
         try {
@@ -653,9 +657,9 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
 
-        if (isset($data[$model->id_field]) && $model->getDirtyRef()[$model->id_field]) {
+        if (isset($data[$model->getModel(true)->id_field]) && $model->getDirtyRef()[$model->getModel(true)->id_field]) {
             // ID was changed
-            $model->setId($data[$model->id_field]);
+            $model->setId($data[$model->getModel(true)->id_field]);
         }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
@@ -677,13 +681,13 @@ class Sql extends Persistence
      */
     public function delete(Model $model, $id): void
     {
-        if (!$model->id_field) {
+        if (!$model->getModel(true)->id_field) {
             throw new Exception('id_field of a model is not set. Unable to delete record.');
         }
 
         $delete = $this->initQuery($model);
         $delete->mode('delete');
-        $delete->where($model->getModel(true)->getField($model->id_field), $id);
+        $delete->where($model->getModel(true)->getField($model->getModel(true)->id_field), $id);
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {

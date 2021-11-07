@@ -181,7 +181,7 @@ class Reference
 
     protected function getOurFieldName(): string
     {
-        return $this->our_field ?: $this->getOurModel()->id_field;
+        return $this->our_field ?: $this->getOurModel()->getModel(true)->id_field;
     }
 
     final protected function getOurField(): Field
