@@ -420,7 +420,6 @@ class Model implements \IteratorAggregate
                 '_hookIndexCounter',
                 '_hookOrigThis',
 
-                'persistence', // TODO should be not available from entity
                 'ownerReference', // should removed once references/joins are non-entity
                 'userActions', // should removed once user actions are non-entity
             ]
@@ -1245,14 +1244,14 @@ class Model implements \IteratorAggregate
             throw new Exception('Entity must be unloaded');
         }
 
-        $this->checkPersistence();
+        $this->getModel()->checkPersistence();
 
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
         if ($this->hook(self::HOOK_BEFORE_LOAD, [$noId ? null : $id]) === false) {
             return $this;
         }
         $dataRef = &$this->getDataRef();
-        $dataRef = $this->persistence->{$isTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
+        $dataRef = $this->getModel()->persistence->{$isTryLoad ? 'tryLoad' : 'load'}($this->getModel(), $this->remapIdLoadToPersistence($id));
         if ($isTryLoad && $dataRef === null) {
             $dataRef = [];
             $this->unload();
@@ -1528,7 +1527,7 @@ class Model implements \IteratorAggregate
      */
     public function save(array $data = [])
     {
-        $this->checkPersistence();
+        $this->getModel()->checkPersistence();
 
         if ($this->getModel()->read_only) {
             throw new Exception('Model is read-only and cannot be saved');
@@ -1577,7 +1576,7 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                $this->persistence->update($this, $this->getId(), $data);
+                $this->getModel()->persistence->update($this, $this->getId(), $data);
 
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
             } else {
@@ -1601,7 +1600,7 @@ class Model implements \IteratorAggregate
                 }
 
                 // Collect all data of a new record
-                $id = $this->persistence->insert($this, $data);
+                $id = $this->getModel()->persistence->insert($this, $data);
 
                 if (!$this->getModel()->id_field) {
                     $this->hook(self::HOOK_AFTER_INSERT, [null]);
@@ -1893,7 +1892,7 @@ class Model implements \IteratorAggregate
             if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->getId()]) === false) {
                 return;
             }
-            $this->persistence->delete($this, $this->getId());
+            $this->getModel()->persistence->delete($this, $this->getId());
             $this->hook(self::HOOK_AFTER_DELETE, [$this->getId()]);
         });
         $this->unload();
@@ -1911,7 +1910,7 @@ class Model implements \IteratorAggregate
     public function atomic(\Closure $fx)
     {
         try {
-            return $this->persistence->atomic($fx);
+            return $this->getModel(true)->persistence->atomic($fx);
         } catch (\Exception $e) {
             if ($this->hook(self::HOOK_ROLLBACK, [$e]) === false) {
                 return false;
@@ -1935,9 +1934,9 @@ class Model implements \IteratorAggregate
      */
     public function action($mode, $args = [])
     {
-        $this->checkPersistence('action');
+        $this->getModel(true)->checkPersistence('action');
 
-        return $this->persistence->action($this, $mode, $args);
+        return $this->getModel(true)->persistence->action($this, $mode, $args);
     }
 
     // }}}

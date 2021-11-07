@@ -57,7 +57,7 @@ class Join extends Model\Join
         }
 
         try {
-            $data = Persistence\Array_::assertInstanceOf($model->persistence)
+            $data = Persistence\Array_::assertInstanceOf($model->getModel()->persistence)
                 ->load($this->makeFakeModelWithForeignTable(), $this->id);
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
@@ -112,7 +112,7 @@ class Join extends Model\Join
 
         $this->save_buffer[$this->foreign_field] = $this->hasJoin() ? $this->getJoin()->id : $id;
 
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
+        $persistence = $this->persistence ?: $this->getOwner()->getModel()->persistence;
 
         $this->id = $persistence->insert(
             $this->makeFakeModelWithForeignTable(),
@@ -129,7 +129,7 @@ class Join extends Model\Join
             return;
         }
 
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
+        $persistence = $this->persistence ?: $this->getOwner()->getModel()->persistence;
 
         $this->id = $persistence->update(
             $this->makeFakeModelWithForeignTable(),
@@ -150,7 +150,7 @@ class Join extends Model\Join
             return;
         }
 
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
+        $persistence = $this->persistence ?: $this->getOwner()->getModel()->persistence;
 
         $persistence->delete(
             $this->makeFakeModelWithForeignTable(),

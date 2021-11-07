@@ -139,7 +139,7 @@ class HasOneSql extends HasOne
         $theirModel = parent::ref($defaults);
         $ourModel = $this->getOurModel();
 
-        if (!isset($ourModel->persistence) || !($ourModel->persistence instanceof Persistence\Sql)) {
+        if (!isset($ourModel->getModel(true)->persistence) || !($ourModel->getModel(true)->persistence instanceof Persistence\Sql)) {
             return $theirModel;
         }
 

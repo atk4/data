@@ -82,8 +82,8 @@ class DeepCopy
     {
         $this->destination = $destination;
 
-        if (!$this->destination->persistence) {
-            $this->source->persistence->add($this->destination);
+        if (!$this->destination->getModel(true)->persistence) {
+            $this->source->getModel()->persistence->add($this->destination);
         }
 
         return $this;

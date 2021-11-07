@@ -92,7 +92,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
      */
     public function dsql(): Query
     {
-        $dsql = $this->getOwner()->persistence->initQuery($this->getOwner());
+        $dsql = $this->getOwner()->getModel(true)->persistence->initQuery($this->getOwner());
 
         return $dsql->reset('table')->table($this->foreign_table, $this->foreign_alias);
     }
@@ -116,7 +116,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
         $query->join(
             $this->foreign_table,
-            $this->getOwner()->expr('{{}}.{} = {}', [
+            $this->getOwner()->getModel(true)->expr('{{}}.{} = {}', [
                 ($this->foreign_alias ?: $this->foreign_table),
                 $this->foreign_field,
                 $this->getOwner()->getModel(true)->getField($this->master_field),
@@ -195,14 +195,14 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
             return;
         }
 
-        $model = $this->getOwner();
+        $model = $this->getOwner()->getModel();
 
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model->getModel(), $this->save_buffer));
+        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
         $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
         $query->insert();
-        $this->id = $model->persistence->lastInsertId($model->getModel());
+        $this->id = $model->persistence->lastInsertId($model);
     }
 
     /**
@@ -218,12 +218,14 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
             return;
         }
 
-        $model = $this->getOwner();
+        $entity = $this->getOwner();
+        $model = $entity->getModel();
+
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model->getModel(), $this->save_buffer));
+        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
 
-        $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
+        $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
 
         $query->where($this->foreign_field, $id)->update();
     }
