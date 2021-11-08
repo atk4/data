@@ -1042,6 +1042,8 @@ class Model implements \IteratorAggregate
      */
     public function withId($id)
     {
+        // TODO this should wrap the current model instead of mutating it
+
         return $this->addCondition($this->id_field, $id);
     }
 
