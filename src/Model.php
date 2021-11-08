@@ -1798,20 +1798,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Executes specified callback for each record in DataSet.
-     *
-     * @return $this
-     */
-    public function each(\Closure $fx)
-    {
-        foreach ($this as $record) {
-            $fx($record);
-        }
-
-        return $this;
-    }
-
-    /**
      * Delete record with a specified id. If no ID is specified
      * then current record is deleted.
      *

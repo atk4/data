@@ -496,7 +496,7 @@ If you wonder how those advanced features may impact performance of loading and 
 
 
 ``` php
-foreach($client->ref('Project') as $project) {
+foreach ($client->ref('Project') as $project) {
     echo $project->get('name')."\n"
 }
 

@@ -88,7 +88,7 @@ If you are worried about performance you can keep 2 models in memory::
     $order = new Order($db);
     $client = $order->refModel('client_id');
 
-    foreach($order as $o) {
+    foreach ($order as $o) {
         $client = $client->load($o->get('client_id'));
     }
 
