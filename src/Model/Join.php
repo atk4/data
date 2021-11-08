@@ -249,6 +249,8 @@ class Join
 
     /**
      * Another join will be attached to a current join.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function join(string $foreign_table, array $defaults = []): self
     {
@@ -259,6 +261,8 @@ class Join
 
     /**
      * Another leftJoin will be attached to a current join.
+     *
+     * @param array<string, mixed> $defaults
      */
     public function leftJoin(string $foreign_table, array $defaults = []): self
     {
@@ -266,22 +270,6 @@ class Join
 
         return $this->getOwner()->leftJoin($foreign_table, $defaults);
     }
-
-    /**
-     * weakJoin will be attached to a current join.
-     *
-     * @todo NOT IMPLEMENTED! weakJoin method does not exist!
-     *
-     * @return
-     */
-    /*
-    public function addWeakJoin($defaults = [])
-    {
-        $defaults['joinName'] = $this->short_name;
-
-        return $this->getOwner()->addWeakJoin($defaults);
-    }
-    */
 
     /**
      * Creates reference based on a field from the join.
@@ -364,26 +352,6 @@ class Join
     public function importModel(Model $model, array $defaults = [])
     {
         // not implemented yet !!!
-    }
-    */
-
-    /**
-     * Joins with the primary table of the model and
-     * then import all of the data into our model.
-     *
-     * @todo NOT IMPLEMENTED!
-     */
-    /*
-    public function addWeakJoinModel(Model $model, array $fields = [])
-    {
-        if (!is_object($model)) {
-            $model = $this->getOwner()->connection->add($model);
-        }
-        $j = $this->addJoin($model->table);
-
-        $j->importModel($model);
-
-        return $j;
     }
     */
 
