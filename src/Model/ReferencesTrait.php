@@ -52,6 +52,8 @@ trait ReferencesTrait
      */
     protected function _hasReference(array $seed, string $link, array $defaults = []): Reference
     {
+        $this->assertIsModel();
+
         $defaults[0] = $link;
 
         $reference = Reference::fromSeed($seed, $defaults);
@@ -150,6 +152,13 @@ trait ReferencesTrait
      */
     public function getRef(string $link): Reference
     {
+        // reference added to model after entity was forked
+        if ($this->isEntity() && !$this->hasElement('#ref_' . $link)) {
+            $entityRef = clone $this->getModel()->getRef($link);
+            $entityRef->unsetOwner();
+            $this->_add($entityRef);
+        }
+
         return $this->getElement('#ref_' . $link);
     }
 
@@ -159,9 +168,10 @@ trait ReferencesTrait
     public function getRefs(): array
     {
         $refs = [];
-        foreach ($this->elements as $key => $val) {
-            if (substr($key, 0, 5) === '#ref_') {
-                $refs[substr($key, 5)] = $val;
+        foreach (array_keys($this->elements) as $k) {
+            if (str_starts_with($k, '#ref_')) {
+                $link = substr($k, strlen('#ref_'));
+                $refs[$link] = $this->getRef($link);
             }
         }
 
@@ -173,6 +183,6 @@ trait ReferencesTrait
      */
     public function hasRef(string $link): bool
     {
-        return $this->hasElement('#ref_' . $link);
+        return $this->getModel(true)->hasElement('#ref_' . $link);
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Model;
 
+use Atk4\Data\Model;
+
 trait JoinLinkTrait
 {
     /**
@@ -13,9 +15,13 @@ trait JoinLinkTrait
      */
     protected $joinName;
 
-    public function getJoin(): Join
+    public function getJoin(Model $entity = null): Join
     {
-        return $this->getOwner()->getElement($this->joinName);
+        if ($entity !== null) {
+            $entity->assertIsEntity($this->getOwner());
+        }
+
+        return ($entity ?? $this->getOwner())->getElement($this->joinName);
     }
 
     public function hasJoin(): bool

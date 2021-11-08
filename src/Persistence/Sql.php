@@ -180,12 +180,18 @@ class Sql extends Persistence
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
+            $m->assertIsModel();
+
             return $m->persistence->expr($m, ...$args);
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
+            $m->assertIsModel();
+
             return $m->persistence->dsql($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
+            $m->assertIsModel();
+
             return $m->persistence->exprNow($m, ...$args);
         });
     }
@@ -664,7 +670,9 @@ class Sql extends Persistence
         if ($model->reload_after_save === true && (!$st || $st->rowCount())) {
             $d = $model->getDirtyRef();
             $model->reload();
-            $model->_dirty_after_reload = $model->getDirtyRef();
+            \Closure::bind(function () use ($model) {
+                $model->dirtyAfterReload = $model->getDirtyRef();
+            }, null, Model::class)();
             $dirtyRef = &$model->getDirtyRef();
             $dirtyRef = $d;
         }

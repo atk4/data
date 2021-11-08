@@ -395,7 +395,7 @@ class RandomTest extends TestCase
         $this->assertSame('John', $mm->getTitle()); // returns parent record title_field
 
         // no title_field set - return id value
-        $mm->title_field = null; // @phpstan-ignore-line
+        $mm->title_field = null;
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field

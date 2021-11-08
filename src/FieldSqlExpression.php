@@ -67,7 +67,7 @@ class FieldSqlExpression extends FieldSql
         }
 
         if ($this->concat) {
-            $this->onHookShortToOwner(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
+            $this->onHookToOwner(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
         }
     }
 
@@ -75,7 +75,7 @@ class FieldSqlExpression extends FieldSql
      * Possibly that user will attempt to insert values here. If that is the case, then
      * we would need to inject it into related hasMany relationship.
      */
-    public function afterSave(): void
+    public function afterSave(Model $entity): void
     {
     }
 

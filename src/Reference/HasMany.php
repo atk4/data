@@ -55,9 +55,7 @@ class HasMany extends Reference
      */
     protected function referenceOurValue(): Field
     {
-        $ourModel = $this->getOurModel();
-
-        $ourModel->persistence_data['use_table_prefixes'] = true;
+        $this->getOurModel()->persistence_data['use_table_prefixes'] = true;
 
         return $this->getOurField();
     }

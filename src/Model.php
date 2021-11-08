@@ -26,9 +26,11 @@ use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
  */
 class Model implements \IteratorAggregate
 {
-    use CollectionTrait;
+    use CollectionTrait {
+        _addIntoCollection as private __addIntoCollection;
+    }
     use ContainerTrait {
-        add as _add;
+        add as private _add;
     }
     use DiContainerTrait {
         DiContainerTrait::__isset as private __di_isset;
@@ -105,6 +107,9 @@ class Model implements \IteratorAggregate
      * @var mixed once set, loading a different ID will result in an error
      */
     private $_entityId;
+
+    /** @var array<string, true> */
+    private static $_modelOnlyProperties;
 
     /**
      * The class used by addField() method.
@@ -207,6 +212,9 @@ class Model implements \IteratorAggregate
      */
     private $dirty = [];
 
+    /** @var array */
+    private $dirtyAfterReload = [];
+
     /**
      * Setting model as read_only will protect you from accidentally
      * updating the model. This property is intended for UI and other code
@@ -232,7 +240,7 @@ class Model implements \IteratorAggregate
      * Title field is used typically by UI components for a simple human
      * readable row title/description.
      *
-     * @var string
+     * @var string|null
      */
     public $title_field = 'name';
 
@@ -343,10 +351,14 @@ class Model implements \IteratorAggregate
         }
     }
 
-    public function assertIsEntity(): void
+    public function assertIsEntity(self $expectedModelInstance = null): void
     {
         if (!$this->isEntity()) {
             throw new Exception('Expected entity, but instance is a model');
+        }
+
+        if ($expectedModelInstance !== null && $expectedModelInstance !== $this->getModel()) {
+            throw new Exception('Unexpected entity model instance');
         }
     }
 
@@ -364,6 +376,60 @@ class Model implements \IteratorAggregate
         return $this->_model;
     }
 
+    public function __clone()
+    {
+        if (!$this->isEntity()) {
+            $this->scope = (clone $this->scope)->setModel($this);
+        }
+        $this->_cloneCollection('elements');
+        if (!$this->isEntity()) {
+            $this->_cloneCollection('fields');
+        }
+        $this->_cloneCollection('userActions');
+
+        // check for clone errors immediately, otherwise not strictly needed
+        $this->_rebindHooksIfCloned();
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    protected function getModelOnlyProperties(): array
+    {
+        if (self::$_modelOnlyProperties === null) {
+            $modelOnlyProperties = [];
+            foreach ((new \ReflectionClass(self::class))->getProperties() as $prop) {
+                if (!$prop->isStatic()) {
+                    $modelOnlyProperties[$prop->getName()] = true;
+                }
+            }
+
+            foreach ([
+                '_model',
+                '_entityId',
+                'data',
+                'dirty',
+                'dirtyAfterReload',
+
+                'elements',
+                '_element_name_counts',
+
+                'hooks',
+                '_hookIndexCounter',
+                '_hookOrigThis',
+
+                'ownerReference', // should be removed once references/joins are non-entity
+                'userActions', // should be removed once user actions are non-entity
+            ] as $name) {
+                unset($modelOnlyProperties[$name]);
+            }
+
+            self::$_modelOnlyProperties = $modelOnlyProperties;
+        }
+
+        return self::$_modelOnlyProperties;
+    }
+
     /**
      * @return static
      */
@@ -379,29 +445,12 @@ class Model implements \IteratorAggregate
         }
         $model->_entityId = null;
 
-        // TODO unset properties that should work only on model,
-        // they will emit undefined warning then if accessed then
-        // unset($model->table);
-        // unset($model->table_alias);
-        unset($model->{'scope'});
+        // unset non-entity properties, they are magically remapped to the model when accessed
+        foreach (array_keys($this->getModelOnlyProperties()) as $name) {
+            unset($model->{$name});
+        }
 
         return $model;
-    }
-
-    /**
-     * Clones model object.
-     */
-    public function __clone()
-    {
-        if (!$this->isEntity()) {
-            $this->scope = (clone $this->scope)->setModel($this);
-        }
-        $this->_cloneCollection('elements');
-        $this->_cloneCollection('fields');
-        $this->_cloneCollection('userActions');
-
-        // check for clone errors immediately, otherwise not strictly needed
-        $this->_rebindHooksIfCloned();
     }
 
     /**
@@ -494,6 +543,25 @@ class Model implements \IteratorAggregate
         $this->onHookShort(self::HOOK_AFTER_SAVE, $fx, [], -10);
     }
 
+    public function add(object $obj, array $defaults = []): object
+    {
+        $this->assertIsModel();
+
+        // TEMPORARY to spot any use of $model->add(new Field(), ['bleh']); form.
+        if ($obj instanceof Field) {
+            throw new Exception('You should always use addField() for adding fields, not add()');
+        }
+
+        return $this->_add($obj, $defaults);
+    }
+
+    public function _addIntoCollection(string $name, object $item, string $collection): object
+    {
+        // TODO $this->assertIsModel();
+
+        return $this->__addIntoCollection($name, $item, $collection);
+    }
+
     /**
      * @internal should be not used outside atk4/data
      */
@@ -540,18 +608,6 @@ class Model implements \IteratorAggregate
         return $errors;
     }
 
-    /**
-     * TEMPORARY to spot any use of $model->add(new Field(), ['bleh']); form.
-     */
-    public function add(object $obj, array $defaults = []): object
-    {
-        if ($obj instanceof Field) {
-            throw new Exception('You should always use addField() for adding fields, not add()');
-        }
-
-        return $this->_add($obj, $defaults);
-    }
-
     /** @var array<string, array> */
     protected $fieldSeedByType = [];
 
@@ -576,7 +632,11 @@ class Model implements \IteratorAggregate
      */
     public function addField(string $name, $seed = []): Field
     {
-//        $this->assertIsModel();
+        if ($this->isEntity()) {
+            return $this->getModel()->addField($name, $seed);
+        }
+
+        $this->assertIsModel();
 
         if (is_object($seed)) {
             $field = $seed;
@@ -625,6 +685,12 @@ class Model implements \IteratorAggregate
      */
     public function removeField(string $name)
     {
+        if ($this->isEntity()) {
+            $this->getModel()->removeField($name);
+
+            return $this;
+        }
+
         $this->assertIsModel();
 
         $this->getField($name); // better exception if field does not exist
@@ -636,14 +702,22 @@ class Model implements \IteratorAggregate
 
     public function hasField(string $name): bool
     {
-//        $this->assertIsModel();
+        if ($this->isEntity()) {
+            return $this->getModel()->hasField($name);
+        }
+
+        $this->assertIsModel();
 
         return $this->_hasInCollection($name, 'fields');
     }
 
     public function getField(string $name): Field
     {
-//        $this->assertIsModel();
+        if ($this->isEntity()) {
+            return $this->getModel()->getField($name);
+        }
+
+        $this->assertIsModel();
 
         try {
             return $this->_getFromCollection($name, 'fields');
@@ -661,6 +735,14 @@ class Model implements \IteratorAggregate
      */
     public function onlyFields(array $fields = [])
     {
+        if ($this->isEntity()) {
+            $this->getModel()->onlyFields($fields);
+
+            return $this;
+        }
+
+        $this->assertIsModel();
+
         $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
         $this->only_fields = $fields;
 
@@ -674,6 +756,14 @@ class Model implements \IteratorAggregate
      */
     public function allFields()
     {
+        if ($this->isEntity()) {
+            $this->getModel()->allFields();
+
+            return $this;
+        }
+
+        $this->assertIsModel();
+
         $this->only_fields = false;
 
         return $this;
@@ -681,6 +771,14 @@ class Model implements \IteratorAggregate
 
     private function checkOnlyFieldsField(string $field): void
     {
+        if ($this->isEntity()) {
+            $this->getModel()->checkOnlyFieldsField($field);
+
+            return;
+        }
+
+        $this->assertIsModel();
+
         $this->getField($field); // test if field exists
 
         if ($this->only_fields) {
@@ -716,6 +814,12 @@ class Model implements \IteratorAggregate
      */
     public function getFields($filter = null): array
     {
+        if ($this->isEntity()) {
+            return $this->getModel()->getFields($filter);
+        }
+
+        $this->assertIsModel();
+
         if ($filter === null) {
             return $this->fields;
         } elseif (is_string($filter)) {
@@ -724,7 +828,7 @@ class Model implements \IteratorAggregate
 
         return array_filter($this->fields, function (Field $field, $name) use ($filter) {
             // do not return fields outside of "only_fields" scope
-            if ($this->only_fields && !in_array($name, $this->only_fields, true)) {
+            if ($this->only_fields && !in_array($name, $this->only_fields, true)) { // TODO also without filter?
                 return false;
             }
             foreach ($filter as $f) {
@@ -803,13 +907,13 @@ class Model implements \IteratorAggregate
     public function setNull(string $field)
     {
         // set temporary hook to disable any normalization (null validation)
-        $hookIndex = $this->onHookShort(self::HOOK_NORMALIZE, static function () {
+        $hookIndex = $this->getModel()->onHookShort(self::HOOK_NORMALIZE, static function () {
             throw new \Atk4\Core\HookBreaker(false);
         }, [], \PHP_INT_MIN);
         try {
             return $this->set($field, null);
         } finally {
-            $this->removeHook(self::HOOK_NORMALIZE, $hookIndex, true);
+            $this->getModel()->removeHook(self::HOOK_NORMALIZE, $hookIndex, true);
         }
     }
 
@@ -915,7 +1019,7 @@ class Model implements \IteratorAggregate
     public function getTitle()
     {
         if ($this->title_field && $this->hasField($this->title_field)) {
-            return $this->getField($this->title_field)->get();
+            return $this->get($this->title_field);
         }
 
         return $this->getId();
@@ -926,6 +1030,8 @@ class Model implements \IteratorAggregate
      */
     public function getTitles(): array
     {
+        $this->assertIsModel();
+
         $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
 
         return array_map(function ($row) use ($field) {
@@ -938,7 +1044,7 @@ class Model implements \IteratorAggregate
      */
     public function compare(string $name, $value): bool
     {
-        return $this->getField($name)->compare($value);
+        return $this->getField($name)->compare($this->get($name), $value);
     }
 
     /**
@@ -1316,7 +1422,7 @@ class Model implements \IteratorAggregate
      */
     public function duplicate()
     {
-        // deprecated, TODO remove in v3.1
+        // deprecated, TODO remove in v3.2
         if (func_num_args() > 0) {
             throw new Exception('Duplicating using existing ID is no longer supported');
         }
@@ -1471,9 +1577,6 @@ class Model implements \IteratorAggregate
         }
     }
 
-    /** @var array */
-    public $_dirty_after_reload = [];
-
     /**
      * Save record.
      *
@@ -1481,11 +1584,6 @@ class Model implements \IteratorAggregate
      */
     public function save(array $data = [])
     {
-        // deprecated, TODO remove in v3.1
-        if (func_num_args() > 1) {
-            throw new Exception('Model::save() with 2nd param $to_persistence is no longer supported');
-        }
-
         $this->checkPersistence();
 
         if ($this->read_only) {
@@ -1520,7 +1618,7 @@ class Model implements \IteratorAggregate
                     if ($field->hasJoin()) {
                         $dirty_join = true;
                         // storing into a different table join
-                        $field->getJoin()->set($name, $value);
+                        $field->getJoin($this)->set($name, $value);
                     } else {
                         $data[$name] = $value;
                     }
@@ -1548,7 +1646,7 @@ class Model implements \IteratorAggregate
 
                     if ($field->hasJoin()) {
                         // storing into a different table join
-                        $field->getJoin()->set($name, $value);
+                        $field->getJoin($this)->set($name, $value);
                     } else {
                         $data[$name] = $value;
                     }
@@ -1573,14 +1671,14 @@ class Model implements \IteratorAggregate
                         $d = $dirtyRef;
                         $dirtyRef = [];
                         $this->reload();
-                        $this->_dirty_after_reload = $dirtyRef;
+                        $this->dirtyAfterReload = $dirtyRef;
                         $dirtyRef = $d;
                     }
                 }
             }
 
             if ($this->loaded()) {
-                $dirtyRef = $this->_dirty_after_reload;
+                $dirtyRef = $this->dirtyAfterReload;
             }
 
             $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
@@ -1868,11 +1966,6 @@ class Model implements \IteratorAggregate
      */
     public function atomic(\Closure $fx)
     {
-        // deprecated, TODO remove in v3.1
-        if (func_num_args() > 1) {
-            throw new Exception('Model::atomic() with 2nd param $persistence is no longer supported');
-        }
-
         try {
             return $this->persistence->atomic($fx);
         } catch (\Exception $e) {
@@ -1958,8 +2051,12 @@ class Model implements \IteratorAggregate
 
     public function __isset(string $name): bool
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             return $this->__hintable_isset($name);
+        }
+
+        if ($this->isEntity() && isset($this->getModelOnlyProperties()[$name])) {
+            return isset($this->getModel()->{$name});
         }
 
         return $this->__di_isset($name);
@@ -1970,8 +2067,12 @@ class Model implements \IteratorAggregate
      */
     public function &__get(string $name)
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             return $this->__hintable_get($name);
+        }
+
+        if ($this->isEntity() && isset($this->getModelOnlyProperties()[$name])) {
+            return $this->getModel()->{$name};
         }
 
         return $this->__di_get($name);
@@ -1982,8 +2083,14 @@ class Model implements \IteratorAggregate
      */
     public function __set(string $name, $value): void
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             $this->__hintable_set($name, $value);
+
+            return;
+        }
+
+        if ($this->isEntity() && isset($this->getModelOnlyProperties()[$name])) {
+            $this->getModel()->{$name} = $value;
 
             return;
         }
@@ -1993,8 +2100,14 @@ class Model implements \IteratorAggregate
 
     public function __unset(string $name): void
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             $this->__hintable_unset($name);
+
+            return;
+        }
+
+        if ($this->isEntity() && isset($this->getModelOnlyProperties()[$name])) {
+            unset($this->getModel()->{$name});
 
             return;
         }
@@ -2002,11 +2115,6 @@ class Model implements \IteratorAggregate
         $this->__di_unset($name);
     }
 
-    // {{{ Debug Methods
-
-    /**
-     * Returns array with useful debug info for var_dump.
-     */
     public function __debugInfo(): array
     {
         if ($this->isEntity()) {
@@ -2023,6 +2131,4 @@ class Model implements \IteratorAggregate
             'scope' => $this->scope()->toWords(),
         ];
     }
-
-    // }}}
 }

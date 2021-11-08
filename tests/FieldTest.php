@@ -742,9 +742,9 @@ class FieldTest extends TestCase
         $model->addField('datetime', ['type' => 'datetime']);
         $model = $model->createEntity();
 
-        $this->assertSame('', $model->getField('date')->toString());
-        $this->assertSame('', $model->getField('time')->toString());
-        $this->assertSame('', $model->getField('datetime')->toString());
+        $this->assertSame('', $model->getField('date')->toString($model->get('date')));
+        $this->assertSame('', $model->getField('time')->toString($model->get('time')));
+        $this->assertSame('', $model->getField('datetime')->toString($model->get('datetime')));
 
         // datetime without microseconds
         $dt = new \DateTime('2020-01-21 21:09:42 UTC');
@@ -752,9 +752,9 @@ class FieldTest extends TestCase
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
-        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
-        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString($model->get('date')));
+        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString($model->get('time')));
+        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString($model->get('datetime')));
 
         // datetime with microseconds
         $dt = new \DateTime('2020-01-21 21:09:42.895623 UTC');
@@ -762,9 +762,9 @@ class FieldTest extends TestCase
         $model->set('time', $dt);
         $model->set('datetime', $dt);
 
-        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
-        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString($model->get('date')));
+        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString($model->get('time')));
+        $this->assertSame($dt->format('Y-m-d H:i:s.u'), $model->getField('datetime')->toString($model->get('datetime')));
     }
 
     public function testSetNull(): void
@@ -792,14 +792,45 @@ class FieldTest extends TestCase
         // null must pass
         $m->setNull('a');
         $m->setNull('b');
-        $m->getField('c')->setNull();
+        $m->getField('c')->setNull($m);
         $this->assertNull($m->get('a'));
         $this->assertNull($m->get('b'));
         $this->assertNull($m->get('c'));
 
         // invalid value for set() - normalization must fail
-        $this->expectException(\Atk4\Data\Exception::class);
-        $m->set('c', null); // @TODO even "b"/mandatory field should fail!
+        $this->expectException(Exception::class);
+        $m->set('c', null);
+    }
+
+    public function testEntityField(): void
+    {
+        $m = new Model();
+        $m->addField('foo');
+        $m->addField('bar', ['mandatory' => true]);
+
+        $entity = $m->createEntity();
+        $entityFooField = new Model\EntityField($entity, 'foo');
+        $entityBarField = new Model\EntityField($entity, 'bar');
+
+        $this->assertSame($entity, $entityFooField->getEntity());
+        $this->assertSame($entity, $entityBarField->getEntity());
+        $this->assertSame('foo', $entityFooField->getFieldName());
+        $this->assertSame('bar', $entityBarField->getFieldName());
+        $this->assertSame($m->getField('foo'), $entityFooField->getField());
+        $this->assertSame($m->getField('bar'), $entityBarField->getField());
+
+        $this->assertNull($entityFooField->get());
+        $this->assertNull($entityBarField->get());
+
+        $entity->set('foo', 'a');
+        $this->assertSame('a', $entityFooField->get());
+        $entityBarField->set('b');
+        $this->assertSame('b', $entityBarField->get());
+        $entityBarField->setNull();
+        $this->assertNull($entityBarField->get());
+
+        $this->expectException(Exception::class);
+        $entityBarField->set(null);
     }
 
     public function testBoolean(): void

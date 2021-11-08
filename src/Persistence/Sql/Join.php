@@ -116,7 +116,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
         $query->join(
             $this->foreign_table,
-            $this->getOwner()->expr('{{}}.{} = {}', [
+            $this->getOwner()->getModel(true)->expr('{{}}.{} = {}', [
                 ($this->foreign_alias ?: $this->foreign_table),
                 $this->foreign_field,
                 $this->getOwner()->getField($this->master_field),
