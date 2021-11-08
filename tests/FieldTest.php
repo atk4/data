@@ -802,15 +802,15 @@ class FieldTest extends TestCase
         $m->set('c', null);
     }
 
-    public function testEntityField(): void
+    public function testEntityFieldPair(): void
     {
         $m = new Model();
         $m->addField('foo');
         $m->addField('bar', ['mandatory' => true]);
 
         $entity = $m->createEntity();
-        $entityFooField = new Model\EntityField($entity, 'foo');
-        $entityBarField = new Model\EntityField($entity, 'bar');
+        $entityFooField = new Model\EntityFieldPair($entity, 'foo');
+        $entityBarField = new Model\EntityFieldPair($entity, 'bar');
 
         $this->assertSame($entity, $entityFooField->getEntity());
         $this->assertSame($entity, $entityBarField->getEntity());

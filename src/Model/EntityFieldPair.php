@@ -10,7 +10,7 @@ use Atk4\Data\Model;
 /**
  * @template T of Model
  */
-class EntityField
+class EntityFieldPair
 {
     /** @var T */
     private $entity;
