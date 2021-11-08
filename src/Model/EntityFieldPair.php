@@ -7,19 +7,13 @@ namespace Atk4\Data\Model;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 
-/**
- * @template T of Model
- */
 class EntityFieldPair
 {
-    /** @var T */
+    /** @var Model */
     private $entity;
     /** @var string */
     private $fieldName;
 
-    /**
-     * @param T $entity
-     */
     public function __construct(Model $entity, string $fieldName)
     {
         $entity->assertIsEntity();
@@ -28,9 +22,6 @@ class EntityFieldPair
         $this->fieldName = $fieldName;
     }
 
-    /**
-     * @phpstan-return T
-     */
     public function getEntity(): Model
     {
         return $this->entity;
