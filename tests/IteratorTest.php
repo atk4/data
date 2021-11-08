@@ -144,18 +144,18 @@ class IteratorTest extends TestCase
         $i->onlyFields(['total_net']);
 
         $data = [];
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->getRawIterator() as $row) {
             $data[] = $row;
 
             break;
         }
 
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->getRawIterator() as $row) {
             $data[] = $row;
             $i->setLimit(1);
         }
 
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->getRawIterator() as $row) {
             $data[] = $row;
         }
 

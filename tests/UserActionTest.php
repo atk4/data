@@ -152,7 +152,7 @@ class UserActionTest extends TestCase
         $client->addUserAction('new_client', ['appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS, 'atomic' => false]);
         $client = $client->createEntity();
 
-        $this->expectExceptionMessage('not defined');
+        $this->expectExceptionMessage('undefined method');
         $client->executeUserAction('new_client');
     }
 

@@ -1747,7 +1747,7 @@ class Model implements \IteratorAggregate
      */
     public function getIterator(): \Traversable
     {
-        foreach ($this->rawIterator() as $data) {
+        foreach ($this->getRawIterator() as $data) {
             $thisCloned = $this->createEntity();
 
             $dataRef = &$thisCloned->getDataRef();
@@ -1790,7 +1790,7 @@ class Model implements \IteratorAggregate
     /**
      * @return \Traversable<array<string, string|null>>
      */
-    public function rawIterator(): \Traversable
+    public function getRawIterator(): \Traversable
     {
         $this->assertIsModel();
 

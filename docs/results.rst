@@ -57,12 +57,12 @@ will consume memory), you can do it like this::
 Raw Data Fetching
 ----------------
 
-.. php:method:: rawIterator()
+.. php:method:: getRawIterator()
 
 If you do not care about the hooks and simply wish to get the data, you can fetch
 it::
 
-    foreach ($m->rawIterator() as $row) {
+    foreach ($m->getRawIterator() as $row) {
         var_dump($row); // array
     }
 
@@ -86,7 +86,7 @@ You can invoke and iterate action (particularly SQL) to fetch the data::
         var_dump($row); // array
     }
 
-This has the identical behavior to $m->rawIterator();
+This has the identical behavior to $m->getRawIterator();
 
 
 Comparison of various ways of fetching
@@ -94,5 +94,5 @@ Comparison of various ways of fetching
 
 - getIterator - action(select), [ fetches row, set ID/Data, call afterLoad hook,
   yields model ], unloads data
-- rawIterator - action(select), [ fetches row, yields row ]
+- getRawIterator - action(select), [ fetches row, yields row ]
 - export - action(select), fetches all rows, returns all rows
