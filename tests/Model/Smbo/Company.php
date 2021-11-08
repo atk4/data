@@ -15,8 +15,8 @@ class Company extends Model
         parent::init();
 
         // Company data is stored in 3 tables actually.
-        $j_contractor = $this->join('contractor');
-        $j_company = $j_contractor->join('company.contractor_id', ['prefix' => 'company_']);
+        $j_contractor = $this->addJoin('contractor');
+        $j_company = $j_contractor->addJoin('company.contractor_id', ['prefix' => 'company_']);
 
         $j_contractor->addFields([
             ['name', 'actual' => 'legal_name'],

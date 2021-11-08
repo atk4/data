@@ -17,7 +17,7 @@ class Payment extends Document
 
         $this->addCondition('doc_type', 'payment');
 
-        $this->j_payment = $this->join('payment.document_id');
+        $this->j_payment = $this->addJoin('payment.document_id');
 
         $this->j_payment->addField('cheque_no');
         $this->j_payment->hasOne('account_id', ['model' => [Account::class]]);

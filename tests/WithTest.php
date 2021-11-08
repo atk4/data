@@ -43,7 +43,7 @@ class WithTest extends TestCase
         // setup test model
         $m = clone $m_user;
         $m->addWith($m_invoice, 'i', ['user_id', 'net' => 'invoiced']); // add cursor
-        $j_invoice = $m->join('i.user_id'); // join cursor
+        $j_invoice = $m->addJoin('i.user_id'); // join cursor
         $j_invoice->addField('invoiced');   // add field from joined cursor
 
         // tests

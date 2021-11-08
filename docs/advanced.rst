@@ -19,7 +19,7 @@ store extra fields there. In your code::
     class Transaction_Transfer extends Transaction {
         function init(): void {
             parent::init();
-            $j = $this->join('transaction_transfer.transaction_id');
+            $j = $this->addJoin('transaction_transfer.transaction_id');
             $j->addField('destination_account');
         }
     }
@@ -464,7 +464,7 @@ and even delete statements.
 
     $contacts = new Contact();
     $contacts->addWith($invoices, 'inv', ['contact_id' => 'cid', 'ref_no', 'total_net' => 'invoiced'], false);
-    $contacts->join('inv.cid');
+    $contacts->addJoin('inv.cid');
 
 .. code-block:: sql
 
@@ -512,7 +512,7 @@ Next we need to define reference. Inside Model_Invoice add::
 
     $this->hasMany('Payment', ['model' => function($m) {
         $p = new Model_Payment($m->persistence);
-        $j = $p->join('invoice_payment.payment_id');
+        $j = $p->addJoin('invoice_payment.payment_id');
         $j->addField('amount_closed');
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field' => 'invoice_id']);

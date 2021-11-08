@@ -16,23 +16,23 @@ class JoinSqlTest extends TestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
 
-        $j = $m->join('contact');
+        $j = $m->addJoin('contact');
         $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
-        $j = $m->join('contact2.test_id');
+        $j = $m->addJoin('contact2.test_id');
         $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertSame('id', $this->getProtected($j, 'master_field'));
         $this->assertSame('test_id', $this->getProtected($j, 'foreign_field'));
 
-        $j = $m->join('contact3', ['master_field' => 'test_id']);
+        $j = $m->addJoin('contact3', ['master_field' => 'test_id']);
         $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-        $j = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
+        $j = $m->addJoin('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
         $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
@@ -44,7 +44,7 @@ class JoinSqlTest extends TestCase
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
+        $j = $m->addJoin('contact.foo_id', ['master_field' => 'test_id']);
     }
 
     public function testJoinSaving1(): void
@@ -61,7 +61,7 @@ class JoinSqlTest extends TestCase
 
         $m_u->addField('contact_id');
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
         $j->addField('contact_phone');
 
         $m_u2 = $m_u->createEntity();
@@ -103,7 +103,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
         $m_u->addField('name');
-        $j = $m_u->join('contact.test_id');
+        $j = $m_u->addJoin('contact.test_id');
         $j->addFields(['contact_phone']);
 
         $m_u2 = $m_u->createEntity();
@@ -162,7 +162,7 @@ class JoinSqlTest extends TestCase
         ]);
 
         $m_u->addField('name');
-        $j = $m_u->join('contact', ['master_field' => 'test_id']);
+        $j = $m_u->addJoin('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');
         $m_u = $m_u->createEntity();
 
@@ -193,7 +193,7 @@ class JoinSqlTest extends TestCase
         $db = new Persistence\Sql($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
         $j->addField('contact_phone');
 
         $m_u2 = $m_u->load(1);
@@ -229,7 +229,7 @@ class JoinSqlTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
         $j->addField('contact_phone');
 
         $m_u2 = $m_u->load(1);
@@ -330,7 +330,7 @@ class JoinSqlTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
         $j->addField('contact_phone');
 
         $m_u = $m_u->load(1);
@@ -363,7 +363,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
         $m_u->addField('name');
-        $j = $m_u->join('contact.test_id');
+        $j = $m_u->addJoin('contact.test_id');
         $j->addField('contact_phone');
 
         $m_u->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
@@ -405,9 +405,9 @@ class JoinSqlTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
-        $j_contact = $m_u->join('contact');
+        $j_contact = $m_u->addJoin('contact');
         $j_contact->addField('contact_phone');
-        $j_country = $j_contact->join('country');
+        $j_country = $j_contact->addJoin('country');
         $j_country->addField('country_name', ['actual' => 'name']);
 
         $m_u2 = $m_u->load(10);
@@ -469,9 +469,9 @@ class JoinSqlTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
         $j->addField('contact_phone');
-        $c = $j->join('country');
+        $c = $j->addJoin('country');
         $c->addFields(['country_name' => ['actual' => 'name']]);
 
         $m_u2 = $m_u->load(10);
@@ -529,7 +529,7 @@ class JoinSqlTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
 
         $m_u2 = $m_u->load(1);
         $this->assertEquals([
@@ -587,7 +587,7 @@ class JoinSqlTest extends TestCase
         $db = new Persistence\Sql($this->db->connection);
         $m_user = new Model($db, ['table' => 'user']);
         $m_user->addField('name');
-        $j = $m_user->join('detail.my_user_id', [
+        $j = $m_user->addJoin('detail.my_user_id', [
             //'reverse' => true, // this will be reverse join by default
             // also no need to set these (will be done automatically), but still let's do that for test sake
             'master_field' => 'id',
@@ -615,7 +615,7 @@ class JoinSqlTest extends TestCase
         // now test reverse join defined differently
         $m_user = new Model($db, ['table' => 'user']);
         $m_user->addField('name');
-        $j = $m_user->join('detail', [ // here we just set foreign table name without dot and foreign_field
+        $j = $m_user->addJoin('detail', [ // here we just set foreign table name without dot and foreign_field
             'reverse' => true, // and set it as revers join
             'foreign_field' => 'my_user_id', // this is custome name so we have to set it here otherwise it will generate user_id
         ]);
@@ -630,7 +630,7 @@ class JoinSqlTest extends TestCase
         // now test reverse join with table_alias and foreign_alias
         $m_user = new Model($db, ['table' => 'user', 'table_alias' => 'u']);
         $m_user->addField('name');
-        $j = $m_user->join('detail', [
+        $j = $m_user->addJoin('detail', [
             'reverse' => true,
             'foreign_field' => 'my_user_id',
             'foreign_alias' => 'a',
@@ -665,10 +665,10 @@ class JoinSqlTest extends TestCase
         $m_u->addField('contact_id', ['actual' => 'cid']);
         $m_u->addField('name', ['actual' => 'first_name']);
         // normal join
-        $j = $m_u->join('contact', ['prefix' => 'j1_']);
+        $j = $m_u->addJoin('contact', ['prefix' => 'j1_']);
         $j->addField('phone', ['actual' => 'contact_phone']);
         // reverse join
-        $j2 = $m_u->join('salaries.uid', ['prefix' => 'j2_']);
+        $j2 = $m_u->addJoin('salaries.uid', ['prefix' => 'j2_']);
         $j2->addField('salary', ['actual' => 'amount']);
 
         // update

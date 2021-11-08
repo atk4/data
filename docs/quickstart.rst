@@ -282,7 +282,7 @@ like this::
             $this->addField('username');
             $this->addField('email');
 
-            $j = $this->join('contact_info', 'contact_info_id');
+            $j = $this->addJoin('contact_info', 'contact_info_id');
             $j->addField('address_1');
             $j->addField('address_2');
             $j->addField('address_3');
@@ -336,12 +336,12 @@ your field, but it also participates in some field-related activity.
 Table Joins
 -----------
 
-Similarly, :php:meth:`Model::join()` creates a Join object and stores it in $j.
+Similarly, :php:meth:`Model::addJoin()` creates a Join object and stores it in $j.
 The Join object defines a relationship between the master :php:attr:`Model::table`
 and some other table inside persistence domain. It makes sure relationship is
 maintained when objects are saved / loaded::
 
-    $j = $this->join('contact_info', 'contact_info_id');
+    $j = $this->addJoin('contact_info', 'contact_info_id');
     $j->addField('address_1');
     $j->addField('address_2');
 

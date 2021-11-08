@@ -248,7 +248,7 @@ class ConditionSqlTest extends TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender', 'surname']);
 
-        $m->join('contact')->addField('contact_phone');
+        $m->addJoin('contact')->addField('contact_phone');
 
         $mm2 = $m->tryLoad(1);
         $this->assertSame('John', $mm2->get('name'));

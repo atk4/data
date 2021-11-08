@@ -119,7 +119,7 @@ When you declare a model Field you can also store some persistence-related meta-
    $model->addField('old_field', ['actual' => 'new_field']);
 
    // or even into a different table
-   $model->join('new_table')->addField('extra_field');
+   $model->addJoin('new_table')->addField('extra_field');
 
 Model also has a property `$table`, which indicate name of default table/collection/file to be
 used by persistence. (Name of property is decided to avoid beginner confusion)

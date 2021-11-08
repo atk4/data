@@ -122,7 +122,7 @@ It is possible to perform reference through an 3rd party table::
     // table invoice_payment has 'invoice_id', 'payment_id' and 'amount_allocated'
 
     $p
-        ->join('invoice_payment.payment_id')
+        ->addJoin('invoice_payment.payment_id')
         ->addFields(['amount_allocated','invoice_id']);
 
     $i->hasMany('Payments', ['model' => $p]);
@@ -545,7 +545,7 @@ that relate to itself. Here is example::
 
             $this->addField('name');
             $this->addField('age');
-            $i2 = $this->join('item2.item_id');
+            $i2 = $this->addJoin('item2.item_id');
             $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
                 ->addTitle();
 

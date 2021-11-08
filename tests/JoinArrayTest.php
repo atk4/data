@@ -32,23 +32,23 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m = new Model($db, ['table' => 'user']);
 
-        $j = $m->join('contact');
+        $j = $m->addJoin('contact');
         $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertSame('contact_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
-        $j = $m->join('contact2.test_id');
+        $j = $m->addJoin('contact2.test_id');
         $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertSame('id', $this->getProtected($j, 'master_field'));
         $this->assertSame('test_id', $this->getProtected($j, 'foreign_field'));
 
-        $j = $m->join('contact3', ['master_field' => 'test_id']);
+        $j = $m->addJoin('contact3', ['master_field' => 'test_id']);
         $this->assertFalse($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('id', $this->getProtected($j, 'foreign_field'));
 
         $this->expectException(Exception::class); // TODO not implemented yet, see https://github.com/atk4/data/issues/803
-        $j = $m->join('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
+        $j = $m->addJoin('contact4.foo_id', ['master_field' => 'test_id', 'reverse' => true]);
         $this->assertTrue($this->getProtected($j, 'reverse'));
         $this->assertSame('test_id', $this->getProtected($j, 'master_field'));
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
@@ -60,7 +60,7 @@ class JoinArrayTest extends TestCase
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
-        $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
+        $j = $m->addJoin('contact.foo_id', ['master_field' => 'test_id']);
     }
 
     public function testJoinSaving1(): void
@@ -69,7 +69,7 @@ class JoinArrayTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id', ['type' => 'integer']);
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
         $j->addField('contact_phone');
 
         $m_u2 = $m_u->createEntity();
@@ -120,7 +120,7 @@ class JoinArrayTest extends TestCase
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
-        $j = $m_u->join('contact.test_id');
+        $j = $m_u->addJoin('contact.test_id');
         $j->addField('contact_phone');
         $j->addField('test_id', ['type' => 'integer']);
 
@@ -175,7 +175,7 @@ class JoinArrayTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
         $m_u->addField('test_id', ['type' => 'integer']);
-        $j = $m_u->join('contact', ['master_field' => 'test_id']);
+        $j = $m_u->addJoin('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');
         $m_u = $m_u->createEntity();
 
@@ -196,7 +196,7 @@ class JoinArrayTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
         $m_u->addField('code');
-        $j = $m_u->join('contact.code', ['master_field' => 'code']);
+        $j = $m_u->addJoin('contact.code', ['master_field' => 'code']);
         $j->addField('contact_phone');
         $m_u = $m_u->createEntity();
 
@@ -227,7 +227,7 @@ class JoinArrayTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id', ['type' => 'integer']);
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
         $j->addField('contact_phone');
 
         $m_u2 = $m_u->load(1);
@@ -261,7 +261,7 @@ class JoinArrayTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id', ['type' => 'integer']);
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
         $j->addField('contact_phone');
 
         $m_u2 = $m_u->load(1);
@@ -332,7 +332,7 @@ class JoinArrayTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id', ['type' => 'integer']);
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
         $j->addField('contact_phone');
 
         $m_u = $m_u->load(1);
@@ -365,7 +365,7 @@ class JoinArrayTest extends TestCase
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id', ['type' => 'integer']);
         $m_u->addField('name');
-        $j = $m_u->join('contact');
+        $j = $m_u->addJoin('contact');
         $j->addField('contact_phone');
         $this->expectException(Exception::class);
         $m_u = $m_u->load(2);
@@ -379,7 +379,7 @@ class JoinArrayTest extends TestCase
 
         // tricky cases to testt
         //
-        //$m->join('foo.bar', ['master_field' => 'baz']);
+        //$m->addJoin('foo.bar', ['master_field' => 'baz']);
         // foreign_table = 'foo.bar'
     }
     */

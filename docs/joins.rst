@@ -21,7 +21,7 @@ Agile Data allows you to map multiple table fields into a single business model
 by using joins::
 
     $user->addField('username');
-    $j_contact = $user->join('contact');
+    $j_contact = $user->addJoin('contact');
     $j_contact->addField('address');
     $j_contact->addField('county');
     $j_contact->hasOne('Country');
@@ -66,7 +66,7 @@ but you wouldn't want that adding a new user would create a new country::
 
     $user->addField('username');
     $user->addField('country_id');
-    $j_country = $user->weakJoin('country', ['prefix' => 'country_']);
+    $j_country = $user->addWeakJoin('country', ['prefix' => 'country_']);
     $j_country->addField('code');
     $j_country->addField('name');
     $j_country->addField('default_currency', ['prefix' => false]);
@@ -87,7 +87,7 @@ Finally you can even join using existing models::
 
     $user->addField('username');
     $user->addField('country_id');
-    $user->weakJoin('country')->importModel('Country');
+    $user->addWeakJoin('country')->importModel('Country');
 
 This will automatically import fields, expressions, references and conditions
 from 'Country' model into $user model and will also re-map field names in
@@ -114,7 +114,7 @@ earlier examples, we the master table was "user" that contained reference to
 "contact". The condition would look like this ``user.contact_id=contact.id``.
 In some cases, however, a relation should be reversed::
 
-    $j_contact = $user->join('contact.user_id');
+    $j_contact = $user->addJoin('contact.user_id');
 
 This will result in the following join condition: ``user.id=contact.user_id``.
 The first argument to join defines both the table that we need to join and
@@ -128,7 +128,7 @@ specify which field to be used for matching. By default the field is calculated
 like this: foreign_table.'_id'. Here is usage example::
 
     $user->addField('username');
-    $j_cc = $user->join('credit_card', [
+    $j_cc = $user->addJoin('credit_card', [
         'prefix' => 'cc_',
         'master_field' => 'default_credit_card_id'
     ]);
@@ -155,11 +155,11 @@ with a foreign table.
 
 .. php:method:: join
 
-    same as :php:meth:`Model::join` but links new table with this foreign table.
+    same as :php:meth:`Model::addJoin` but links new table with this foreign table.
 
 .. php:method:: weakJoin
 
-    same as :php:meth:`Model::weakJoin` but links new table with this foreign
+    same as :php:meth:`Model::addWeakJoin` but links new table with this foreign
     table.
 
     Not yet implemented !
@@ -279,7 +279,7 @@ Specifying complex ON logic
 When you're dealing with SQL drivers, you can specify `\Atk4\Data\Persistence\Sql\Expression` for your
 "on" clause::
 
-    $stats = $user->join('stats', [
+    $stats = $user->addJoin('stats', [
         'on' => $user->expr('year({}) = _st.year'),
         'foreign_alias' => '_st'
     ]);

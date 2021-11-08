@@ -19,6 +19,30 @@ trait JoinsTrait
     public $_default_seed_join = [Join::class];
 
     /**
+     * @param array<string, mixed> $defaults
+     *
+     * @deprecated to be removed in v3.3
+     */
+    public function join(string $foreignTable, array $defaults = []): Join
+    {
+        'trigger_error'('Method is deprecated. Use addJoin() instead', \E_USER_DEPRECATED);
+
+        return $this->addJoin($foreignTable, $defaults);
+    }
+
+    /**
+     * @param array<string, mixed> $defaults
+     *
+     * @deprecated to be removed in v3.3
+     */
+    public function leftJoin(string $foreignTable, array $defaults = []): Join
+    {
+        'trigger_error'('Method is deprecated. Use addLeftJoin() instead', \E_USER_DEPRECATED);
+
+        return $this->addLeftJoin($foreignTable, $defaults);
+    }
+
+    /**
      * Creates an objects that describes relationship between multiple tables (or collections).
      *
      * When object is loaded, then instead of pulling all the data from a single table,
@@ -27,7 +51,7 @@ trait JoinsTrait
      *
      * @param array<string, mixed> $defaults
      */
-    public function join(string $foreignTable, array $defaults = []): Join
+    public function addJoin(string $foreignTable, array $defaults = []): Join
     {
         $this->assertIsModel();
 
@@ -51,10 +75,10 @@ trait JoinsTrait
      *
      * @param array<string, mixed> $defaults
      */
-    public function leftJoin(string $foreignTable, array $defaults = []): Join
+    public function addLeftJoin(string $foreignTable, array $defaults = []): Join
     {
         $defaults['weak'] = true;
 
-        return $this->join($foreignTable, $defaults);
+        return $this->addJoin($foreignTable, $defaults);
     }
 }

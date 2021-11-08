@@ -42,7 +42,7 @@ class Model_Item2 extends Model
     {
         parent::init();
         $this->addField('name');
-        $i2 = $this->join('item2.item_id');
+        $i2 = $this->addJoin('item2.item_id');
         $i2->hasOne('parent_item_id', ['model' => [self::class]])
             ->addTitle();
     }
@@ -59,7 +59,7 @@ class Model_Item3 extends Model
 
         $this->addField('name');
         $this->addField('age');
-        $i2 = $this->join('item2.item_id');
+        $i2 = $this->addJoin('item2.item_id');
         $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
             ->addTitle();
 

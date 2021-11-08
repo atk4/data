@@ -79,7 +79,7 @@ class Join
      *
      * If you are using the following syntax:
      *
-     * $user->join('contact','default_contact_id');
+     * $user->addJoin('contact', 'default_contact_id');
      *
      * Then the ID connecting tables is stored in foreign table and the order
      * of saving and delete needs to be reversed. In this case $reverse
@@ -285,15 +285,39 @@ class Join
     }
 
     /**
+     * @param array<string, mixed> $defaults
+     *
+     * @deprecated to be removed in v3.3
+     */
+    public function join(string $foreign_table, array $defaults = []): self
+    {
+        'trigger_error'('Method is deprecated. Use addJoin() instead', \E_USER_DEPRECATED);
+
+        return $this->addJoin($foreign_table, $defaults);
+    }
+
+    /**
+     * @param array<string, mixed> $defaults
+     *
+     * @deprecated to be removed in v3.3
+     */
+    public function leftJoin(string $foreign_table, array $defaults = []): self
+    {
+        'trigger_error'('Method is deprecated. Use addLeftJoin() instead', \E_USER_DEPRECATED);
+
+        return $this->addLeftJoin($foreign_table, $defaults);
+    }
+
+    /**
      * Another join will be attached to a current join.
      *
      * @param array<string, mixed> $defaults
      */
-    public function join(string $foreign_table, array $defaults = []): self
+    public function addJoin(string $foreign_table, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
-        return $this->getOwner()->join($foreign_table, $defaults);
+        return $this->getOwner()->addJoin($foreign_table, $defaults);
     }
 
     /**
@@ -301,11 +325,11 @@ class Join
      *
      * @param array<string, mixed> $defaults
      */
-    public function leftJoin(string $foreign_table, array $defaults = []): self
+    public function addLeftJoin(string $foreign_table, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
-        return $this->getOwner()->leftJoin($foreign_table, $defaults);
+        return $this->getOwner()->addLeftJoin($foreign_table, $defaults);
     }
 
     /**
