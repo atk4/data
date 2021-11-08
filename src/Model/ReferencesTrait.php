@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Model;
 
-use Atk4\Data\Model;
 use Atk4\Data\Exception;
+use Atk4\Data\Model;
 use Atk4\Data\Reference;
 
 /**
@@ -57,12 +57,10 @@ trait ReferencesTrait
 
         $reference = Reference::fromSeed($seed, $defaults);
 
-        // if reference with such name already exists, then throw exception
         if ($this->hasElement($name = $reference->getDesiredName())) {
             throw (new Exception('Reference with such name already exists'))
                 ->addMoreInfo('name', $name)
-                ->addMoreInfo('link', $link)
-                ->addMoreInfo('defaults', $defaults);
+                ->addMoreInfo('link', $link);
         }
 
         return $this->add($reference);

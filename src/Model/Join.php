@@ -137,6 +137,13 @@ class Join
     public function __construct(string $foreign_table = null)
     {
         $this->foreign_table = $foreign_table;
+
+        // handle foreign table containing a dot - that will be reverse join
+        if (strpos($this->foreign_table, '.') !== false) {
+            // split by LAST dot in foreign_table name
+            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
+            $this->reverse = true;
+        }
     }
 
     protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -174,16 +181,6 @@ class Join
         if (!$id_field) {
             throw (new Exception('Joins owner model should have id_field set'))
                 ->addMoreInfo('model', $this->getOwner());
-        }
-
-        // handle foreign table containing a dot - that will be reverse join
-        if (strpos($this->foreign_table, '.') !== false) {
-            // split by LAST dot in foreign_table name
-            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
-
-            if ($this->reverse === null) {
-                $this->reverse = true;
-            }
         }
 
         if ($this->reverse === true) {
@@ -252,8 +249,6 @@ class Join
 
     /**
      * Another join will be attached to a current join.
-     *
-     * @return self
      */
     public function join(string $foreign_table, array $defaults = []): self
     {
@@ -264,8 +259,6 @@ class Join
 
     /**
      * Another leftJoin will be attached to a current join.
-     *
-     * @return self
      */
     public function leftJoin(string $foreign_table, array $defaults = []): self
     {

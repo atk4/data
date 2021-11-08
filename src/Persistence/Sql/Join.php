@@ -25,7 +25,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
      */
     public function getDesiredName(): string
     {
-        return '_' . ($this->foreign_alias ?: $this->foreign_table[0]);
+        return '_' . ($this->foreign_alias ?: $this->foreign_table);
     }
 
     public function getDsqlExpression(Expression $expr): Expression

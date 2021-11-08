@@ -494,6 +494,24 @@ class Model implements \IteratorAggregate
         $this->onHookShort(self::HOOK_AFTER_SAVE, $fx, [], -10);
     }
 
+    public function add(object $obj, array $defaults = []): object
+    {
+        $this->assertIsModel();
+
+        if ($obj instanceof Field) {
+            throw new Exception('Field can be added using addField() method only');
+        }
+
+        return $this->_add($obj, $defaults);
+    }
+
+    public function _addIntoCollection(string $name, object $item, string $collection): object
+    {
+        // TODO $this->assertIsModel();
+
+        return $this->__addIntoCollection($name, $item, $collection);
+    }
+
     /**
      * @internal should be not used outside atk4/data
      */
@@ -538,18 +556,6 @@ class Model implements \IteratorAggregate
         }
 
         return $errors;
-    }
-
-    /**
-     * TEMPORARY to spot any use of $model->add(new Field(), ['bleh']); form.
-     */
-    public function add(object $obj, array $defaults = []): object
-    {
-        if ($obj instanceof Field) {
-            throw new Exception('You should always use addField() for adding fields, not add()');
-        }
-
-        return $this->_add($obj, $defaults);
     }
 
     /** @var array<string, array> */
