@@ -977,6 +977,16 @@ class Model implements \IteratorAggregate
     // {{{ DataSet logic
 
     /**
+     * Get the scope object of the Model.
+     */
+    public function scope(): Model\Scope\RootScope
+    {
+        $this->assertIsModel();
+
+        return $this->scope;
+    }
+
+    /**
      * Narrow down data-set of the current model by applying
      * additional condition. There is no way to remove
      * condition once added, so if you need - clone model.
@@ -1021,16 +1031,6 @@ class Model implements \IteratorAggregate
         $this->scope()->addCondition(...func_get_args());
 
         return $this;
-    }
-
-    /**
-     * Get the scope object of the Model.
-     */
-    public function scope(): Model\Scope\RootScope
-    {
-        $this->assertIsModel();
-
-        return $this->scope;
     }
 
     /**
