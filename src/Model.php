@@ -594,25 +594,13 @@ class Model implements \IteratorAggregate
      */
     public function addFields(array $fields, array $defaults = [])
     {
-        foreach ($fields as $key => $field) {
-            if (!is_int($key)) {
-                // field name can be passed as array key
-                $name = $key;
-            } elseif (is_string($field)) {
-                // or it can be simple string = field name
-                $name = $field;
-                $field = [];
-            } elseif (is_array($field) && is_string($field[0] ?? null)) {
-                // or field name can be passed as first element of seed array (old behaviour)
-                $name = array_shift($field);
-            } else {
-                // some unsupported format, maybe throw exception here?
-                continue;
+        foreach ($fields as $name => $seed) {
+            if (is_int($name)) {
+                $name = $seed;
+                $seed = [];
             }
 
-            $seed = is_object($field) ? $field : array_merge($defaults, (array) $field);
-
-            $this->addField($name, $seed);
+            $this->addField($name, Factory::mergeSeeds($seed, $defaults));
         }
 
         return $this;

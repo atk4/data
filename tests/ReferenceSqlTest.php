@@ -176,7 +176,7 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', ['date', 'type' => 'date']]);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'date' => ['type' => 'date']]);
 
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
@@ -250,9 +250,9 @@ class ReferenceSqlTest extends TestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
         $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields([
             'invoice_id',
-            ['total_net', 'type' => 'atk4_money'],
-            ['total_vat', 'type' => 'atk4_money'],
-            ['total_gross', 'type' => 'atk4_money'],
+            'total_net' => ['type' => 'atk4_money'],
+            'total_vat' => ['type' => 'atk4_money'],
+            'total_gross' => ['type' => 'atk4_money'],
         ]);
         $i->hasMany('line', ['model' => $l])
             ->addFields([

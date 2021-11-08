@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\DiContainerTrait;
+use Atk4\Core\Factory;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
@@ -235,16 +236,15 @@ class Join
      *
      * @return $this
      */
-    public function addFields(array $fields = [])
+    public function addFields(array $fields = [], array $defaults = [])
     {
-        foreach ($fields as $field) {
-            if (is_array($field)) {
-                $name = $field[0];
-                unset($field[0]);
-                $this->addField($name, $field);
-            } else {
-                $this->addField($field);
+        foreach ($fields as $name => $seed) {
+            if (is_int($name)) {
+                $name = $seed;
+                $seed = [];
             }
+
+            $this->addField($name, Factory::mergeSeeds($seed, $defaults));
         }
 
         return $this;
