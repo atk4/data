@@ -1127,6 +1127,17 @@ class Model implements \IteratorAggregate
 
     // {{{ Persistence-related logic
 
+    public function assertHasPersistence(string $methodName = null): void
+    {
+        if (!$this->persistence) {
+            throw new Exception('Model is not associated with a persistence');
+        }
+
+        if ($methodName && !$this->persistence->hasMethod($methodName)) {
+            throw new Exception("Persistence does not support {$methodName} method");
+        }
+    }
+
     /**
      * Is model loaded?
      */
@@ -1185,7 +1196,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Entity must be unloaded');
         }
 
-        $this->checkPersistence();
+        $this->assertHasPersistence();
 
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
         if ($this->hook(self::HOOK_BEFORE_LOAD, [$noId ? null : $id]) === false) {
@@ -1447,20 +1458,6 @@ class Model implements \IteratorAggregate
         return $this->_loadBy(true, $fieldName, $value);
     }
 
-    /**
-     * Check if model has persistence with specified method.
-     */
-    public function checkPersistence(string $method = null): void
-    {
-        if (!$this->persistence) {
-            throw new Exception('Model is not associated with any persistence');
-        }
-
-        if ($method && !$this->persistence->hasMethod($method)) {
-            throw new Exception("Persistence does not support {$method} method");
-        }
-    }
-
     /** @var array */
     public $_dirty_after_reload = [];
 
@@ -1471,12 +1468,7 @@ class Model implements \IteratorAggregate
      */
     public function save(array $data = [])
     {
-        // deprecated, TODO remove in v3.1
-        if (func_num_args() > 1) {
-            throw new Exception('Model::save() with 2nd param $to_persistence is no longer supported');
-        }
-
-        $this->checkPersistence();
+        $this->assertHasPersistence();
 
         if ($this->read_only) {
             throw new Exception('Model is read-only and cannot be saved');
@@ -1670,8 +1662,7 @@ class Model implements \IteratorAggregate
     public function export(array $fields = null, $key_field = null, $typecast_data = true): array
     {
         $this->assertIsModel();
-
-        $this->checkPersistence('export');
+        $this->assertHasPersistence('export');
 
         // no key field - then just do export
         if ($key_field === null) {
@@ -1865,7 +1856,11 @@ class Model implements \IteratorAggregate
     // {{{ Support for actions
 
     /**
-     * Execute action.
+     * Create persistence action.
+     *
+     * TODO Rename this method to stress this method should not be used by used
+     * for anything else then reading records as insert/update/delete hooks
+     * will not be called.
      *
      * @param string $mode
      * @param array  $args
@@ -1874,7 +1869,7 @@ class Model implements \IteratorAggregate
      */
     public function action($mode, $args = [])
     {
-        $this->checkPersistence('action');
+        $this->assertHasPersistence('action');
 
         return $this->persistence->action($this, $mode, $args);
     }
