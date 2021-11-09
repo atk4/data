@@ -22,14 +22,14 @@ class Join extends Model\Join
 
         // add necessary hooks
         if ($this->reverse) {
-            $this->onHookToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
-            $this->onHookToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
-            $this->onHookToOwner(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
         } else {
-            $this->onHookToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']));
-            $this->onHookToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookToOwner(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-            $this->onHookToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']));
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 
@@ -47,8 +47,6 @@ class Join extends Model\Join
 
     public function afterLoad(Model $entity): void
     {
-        $entity->assertIsEntity($this->getOwner());
-
         // we need to collect ID
         $this->id = $entity->getDataRef()[$this->master_field];
         if (!$this->id) {
@@ -69,8 +67,6 @@ class Join extends Model\Join
 
     public function beforeInsert(Model $entity, array &$data): void
     {
-        $entity->assertIsEntity($this->getOwner());
-
         if ($this->weak) {
             return;
         }
@@ -99,8 +95,6 @@ class Join extends Model\Join
      */
     public function afterInsert(Model $entity, $id): void
     {
-        $entity->assertIsEntity($this->getOwner());
-
         if ($this->weak) {
             return;
         }
@@ -117,8 +111,6 @@ class Join extends Model\Join
 
     public function beforeUpdate(Model $entity, array &$data): void
     {
-        $entity->assertIsEntity($this->getOwner());
-
         if ($this->weak) {
             return;
         }
@@ -138,8 +130,6 @@ class Join extends Model\Join
      */
     public function doDelete(Model $entity, $id): void
     {
-        $entity->assertIsEntity($this->getOwner());
-
         if ($this->weak) {
             return;
         }

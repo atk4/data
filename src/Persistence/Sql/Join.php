@@ -62,10 +62,10 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
         // add necessary hooks
         if ($this->reverse) {
-            $this->onHookToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
-            $this->onHookToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookToOwner(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
-            $this->onHookToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         } else {
             // Master field indicates ID of the joined item. In the past it had to be
             // defined as a physical field in the main table. Now it is a model field
@@ -80,10 +80,10 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
                 $this->master_field = $field->short_name;
             }
 
-            $this->onHookToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
-            $this->onHookToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookToOwner(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-            $this->onHookToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
+            $this->onHookToOwnerEntity(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 
@@ -138,8 +138,6 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
     public function afterLoad(Model $entity): void
     {
-        $entity->assertIsEntity($this->getOwner());
-
         // we need to collect ID
         if (isset($entity->getDataRef()[$this->short_name])) {
             $this->id = $entity->getDataRef()[$this->short_name];
@@ -149,12 +147,11 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
     public function beforeInsert(Model $entity, array &$data): void
     {
-        $entity->assertIsEntity($this->getOwner());
-        $model = $this->getOwner();
-
         if ($this->weak) {
             return;
         }
+
+        $model = $this->getOwner();
 
         // The value for the master_field is set, so we are going to use existing record anyway
         if ($model->hasField($this->master_field) && $entity->get($this->master_field)) {
@@ -181,12 +178,11 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
      */
     public function afterInsert(Model $entity, $id): void
     {
-        $entity->assertIsEntity($this->getOwner());
-        $model = $this->getOwner();
-
         if ($this->weak) {
             return;
         }
+
+        $model = $this->getOwner();
 
         $query = $this->dsql();
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
@@ -198,9 +194,6 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
     public function beforeUpdate(Model $entity, array &$data): void
     {
-        $entity->assertIsEntity($this->getOwner());
-        $model = $this->getOwner();
-
         if ($this->weak) {
             return;
         }
@@ -208,6 +201,8 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         if (!$this->save_buffer) {
             return;
         }
+
+        $model = $this->getOwner();
 
         $query = $this->dsql();
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
@@ -223,8 +218,6 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
      */
     public function doDelete(Model $entity, $id): void
     {
-        $entity->assertIsEntity($this->getOwner());
-
         if ($this->weak) {
             return;
         }

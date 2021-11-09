@@ -67,7 +67,7 @@ class FieldSqlExpression extends FieldSql
         }
 
         if ($this->concat) {
-            $this->onHookToOwner(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
+            $this->onHookToOwnerEntity(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
         }
     }
 

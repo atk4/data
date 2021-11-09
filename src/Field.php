@@ -70,14 +70,17 @@ class Field implements Expressionable
         return Type::getType($this->type ?? 'string');
     }
 
-    protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->short_name; // use static function to allow this object to be GCed
 
         return $this->getOwner()->onHookDynamic(
             $spot,
-            static function (Model $owner) use ($name) {
-                return $owner->getModel()->getField($name);
+            static function (Model $entity) use ($name): self {
+                $obj = $entity->getModel()->getField($name);
+                $entity->assertIsEntity($obj->getOwner());
+
+                return $obj;
             },
             $fx,
             $args,

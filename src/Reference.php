@@ -94,7 +94,7 @@ class Reference
 
         return $model->onHookDynamic(
             $spot,
-            static function (Model $model) use ($name) {
+            static function (Model $model) use ($name): self {
                 return $model->getElement($name);
             },
             $fx,

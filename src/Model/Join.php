@@ -158,8 +158,27 @@ class Join
 
         return $this->getOwner()->onHookDynamic(
             $spot,
-            static function (Model $owner) use ($name) {
-                return $owner->getModel(true)->getElement($name);
+            static function (Model $model) use ($name): self {
+                return $model->getModel(true)->getElement($name);
+            },
+            $fx,
+            $args,
+            $priority
+        );
+    }
+
+    protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $this->getOwner()->onHookDynamic(
+            $spot,
+            static function (Model $entity) use ($name): self {
+                /** @var self */
+                $obj = $entity->getModel()->getElement($name);
+                $entity->assertIsEntity($obj->getOwner());
+
+                return $obj;
             },
             $fx,
             $args,
@@ -224,7 +243,7 @@ class Join
             }
         }
 
-        $this->onHookToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
 
         // if kind is not specified, figure out join type
         if (!$this->kind) {

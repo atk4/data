@@ -30,9 +30,7 @@ class Callback extends \Atk4\Data\Field
 
         $this->ui['table']['sortable'] = false;
 
-        $this->onHookToOwner(Model::HOOK_AFTER_LOAD, function (Model $entity) {
-            $entity->assertIsEntity($this->getOwner());
-
+        $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, function (Model $entity) {
             $entity->getDataRef()[$this->short_name] = ($this->expr)($entity);
         });
     }
