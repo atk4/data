@@ -255,7 +255,7 @@ class Join
      *
      * @return self
      */
-    public function join(string $foreign_table, array $defaults = [])
+    public function join(string $foreign_table, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
@@ -267,7 +267,7 @@ class Join
      *
      * @return self
      */
-    public function leftJoin(string $foreign_table, array $defaults = [])
+    public function leftJoin(string $foreign_table, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
@@ -282,11 +282,11 @@ class Join
      * @return
      */
     /*
-    public function weakJoin($defaults = [])
+    public function addWeakJoin($defaults = [])
     {
         $defaults['joinName'] = $this->short_name;
 
-        return $this->getOwner()->weakJoin($defaults);
+        return $this->getOwner()->addWeakJoin($defaults);
     }
     */
 
@@ -381,12 +381,12 @@ class Join
      * @todo NOT IMPLEMENTED!
      */
     /*
-    public function weakJoinModel(Model $model, array $fields = [])
+    public function addWeakJoinModel(Model $model, array $fields = [])
     {
         if (!is_object($model)) {
             $model = $this->getOwner()->connection->add($model);
         }
-        $j = $this->join($model->table);
+        $j = $this->addJoin($model->table);
 
         $j->importModel($model);
 

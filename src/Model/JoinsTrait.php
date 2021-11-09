@@ -33,7 +33,7 @@ trait JoinsTrait
     }
 
     /**
-     * Left Join support.
+     * Add left/weak join.
      *
      * @see join()
      *
