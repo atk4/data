@@ -517,7 +517,7 @@ Next we need to define reference. Inside Model_Invoice add::
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field' => 'invoice_id']);
 
-    $this->onHookShort(Model::HOOK_BEFORE_DELETE, function(){
+    $this->onHookShort(Model::HOOK_BEFORE_DELETE, function() {
         $this->ref('InvoicePayment')->action('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment

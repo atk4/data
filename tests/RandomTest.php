@@ -307,7 +307,7 @@ class RandomTest extends TestCase
             $m->breakHook(false);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m, int $id) {
+        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m) {
             $m->unload();
             $m->breakHook(false);
         });

@@ -1954,7 +1954,7 @@ class Model implements \IteratorAggregate
         }
 
         $this->atomic(function () {
-            if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->getId()]) === false) {
+            if ($this->hook(self::HOOK_BEFORE_DELETE) === false) {
                 return;
             }
             $this->persistence->delete($this, $this->getId());
