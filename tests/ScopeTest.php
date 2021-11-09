@@ -45,8 +45,8 @@ class SUser extends Model
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
         $this->hasOne('country_id', ['model' => [SCountry::class]])
-            ->withTitle()
-            ->addFields(['country_code' => 'code', 'is_eu']);
+            ->addFields(['country_code' => 'code', 'is_eu'])
+            ->addTitle();
 
         $this->hasMany('Tickets', ['model' => [STicket::class], 'their_field' => 'user']);
     }

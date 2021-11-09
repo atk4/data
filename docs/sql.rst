@@ -131,10 +131,6 @@ SQL Reference
 
     Returns new field object.
 
-.. php:method:: withTitle
-
-    Similar to addTitle, but returns $this.
-
 Expressions
 -----------
 

@@ -60,7 +60,7 @@ class Model_Item3 extends Model
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
         $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
-            ->withTitle();
+            ->addTitle();
 
         $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);

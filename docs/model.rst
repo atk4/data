@@ -702,7 +702,7 @@ Title Field
     you can specify that in the property. If title_field is not needed, set it
     to false or point towards a non-existent field.
 
-    See: :php:meth::`hasOne::addTitle()` and :php:meth::`hasOne::withTitle()`
+    See: :php:meth::`hasOne::addTitle()`
 
 .. php:method:: public getTitle
 
