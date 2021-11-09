@@ -58,7 +58,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
             $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
-        $this->onHookToOwner(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
+        $this->onHookToOwnerBoth(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
 
         // add necessary hooks
         if ($this->reverse) {

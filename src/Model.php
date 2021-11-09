@@ -344,10 +344,14 @@ class Model implements \IteratorAggregate
         return $this->_model !== null;
     }
 
-    public function assertIsModel(): void
+    public function assertIsModel(self $expectedModelInstance = null): void
     {
         if ($this->isEntity()) {
             throw new Exception('Expected model, but instance is an entity');
+        }
+
+        if ($expectedModelInstance !== null && $expectedModelInstance !== $this) {
+            throw new Exception('Unexpected entity model instance');
         }
     }
 
@@ -357,8 +361,8 @@ class Model implements \IteratorAggregate
             throw new Exception('Expected entity, but instance is a model');
         }
 
-        if ($expectedModelInstance !== null && $expectedModelInstance !== $this->getModel()) {
-            throw new Exception('Unexpected entity model instance');
+        if ($expectedModelInstance !== null) {
+            $this->getModel()->assertIsModel($expectedModelInstance);
         }
     }
 

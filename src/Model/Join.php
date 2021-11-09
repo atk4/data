@@ -152,14 +152,18 @@ class Join
         return $this->_setOwner($owner);
     }
 
-    protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToOwnerBoth(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->short_name; // use static function to allow this object to be GCed
 
         return $this->getOwner()->onHookDynamic(
             $spot,
             static function (Model $model) use ($name): self {
-                return $model->getModel(true)->getElement($name);
+                /** @var self */
+                $obj = $model->getModel(true)->getElement($name);
+                $model->getModel(true)->assertIsModel($obj->getOwner());
+
+                return $obj;
             },
             $fx,
             $args,
