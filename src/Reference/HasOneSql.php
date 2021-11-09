@@ -40,8 +40,9 @@ class HasOneSql extends HasOne
         $ourModel = $this->getOurModel();
 
         // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
-        $defaults['caption'] ??= $ourModel->refModel($this->link)->getField($theirFieldName)->getCaption();
-        $defaults['type'] ??= $ourModel->refModel($this->link)->getField($theirFieldName)->type;
+        $refModel = $ourModel->refModel($this->link);
+        $defaults['caption'] ??= $refModel->getField($theirFieldName)->getCaption();
+        $defaults['type'] ??= $refModel->getField($theirFieldName)->type;
 
         /** @var FieldSqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
