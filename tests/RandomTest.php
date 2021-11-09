@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
@@ -255,7 +256,7 @@ class RandomTest extends TestCase
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
-                throw (new \Atk4\Core\Exception('Update didn\'t affect any records'))
+                throw (new Exception('Update didn\'t affect any records'))
                     ->addMoreInfo('query', $update->getDebugQuery())
                     ->addMoreInfo('statement', $st)
                     ->addMoreInfo('model', $m);
@@ -327,7 +328,7 @@ class RandomTest extends TestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Item($db);
 
-        $this->expectException(Exception::class);
+        $this->expectException(CoreException::class);
         $m->hasOne('foo', ['model' => [Model_Item::class]])
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }

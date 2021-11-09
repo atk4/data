@@ -175,11 +175,6 @@ class HasOneSql extends HasOne
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
 
-        if ($ourModel->hasField($fieldName)) {
-            throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\' => \'field_name\'])'))
-                ->addMoreInfo('field', $fieldName);
-        }
-
         /** @var FieldSqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($fieldName, array_replace_recursive(
             [
