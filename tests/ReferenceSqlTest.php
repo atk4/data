@@ -643,7 +643,7 @@ class ReferenceSqlTest extends TestCase
 
         $o = (new Model($this->db, ['table' => 'order']));
         $order_user_ref = $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id']);
-        $order_user_ref->addField('user_last_name', 'last_name');
+        $order_user_ref->addField('user_last_name', [], 'last_name');
 
         $referenced_caption = $o->getField('user_last_name')->getCaption();
 
@@ -684,12 +684,12 @@ class ReferenceSqlTest extends TestCase
         $order = (new Model($this->db, ['table' => 'order']));
         $order_UserRef = $order->hasOne('my_user', ['model' => $user, 'our_field' => 'user_id']);
 
-        //no type set in defaults, should pull type integer from user model
+        // no type set in defaults, should pull type integer from user model
         $order_UserRef->addField('some_number');
         $this->assertSame('integer', $order->getField('some_number')->type);
 
-        //set type in defaults, this should have higher priority than type set in Model
-        $order_UserRef->addField(['some_other_number', 'type' => 'string']);
+        // set type in defaults, this should have higher priority than type set in Model
+        $order_UserRef->addField('some_other_number', ['type' => 'string']);
         $this->assertSame('string', $order->getField('some_other_number')->type);
     }
 }
