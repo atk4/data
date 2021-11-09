@@ -19,9 +19,11 @@ trait JoinLinkTrait
     {
         if ($entity !== null) {
             $entity->assertIsEntity($this->getOwner());
+
+            return $entity->getModel()->getElement($this->joinName);
         }
 
-        return ($entity ?? $this->getOwner())->getElement($this->joinName);
+        return $this->getOwner()->getElement($this->joinName);
     }
 
     public function hasJoin(): bool

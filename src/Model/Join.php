@@ -25,7 +25,9 @@ class Join
         init as _init;
     }
     use JoinLinkTrait;
-    use TrackableTrait;
+    use TrackableTrait {
+        setOwner as private _setOwner;
+    }
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
@@ -138,14 +140,26 @@ class Join
         $this->foreign_table = $foreign_table;
     }
 
-    protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    /**
+     * @param Model $owner
+     *
+     * @return static
+     */
+    public function setOwner(object $owner)
+    {
+        $owner->assertIsModel();
+
+        return $this->_setOwner($owner);
+    }
+
+    protected function onHookToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->short_name; // use static function to allow this object to be GCed
 
-        return $this->getOwner()->onHookDynamicShort(
+        return $this->getOwner()->onHookDynamic(
             $spot,
             static function (Model $owner) use ($name) {
-                return $owner->getElement($name);
+                return $owner->getModel(true)->getElement($name);
             },
             $fx,
             $args,
@@ -210,7 +224,7 @@ class Join
             }
         }
 
-        $this->onHookShortToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+        $this->onHookToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
 
         // if kind is not specified, figure out join type
         if (!$this->kind) {
@@ -412,7 +426,7 @@ class Join
     /**
      * Clears id and save buffer.
      */
-    protected function afterUnload(): void
+    protected function afterUnload(Model $model): void
     {
         $this->id = null;
         $this->save_buffer = [];

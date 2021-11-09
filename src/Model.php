@@ -380,11 +380,15 @@ class Model implements \IteratorAggregate
     {
         if (!$this->isEntity()) {
             $this->scope = (clone $this->scope)->setModel($this);
+            $this->_cloneCollection('fields');
+        } else {
+            foreach ($this->{'elements'} as $k => $v) {
+                if ($v instanceof Model\Join) {
+                    unset($this->elements[$k]);
+                }
+            }
         }
         $this->_cloneCollection('elements');
-        if (!$this->isEntity()) {
-            $this->_cloneCollection('fields');
-        }
         $this->_cloneCollection('userActions');
 
         // check for clone errors immediately, otherwise not strictly needed
