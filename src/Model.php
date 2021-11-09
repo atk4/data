@@ -1958,7 +1958,7 @@ class Model implements \IteratorAggregate
                 return;
             }
             $this->persistence->delete($this, $this->getId());
-            $this->hook(self::HOOK_AFTER_DELETE, [$this->getId()]);
+            $this->hook(self::HOOK_AFTER_DELETE);
         });
         $this->unload();
 

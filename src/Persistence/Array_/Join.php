@@ -125,10 +125,7 @@ class Join extends Model\Join
         );
     }
 
-    /**
-     * @param mixed $id
-     */
-    public function doDelete(Model $entity, $id): void
+    public function doDelete(Model $entity): void
     {
         if ($this->weak) {
             return;

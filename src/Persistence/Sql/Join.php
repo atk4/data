@@ -213,10 +213,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         $query->where($this->foreign_field, $id)->update();
     }
 
-    /**
-     * @param mixed $id
-     */
-    public function doDelete(Model $entity, $id): void
+    public function doDelete(Model $entity): void
     {
         if ($this->weak) {
             return;

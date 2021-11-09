@@ -359,7 +359,7 @@ before and just slightly modifying it::
             $m->save(['is_deleted' => true])->unload();
             $m->reload_after_save = $rs;
 
-            $m->hook(Model::HOOK_AFTER_DELETE, [$id]);
+            $m->hook(Model::HOOK_AFTER_DELETE);
 
             $m->breakHook(false); // this will cancel original delete()
         }
