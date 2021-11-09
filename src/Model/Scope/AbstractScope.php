@@ -16,7 +16,7 @@ use Atk4\Data\Model;
 abstract class AbstractScope
 {
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
     use TrackableTrait;
     use WarnDynamicPropertyTrait;

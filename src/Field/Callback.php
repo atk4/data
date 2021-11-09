@@ -13,7 +13,7 @@ use Atk4\Data\Model;
 class Callback extends \Atk4\Data\Field
 {
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
 
     /** @var bool Expressions are always read_only. */

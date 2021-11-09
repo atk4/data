@@ -10,7 +10,7 @@ use Atk4\Data\Persistence\Sql\Expression;
 class FieldSqlExpression extends FieldSql
 {
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
 
     /**
