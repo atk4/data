@@ -256,9 +256,9 @@ class ReferenceSqlTest extends TestCase
         ]);
         $i->hasMany('line', ['model' => $l])
             ->addFields([
-                ['total_vat', 'aggregate' => 'sum', 'type' => 'atk4_money'],
-                ['total_net', 'aggregate' => 'sum'],
-                ['total_gross', 'aggregate' => 'sum'],
+                'total_vat' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
+                'total_net' => ['aggregate' => 'sum'],
+                'total_gross' => ['aggregate' => 'sum'],
             ]);
         $i = $i->load('1');
 
@@ -308,11 +308,11 @@ class ReferenceSqlTest extends TestCase
                 2 => ['id' => 2, 'name' => 'Veg'],
                 3 => ['id' => 3, 'name' => 'Fruit'],
             ], 'item' => [
-                ['name' => 'Apple',  'code' => 'ABC', 'list_id' => 3],
+                ['name' => 'Apple', 'code' => 'ABC', 'list_id' => 3],
                 ['name' => 'Banana', 'code' => 'DEF', 'list_id' => 3],
-                ['name' => 'Pork',   'code' => 'GHI', 'list_id' => 1],
-                ['name' => 'Chicken', 'code' => null,  'list_id' => 1],
-                ['name' => 'Pear',   'code' => null,  'list_id' => 3],
+                ['name' => 'Pork', 'code' => 'GHI', 'list_id' => 1],
+                ['name' => 'Chicken', 'code' => null, 'list_id' => 1],
+                ['name' => 'Pear', 'code' => null, 'list_id' => 3],
             ],
         ]);
 
@@ -320,14 +320,14 @@ class ReferenceSqlTest extends TestCase
         $i = (new Model($this->db, ['table' => 'item']))->addFields(['list_id', 'name', 'code']);
         $l->hasMany('Items', ['model' => $i])
             ->addFields([
-                ['items_name', 'aggregate' => 'count', 'field' => 'name'],
-                ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
-                ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
-                ['items_c:',  'concat' => '::', 'field' => 'name'],
-                ['items_c-',  'aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
-                ['len',       'aggregate' => $i->expr('sum(length([name]))')],
-                ['len2',      'expr' => 'sum(length([name]))'],
-                ['chicken5',  'expr' => 'sum([])', 'args' => ['5']],
+                'items_name' => ['aggregate' => 'count', 'field' => 'name'],
+                'items_code' => ['aggregate' => 'count', 'field' => 'code'], // counts only not-null values
+                'items_star' => ['aggregate' => 'count'], // no field set, counts all rows with count(*)
+                'items_c:' => ['concat' => '::', 'field' => 'name'],
+                'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
+                'len' => ['aggregate' => $i->expr('sum(length([name]))')],
+                'len2' => ['expr' => 'sum(length([name]))'],
+                'chicken5' => ['expr' => 'sum([])', 'args' => ['5']],
             ]);
 
         $ll = $l->load(1);
