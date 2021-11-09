@@ -1668,12 +1668,12 @@ class Model implements \IteratorAggregate
                 $id = $this->persistence->insert($this, $data);
 
                 if (!$this->id_field) {
-                    $this->hook(self::HOOK_AFTER_INSERT, [null]);
+                    $this->hook(self::HOOK_AFTER_INSERT);
 
                     $dirtyRef = [];
                 } else {
                     $this->setId($id);
-                    $this->hook(self::HOOK_AFTER_INSERT, [$this->getId()]);
+                    $this->hook(self::HOOK_AFTER_INSERT);
 
                     if ($this->reload_after_save !== false) {
                         $d = $dirtyRef;

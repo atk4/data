@@ -173,10 +173,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         }
     }
 
-    /**
-     * @param mixed $id
-     */
-    public function afterInsert(Model $entity, $id): void
+    public function afterInsert(Model $entity): void
     {
         if ($this->weak) {
             return;
@@ -187,7 +184,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         $query = $this->dsql();
         $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
         $this->save_buffer = [];
-        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
+        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $entity->getId());
         $query->insert();
         $this->id = $model->persistence->lastInsertId($model);
     }

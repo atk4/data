@@ -90,16 +90,13 @@ class Join extends Model\Join
         // $entity->set($this->master_field, $this->id);
     }
 
-    /**
-     * @param mixed $id
-     */
-    public function afterInsert(Model $entity, $id): void
+    public function afterInsert(Model $entity): void
     {
         if ($this->weak) {
             return;
         }
 
-        $this->save_buffer[$this->foreign_field] = $this->hasJoin() ? $this->getJoin()->id : $id;
+        $this->save_buffer[$this->foreign_field] = $this->hasJoin() ? $this->getJoin()->id : $entity->getId();
 
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
