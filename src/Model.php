@@ -26,7 +26,9 @@ use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
  */
 class Model implements \IteratorAggregate
 {
-    use CollectionTrait;
+    use CollectionTrait {
+        _addIntoCollection as private __addIntoCollection;
+    }
     use ContainerTrait {
         add as _add;
     }
@@ -496,7 +498,7 @@ class Model implements \IteratorAggregate
 
     public function add(object $obj, array $defaults = []): object
     {
-        $this->assertIsModel();
+        // TODO $this->assertIsModel();
 
         if ($obj instanceof Field) {
             throw new Exception('Field can be added using addField() method only');
@@ -1935,7 +1937,7 @@ class Model implements \IteratorAggregate
 
     public function __isset(string $name): bool
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             return $this->__hintable_isset($name);
         }
 
@@ -1947,7 +1949,7 @@ class Model implements \IteratorAggregate
      */
     public function &__get(string $name)
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             return $this->__hintable_get($name);
         }
 
@@ -1959,7 +1961,7 @@ class Model implements \IteratorAggregate
      */
     public function __set(string $name, $value): void
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             $this->__hintable_set($name, $value);
 
             return;
@@ -1970,7 +1972,7 @@ class Model implements \IteratorAggregate
 
     public function __unset(string $name): void
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             $this->__hintable_unset($name);
 
             return;
