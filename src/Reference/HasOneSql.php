@@ -8,7 +8,6 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\FieldSqlExpression;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 
 class HasOneSql extends HasOne
 {
@@ -138,10 +137,6 @@ class HasOneSql extends HasOne
     {
         $theirModel = parent::ref($defaults);
         $ourModel = $this->getOurModel();
-
-        if (!isset($ourModel->persistence) || !($ourModel->persistence instanceof Persistence\Sql)) {
-            return $theirModel;
-        }
 
         $theirFieldName = $this->their_field ?? $theirModel->id_field; // TODO why not $this->getTheirFieldName() ?
 
