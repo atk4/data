@@ -703,7 +703,7 @@ class ReferenceSqlTest extends TestCase
     /**
      * Test update of referenced model.
      */
-    public function testRefModelUpdateAlias()
+    public function testRefModelUpdateAlias(): void
     {
         $this->setDb([
             'user' => [
@@ -717,15 +717,15 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['user', 'table_alias' => 'uu']))->addFields(['name']);
-        $o = (new Model($this->db, ['order', 'table_alias' => 'oo']))->addFields(['name']); // table alias here is important otherwise it will use alias "order" which is fine
+        $u = (new Model($this->db, ['table' => 'user', 'table_alias' => 'uu']))->addFields(['name']);
+        $o = (new Model($this->db, ['table' => 'order', 'table_alias' => 'oo']))->addFields(['name']); // table alias here is important otherwise it will use alias "order" which is fine
 
-        $o->hasOne('owner_id', [$u, 'our_field' => 'owner_id', 'their_field' => 'id'])->withTitle(); // withTitle here is important, in that case it will start adding these aliases
-        $u->hasMany('Orders', [$o, 'our_field' => 'id', 'their_field' => 'owner_id']);
+        $o->hasOne('owner_id', ['model' => $u, 'our_field' => 'owner_id', 'their_field' => 'id'])->addTitle(); // addTitle here is important, in that case it will start adding these aliases
+        $u->hasMany('Orders', ['model' => $o, 'our_field' => 'id', 'their_field' => 'owner_id']);
 
         $this->assertSame(3, count($u->ref('Orders')->export()));
 
-        $ord = $u/*->load(1)*/->ref('Orders')->load(3);
+        $ord = $u/*->load(1)*/ ->ref('Orders')->load(3);
         $ord->set('name', 'CCC');
         // var_dump($ord->action('update')->getDebugQuery()); // update "order" set "name"='CCC'  where "oo"."id" = 3 which is wrong
         $ord->save();
