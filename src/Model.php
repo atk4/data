@@ -1272,7 +1272,7 @@ class Model implements \IteratorAggregate
         $dataRef = &$this->getDataRef();
         $dirtyRef = &$this->getDirtyRef();
         $dataRef = [];
-        if ($this->id_field) {
+        if ($this->id_field && $this->hasField($this->id_field)) {
             $this->setId(null);
         }
         $dirtyRef = [];
@@ -1606,13 +1606,11 @@ class Model implements \IteratorAggregate
                         continue;
                     }
 
-                    // get the value of the field
                     $value = $this->get($name);
 
                     if ($field->hasJoin()) {
                         $dirty_join = true;
-                        // storing into a different table join
-                        $field->getJoin()->set($name, $value);
+                        $field->getJoin()->setSaveBufferValue($this, $name, $value);
                     } else {
                         $data[$name] = $value;
                     }
@@ -1639,8 +1637,7 @@ class Model implements \IteratorAggregate
                     }
 
                     if ($field->hasJoin()) {
-                        // storing into a different table join
-                        $field->getJoin()->set($name, $value);
+                        $field->getJoin()->setSaveBufferValue($this, $name, $value);
                     } else {
                         $data[$name] = $value;
                     }

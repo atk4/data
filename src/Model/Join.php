@@ -47,13 +47,6 @@ class Join
     protected $persistence;
 
     /**
-     * ID used by a joined table.
-     *
-     * @var mixed
-     */
-    protected $id;
-
-    /**
      * Field that is used as native "ID" in the foreign table.
      * When deleting record, this field will be conditioned.
      *
@@ -130,11 +123,18 @@ class Join
     protected $prefix = '';
 
     /**
-     * Data which is populated here as the save/insert progresses.
+     * ID indexed by spl_object_id(entity) used by a joined table.
      *
-     * @var array
+     * @var mixed
      */
-    protected $save_buffer = [];
+    protected $idByOid;
+
+    /**
+     * Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses.
+     *
+     * @var array<int, array<string, mixed>>
+     */
+    private $saveBufferByOid = [];
 
     public function __construct(string $foreign_table = null)
     {
@@ -393,26 +393,80 @@ class Join
     */
 
     /**
-     * Set value.
+     * @return mixed
      *
-     * @param string $field
-     * @param mixed  $value
-     *
-     * @return $this
+     * @internal should be not used outside atk4/data
      */
-    public function set($field, $value)
+    protected function getId(Model $entity)
     {
-        $this->save_buffer[$field] = $value;
+        return $this->idByOid[spl_object_id($entity)];
+    }
 
-        return $this;
+    /**
+     * @param mixed $id
+     *
+     * @internal should be not used outside atk4/data
+     */
+    protected function setId(Model $entity, $id): void
+    {
+        $this->idByOid[spl_object_id($entity)] = $id;
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function unsetId(Model $entity): void
+    {
+        unset($this->idByOid[spl_object_id($entity)]);
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function issetSaveBuffer(Model $entity): bool
+    {
+        return isset($this->saveBufferByOid[spl_object_id($entity)]);
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function getAndUnsetSaveBuffer(Model $entity): array
+    {
+        $res = $this->saveBufferByOid[spl_object_id($entity)];
+        $this->unsetSaveBuffer($entity);
+
+        return $res;
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function unsetSaveBuffer(Model $entity): void
+    {
+        unset($this->saveBufferByOid[spl_object_id($entity)]);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function setSaveBufferValue(Model $entity, string $fieldName, $value): void
+    {
+        $entity->assertIsEntity($this->getOwner());
+
+        if (!isset($this->saveBufferByOid[spl_object_id($entity)])) {
+            $this->saveBufferByOid[spl_object_id($entity)] = [];
+        }
+
+        $this->saveBufferByOid[spl_object_id($entity)][$fieldName] = $value;
     }
 
     /**
      * Clears id and save buffer.
      */
-    protected function afterUnload(Model $model): void
+    protected function afterUnload(Model $entity): void
     {
-        $this->id = null;
-        $this->save_buffer = [];
+        $this->unsetId($entity);
+        $this->unsetSaveBuffer($entity);
     }
 }

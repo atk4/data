@@ -48,18 +48,18 @@ class Join extends Model\Join
     public function afterLoad(Model $entity): void
     {
         // we need to collect ID
-        $this->id = $entity->getDataRef()[$this->master_field];
-        if (!$this->id) {
+        $this->setId($entity, $entity->getDataRef()[$this->master_field]);
+        if ($this->getId($entity) === null) {
             return;
         }
 
         try {
             $data = Persistence\Array_::assertInstanceOf($this->getOwner()->persistence)
-                ->load($this->makeFakeModelWithForeignTable(), $this->id);
+                ->load($this->makeFakeModelWithForeignTable(), $this->getId($entity));
         } catch (Exception $e) {
             throw (new Exception('Unable to load joined record', $e->getCode(), $e))
                 ->addMoreInfo('table', $this->foreign_table)
-                ->addMoreInfo('id', $this->id);
+                ->addMoreInfo('id', $this->getId($entity));
         }
         $dataRef = &$entity->getDataRef();
         $dataRef = array_merge($data, $entity->getDataRef());
@@ -80,14 +80,14 @@ class Join extends Model\Join
         // Figure out where are we going to save data
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
-        $this->id = $persistence->insert(
+        $this->setId($entity, $persistence->insert(
             $this->makeFakeModelWithForeignTable(),
-            $this->save_buffer
-        );
+            $this->getAndUnsetSaveBuffer($entity)
+        ));
 
-        $data[$this->master_field] = $this->id;
+        $data[$this->master_field] = $this->getId($entity);
 
-        // $entity->set($this->master_field, $this->id);
+        // $entity->set($this->master_field, $this->getId($entity));
     }
 
     public function afterInsert(Model $entity): void
@@ -96,14 +96,14 @@ class Join extends Model\Join
             return;
         }
 
-        $this->save_buffer[$this->foreign_field] = $this->hasJoin() ? $this->getJoin()->id : $entity->getId();
+        $this->setSaveBufferValue($entity, $this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
 
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
-        $this->id = $persistence->insert(
+        $this->setId($entity, $persistence->insert(
             $this->makeFakeModelWithForeignTable(),
-            $this->save_buffer
-        );
+            $this->getAndUnsetSaveBuffer($entity)
+        ));
     }
 
     public function beforeUpdate(Model $entity, array &$data): void
@@ -114,12 +114,12 @@ class Join extends Model\Join
 
         $persistence = $this->persistence ?: $this->getOwner()->persistence;
 
-        $this->id = $persistence->update(
+        $this->setId($entity, $persistence->update(
             $this->makeFakeModelWithForeignTable(),
-            $this->id,
-            $this->save_buffer,
+            $this->getId($entity),
+            $this->getAndUnsetSaveBuffer($entity),
             $this->foreign_table
-        );
+        ));
     }
 
     public function doDelete(Model $entity): void
@@ -132,9 +132,9 @@ class Join extends Model\Join
 
         $persistence->delete(
             $this->makeFakeModelWithForeignTable(),
-            $this->id
+            $this->getId($entity)
         );
 
-        $this->id = null;
+        $this->unsetId($entity);
     }
 }

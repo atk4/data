@@ -140,7 +140,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
     {
         // we need to collect ID
         if (isset($entity->getDataRef()[$this->short_name])) {
-            $this->id = $entity->getDataRef()[$this->short_name];
+            $this->setId($entity, $entity->getDataRef()[$this->short_name]);
             unset($entity->getDataRef()[$this->short_name]);
         }
     }
@@ -160,16 +160,15 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
         $query = $this->dsql();
         $query->mode('insert');
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
-        $this->save_buffer = [];
+        $query->set($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
         // $query->set($this->foreign_field, null);
         $query->insert();
-        $this->id = $model->persistence->lastInsertId(new Model($model->persistence, ['table' => $this->foreign_table]));
+        $this->setId($entity, $model->persistence->lastInsertId(new Model($model->persistence, ['table' => $this->foreign_table])));
 
         if ($this->hasJoin()) {
-            $this->getJoin()->set($this->master_field, $this->id);
+            $this->getJoin()->setSaveBufferValue($entity, $this->master_field, $this->getId($entity));
         } else {
-            $data[$this->master_field] = $this->id;
+            $data[$this->master_field] = $this->getId($entity);
         }
     }
 
@@ -182,11 +181,10 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         $model = $this->getOwner();
 
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
-        $this->save_buffer = [];
-        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $entity->getId());
+        $query->set($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
+        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
         $query->insert();
-        $this->id = $model->persistence->lastInsertId($model);
+        $this->setId($entity, $model->persistence->lastInsertId($model));
     }
 
     public function beforeUpdate(Model $entity, array &$data): void
@@ -195,15 +193,14 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
             return;
         }
 
-        if (!$this->save_buffer) {
+        if (!$this->issetSaveBuffer($entity)) {
             return;
         }
 
         $model = $this->getOwner();
 
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
-        $this->save_buffer = [];
+        $query->set($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
 
         $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
 
