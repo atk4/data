@@ -1866,7 +1866,7 @@ class Model implements \IteratorAggregate
     /**
      * Create persistence action.
      *
-     * TODO Rename this method to stress this method should not be used by used
+     * TODO Rename this method to stress this method should not be used
      * for anything else then reading records as insert/update/delete hooks
      * will not be called.
      *
