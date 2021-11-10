@@ -70,7 +70,7 @@ would work without a change.
 
 Another scenario which could benefit by type substitution would be::
 
-    foreach($accoutn->ref('Transactions') as $tr) {
+    foreach ($account->ref('Transactions') as $tr) {
         echo get_class($tr)."\n";
     }
 
@@ -107,9 +107,9 @@ of the record. Finally to help with performance, you can implement a switch::
 Now, every time you iterate (or load) you can decide if you want to invoke type
 substitution::
 
-    foreach($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
+    foreach ($account->ref('Transactions', ['typeSubstitution' => true]) as $tr) {
 
-        $tr->verify();  // verify() method can be overloaded!
+        $tr->verify(); // verify() method can be overloaded!
     }
 
 
@@ -521,7 +521,9 @@ Next we need to define reference. Inside Model_Invoice add::
         $this->ref('InvoicePayment')->action('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment
-        // $payment = $this->ref('InvoicePayment'); $payment->each(function () use ($payment) { $payment->delete(); });
+        // foreach ($this->ref('InvoicePayment') as $payment) {
+        //     $payment->delete();
+        // }
     });
 
 You'll have to do a similar change inside Payment model. The code for '$j->'
@@ -811,12 +813,10 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
 In this case the payment_invoice_id will be set to ID of any payment by client
 123. There also may be some better uses::
 
-    $cl->ref('Invoice')->each(function($m) {
-
+    foreach ($cl->ref('Invoice') as $m) {
         $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadOne()->getId());
         $m->save();
-
-    });
+    }
 
 Narrowing Down Existing References
 ==================================

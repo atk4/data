@@ -111,16 +111,6 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
-     * @deprecated will be removed in v2.5
-     */
-    public function __toString()
-    {
-        'trigger_error'('Method is deprecated. Use $this->getOne() instead', \E_USER_DEPRECATED);
-
-        return $this->getOne();
-    }
-
-    /**
      * @return $this
      */
     public function getDsqlExpression(self $expression): self
@@ -610,16 +600,6 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         return $v; // throw a type error if not null nor string
-    }
-
-    /**
-     * @deprecated use "getRows" method instead - will be removed in v2.5
-     */
-    public function get(): array
-    {
-        'trigger_error'('Method is deprecated. Use getRows instead', \E_USER_DEPRECATED);
-
-        return $this->getRows();
     }
 
     /**

@@ -295,16 +295,6 @@ class Action
     }
 
     /**
-     * @deprecated use "getRows" method instead - TODO remove in v3.1
-     */
-    public function get(): array
-    {
-        'trigger_error'('Method is deprecated. Use getRows instead', \E_USER_DEPRECATED);
-
-        return $this->getRows();
-    }
-
-    /**
      * Return all data inside array.
      */
     public function getRows(): array

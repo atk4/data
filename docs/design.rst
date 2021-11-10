@@ -384,7 +384,7 @@ Orders::
 You can iterate over the DataSet::
 
     $sum = 0;
-    foreach($db->add('Model_Order') as $order) {
+    foreach ($db->add('Model_Order') as $order) {
         $sum += $order->get('amount');
     }
 
@@ -417,7 +417,7 @@ The above is a Domain Model code. It will iterate through the DataSet of
 a restriction::
 
     $sum = 0;
-    foreach($db->add('Model_Order')->addCondition('is_paid', true) as $order) {
+    foreach ($db->add('Model_Order')->addCondition('is_paid', true) as $order) {
         $sum += $order->get('amount');
     }
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Atk4\Data\Reference;
 
 use Atk4\Data\Exception;
-use Atk4\Data\Field;
 use Atk4\Data\FieldSqlExpression;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
@@ -14,25 +13,9 @@ class HasOneSql extends HasOne
 {
     /**
      * Creates expression which sub-selects a field inside related model.
-     *
-     * Returns Expression in case you want to do something else with it.
-     *
-     * @param string|Field|array $ourFieldName or [$field, ..defaults]
      */
-    public function addField($ourFieldName, string $theirFieldName = null): FieldSqlExpression
+    public function addField(string $ourFieldName, array $ourFieldDefaults = [], string $theirFieldName = null): FieldSqlExpression
     {
-        if (is_array($ourFieldName)) {
-            $defaults = $ourFieldName;
-            if (!isset($defaults[0])) {
-                throw (new Exception('Field name must be specified'))
-                    ->addMoreInfo('field', $ourFieldName);
-            }
-            $ourFieldName = $defaults[0];
-            unset($defaults[0]);
-        } else {
-            $defaults = [];
-        }
-
         if ($theirFieldName === null) {
             $theirFieldName = $ourFieldName;
         }
@@ -40,8 +23,9 @@ class HasOneSql extends HasOne
         $ourModel = $this->getOurModel();
 
         // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
-        $defaults['caption'] ??= $ourModel->refModel($this->link)->getField($theirFieldName)->getCaption();
-        $defaults['type'] ??= $ourModel->refModel($this->link)->getField($theirFieldName)->type;
+        $refModel = $ourModel->refModel($this->link);
+        $ourFieldDefaults['caption'] ??= $refModel->getField($theirFieldName)->getCaption();
+        $ourFieldDefaults['type'] ??= $refModel->getField($theirFieldName)->type;
 
         /** @var FieldSqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
@@ -52,7 +36,7 @@ class HasOneSql extends HasOne
                     return $ourModel->refLink($this->link)->action('field', [$theirFieldName])->reset('order');
                 },
             ],
-            $defaults,
+            $ourFieldDefaults,
             [
                 // to be able to change field, but not save it
                 // afterSave hook will take care of the rest
@@ -96,21 +80,13 @@ class HasOneSql extends HasOne
         foreach ($fields as $ourFieldName => $ourFieldDefaults) {
             $ourFieldDefaults = array_merge($defaults, (array) $ourFieldDefaults);
 
-            if (!isset($ourFieldDefaults[0])) {
-                throw (new Exception('Incorrect definition for addFields. Field name must be specified'))
-                    ->addMoreInfo('ourFieldName', $ourFieldName)
-                    ->addMoreInfo('ourFieldDefaults', $ourFieldDefaults);
-            }
-
-            $theirFieldName = $ourFieldDefaults[0];
-
+            $theirFieldName = $ourFieldDefaults[0] ?? null;
+            unset($ourFieldDefaults[0]);
             if (is_int($ourFieldName)) {
                 $ourFieldName = $theirFieldName;
             }
 
-            $ourFieldDefaults[0] = $ourFieldName;
-
-            $this->addField($ourFieldDefaults, $theirFieldName);
+            $this->addField($ourFieldName, $ourFieldDefaults, $theirFieldName);
         }
 
         return $this;

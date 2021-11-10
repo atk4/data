@@ -176,7 +176,7 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
-        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', ['date', 'type' => 'date']]);
+        $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'date' => ['type' => 'date']]);
 
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
@@ -250,15 +250,15 @@ class ReferenceSqlTest extends TestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
         $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields([
             'invoice_id',
-            ['total_net', 'type' => 'atk4_money'],
-            ['total_vat', 'type' => 'atk4_money'],
-            ['total_gross', 'type' => 'atk4_money'],
+            'total_net' => ['type' => 'atk4_money'],
+            'total_vat' => ['type' => 'atk4_money'],
+            'total_gross' => ['type' => 'atk4_money'],
         ]);
         $i->hasMany('line', ['model' => $l])
             ->addFields([
-                ['total_vat', 'aggregate' => 'sum', 'type' => 'atk4_money'],
-                ['total_net', 'aggregate' => 'sum'],
-                ['total_gross', 'aggregate' => 'sum'],
+                'total_vat' => ['aggregate' => 'sum', 'type' => 'atk4_money'],
+                'total_net' => ['aggregate' => 'sum'],
+                'total_gross' => ['aggregate' => 'sum'],
             ]);
         $i = $i->load('1');
 
@@ -308,11 +308,11 @@ class ReferenceSqlTest extends TestCase
                 2 => ['id' => 2, 'name' => 'Veg'],
                 3 => ['id' => 3, 'name' => 'Fruit'],
             ], 'item' => [
-                ['name' => 'Apple',  'code' => 'ABC', 'list_id' => 3],
+                ['name' => 'Apple', 'code' => 'ABC', 'list_id' => 3],
                 ['name' => 'Banana', 'code' => 'DEF', 'list_id' => 3],
-                ['name' => 'Pork',   'code' => 'GHI', 'list_id' => 1],
-                ['name' => 'Chicken', 'code' => null,  'list_id' => 1],
-                ['name' => 'Pear',   'code' => null,  'list_id' => 3],
+                ['name' => 'Pork', 'code' => 'GHI', 'list_id' => 1],
+                ['name' => 'Chicken', 'code' => null, 'list_id' => 1],
+                ['name' => 'Pear', 'code' => null, 'list_id' => 3],
             ],
         ]);
 
@@ -320,14 +320,14 @@ class ReferenceSqlTest extends TestCase
         $i = (new Model($this->db, ['table' => 'item']))->addFields(['list_id', 'name', 'code']);
         $l->hasMany('Items', ['model' => $i])
             ->addFields([
-                ['items_name', 'aggregate' => 'count', 'field' => 'name'],
-                ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
-                ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
-                ['items_c:',  'concat' => '::', 'field' => 'name'],
-                ['items_c-',  'aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
-                ['len',       'aggregate' => $i->expr('sum(length([name]))')],
-                ['len2',      'expr' => 'sum(length([name]))'],
-                ['chicken5',  'expr' => 'sum([])', 'args' => ['5']],
+                'items_name' => ['aggregate' => 'count', 'field' => 'name'],
+                'items_code' => ['aggregate' => 'count', 'field' => 'code'], // counts only not-null values
+                'items_star' => ['aggregate' => 'count'], // no field set, counts all rows with count(*)
+                'items_c:' => ['concat' => '::', 'field' => 'name'],
+                'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
+                'len' => ['aggregate' => $i->expr('sum(length([name]))')],
+                'len2' => ['expr' => 'sum(length([name]))'],
+                'chicken5' => ['expr' => 'sum([])', 'args' => ['5']],
             ]);
 
         $ll = $l->load(1);
@@ -643,7 +643,7 @@ class ReferenceSqlTest extends TestCase
 
         $o = (new Model($this->db, ['table' => 'order']));
         $order_user_ref = $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id']);
-        $order_user_ref->addField('user_last_name', 'last_name');
+        $order_user_ref->addField('user_last_name', [], 'last_name');
 
         $referenced_caption = $o->getField('user_last_name')->getCaption();
 
@@ -684,12 +684,12 @@ class ReferenceSqlTest extends TestCase
         $order = (new Model($this->db, ['table' => 'order']));
         $order_UserRef = $order->hasOne('my_user', ['model' => $user, 'our_field' => 'user_id']);
 
-        //no type set in defaults, should pull type integer from user model
+        // no type set in defaults, should pull type integer from user model
         $order_UserRef->addField('some_number');
         $this->assertSame('integer', $order->getField('some_number')->type);
 
-        //set type in defaults, this should have higher priority than type set in Model
-        $order_UserRef->addField(['some_other_number', 'type' => 'string']);
+        // set type in defaults, this should have higher priority than type set in Model
+        $order_UserRef->addField('some_other_number', ['type' => 'string']);
         $this->assertSame('string', $order->getField('some_other_number')->type);
     }
 }

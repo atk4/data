@@ -285,11 +285,11 @@ class SelectTest extends TestCase
         } catch (\Atk4\Data\Persistence\Sql\ExecuteException $e) {
             // test error code
             $unknownFieldErrorCode = [
-                'sqlite' => 1,        // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
-                'mysql' => 1146,      // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
-                'postgresql' => 7,    // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
-                'mssql' => 208,       // SQLSTATE[42S02]: Invalid object name 'non_existing_table'
-                'oracle' => 942,      // SQLSTATE[HY000]: ORA-00942: table or view does not exist
+                'sqlite' => 1,     // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
+                'mysql' => 1146,   // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
+                'postgresql' => 7, // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
+                'mssql' => 208,    // SQLSTATE[42S02]: Invalid object name 'non_existing_table'
+                'oracle' => 942,   // SQLSTATE[HY000]: ORA-00942: table or view does not exist
             ][$this->c->getDatabasePlatform()->getName()];
             $this->assertSame($unknownFieldErrorCode, $e->getCode());
 

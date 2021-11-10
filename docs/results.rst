@@ -19,15 +19,15 @@ Create your persistence object first then iterate it::
     $db = \Atk4\Data\Persistence::connect($dsn);
     $m = new Model_Client($db);
 
-    foreach($m as $id => $item) {
-        echo $id.": ".$item->get('name')."\n";
+    foreach ($m as $id => $item) {
+        echo $id . ': ' . $item->get('name') . "\n";
     }
 
 You must be aware that $item will actually be same as $m and will point to the model.
 The model, however, will have the data loaded for you, so you can call methods for
 each iteration like this::
 
-    foreach($m as $item) {
+    foreach ($m as $item) {
         $item->sendReminder();
     }
 
@@ -49,7 +49,7 @@ will consume memory), you can do it like this::
 
     $cat = [];
 
-    foreach(new Model_Category($db) as $id => $c) {
+    foreach (new Model_Category($db) as $id => $c) {
         $cat[$id] = clone $c;
     }
 
@@ -57,12 +57,12 @@ will consume memory), you can do it like this::
 Raw Data Fetching
 ----------------
 
-.. php:method:: rawIterator()
+.. php:method:: getRawIterator()
 
 If you do not care about the hooks and simply wish to get the data, you can fetch
 it::
 
-    foreach($m->rawIterator() as $row) {
+    foreach ($m->getRawIterator() as $row) {
         var_dump($row); // array
     }
 
@@ -82,11 +82,11 @@ Fetching data through action
 
 You can invoke and iterate action (particularly SQL) to fetch the data::
 
-    foreach($m->action('select') as $row) {
+    foreach ($m->action('select') as $row) {
         var_dump($row); // array
     }
 
-This has the identical behavior to $m->rawIterator();
+This has the identical behavior to $m->getRawIterator();
 
 
 Comparison of various ways of fetching
@@ -94,5 +94,5 @@ Comparison of various ways of fetching
 
 - getIterator - action(select), [ fetches row, set ID/Data, call afterLoad hook,
   yields model ], unloads data
-- rawIterator - action(select), [ fetches row, yields row ]
+- getRawIterator - action(select), [ fetches row, yields row ]
 - export - action(select), fetches all rows, returns all rows

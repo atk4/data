@@ -24,7 +24,7 @@ or query::
 When it's time to execute you can specify your PDO manually::
 
     $rows = $expr->getRows($pdo);
-    foreach($rows as $row) {
+    foreach ($rows as $row) {
         echo json_encode($row)."\n";
     }
 

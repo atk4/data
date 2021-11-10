@@ -207,7 +207,7 @@ class DeepCopy
                 }
 
                 // TODO add a way here to look for duplicates based on unique fields
-                // foreach($destination->unique fields) { try load by
+                // foreach ($destination->unique fields) { try load by
 
                 // if we still have id field, then remove it
                 unset($data[$source->id_field]);

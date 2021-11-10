@@ -26,7 +26,9 @@ use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
  */
 class Model implements \IteratorAggregate
 {
-    use CollectionTrait;
+    use CollectionTrait {
+        _addIntoCollection as private __addIntoCollection;
+    }
     use ContainerTrait {
         add as _add;
     }
@@ -494,6 +496,24 @@ class Model implements \IteratorAggregate
         $this->onHookShort(self::HOOK_AFTER_SAVE, $fx, [], -10);
     }
 
+    public function add(object $obj, array $defaults = []): object
+    {
+        // TODO $this->assertIsModel();
+
+        if ($obj instanceof Field) {
+            throw new Exception('Field can be added using addField() method only');
+        }
+
+        return $this->_add($obj, $defaults);
+    }
+
+    public function _addIntoCollection(string $name, object $item, string $collection): object
+    {
+        // TODO $this->assertIsModel();
+
+        return $this->__addIntoCollection($name, $item, $collection);
+    }
+
     /**
      * @internal should be not used outside atk4/data
      */
@@ -540,18 +560,6 @@ class Model implements \IteratorAggregate
         return $errors;
     }
 
-    /**
-     * TEMPORARY to spot any use of $model->add(new Field(), ['bleh']); form.
-     */
-    public function add(object $obj, array $defaults = []): object
-    {
-        if ($obj instanceof Field) {
-            throw new Exception('You should always use addField() for adding fields, not add()');
-        }
-
-        return $this->_add($obj, $defaults);
-    }
-
     /** @var array<string, array> */
     protected $fieldSeedByType = [];
 
@@ -594,25 +602,13 @@ class Model implements \IteratorAggregate
      */
     public function addFields(array $fields, array $defaults = [])
     {
-        foreach ($fields as $key => $field) {
-            if (!is_int($key)) {
-                // field name can be passed as array key
-                $name = $key;
-            } elseif (is_string($field)) {
-                // or it can be simple string = field name
-                $name = $field;
-                $field = [];
-            } elseif (is_array($field) && is_string($field[0] ?? null)) {
-                // or field name can be passed as first element of seed array (old behaviour)
-                $name = array_shift($field);
-            } else {
-                // some unsupported format, maybe throw exception here?
-                continue;
+        foreach ($fields as $name => $seed) {
+            if (is_int($name)) {
+                $name = $seed;
+                $seed = [];
             }
 
-            $seed = is_object($field) ? $field : array_merge($defaults, (array) $field);
-
-            $this->addField($name, $seed);
+            $this->addField($name, Factory::mergeSeeds($seed, $defaults));
         }
 
         return $this;
@@ -977,6 +973,16 @@ class Model implements \IteratorAggregate
     // {{{ DataSet logic
 
     /**
+     * Get the scope object of the Model.
+     */
+    public function scope(): Model\Scope\RootScope
+    {
+        $this->assertIsModel();
+
+        return $this->scope;
+    }
+
+    /**
      * Narrow down data-set of the current model by applying
      * additional condition. There is no way to remove
      * condition once added, so if you need - clone model.
@@ -1024,16 +1030,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Get the scope object of the Model.
-     */
-    public function scope(): Model\Scope\RootScope
-    {
-        $this->assertIsModel();
-
-        return $this->scope;
-    }
-
-    /**
      * Shortcut for using addCondition(id_field, $id).
      *
      * @param mixed $id
@@ -1042,6 +1038,8 @@ class Model implements \IteratorAggregate
      */
     public function withId($id)
     {
+        // TODO this should wrap the current model instead of mutating it
+
         return $this->addCondition($this->id_field, $id);
     }
 
@@ -1137,6 +1135,17 @@ class Model implements \IteratorAggregate
 
     // {{{ Persistence-related logic
 
+    public function assertHasPersistence(string $methodName = null): void
+    {
+        if (!$this->persistence) {
+            throw new Exception('Model is not associated with a persistence');
+        }
+
+        if ($methodName && !$this->persistence->hasMethod($methodName)) {
+            throw new Exception("Persistence does not support {$methodName} method");
+        }
+    }
+
     /**
      * Is model loaded?
      */
@@ -1195,7 +1204,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Entity must be unloaded');
         }
 
-        $this->checkPersistence();
+        $this->assertHasPersistence();
 
         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
         if ($this->hook(self::HOOK_BEFORE_LOAD, [$noId ? null : $id]) === false) {
@@ -1316,7 +1325,7 @@ class Model implements \IteratorAggregate
      */
     public function duplicate()
     {
-        // deprecated, TODO remove in v3.1
+        // deprecated, to be removed in v3.2
         if (func_num_args() > 0) {
             throw new Exception('Duplicating using existing ID is no longer supported');
         }
@@ -1457,20 +1466,6 @@ class Model implements \IteratorAggregate
         return $this->_loadBy(true, $fieldName, $value);
     }
 
-    /**
-     * Check if model has persistence with specified method.
-     */
-    public function checkPersistence(string $method = null): void
-    {
-        if (!$this->persistence) {
-            throw new Exception('Model is not associated with any persistence');
-        }
-
-        if ($method && !$this->persistence->hasMethod($method)) {
-            throw new Exception("Persistence does not support {$method} method");
-        }
-    }
-
     /** @var array */
     public $_dirty_after_reload = [];
 
@@ -1481,12 +1476,7 @@ class Model implements \IteratorAggregate
      */
     public function save(array $data = [])
     {
-        // deprecated, TODO remove in v3.1
-        if (func_num_args() > 1) {
-            throw new Exception('Model::save() with 2nd param $to_persistence is no longer supported');
-        }
-
-        $this->checkPersistence();
+        $this->assertHasPersistence();
 
         if ($this->read_only) {
             throw new Exception('Model is read-only and cannot be saved');
@@ -1680,8 +1670,7 @@ class Model implements \IteratorAggregate
     public function export(array $fields = null, $key_field = null, $typecast_data = true): array
     {
         $this->assertIsModel();
-
-        $this->checkPersistence('export');
+        $this->assertHasPersistence('export');
 
         // no key field - then just do export
         if ($key_field === null) {
@@ -1757,7 +1746,7 @@ class Model implements \IteratorAggregate
      */
     public function getIterator(): \Traversable
     {
-        foreach ($this->rawIterator() as $data) {
+        foreach ($this->getRawIterator() as $data) {
             $thisCloned = $this->createEntity();
 
             $dataRef = &$thisCloned->getDataRef();
@@ -1800,25 +1789,11 @@ class Model implements \IteratorAggregate
     /**
      * @return \Traversable<array<string, string|null>>
      */
-    public function rawIterator(): \Traversable
+    public function getRawIterator(): \Traversable
     {
         $this->assertIsModel();
 
         return $this->persistence->prepareIterator($this);
-    }
-
-    /**
-     * Executes specified callback for each record in DataSet.
-     *
-     * @return $this
-     */
-    public function each(\Closure $fx)
-    {
-        foreach ($this as $record) {
-            $fx($record);
-        }
-
-        return $this;
     }
 
     /**
@@ -1889,7 +1864,11 @@ class Model implements \IteratorAggregate
     // {{{ Support for actions
 
     /**
-     * Execute action.
+     * Create persistence action.
+     *
+     * TODO Rename this method to stress this method should not be used
+     * for anything else then reading records as insert/update/delete hooks
+     * will not be called.
      *
      * @param string $mode
      * @param array  $args
@@ -1898,7 +1877,7 @@ class Model implements \IteratorAggregate
      */
     public function action($mode, $args = [])
     {
-        $this->checkPersistence('action');
+        $this->assertHasPersistence('action');
 
         return $this->persistence->action($this, $mode, $args);
     }
@@ -1958,7 +1937,7 @@ class Model implements \IteratorAggregate
 
     public function __isset(string $name): bool
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             return $this->__hintable_isset($name);
         }
 
@@ -1970,7 +1949,7 @@ class Model implements \IteratorAggregate
      */
     public function &__get(string $name)
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             return $this->__hintable_get($name);
         }
 
@@ -1982,7 +1961,7 @@ class Model implements \IteratorAggregate
      */
     public function __set(string $name, $value): void
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             $this->__hintable_set($name, $value);
 
             return;
@@ -1993,7 +1972,7 @@ class Model implements \IteratorAggregate
 
     public function __unset(string $name): void
     {
-        if (isset($this->getHintableProps()[$name])) {
+        if (isset($this->getModel(true)->getHintableProps()[$name])) {
             $this->__hintable_unset($name);
 
             return;
