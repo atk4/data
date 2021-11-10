@@ -129,8 +129,6 @@ class Field implements Expressionable
      */
     public function normalize($value)
     {
-        $this->getOwner()->assertIsModel();
-
         $this->getTypeObject(); // assert type exists
 
         try {
