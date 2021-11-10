@@ -10,7 +10,7 @@ use Atk4\Data\Persistence;
 /**
  * @property Persistence\Sql $persistence
  */
-class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionable
+class Join extends Model\Join
 {
     /**
      * By default we create ON expression ourselves, but if you want to specify
@@ -26,22 +26,6 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
     public function getDesiredName(): string
     {
         return '_' . ($this->foreign_alias ?: $this->foreign_table);
-    }
-
-    public function getDsqlExpression(Expression $expr): Expression
-    {
-        /*
-        // If our Model has expr() method (inherited from Persistence\Sql) then use it
-        if ($this->getOwner()->hasMethod('expr')) {
-            return $this->getOwner()->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
-        }
-
-        // Otherwise call it from expression itself
-        return $expr->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
-        */
-
-        // Romans: Join\Sql shouldn't even be called if expr is undefined. I think we should leave it here to produce error.
-        return $this->getOwner()->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
     }
 
     /**
@@ -160,7 +144,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
 
         $query = $this->dsql();
         $query->mode('insert');
-        $query->set($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
+        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
         // $query->set($this->foreign_field, null);
         $query->insert();
         $this->setId($entity, $model->persistence->lastInsertId(new Model($model->persistence, ['table' => $this->foreign_table])));
@@ -181,7 +165,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         $model = $this->getOwner();
 
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
+        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
         $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->getId($entity) : $entity->getId());
         $query->insert();
         $this->setId($entity, $model->persistence->lastInsertId($model));
@@ -200,7 +184,7 @@ class Join extends Model\Join implements \Atk4\Data\Persistence\Sql\Expressionab
         $model = $this->getOwner();
 
         $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
+        $query->setMulti($model->persistence->typecastSaveRow($model, $this->getAndUnsetSaveBuffer($entity)));
 
         $id = $this->reverse ? $entity->getId() : $entity->get($this->master_field);
 

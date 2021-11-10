@@ -153,7 +153,7 @@ class TestCase extends BaseTestCase
                     }
 
                     $query->table($tableName);
-                    $query->set($row);
+                    $query->setMulti($row);
 
                     if (!isset($row['id']) && $hasId) {
                         $query->set('id', $id);

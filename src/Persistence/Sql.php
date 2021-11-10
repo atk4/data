@@ -567,7 +567,7 @@ class Sql extends Persistence
             unset($data[$model->id_field]);
         }
 
-        $insert->set($this->typecastSaveRow($model, $data));
+        $insert->setMulti($this->typecastSaveRow($model, $data));
 
         $st = null;
         try {
@@ -637,10 +637,8 @@ class Sql extends Persistence
         $update = $this->initQuery($model);
         $update->mode('update');
 
-        $data = $this->typecastSaveRow($model, $data);
-
         // only apply fields that has been modified
-        $update->set($data);
+        $update->setMulti($this->typecastSaveRow($model, $data));
         $update->where($model->getField($model->id_field), $id);
 
         $st = null;

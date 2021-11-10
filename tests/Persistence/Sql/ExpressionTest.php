@@ -430,7 +430,7 @@ class ExpressionTest extends TestCase
     }
 
     /**
-     * Only Expressions or Expressionable objects may be used in Expression.
+     * Only Expressionable objects may be used in Expression.
      *
      * @covers ::consume
      */
