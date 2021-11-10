@@ -95,7 +95,7 @@ class RandomTest extends TestCase
 
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
-        $m->addFields(['name', ['salary', 'default' => 10]]);
+        $m->addFields(['name', 'salary' => ['default' => 10]]);
 
         $m->import([['name' => 'Peter'], ['name' => 'Steve', 'salary' => 30]]);
         $m->insert(['name' => 'Sue']);
@@ -150,7 +150,7 @@ class RandomTest extends TestCase
             'last_name',
             'login' => ['default' => 'unknown'],
             'salary' => ['type' => 'atk4_money', CustomField::class, 'default' => 100],
-            ['tax', CustomField::class, 'type' => 'atk4_money', 'default' => 20],
+            'tax' => [CustomField::class, 'type' => 'atk4_money', 'default' => 20],
             'vat' => new CustomField(['type' => 'atk4_money', 'default' => 15]),
         ]);
 

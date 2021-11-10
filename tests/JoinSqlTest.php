@@ -473,7 +473,7 @@ class JoinSqlTest extends TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
         $c = $j->join('country');
-        $c->addFields([['country_name', ['actual' => 'name']]]);
+        $c->addFields(['country_name' => ['actual' => 'name']]);
 
         $m_u2 = $m_u->load(10);
         $m_u2->delete();

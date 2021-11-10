@@ -387,7 +387,7 @@ Here is another example using PHP generator::
                 throw new Exception('Client must be loaded');
             }
 
-            foreach($this->expr("call get_client_report_data([client_id, arg])", [
+            foreach ($this->expr("call get_client_report_data([client_id, arg])", [
                 'arg' => $arg,
                 'client_id' => $client_id,
             ]) as $row) {

@@ -412,8 +412,6 @@ class Sql extends Persistence
     }
 
     /**
-     * Executing $model->action('update') will call this method.
-     *
      * @return Query
      */
     public function action(Model $model, string $type, array $args = [])

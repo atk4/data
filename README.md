@@ -336,10 +336,10 @@ Resulting queries (I have removed back-ticks and parametric variables for readab
 ```sql
 select id, name from client where name = "Pear Company" and is_deleted = 0;
 insert into order (company_id, ref, delivery_date)
-  values (293, "TBL1", "2015-18-12");
+    values (293, "TBL1", "2015-18-12");
 insert into order_lines (order_id, title, category_id, qty, price) values
-  (201, "Table", (select id from category where name = "furniture"), 2, 10.50),
-  (201, "Chair", (select id from category where name = "furniture"), 19, 3.25);
+    (201, "Table", (select id from category where name = "furniture"), 2, 10.50),
+    (201, "Chair", (select id from category where name = "furniture"), 19, 3.25);
 ```
 
 If you have enjoyed those examples and would like to try them yourself, continue to https://github.com/atk4/data-primer.
@@ -350,14 +350,15 @@ Agile Data uses vendor-independent and lightweight `Model` class to describe you
 
 ``` php
 class Client extends \Atk4\Data\Model {
-  public $table = 'client';
-  function init(): void {
-    parent::init();
+    public $table = 'client';
 
-    $this->addFields(['name','address']);
+    function init(): void {
+        parent::init();
 
-    $this->hasMany('Project', ['model' => [Project::class]]);
-  }
+        $this->addFields(['name', 'address']);
+
+        $this->hasMany('Project', ['model' => [Project::class]]);
+    }
 }
 ```
 
@@ -496,7 +497,7 @@ If you wonder how those advanced features may impact performance of loading and 
 
 
 ``` php
-foreach($client->ref('Project') as $project) {
+foreach ($client->ref('Project') as $project) {
     echo $project->get('name')."\n"
 }
 

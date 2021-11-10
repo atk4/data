@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Model;
 
+use Atk4\Data\Exception;
+
 /**
  * Provides native Model methods for join functionality.
  */
@@ -29,11 +31,19 @@ trait JoinsTrait
     {
         $defaults[0] = $foreignTable;
 
-        return $this->add(Join::fromSeed($this->_default_seed_join, $defaults));
+        $join = Join::fromSeed($this->_default_seed_join, $defaults);
+
+        if ($this->hasElement($name = $join->getDesiredName())) {
+            throw (new Exception('Join with such name already exists'))
+                ->addMoreInfo('name', $name)
+                ->addMoreInfo('foreignTable', $foreignTable);
+        }
+
+        return $this->add($join);
     }
 
     /**
-     * Left Join support.
+     * Add left/weak join.
      *
      * @see join()
      *

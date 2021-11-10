@@ -151,10 +151,13 @@ class HasMany extends Reference
      */
     public function addFields(array $fields = [])
     {
-        foreach ($fields as $defaults) {
-            $fieldName = $defaults[0];
-            unset($defaults[0]);
-            $this->addField($fieldName, $defaults);
+        foreach ($fields as $name => $seed) {
+            if (is_int($name)) {
+                $name = $seed;
+                $seed = [];
+            }
+
+            $this->addField($name, $seed);
         }
 
         return $this;

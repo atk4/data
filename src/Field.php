@@ -349,7 +349,7 @@ class Field implements Expressionable
                     }
                 };
             } else {
-                $this->getOwner()->checkPersistence();
+                $this->getOwner()->assertHasPersistence();
             }
         }
 

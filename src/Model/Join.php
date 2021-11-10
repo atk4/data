@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Model;
 
 use Atk4\Core\DiContainerTrait;
+use Atk4\Core\Factory;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Exception;
@@ -138,6 +139,13 @@ class Join
     public function __construct(string $foreign_table = null)
     {
         $this->foreign_table = $foreign_table;
+
+        // handle foreign table containing a dot - that will be reverse join
+        if (strpos($this->foreign_table, '.') !== false) {
+            // split by LAST dot in foreign_table name
+            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
+            $this->reverse = true;
+        }
     }
 
     /**
@@ -212,16 +220,6 @@ class Join
                 ->addMoreInfo('model', $this->getOwner());
         }
 
-        // handle foreign table containing a dot - that will be reverse join
-        if (strpos($this->foreign_table, '.') !== false) {
-            // split by LAST dot in foreign_table name
-            [$this->foreign_table, $this->foreign_field] = preg_split('~\.+(?=[^.]+$)~', $this->foreign_table);
-
-            if ($this->reverse === null) {
-                $this->reverse = true;
-            }
-        }
-
         if ($this->reverse === true) {
             if ($this->master_field && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/atk4/data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
@@ -272,16 +270,15 @@ class Join
      *
      * @return $this
      */
-    public function addFields(array $fields = [])
+    public function addFields(array $fields = [], array $defaults = [])
     {
-        foreach ($fields as $field) {
-            if (is_array($field)) {
-                $name = $field[0];
-                unset($field[0]);
-                $this->addField($name, $field);
-            } else {
-                $this->addField($field);
+        foreach ($fields as $name => $seed) {
+            if (is_int($name)) {
+                $name = $seed;
+                $seed = [];
             }
+
+            $this->addField($name, Factory::mergeSeeds($seed, $defaults));
         }
 
         return $this;
@@ -290,9 +287,9 @@ class Join
     /**
      * Another join will be attached to a current join.
      *
-     * @return self
+     * @param array<string, mixed> $defaults
      */
-    public function join(string $foreign_table, array $defaults = [])
+    public function join(string $foreign_table, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
@@ -302,30 +299,14 @@ class Join
     /**
      * Another leftJoin will be attached to a current join.
      *
-     * @return self
+     * @param array<string, mixed> $defaults
      */
-    public function leftJoin(string $foreign_table, array $defaults = [])
+    public function leftJoin(string $foreign_table, array $defaults = []): self
     {
         $defaults['joinName'] = $this->short_name;
 
         return $this->getOwner()->leftJoin($foreign_table, $defaults);
     }
-
-    /**
-     * weakJoin will be attached to a current join.
-     *
-     * @todo NOT IMPLEMENTED! weakJoin method does not exist!
-     *
-     * @return
-     */
-    /*
-    public function weakJoin($defaults = [])
-    {
-        $defaults['joinName'] = $this->short_name;
-
-        return $this->getOwner()->weakJoin($defaults);
-    }
-    */
 
     /**
      * Creates reference based on a field from the join.
@@ -408,26 +389,6 @@ class Join
     public function importModel(Model $model, array $defaults = [])
     {
         // not implemented yet !!!
-    }
-    */
-
-    /**
-     * Joins with the primary table of the model and
-     * then import all of the data into our model.
-     *
-     * @todo NOT IMPLEMENTED!
-     */
-    /*
-    public function weakJoinModel(Model $model, array $fields = [])
-    {
-        if (!is_object($model)) {
-            $model = $this->getOwner()->connection->add($model);
-        }
-        $j = $this->join($model->table);
-
-        $j->importModel($model);
-
-        return $j;
     }
     */
 

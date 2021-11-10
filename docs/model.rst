@@ -36,7 +36,7 @@ and even perform operations on multiple records (See `Persistence Actions` below
 
    $m->action('delete')->execute(); // performs mass delete, hooks are not executed
 
-   $m->each(function () use ($m) { $m->delete(); }); // deletes each record, hooks are executed
+   foreach ($m as $entity) { $entity->delete(); } // deletes each record, hooks are executed
 
 When data is loaded from associated Persistence, it is automatically converted into
 a native PHP type (such as DateTime object) through a process called Typecasting. Various
@@ -208,8 +208,7 @@ Each model field is represented by a Field object::
 Other persistence framework will use "properties", because individual objects may impact
 performance. In ATK Data this is not an issue, because "Model" is re-usable::
 
-   foreach(new User($db) as $user) {
-
+   foreach (new User($db) as $user) {
       // will be the same object every time!!
       var_dump($user->getField['name']);
 
