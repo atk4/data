@@ -1612,7 +1612,7 @@ class Model implements \IteratorAggregate
                     if ($field->hasJoin()) {
                         $dirty_join = true;
                         // storing into a different table join
-                        $field->getJoin($this)->set($name, $value);
+                        $field->getJoin()->set($name, $value);
                     } else {
                         $data[$name] = $value;
                     }
@@ -1640,7 +1640,7 @@ class Model implements \IteratorAggregate
 
                     if ($field->hasJoin()) {
                         // storing into a different table join
-                        $field->getJoin($this)->set($name, $value);
+                        $field->getJoin()->set($name, $value);
                     } else {
                         $data[$name] = $value;
                     }

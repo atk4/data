@@ -422,7 +422,6 @@ class JoinSqlTest extends TestCase
         $this->assertFalse($m_u2->loaded());
 
         $this->assertSame($m_u2->getModel()->getField('country_id')->getJoin(), $m_u2->getModel()->getField('contact_phone')->getJoin());
-        $this->assertSame($m_u2->getModel()->getField('country_id')->getJoin($m_u2), $m_u2->getModel()->getField('contact_phone')->getJoin($m_u2));
 
         $m_u->createEntity()->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
