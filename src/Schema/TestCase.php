@@ -31,32 +31,30 @@ class TestCase extends BaseTestCase
 
         $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
 
-        if ($this->debug) {
-            $this->db->connection->connection()->getConfiguration()->setSQLLogger(
-                new class($this) implements SQLLogger {
-                    /** @var TestCase */
-                    public $testCase;
+        $this->db->connection->connection()->getConfiguration()->setSQLLogger(
+            new class($this) implements SQLLogger {
+                /** @var TestCase */
+                public $testCase;
 
-                    public function __construct(TestCase $testCase)
-                    {
-                        $this->testCase = $testCase;
-                    }
-
-                    public function startQuery($sql, $params = null, $types = null): void
-                    {
-                        if (!$this->testCase->debug) {
-                            return;
-                        }
-
-                        echo "\n" . $sql . "\n" . print_r($params, true) . "\n\n";
-                    }
-
-                    public function stopQuery(): void
-                    {
-                    }
+                public function __construct(TestCase $testCase)
+                {
+                    $this->testCase = $testCase;
                 }
-            );
-        }
+
+                public function startQuery($sql, $params = null, $types = null): void
+                {
+                    if (!$this->testCase->debug) {
+                        return;
+                    }
+
+                    echo "\n" . $sql . "\n" . print_r($params, true) . "\n\n";
+                }
+
+                public function stopQuery(): void
+                {
+                }
+            }
+        );
     }
 
     protected function getDatabasePlatform(): AbstractPlatform
