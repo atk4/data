@@ -101,9 +101,9 @@ class LFriend extends Model
         parent::init();
 
         $this->hasOne('user_id', ['model' => [LUser::class]])
-            ->addField('my_name', [], 'name');
+            ->addField('my_name', 'name');
         $this->hasOne('friend_id', ['model' => [LUser::class]])
-            ->addField('friend_name', [], 'name');
+            ->addField('friend_name', 'name');
 
         // add or remove reverse friendships
         /*

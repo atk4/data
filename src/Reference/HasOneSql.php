@@ -12,7 +12,7 @@ class HasOneSql extends HasOne
     /**
      * Creates expression which sub-selects a field inside related model.
      */
-    public function addField(string $ourFieldName, array $ourFieldDefaults = [], string $theirFieldName = null): FieldSqlExpression
+    public function addField(string $ourFieldName, string $theirFieldName = null, array $defaults = []): FieldSqlExpression
     {
         if ($theirFieldName === null) {
             $theirFieldName = $ourFieldName;
@@ -22,8 +22,8 @@ class HasOneSql extends HasOne
 
         // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
         $refModel = $ourModel->refModel($this->link);
-        $ourFieldDefaults['caption'] ??= $refModel->getField($theirFieldName)->getCaption();
-        $ourFieldDefaults['type'] ??= $refModel->getField($theirFieldName)->type;
+        $defaults['caption'] ??= $refModel->getField($theirFieldName)->getCaption();
+        $defaults['type'] ??= $refModel->getField($theirFieldName)->type;
 
         /** @var FieldSqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
@@ -34,7 +34,7 @@ class HasOneSql extends HasOne
                     return $ourModel->refLink($this->link)->action('field', [$theirFieldName])->reset('order');
                 },
             ],
-            $ourFieldDefaults,
+            $defaults,
             [
                 // to be able to change field, but not save it
                 // afterSave hook will take care of the rest
@@ -84,7 +84,7 @@ class HasOneSql extends HasOne
                 $ourFieldName = $theirFieldName;
             }
 
-            $this->addField($ourFieldName, $ourFieldDefaults, $theirFieldName);
+            $this->addField($ourFieldName, $theirFieldName, $ourFieldDefaults);
         }
 
         return $this;
