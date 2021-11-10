@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Reference;
 
-use Atk4\Data\Exception;
 use Atk4\Data\FieldSqlExpression;
 use Atk4\Data\Model;
 
