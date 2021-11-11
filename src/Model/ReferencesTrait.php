@@ -117,27 +117,11 @@ trait ReferencesTrait
     }
 
     /**
-     * Traverse to related model.
+     * Returns true if reference exists.
      */
-    public function ref(string $link, array $defaults = []): Model
+    public function hasRef(string $link): bool
     {
-        return $this->getRef($link)->ref($defaults);
-    }
-
-    /**
-     * Return related model.
-     */
-    public function refModel(string $link, array $defaults = []): Model
-    {
-        return $this->getRef($link)->refModel($defaults);
-    }
-
-    /**
-     * Returns model that can be used for generating sub-query actions.
-     */
-    public function refLink(string $link, array $defaults = []): Model
-    {
-        return $this->getRef($link)->refLink($defaults);
+        return $this->getModel(true)->hasElement('#ref_' . $link);
     }
 
     /**
@@ -172,10 +156,26 @@ trait ReferencesTrait
     }
 
     /**
-     * Returns true if reference exists.
+     * Traverse to related model.
      */
-    public function hasRef(string $link): bool
+    public function ref(string $link, array $defaults = []): Model
     {
-        return $this->getModel(true)->hasElement('#ref_' . $link);
+        return $this->getRef($link)->ref($defaults);
+    }
+
+    /**
+     * Return related model.
+     */
+    public function refModel(string $link, array $defaults = []): Model
+    {
+        return $this->getRef($link)->refModel($defaults);
+    }
+
+    /**
+     * Returns model that can be used for generating sub-query actions.
+     */
+    public function refLink(string $link, array $defaults = []): Model
+    {
+        return $this->getRef($link)->refLink($defaults);
     }
 }
