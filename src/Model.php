@@ -12,7 +12,6 @@ use Atk4\Core\Factory;
 use Atk4\Core\HookTrait;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
-use Atk4\Data\Persistence\Sql\Query;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
@@ -147,8 +146,6 @@ class Model implements \IteratorAggregate
     public $table_alias;
 
     /**
-     * Persistence driver inherited from Atk4\Data\Persistence.
-     *
      * @var Persistence|Persistence\Sql|null
      */
     public $persistence;
@@ -844,7 +841,7 @@ class Model implements \IteratorAggregate
         $currentValue = array_key_exists($field, $dataRef)
             ? $dataRef[$field]
             : (array_key_exists($field, $dirtyRef) ? $dirtyRef[$field] : $f->default);
-        if (!$value instanceof \Atk4\Data\Persistence\Sql\Expression && $f->compare($value, $currentValue)) {
+        if (!$value instanceof Persistence\Sql\Expression && $f->compare($value, $currentValue)) {
             return $this;
         }
 
@@ -1935,12 +1932,9 @@ class Model implements \IteratorAggregate
      * for anything else then reading records as insert/update/delete hooks
      * will not be called.
      *
-     * @param string $mode
-     * @param array  $args
-     *
-     * @return Query
+     * @return Persistence\Sql\Query
      */
-    public function action($mode, $args = [])
+    public function action(string $mode, array $args = [])
     {
         $this->assertHasPersistence('action');
 
