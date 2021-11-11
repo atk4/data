@@ -26,9 +26,9 @@ class ContainsMany extends ContainsOne
     /**
      * Returns referenced model.
      */
-    public function ref(Model $ourBoth, array $defaults = []): Model
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel($ourBoth);
+        $ourModel = $this->getOurModel($ourModel);
 
         // get model
         $theirModel = $this->createTheirModel(array_merge($defaults, [

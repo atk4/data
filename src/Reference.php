@@ -154,15 +154,15 @@ class Reference
         return '#ref_' . $this->link;
     }
 
-    public function getOurModel(?Model $ourBoth): Model
+    public function getOurModel(?Model $ourModel): Model
     {
-        if ($ourBoth === null) {
-            $ourBoth = $this->getOwner();
+        if ($ourModel === null) {
+            $ourModel = $this->getOwner();
         }
 
-        $this->getOwner()->assertIsModel($ourBoth->getModel(true));
+        $this->getOwner()->assertIsModel($ourModel->getModel(true));
 
-        return $ourBoth;
+        return $ourModel;
     }
 
     /**
@@ -268,7 +268,7 @@ class Reference
      * Returns referenced model without any extra conditions. However other
      * relationship types may override this to imply conditions.
      */
-    public function ref(Model $ourBoth, array $defaults = []): Model
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }
@@ -278,7 +278,7 @@ class Reference
      * must always respond with Model that does not look into current record
      * or scope.
      */
-    public function refModel(Model $ourBoth, array $defaults = []): Model
+    public function refModel(Model $ourModel, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }

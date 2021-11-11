@@ -75,9 +75,9 @@ class HasOne extends Reference
      * If our model is not loaded, then return their model with condition set.
      * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
      */
-    public function ref(Model $ourBoth, array $defaults = []): Model
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel($ourBoth);
+        $ourModel = $this->getOurModel($ourModel);
         $theirModel = $this->createTheirModel($defaults);
 
         // add hook to set our_field = null when record of referenced model is deleted
@@ -86,7 +86,7 @@ class HasOne extends Reference
         });
 
         if ($ourModel->isEntity()) {
-            if ($ourValue = $this->getOurFieldValue($ourBoth)) {
+            if ($ourValue = $this->getOurFieldValue($ourModel)) {
                 // if our model is loaded, then try to load referenced model
                 if ($this->their_field) {
                     $theirModel = $theirModel->tryLoadBy($this->their_field, $ourValue);

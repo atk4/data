@@ -87,9 +87,9 @@ class ContainsOne extends Reference
     /**
      * Returns referenced model with loaded data record.
      */
-    public function ref(Model $ourBoth, array $defaults = []): Model
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel($ourBoth);
+        $ourModel = $this->getOurModel($ourModel);
 
         $theirModel = $this->createTheirModel(array_merge($defaults, [
             'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,

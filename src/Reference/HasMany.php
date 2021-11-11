@@ -34,9 +34,9 @@ class HasMany extends Reference
      *
      * @return mixed
      */
-    protected function getOurValue(Model $ourBoth)
+    protected function getOurValue(Model $ourModel)
     {
-        $ourModel = $this->getOurModel($ourBoth);
+        $ourModel = $this->getOurModel($ourModel);
 
         if ($ourModel->isEntity() && $ourModel->loaded()) {
             return $this->our_field
@@ -63,22 +63,22 @@ class HasMany extends Reference
     /**
      * Returns referenced model with condition set.
      */
-    public function ref(Model $ourBoth, array $defaults = []): Model
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel($ourBoth);
+        $ourModel = $this->getOurModel($ourModel);
 
         return $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
-            $this->getOurValue($ourBoth)
+            $this->getOurValue($ourModel)
         );
     }
 
     /**
      * Creates model that can be used for generating sub-query actions.
      */
-    public function refLink(?Model $ourBoth, array $defaults = []): Model
+    public function refLink(?Model $ourModel, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel($ourBoth);
+        $ourModel = $this->getOurModel($ourModel);
 
         $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
