@@ -1525,9 +1525,9 @@ class QueryTest extends TestCase
      * Test caseExpr (normal).
      *
      * @covers ::_render_case
+     * @covers ::caseElse
      * @covers ::caseExpr
      * @covers ::caseWhen
-     * @covers ::caseElse
      */
     public function testCaseExprNormal(): void
     {
@@ -1554,9 +1554,9 @@ class QueryTest extends TestCase
      * Test caseExpr (short form).
      *
      * @covers ::_render_case
+     * @covers ::caseElse
      * @covers ::caseExpr
      * @covers ::caseWhen
-     * @covers ::caseElse
      */
     public function testCaseExprShortForm(): void
     {
