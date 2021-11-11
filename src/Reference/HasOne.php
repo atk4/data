@@ -104,7 +104,7 @@ class HasOne extends Reference
         $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourModel) {
             $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->getId();
 
-            if ($this->getOurFieldValue($ourModel) !== $theirValue) { // TODO compare should be used here
+            if (!$this->getOurField()->compare($this->getOurFieldValue($ourModel), $theirValue)) {
                 $ourModel->set($this->getOurFieldName(), $theirValue)->save();
             }
 
