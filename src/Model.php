@@ -404,6 +404,8 @@ class Model implements \IteratorAggregate
      */
     protected function getModelOnlyProperties(): array
     {
+        $this->assertIsModel();
+
         if (self::$_modelOnlyProperties === null) {
             $modelOnlyProperties = [];
             foreach ((new \ReflectionClass(self::class))->getProperties() as $prop) {
@@ -639,10 +641,6 @@ class Model implements \IteratorAggregate
      */
     public function addField(string $name, $seed = []): Field
     {
-        if ($this->isEntity()) {
-            return $this->getModel()->addField($name, $seed);
-        }
-
         $this->assertIsModel();
 
         if (is_object($seed)) {
@@ -680,12 +678,6 @@ class Model implements \IteratorAggregate
      */
     public function removeField(string $name)
     {
-        if ($this->isEntity()) {
-            $this->getModel()->removeField($name);
-
-            return $this;
-        }
-
         $this->assertIsModel();
 
         $this->getField($name); // better exception if field does not exist
@@ -730,12 +722,6 @@ class Model implements \IteratorAggregate
      */
     public function onlyFields(array $fields = [])
     {
-        if ($this->isEntity()) {
-            $this->getModel()->onlyFields($fields);
-
-            return $this;
-        }
-
         $this->assertIsModel();
 
         $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
@@ -751,12 +737,6 @@ class Model implements \IteratorAggregate
      */
     public function allFields()
     {
-        if ($this->isEntity()) {
-            $this->getModel()->allFields();
-
-            return $this;
-        }
-
         $this->assertIsModel();
 
         $this->only_fields = false;
@@ -764,17 +744,11 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    private function checkOnlyFieldsField(string $field): void
+    private function assertOnlyFieldsField(string $field): void
     {
-        if ($this->isEntity()) {
-            $this->getModel()->checkOnlyFieldsField($field);
-
-            return;
-        }
-
         $this->assertIsModel();
 
-        $this->getField($field); // test if field exists
+        $this->getField($field); // assert field exists
 
         if ($this->only_fields) {
             if (!in_array($field, $this->only_fields, true) && !$this->getField($field)->system) {
@@ -790,9 +764,7 @@ class Model implements \IteratorAggregate
      */
     public function isDirty(string $field): bool
     {
-        $this->assertIsEntity();
-
-        $this->checkOnlyFieldsField($field);
+        $this->getModel()->assertOnlyFieldsField($field);
 
         $dirtyRef = &$this->getDirtyRef();
         if (array_key_exists($field, $dirtyRef)) {
@@ -853,9 +825,7 @@ class Model implements \IteratorAggregate
      */
     public function set(string $field, $value)
     {
-        $this->assertIsEntity();
-
-        $this->checkOnlyFieldsField($field);
+        $this->getModel()->assertOnlyFieldsField($field);
 
         $f = $this->getField($field);
 
@@ -936,10 +906,9 @@ class Model implements \IteratorAggregate
      */
     public function get(string $field = null)
     {
-        $this->assertIsEntity();
-
         if ($field === null) {
-            // Collect list of eligible fields
+            $this->assertIsEntity();
+
             $data = [];
             foreach ($this->only_fields ?: array_keys($this->getFields()) as $field) {
                 $data[$field] = $this->get($field);
@@ -948,7 +917,7 @@ class Model implements \IteratorAggregate
             return $data;
         }
 
-        $this->checkOnlyFieldsField($field);
+        $this->getModel()->assertOnlyFieldsField($field);
 
         $dataRef = &$this->getDataRef();
         if (array_key_exists($field, $dataRef)) {
@@ -1047,7 +1016,7 @@ class Model implements \IteratorAggregate
      */
     public function _isset(string $name): bool
     {
-        $this->checkOnlyFieldsField($name);
+        $this->getModel()->assertOnlyFieldsField($name);
 
         $dirtyRef = &$this->getDirtyRef();
 
@@ -1061,7 +1030,7 @@ class Model implements \IteratorAggregate
      */
     public function _unset(string $name)
     {
-        $this->checkOnlyFieldsField($name);
+        $this->getModel()->assertOnlyFieldsField($name);
 
         $dataRef = &$this->getDataRef();
         $dirtyRef = &$this->getDirtyRef();
@@ -2031,12 +2000,14 @@ class Model implements \IteratorAggregate
 
     public function __isset(string $name): bool
     {
-        if (isset($this->getModel(true)->getHintableProps()[$name])) {
+        $model = $this->getModel(true);
+
+        if (isset($model->getHintableProps()[$name])) {
             return $this->__hintable_isset($name);
         }
 
-        if ($this->isEntity() && isset($this->getModelOnlyProperties()[$name])) {
-            return isset($this->getModel()->{$name});
+        if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
+            return isset($model->{$name});
         }
 
         return $this->__di_isset($name);
@@ -2047,12 +2018,14 @@ class Model implements \IteratorAggregate
      */
     public function &__get(string $name)
     {
-        if (isset($this->getModel(true)->getHintableProps()[$name])) {
+        $model = $this->getModel(true);
+
+        if (isset($model->getHintableProps()[$name])) {
             return $this->__hintable_get($name);
         }
 
-        if ($this->isEntity() && isset($this->getModelOnlyProperties()[$name])) {
-            return $this->getModel()->{$name};
+        if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
+            return $model->{$name};
         }
 
         return $this->__di_get($name);
@@ -2063,14 +2036,16 @@ class Model implements \IteratorAggregate
      */
     public function __set(string $name, $value): void
     {
-        if (isset($this->getModel(true)->getHintableProps()[$name])) {
+        $model = $this->getModel(true);
+
+        if (isset($model->getHintableProps()[$name])) {
             $this->__hintable_set($name, $value);
 
             return;
         }
 
-        if ($this->isEntity() && isset($this->getModelOnlyProperties()[$name])) {
-            $this->getModel()->{$name} = $value;
+        if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
+            $model->{$name} = $value;
 
             return;
         }
@@ -2080,14 +2055,16 @@ class Model implements \IteratorAggregate
 
     public function __unset(string $name): void
     {
-        if (isset($this->getModel(true)->getHintableProps()[$name])) {
+        $model = $this->getModel(true);
+
+        if (isset($model->getHintableProps()[$name])) {
             $this->__hintable_unset($name);
 
             return;
         }
 
-        if ($this->isEntity() && isset($this->getModelOnlyProperties()[$name])) {
-            unset($this->getModel()->{$name});
+        if ($this->isEntity() && isset($model->getModelOnlyProperties()[$name])) {
+            unset($model->{$name});
 
             return;
         }

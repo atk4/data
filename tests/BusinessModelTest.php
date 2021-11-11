@@ -155,7 +155,7 @@ class BusinessModelTest extends TestCase
         $m->onlyFields(['surname']);
         $m = $m->createEntity();
 
-        $m->allFields();
+        $m->getModel()->allFields();
 
         $m->set('name', 5);
         $this->assertSame('5', $m->get('name'));
