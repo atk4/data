@@ -126,7 +126,7 @@ class Model implements \IteratorAggregate
     public $_default_seed_addExpression = [Field\Callback::class];
 
     /**
-     * @var array Collection containing Field Objects - using key as the field system name
+     * @var array<string, Field>
      */
     protected $fields = [];
 
@@ -603,7 +603,7 @@ class Model implements \IteratorAggregate
      *
      * @param string $intent by default only 'save' is used (from beforeSave) but you can use other intents yourself
      *
-     * @return array [field => err_spec]
+     * @return array<string, string> [field => err_spec]
      */
     public function validate(string $intent = null): array
     {
@@ -777,7 +777,7 @@ class Model implements \IteratorAggregate
     /**
      * @param string|array|null $filter
      *
-     * @return Field[]
+     * @return array<string, Field>
      */
     public function getFields($filter = null): array
     {
@@ -991,6 +991,8 @@ class Model implements \IteratorAggregate
 
     /**
      * Returns array of model record titles [id => title].
+     *
+     * @return array<int|string, mixed>
      */
     public function getTitles(): array
     {

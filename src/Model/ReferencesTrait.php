@@ -141,6 +141,8 @@ trait ReferencesTrait
 
     /**
      * Returns all references.
+     *
+     * @return array<int, Reference>
      */
     public function getRefs(): array
     {
