@@ -24,7 +24,9 @@ class Reference
     use InitializerTrait {
         init as private _init;
     }
-    use TrackableTrait;
+    use TrackableTrait {
+        setOwner as private _setOwner;
+    }
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -81,6 +83,18 @@ class Reference
     public function __construct(string $link)
     {
         $this->link = $link;
+    }
+
+    /**
+     * @param Model $owner
+     *
+     * @return $this
+     */
+    public function setOwner(object $owner)
+    {
+//        $owner->assertIsModel();
+
+        return $this->_setOwner($owner);
     }
 
     public function getTheirFieldName(): string
@@ -248,7 +262,7 @@ class Reference
      * Returns referenced model without any extra conditions. However other
      * relationship types may override this to imply conditions.
      */
-    public function ref(array $defaults = []): Model
+    public function ref(Model $ourBoth, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }
@@ -258,7 +272,7 @@ class Reference
      * must always respond with Model that does not look into current record
      * or scope.
      */
-    public function refModel(array $defaults = []): Model
+    public function refModel(Model $ourBoth, array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
     }

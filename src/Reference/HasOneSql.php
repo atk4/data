@@ -96,7 +96,7 @@ class HasOneSql extends HasOne
     /**
      * Creates model that can be used for generating sub-query actions.
      */
-    public function refLink(array $defaults = []): Model
+    public function refLink(Model $ourBoth, array $defaults = []): Model
     {
         $theirModel = $this->createTheirModel($defaults);
 
@@ -111,9 +111,9 @@ class HasOneSql extends HasOne
     /**
      * Navigate to referenced model.
      */
-    public function ref(array $defaults = []): Model
+    public function ref(Model $ourBoth, array $defaults = []): Model
     {
-        $theirModel = parent::ref($defaults);
+        $theirModel = parent::ref($ourBoth, $defaults);
         $ourModel = $this->getOurModel();
 
         $theirFieldName = $this->their_field ?? $theirModel->id_field; // TODO why not $this->getTheirFieldName() ?

@@ -22,7 +22,7 @@ class ContainsMany extends ContainsOne
     /**
      * Returns referenced model.
      */
-    public function ref(array $defaults = []): Model
+    public function ref(Model $ourBoth, array $defaults = []): Model
     {
         $ourModel = $this->getOurModel();
 

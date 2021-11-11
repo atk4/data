@@ -162,7 +162,7 @@ trait ReferencesTrait
      */
     public function ref(string $link, array $defaults = []): Model
     {
-        return $this->getRef($link)->ref($defaults);
+        return $this->getRef($link)->ref($this, $defaults);
     }
 
     /**
@@ -170,7 +170,7 @@ trait ReferencesTrait
      */
     public function refModel(string $link, array $defaults = []): Model
     {
-        return $this->getRef($link)->refModel($defaults);
+        return $this->getRef($link)->refModel($this, $defaults);
     }
 
     /**
@@ -178,6 +178,6 @@ trait ReferencesTrait
      */
     public function refLink(string $link, array $defaults = []): Model
     {
-        return $this->getRef($link)->refLink($defaults);
+        return $this->getRef($link)->refLink($this, $defaults);
     }
 }

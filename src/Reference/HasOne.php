@@ -75,7 +75,7 @@ class HasOne extends Reference
      * If our model is not loaded, then return their model with condition set.
      * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
      */
-    public function ref(array $defaults = []): Model
+    public function ref(Model $ourBoth, array $defaults = []): Model
     {
         $theirModel = $this->createTheirModel($defaults);
 

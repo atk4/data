@@ -63,7 +63,7 @@ class HasMany extends Reference
     /**
      * Returns referenced model with condition set.
      */
-    public function ref(array $defaults = []): Model
+    public function ref(Model $ourBoth, array $defaults = []): Model
     {
         $ourModel = $this->getOurModel();
 
@@ -76,7 +76,7 @@ class HasMany extends Reference
     /**
      * Creates model that can be used for generating sub-query actions.
      */
-    public function refLink(array $defaults = []): Model
+    public function refLink(?Model $ourBoth, array $defaults = []): Model
     {
         $ourModel = $this->getOurModel();
 
@@ -113,7 +113,7 @@ class HasMany extends Reference
 
         if (isset($defaults['expr'])) {
             $fx = function () use ($defaults, $alias) {
-                $theirModelLinked = $this->refLink();
+                $theirModelLinked = $this->refLink(null);
 
                 return $theirModelLinked->action('field', [$theirModelLinked->expr(
                     $defaults['expr'],
@@ -123,19 +123,19 @@ class HasMany extends Reference
             unset($defaults['args']);
         } elseif (is_object($defaults['aggregate'])) {
             $fx = function () use ($defaults, $alias) {
-                return $this->refLink()->action('field', [$defaults['aggregate'], 'alias' => $alias]);
+                return $this->refLink(null)->action('field', [$defaults['aggregate'], 'alias' => $alias]);
             };
         } elseif ($defaults['aggregate'] === 'count' && !isset($defaults['field'])) {
             $fx = function () use ($alias) {
-                return $this->refLink()->action('count', ['alias' => $alias]);
+                return $this->refLink(null)->action('count', ['alias' => $alias]);
             };
         } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {
             $fx = function () use ($defaults, $field) {
-                return $this->refLink()->action('fx0', [$defaults['aggregate'], $field]);
+                return $this->refLink(null)->action('fx0', [$defaults['aggregate'], $field]);
             };
         } else {
             $fx = function () use ($defaults, $field) {
-                return $this->refLink()->action('fx', [$defaults['aggregate'], $field]);
+                return $this->refLink(null)->action('fx', [$defaults['aggregate'], $field]);
             };
         }
 

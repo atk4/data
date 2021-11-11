@@ -83,7 +83,7 @@ class ContainsOne extends Reference
     /**
      * Returns referenced model with loaded data record.
      */
-    public function ref(array $defaults = []): Model
+    public function ref(Model $ourBoth, array $defaults = []): Model
     {
         $ourModel = $this->getOurModel();
 
