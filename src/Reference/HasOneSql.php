@@ -125,7 +125,7 @@ class HasOneSql extends HasOne
         if ($ourModel->isEntity() && $ourModel->loaded() && !$theirModel->loaded()) {
             if ($ourModel->id_field === $this->getOurFieldName()) {
                 return $theirModel->getModel()
-                    ->addCondition($theirFieldName, $this->getOurFieldValue());
+                    ->addCondition($theirFieldName, $this->getOurFieldValue($ourBoth));
             }
         }
 

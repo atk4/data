@@ -13,6 +13,8 @@ use Atk4\Data\Reference;
  */
 class ContainsOne extends Reference
 {
+    use ContainsSeedHackTrait;
+
     /**
      * Field type.
      *
@@ -75,8 +77,10 @@ class ContainsOne extends Reference
 
     protected function getDefaultPersistence(Model $theirModel): Persistence
     {
+        $ourModel = $this->getOurModelPassedToRefXxx();
+
         return new Persistence\Array_([
-            $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],
+            $this->table_alias => $ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null ? [1 => $this->getOurFieldValue($ourModel)] : [],
         ]);
     }
 

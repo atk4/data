@@ -12,10 +12,14 @@ use Atk4\Data\Persistence;
  */
 class ContainsMany extends ContainsOne
 {
+    use ContainsSeedHackTrait;
+
     protected function getDefaultPersistence(Model $theirModel): Persistence
     {
+        $ourModel = $this->getOurModelPassedToRefXxx();
+
         return new Persistence\Array_([
-            $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? $this->getOurFieldValue() : [],
+            $this->table_alias => $ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null ? $this->getOurFieldValue($ourModel) : [],
         ]);
     }
 

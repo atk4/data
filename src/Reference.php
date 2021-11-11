@@ -206,9 +206,9 @@ class Reference
     /**
      * @return mixed
      */
-    final protected function getOurFieldValue()
+    final protected function getOurFieldValue(Model $ourEntity)
     {
-        return $this->getOurModel()->get($this->getOurFieldName());
+        return $this->getOurModel($ourEntity)->get($this->getOurFieldName());
     }
 
     protected function initTableAlias(): void
