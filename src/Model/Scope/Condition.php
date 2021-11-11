@@ -389,7 +389,7 @@ class Condition extends AbstractScope
             $model->set($field->short_name, $value);
 
             // then take the title
-            $title = $model->getRef($field->getReference()->link)->ref()->getTitle();
+            $title = $model->ref($field->getReference()->link)->getTitle();
             if ($title === $value) {
                 $title = null;
             }
