@@ -18,7 +18,7 @@ class HasOneSql extends HasOne
             $theirFieldName = $ourFieldName;
         }
 
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
 
         // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
         $refModelField = $ourModel->refModel($this->link)->getField($theirFieldName);
@@ -96,7 +96,7 @@ class HasOneSql extends HasOne
     /**
      * Creates model that can be used for generating sub-query actions.
      */
-    public function refLink(array $defaults = []): Model
+    public function refLink(Model $ourModel, array $defaults = []): Model
     {
         $theirModel = $this->createTheirModel($defaults);
 
@@ -111,10 +111,10 @@ class HasOneSql extends HasOne
     /**
      * Navigate to referenced model.
      */
-    public function ref(array $defaults = []): Model
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
-        $theirModel = parent::ref($defaults);
-        $ourModel = $this->getOurModel();
+        $theirModel = parent::ref($ourModel, $defaults);
+        $ourModel = $this->getOurModel($ourModel);
 
         $theirFieldName = $this->their_field ?? $theirModel->id_field; // TODO why not $this->getTheirFieldName() ?
 
@@ -125,7 +125,7 @@ class HasOneSql extends HasOne
         if ($ourModel->isEntity() && $ourModel->loaded() && !$theirModel->loaded()) {
             if ($ourModel->id_field === $this->getOurFieldName()) {
                 return $theirModel->getModel()
-                    ->addCondition($theirFieldName, $this->getOurFieldValue());
+                    ->addCondition($theirFieldName, $this->getOurFieldValue($ourModel));
             }
         }
 
@@ -149,7 +149,7 @@ class HasOneSql extends HasOne
      */
     public function addTitle(array $defaults = []): FieldSqlExpression
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
 

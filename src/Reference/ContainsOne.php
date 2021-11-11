@@ -13,6 +13,8 @@ use Atk4\Data\Reference;
  */
 class ContainsOne extends Reference
 {
+    use ContainsSeedHackTrait;
+
     /**
      * Field type.
      *
@@ -56,7 +58,7 @@ class ContainsOne extends Reference
             $this->our_field = $this->link;
         }
 
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
         $ourField = $this->getOurFieldName();
 
         if (!$ourModel->hasElement($ourField)) {
@@ -75,17 +77,19 @@ class ContainsOne extends Reference
 
     protected function getDefaultPersistence(Model $theirModel): Persistence
     {
+        $ourModel = $this->getOurModelPassedToRefXxx();
+
         return new Persistence\Array_([
-            $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],
+            $this->table_alias => $ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null ? [1 => $this->getOurFieldValue($ourModel)] : [],
         ]);
     }
 
     /**
      * Returns referenced model with loaded data record.
      */
-    public function ref(array $defaults = []): Model
+    public function ref(Model $ourModel, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel($ourModel);
 
         $theirModel = $this->createTheirModel(array_merge($defaults, [
             'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
@@ -93,12 +97,12 @@ class ContainsOne extends Reference
         ]));
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) {
+            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) use ($ourModel) {
                 /** @var Persistence\Array_ */
                 $persistence = $theirModel->persistence;
                 $row = $persistence->getRawDataByTable($theirModel, $this->table_alias);
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
-                $this->getOurModel()->save([$this->getOurFieldName() => $row]);
+                $this->getOurModel($ourModel)->save([$this->getOurFieldName() => $row]);
             });
         }
 

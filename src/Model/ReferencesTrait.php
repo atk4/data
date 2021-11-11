@@ -129,14 +129,7 @@ trait ReferencesTrait
      */
     public function getRef(string $link): Reference
     {
-        // reference added to model after entity was forked
-        if ($this->isEntity() && !$this->hasElement('#ref_' . $link)) {
-            $entityRef = clone $this->getModel()->getRef($link);
-            $entityRef->unsetOwner();
-            $this->_add($entityRef);
-        }
-
-        return $this->getElement('#ref_' . $link);
+        return $this->getModel(true)->getElement('#ref_' . $link);
     }
 
     /**
@@ -147,7 +140,7 @@ trait ReferencesTrait
     public function getRefs(): array
     {
         $refs = [];
-        foreach (array_keys($this->elements) as $k) {
+        foreach (array_keys($this->getModel(true)->elements) as $k) {
             if (str_starts_with($k, '#ref_')) {
                 $link = substr($k, strlen('#ref_'));
                 $refs[$link] = $this->getRef($link);
@@ -162,7 +155,7 @@ trait ReferencesTrait
      */
     public function ref(string $link, array $defaults = []): Model
     {
-        return $this->getRef($link)->ref($defaults);
+        return $this->getRef($link)->ref($this, $defaults);
     }
 
     /**
@@ -170,7 +163,7 @@ trait ReferencesTrait
      */
     public function refModel(string $link, array $defaults = []): Model
     {
-        return $this->getRef($link)->refModel($defaults);
+        return $this->getRef($link)->refModel($this, $defaults);
     }
 
     /**
@@ -178,6 +171,6 @@ trait ReferencesTrait
      */
     public function refLink(string $link, array $defaults = []): Model
     {
-        return $this->getRef($link)->refLink($defaults);
+        return $this->getRef($link)->refLink($this, $defaults);
     }
 }
