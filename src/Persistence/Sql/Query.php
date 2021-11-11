@@ -1264,7 +1264,7 @@ class Query extends Expression
      *
      * @return $this
      */
-    public function when($when, $then)
+    public function caseWhen($when, $then)
     {
         $this->args['case_when'][] = [$when, $then];
 
@@ -1278,8 +1278,7 @@ class Query extends Expression
      *
      * @return $this
      */
-    //public function else($else) // PHP 5.6 restricts to use such method name. PHP 7 is fine with it
-    public function otherwise($else)
+    public function caseElse($else)
     {
         $this->args['case_else'] = $else;
 

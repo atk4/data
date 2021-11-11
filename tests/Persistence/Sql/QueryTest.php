@@ -1526,16 +1526,16 @@ class QueryTest extends TestCase
      *
      * @covers ::_render_case
      * @covers ::caseExpr
-     * @covers ::otherwise
-     * @covers ::when
+     * @covers ::caseWhen
+     * @covers ::caseElse
      */
     public function testCaseExprNormal(): void
     {
         // Test normal form
         $s = $this->q()->caseExpr()
-            ->when(['status', 'New'], 't2.expose_new')
-            ->when(['status', 'like', '%Used%'], 't2.expose_used')
-            ->otherwise(null)
+            ->caseWhen(['status', 'New'], 't2.expose_new')
+            ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
+            ->caseElse(null)
             ->render();
         $this->assertSame('case when "status" = :a then :b when "status" like :c then :d else :e end', $s);
 
@@ -1544,8 +1544,8 @@ class QueryTest extends TestCase
         $q = $this->q()->table('user')->field($age, 'calc_age');
 
         $s = $this->q()->caseExpr()
-            ->when(['age', '>', $q], 'Older')
-            ->otherwise('Younger')
+            ->caseWhen(['age', '>', $q], 'Older')
+            ->caseElse('Younger')
             ->render();
         $this->assertSame('case when "age" > (select year(now()) - year(birth_date) "calc_age" from "user") then :a else :b end', $s);
     }
@@ -1555,15 +1555,15 @@ class QueryTest extends TestCase
      *
      * @covers ::_render_case
      * @covers ::caseExpr
-     * @covers ::otherwise
-     * @covers ::when
+     * @covers ::caseWhen
+     * @covers ::caseElse
      */
     public function testCaseExprShortForm(): void
     {
         $s = $this->q()->caseExpr('status')
-            ->when('New', 't2.expose_new')
-            ->when('Used', 't2.expose_used')
-            ->otherwise(null)
+            ->caseWhen('New', 't2.expose_new')
+            ->caseWhen('Used', 't2.expose_used')
+            ->caseElse(null)
             ->render();
         $this->assertSame('case "status" when :a then :b when :c then :d else :e end', $s);
 
@@ -1572,8 +1572,8 @@ class QueryTest extends TestCase
         $q = $this->q()->table('user')->field($age, 'calc_age');
 
         $s = $this->q()->caseExpr($q)
-            ->when(100, 'Very old')
-            ->otherwise('Younger')
+            ->caseWhen(100, 'Very old')
+            ->caseElse('Younger')
             ->render();
         $this->assertSame('case (select year(now()) - year(birth_date) "calc_age" from "user") when :a then :b else :c end', $s);
     }
@@ -1587,7 +1587,7 @@ class QueryTest extends TestCase
     {
         //$this->expectException(Exception::class);
         $this->q()->caseExpr()
-            ->when(['status'], 't2.expose_new')
+            ->caseWhen(['status'], 't2.expose_new')
             ->render();
     }
 
@@ -1598,7 +1598,7 @@ class QueryTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->q()->caseExpr('status')
-            ->when(['status', 'New'], 't2.expose_new')
+            ->caseWhen(['status', 'New'], 't2.expose_new')
             ->render();
     }
 

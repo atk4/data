@@ -839,7 +839,7 @@ Other Methods
     You can pass operand as parameter to create SQL like
     CASE <operand> WHEN <expression> THEN <expression> END type of SQL statement.
 
-.. php:method:: when($when, $then)
+.. php:method:: caseWhen($when, $then)
 
     Set WHEN condition and THEN expression for CASE statement.
 
@@ -851,18 +851,18 @@ Other Methods
 
     .. code-block:: php
     $s = $this->q()->caseExpr()
-            ->when(['status','New'], 't2.expose_new')
-            ->when(['status', 'like', '%Used%'], 't2.expose_used')
-            ->otherwise(null);
+            ->caseWhen(['status','New'], 't2.expose_new')
+            ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
+            ->caseElse(null);
 
     .. code-block:: sql
     case when "status" = 'New' then "t2"."expose_new" when "status" like '%Used%' then "t2"."expose_used" else null end
 
     .. code-block:: php
     $s = $this->q()->caseExpr('status')
-            ->when('New', 't2.expose_new')
-            ->when('Used', 't2.expose_used')
-            ->otherwise(null);
+            ->caseWhen('New', 't2.expose_new')
+            ->caseWhen('Used', 't2.expose_used')
+            ->caseElse(null);
 
     .. code-block:: sql
     case "status" when 'New' then "t2"."expose_new" when 'Used' then "t2"."expose_used" else null end
