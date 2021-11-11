@@ -17,7 +17,7 @@ trait UserActionsTrait
     public $_default_seed_action = [Model\UserAction::class];
 
     /**
-     * @var array Collection of user actions - using key as action system name
+     * @var array<string, Model\UserAction> Collection of user actions - using key as action system name
      */
     protected $userActions = [];
 
@@ -51,6 +51,8 @@ trait UserActionsTrait
      * It will also skip system user actions (where system === true).
      *
      * @param string $appliesTo e.g. Model\UserAction::APPLIES_TO_ALL_RECORDS
+     *
+     * @return array<string, Model\UserAction>
      */
     public function getUserActions(string $appliesTo = null): array
     {

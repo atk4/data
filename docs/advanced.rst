@@ -135,7 +135,7 @@ To implement the above, I'll create a new class::
     class Controller_Audit {
 
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
         use \Atk4\Core\AppScopeTrait;
@@ -216,7 +216,7 @@ Start by creating a class::
     class Controller_SoftDelete {
 
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
@@ -325,7 +325,7 @@ before and just slightly modifying it::
     class Controller_SoftDelete {
 
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
@@ -359,7 +359,7 @@ before and just slightly modifying it::
             $m->save(['is_deleted' => true])->unload();
             $m->reload_after_save = $rs;
 
-            $m->hook(Model::HOOK_AFTER_DELETE, [$id]);
+            $m->hook(Model::HOOK_AFTER_DELETE);
 
             $m->breakHook(false); // this will cancel original delete()
         }
@@ -411,7 +411,7 @@ inside your model are unique::
 
     class Controller_UniqueFields {
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
@@ -517,7 +517,7 @@ Next we need to define reference. Inside Model_Invoice add::
         $j->hasOne('invoice_id', 'Model_Invoice');
     }, 'their_field' => 'invoice_id']);
 
-    $this->onHookShort(Model::HOOK_BEFORE_DELETE, function(){
+    $this->onHookShort(Model::HOOK_BEFORE_DELETE, function() {
         $this->ref('InvoicePayment')->action('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment

@@ -75,10 +75,6 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             '"first_name", "last_name"',
-            $this->callProtected($this->q()->field('first_name,last_name'), '_render_field')
-        );
-        $this->assertSame(
-            '"first_name", "last_name"',
             $this->callProtected($this->q()->field('first_name')->field('last_name'), '_render_field')
         );
         $this->assertSame(
@@ -100,18 +96,6 @@ class QueryTest extends TestCase
         $this->assertSame(
             '"first_name" "name"',
             $this->callProtected($this->q()->field('first_name', 'name'), '_render_field')
-        );
-        $this->assertSame(
-            '"first_name" "name"',
-            $this->callProtected($this->q()->field(['name' => 'first_name']), '_render_field')
-        );
-        $this->assertSame(
-            '"name"',
-            $this->callProtected($this->q()->field(['name' => 'name']), '_render_field')
-        );
-        $this->assertSame(
-            '"employee"."first_name" "name"',
-            $this->callProtected($this->q()->field(['name' => 'employee.first_name']), '_render_field')
         );
         $this->assertSame(
             '*',
@@ -190,10 +174,6 @@ class QueryTest extends TestCase
             'now() "time"',
             $this->q('[field]')->field(new Expression('now()'), 'time')->render()
         );
-        $this->assertSame(// alias can be passed as 3nd argument
-            'now() "time"',
-            $this->q('[field]')->field(['time' => new Expression('now()')])->render()
-        );
     }
 
     /**
@@ -206,39 +186,6 @@ class QueryTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->q()->field('name', 'a')->field('surname', 'a');
-    }
-
-    /**
-     * There shouldn't be alias when passing fields as array.
-     *
-     * @covers ::field
-     */
-    public function testFieldException2(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q()->field(['name', 'surname'], 'a');
-    }
-
-    /**
-     * There shouldn't be alias when passing multiple tables.
-     *
-     * @covers ::table
-     */
-    public function testTableException1(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q()->table('employee,jobs', 'u');
-    }
-
-    /**
-     * There shouldn't be alias when passing multiple tables.
-     *
-     * @covers ::table
-     */
-    public function testTableException2(): void
-    {
-        $this->expectException(Exception::class);
-        $this->q()->table(['employee', 'jobs'], 'u');
     }
 
     /**
@@ -455,42 +402,18 @@ class QueryTest extends TestCase
                 ->field('employee.name')->table('employee')->table('jobs')
                 ->render()
         );
-        $this->assertSame(
-            'select "name" from "employee", "jobs"',
-            $this->q()
-                ->field('name')->table('employee,jobs')
-                ->render()
-        );
-        $this->assertSame(
-            'select "name" from "employee", "jobs"',
-            $this->q()
-                ->field('name')->table('  employee ,   jobs  ')
-                ->render()
-        );
-        $this->assertSame(
-            'select "name" from "employee", "jobs"',
-            $this->q()
-                ->field('name')->table(['employee', 'jobs'])
-                ->render()
-        );
-        $this->assertSame(
-            'select "name" from "employee", "jobs"',
-            $this->q()
-                ->field('name')->table(['employee  ', '  jobs'])
-                ->render()
-        );
 
         // multiple tables with aliases
         $this->assertSame(
             'select "name" from "employee", "jobs" "j"',
             $this->q()
-                ->field('name')->table(['employee', 'j' => 'jobs'])
+                ->field('name')->table('employee')->table('jobs', 'j')
                 ->render()
         );
         $this->assertSame(
             'select "name" from "employee" "e", "jobs" "j"',
             $this->q()
-                ->field('name')->table(['e' => 'employee', 'j' => 'jobs'])
+                ->field('name')->table('employee', 'e')->table('jobs', 'j')
                 ->render()
         );
         // testing _render_table_noalias, shouldn't render table alias 'emp'
@@ -676,7 +599,9 @@ class QueryTest extends TestCase
 
         // SELECT date, debit, credit FROM ($q1 union $q2)
         $q = $this->q()
-            ->field('date,debit,credit')
+            ->field('date')
+            ->field('debit')
+            ->field('credit')
             ->table($u, 'derrivedTable');
         $this->assertSame(
             'select "date", "debit", "credit" from ((select "date", "amount" "debit", 0 "credit" from "sales") union (select "date", 0 "debit", "amount" "credit" from "purchases")) "derrivedTable"',
@@ -696,7 +621,9 @@ class QueryTest extends TestCase
 
         // SELECT date, debit, credit FROM ($q1 union $q2)
         $q = $this->q()
-            ->field('date,debit,credit')
+            ->field('date')
+            ->field('debit')
+            ->field('credit')
             ->table($u, 'derrivedTable');
         $this->assertSame(
             'select "date", "debit", "credit" from (select "date", "amount" "debit", 0 "credit" from "sales" union select "date", 0 "debit", "amount" "credit" from "purchases") "derrivedTable"',
@@ -1044,11 +971,11 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'order by "name", "surname"',
-            $this->q('[order]')->order('name,surname')->render()
+            $this->q('[order]')->order('surname')->order('name')->render()
         );
         $this->assertSame(
             'order by "name" desc, "surname" desc',
-            $this->q('[order]')->order('name desc,surname desc')->render()
+            $this->q('[order]')->order('surname desc')->order('name desc')->render()
         );
         $this->assertSame(
             'order by "name" desc, "surname"',
@@ -1137,14 +1064,6 @@ class QueryTest extends TestCase
         $this->assertSame(
             'group by "gender"',
             $this->q('[group]')->group('gender')->render()
-        );
-        $this->assertSame(
-            'group by "gender", "age"',
-            $this->q('[group]')->group('gender,age')->render()
-        );
-        $this->assertSame(
-            'group by "gender", "age"',
-            $this->q('[group]')->group(['gender', 'age'])->render()
         );
         $this->assertSame(
             'group by "gender", "age"',
@@ -1261,20 +1180,21 @@ class QueryTest extends TestCase
             'left join "address" "a" on "a"."user_id" = "u"."id" ' .
             'left join "bank" "b" on "b"."id" = "u"."bank_id"',
             $this->q('[join]')->table('user', 'u')
-                ->join(['a' => 'address.user_id', 'b' => 'bank'])->render()
+                ->join('address.user_id', null, null, 'a')->join('bank', null, null, 'b')
+                ->render()
         );
         $this->assertSame(
             'left join "address" on "address"."user_id" = "u"."id" ' .
             'left join "bank" on "bank"."id" = "u"."bank_id"',
             $this->q('[join]')->table('user', 'u')
-                ->join(['address.user_id', 'bank'])->render()
+                ->join('address.user_id')->join('bank')->render()
         );
         $this->assertSame(
             'left join "address" "a" on "a"."user_id" = "u"."id" ' .
             'left join "bank" "b" on "b"."id" = "u"."bank_id" ' .
             'left join "bank_details" on "bank_details"."id" = "bank"."details_id"',
             $this->q('[join]')->table('user', 'u')
-                ->join(['a' => 'address.user_id', 'b' => 'bank'])
+                ->join('address.user_id', null, null, 'a')->join('bank', null, null, 'b')
                 ->join('bank_details', 'bank.details_id')->render()
         );
 
@@ -1424,7 +1344,7 @@ class QueryTest extends TestCase
             'insert into "employee" ("time", "name") values (now(), :a)',
             $this->q()
                 ->field('time')->field('name')->table('employee')
-                ->set(['time' => new Expression('now()'), 'name' => 'unknown'])
+                ->setMulti(['time' => new Expression('now()'), 'name' => 'unknown'])
                 ->mode('insert')
                 ->render()
         );
@@ -1577,11 +1497,7 @@ class QueryTest extends TestCase
         // multiple options
         $this->assertSame(
             'select calc_found_rows ignore * from "test"',
-            $this->q()->table('test')->option('calc_found_rows,ignore')->render()
-        );
-        $this->assertSame(
-            'select calc_found_rows ignore * from "test"',
-            $this->q()->table('test')->option(['calc_found_rows', 'ignore'])->render()
+            $this->q()->table('test')->option('calc_found_rows')->option('ignore')->render()
         );
         // options for specific modes
         $q = $this->q()
@@ -1609,17 +1525,17 @@ class QueryTest extends TestCase
      * Test caseExpr (normal).
      *
      * @covers ::_render_case
+     * @covers ::caseElse
      * @covers ::caseExpr
-     * @covers ::otherwise
-     * @covers ::when
+     * @covers ::caseWhen
      */
     public function testCaseExprNormal(): void
     {
         // Test normal form
         $s = $this->q()->caseExpr()
-            ->when(['status', 'New'], 't2.expose_new')
-            ->when(['status', 'like', '%Used%'], 't2.expose_used')
-            ->otherwise(null)
+            ->caseWhen(['status', 'New'], 't2.expose_new')
+            ->caseWhen(['status', 'like', '%Used%'], 't2.expose_used')
+            ->caseElse(null)
             ->render();
         $this->assertSame('case when "status" = :a then :b when "status" like :c then :d else :e end', $s);
 
@@ -1628,8 +1544,8 @@ class QueryTest extends TestCase
         $q = $this->q()->table('user')->field($age, 'calc_age');
 
         $s = $this->q()->caseExpr()
-            ->when(['age', '>', $q], 'Older')
-            ->otherwise('Younger')
+            ->caseWhen(['age', '>', $q], 'Older')
+            ->caseElse('Younger')
             ->render();
         $this->assertSame('case when "age" > (select year(now()) - year(birth_date) "calc_age" from "user") then :a else :b end', $s);
     }
@@ -1638,16 +1554,16 @@ class QueryTest extends TestCase
      * Test caseExpr (short form).
      *
      * @covers ::_render_case
+     * @covers ::caseElse
      * @covers ::caseExpr
-     * @covers ::otherwise
-     * @covers ::when
+     * @covers ::caseWhen
      */
     public function testCaseExprShortForm(): void
     {
         $s = $this->q()->caseExpr('status')
-            ->when('New', 't2.expose_new')
-            ->when('Used', 't2.expose_used')
-            ->otherwise(null)
+            ->caseWhen('New', 't2.expose_new')
+            ->caseWhen('Used', 't2.expose_used')
+            ->caseElse(null)
             ->render();
         $this->assertSame('case "status" when :a then :b when :c then :d else :e end', $s);
 
@@ -1656,8 +1572,8 @@ class QueryTest extends TestCase
         $q = $this->q()->table('user')->field($age, 'calc_age');
 
         $s = $this->q()->caseExpr($q)
-            ->when(100, 'Very old')
-            ->otherwise('Younger')
+            ->caseWhen(100, 'Very old')
+            ->caseElse('Younger')
             ->render();
         $this->assertSame('case (select year(now()) - year(birth_date) "calc_age" from "user") when :a then :b else :c end', $s);
     }
@@ -1671,7 +1587,7 @@ class QueryTest extends TestCase
     {
         //$this->expectException(Exception::class);
         $this->q()->caseExpr()
-            ->when(['status'], 't2.expose_new')
+            ->caseWhen(['status'], 't2.expose_new')
             ->render();
     }
 
@@ -1682,7 +1598,7 @@ class QueryTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->q()->caseExpr('status')
-            ->when(['status', 'New'], 't2.expose_new')
+            ->caseWhen(['status', 'New'], 't2.expose_new')
             ->render();
     }
 
@@ -1783,7 +1699,10 @@ class QueryTest extends TestCase
             ->table('employees')
             ->join('q.emp')
             ->join('i.emp')
-            ->field(['name', 'salary', 'q.quoted', 'i.invoiced']);
+            ->field('name')
+            ->field('salary')
+            ->field('q.quoted')
+            ->field('i.invoiced');
         $this->assertSame(
             'with ' .
                 '"q" ("emp", "quoted") as (select "emp_id", sum(:a) from "quotes" group by "emp_id"), ' .

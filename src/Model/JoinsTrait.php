@@ -29,6 +29,8 @@ trait JoinsTrait
      */
     public function join(string $foreignTable, array $defaults = []): Join
     {
+        $this->assertIsModel();
+
         $defaults[0] = $foreignTable;
 
         $join = Join::fromSeed($this->_default_seed_join, $defaults);

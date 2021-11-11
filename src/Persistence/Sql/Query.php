@@ -73,9 +73,6 @@ class Query extends Expression
      *  $q->field('user.name');
      *  $q->field('user.name')->field('address.line1');
      *
-     * Array as a first argument will specify multiple fields, same as calling field() multiple times
-     *  $q->field(['name', 'surname', 'address.line1']);
-     *
      * You can pass first argument as Expression or Query
      *  $q->field( $q->expr('2+2'), 'alias');   // must always use alias
      *
@@ -83,39 +80,20 @@ class Query extends Expression
      * brackets.
      *  $q->field( $q->dsql()->table('x')... , 'alias');
      *
-     * Associative array will assume that "key" holds the field alias.
-     * Value may be field name, Expression or Query.
-     *  $q->field(['alias' => 'name', 'alias2' => 'mother.surname']);
-     *  $q->field(['alias' => $q->expr(..), 'alias2' => $q->dsql()->.. ]);
-     *
      * If you need to use funky name for the field (e.g, one containing
      * a dot or a space), you should wrap it into expression:
      *  $q->field($q->expr('{}', ['fun...ky.field']), 'f');
      *
-     * @param mixed  $field Specifies field to select
-     * @param string $alias Specify alias for this field
+     * @param string|Expressionable $field Specifies field to select
+     * @param string                $alias Specify alias for this field
      *
      * @return $this
      */
     public function field($field, $alias = null)
     {
-        // field is passed as string, may contain commas
-        if (is_string($field) && strpos($field, ',') !== false) {
-            $field = explode(',', $field);
-        }
-
-        // recursively add array fields
-        if (is_array($field)) {
-            if ($alias !== null) {
-                throw (new Exception('Alias must not be specified when $field is an array'))
-                    ->addMoreInfo('alias', $alias);
-            }
-
-            foreach ($field as $alias => $f) {
-                $this->field($f, is_numeric($alias) ? null : $alias);
-            }
-
-            return $this;
+        // remove in v4.0
+        if (is_string($field) && str_contains($field, ',') || is_array($field)) {
+            throw new \TypeError('Array input is no longer accepted');
         }
 
         // save field in args
@@ -185,33 +163,16 @@ class Query extends Expression
     /**
      * Specify a table to be used in a query.
      *
-     * @param mixed  $table Specifies table
-     * @param string $alias Specify alias for this table
+     * @param string|Expressionable $table Specifies table
+     * @param string                $alias Specify alias for this table
      *
      * @return $this
      */
     public function table($table, $alias = null)
     {
-        // comma-separated table names
-        if (is_string($table) && strpos($table, ',') !== false) {
-            $table = explode(',', $table);
-        }
-
-        // array of tables - recursively process each
-        if (is_array($table)) {
-            if ($alias !== null) {
-                throw (new Exception('You cannot use single alias with multiple tables'))
-                    ->addMoreInfo('alias', $alias);
-            }
-
-            foreach ($table as $alias => $t) {
-                if (is_numeric($alias)) {
-                    $alias = null;
-                }
-                $this->table($t, $alias);
-            }
-
-            return $this;
+        // remove in v4.0
+        if (is_string($table) && str_contains($table, ',') || is_array($table)) {
+            throw new \TypeError('Array input is no longer accepted');
         }
 
         // if table is set as sub-Query, then alias is mandatory
@@ -374,7 +335,6 @@ class Query extends Expression
      *  $q->join('address');         // on user.address_id=address.id
      *  $q->join('address.user_id'); // on address.user_id=user.id
      *  $q->join('address a');       // With alias
-     *  $q->join(array('a' => 'address')); // Also alias
      *
      * Second argument may specify the field of the master table
      *  $q->join('address', 'billing_id');
@@ -385,9 +345,6 @@ class Query extends Expression
      *  $q->join('address', null, 'left');
      *  $q->join('address.code', 'user.code', 'inner');
      *
-     * Using array syntax you can join multiple tables too
-     *  $q->join(array('a' => 'address', 'p' => 'portfolio'));
-     *
      * You can use expression for more complex joins
      *  $q->join('address',
      *      $q->orExpr()
@@ -395,10 +352,10 @@ class Query extends Expression
      *          ->where('user.technical_id=address.id')
      *  )
      *
-     * @param string|array $foreign_table  Table to join with
-     * @param mixed        $master_field   Field in master table
-     * @param string       $join_kind      'left' or 'inner', etc
-     * @param string       $_foreign_alias Internal, don't use
+     * @param string $foreign_table  Table to join with
+     * @param mixed  $master_field   Field in master table
+     * @param string $join_kind      'left' or 'inner', etc
+     * @param string $_foreign_alias Internal, don't use
      *
      * @return $this
      */
@@ -408,18 +365,11 @@ class Query extends Expression
         $join_kind = null,
         $_foreign_alias = null
     ) {
-        // If array - add recursively
+        // remove in v4.0
         if (is_array($foreign_table)) {
-            foreach ($foreign_table as $alias => $foreign) {
-                if (is_numeric($alias)) {
-                    $alias = null;
-                }
-
-                $this->join($foreign, $master_field, $join_kind, $alias);
-            }
-
-            return $this;
+            throw new \TypeError('Array input is no longer accepted');
         }
+
         $j = [];
 
         // try to find alias in foreign table definition. this behaviour should be deprecated
@@ -515,32 +465,32 @@ class Query extends Expression
      * Adds condition to your query.
      *
      * Examples:
-     *  $q->where('id',1);
+     *  $q->where('id', 1);
      *
      * By default condition implies equality. You can specify a different comparison
      * operator by either including it along with the field or using 3-argument
      * format:
-     *  $q->where('id>','1');
-     *  $q->where('id','>',1);
+     *  $q->where('id>', '1');
+     *  $q->where('id', '>', 1);
      *
      * You may use Expression as any part of the query.
      *  $q->where($q->expr('a=b'));
-     *  $q->where('date>',$q->expr('now()'));
-     *  $q->where($q->expr('length(password)'),'>',5);
+     *  $q->where('date>', $q->expr('now()'));
+     *  $q->where($q->expr('length(password)'), '>', 5);
      *
      * If you specify Query as an argument, it will be automatically
      * surrounded by brackets:
-     *  $q->where('user_id',$q->dsql()->table('users')->field('id'));
+     *  $q->where('user_id', $q->dsql()->table('users')->field('id'));
      *
      * To specify OR conditions:
-     *  $q->where($q->orExpr()->where('a',1)->where('b',1));
+     *  $q->where($q->orExpr()->where('a', 1)->where('b', 1));
      *
-     * @param mixed  $field    Field or Expression
-     * @param mixed  $cond     Condition such as '=', '>' or 'is not'
-     * @param mixed  $value    Value. Will be quoted unless you pass expression
-     * @param string $kind     Do not use directly. Use having()
-     * @param int    $num_args when $kind is passed, we can't determine number of
-     *                         actual arguments, so this argument must be specified
+     * @param string|Expressionable $field    Field or Expression
+     * @param mixed                 $cond     Condition such as '=', '>' or 'is not'
+     * @param mixed                 $value    Value. Will be quoted unless you pass expression
+     * @param string                $kind     Do not use directly. Use having()
+     * @param int                   $num_args when $kind is passed, we can't determine number of
+     *                                        actual arguments, so this argument must be specified
      *
      * @return $this
      */
@@ -551,10 +501,9 @@ class Query extends Expression
             $num_args = func_num_args();
         }
 
-        // Array as first argument means we have to replace it with orExpr()
-        // remove in v2.5
+        // remove in v4.0
         if (is_array($field)) {
-            throw new Exception('Array input / OR conditions is no longer supported');
+            throw new Exception('Array input as OR conditions is no longer supported');
         }
 
         // first argument is string containing more than just a field name and no more than 2
@@ -573,7 +522,7 @@ class Query extends Expression
 
             // if we couldn't clearly identify the condition, we might be dealing with
             // a more complex expression. If expression is followed by another argument
-            // we need to add equation sign  where('now()',123).
+            // we need to add equation sign  where('now()', 123).
             if (!$cond) {
                 $matches[1] = $this->expr($field);
 
@@ -627,9 +576,9 @@ class Query extends Expression
     /**
      * Same syntax as where().
      *
-     * @param mixed $field Field or Expression
-     * @param mixed $cond  Condition such as '=', '>' or 'is not'
-     * @param mixed $value Value. Will be quoted unless you pass expression
+     * @param string|Expressionable $field Field or Expression
+     * @param mixed                 $cond  Condition such as '=', '>' or 'is not'
+     * @param mixed                 $value Value. Will be quoted unless you pass expression
      *
      * @return $this
      */
@@ -796,23 +745,15 @@ class Query extends Expression
      * Implements GROUP BY functionality. Simply pass either field name
      * as string or expression.
      *
-     * @param mixed $group Group by this
+     * @param string|Expressionable $group
      *
      * @return $this
      */
     public function group($group)
     {
-        // Case with comma-separated fields
-        if (is_string($group) && !$this->isUnescapablePattern($group) && strpos($group, ',') !== false) {
-            $group = explode(',', $group);
-        }
-
+        // remove in v4.0
         if (is_array($group)) {
-            foreach ($group as $g) {
-                $this->args['group'][] = $g;
-            }
-
-            return $this;
+            throw new \TypeError('Array input is no longer accepted');
         }
 
         $this->args['group'][] = $group;
@@ -840,25 +781,22 @@ class Query extends Expression
     /**
      * Sets field value for INSERT or UPDATE statements.
      *
-     * @param string|Expression|Expressionable|array $field Name of the field
-     * @param mixed                                  $value Value of the field
+     * @param string|Expressionable $field Name of the field
+     * @param mixed                 $value Value of the field
      *
      * @return $this
      */
     public function set($field, $value = null)
     {
+        // remove in v4.0
+        if (is_array($field)) {
+            throw new \TypeError('Array input is no longer accepted');
+        }
+
         if (is_array($value)) {
             throw (new Exception('Array values are not supported by SQL'))
                 ->addMoreInfo('field', $field)
                 ->addMoreInfo('value', $value);
-        }
-
-        if (is_array($field)) {
-            foreach ($field as $key => $value) {
-                $this->set($key, $value);
-            }
-
-            return $this;
         }
 
         if (is_string($field) || $field instanceof Expressionable) {
@@ -866,6 +804,20 @@ class Query extends Expression
         } else {
             throw (new Exception('Field name should be string or Expressionable'))
                 ->addMoreInfo('field', $field);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $fields
+     *
+     * @return $this
+     */
+    public function setMulti($fields)
+    {
+        foreach ($fields as $k => $v) {
+            $this->set($k, $v);
         }
 
         return $this;
@@ -934,17 +886,9 @@ class Query extends Expression
      */
     public function option($option, $mode = 'select')
     {
-        // Case with comma-separated options
-        if (is_string($option) && strpos($option, ',') !== false) {
-            $option = explode(',', $option);
-        }
-
-        if (is_array($option)) {
-            foreach ($option as $opt) {
-                $this->args['option'][$mode][] = $opt;
-            }
-
-            return $this;
+        // remove in v4.0
+        if (is_string($option) && str_contains($option, ',') || is_array($option)) {
+            throw new \TypeError('Array input is no longer accepted');
         }
 
         $this->args['option'][$mode][] = $option;
@@ -1070,26 +1014,24 @@ class Query extends Expression
      * $q->order('name');
      * $q->order('name desc');
      * $q->order('name desc, id asc')
-     * $q->order('name',true);
+     * $q->order('name', true);
      *
-     * @param string|Expressionable|array $order order by
-     * @param string|bool                 $desc  true to sort descending
+     * @param string|Expressionable|array<int, string|Expressionable> $order order by
+     * @param string|bool                                             $desc  true to sort descending
      *
      * @return $this
      */
     public function order($order, $desc = null)
     {
-        // Case with comma-separated fields or first argument being an array
-        if (is_string($order) && strpos($order, ',') !== false) {
-            $order = explode(',', $order);
+        if (is_string($order) && str_contains($order, ',')) {
+            throw new Exception('Comma-separated fields list is no longer accepted, use array instead');
         }
 
         if (is_array($order)) {
             if ($desc !== null) {
-                throw new Exception(
-                    'If first argument is array, second argument must not be used'
-                );
+                throw new Exception('If first argument is array, second argument must not be used');
             }
+
             foreach (array_reverse($order) as $o) {
                 $this->order($o);
             }
@@ -1099,7 +1041,7 @@ class Query extends Expression
 
         // First argument may contain space, to divide field and ordering keyword.
         // Explode string only if ordering keyword is 'desc' or 'asc'.
-        if ($desc === null && is_string($order) && strpos($order, ' ') !== false) {
+        if ($desc === null && is_string($order) && str_contains($order, ' ')) {
             $_chunks = explode(' ', $order);
             $_desc = strtolower(array_pop($_chunks));
             if (in_array($_desc, ['desc', 'asc'], true)) {
@@ -1215,7 +1157,7 @@ class Query extends Expression
      * Use this instead of "new Query()" if you want to automatically bind
      * query to the same connection as the parent.
      *
-     * @param array $properties
+     * @param string|array $properties
      *
      * @return Query
      */
@@ -1305,7 +1247,7 @@ class Query extends Expression
      * PostgreSQL - string_agg
      * Oracle - listagg
      *
-     * @param mixed $field
+     * @param string|Expressionable $field
      *
      * @return Expression
      */
@@ -1322,7 +1264,7 @@ class Query extends Expression
      *
      * @return $this
      */
-    public function when($when, $then)
+    public function caseWhen($when, $then)
     {
         $this->args['case_when'][] = [$when, $then];
 
@@ -1336,8 +1278,7 @@ class Query extends Expression
      *
      * @return $this
      */
-    //public function else($else) // PHP 5.6 restricts to use such method name. PHP 7 is fine with it
-    public function otherwise($else)
+    public function caseElse($else)
     {
         $this->args['case_else'] = $else;
 

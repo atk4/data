@@ -45,8 +45,8 @@ class SUser extends Model
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
         $this->hasOne('country_id', ['model' => [SCountry::class]])
-            ->withTitle()
-            ->addFields(['country_code' => 'code', 'is_eu']);
+            ->addFields(['country_code' => 'code', 'is_eu'])
+            ->addTitle();
 
         $this->hasMany('Tickets', ['model' => [STicket::class], 'their_field' => 'user']);
     }
@@ -309,7 +309,7 @@ class ScopeTest extends TestCase
 
         $this->assertEquals(Scope::OR, $scope->getJunction());
 
-        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')', $scope->toWords($user));
+        $this->assertEquals('(Name is equal to \'John\' and Country Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Country Code is equal to \'LV\')', $scope->toWords($user));
 
         $user->scope()->add($scope);
 
@@ -330,7 +330,7 @@ class ScopeTest extends TestCase
 
         $scope->addCondition('country_code', 'BR');
 
-        $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\') or Code is equal to \'BR\'', $scope->toWords($user));
+        $this->assertEquals('(Name is equal to \'John\' and Country Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Country Code is equal to \'LV\') or Country Code is equal to \'BR\'', $scope->toWords($user));
 
         $user = new SUser($this->db);
 
@@ -351,7 +351,7 @@ class ScopeTest extends TestCase
 
         $scope = Scope::createAnd($scope1, $condition3);
 
-        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->toWords($user));
+        $this->assertEquals('(Name is equal to \'Alain\' and Country Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->toWords($user));
     }
 
     public function testNegate(): void
@@ -381,7 +381,7 @@ class ScopeTest extends TestCase
 
         $scope = Scope::createOr($scope, new Condition('name', 'John'));
 
-        $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'FR\') or Name is equal to \'John\'', $scope->toWords($user));
+        $this->assertEquals('(Name is equal to \'Alain\' and Country Code is equal to \'FR\') or Name is equal to \'John\'', $scope->toWords($user));
     }
 
     public function testOr(): void
@@ -395,7 +395,7 @@ class ScopeTest extends TestCase
 
         $scope = Scope::createAnd($scope, new Condition('name', 'John'));
 
-        $this->assertEquals('(Name is equal to \'Alain\' or Code is equal to \'FR\') and Name is equal to \'John\'', $scope->toWords($user));
+        $this->assertEquals('(Name is equal to \'Alain\' or Country Code is equal to \'FR\') and Name is equal to \'John\'', $scope->toWords($user));
     }
 
     public function testMerge(): void
@@ -407,7 +407,7 @@ class ScopeTest extends TestCase
 
         $scope = Scope::createAnd($condition1, $condition2);
 
-        $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $scope->toWords($user));
+        $this->assertEquals('Name is equal to \'Alain\' and Country Code is equal to \'FR\'', $scope->toWords($user));
     }
 
     public function testDestroyEmpty(): void

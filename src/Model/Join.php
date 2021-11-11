@@ -23,10 +23,12 @@ class Join
 {
     use DiContainerTrait;
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
     use JoinLinkTrait;
-    use TrackableTrait;
+    use TrackableTrait {
+        setOwner as private _setOwner;
+    }
 
     /**
      * Name of the table (or collection) that can be used to retrieve data from.
@@ -43,13 +45,6 @@ class Join
      * @var Persistence|Persistence\Sql|null
      */
     protected $persistence;
-
-    /**
-     * ID used by a joined table.
-     *
-     * @var mixed
-     */
-    protected $id;
 
     /**
      * Field that is used as native "ID" in the foreign table.
@@ -128,11 +123,18 @@ class Join
     protected $prefix = '';
 
     /**
-     * Data which is populated here as the save/insert progresses.
+     * ID indexed by spl_object_id(entity) used by a joined table.
      *
-     * @var array
+     * @var mixed
      */
-    protected $save_buffer = [];
+    protected $idByOid;
+
+    /**
+     * Data indexed by spl_object_id(entity) which is populated here as the save/insert progresses.
+     *
+     * @var array<int, array<string, mixed>>
+     */
+    private $saveBufferByOid = [];
 
     public function __construct(string $foreign_table = null)
     {
@@ -146,14 +148,49 @@ class Join
         }
     }
 
-    protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    /**
+     * @param Model $owner
+     *
+     * @return $this
+     */
+    public function setOwner(object $owner)
+    {
+        $owner->assertIsModel();
+
+        return $this->_setOwner($owner);
+    }
+
+    protected function onHookToOwnerBoth(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->short_name; // use static function to allow this object to be GCed
 
-        return $this->getOwner()->onHookDynamicShort(
+        return $this->getOwner()->onHookDynamic(
             $spot,
-            static function (Model $owner) use ($name) {
-                return $owner->getElement($name);
+            static function (Model $model) use ($name): self {
+                /** @var self */
+                $obj = $model->getModel(true)->getElement($name);
+                $model->getModel(true)->assertIsModel($obj->getOwner());
+
+                return $obj;
+            },
+            $fx,
+            $args,
+            $priority
+        );
+    }
+
+    protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    {
+        $name = $this->short_name; // use static function to allow this object to be GCed
+
+        return $this->getOwner()->onHookDynamic(
+            $spot,
+            static function (Model $entity) use ($name): self {
+                /** @var self */
+                $obj = $entity->getModel()->getElement($name);
+                $entity->assertIsEntity($obj->getOwner());
+
+                return $obj;
             },
             $fx,
             $args,
@@ -208,7 +245,7 @@ class Join
             }
         }
 
-        $this->onHookShortToOwner(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
+        $this->onHookToOwnerEntity(Model::HOOK_AFTER_UNLOAD, \Closure::fromCallable([$this, 'afterUnload']));
 
         // if kind is not specified, figure out join type
         if (!$this->kind) {
@@ -356,26 +393,80 @@ class Join
     */
 
     /**
-     * Set value.
+     * @return mixed
      *
-     * @param string $field
-     * @param mixed  $value
-     *
-     * @return $this
+     * @internal should be not used outside atk4/data
      */
-    public function set($field, $value)
+    protected function getId(Model $entity)
     {
-        $this->save_buffer[$field] = $value;
+        return $this->idByOid[spl_object_id($entity)];
+    }
 
-        return $this;
+    /**
+     * @param mixed $id
+     *
+     * @internal should be not used outside atk4/data
+     */
+    protected function setId(Model $entity, $id): void
+    {
+        $this->idByOid[spl_object_id($entity)] = $id;
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function unsetId(Model $entity): void
+    {
+        unset($this->idByOid[spl_object_id($entity)]);
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function issetSaveBuffer(Model $entity): bool
+    {
+        return isset($this->saveBufferByOid[spl_object_id($entity)]);
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function getAndUnsetSaveBuffer(Model $entity): array
+    {
+        $res = $this->saveBufferByOid[spl_object_id($entity)];
+        $this->unsetSaveBuffer($entity);
+
+        return $res;
+    }
+
+    /**
+     * @internal should be not used outside atk4/data
+     */
+    protected function unsetSaveBuffer(Model $entity): void
+    {
+        unset($this->saveBufferByOid[spl_object_id($entity)]);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function setSaveBufferValue(Model $entity, string $fieldName, $value): void
+    {
+        $entity->assertIsEntity($this->getOwner());
+
+        if (!isset($this->saveBufferByOid[spl_object_id($entity)])) {
+            $this->saveBufferByOid[spl_object_id($entity)] = [];
+        }
+
+        $this->saveBufferByOid[spl_object_id($entity)][$fieldName] = $value;
     }
 
     /**
      * Clears id and save buffer.
      */
-    protected function afterUnload(): void
+    protected function afterUnload(Model $entity): void
     {
-        $this->id = null;
-        $this->save_buffer = [];
+        $this->unsetId($entity);
+        $this->unsetSaveBuffer($entity);
     }
 }

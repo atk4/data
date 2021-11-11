@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
+use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
@@ -60,7 +61,7 @@ class Model_Item3 extends Model
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
         $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
-            ->withTitle();
+            ->addTitle();
 
         $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
@@ -255,7 +256,7 @@ class RandomTest extends TestCase
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
-                throw (new \Atk4\Core\Exception('Update didn\'t affect any records'))
+                throw (new Exception('Update didn\'t affect any records'))
                     ->addMoreInfo('query', $update->getDebugQuery())
                     ->addMoreInfo('statement', $st)
                     ->addMoreInfo('model', $m);
@@ -307,7 +308,7 @@ class RandomTest extends TestCase
             $m->breakHook(false);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m, int $id) {
+        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m) {
             $m->unload();
             $m->breakHook(false);
         });
@@ -327,7 +328,7 @@ class RandomTest extends TestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Item($db);
 
-        $this->expectException(Exception::class);
+        $this->expectException(CoreException::class);
         $m->hasOne('foo', ['model' => [Model_Item::class]])
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
@@ -395,7 +396,7 @@ class RandomTest extends TestCase
         $this->assertSame('John', $mm->getTitle()); // returns parent record title_field
 
         // no title_field set - return id value
-        $mm->title_field = null; // @phpstan-ignore-line
+        $mm->title_field = null;
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field

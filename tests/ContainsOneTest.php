@@ -184,7 +184,7 @@ class ContainsOneTest extends TestCase
         $a->save();
 
         // now let's add one more field in address model and save
-        $a->addField('post_index');
+        $a->getModel()->addField('post_index');
         $a->set('post_index', 'LV-1234');
         $a->save();
 

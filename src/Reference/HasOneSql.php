@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Reference;
 
-use Atk4\Data\Exception;
 use Atk4\Data\FieldSqlExpression;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 
 class HasOneSql extends HasOne
 {
     /**
      * Creates expression which sub-selects a field inside related model.
      */
-    public function addField(string $ourFieldName, array $ourFieldDefaults = [], string $theirFieldName = null): FieldSqlExpression
+    public function addField(string $ourFieldName, string $theirFieldName = null, array $defaults = []): FieldSqlExpression
     {
         if ($theirFieldName === null) {
             $theirFieldName = $ourFieldName;
@@ -23,9 +21,12 @@ class HasOneSql extends HasOne
         $ourModel = $this->getOurModel();
 
         // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
-        $refModel = $ourModel->refModel($this->link);
-        $ourFieldDefaults['caption'] ??= $refModel->getField($theirFieldName)->getCaption();
-        $ourFieldDefaults['type'] ??= $refModel->getField($theirFieldName)->type;
+        $refModelField = $ourModel->refModel($this->link)->getField($theirFieldName);
+        $defaults['type'] ??= $refModelField->type;
+        $defaults['enum'] ??= $refModelField->enum;
+        $defaults['values'] ??= $refModelField->values;
+        $defaults['caption'] ??= $refModelField->caption;
+        $defaults['ui'] ??= $refModelField->ui;
 
         /** @var FieldSqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
@@ -36,7 +37,7 @@ class HasOneSql extends HasOne
                     return $ourModel->refLink($this->link)->action('field', [$theirFieldName])->reset('order');
                 },
             ],
-            $ourFieldDefaults,
+            $defaults,
             [
                 // to be able to change field, but not save it
                 // afterSave hook will take care of the rest
@@ -86,7 +87,7 @@ class HasOneSql extends HasOne
                 $ourFieldName = $theirFieldName;
             }
 
-            $this->addField($ourFieldName, $ourFieldDefaults, $theirFieldName);
+            $this->addField($ourFieldName, $theirFieldName, $ourFieldDefaults);
         }
 
         return $this;
@@ -115,12 +116,7 @@ class HasOneSql extends HasOne
         $theirModel = parent::ref($defaults);
         $ourModel = $this->getOurModel();
 
-        if (!isset($ourModel->persistence) || !($ourModel->persistence instanceof Persistence\Sql)) {
-            return $theirModel;
-        }
-
-        $theirField = $this->their_field ?: $theirModel->id_field;
-        $ourField = $this->getOurField();
+        $theirFieldName = $this->their_field ?? $theirModel->id_field; // TODO why not $this->getTheirFieldName() ?
 
         // At this point the reference
         // if our_field is the id_field and is being used in the reference
@@ -129,15 +125,15 @@ class HasOneSql extends HasOne
         if ($ourModel->isEntity() && $ourModel->loaded() && !$theirModel->loaded()) {
             if ($ourModel->id_field === $this->getOurFieldName()) {
                 return $theirModel->getModel()
-                    ->addCondition($theirField, $this->getOurFieldValue());
+                    ->addCondition($theirFieldName, $this->getOurFieldValue());
             }
         }
 
         // handles the deep traversal using an expression
-        $ourFieldExpression = $ourModel->action('field', [$ourField]);
+        $ourFieldExpression = $ourModel->action('field', [$this->getOurField()]);
 
         $theirModel->getModel(true)
-            ->addCondition($theirField, $ourFieldExpression);
+            ->addCondition($theirFieldName, $ourFieldExpression);
 
         return $theirModel;
     }
@@ -156,11 +152,6 @@ class HasOneSql extends HasOne
         $ourModel = $this->getOurModel();
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
-
-        if ($ourModel->hasField($fieldName)) {
-            throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\' => \'field_name\'])'))
-                ->addMoreInfo('field', $fieldName);
-        }
 
         /** @var FieldSqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($fieldName, array_replace_recursive(
@@ -200,21 +191,5 @@ class HasOneSql extends HasOne
         }
 
         return $fieldExpression;
-    }
-
-    /**
-     * Add a title of related entity as expression to our field.
-     *
-     * $order->hasOne('user_id', 'User')->addTitle();
-     *
-     * This will add expression 'user' equal to ref('user_id')['name'];
-     *
-     * @return $this
-     */
-    public function withTitle(array $defaults = [])
-    {
-        $this->addTitle($defaults);
-
-        return $this;
     }
 }

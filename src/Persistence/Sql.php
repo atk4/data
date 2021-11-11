@@ -180,12 +180,18 @@ class Sql extends Persistence
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('expr', static function (Model $m, ...$args) {
+            $m->assertIsModel();
+
             return $m->persistence->expr($m, ...$args);
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
+            $m->assertIsModel();
+
             return $m->persistence->dsql($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
+            $m->assertIsModel();
+
             return $m->persistence->exprNow($m, ...$args);
         });
     }
@@ -561,7 +567,7 @@ class Sql extends Persistence
             unset($data[$model->id_field]);
         }
 
-        $insert->set($this->typecastSaveRow($model, $data));
+        $insert->setMulti($this->typecastSaveRow($model, $data));
 
         $st = null;
         try {
@@ -631,10 +637,8 @@ class Sql extends Persistence
         $update = $this->initQuery($model);
         $update->mode('update');
 
-        $data = $this->typecastSaveRow($model, $data);
-
         // only apply fields that has been modified
-        $update->set($data);
+        $update->setMulti($this->typecastSaveRow($model, $data));
         $update->where($model->getField($model->id_field), $id);
 
         $st = null;
@@ -662,7 +666,9 @@ class Sql extends Persistence
         if ($model->reload_after_save === true && (!$st || $st->rowCount())) {
             $d = $model->getDirtyRef();
             $model->reload();
-            $model->_dirty_after_reload = $model->getDirtyRef();
+            \Closure::bind(function () use ($model) {
+                $model->dirtyAfterReload = $model->getDirtyRef();
+            }, null, Model::class)();
             $dirtyRef = &$model->getDirtyRef();
             $dirtyRef = $d;
         }

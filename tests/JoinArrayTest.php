@@ -193,16 +193,16 @@ class JoinArrayTest extends TestCase
     /*public function testJoinSaving4(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
-        $m_u = new Model($db, 'user');
+        $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
         $m_u->addField('code');
         $j = $m_u->join('contact.code', ['master_field' => 'code']);
         $j->addField('contact_phone');
         $m_u = $m_u->createEntity();
 
-        $m_u->get('name') = 'John';
-        $m_u->get('code') = 'C28';
-        $m_u->get('contact_phone') = '+123';
+        $m_u->set('name', 'John');
+        $m_u->set('code', 'C28');
+        $m_u->set('contact_phone', '+123');
 
         $m_u->save();
 
@@ -372,17 +372,6 @@ class JoinArrayTest extends TestCase
     }
 
     /*
-    public function testReverseJoin(): void
-    {
-        $db = new Persistence\Array_();
-        $m = new Model($db);
-        $m->addField('name');
-    }
-
-    public function testMultipleJoins(): void
-    {
-    }
-
     public function testTrickyCases(): void
     {
         $db = new Persistence\Array_();

@@ -53,6 +53,8 @@ trait ReferencesTrait
      */
     protected function _addRef(array $seed, string $link, array $defaults = []): Reference
     {
+        $this->assertIsModel();
+
         $defaults[0] = $link;
 
         $reference = Reference::fromSeed($seed, $defaults);
@@ -115,6 +117,47 @@ trait ReferencesTrait
     }
 
     /**
+     * Returns true if reference exists.
+     */
+    public function hasRef(string $link): bool
+    {
+        return $this->getModel(true)->hasElement('#ref_' . $link);
+    }
+
+    /**
+     * Returns the reference.
+     */
+    public function getRef(string $link): Reference
+    {
+        // reference added to model after entity was forked
+        if ($this->isEntity() && !$this->hasElement('#ref_' . $link)) {
+            $entityRef = clone $this->getModel()->getRef($link);
+            $entityRef->unsetOwner();
+            $this->_add($entityRef);
+        }
+
+        return $this->getElement('#ref_' . $link);
+    }
+
+    /**
+     * Returns all references.
+     *
+     * @return array<string, Reference>
+     */
+    public function getRefs(): array
+    {
+        $refs = [];
+        foreach (array_keys($this->elements) as $k) {
+            if (str_starts_with($k, '#ref_')) {
+                $link = substr($k, strlen('#ref_'));
+                $refs[$link] = $this->getRef($link);
+            }
+        }
+
+        return $refs;
+    }
+
+    /**
      * Traverse to related model.
      */
     public function ref(string $link, array $defaults = []): Model
@@ -136,36 +179,5 @@ trait ReferencesTrait
     public function refLink(string $link, array $defaults = []): Model
     {
         return $this->getRef($link)->refLink($defaults);
-    }
-
-    /**
-     * Returns the reference.
-     */
-    public function getRef(string $link): Reference
-    {
-        return $this->getElement('#ref_' . $link);
-    }
-
-    /**
-     * Returns all references.
-     */
-    public function getRefs(): array
-    {
-        $refs = [];
-        foreach ($this->elements as $key => $val) {
-            if (substr($key, 0, 5) === '#ref_') {
-                $refs[substr($key, 5)] = $val;
-            }
-        }
-
-        return $refs;
-    }
-
-    /**
-     * Returns true if reference exists.
-     */
-    public function hasRef(string $link): bool
-    {
-        return $this->hasElement('#ref_' . $link);
     }
 }

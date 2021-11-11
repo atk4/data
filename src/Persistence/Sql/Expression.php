@@ -222,8 +222,8 @@ class Expression implements Expressionable, \ArrayAccess
     /**
      * Recursively renders sub-query or expression, combining parameters.
      *
-     * @param mixed  $expression Expression
-     * @param string $escapeMode Fall-back escaping mode - using one of the Expression::ESCAPE_* constants
+     * @param string|Expressionable $expression
+     * @param string                $escapeMode Fall-back escaping mode - using one of the Expression::ESCAPE_* constants
      *
      * @return string Quoted expression
      */

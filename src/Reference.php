@@ -22,7 +22,7 @@ class Reference
 {
     use DiContainerTrait;
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
     use TrackableTrait;
 
@@ -94,7 +94,7 @@ class Reference
 
         return $model->onHookDynamic(
             $spot,
-            static function (Model $model) use ($name) {
+            static function (Model $model) use ($name): self {
                 return $model->getElement($name);
             },
             $fx,
@@ -179,22 +179,22 @@ class Reference
         return $theirModel;
     }
 
-    protected function getOurField(): Field
-    {
-        return $this->getOurModel()->getField($this->getOurFieldName());
-    }
-
     protected function getOurFieldName(): string
     {
         return $this->our_field ?: $this->getOurModel()->id_field;
     }
 
+    final protected function getOurField(): Field
+    {
+        return $this->getOurModel()->getField($this->getOurFieldName());
+    }
+
     /**
      * @return mixed
      */
-    protected function getOurFieldValue()
+    final protected function getOurFieldValue()
     {
-        return $this->getOurField()->get();
+        return $this->getOurModel()->get($this->getOurFieldName());
     }
 
     protected function initTableAlias(): void
@@ -263,8 +263,6 @@ class Reference
         return $this->createTheirModel($defaults);
     }
 
-    // {{{ Debug Methods
-
     /**
      * List of properties to show in var_dump.
      *
@@ -287,6 +285,4 @@ class Reference
 
         return $arr;
     }
-
-    // }}}
 }

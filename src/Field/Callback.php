@@ -13,7 +13,7 @@ use Atk4\Data\Model;
 class Callback extends \Atk4\Data\Field
 {
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
 
     /** @var bool Expressions are always read_only. */
@@ -21,7 +21,7 @@ class Callback extends \Atk4\Data\Field
     /** @var bool Never persist this field. */
     public $never_persist = true;
 
-    /** @var \Closure Method to execute for evaluation. */
+    /** @var \Closure(Model): mixed */
     public $expr;
 
     protected function init(): void
@@ -30,10 +30,8 @@ class Callback extends \Atk4\Data\Field
 
         $this->ui['table']['sortable'] = false;
 
-        $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, function () {
-            $model = $this->getOwner();
-
-            $model->getDataRef()[$this->short_name] = ($this->expr)($model);
+        $this->onHookToOwnerEntity(Model::HOOK_AFTER_LOAD, function (Model $entity) {
+            $entity->getDataRef()[$this->short_name] = ($this->expr)($entity);
         });
     }
 }

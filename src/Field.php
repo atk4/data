@@ -18,18 +18,17 @@ use Doctrine\DBAL\Types\Type;
 class Field implements Expressionable
 {
     use DiContainerTrait {
-        setDefaults as _setDefaults;
+        setDefaults as private _setDefaults;
     }
     use Model\FieldPropertiesTrait;
     use Model\JoinLinkTrait;
     use ReadableCaptionTrait;
-    use TrackableTrait;
+    use TrackableTrait {
+        setOwner as private _setOwner;
+    }
 
     // {{{ Core functionality
 
-    /**
-     * Constructor. You can pass field properties as array.
-     */
     public function __construct(array $defaults = [])
     {
         foreach ($defaults as $key => $val) {
@@ -39,6 +38,18 @@ class Field implements Expressionable
                 $this->{$key} = $val;
             }
         }
+    }
+
+    /**
+     * @param Model $owner
+     *
+     * @return $this
+     */
+    public function setOwner(object $owner)
+    {
+        $owner->assertIsModel();
+
+        return $this->_setOwner($owner);
     }
 
     public function setDefaults(array $properties, bool $passively = false): self
@@ -59,14 +70,17 @@ class Field implements Expressionable
         return Type::getType($this->type ?? 'string');
     }
 
-    protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
+    protected function onHookToOwnerEntity(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->short_name; // use static function to allow this object to be GCed
 
-        return $this->getOwner()->onHookDynamicShort(
+        return $this->getOwner()->onHookDynamic(
             $spot,
-            static function (Model $owner) use ($name) {
-                return $owner->getField($name);
+            static function (Model $entity) use ($name): self {
+                $obj = $entity->getModel()->getField($name);
+                $entity->assertIsEntity($obj->getOwner());
+
+                return $obj;
             },
             $fx,
             $args,
@@ -272,15 +286,10 @@ class Field implements Expressionable
     /**
      * Casts field value to string.
      *
-     * @param mixed $value Optional value
+     * @param mixed $value
      */
-    public function toString($value = null): string
+    public function toString($value): string
     {
-        $value = ($value === null /* why not func_num_args() === 1 */ ? $this->get() : $this->normalize($value));
-        if (is_bool($value)) {
-            $value = $value ? '1' : '0';
-        }
-
         return (string) $this->typecastSaveField($value, true);
     }
 
@@ -289,9 +298,11 @@ class Field implements Expressionable
      *
      * @return mixed
      */
-    public function get()
+    final public function get(Model $entity)
     {
-        return $this->getOwner()->get($this->short_name);
+        $entity->assertIsEntity($this->getOwner());
+
+        return $entity->get($this->short_name);
     }
 
     /**
@@ -299,9 +310,11 @@ class Field implements Expressionable
      *
      * @param mixed $value
      */
-    public function set($value): self
+    final public function set(Model $entity, $value): self
     {
-        $this->getOwner()->set($this->short_name, $value);
+        $entity->assertIsEntity($this->getOwner());
+
+        $entity->set($this->short_name, $value);
 
         return $this;
     }
@@ -309,9 +322,11 @@ class Field implements Expressionable
     /**
      * Unset field value even if null value is not allowed.
      */
-    public function setNull(): self
+    final public function setNull(Model $entity): self
     {
-        $this->getOwner()->setNull($this->short_name);
+        $entity->assertIsEntity($this->getOwner());
+
+        $entity->setNull($this->short_name);
 
         return $this;
     }
@@ -353,29 +368,25 @@ class Field implements Expressionable
 
     /**
      * Compare new value of the field with existing one without retrieving.
-     * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
-     *  - comparing values that can't be received - passwords, encrypted data
-     *  - comparing images
-     *  - if get() is expensive (e.g. retrieve object).
      *
-     * @param mixed      $value
-     * @param mixed|void $value2
+     * @param mixed $value
+     * @param mixed $value2
      */
-    public function compare($value, $value2 = null): bool
+    public function compare($value, $value2): bool
     {
-        if (func_num_args() === 1) {
-            $value2 = $this->get();
-        }
-
         // TODO, see https://stackoverflow.com/questions/48382457/mysql-json-column-change-array-order-after-saving
         // at least MySQL sorts the JSON keys if stored natively
         return $this->getValueForCompare($value) === $this->getValueForCompare($value2);
     }
 
-    public function getReference(): ?Reference
+    public function getReference(Model $entity = null): ?Reference
     {
+        if ($entity !== null) {
+            $entity->assertIsEntity($this->getOwner());
+        }
+
         return $this->referenceLink !== null
-            ? $this->getOwner()->getRef($this->referenceLink)
+            ? ($entity ?? $this->getOwner())->getRef($this->referenceLink)
             : null;
     }
 
@@ -481,20 +492,15 @@ class Field implements Expressionable
         return $this->getOwner()->persistence->getFieldSqlExpression($this, $expression);
     }
 
-    // {{{ Debug Methods
-
-    /**
-     * Returns array with useful debug info for var_dump.
-     */
     public function __debugInfo(): array
     {
         $arr = [
             'short_name' => $this->short_name,
-            'value' => $this->get(),
+            'type' => $this->type,
         ];
 
         foreach ([
-            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
+            'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
         ] as $key) {
             if ($this->{$key} !== null) {
                 $arr[$key] = $this->{$key};
@@ -503,6 +509,4 @@ class Field implements Expressionable
 
         return $arr;
     }
-
-    // }}}
 }

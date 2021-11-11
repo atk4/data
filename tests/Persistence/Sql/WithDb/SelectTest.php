@@ -109,7 +109,7 @@ class SelectTest extends TestCase
 
         $this->assertSame(
             ['name' => 'Oliver', 'surname' => 'Smith'],
-            $this->q('employee')->field('name,surname')->getRow()
+            $this->q('employee')->field('name')->field('surname')->getRow()
         );
 
         $this->assertSame(
@@ -202,14 +202,14 @@ class SelectTest extends TestCase
 
         // insert
         $this->q('employee')
-            ->set(['id' => 1, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
+            ->setMulti(['id' => 1, 'name' => 'John', 'surname' => 'Doe', 'retired' => true])
             ->insert();
         $this->q('employee')
-            ->set(['id' => 2, 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
+            ->setMulti(['id' => 2, 'name' => 'Jane', 'surname' => 'Doe', 'retired' => false])
             ->insert();
         $this->assertSame(
             [['id' => '1', 'name' => 'John'], ['id' => '2', 'name' => 'Jane']],
-            $this->q('employee')->field('id,name')->order('id')->getRows()
+            $this->q('employee')->field('id')->field('name')->order('id')->getRows()
         );
 
         // update
@@ -219,18 +219,18 @@ class SelectTest extends TestCase
             ->update();
         $this->assertSame(
             [['id' => '1', 'name' => 'Johnny'], ['id' => '2', 'name' => 'Jane']],
-            $this->q('employee')->field('id,name')->order('id')->getRows()
+            $this->q('employee')->field('id')->field('name')->order('id')->getRows()
         );
 
         // replace
         if ($this->c->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->c->getDatabasePlatform() instanceof SQLServer2012Platform || $this->c->getDatabasePlatform() instanceof OraclePlatform) {
             $this->q('employee')
-                ->set(['name' => 'Peter', 'surname' => 'Doe', 'retired' => true])
+                ->setMulti(['name' => 'Peter', 'surname' => 'Doe', 'retired' => true])
                 ->where('id', 1)
                 ->update();
         } else {
             $this->q('employee')
-                ->set(['id' => 1, 'name' => 'Peter', 'surname' => 'Doe', 'retired' => true])
+                ->setMulti(['id' => 1, 'name' => 'Peter', 'surname' => 'Doe', 'retired' => true])
                 ->replace();
         }
 
@@ -241,7 +241,7 @@ class SelectTest extends TestCase
         // not [Peter, Jane] as in MySQL, which in theory does the same thing,
         // but returns [Peter, Jane] - in original order.
         // That's why we add usort here.
-        $data = $this->q('employee')->field('id,name')->getRows();
+        $data = $this->q('employee')->field('id')->field('name')->getRows();
         usort($data, function ($a, $b) {
             return $a['id'] - $b['id']; // @phpstan-ignore-line
         });
@@ -256,7 +256,7 @@ class SelectTest extends TestCase
             ->delete();
         $this->assertSame(
             [['id' => '2', 'name' => 'Jane']],
-            $this->q('employee')->field('id,name')->getRows()
+            $this->q('employee')->field('id')->field('name')->getRows()
         );
     }
 

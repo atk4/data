@@ -92,7 +92,7 @@ class ModelTest extends TestCase
             ->field('baz', ['type' => 'text'])
             ->create();
         $this->db->dsql()->table('user')
-            ->set([
+            ->setMulti([
                 'id' => 1,
                 'foo' => 'foovalue',
                 'bar' => 123,
