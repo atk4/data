@@ -103,7 +103,7 @@ Many databases will allow you to use different types for ID fields.
 In SQL the 'id' column will usually be "integer", but sometimes it can be of
 a different type.
 
-The same applies for references ($m->hasOne()).
+The same applies for references ($m->addHasOne()).
 
 Supported types
 ---------------

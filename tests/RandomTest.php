@@ -30,7 +30,7 @@ class Model_Item extends Model
     {
         parent::init();
         $this->addField('name');
-        $this->hasOne('parent_item_id', ['model' => [self::class]])
+        $this->addHasOne('parent_item_id', ['model' => [self::class]])
             ->addTitle();
     }
 }
@@ -43,7 +43,7 @@ class Model_Item2 extends Model
         parent::init();
         $this->addField('name');
         $i2 = $this->addJoin('item2.item_id');
-        $i2->hasOne('parent_item_id', ['model' => [self::class]])
+        $i2->addHasOne('parent_item_id', ['model' => [self::class]])
             ->addTitle();
     }
 }
@@ -60,10 +60,10 @@ class Model_Item3 extends Model
         $this->addField('name');
         $this->addField('age');
         $i2 = $this->addJoin('item2.item_id');
-        $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
+        $i2->addHasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
             ->addTitle();
 
-        $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
+        $this->addHasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
     }
 }
@@ -329,7 +329,7 @@ class RandomTest extends TestCase
         $m = new Model_Item($db);
 
         $this->expectException(CoreException::class);
-        $m->hasOne('foo', ['model' => [Model_Item::class]])
+        $m->addHasOne('foo', ['model' => [Model_Item::class]])
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 
@@ -523,8 +523,8 @@ class RandomTest extends TestCase
         $m = new Model($this->db, ['table' => 'db1.user']);
         $m->addField('name');
 
-        $d->hasOne('user_id', ['model' => $m])->addTitle();
-        $m->hasMany('Documents', ['model' => $d]);
+        $d->addHasOne('user_id', ['model' => $m])->addTitle();
+        $m->addHasMany('Documents', ['model' => $d]);
 
         $d->addCondition('user', 'Sarah');
 

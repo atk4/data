@@ -799,7 +799,7 @@ class ArrayTest extends TestCase
     }
 
     /**
-     * Test Model->hasOne().
+     * Test Model->addHasOne().
      */
     public function testHasOne(): void
     {
@@ -822,7 +822,7 @@ class ArrayTest extends TestCase
         $country->table = 'country';
         $country->addField('name');
 
-        $user->hasOne('country_id', ['model' => $country]);
+        $user->addHasOne('country_id', ['model' => $country]);
 
         $uu = $user->load(1);
         $this->assertSame('Latvia', $uu->ref('country_id')->get('name'));
@@ -832,7 +832,7 @@ class ArrayTest extends TestCase
     }
 
     /**
-     * Test Model->hasMany().
+     * Test Model->addHasMany().
      */
     public function testHasMany(): void
     {
@@ -856,8 +856,8 @@ class ArrayTest extends TestCase
         $user->addField('name');
         $user->addField('surname');
 
-        $country->hasMany('Users', ['model' => $user]);
-        $user->hasOne('country_id', ['model' => $country]);
+        $country->addHasMany('Users', ['model' => $user]);
+        $user->addHasOne('country_id', ['model' => $country]);
 
         $cc = $country->load(1);
         $this->assertSame(2, $cc->ref('Users')->action('count')->getOne());

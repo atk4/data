@@ -276,7 +276,7 @@ Your init() method for a Field_Currency might look like this::
             ['type' => 'atk4_money', 'system' => true]
         );
 
-        $this->getOwner()->hasOne(
+        $this->getOwner()->addHasOne(
             $f.'_currency_id',
             [
                 $this->currency_model ?: new Currency(),
@@ -845,7 +845,7 @@ SQL Actions on Linked Records
 In conjunction with Model::refLink() you can produce expressions for creating
 sub-selects. The functionality is nicely wrapped inside FieldSql_Many::addField()::
 
-    $client->hasMany('Invoice')
+    $client->addHasMany('Invoice')
         ->addField('total_gross', ['aggregate' => 'sum', 'field' => 'gross']);
 
 This operation is actually consisting of 3 following operations::
@@ -860,7 +860,7 @@ This operation is actually consisting of 3 following operations::
 
 Here is a way how to intervene with the process::
 
-    $client->hasMany('Invoice');
+    $client->addHasMany('Invoice');
     $client->addExpression('last_sale', function($m) {
         return $m->refLink('Invoice')
             ->setOrder('date desc')

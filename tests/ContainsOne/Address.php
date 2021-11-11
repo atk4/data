@@ -21,13 +21,12 @@ class Address extends Model
     {
         parent::init();
 
-        $this->hasOne($this->fieldName()->country_id, ['model' => [Country::class], 'type' => 'integer']);
+        $this->addHasOne($this->fieldName()->country_id, ['model' => [Country::class], 'type' => 'integer']);
 
         $this->addField($this->fieldName()->address);
         $this->addField($this->fieldName()->built_date, ['type' => 'datetime']);
         $this->addField($this->fieldName()->tags, ['type' => 'json', 'default' => []]);
 
-        // will contain one door code
-        $this->containsOne($this->fieldName()->door_code, ['model' => [DoorCode::class], 'caption' => 'Secret Code']);
+        $this->addContainsOne($this->fieldName()->door_code, ['model' => [DoorCode::class], 'caption' => 'Secret Code']);
     }
 }

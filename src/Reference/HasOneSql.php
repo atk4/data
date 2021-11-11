@@ -141,7 +141,7 @@ class HasOneSql extends HasOne
     /**
      * Add a title of related entity as expression to our field.
      *
-     * $order->hasOne('user_id', 'User')->addTitle();
+     * $order->addHasOne('user_id', 'User')->addTitle();
      *
      * This will add expression 'user' equal to ref('user_id')['name'];
      *

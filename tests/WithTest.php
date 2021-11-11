@@ -37,7 +37,7 @@ class WithTest extends TestCase
 
         $m_invoice = new Model($db, ['table' => 'invoice']);
         $m_invoice->addField('net', ['type' => 'atk4_money']);
-        $m_invoice->hasOne('user_id', ['model' => $m_user]);
+        $m_invoice->addHasOne('user_id', ['model' => $m_user]);
         $m_invoice->addCondition('net', '>', 100);
 
         // setup test model

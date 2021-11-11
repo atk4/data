@@ -29,7 +29,7 @@ store extra fields there. In your code::
 As you implement single Account and multiple Transaction types, you want to relate
 both::
 
-    $account->hasMany('Transactions', ['model' => [Transaction::class]]);
+    $account->addHasMany('Transactions', ['model' => [Transaction::class]]);
 
 There are however two difficulties here:
 
@@ -42,9 +42,9 @@ Best practice for specifying relation type
 Although there is no magic behind it, I recommend that you use the following
 code pattern when dealing with multiple types::
 
-    $account->hasMany('Transactions', ['model' => [Transaction::class]]);
-    $account->hasMany('Transactions:Deposit', ['model' => [Transaction\Deposit::class]]);
-    $account->hasMany('Transactions:Transfer', ['model' => [Transaction\Transfer::class]]);
+    $account->addHasMany('Transactions', ['model' => [Transaction::class]]);
+    $account->addHasMany('Transactions:Deposit', ['model' => [Transaction\Deposit::class]]);
+    $account->addHasMany('Transactions:Transfer', ['model' => [Transaction\Transfer::class]]);
 
 You can then use type-specific reference::
 
@@ -157,12 +157,12 @@ which I want to define like this::
 
         $this->getOwner()->addField('created_dts', ['type' => 'datetime', 'default' => new \DateTime()]);
 
-        $this->getOwner()->hasOne('created_by_user_id', 'User');
+        $this->getOwner()->addHasOne('created_by_user_id', 'User');
         if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
             $this->getOwner()->getField('created_by_user_id')->default = $this->getApp()->user->getId();
         }
 
-        $this->getOwner()->hasOne('updated_by_user_id', 'User');
+        $this->getOwner()->addHasOne('updated_by_user_id', 'User');
 
         $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
@@ -497,8 +497,8 @@ Create new Model::
         function init(): void
         {
             parent::init();
-            $this->hasOne('invoice_id', 'Model_Invoice');
-            $this->hasOne('payment_id', 'Model_Payment');
+            $this->addHasOne('invoice_id', 'Model_Invoice');
+            $this->addHasOne('payment_id', 'Model_Payment');
             $this->addField('amount_closed');
         }
     }
@@ -508,13 +508,13 @@ Create new Model::
 
 Next we need to define reference. Inside Model_Invoice add::
 
-    $this->hasMany('InvoicePayment');
+    $this->addHasMany('InvoicePayment');
 
-    $this->hasMany('Payment', ['model' => function($m) {
+    $this->addHasMany('Payment', ['model' => function($m) {
         $p = new Model_Payment($m->persistence);
         $j = $p->addJoin('invoice_payment.payment_id');
         $j->addField('amount_closed');
-        $j->hasOne('invoice_id', 'Model_Invoice');
+        $j->addHasOne('invoice_id', 'Model_Invoice');
     }, 'their_field' => 'invoice_id']);
 
     $this->onHookShort(Model::HOOK_BEFORE_DELETE, function() {
@@ -546,7 +546,7 @@ Having some calculated fields for the invoice is handy. I'm adding `total_paymen
 that shows how much amount is closed and `amount_due`::
 
     // define field to see closed amount on invoice
-    $this->hasMany('InvoicePayment')
+    $this->addHasMany('InvoicePayment')
         ->addField('total_payments', ['aggregate' => 'sum', 'field' => 'amount_closed']);
     $this->addExpression('amount_due', '[total]-coalesce([total_payments],0)');
 
@@ -616,7 +616,7 @@ category_id::
 
             ...
 
-            $this->hasOne('category_id', 'Model_Category');
+            $this->addHasOne('category_id', 'Model_Category');
 
             ...
         }
@@ -707,7 +707,7 @@ If you wish to use a different value instead, you can create an expression::
 The beautiful thing about this approach is that default can also be defined
 as a lookup query::
 
-    $this->hasOne('category_id','Model_Category');
+    $this->addHasOne('category_id','Model_Category');
     $this->getField('category_id')->default =
         $this->refModel('category_id')->addCondition('name','Other')
             ->action('field',['id']);
@@ -773,12 +773,12 @@ In theory Document's 'contact_id' can be any Contact, however when you create
 'Model_Invoice' you wish that 'contact_id' allow only Clients. First, lets
 define Model_Document::
 
-    $this->hasOne('client_id', 'Model_Contact');
+    $this->addHasOne('client_id', 'Model_Contact');
 
 One option here is to move 'Model_Contact' into model property, which will be
 different for the extended class::
 
-    $this->hasOne('client_id', ['model' => [$this->client_class]]);
+    $this->addHasOne('client_id', ['model' => [$this->client_class]]);
 
 Alternatively you can replace model in the init() method of Model_Invoice::
 
@@ -797,9 +797,9 @@ passed into the related model. Let's say we have 'Model_Invoice' and we want to
 add 'payment_invoice_id' that points to 'Model_Payment'. However we want this
 field only to offer payments made by the same client. Inside Model_Invoice add::
 
-    $this->hasOne('client_id', 'Client');
+    $this->addHasOne('client_id', 'Client');
 
-    $this->hasOne('payment_invoice_id', ['model' => function($m){
+    $this->addHasOne('payment_invoice_id', ['model' => function($m){
         return $m->ref('client_id')->ref('Payment');
     }]);
 
@@ -824,8 +824,8 @@ Narrowing Down Existing References
 Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::
 
-    $this->hasMany('Invoice', 'Model_Invoice');
-    $this->hasMany('OverdueInvoice', ['model' => function($m){
+    $this->addHasMany('Invoice', 'Model_Invoice');
+    $this->addHasMany('OverdueInvoice', ['model' => function($m){
         return $m->ref('Invoice')->addCondition('due','<',date('Y-m-d'))
     }]);
 

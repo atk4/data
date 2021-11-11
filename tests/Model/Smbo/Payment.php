@@ -20,7 +20,7 @@ class Payment extends Document
         $this->j_payment = $this->addJoin('payment.document_id');
 
         $this->j_payment->addField('cheque_no');
-        $this->j_payment->hasOne('account_id', ['model' => [Account::class]]);
+        $this->j_payment->addHasOne('account_id', ['model' => [Account::class]]);
 
         $this->j_payment->addField('misc_payment', ['type' => 'boolean']);
     }

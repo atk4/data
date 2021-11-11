@@ -77,11 +77,59 @@ trait ReferencesTrait
     }
 
     /**
+     * @return Reference\HasOne|Reference\HasOneSql
+     *
+     * @deprecated to be removed in v3.3
+     */
+    public function hasOne(string $link, array $defaults = [])
+    {
+        'trigger_error'('Method is deprecated. Use addHasOne() instead', \E_USER_DEPRECATED);
+
+        return $this->addHasOne($link, $defaults);
+    }
+
+    /**
+     * @return Reference\HasMany
+     *
+     * @deprecated to be removed in v3.3
+     */
+    public function hasMany(string $link, array $defaults = [])
+    {
+        'trigger_error'('Method is deprecated. Use addHasMany() instead', \E_USER_DEPRECATED);
+
+        return $this->addHasMany($link, $defaults);
+    }
+
+    /**
+     * @return Reference\ContainsOne
+     *
+     * @deprecated to be removed in v3.3
+     */
+    public function containsOne(string $link, array $defaults = [])
+    {
+        'trigger_error'('Method is deprecated. Use addContainsOne() instead', \E_USER_DEPRECATED);
+
+        return $this->addContainsOne($link, $defaults);
+    }
+
+    /**
+     * @return Reference\ContainsMany
+     *
+     * @deprecated to be removed in v3.3
+     */
+    public function containsMany(string $link, array $defaults = [])
+    {
+        'trigger_error'('Method is deprecated. Use addContainsMany() instead', \E_USER_DEPRECATED);
+
+        return $this->addContainsMany($link, $defaults);
+    }
+
+    /**
      * Add hasOne reference.
      *
      * @return Reference\HasOne|Reference\HasOneSql
      */
-    public function hasOne(string $link, array $defaults = []) //: Reference
+    public function addHasOne(string $link, array $defaults = []) //: Reference
     {
         return $this->_addRef($this->_default_seed_hasOne, $link, $defaults); // @phpstan-ignore-line
     }
@@ -91,7 +139,7 @@ trait ReferencesTrait
      *
      * @return Reference\HasMany
      */
-    public function hasMany(string $link, array $defaults = []) //: Reference
+    public function addHasMany(string $link, array $defaults = []) //: Reference
     {
         return $this->_addRef($this->_default_seed_hasMany, $link, $defaults); // @phpstan-ignore-line
     }
@@ -101,7 +149,7 @@ trait ReferencesTrait
      *
      * @return Reference\ContainsOne
      */
-    public function containsOne(string $link, array $defaults = []) //: Reference
+    public function addContainsOne(string $link, array $defaults = []) //: Reference
     {
         return $this->_addRef($this->_default_seed_containsOne, $link, $defaults); // @phpstan-ignore-line
     }
@@ -111,7 +159,7 @@ trait ReferencesTrait
      *
      * @return Reference\ContainsMany
      */
-    public function containsMany(string $link, array $defaults = []) //: Reference
+    public function addContainsMany(string $link, array $defaults = []) //: Reference
     {
         return $this->_addRef($this->_default_seed_containsMany, $link, $defaults); // @phpstan-ignore-line
     }

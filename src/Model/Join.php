@@ -309,6 +309,30 @@ class Join
     }
 
     /**
+     * @return Reference\HasOne|Reference\HasOneSql
+     *
+     * @deprecated to be removed in v3.3
+     */
+    public function hasOne(string $link, array $defaults = [])
+    {
+        'trigger_error'('Method is deprecated. Use addHasOne() instead', \E_USER_DEPRECATED);
+
+        return $this->addHasOne($link, $defaults);
+    }
+
+    /**
+     * @return Reference\HasMany
+     *
+     * @deprecated to be removed in v3.3
+     */
+    public function hasMany(string $link, array $defaults = [])
+    {
+        'trigger_error'('Method is deprecated. Use addHasMany() instead', \E_USER_DEPRECATED);
+
+        return $this->addHasMany($link, $defaults);
+    }
+
+    /**
      * Another join will be attached to a current join.
      *
      * @param array<string, mixed> $defaults
@@ -337,11 +361,11 @@ class Join
      *
      * @return Reference\HasOne
      */
-    public function hasOne(string $link, array $defaults = [])
+    public function addHasOne(string $link, array $defaults = [])
     {
         $defaults['joinName'] = $this->short_name;
 
-        return $this->getOwner()->hasOne($link, $defaults);
+        return $this->getOwner()->addHasOne($link, $defaults);
     }
 
     /**
@@ -349,18 +373,18 @@ class Join
      *
      * @return Reference\HasMany
      */
-    public function hasMany(string $link, array $defaults = [])
+    public function addHasMany(string $link, array $defaults = [])
     {
         $defaults = array_merge([
             'our_field' => $this->id_field,
             'their_field' => $this->getOwner()->table . '_' . $this->id_field,
         ], $defaults);
 
-        return $this->getOwner()->hasMany($link, $defaults);
+        return $this->getOwner()->addHasMany($link, $defaults);
     }
 
     /**
-     * Wrapper for containsOne that will associate field
+     * Wrapper for addContainsOne that will associate field
      * with join.
      *
      * @todo NOT IMPLEMENTED !
@@ -368,18 +392,18 @@ class Join
      * @return ???
      */
     /*
-    public function containsOne(Model $model, array $defaults = [])
+    public function addContainsOne(Model $model, array $defaults = [])
     {
         if (is_string($defaults[0])) {
             $defaults[0] = $this->addField($defaults[0], ['system' => true]);
         }
 
-        return parent::containsOne($model, $defaults);
+        return parent::addContainsOne($model, $defaults);
     }
     */
 
     /**
-     * Wrapper for containsMany that will associate field
+     * Wrapper for addContainsMany that will associate field
      * with join.
      *
      * @todo NOT IMPLEMENTED !
@@ -387,13 +411,13 @@ class Join
      * @return ???
      */
     /*
-    public function containsMany(Model $model, array $defaults = [])
+    public function addContainsMany(Model $model, array $defaults = [])
     {
         if (is_string($defaults[0])) {
             $defaults[0] = $this->addField($defaults[0], ['system' => true]);
         }
 
-        return parent::containsMany($model, $defaults);
+        return parent::addContainsMany($model, $defaults);
     }
     */
 

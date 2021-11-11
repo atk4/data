@@ -24,7 +24,7 @@ by using joins::
     $j_contact = $user->addJoin('contact');
     $j_contact->addField('address');
     $j_contact->addField('county');
-    $j_contact->hasOne('Country');
+    $j_contact->addHasOne('Country');
 
 This code will load data from two tables simultaneously and if you do change any
 of those fields they will be update in their respective tables. With SQL the

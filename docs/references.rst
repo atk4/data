@@ -13,12 +13,12 @@ Models can relate one to another. The logic of traversing references, however,
 is slightly different to the traditional ORM implementation, because in Agile
 Data traversing also imposes :ref:`conditions`
 
-There are two basic types of references: hasOne() and hasMany(), but it's also
+There are two basic types of references: addHasOne() and addHasMany(), but it's also
 possible to add other reference types. The basic ones are really easy to
 use::
 
     $m = new Model_User($db, 'user');
-    $m->hasMany('Orders', ['model' => [Model_Order::class]]);
+    $m->addHasMany('Orders', ['model' => [Model_Order::class]]);
     $m = $m->load(13);
 
     $orders_for_user_13 = $m->ref('Orders');
@@ -28,7 +28,7 @@ so that you could only access orders for the user with ID=13. The following is
 also possible::
 
     $m = new Model_User($db, 'user');
-    $m->hasMany('Orders', ['model' => [Model_Order::class]]);
+    $m->addHasMany('Orders', ['model' => [Model_Order::class]]);
     $m->addCondition('is_vip', true);
 
     $orders_for_vips = $m->ref('Orders');
@@ -58,7 +58,7 @@ not reside inside the same database?
 You can specify it like this::
 
     $m = new Model_User($db_array_cache, 'user');
-    $m->hasMany('Orders', ['model' => [Model_Order::class, $db_sql]]);
+    $m->addHasMany('Orders', ['model' => [Model_Order::class, $db_sql]]);
     $m->addCondition('is_vip', true);
 
     $orders_for_vips = $m->ref('Orders');
@@ -100,13 +100,13 @@ If you are worried about performance you can keep 2 models in memory::
 hasMany Reference
 =================
 
-.. php:method:: hasMany($link, ['model' => $model]);
+.. php:method:: addHasMany($link, ['model' => $model]);
 
 There are several ways how to link models with hasMany::
 
-    $m->hasMany('Orders', ['model' => [Model_Order::class]]); // using seed
+    $m->addHasMany('Orders', ['model' => [Model_Order::class]]); // using seed
 
-    $m->hasMany('Order', ['model' => function($m, $r) {   // using callback
+    $m->addHasMany('Order', ['model' => function($m, $r) {   // using callback
         return new Model_Order();
     }]);
 
@@ -125,7 +125,7 @@ It is possible to perform reference through an 3rd party table::
         ->addJoin('invoice_payment.payment_id')
         ->addFields(['amount_allocated','invoice_id']);
 
-    $i->hasMany('Payments', ['model' => $p]);
+    $i->addHasMany('Payments', ['model' => $p]);
 
 Now you can fetch all the payments associated with the invoice through::
 
@@ -141,7 +141,7 @@ available. Both models will relate through ``currency.code = exchange.currency_c
     $c = new Model_Currency();
     $e = new Model_ExchangeRate();
 
-    $c->hasMany('Exchanges', ['model' => $e, 'their_field' => 'currency_code', 'our_field' => 'code']);
+    $c->addHasMany('Exchanges', ['model' => $e, 'their_field' => 'currency_code', 'our_field' => 'code']);
 
     $c->addCondition('is_convertable',true);
     $e = $c->ref('Exchanges');
@@ -160,7 +160,7 @@ Concatenating Fields
 
 You may want to display want to list your related entities by concatenating. For example::
 
-    $user->hasMany('Tags', ['model' => [Tag::class]])
+    $user->addHasMany('Tags', ['model' => [Tag::class]])
         ->addField('tags', ['concat' => ',', 'field' => 'name']);
 
 This will create a new field for your user, ``tags`` which will contain all comma-separated
@@ -173,20 +173,20 @@ Reference hasMany makes it a little simpler for you to define an aggregate field
 
     $u = new Model_User($db_array_cache, 'user');
 
-    $u->hasMany('Orders', ['model' => [Model_Order::class]])
+    $u->addHasMany('Orders', ['model' => [Model_Order::class]])
         ->addField('amount', ['aggregate' => 'sum']);
 
 It's important to define aggregation functions here. This will add another field
 inside ``$m`` that will correspond to the sum of all the orders. Here is another
 example::
 
-    $u->hasMany('PaidOrders', (new Model_Order())->addCondition('is_paid', true))
+    $u->addHasMany('PaidOrders', (new Model_Order())->addCondition('is_paid', true))
         ->addField('paid_amount', ['aggregate' => 'sum', 'field' => 'amount']);
 
 You can also define multiple fields, although you must remember that this will
 keep making your query bigger and bigger::
 
-    $invoice->hasMany('Invoice_Line', ['model' => [Model_Invoice_Line::class]])
+    $invoice->addHasMany('Invoice_Line', ['model' => [Model_Invoice_Line::class]])
         ->addFields([
             ['total_vat', 'aggregate' => 'sum'],
             ['total_net', 'aggregate' => 'sum'],
@@ -237,7 +237,7 @@ containing your optional arguments::
 
 Alternatively you may also specify either 'aggregate'::
 
-    $book->hasMany('Pages', ['model' => [Page::class]])
+    $book->addHasMany('Pages', ['model' => [Page::class]])
         ->addField('page_list', [
             'aggregate' => $book->refModel('Pages')->expr('group_concat([number], [])', ['-'])
         ]);
@@ -259,7 +259,7 @@ the conditioning will be done differently. refLink is useful when defining
 sub-queries::
 
     $m = new Model_User($db_array_cache, 'user');
-    $m->hasMany('Orders', ['model' => [Model_Order::class]]);
+    $m->addHasMany('Orders', ['model' => [Model_Order::class]]);
     $m->addCondition('is_vip', true);
 
     $sum = $m->refLink('Orders')->action('fx0', ['sum', 'amount']);
@@ -290,7 +290,7 @@ reference itself. In such case refModel() comes in as handy shortcut of doing
 hasOne reference
 ================
 
-.. php:method:: hasOne($link, ['model' => $model])
+.. php:method:: addHasOne($link, ['model' => $model])
 
     $model can be an array containing options: [$model, ...]
 
@@ -300,7 +300,7 @@ This reference allows you to attach a related model to a foreign key::
     $o = new Model_Order($db, 'order');
     $u = new Model_User($db, 'user');
 
-    $o->hasOne('user_id', ['model' => $u]);
+    $o->addHasOne('user_id', ['model' => $u]);
 
 This reference is similar to hasMany, but it does behave slightly different.
 Also this reference will define a system new field ``user_id`` if you haven't
@@ -336,15 +336,15 @@ process and the loadAny() will look like this:
     select * from user where id in
         (select user_id from order where status = 'failed')
 
-By passing options to hasOne() you can also differentiate field name::
+By passing options to addHasOne() you can also differentiate field name::
 
     $o->addField('user_id');
-    $o->hasOne('User', ['model' => $u, 'our_field' => 'user_id']);
+    $o->addHasOne('User', ['model' => $u, 'our_field' => 'user_id']);
 
     $o->load(1)->ref('User')['name'];
 
 You can also use ``their_field`` if you need non-id matching (see example above
-for hasMany()).
+for addHasMany()).
 
 Importing Fields
 ----------------
@@ -357,7 +357,7 @@ the field::
     $i = new Model_Invoice($db)
     $c = new Model_Currency($db);
 
-    $i->hasOne('currency_id', ['model' => $c])
+    $i->addHasOne('currency_id', ['model' => $c])
         ->addField('currency_name', 'name');
 
 
@@ -371,7 +371,7 @@ be renamed, just as we did above::
     $u = new Model_User($db)
     $a = new Model_Address($db);
 
-    $u->hasOne('address_id', ['model' => $a])
+    $u->addHasOne('address_id', ['model' => $a])
         ->addFields([
             'address_1',
             'address_2',
@@ -391,14 +391,14 @@ Above, all ``address_`` fields are copied with the same name, however field
 Importing hasOne Title
 ----------------------
 
-When you are using hasOne() in most cases the referenced object will be addressed
+When you are using addHasOne() in most cases the referenced object will be addressed
 through "ID" but will have a human-readable field as well. In the example above
 `Model_Currency` has a title field called `name`. Agile Data provides you an
 easier way how to define currency title::
 
     $i = new Invoice($db)
 
-    $i->hasOne('currency_id', ['model' => [Currency::class]])
+    $i->addHasOne('currency_id', ['model' => [Currency::class]])
         ->addTitle();
 
 This would create 'currency' field containing name of the currency::
@@ -422,7 +422,7 @@ By default name of the field will be calculated by removing "_id" from the end
 of hasOne field, but to override this, you can specify name of the title field
 explicitly::
 
-    $i->hasOne('currency_id', ['model' => [Currency::class]])
+    $i->addHasOne('currency_id', ['model' => [Currency::class]])
         ->addTitle(['field' => 'currency_name']);
 
 User-defined Reference
@@ -522,14 +522,14 @@ when SQL is confused about which table to use.
 To avoid this problem Agile Data will automatically alias tables in sub-queries.
 Here is how it works::
 
-    $item->hasMany('parent_item_id', ['model' => [Model_Item::class]])
+    $item->addHasMany('parent_item_id', ['model' => [Model_Item::class]])
         ->addField('parent', 'name');
 
 When generating expression for 'parent', the sub-query will use alias ``pi``
 consisting of first letters in 'parent_item_id'. (except _id). You can actually
 specify a custom table alias if you want::
 
-    $item->hasMany('parent_item_id', ['model' => [Model_Item::class], 'table_alias' => 'mypi'])
+    $item->addHasMany('parent_item_id', ['model' => [Model_Item::class], 'table_alias' => 'mypi'])
         ->addField('parent', 'name');
 
 Additionally you can pass table_alias as second argument into :php:meth:`Model::ref()`
@@ -546,10 +546,10 @@ that relate to itself. Here is example::
             $this->addField('name');
             $this->addField('age');
             $i2 = $this->addJoin('item2.item_id');
-            $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
+            $i2->addHasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
                 ->addTitle();
 
-            $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
+            $this->addHasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
                 ->addField('child_age',['aggregate' => 'sum', 'field' => 'age']);
         }
     }
@@ -574,7 +574,7 @@ Loading model like that can produce a pretty sophisticated query:
 Various ways to specify options
 -------------------------------
 
-When calling `hasOne()->addFields()` there are various ways to pass options:
+When calling `addHasOne()->addFields()` there are various ways to pass options:
 
 - `addFields(['name', 'dob'])` - no options are passed, use defaults. Note that
   reference will not fetch the type of foreign field due to performance consideration.
@@ -605,7 +605,7 @@ Consider the following two models::
             parent::init();
             $this->addField('name');
 
-            $this->hasOne('contact_id', ['model' => [Model_Contact::class]]);
+            $this->addHasOne('contact_id', ['model' => [Model_Contact::class]]);
         }
     }
 

@@ -65,7 +65,7 @@ Model class can be seen as a "gateway" between your code and many other features
 For example - you may define fields and relations for the model::
 
    $model->addField('age', ['type' => 'integer']);
-   $model->hasMany('Children', ['model' => [Person::class]]);
+   $model->addHasMany('Children', ['model' => [Person::class]]);
 
 Methods `addField` and `hasMany` will ultimatelly create and link model with a corresponding
 `Field` object and `Reference` object. Those classes contain the logic, but in 95% of the use-cases,
@@ -140,7 +140,7 @@ We actually recommend you to use namespaces instead::
 
          $this->addField('name');
 
-         $this->hasMany('Invoices', ['model' => [Invoice::class]]);
+         $this->addHasMany('Invoices', ['model' => [Invoice::class]]);
       }
    }
 

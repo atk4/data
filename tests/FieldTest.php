@@ -378,7 +378,7 @@ class FieldTest extends TestCase
 
         $m = new Model($db, ['table' => 'user']);
         $m->addField('name');
-        $m->hasOne('category_id', ['model' => $c])
+        $m->addHasOne('category_id', ['model' => $c])
             ->addTitle();
 
         $m = $m->load(1);

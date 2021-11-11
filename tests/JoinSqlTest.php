@@ -539,7 +539,7 @@ class JoinSqlTest extends TestCase
         // hasOne phone model
         $m_p = new Model($db, ['table' => 'phone']);
         $m_p->addField('number');
-        $ref_one = $j->hasOne('phone_id', ['model' => $m_p]); // hasOne on JOIN
+        $ref_one = $j->addHasOne('phone_id', ['model' => $m_p]); // hasOne on JOIN
         $ref_one->addField('number');
 
         $m_u2 = $m_u->load(1);
@@ -551,7 +551,7 @@ class JoinSqlTest extends TestCase
         $m_t = new Model($db, ['table' => 'token']);
         $m_t->addField('user_id');
         $m_t->addField('token');
-        $ref_many = $j->hasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default our_field, their_field)
+        $ref_many = $j->addHasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default our_field, their_field)
 
         $m_u2 = $m_u->load(1);
         $this->assertEquals([
@@ -563,7 +563,7 @@ class JoinSqlTest extends TestCase
         $m_e = new Model($db, ['table' => 'email']);
         $m_e->addField('contact_id');
         $m_e->addField('address');
-        $ref_many = $j->hasMany('Email', ['model' => $m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+        $ref_many = $j->addHasMany('Email', ['model' => $m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
 
         $m_u2 = $m_u->load(1);
         $this->assertEquals([

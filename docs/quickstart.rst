@@ -15,7 +15,7 @@ unions but only if the database server supports those operations.
 
 Developer would normally create a declaration like this::
 
-    $user->hasMany('Order')->addField('total', ['aggregate' => 'sum']);
+    $user->addHasMany('Order')->addField('total', ['aggregate' => 'sum']);
 
 It is up to Agile Data to decide what's the most efficient way to implement
 the aggregation. Currently only SQL persistence is capable of constructing
@@ -286,7 +286,7 @@ like this::
             $j->addField('address_1');
             $j->addField('address_2');
             $j->addField('address_3');
-            $j->hasOne('country_id', 'Country');
+            $j->addHasOne('country_id', 'Country');
 
         }
     }
@@ -426,8 +426,8 @@ related to each-other.
 .. warning:: Do not mix-up business model references with database relations
     (foreign keys).
 
-References are defined by calling :php:meth:`Model::hasOne()` or
-:php:meth:`Model::hasMany()`. You always specify destination model and you can
+References are defined by calling :php:meth:`Model::addHasOne()` or
+:php:meth:`Model::addHasMany()`. You always specify destination model and you can
 optionally specify which fields are used for conditioning.
 
 One to Many
@@ -437,7 +437,7 @@ Launch up console again and let's create reference between 'User' and 'System'.
 As per our database design - one user can have multiple 'system' records::
 
     $m = new Model_User($db);
-    $m->hasMany('System');
+    $m->addHasMany('System');
 
 Next you can load a specific user and traverse into System model::
 
@@ -475,7 +475,7 @@ You can examine the this model further::
     $c->export();
     $c->action('count')->getDebugQuery();
 
-By looking at the code - both MtM and OtM references are defined with 'hasMany'.
+By looking at the code - both MtM and OtM references are defined with hasMany.
 The only difference is the loaded() state of the source model.
 
 Calling ref()->ref() is also called Deep Traversal.
@@ -497,11 +497,11 @@ country of user john::
 Implementation of References
 ----------------------------
 
-When reference is added using :php:meth:`Model::hasOne()` or :php:meth:`Model::hasMany()`,
+When reference is added using :php:meth:`Model::addHasOne()` or :php:meth:`Model::addHasMany()`,
 the new object is created and added into Model of class :php:class:`Reference\HasMany`
 or :php:class:`Reference\\HasOne` (or :php:class:`Reference\\HasOneSql` in case you
 use SQL database). The object itself is quite simple and you can fetch it from
-the model if you keep the return value of hasOne() / hasMany() or call
+the model if you keep the return value of addHasOne() / addHasMany() or call
 :php:meth:`Model::getRef()` with the same identifier later on.
 You can also use :php:meth:`Model::hasRef()` to check if reference exists in model.
 
@@ -591,7 +591,7 @@ console once away::
 
     $m = new Model_User($db);
     $m = $m->loadBy('username','john');
-    $m->hasMany('System');
+    $m->addHasMany('System');
     $c = $m->ref('System')->ref('Client');
     $s = $m->ref('System')->ref('Supplier');
 

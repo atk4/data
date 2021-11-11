@@ -24,13 +24,13 @@ class ReferenceTest extends TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id', ['type' => 'integer']);
 
-        $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        $user->getModel()->addHasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders')->createEntity();
 
         $this->assertSame(20, $o->get('amount'));
         $this->assertSame(1, $o->get('user_id'));
 
-        $user->getModel()->hasMany('BigOrders', ['model' => function () {
+        $user->getModel()->addHasMany('BigOrders', ['model' => function () {
             $m = new Model();
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id');
@@ -57,7 +57,7 @@ class ReferenceTest extends TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->getModel()->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        $user->getModel()->addHasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
         $this->assertSame('My Orders', $user->refModel('Orders')->getModelCaption());
@@ -70,7 +70,7 @@ class ReferenceTest extends TestCase
         $user = new Model($db, ['table' => 'user']);
         $user = $user->createEntity();
         $user->setId(1);
-        $user->getModel()->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
+        $user->getModel()->addHasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
         $o = $user->ref('order_id');
         $this->assertSame('order', $o->table);
     }
@@ -81,9 +81,9 @@ class ReferenceTest extends TestCase
         $order = new Model();
         $order->addField('user_id');
 
-        $user->hasMany('Orders', ['model' => $order]);
+        $user->addHasMany('Orders', ['model' => $order]);
         $this->expectException(Exception::class);
-        $user->hasMany('Orders', ['model' => $order]);
+        $user->addHasMany('Orders', ['model' => $order]);
     }
 
     public function testRefName2(): void
@@ -91,9 +91,9 @@ class ReferenceTest extends TestCase
         $order = new Model(null, ['table' => 'order']);
         $user = new Model(null, ['table' => 'user']);
 
-        $user->hasOne('user_id', ['model' => $user]);
+        $user->addHasOne('user_id', ['model' => $user]);
         $this->expectException(Exception::class);
-        $user->hasOne('user_id', ['model' => $user]);
+        $user->addHasOne('user_id', ['model' => $user]);
     }
 
     public function testRefName3(): void

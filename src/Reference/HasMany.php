@@ -95,7 +95,7 @@ class HasMany extends Reference
     public function addField(string $fieldName, array $defaults = []): Field
     {
         if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
-            throw (new Exception('Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()'))
+            throw (new Exception('Aggregate field requires "aggregate", "concat" or "expr" specified to HasMany->addField()'))
                 ->addMoreInfo('field', $fieldName)
                 ->addMoreInfo('defaults', $defaults);
         }

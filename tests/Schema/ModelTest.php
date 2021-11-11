@@ -175,7 +175,7 @@ class TestUser extends \Atk4\Data\Model
         $this->addField('is_admin', ['type' => 'boolean']);
         $this->addField('notes', ['type' => 'text']);
 
-        $this->hasOne('role_id', ['model' => [TestRole::class], 'our_field' => 'main_role_id', 'their_field' => 'id']);
+        $this->addHasOne('role_id', ['model' => [TestRole::class], 'our_field' => 'main_role_id', 'their_field' => 'id']);
     }
 }
 
@@ -188,6 +188,6 @@ class TestRole extends \Atk4\Data\Model
         parent::init();
 
         $this->addField('name');
-        $this->hasMany('Users', [TestUser::class, 'our_field' => 'id', 'their_field' => 'main_role_id']);
+        $this->addHasMany('Users', [TestUser::class, 'our_field' => 'id', 'their_field' => 'main_role_id']);
     }
 }

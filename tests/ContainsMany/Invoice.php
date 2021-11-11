@@ -29,7 +29,7 @@ class Invoice extends Model
         $this->addField($this->fieldName()->amount, ['type' => 'atk4_money']);
 
         // will contain many Lines
-        $this->containsMany($this->fieldName()->lines, ['model' => [Line::class], 'caption' => 'My Invoice Lines']);
+        $this->addContainsMany($this->fieldName()->lines, ['model' => [Line::class], 'caption' => 'My Invoice Lines']);
 
         // total_gross - calculated by php callback not by SQL expression
         $this->addCalculatedField($this->fieldName()->total_gross, function (self $m) {

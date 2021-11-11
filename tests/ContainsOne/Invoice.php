@@ -24,7 +24,6 @@ class Invoice extends Model
 
         $this->addField($this->fieldName()->ref_no, ['required' => true]);
 
-        // will contain one Address
-        $this->containsOne($this->fieldName()->addr, ['model' => [Address::class]]);
+        $this->addContainsOne($this->fieldName()->addr, ['model' => [Address::class]]);
     }
 }
