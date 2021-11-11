@@ -97,6 +97,24 @@ class Reference
         return $this->_setOwner($owner);
     }
 
+    protected function getOurFieldName(): string
+    {
+        return $this->our_field ?: $this->getOurModel(null)->id_field;
+    }
+
+    final protected function getOurField(): Field
+    {
+        return $this->getOurModel(null)->getField($this->getOurFieldName());
+    }
+
+    /**
+     * @return mixed
+     */
+    final protected function getOurFieldValue(Model $ourEntity)
+    {
+        return $this->getOurModel($ourEntity)->get($this->getOurFieldName());
+    }
+
     public function getTheirFieldName(): string
     {
         return $this->their_field ?? $this->model->id_field;
@@ -197,24 +215,6 @@ class Reference
         $this->addToPersistence($theirModel, $defaults);
 
         return $theirModel;
-    }
-
-    protected function getOurFieldName(): string
-    {
-        return $this->our_field ?: $this->getOurModel(null)->id_field;
-    }
-
-    final protected function getOurField(): Field
-    {
-        return $this->getOurModel(null)->getField($this->getOurFieldName());
-    }
-
-    /**
-     * @return mixed
-     */
-    final protected function getOurFieldValue(Model $ourEntity)
-    {
-        return $this->getOurModel($ourEntity)->get($this->getOurFieldName());
     }
 
     protected function initTableAlias(): void
