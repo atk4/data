@@ -382,14 +382,8 @@ class Model implements \IteratorAggregate
         if (!$this->isEntity()) {
             $this->scope = (clone $this->scope)->setModel($this);
             $this->_cloneCollection('fields');
-        } else {
-            foreach ($this->{'elements'} as $k => $v) {
-                if ($v instanceof Reference || $v instanceof Model\Join) {
-                    unset($this->elements[$k]);
-                }
-            }
+            $this->_cloneCollection('elements');
         }
-        $this->_cloneCollection('elements');
         $this->_cloneCollection('userActions');
 
         // check for clone errors immediately, otherwise not strictly needed
@@ -417,9 +411,6 @@ class Model implements \IteratorAggregate
                 'data',
                 'dirty',
                 'dirtyAfterReload',
-
-                'elements',
-                '_element_name_counts',
 
                 'hooks',
                 '_hookIndexCounter',
