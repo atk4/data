@@ -18,7 +18,7 @@ class HasOneSql extends HasOne
             $theirFieldName = $ourFieldName;
         }
 
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
 
         // if caption/type is not defined in $defaults -> get it directly from the linked model field $theirFieldName
         $refModelField = $ourModel->refModel($this->link)->getField($theirFieldName);
@@ -114,7 +114,7 @@ class HasOneSql extends HasOne
     public function ref(Model $ourBoth, array $defaults = []): Model
     {
         $theirModel = parent::ref($ourBoth, $defaults);
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel($ourBoth);
 
         $theirFieldName = $this->their_field ?? $theirModel->id_field; // TODO why not $this->getTheirFieldName() ?
 
@@ -149,7 +149,7 @@ class HasOneSql extends HasOne
      */
     public function addTitle(array $defaults = []): FieldSqlExpression
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
 

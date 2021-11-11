@@ -179,7 +179,7 @@ class Reference
         if (is_object($this->model)) {
             if ($this->model instanceof \Closure) {
                 // if model is Closure, then call the closure and whci should return a model
-                $theirModel = ($this->model)($this->getOurModel(), $this, $defaults);
+                $theirModel = ($this->model)($this->getOurModel(null), $this, $defaults);
             } else {
                 // if model is set, then use clone of this model
                 $theirModel = clone $this->model;
@@ -201,12 +201,12 @@ class Reference
 
     protected function getOurFieldName(): string
     {
-        return $this->our_field ?: $this->getOurModel()->id_field;
+        return $this->our_field ?: $this->getOurModel(null)->id_field;
     }
 
     final protected function getOurField(): Field
     {
-        return $this->getOurModel()->getField($this->getOurFieldName());
+        return $this->getOurModel(null)->getField($this->getOurFieldName());
     }
 
     /**
@@ -220,7 +220,7 @@ class Reference
     protected function initTableAlias(): void
     {
         if (!$this->table_alias) {
-            $ourModel = $this->getOurModel();
+            $ourModel = $this->getOurModel(null);
 
             $aliasFull = $this->link;
             $alias = preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $aliasFull);
@@ -252,7 +252,7 @@ class Reference
      */
     protected function getDefaultPersistence(Model $theirModel)
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
 
         // this will be useful for containsOne/Many implementation in case when you have
         // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence

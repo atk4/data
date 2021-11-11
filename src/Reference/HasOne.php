@@ -35,7 +35,7 @@ class HasOne extends Reference
         $fieldPropsRefl = (new \ReflectionClass(Model\FieldPropertiesTrait::class))->getProperties();
         $fieldPropsRefl[] = (new \ReflectionClass(Model\JoinLinkTrait::class))->getProperty('joinName');
 
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
         if (!$ourModel->hasField($this->our_field)) {
             $fieldSeed = [];
             foreach ($fieldPropsRefl as $fieldPropRefl) {
@@ -64,7 +64,7 @@ class HasOne extends Reference
      */
     protected function referenceOurValue(): Field
     {
-        $this->getOurModel()->persistence_data['use_table_prefixes'] = true;
+        $this->getOurModel(null)->persistence_data['use_table_prefixes'] = true;
 
         return $this->getOurField();
     }
@@ -77,14 +77,15 @@ class HasOne extends Reference
      */
     public function ref(Model $ourBoth, array $defaults = []): Model
     {
+        $ourModel = $this->getOurModel($ourBoth);
         $theirModel = $this->createTheirModel($defaults);
 
         // add hook to set our_field = null when record of referenced model is deleted
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) {
-            $this->getOurModel()->setNull($this->getOurFieldName());
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) use ($ourModel) {
+            $ourModel->setNull($this->getOurFieldName());
         });
 
-        if ($this->getOurModel()->isEntity()) {
+        if ($ourModel->isEntity()) {
             if ($ourValue = $this->getOurFieldValue($ourBoth)) {
                 // if our model is loaded, then try to load referenced model
                 if ($this->their_field) {
@@ -100,11 +101,11 @@ class HasOne extends Reference
         // their model will be reloaded after saving our model to reflect changes in referenced fields
         $theirModel->reload_after_save = false;
 
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourBoth) {
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) use ($ourModel) {
             $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->getId();
 
-            if ($this->getOurFieldValue($ourBoth) !== $theirValue) { // TODO compare should be used here
-                $this->getOurModel()->set($this->getOurFieldName(), $theirValue)->save();
+            if ($this->getOurFieldValue($ourModel) !== $theirValue) { // TODO compare should be used here
+                $ourModel->set($this->getOurFieldName(), $theirValue)->save();
             }
 
             $theirModel->reload();

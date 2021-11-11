@@ -28,7 +28,7 @@ class ContainsMany extends ContainsOne
      */
     public function ref(Model $ourBoth, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel($ourBoth);
 
         // get model
         $theirModel = $this->createTheirModel(array_merge($defaults, [
@@ -38,11 +38,11 @@ class ContainsMany extends ContainsOne
 
         // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) {
+            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) use ($ourModel) {
                 /** @var Persistence\Array_ */
                 $persistence = $theirModel->persistence;
                 $rows = $persistence->getRawDataByTable($theirModel, $this->table_alias);
-                $this->getOurModel()->save([
+                $this->getOurModel($ourModel)->save([
                     $this->getOurFieldName() => $rows ?: null,
                 ]);
             });

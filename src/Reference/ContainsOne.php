@@ -58,7 +58,7 @@ class ContainsOne extends Reference
             $this->our_field = $this->link;
         }
 
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
         $ourField = $this->getOurFieldName();
 
         if (!$ourModel->hasElement($ourField)) {
@@ -89,7 +89,7 @@ class ContainsOne extends Reference
      */
     public function ref(Model $ourBoth, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel($ourBoth);
 
         $theirModel = $this->createTheirModel(array_merge($defaults, [
             'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
@@ -97,12 +97,12 @@ class ContainsOne extends Reference
         ]));
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
-            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) {
+            $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) use ($ourModel) {
                 /** @var Persistence\Array_ */
                 $persistence = $theirModel->persistence;
                 $row = $persistence->getRawDataByTable($theirModel, $this->table_alias);
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence
-                $this->getOurModel()->save([$this->getOurFieldName() => $row]);
+                $this->getOurModel($ourModel)->save([$this->getOurFieldName() => $row]);
             });
         }
 

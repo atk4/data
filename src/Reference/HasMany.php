@@ -19,7 +19,7 @@ class HasMany extends Reference
 
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel(null);
         $theirFieldName = $ourModel->table . '_' . $ourModel->id_field;
         if (!$this->createTheirModel()->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
@@ -34,9 +34,9 @@ class HasMany extends Reference
      *
      * @return mixed
      */
-    protected function getOurValue()
+    protected function getOurValue(Model $ourBoth)
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel($ourBoth);
 
         if ($ourModel->isEntity() && $ourModel->loaded()) {
             return $this->our_field
@@ -55,7 +55,7 @@ class HasMany extends Reference
      */
     protected function referenceOurValue(): Field
     {
-        $this->getOurModel()->persistence_data['use_table_prefixes'] = true;
+        $this->getOurModel(null)->persistence_data['use_table_prefixes'] = true;
 
         return $this->getOurField();
     }
@@ -65,11 +65,11 @@ class HasMany extends Reference
      */
     public function ref(Model $ourBoth, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel($ourBoth);
 
         return $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
-            $this->getOurValue()
+            $this->getOurValue($ourBoth)
         );
     }
 
@@ -78,7 +78,7 @@ class HasMany extends Reference
      */
     public function refLink(?Model $ourBoth, array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
+        $ourModel = $this->getOurModel($ourBoth);
 
         $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
@@ -106,7 +106,7 @@ class HasMany extends Reference
         $field = $alias ?? $fieldName;
 
         if (isset($defaults['concat'])) {
-            $defaults['aggregate'] = $this->getOurModel()->dsql()->groupConcat($field, $defaults['concat']);
+            $defaults['aggregate'] = $this->getOurModel(null)->dsql()->groupConcat($field, $defaults['concat']);
             $defaults['read_only'] = false;
             $defaults['never_save'] = true;
         }
@@ -139,7 +139,7 @@ class HasMany extends Reference
             };
         }
 
-        return $this->getOurModel()->addExpression($fieldName, array_merge([$fx], $defaults));
+        return $this->getOurModel(null)->addExpression($fieldName, array_merge([$fx], $defaults));
     }
 
     /**
