@@ -151,7 +151,7 @@ class Join
     /**
      * @param Model $owner
      *
-     * @return static
+     * @return $this
      */
     public function setOwner(object $owner)
     {

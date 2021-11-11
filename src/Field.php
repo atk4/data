@@ -43,7 +43,7 @@ class Field implements Expressionable
     /**
      * @param Model $owner
      *
-     * @return static
+     * @return $this
      */
     public function setOwner(object $owner)
     {
