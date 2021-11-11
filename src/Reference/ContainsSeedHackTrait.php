@@ -33,7 +33,7 @@ trait ContainsSeedHackTrait
                 }
 
                 if (in_array($frame['function'], ['ref', 'refModel', 'refLink'], true)) {
-                    return $frame['args'][0];
+                    return $this->getOurModel($frame['args'][0]);
                 }
             }
 

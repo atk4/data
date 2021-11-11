@@ -92,7 +92,7 @@ class Reference
      */
     public function setOwner(object $owner)
     {
-//        $owner->assertIsModel();
+        $owner->assertIsModel();
 
         return $this->_setOwner($owner);
     }
@@ -109,7 +109,7 @@ class Reference
         return $model->onHookDynamic(
             $spot,
             static function (Model $model) use ($name): self {
-                return $model->getElement($name);
+                return $model->getModel(true)->getElement($name);
             },
             $fx,
             $args,
@@ -154,9 +154,15 @@ class Reference
         return '#ref_' . $this->link;
     }
 
-    public function getOurModel(): Model
+    public function getOurModel(?Model $ourBoth): Model
     {
-        return $this->getOwner();
+        if ($ourBoth === null) {
+            $ourBoth = $this->getOwner();
+        }
+
+        $this->getOwner()->assertIsModel($ourBoth->getModel(true));
+
+        return $ourBoth;
     }
 
     /**

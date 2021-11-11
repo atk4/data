@@ -384,7 +384,7 @@ class Model implements \IteratorAggregate
             $this->_cloneCollection('fields');
         } else {
             foreach ($this->{'elements'} as $k => $v) {
-                if ($v instanceof Model\Join) {
+                if ($v instanceof Reference || $v instanceof Model\Join) {
                     unset($this->elements[$k]);
                 }
             }
