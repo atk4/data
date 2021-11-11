@@ -135,7 +135,7 @@ To implement the above, I'll create a new class::
     class Controller_Audit {
 
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
         use \Atk4\Core\AppScopeTrait;
@@ -216,7 +216,7 @@ Start by creating a class::
     class Controller_SoftDelete {
 
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
@@ -325,7 +325,7 @@ before and just slightly modifying it::
     class Controller_SoftDelete {
 
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 
@@ -411,7 +411,7 @@ inside your model are unique::
 
     class Controller_UniqueFields {
         use \Atk4\Core\InitializerTrait {
-            init as _init;
+            init as private _init;
         }
         use \Atk4\Core\TrackableTrait;
 

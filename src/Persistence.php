@@ -15,7 +15,7 @@ use Doctrine\DBAL\Platforms;
 abstract class Persistence
 {
     use ContainerTrait {
-        add as _add;
+        add as private _add;
     }
     use DiContainerTrait;
     use DynamicMethodTrait;

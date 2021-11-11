@@ -22,7 +22,7 @@ class Reference
 {
     use DiContainerTrait;
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
     use TrackableTrait;
 

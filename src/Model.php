@@ -46,7 +46,7 @@ class Model implements \IteratorAggregate
     }
     use HookTrait;
     use InitializerTrait {
-        init as _init;
+        init as private _init;
     }
     use Model\JoinsTrait;
     use Model\ReferencesTrait;

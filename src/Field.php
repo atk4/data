@@ -18,7 +18,7 @@ use Doctrine\DBAL\Types\Type;
 class Field implements Expressionable
 {
     use DiContainerTrait {
-        setDefaults as _setDefaults;
+        setDefaults as private _setDefaults;
     }
     use Model\FieldPropertiesTrait;
     use Model\JoinLinkTrait;
