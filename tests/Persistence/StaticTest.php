@@ -76,6 +76,7 @@ class StaticTest extends TestCase
                 parent::init();
 
                 $this->getField('id')->required = false;
+                $this->getField('id')->mandatory = true;
             }
         };
 
