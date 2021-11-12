@@ -82,12 +82,8 @@ abstract class Persistence
     {
         Factory::factory($model, $defaults);
 
-        if ($model->persistence) {
-            if ($model->persistence === $this) {
-                return;
-            }
-
-            throw new Exception('Model is already related to another persistence');
+        if ($model->persistence !== null) {
+            throw new Exception('Persistence already set');
         }
 
         $model->persistence = $this;
