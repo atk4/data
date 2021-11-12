@@ -42,13 +42,21 @@ class Static_ extends Array_
 
         if (!is_array($row1)) {
             // convert array of strings into array of hashes
+            $allKeysInt = true;
             foreach ($data as $k => $str) {
                 $data[$k] = ['name' => $str];
+
+                if (!is_int($k)) {
+                    $allKeysInt = false;
+                }
             }
             unset($str);
 
             $this->titleForModel = 'name';
-            $this->fieldsForModel = ['name' => []];
+            $this->fieldsForModel = [
+                'id' => ['type' => $allKeysInt ? 'integer' : 'string'],
+                'name' => ['type' => 'string'], // TODO type should be guessed as well
+            ];
 
             parent::__construct($data);
 
@@ -85,7 +93,7 @@ class Static_ extends Array_
             } elseif (is_object($value)) {
                 $def_types[] = ['type' => 'object'];
             } else {
-                $def_types[] = [];
+                $def_types[] = ['type' => 'string'];
             }
 
             // if title is not set, use first key
@@ -130,11 +138,30 @@ class Static_ extends Array_
 
     public function add(Model $model, array $defaults = []): Model
     {
-        parent::add($model, $defaults);
+        if ($model->id_field && !$model->hasField($model->id_field)) {
+            // init model, but prevent array persistence data seeding, id field with correct type must be setup first
+            \Closure::bind(function () use ($model, $defaults) {
+                $hadData = true;
+                if (!isset($this->data[$model->table])) {
+                    $hadData = false;
+                    $this->data[$model->table] = true;
+                }
+                try {
+                    parent::add($model, $defaults);
+                } finally {
+                    if (!$hadData) {
+                        unset($this->data[$model->table]);
+                    }
+                }
+            }, $this, Array_::class)();
 
+            if (isset($this->fieldsForModel[$model->id_field])) {
+                $model->getField($model->id_field)->type = $this->fieldsForModel[$model->id_field]['type'];
+            }
+        }
         $this->addMissingFieldsToModel($model);
 
-        return $model;
+        return parent::add($model, $defaults);
     }
 
     /**

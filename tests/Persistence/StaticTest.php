@@ -119,17 +119,36 @@ class StaticTest extends TestCase
         ]]);
         $m = new Model($p);
 
+        $this->assertSame('integer', $m->getField('id')->type);
         $this->assertSame('integer', $m->getField('test_int')->type);
         $this->assertSame('float', $m->getField('test_float')->type);
         // $this->assertSame('datetime', $m->getField('test_date')->type);
         // $this->assertSame('json', $m->getField('test_array')->type);
         // $this->assertSame('object', $m->getField('test_object')->type);
 
-        // string is default type, so it is null
-        $this->assertNull($m->getField('name')->type);
-        $this->assertNull($m->getField('test_str_1')->type);
-        $this->assertNull($m->getField('test_str_2')->type);
-        $this->assertNull($m->getField('test_str_3')->type);
+        // string is default type
+        $this->assertSame('string', $m->getField('name')->type);
+        $this->assertSame('string', $m->getField('test_str_1')->type);
+        $this->assertSame('string', $m->getField('test_str_2')->type);
+        $this->assertSame('string', $m->getField('test_str_3')->type);
+    }
+
+    public function testFieldTypesBasicInteger(): void
+    {
+        $p = new Persistence\Static_(['hello', 'world']);
+        $m = new Model($p);
+
+        $this->assertSame('integer', $m->getField('id')->type);
+        $this->assertSame('string', $m->getField('name')->type);
+    }
+
+    public function testFieldTypesBasicString(): void
+    {
+        $p = new Persistence\Static_(['test' => 'hello', 10 => 'world']);
+        $m = new Model($p);
+
+        $this->assertSame('string', $m->getField('id')->type);
+        $this->assertSame('string', $m->getField('name')->type);
     }
 }
 
