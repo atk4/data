@@ -40,10 +40,6 @@ class Static_ extends Array_
         // chomp off first row, we will use it to deduct fields
         $row1 = reset($data);
 
-        $this->onHookShort(self::HOOK_AFTER_ADD, function (...$args) {
-            $this->afterAdd(...$args);
-        });
-
         if (!is_array($row1)) {
             // convert array of strings into array of hashes
             foreach ($data as $k => $str) {
@@ -132,12 +128,19 @@ class Static_ extends Array_
         parent::__construct($data);
     }
 
+    public function add(Model $model, array $defaults = []): Model
+    {
+        parent::add($model, $defaults);
+
+        $this->addMissingFieldsToModel($model);
+
+        return $model;
+    }
+
     /**
      * Automatically adds missing model fields.
-     *
-     * Called by HOOK_AFTER_ADD hook.
      */
-    public function afterAdd(Model $model): void
+    protected function addMissingFieldsToModel(Model $model): void
     {
         if ($this->titleForModel) {
             $model->title_field = $this->titleForModel;
@@ -148,7 +151,6 @@ class Static_ extends Array_
                 continue;
             }
 
-            // add new field
             $model->addField($field, $def);
         }
     }
