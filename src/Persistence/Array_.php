@@ -43,7 +43,7 @@ class Array_ extends Persistence
         // and put all persistence data in there 1/2
         if (count($this->seedData) > 0 && !isset($this->seedData['data'])) {
             $rowSample = reset($this->seedData);
-            if (is_array($rowSample) && !is_array(reset($rowSample))) {
+            if (is_array($rowSample) && $rowSample !== [] && !is_array(reset($rowSample))) {
                 $this->seedData = ['data' => $this->seedData];
             }
         }
