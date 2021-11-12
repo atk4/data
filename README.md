@@ -31,7 +31,7 @@ $vip_clients = (new Client($db))->addCondition('is_vip', true);
 // express total for all VIP client invoices. The value of the variable is an object
 $total_due = $vip_clients->ref('Invoice')->action('fx', ['sum', 'total']);
 
-// Single database query is executed here, but not before!
+// single database query is executed here, but not before!
 echo $total_due->getOne();
 ```
 
@@ -42,7 +42,7 @@ In other ORM the similar implementation would be either [slow, clumsy, limited o
 Agile Toolkit is a low-code framework. Once you have defined your business object, it can be associated with a UI widget:
 
 ``` php
-$app->add(new Crud())->setModel(new Client($db), ['name', 'surname'], ['edit', 'archive']);
+Crud::addTo($app)->setModel(new Client($db), ['name', 'surname'], ['edit', 'archive']);
 ```
 
 or with an API end-point:
@@ -126,41 +126,44 @@ This next example builds a complex "Job Profitability Report" by only relying on
 
 ``` php
 class JobReport extends Job {
-  function init(): void {
-    parent::init();
+    function init(): void {
+        parent::init();
 
-    // Invoice contains Lines that may relevant to this job
-    $invoice = new Invoice($this->persistence);
+        // Invoice contains Lines that may relevant to this job
+        $invoice = new Invoice($this->persistence);
 
-    // We need to ignore draft invoices
-    $invoice->addCondition('status', '!=', 'draft');
+        // we need to ignore draft invoices
+        $invoice->addCondition('status', '!=', 'draft');
 
-    // Each invoice may have multiple lines, which is what we want
-    $invoice_lines = $invoice->ref('Lines');
+        // each invoice may have multiple lines, which is what we want
+        $invoice_lines = $invoice->ref('Lines');
 
-    // Build relation between job and invoice line
-    $this->hasMany('InvoiceLines', ['model' => $invoice_lines])
-      ->addField('invoiced', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'atk4_money']);
+        // build relation between job and invoice line
+        $this->hasMany('InvoiceLines', ['model' => $invoice_lines])
+            ->addField('invoiced', ['aggregate' => 'sum', 'field' => 'total', 'type' => 'atk4_money']);
 
-    // Next we need to see how much is reported through timesheets
-    $timesheet = new Timesheet($this->persistence);
+        // next we need to see how much is reported through timesheets
+        $timesheet = new Timesheet($this->persistence);
 
-    // Timesheet relates to client. Import client.hourly_rate as expression.
-    $timesheet->getRef('client_id')->addField('hourly_rate');
+        // timesheet relates to client, import client.hourly_rate as expression
+        $timesheet->getRef('client_id')->addField('hourly_rate');
 
-    // Calculate timesheet cost expression
-    $timesheet->addExpression('cost', '[hours]*[hourly_rate]');
+        // calculate timesheet cost expression
+        $timesheet->addExpression('cost', '[hours]*[hourly_rate]');
 
-    // Build relation between Job and Timesheets
-    $this->hasMany('Timesheets', ['model' => $timesheet])
-      ->addField('reported', ['aggregate' => 'sum', 'field' => 'cost', 'type' => 'atk4_money']);
+        // build relation between Job and Timesheets
+        $this->hasMany('Timesheets', ['model' => $timesheet])
+            ->addField(
+                'reported',
+                ['aggregate' => 'sum', 'field' => 'cost', 'type' => 'atk4_money']
+            );
 
-	// Finally lets calculate profit
-    $this->addExpression('profit', '[invoiced]-[reported]');
+        // finally lets calculate profit
+        $this->addExpression('profit', '[invoiced]-[reported]');
 
-    // Profit margin could be also useful
-    $this->addExpression('profit_margin', 'coalesce([profit] / [invoiced], 0)');
-  }
+        // profit margin could be also useful
+        $this->addExpression('profit_margin', 'coalesce([profit] / [invoiced], 0)');
+    }
 }
 ```
 
@@ -190,7 +193,7 @@ $data->addExpression('month', 'month([date])');
 $aggregate = new \Atk4\Report\GroupModel($data);
 $aggregate->groupBy('month', ['profit_margin' => 'sum']);
 
-// Associate presentation with data
+// associate presentation with data
 $chart->setModel($aggregate, ['month', 'profit_margin']);
 $html = $chart->html();
 ```
@@ -294,16 +297,16 @@ You get to manipulate your objects first before query is invoked. The next code 
 ``` php
 $m = new Client($db);
 echo $m->addCondition('vip', true)
-  ->ref('Order')->ref('Line')->action('fx', ['sum', 'total'])->getOne();
+    ->ref('Order')->ref('Line')->action('fx', ['sum', 'total'])->getOne();
 ```
 
 Resulting Query will always use parametric variables if vendor driver supports them (such as PDO):
 
 ``` sql
 select sum(`price`*`qty`) from `order_line` `O_L` where `order_id` in (
-  select `id` from `order` `O` where `client_id` in (
-    select `id` from `client` where `vip` = :a
-  )
+    select `id` from `order` `O` where `client_id` in (
+        select `id` from `client` where `vip` = :a
+    )
 )
 
 // :a is "Y"
@@ -319,11 +322,11 @@ My next example demonstrates how simple and clean your code looks when you store
 $m = new Client($db);
 $m->loadBy('name', 'Pear Company');
 $m->ref('Order')
-   ->save(['ref' => 'TBL1', 'delivery' => new DateTime('+1 month')])
-   ->ref('Lines')->import([
-      ['Table', 'category' => 'furniture', 'qty' => 2, 'price' => 10.50],
-      ['Chair', 'category' => 'furniture', 'qty' => 10, 'price' => 3.25],
-]);
+    ->save(['ref' => 'TBL1', 'delivery' => new DateTime('+1 month')])
+    ->ref('Lines')->import([
+        ['Table', 'category' => 'furniture', 'qty' => 2, 'price' => 10.50],
+        ['Chair', 'category' => 'furniture', 'qty' => 10, 'price' => 3.25],
+    ]);
 ```
 
 Resulting queries (I have removed back-ticks and parametric variables for readability) use a consise syntax and demonstrate some of the "behind-the-scenes" logic:
@@ -502,7 +505,7 @@ foreach ($client->ref('Project') as $project) {
 }
 
 // $project refers to same object at all times, but $project's active data
-// is re-populated on each iteration.
+// is re-populated on each iteration
 ```
 
 Nothing unnecessary is pre-fetched. Only requested columns are queried. Rows are streamed and never ever we will try to squeeze a large collection of IDs into a variable or a query.
@@ -575,7 +578,8 @@ class User extends \Atk4\Data\Model
         parent::init();
 
         $this->addFields(['email', 'name', 'password']);
-        // use your table fields here
+
+        // add your table fields here
     }
 }
 ```
@@ -584,7 +588,9 @@ Next create `console.php`:
 
 ``` php
 <?php
-include'vendor/autoload.php';
+
+require __DIR__ . '/vendor/autoload.php';
+
 $db = \Atk4\Data\Persistence::connect(PDO_DSN, USER, PASS);
 eval(\Psy\sh());
 ```
@@ -625,41 +631,39 @@ DSQL Is Simple and Powerful
 
 ``` php
 $query = new Atk4\Data\Persistence\Sql\Query();
-$query  ->table('employees')
-        ->where('birth_date','1961-05-02')
-        ->field('count(*)')
-        ;
-echo "Employees born on May 2, 1961: ".$query->getOne();
+$query->table('employees')
+    ->where('birth_date','1961-05-02')
+    ->field('count(*)');
+echo 'Employees born on May 2, 1961: ' . $query->getOne();
 ```
 
 If the basic query is not fun, how about more complex one?
 
 ``` php
-// Establish a query looking for a maximum salary
+// establish a query looking for a maximum salary
 $salary = new Atk4\Data\Persistence\Sql\Query(['connection' => $pdo]);
 
-// Create few expression objects
+// create few expression objects
 $e_ms = $salary->expr('max(salary)');
 $e_df = $salary->expr('TimeStampDiff(month, from_date, to_date)');
 
-// Configure our basic query
+// configure our basic query
 $salary
     ->table('salary')
     ->field(['emp_no', 'max_salary' => $e_ms, 'months' => $e_df])
     ->group('emp_no')
     ->order('-max_salary')
 
-// Define sub-query for employee "id" with certain birth-date
+// define sub-query for employee "id" with certain birth-date
 $employees = $salary->dsql()
     ->table('employees')
     ->where('birth_date','1961-05-02')
-    ->field('emp_no')
-    ;
+    ->field('emp_no');
 
 // use sub-select to condition salaries
 $salary->where('emp_no', $employees);
 
-// Join with another table for more data
+// join with another table for more data
 $salary
     ->join('employees.emp_id','emp_id')
     ->field('employees.first_name');
