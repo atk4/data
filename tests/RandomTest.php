@@ -237,6 +237,21 @@ class RandomTest extends TestCase
         $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 
+    public function testDirty2(): void
+    {
+        $p = new Persistence\Static_([1 => 'hello', 'world']);
+
+        // default title field
+        $m = new Model($p);
+        $m->addExpression('caps', function ($m) {
+            return strtoupper($m->get('name'));
+        });
+
+        $m = $m->load(2);
+        $this->assertSame('world', $m->get('name'));
+        $this->assertSame('WORLD', $m->get('caps'));
+    }
+
     public function testUpdateCondition(): void
     {
         $db = new Persistence\Sql($this->db->connection);
