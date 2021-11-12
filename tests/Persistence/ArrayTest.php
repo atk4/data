@@ -700,10 +700,10 @@ class ArrayTest extends TestCase
     {
         // order by one field ascending
         $p = new Persistence\Array_([
-            ['f1' => 'A'],
-            ['f1' => 'D'],
-            ['f1' => 'E'],
-            ['f1' => 'C'],
+            1 => ['f1' => 'A'],
+            2 => ['f1' => 'D'],
+            3 => ['f1' => 'E'],
+            4 => ['f1' => 'C'],
         ]);
         $m = new Model($p);
         $m->addField('f1');
@@ -713,16 +713,16 @@ class ArrayTest extends TestCase
         $m->setLimit(3);
         $this->assertSame(3, $m->action('count')->getOne());
         $this->assertSame([
-            ['id' => 0, 'f1' => 'A'],
-            ['id' => 1, 'f1' => 'D'],
-            ['id' => 2, 'f1' => 'E'],
+            ['id' => 1, 'f1' => 'A'],
+            ['id' => 2, 'f1' => 'D'],
+            ['id' => 3, 'f1' => 'E'],
         ], array_values($m->export()));
 
         $m->setLimit(2, 1);
         $this->assertSame(2, $m->action('count')->getOne());
         $this->assertSame([
-            ['id' => 1, 'f1' => 'D'],
-            ['id' => 2, 'f1' => 'E'],
+            ['id' => 2, 'f1' => 'D'],
+            ['id' => 3, 'f1' => 'E'],
         ], array_values($m->export()));
 
         // well, this is strange, that you can actually change limit on-the-fly and then previous

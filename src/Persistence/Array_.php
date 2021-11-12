@@ -43,7 +43,7 @@ class Array_ extends Persistence
         // and put all persistence data in there 1/2
         if (count($this->seedData) > 0 && !isset($this->seedData['data'])) {
             $rowSample = reset($this->seedData);
-            if (is_array($rowSample) && !is_array(reset($rowSample))) {
+            if (is_array($rowSample) && $rowSample !== [] && !is_array(reset($rowSample))) {
                 $this->seedData = ['data' => $this->seedData];
             }
         }
@@ -111,9 +111,9 @@ class Array_ extends Persistence
      * @param int|string|null $idFromRow
      * @param int|string      $id
      */
-    private function assertNoIdMismatch($idFromRow, $id): void
+    private function assertNoIdMismatch(Model $model, $idFromRow, $id): void
     {
-        if ($idFromRow !== null && (is_int($idFromRow) ? (string) $idFromRow : $idFromRow) !== (is_int($id) ? (string) $id : $id)) {
+        if ($idFromRow !== null && !$model->getField($model->id_field)->compare($idFromRow, $id)) {
             throw (new Exception('Row constains ID column, but it does not match the row ID'))
                 ->addMoreInfo('idFromKey', $id)
                 ->addMoreInfo('idFromData', $idFromRow);
@@ -127,9 +127,10 @@ class Array_ extends Persistence
     {
         if ($model->id_field) {
             $idField = $model->getField($model->id_field);
+            $id = $idField->normalize($id);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $rowData)) {
-                $this->assertNoIdMismatch($rowData[$idColumnName], $id);
+                $this->assertNoIdMismatch($model, $rowData[$idColumnName], $id);
                 unset($rowData[$idColumnName]);
             }
 
@@ -179,7 +180,7 @@ class Array_ extends Persistence
 
         if ($model->id_field && $model->hasField($model->id_field)) {
             $f = $model->getField($model->id_field);
-            if (!$f->type) {
+            if ($f->type === null) {
                 $f->type = 'integer';
             }
         }
