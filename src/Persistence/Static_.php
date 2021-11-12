@@ -144,7 +144,7 @@ class Static_ extends Array_
                 $hadData = true;
                 if (!isset($this->data[$model->table])) {
                     $hadData = false;
-                    $this->data[$model->table] = true;
+                    $this->data[$model->table] = true; // @phpstan-ignore-line
                 }
                 try {
                     parent::add($model, $defaults);
