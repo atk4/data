@@ -541,7 +541,7 @@ class Model implements \IteratorAggregate
         $this->onHookShort(self::HOOK_AFTER_SAVE, $fx, [], -10);
     }
 
-    public function add(object $obj, array $defaults = []): object
+    public function add(object $obj, array $defaults = []): void
     {
         $this->assertIsModel();
 
@@ -549,7 +549,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Field can be added using addField() method only');
         }
 
-        return $this->_add($obj, $defaults);
+        $this->_add($obj, $defaults);
     }
 
     public function _addIntoCollection(string $name, object $item, string $collection): object

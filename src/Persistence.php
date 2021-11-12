@@ -78,29 +78,27 @@ abstract class Persistence
     /**
      * Associate model with the data driver.
      */
-    public function add(Model $m, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): void
     {
-        $m = Factory::factory($m, $defaults);
+        Factory::factory($model, $defaults);
 
-        if ($m->persistence) {
-            if ($m->persistence === $this) {
-                return $m;
+        if ($model->persistence) {
+            if ($model->persistence === $this) {
+                return;
             }
 
             throw new Exception('Model is already related to another persistence');
         }
 
-        $m->persistence = $this;
-        $m->persistence_data = [];
-        $this->initPersistence($m);
+        $model->persistence = $this;
+        $model->persistence_data = [];
+        $this->initPersistence($model);
 
         // invokes Model::init()
         // model is not added to elements as it does not implement TrackableTrait trait
-        $m = $this->_add($m);
+        $this->_add($model);
 
-        $this->hook(self::HOOK_AFTER_ADD, [$m]);
-
-        return $m;
+        $this->hook(self::HOOK_AFTER_ADD, [$model]);
     }
 
     /**

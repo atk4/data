@@ -41,7 +41,9 @@ trait JoinsTrait
                 ->addMoreInfo('foreignTable', $foreignTable);
         }
 
-        return $this->add($join);
+        $this->add($join);
+
+        return $join;
     }
 
     /**
