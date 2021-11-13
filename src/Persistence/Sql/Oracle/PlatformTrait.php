@@ -10,6 +10,11 @@ use Doctrine\DBAL\Schema\Sequence;
 
 trait PlatformTrait
 {
+    protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
+    {
+        return $this->getVarcharTypeDeclarationSQLSnippet($length, $fixed);
+    }
+
     // Oracle CLOB/BLOB has limited SQL support, see:
     // https://stackoverflow.com/questions/12980038/ora-00932-inconsistent-datatypes-expected-got-clob#12980560
     // fix this Oracle inconsistency by using VARCHAR/VARBINARY instead (but limited to 4000 bytes)
