@@ -6,6 +6,16 @@ namespace Atk4\Data\Persistence\Sql\Mssql;
 
 trait PlatformTrait
 {
+    protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
+    {
+        return $this->getVarcharTypeDeclarationSQLSnippet($length, $fixed);
+    }
+
+    public function getBlobTypeDeclarationSQL(array $column)
+    {
+        return $this->getClobTypeDeclarationSQL($column);
+    }
+
     // SQL Server DBAL platform has buggy identifier escaping, fix until fixed officially, see:
     // https://github.com/doctrine/dbal/pull/4360
 
