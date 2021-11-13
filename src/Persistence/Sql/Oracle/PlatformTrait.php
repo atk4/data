@@ -46,6 +46,15 @@ trait PlatformTrait
         return $this->forwardTypeDeclarationSQL('getBinaryTypeDeclarationSQL', $column);
     }
 
+    protected function initializeCommentedDoctrineTypes()
+    {
+        parent::initializeCommentedDoctrineTypes();
+
+        $this->markDoctrineTypeCommented('binary');
+        $this->markDoctrineTypeCommented('text');
+        $this->markDoctrineTypeCommented('blob');
+    }
+
     // Oracle DBAL platform autoincrement implementation does not increment like
     // Sqlite or MySQL does, unify the behaviour
 

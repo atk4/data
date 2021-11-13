@@ -7,6 +7,7 @@ namespace Atk4\Data\Persistence\Sql;
 use Atk4\Core\WarnDynamicPropertyTrait;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Result as DbalResult;
@@ -512,19 +513,21 @@ class Expression implements Expressionable, \ArrayAccess
 
                 foreach ($this->params as $key => $val) {
                     if (is_int($val)) {
-                        $type = \PDO::PARAM_INT;
+                        $type = ParameterType::INTEGER;
                     } elseif (is_bool($val)) {
                         if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-                            $type = \PDO::PARAM_STR;
+                            $type = ParameterType::STRING;
                             $val = $val ? '1' : '0';
                         } else {
-                            $type = \PDO::PARAM_INT;
+                            $type = ParameterType::INTEGER;
                             $val = $val ? 1 : 0;
                         }
                     } elseif ($val === null) {
-                        $type = \PDO::PARAM_NULL;
-                    } elseif (is_string($val) || is_float($val)) {
-                        $type = \PDO::PARAM_STR;
+                        $type = ParameterType::NULL;
+                    } elseif (is_float($val)) {
+                        $type = ParameterType::STRING;
+                    } elseif (is_string($val)) {
+                        $type = ParameterType::STRING;
                     } elseif (is_resource($val)) {
                         throw new Exception('Resource type is not supported, set value as string instead');
                     } else {

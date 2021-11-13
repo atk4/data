@@ -16,6 +16,14 @@ trait PlatformTrait
         return $this->getClobTypeDeclarationSQL($column);
     }
 
+    protected function initializeCommentedDoctrineTypes()
+    {
+        parent::initializeCommentedDoctrineTypes();
+
+        $this->markDoctrineTypeCommented('binary');
+        $this->markDoctrineTypeCommented('blob');
+    }
+
     // SQL Server DBAL platform has buggy identifier escaping, fix until fixed officially, see:
     // https://github.com/doctrine/dbal/pull/4360
 
