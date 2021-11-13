@@ -136,7 +136,7 @@ class Static_ extends Array_
         parent::__construct($data);
     }
 
-    public function add(Model $model, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): void
     {
         if ($model->id_field && !$model->hasField($model->id_field)) {
             // init model, but prevent array persistence data seeding, id field with correct type must be setup first
@@ -154,6 +154,7 @@ class Static_ extends Array_
                     }
                 }
             }, $this, Array_::class)();
+            $model->persistence = null;
 
             if (isset($this->fieldsForModel[$model->id_field])) {
                 $model->getField($model->id_field)->type = $this->fieldsForModel[$model->id_field]['type'];
@@ -161,7 +162,7 @@ class Static_ extends Array_
         }
         $this->addMissingFieldsToModel($model);
 
-        return parent::add($model, $defaults);
+        parent::add($model, $defaults);
     }
 
     /**

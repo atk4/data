@@ -140,10 +140,7 @@ class Sql extends Persistence
         return $this->connection->getDatabasePlatform();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function add(Model $model, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): void
     {
         // Use our own classes for fields, references and expressions unless
         // $defaults specify them otherwise.
@@ -155,7 +152,7 @@ class Sql extends Persistence
             '_default_seed_join' => $this->_default_seed_join,
         ], $defaults);
 
-        $model = parent::add($model, $defaults);
+        parent::add($model, $defaults);
 
         if ($model->table === null) {
             throw (new Exception('Property $table must be specified for a model'))
@@ -170,8 +167,6 @@ class Sql extends Persistence
             // SQL databases use ID of int by default
             //$m->getField($m->id_field)->type = 'integer';
         }
-
-        return $model;
     }
 
     /**

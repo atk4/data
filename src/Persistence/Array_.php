@@ -156,10 +156,7 @@ class Array_ extends Persistence
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function add(Model $model, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): void
     {
         if (isset($defaults[0])) {
             $model->table = $defaults[0];
@@ -170,7 +167,7 @@ class Array_ extends Persistence
             '_default_seed_join' => [Array_\Join::class],
         ], $defaults);
 
-        $model = parent::add($model, $defaults);
+        parent::add($model, $defaults);
 
         // if there is no model table specified, then create fake one named 'data'
         // and put all persistence data in there 2/2
@@ -186,8 +183,6 @@ class Array_ extends Persistence
         }
 
         $this->seedData($model);
-
-        return $model;
     }
 
     private function filterRowDataOnlyModelFields(Model $model, array $rowData): array

@@ -65,7 +65,9 @@ trait ReferencesTrait
                 ->addMoreInfo('link', $link);
         }
 
-        return $this->add($reference);
+        $this->add($reference);
+
+        return $reference;
     }
 
     /**

@@ -15,7 +15,7 @@ class WithTest extends TestCase
     public function testWith(): void
     {
         if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
-            $this->markTestIncomplete('TODO - add WITH support for MSSQL');
+            $this->markTestIncomplete('TODO MSSQL WITH support not implemented yet');
         }
 
         $this->setDb([

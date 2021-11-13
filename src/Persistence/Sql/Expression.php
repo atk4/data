@@ -7,6 +7,7 @@ namespace Atk4\Data\Persistence\Sql;
 use Atk4\Core\WarnDynamicPropertyTrait;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Result as DbalResult;
 
@@ -178,7 +179,7 @@ class Expression implements Expressionable, \ArrayAccess
     public function expr($properties = [], $arguments = null)
     {
         if ($this->connection !== null) {
-            // TODO - condition above always satisfied when connection is set - adjust tests,
+            // TODO condition above always satisfied when connection is set - adjust tests,
             // so connection is always set and remove the code below
             return $this->connection->expr($properties, $arguments);
         }
@@ -595,7 +596,7 @@ class Expression implements Expressionable, \ArrayAccess
 
         // for Oracle CLOB/BLOB datatypes and PDO driver
         if (is_resource($v) && get_resource_type($v) === 'stream'
-                && $this->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\OraclePlatform) {
+                && $this->connection->getDatabasePlatform() instanceof OraclePlatform) {
             $v = stream_get_contents($v);
         }
 
