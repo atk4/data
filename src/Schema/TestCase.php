@@ -47,7 +47,13 @@ class TestCase extends BaseTestCase
                         return;
                     }
 
-                    echo "\n" . $sql . "\n" . print_r($params, true) . "\n\n";
+                    echo "\n" . $sql . "\n" . (is_array($params) ? print_r(array_map(function ($v) {
+                        if (is_string($v) && strlen($v) > 4096) {
+                            $v = '*long string* (length: ' . strlen($v) . ' bytes, sha256: ' . hash('sha256', $v) . ')';
+                        }
+
+                        return $v;
+                    }, $params), true) : '') . "\n\n";
                 }
 
                 public function stopQuery(): void
