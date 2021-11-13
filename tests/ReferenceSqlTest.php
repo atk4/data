@@ -294,12 +294,6 @@ class ReferenceSqlTest extends TestCase
 
     public function testOtherAggregates(): void
     {
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-            $this->markTestIncomplete('PostgreSQL does not support "SUM(variable)" syntax');
-        } elseif ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
-            $this->markTestIncomplete('MSSQL does not support "LENGTH(variable)" function');
-        }
-
         $vat = 0.23;
 
         $this->setDb([
@@ -316,6 +310,19 @@ class ReferenceSqlTest extends TestCase
             ],
         ]);
 
+        $buildLengthSqlFx = function (string $v): string {
+            return ($this->getDatabasePlatform() instanceof SQLServer2012Platform ? 'LEN' : 'LENGTH') . '(' . $v . ')';
+        };
+
+        $buildSumWithIntegerCastSqlFx = function (string $v): string {
+            if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform
+                || $this->getDatabasePlatform() instanceof SQLServer2012Platform) {
+                $v = 'CAST(' . $v . ' AS INT)';
+            }
+
+            return 'SUM(' . $v . ')';
+        };
+
         $l = (new Model($this->db, ['table' => 'list']))->addFields(['name']);
         $i = (new Model($this->db, ['table' => 'item']))->addFields(['list_id', 'name', 'code']);
         $l->hasMany('Items', ['model' => $i])
@@ -325,9 +332,9 @@ class ReferenceSqlTest extends TestCase
                 'items_star' => ['aggregate' => 'count'], // no field set, counts all rows with count(*)
                 'items_c:' => ['concat' => '::', 'field' => 'name'],
                 'items_c-' => ['aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
-                'len' => ['aggregate' => $i->expr('sum(length([name]))')],
-                'len2' => ['expr' => 'sum(length([name]))'],
-                'chicken5' => ['expr' => 'sum([])', 'args' => ['5']],
+                'len' => ['aggregate' => $i->expr($buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]')))], // TODO cast should be implicit when using "aggregate", sandpit http://sqlfiddle.com/#!17/0d2c0/3
+                'len2' => ['expr' => $buildSumWithIntegerCastSqlFx($buildLengthSqlFx('[name]'))],
+                'chicken5' => ['expr' => $buildSumWithIntegerCastSqlFx('[]'), 'args' => ['5']],
             ]);
 
         $ll = $l->load(1);

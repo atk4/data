@@ -179,7 +179,7 @@ class Expression implements Expressionable, \ArrayAccess
     public function expr($properties = [], $arguments = null)
     {
         if ($this->connection !== null) {
-            // TODO - condition above always satisfied when connection is set - adjust tests,
+            // TODO condition above always satisfied when connection is set - adjust tests,
             // so connection is always set and remove the code below
             return $this->connection->expr($properties, $arguments);
         }
