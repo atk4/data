@@ -1222,6 +1222,23 @@ class Query extends Expression
     }
 
     /**
+     * Returns a query for a function, which can be used as part of the GROUP
+     * query which would concatenate all matching fields.
+     *
+     * MySQL, SQLite - group_concat
+     * PostgreSQL - string_agg
+     * Oracle - listagg
+     *
+     * @param string|Expressionable $field
+     *
+     * @return Expression
+     */
+    public function groupConcat($field, string $delimiter = ',')
+    {
+        throw new Exception('groupConcat() is SQL-dependent, so use a correct class');
+    }
+
+    /**
      * Returns Query object of [case] expression.
      *
      * @param mixed $operand optional operand for case expression
@@ -1237,23 +1254,6 @@ class Query extends Expression
         }
 
         return $q;
-    }
-
-    /**
-     * Returns a query for a function, which can be used as part of the GROUP
-     * query which would concatenate all matching fields.
-     *
-     * MySQL, SQLite - group_concat
-     * PostgreSQL - string_agg
-     * Oracle - listagg
-     *
-     * @param string|Expressionable $field
-     *
-     * @return Expression
-     */
-    public function groupConcat($field, string $delimiter = ',')
-    {
-        throw new Exception('groupConcat() is SQL-dependent, so use a correct class');
     }
 
     /**
