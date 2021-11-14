@@ -7,6 +7,7 @@ namespace Atk4\Data\Persistence\Sql;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 trait BinaryTypeCompatibilityTypecastTrait
@@ -45,7 +46,9 @@ trait BinaryTypeCompatibilityTypecastTrait
 
     private function binaryTypeIsEncodeNeededByPlatform(): bool
     {
-        return $this->getDatabasePlatform() instanceof SQLServer2012Platform
+        // TODO PostgreSQL tests fail without binary compatibility typecast
+        return $this->getDatabasePlatform() instanceof PostgreSQL94Platform
+            || $this->getDatabasePlatform() instanceof SQLServer2012Platform
             || $this->getDatabasePlatform() instanceof OraclePlatform;
     }
 
