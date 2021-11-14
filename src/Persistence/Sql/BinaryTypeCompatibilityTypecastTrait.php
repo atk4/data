@@ -6,9 +6,11 @@ namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
+use Atk4\Data\Persistence\DbalTypeUtil;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Types\Type;
 
 trait BinaryTypeCompatibilityTypecastTrait
 {
@@ -44,20 +46,26 @@ trait BinaryTypeCompatibilityTypecastTrait
         return hex2bin($hex);
     }
 
-    private function binaryTypeIsEncodeNeededByPlatform(): bool
+    private function binaryTypeIsEncodeNeeded(Type $type): bool
     {
         // TODO PostgreSQL tests fail without binary compatibility typecast
-        return $this->getDatabasePlatform() instanceof PostgreSQL94Platform
-            || $this->getDatabasePlatform() instanceof SQLServer2012Platform
-            || $this->getDatabasePlatform() instanceof OraclePlatform;
+        $platform = $this->getDatabasePlatform();
+        if ($platform instanceof PostgreSQL94Platform
+            || $platform instanceof SQLServer2012Platform
+            || $platform instanceof OraclePlatform) {
+            if (DbalTypeUtil::isBinaryType($type->getName())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function typecastSaveField(Field $field, $value)
     {
         $value = parent::typecastSaveField($field, $value);
 
-        if ($value !== null && $this->binaryTypeIsEncodeNeededByPlatform()
-            && in_array($field->getTypeObject()->getName(), ['binary', 'blob'], true)) {
+        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
             $value = $this->binaryTypeValueEncode($value);
         }
 
@@ -68,8 +76,7 @@ trait BinaryTypeCompatibilityTypecastTrait
     {
         $value = parent::typecastLoadField($field, $value);
 
-        if ($value !== null && $this->binaryTypeIsEncodeNeededByPlatform()
-            && in_array($field->getTypeObject()->getName(), ['binary', 'blob'], true)) {
+        if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
             $value = $this->binaryTypeValueDecode($value);
         }
 
