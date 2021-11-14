@@ -223,7 +223,7 @@ class ModelTest extends TestCase
     public function providerCharacterTypeFieldLongData(): array
     {
         return [
-            ['string', false, 100],
+            ['string', false, 250],
             ['binary', true, 100],
             ['text', false, 256 * 1024],
             ['blob', true, 256 * 1024],
