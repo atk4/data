@@ -12,6 +12,7 @@ use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Reference\HasOne;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -69,6 +70,9 @@ class Migration
     public function table(string $tableName): self
     {
         $this->table = new Table($this->getDatabasePlatform()->quoteSingleIdentifier($tableName));
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+            $this->table->addOption('charset', 'utf8mb4');
+        }
 
         return $this;
     }
