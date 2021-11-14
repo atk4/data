@@ -7,7 +7,6 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class ModelTest extends TestCase
 {
@@ -134,15 +133,6 @@ class ModelTest extends TestCase
 
         $this->createMigrator($model)->dropIfExists()->create();
 
-        if ($isBinary) {
-            // TODO insert/update of binary character types must be supported, maybe fix using trigger or store data in hex for MSSQL & Oracle?
-            if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
-                $this->markTestIncomplete('TODO MSSQL: Implicit conversion from data type char to varbinary(max) is not allowed. Use the CONVERT function to run this query');
-            } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-                $this->markTestIncomplete('TODO Oracle: ORA-01465: invalid hex number');
-            }
-        }
-
         $model->import([['v' => 'mixedcase'], ['v' => 'MIXEDCASE'], ['v' => 'MixedCase']]);
 
         $model->addCondition('v', 'MixedCase');
@@ -158,6 +148,85 @@ class ModelTest extends TestCase
             ['binary', true],
             ['text', false],
             ['blob', true],
+        ];
+    }
+
+    private function makePseudoRandomString(bool $isBinary, int $lengthBytes): string
+    {
+        $baseChars = [];
+        if ($isBinary) {
+            for ($i = 0; $i <= 0xFF; ++$i) {
+                $baseChars[crc32($lengthBytes . '_' . $i)] = chr($i);
+            }
+        } else {
+            for ($i = 0; $i <= 0x10FFFF; $i = $i * 1.001 + 1) {
+                $iInt = (int) $i;
+                if ($iInt < 0xD800 || $iInt > 0xDFFF) {
+                    $baseChars[crc32($lengthBytes . '_' . $i)] = mb_chr($iInt);
+                }
+            }
+        }
+        ksort($baseChars);
+
+        $res = str_repeat(implode('', $baseChars), intdiv($lengthBytes, count($baseChars)) + 1);
+        if ($isBinary) {
+            return substr($res, 0, $lengthBytes);
+        }
+
+        $res = mb_strcut($res, 0, $lengthBytes);
+        $padLength = $lengthBytes - strlen($res);
+        foreach ($baseChars as $ch) {
+            if (strlen($ch) === $padLength) {
+                $res .= $ch;
+
+                break;
+            }
+        }
+
+        return $res;
+    }
+
+    /**
+     * @dataProvider providerCharacterTypeFieldLongData
+     */
+    public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $lengthBytes): void
+    {
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $lengthBytes = min($lengthBytes, 500);
+        }
+
+        $str = $this->makePseudoRandomString($isBinary, $lengthBytes);
+        if (!$isBinary) {
+            $str = preg_replace('~[\x00-\x1f]~', '-', $str);
+        }
+        $this->assertSame($lengthBytes, strlen($str));
+
+        $model = new Model($this->db, ['table' => 'user']);
+        $model->addField('v', ['type' => $type]);
+
+        $this->createMigrator($model)->dropIfExists()->create();
+
+        $model->import([['v' => $str . ($isBinary ? "\0" : '.')]]);
+        $model->import([['v' => $str]]);
+
+        $model->addCondition('v', $str);
+        $rows = $model->export();
+        $this->assertCount(1, $rows);
+        $row = reset($rows);
+        unset($rows);
+        $this->assertSame(['id', 'v'], array_keys($row));
+        $this->assertSame(2, $row['id']);
+        $this->assertSame(strlen($str), strlen($row['v']));
+        $this->assertTrue($str === $row['v']);
+    }
+
+    public function providerCharacterTypeFieldLongData(): array
+    {
+        return [
+            ['string', false, 100],
+            ['binary', true, 100],
+            ['text', false, 256 * 1024],
+            ['blob', true, 256 * 1024],
         ];
     }
 }

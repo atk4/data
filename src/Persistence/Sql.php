@@ -20,6 +20,8 @@ use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class Sql extends Persistence
 {
+    use Sql\BinaryTypeCompatibilityTypecastTrait;
+
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
     /** @const string */

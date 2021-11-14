@@ -594,9 +594,11 @@ class Expression implements Expressionable, \ArrayAccess
             return $v ? '1' : '0';
         }
 
-        // for Oracle CLOB/BLOB datatypes and PDO driver
-        if (is_resource($v) && get_resource_type($v) === 'stream'
-                && $this->connection->getDatabasePlatform() instanceof OraclePlatform) {
+        // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
+        if (is_resource($v) && get_resource_type($v) === 'stream' && (
+            $this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform
+            || $this->connection->getDatabasePlatform() instanceof OraclePlatform
+        )) {
             $v = stream_get_contents($v);
         }
 
