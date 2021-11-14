@@ -201,7 +201,7 @@ jobs:
       - name: "Run tests: Oracle (only for coverage or cron)"
         if: env.LOG_COVERAGE || github.event_name == 'schedule'
         env:
-          DB_DSN: "oci:dbname=oracle/xe;charset=UTF8"
+          DB_DSN: "oci:dbname=oracle/xe"
           DB_USER: system
           DB_PASSWORD: oracle
         run: |

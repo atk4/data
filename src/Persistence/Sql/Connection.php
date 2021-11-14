@@ -212,6 +212,14 @@ abstract class Connection
         if (isset($dsn['pdo'])) {
             $pdo = $dsn['pdo'];
         } else {
+            if (!str_contains(strtolower($dsn['dsn']), ';charset=')) {
+                if ($dsn['driverSchema'] === 'mysql') {
+                    $dsn['dsn'] .= ';charset=utf8mb4';
+                } elseif ($dsn['driverSchema'] === 'oci') {
+                    $dsn['dsn'] .= ';charset=AL32UTF8';
+                }
+            }
+
             $pdo = new \PDO($dsn['dsn'], $dsn['user'], $dsn['pass']);
         }
 
