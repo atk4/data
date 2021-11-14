@@ -10,6 +10,9 @@ use Doctrine\DBAL\Schema\Sequence;
 
 trait PlatformTrait
 {
+    // Oracle database requires explicit conversion when using binary column,
+    // workaround by using a standard non-binary column with custom encoding/typecast
+
     protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
     {
         return $this->getVarcharTypeDeclarationSQLSnippet($length, $fixed);
