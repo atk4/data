@@ -6,7 +6,6 @@ namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
-use Atk4\Data\Persistence\TypeUtil;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
@@ -46,18 +45,16 @@ trait BinaryTypeCompatibilityTypecastTrait
 
     private function binaryTypeIsEncodeNeededByPlatform(): bool
     {
-        return true; // DEBUG
-//
-//        return $this->getDatabasePlatform() instanceof SQLServer2012Platform
-//            || $this->getDatabasePlatform() instanceof OraclePlatform;
+        return $this->getDatabasePlatform() instanceof SQLServer2012Platform
+            || $this->getDatabasePlatform() instanceof OraclePlatform;
     }
 
     public function typecastSaveField(Field $field, $value)
     {
         $value = parent::typecastSaveField($field, $value);
 
-        if ($value !== null && TypeUtil::isBinaryType($field->getTypeObject()->getName())
-            && $this->binaryTypeIsEncodeNeededByPlatform()) {
+        if ($value !== null && $this->binaryTypeIsEncodeNeededByPlatform()
+            && in_array($field->getTypeObject()->getName(), ['binary', 'blob'], true)) {
             $value = $this->binaryTypeValueEncode($value);
         }
 
@@ -68,8 +65,8 @@ trait BinaryTypeCompatibilityTypecastTrait
     {
         $value = parent::typecastLoadField($field, $value);
 
-        if ($value !== null && TypeUtil::isBinaryType($field->getTypeObject()->getName())
-            && $this->binaryTypeIsEncodeNeededByPlatform()) {
+        if ($value !== null && $this->binaryTypeIsEncodeNeededByPlatform()
+            && in_array($field->getTypeObject()->getName(), ['binary', 'blob'], true)) {
             $value = $this->binaryTypeValueDecode($value);
         }
 
