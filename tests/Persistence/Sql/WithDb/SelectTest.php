@@ -304,6 +304,21 @@ class SelectTest extends TestCase
         }
     }
 
+    public function testUtf8mb4Support(): void
+    {
+        $this->assertSame(
+            ['❤' => 'žlutý_😀'],
+            $this->q(
+                $this->q()->field($this->e('\'žlutý_😀\''), '❤'),
+                '🚀'
+            )
+                ->where('❤', 'žlutý_😀') // as param
+                ->group('🚀.❤')
+                ->having('❤ = \'žlutý_😀\'') // as string literal (mapped to N'xxx' with MSSQL platform)
+                ->getRow()
+        );
+    }
+
     public function testImportAndAutoincrement(): void
     {
         $p = new \Atk4\Data\Persistence\Sql($this->c);
