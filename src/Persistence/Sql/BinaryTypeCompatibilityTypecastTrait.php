@@ -6,7 +6,6 @@ namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
-use Atk4\Data\Persistence\DbalTypeUtil;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
@@ -53,7 +52,7 @@ trait BinaryTypeCompatibilityTypecastTrait
         if ($platform instanceof PostgreSQL94Platform
             || $platform instanceof SQLServer2012Platform
             || $platform instanceof OraclePlatform) {
-            if (DbalTypeUtil::isBinaryType($type->getName())) {
+            if (in_array($type->getName(), ['binary', 'blob'], true)) {
                 return true;
             }
         }
