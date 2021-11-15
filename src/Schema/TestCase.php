@@ -130,7 +130,18 @@ class TestCase extends BaseTestCase
         foreach ($dbData as $tableName => $data) {
             $migrator = $this->createMigrator()->table($tableName);
 
-            $migrator->dropIfExists();
+            // drop table if exists but only if it was created during this test
+            foreach ($this->createdMigrators as $migr) {
+                if ($migr->connection === $this->db->connection) {
+                    foreach ($migr->getCreatedTableNames() as $t) {
+                        if ($t === $tableName) {
+                            $migrator->dropIfExists();
+
+                            break 2;
+                        }
+                    }
+                }
+            }
 
             $first_row = current($data);
             if ($first_row) {
