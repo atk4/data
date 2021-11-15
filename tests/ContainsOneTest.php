@@ -29,8 +29,8 @@ class ContainsOneTest extends TestCase
         parent::setUp();
 
         // populate database for our models
-        $this->createMigrator(new Country($this->db))->dropIfExists()->create();
-        $this->createMigrator(new Invoice($this->db))->dropIfExists()->create();
+        $this->createMigrator(new Country($this->db))->create();
+        $this->createMigrator(new Invoice($this->db))->create();
 
         // fill in some default values
         $m = new Country($this->db);

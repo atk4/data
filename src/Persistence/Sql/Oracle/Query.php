@@ -4,8 +4,24 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
-class Query extends AbstractQuery
+use Atk4\Data\Persistence\Sql\Query as BaseQuery;
+
+class Query extends BaseQuery
 {
+    public function render(): string
+    {
+        if ($this->mode === 'select' && $this->main_table === null) {
+            $this->table('DUAL');
+        }
+
+        return parent::render();
+    }
+
+    public function groupConcat($field, string $delimiter = ',')
+    {
+        return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $delimiter]);
+    }
+
     // {{{ for Oracle 11 and lower to support LIMIT with OFFSET
 
     protected $template_select = '[with]select[option] [field] [from] [table][join][where][group][having][order]';

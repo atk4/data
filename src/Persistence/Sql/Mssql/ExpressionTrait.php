@@ -23,6 +23,14 @@ trait ExpressionTrait
         return preg_replace('~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K\]([^\[\]\'"(){}]*?)\]~s', '[$1]', $v);
     }
 
+    private function _render(): string
+    {
+        // convert all SQL strings to NVARCHAR, eg 'text' to N'text'
+        return preg_replace_callback('~(^|.)(\'(?:\'\'|\\\\\'|[^\'])*\')~s', function ($matches) {
+            return $matches[1] . (!in_array($matches[1], ['N', '\'', '\\'], true) ? 'N' : '') . $matches[2];
+        }, parent::render());
+    }
+
     // {{{ MSSQL does not support named parameters, so convert them to numerical inside execute
 
     /** @var array|null */
@@ -51,7 +59,7 @@ trait ExpressionTrait
 
                     return '?';
                 },
-                parent::render()
+                $this->_render()
             );
             $this->params = $numParams;
 
@@ -69,7 +77,7 @@ trait ExpressionTrait
             return $this->numQueryRender;
         }
 
-        return parent::render();
+        return $this->_render();
     }
 
     public function getDebugQuery(): string

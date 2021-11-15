@@ -45,20 +45,11 @@ abstract class Persistence
         $dsn = \Atk4\Data\Persistence\Sql\Connection::normalizeDsn($dsn, $user, $password);
 
         switch ($dsn['driverSchema']) {
+            case 'sqlite':
             case 'mysql':
-            case 'oci':
-            case 'oci12':
-                // Omitting UTF8 is always a bad problem, so unless it's specified we will do that
-                // to prevent nasty problems. This is un-tested on other databases, so moving it here.
-                // It gives problem with sqlite
-                if (strpos($dsn['dsn'], ';charset=') === false) {
-                    $dsn['dsn'] .= ';charset=utf8mb4';
-                }
-
-                // no break
             case 'pgsql':
             case 'sqlsrv':
-            case 'sqlite':
+            case 'oci':
                 $db = new \Atk4\Data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
 
                 return $db;

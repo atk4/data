@@ -13,8 +13,6 @@ class BasicTest extends TestCase
      */
     public function testCreate(): void
     {
-        $this->dropTableIfExists('user');
-
         $this->createMigrator()->table('user')->id()
             ->field('foo')
             ->field('bar', ['type' => 'integer'])
@@ -35,8 +33,6 @@ class BasicTest extends TestCase
      */
     public function testCreateAndDrop(): void
     {
-        $this->dropTableIfExists('user');
-
         $this->createMigrator()->table('user')->id()
             ->field('foo')
             ->field('bar', ['type' => 'integer'])

@@ -485,20 +485,20 @@ class Query extends Expression
      * To specify OR conditions:
      *  $q->where($q->orExpr()->where('a', 1)->where('b', 1));
      *
-     * @param string|Expressionable $field    Field or Expression
-     * @param mixed                 $cond     Condition such as '=', '>' or 'is not'
-     * @param mixed                 $value    Value. Will be quoted unless you pass expression
-     * @param string                $kind     Do not use directly. Use having()
-     * @param int                   $num_args when $kind is passed, we can't determine number of
-     *                                        actual arguments, so this argument must be specified
+     * @param string|Expressionable $field   Field or Expression
+     * @param mixed                 $cond    Condition such as '=', '>' or 'is not'
+     * @param mixed                 $value   Value. Will be quoted unless you pass expression
+     * @param string                $kind    Do not use directly. Use having()
+     * @param int                   $numArgs when $kind is passed, we can't determine number of
+     *                                       actual arguments, so this argument must be specified
      *
      * @return $this
      */
-    public function where($field, $cond = null, $value = null, $kind = 'where', $num_args = null)
+    public function where($field, $cond = null, $value = null, $kind = 'where', $numArgs = null)
     {
         // Number of passed arguments will be used to determine if arguments were specified or not
-        if ($num_args === null) {
-            $num_args = func_num_args();
+        if ($numArgs === null) {
+            $numArgs = func_num_args();
         }
 
         // remove in v4.0
@@ -506,68 +506,38 @@ class Query extends Expression
             throw new Exception('Array input as OR conditions is no longer supported');
         }
 
-        // first argument is string containing more than just a field name and no more than 2
-        // arguments means that we either have a string expression or embedded condition.
-        if ($num_args === 2 && is_string($field) && !preg_match('/^[.a-zA-Z0-9_]*$/', $field)) {
-            // field contains non-alphanumeric values. Look for condition
-            preg_match(
-                '/^([^ <>!=]*)([><!=]*|( *(not|is|in|like))*) *$/',
-                $field,
-                $matches
-            );
-
-            // matches[2] will contain the condition, but $cond will contain the value
-            $value = $cond;
-            $cond = $matches[2];
-
-            // if we couldn't clearly identify the condition, we might be dealing with
-            // a more complex expression. If expression is followed by another argument
-            // we need to add equation sign  where('now()', 123).
-            if (!$cond) {
-                $matches[1] = $this->expr($field);
-
-                $cond = '=';
-            } else {
-                ++$num_args;
-            }
-
-            $field = $matches[1];
+        if (is_string($field) && preg_match('~([><!=]|(<!\w)(not|is|in|like))\s*$~i', $field)) {
+            throw (new Exception('Field condition must be passed separately'))
+                ->addMoreInfo('field', $field);
         }
 
-        switch ($num_args) {
-            case 1:
-                if (is_string($field)) {
-                    $field = $this->expr($field);
-                    $field->wrapInParentheses = true;
-                } elseif (!$field->wrapInParentheses) {
-                    $field = $this->expr('[]', [$field]);
-                    $field->wrapInParentheses = true;
-                }
+        if ($numArgs === 1) {
+            if (is_string($field)) {
+                $field = $this->expr($field);
+                $field->wrapInParentheses = true;
+            } elseif (!$field instanceof Expression || !$field->wrapInParentheses) {
+                $field = $this->expr('[]', [$field]);
+                $field->wrapInParentheses = true;
+            }
 
-                $this->args[$kind][] = [$field];
+            $this->args[$kind][] = [$field];
+        } else {
+            if ($numArgs === 2) {
+                $value = $cond;
+                unset($cond);
+            }
 
-                break;
-            case 2:
-                if (is_object($cond) && !$cond instanceof Expressionable) {
-                    throw (new Exception('Value cannot be converted to SQL-compatible expression'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('value', $cond);
-                }
+            if (is_object($value) && !$value instanceof Expressionable) {
+                throw (new Exception('Value cannot be converted to SQL-compatible expression'))
+                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('value', $value);
+            }
 
-                $this->args[$kind][] = [$field, $cond];
-
-                break;
-            case 3:
-                if (is_object($value) && !$value instanceof Expressionable) {
-                    throw (new Exception('Value cannot be converted to SQL-compatible expression'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('cond', $cond)
-                        ->addMoreInfo('value', $value);
-                }
-
+            if ($numArgs === 2) {
+                $this->args[$kind][] = [$field, $value];
+            } else {
                 $this->args[$kind][] = [$field, $cond, $value];
-
-                break;
+            }
         }
 
         return $this;

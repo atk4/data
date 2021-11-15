@@ -10,6 +10,14 @@ use Doctrine\DBAL\Schema\Sequence;
 
 trait PlatformTrait
 {
+    // Oracle database requires explicit conversion when using binary column,
+    // workaround by using a standard non-binary column with custom encoding/typecast
+
+    protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
+    {
+        return $this->getVarcharTypeDeclarationSQLSnippet($length, $fixed);
+    }
+
     // Oracle CLOB/BLOB has limited SQL support, see:
     // https://stackoverflow.com/questions/12980038/ora-00932-inconsistent-datatypes-expected-got-clob#12980560
     // fix this Oracle inconsistency by using VARCHAR/VARBINARY instead (but limited to 4000 bytes)
@@ -39,6 +47,15 @@ trait PlatformTrait
         $column['length'] = $this->getBinaryMaxLength();
 
         return $this->forwardTypeDeclarationSQL('getBinaryTypeDeclarationSQL', $column);
+    }
+
+    protected function initializeCommentedDoctrineTypes()
+    {
+        parent::initializeCommentedDoctrineTypes();
+
+        $this->markDoctrineTypeCommented('binary');
+        $this->markDoctrineTypeCommented('text');
+        $this->markDoctrineTypeCommented('blob');
     }
 
     // Oracle DBAL platform autoincrement implementation does not increment like

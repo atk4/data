@@ -6,6 +6,7 @@ namespace Atk4\Data\Persistence;
 
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms;
+use Mvorisek\Atk4\Hintable\Phpstan\PhpstanUtil;
 
 class GenericPlatform extends Platforms\AbstractPlatform
 {
@@ -13,7 +14,8 @@ class GenericPlatform extends Platforms\AbstractPlatform
     {
         if (\Atk4\Data\Persistence\Sql\Connection::isComposerDbal2x()) {
             // hack for PHPStan, keep ignored error count for DBAL 2.x and DBAL 3.x the same
-            if (\PHP_MAJOR_VERSION === 0) {
+            if (PhpstanUtil::alwaysFalseAnalyseOnly()) {
+                \Doctrine\DBAL\DBALException::notSupported('SQL');
                 \Doctrine\DBAL\DBALException::notSupported('SQL');
                 \Doctrine\DBAL\DBALException::notSupported('SQL');
                 \Doctrine\DBAL\DBALException::notSupported('SQL');

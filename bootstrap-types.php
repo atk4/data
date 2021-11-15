@@ -39,6 +39,11 @@ class MoneyType extends DbalTypes\Type
 
         return $v === null ? null : (float) $v;
     }
+
+    public function requiresSQLCommentHint(AbstractPlatform $platform)
+    {
+        return true;
+    }
 }
 
 DbalTypes\Type::addType(Types::MONEY, MoneyType::class);

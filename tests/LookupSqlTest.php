@@ -144,9 +144,9 @@ class LookupSqlTest extends TestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->createMigrator(new LCountry($this->db))->dropIfExists()->create();
-        $this->createMigrator(new LUser($this->db))->dropIfExists()->create();
-        $this->createMigrator(new LFriend($this->db))->dropIfExists()->create();
+        $this->createMigrator(new LCountry($this->db))->create();
+        $this->createMigrator(new LUser($this->db))->create();
+        $this->createMigrator(new LFriend($this->db))->create();
     }
 
     /**

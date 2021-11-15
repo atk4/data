@@ -154,8 +154,8 @@ class SubTypesTest extends TestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->createMigrator(new StAccount($this->db))->dropIfExists()->create();
-        $this->createMigrator(new StTransaction_TransferOut($this->db))->dropIfExists()->create();
+        $this->createMigrator(new StAccount($this->db))->create();
+        $this->createMigrator(new StTransaction_TransferOut($this->db))->create();
     }
 
     public function testBasic(): void

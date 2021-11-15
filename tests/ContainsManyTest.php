@@ -29,8 +29,8 @@ class ContainsManyTest extends TestCase
         parent::setUp();
 
         // populate database for our models
-        $this->createMigrator(new VatRate($this->db))->dropIfExists()->create();
-        $this->createMigrator(new Invoice($this->db))->dropIfExists()->create();
+        $this->createMigrator(new VatRate($this->db))->create();
+        $this->createMigrator(new Invoice($this->db))->create();
 
         // fill in some default values
         $m = new VatRate($this->db);

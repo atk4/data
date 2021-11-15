@@ -76,7 +76,7 @@ class ScopeTest extends TestCase
         parent::setUp();
 
         $country = new SCountry($this->db);
-        $this->createMigrator($country)->dropIfExists()->create();
+        $this->createMigrator($country)->create();
         $country->import([
             ['name' => 'Canada', 'code' => 'CA'],
             ['name' => 'Latvia', 'code' => 'LV'],
@@ -88,7 +88,7 @@ class ScopeTest extends TestCase
         ]);
 
         $user = new SUser($this->db);
-        $this->createMigrator($user)->dropIfExists()->create();
+        $this->createMigrator($user)->create();
         $user->import([
             ['name' => 'John', 'surname' => 'Smith', 'country_code' => 'CA'],
             ['name' => 'Jane', 'surname' => 'Doe', 'country_code' => 'LV'],
@@ -98,7 +98,7 @@ class ScopeTest extends TestCase
         ]);
 
         $ticket = new STicket($this->db);
-        $this->createMigrator($ticket)->dropIfExists()->create();
+        $this->createMigrator($ticket)->create();
         $ticket->import([
             ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],
             ['number' => '002', 'venue' => 'Best Stadium', 'user' => 2],

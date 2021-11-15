@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests;
 
-use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Tests\Model\Smbo\Account;
 use Atk4\Data\Tests\Model\Smbo\Company;
@@ -17,12 +16,12 @@ class SmboTransferTest extends TestCase
     {
         parent::setUp();
 
-        $this->createMigrator()->table('account')->dropIfExists()
+        $this->createMigrator()->table('account')
             ->id()
             ->field('name')
             ->create();
 
-        $this->createMigrator()->table('document')->dropIfExists()
+        $this->createMigrator()->table('document')
             ->id()
             ->field('reference')
             ->field('contact_from_id')
@@ -31,7 +30,7 @@ class SmboTransferTest extends TestCase
             ->field('amount', ['type' => 'float'])
             ->create();
 
-        $this->createMigrator()->table('payment')->dropIfExists()
+        $this->createMigrator()->table('payment')
             ->id()
             ->field('document_id', ['type' => 'integer'])
             ->field('account_id', ['type' => 'integer'])
@@ -108,10 +107,8 @@ class SmboTransferTest extends TestCase
     /*
     public function testBasicEntities(): void
     {
-        $db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
-
         // Create a new company
-        $company = new Company($db);
+        $company = new Company($this->db);
         $company->set([
             'name' => 'Test Company 1',
             'director_name' => 'Tester Little',
