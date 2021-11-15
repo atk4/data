@@ -84,9 +84,7 @@ jobs:
     name: Unit
     runs-on: ubuntu-latest
     container:
-      # Alpine image has some charset issue with pdo_oci, use Debian until
-      # https://github.com/mlocati/docker-php-extension-installer/issues/464 is fixed
-      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}-debian
+      image: ghcr.io/mvorisek/image-php:${{ matrix.php }}
     strategy:
       fail-fast: false
       matrix:
@@ -206,6 +204,7 @@ jobs:
           DB_DSN: "oci:dbname=oracle/xe"
           DB_USER: system
           DB_PASSWORD: oracle
+          NLS_LANG: AMERICAN_AMERICA.AL32UTF8
         run: |
           php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) -v \
           || php -d opcache.enable_cli=1 vendor/bin/phpunit --exclude-group none $(if [ -n "$LOG_COVERAGE" ]; then echo --coverage-text; else echo --no-coverage; fi) -v
