@@ -13,13 +13,10 @@ use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 class TestCase extends BaseTestCase
 {
-    /** @var Persistence|Persistence\Sql Persistence instance */
+    /** @var Persistence|Persistence\Sql */
     public $db;
 
-    /** @var array Array of database table names */
-    public $tables;
-
-    /** @var bool Debug mode enabled/disabled. In debug mode SQL queries are dumped. */
+    /** @var bool If true, SQL queries are dumped. */
     public $debug = false;
 
     /** @var Migration[] */
@@ -122,8 +119,6 @@ class TestCase extends BaseTestCase
      */
     public function setDb(array $dbData, bool $importData = true): void
     {
-        $this->tables = array_keys($dbData);
-
         // create tables
         foreach ($dbData as $tableName => $data) {
             $migrator = $this->createMigrator()->table($tableName);
@@ -184,7 +179,13 @@ class TestCase extends BaseTestCase
     public function getDb(array $tableNames = null, bool $noId = false): array
     {
         if ($tableNames === null) {
-            $tableNames = $this->tables;
+            $tableNames = [];
+            foreach ($this->createdMigrators as $migrator) {
+                foreach ($migrator->getCreatedTableNames() as $t) {
+                    $tableNames[$t] = $t;
+                }
+            }
+            $tableNames = array_values($tableNames);
         }
 
         $ret = [];
