@@ -271,7 +271,7 @@ class SelectTest extends TestCase
     {
         // remove once https://jira.mariadb.org/browse/MDEV-27050 is fixed
         if (str_contains($_ENV['DB_DSN'], 'mariadb')) {
-            $this->markTestSkipped('TODO MariaDB has some issue with utf8mb4 identifier');
+            $this->markTestSkipped('MariaDB has broken support of utf8mb4 identifiers');
         }
 
         $this->assertSame(
