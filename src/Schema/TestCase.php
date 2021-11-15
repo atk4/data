@@ -22,6 +22,9 @@ class TestCase extends BaseTestCase
     /** @var bool Debug mode enabled/disabled. In debug mode SQL queries are dumped. */
     public $debug = false;
 
+    /** @var Migration[] */
+    private $createdMigrators = [];
+
     /**
      * Setup test database.
      */
@@ -33,17 +36,17 @@ class TestCase extends BaseTestCase
 
         $this->db->connection->connection()->getConfiguration()->setSQLLogger(
             new class($this) implements SQLLogger {
-                /** @var TestCase */
-                public $testCase;
+                /** @var \WeakReference<TestCase> */
+                private $testCaseWeakRef;
 
                 public function __construct(TestCase $testCase)
                 {
-                    $this->testCase = $testCase;
+                    $this->testCaseWeakRef = \WeakReference::create($testCase);
                 }
 
                 public function startQuery($sql, $params = null, $types = null): void
                 {
-                    if (!$this->testCase->debug) {
+                    if (!$this->testCaseWeakRef->get()->debug) {
                         return;
                     }
 
@@ -61,6 +64,18 @@ class TestCase extends BaseTestCase
                 }
             }
         );
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->createdMigrators as $migrator) {
+            foreach ($migrator->getCreatedTableNames() as $t) {
+                (clone $migrator)->table($t)->dropIfExists();
+            }
+        }
+        $this->createdMigrators = [];
+
+        parent::tearDown();
     }
 
     protected function getDatabasePlatform(): AbstractPlatform
@@ -96,18 +111,10 @@ class TestCase extends BaseTestCase
 
     public function createMigrator(Model $model = null): Migration
     {
-        return new Migration($model ?: $this->db);
-    }
+        $migrator = new Migration($model ?: $this->db);
+        $this->createdMigrators[] = $migrator;
 
-    /**
-     * Use this method to clean up tables after you have created them,
-     * so that your database would be ready for the next test.
-     */
-    public function dropTableIfExists(string $tableName): self
-    {
-        $this->createMigrator()->table($tableName)->dropIfExists();
-
-        return $this;
+        return $migrator;
     }
 
     /**
@@ -119,12 +126,12 @@ class TestCase extends BaseTestCase
 
         // create tables
         foreach ($dbData as $tableName => $data) {
-            $this->dropTableIfExists($tableName);
+            $migrator = $this->createMigrator()->table($tableName);
+
+            $migrator->dropIfExists();
 
             $first_row = current($data);
             if ($first_row) {
-                $migrator = $this->createMigrator()->table($tableName);
-
                 $migrator->id('id');
 
                 foreach ($first_row as $field => $row) {

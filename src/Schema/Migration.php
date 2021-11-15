@@ -30,6 +30,9 @@ class Migration
     /** @var Table */
     public $table;
 
+    /** @var array<int, string> */
+    private $createdTableNames = [];
+
     /**
      * Create new migration.
      *
@@ -77,9 +80,18 @@ class Migration
         return $this;
     }
 
+    /**
+     * @return array<int, string>
+     */
+    public function getCreatedTableNames(): array
+    {
+        return $this->createdTableNames;
+    }
+
     public function create(): self
     {
         $this->getSchemaManager()->createTable($this->table);
+        $this->createdTableNames[] = $this->table->getName();
 
         return $this;
     }
@@ -87,6 +99,7 @@ class Migration
     public function drop(): self
     {
         $this->getSchemaManager()->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
+        $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
 
         return $this;
     }

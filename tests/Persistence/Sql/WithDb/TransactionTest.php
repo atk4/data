@@ -4,78 +4,37 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 
-use Atk4\Core\Phpunit\TestCase;
+use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
-use Atk4\Data\Schema\Migration;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Atk4\Data\Schema\TestCase;
 
 class TransactionTest extends TestCase
 {
     /** @var Connection */
     protected $c;
 
-    private function dropDbIfExists(): void
-    {
-        (new Migration($this->c))->table('employee')->dropIfExists();
-    }
-
     protected function setUp(): void
     {
-        $this->c = Connection::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
+        parent::setUp();
 
-        $this->dropDbIfExists();
+        $this->c = $this->db->connection;
 
-        $strType = $this->c->getDatabasePlatform() instanceof OraclePlatform ? 'varchar2' : 'varchar';
-        $boolType = ['mssql' => 'bit', 'oracle' => 'number(1)'][$this->c->getDatabasePlatform()->getName()] ?? 'bool';
-        $fixIdentifiersFunc = function ($sql) {
-            return preg_replace_callback('~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K"([^\'"()\[\]{}]*?)"~s', function ($matches) {
-                if ($this->c->getDatabasePlatform() instanceof MySQLPlatform) {
-                    return '`' . $matches[1] . '`';
-                } elseif ($this->c->getDatabasePlatform() instanceof SQLServer2012Platform) {
-                    return '[' . $matches[1] . ']';
-                }
+        $model = new Model($this->db, ['table' => 'employee']);
+        $model->addField('name');
+        $model->addField('surname');
+        $model->addField('retired', ['type' => 'boolean']);
 
-                return '"' . $matches[1] . '"';
-            }, $sql);
-        };
-        $this->c->connection()->executeQuery($fixIdentifiersFunc('CREATE TABLE "employee" ("id" int not null, "name" ' . $strType . '(100), "surname" ' . $strType . '(100), "retired" ' . $boolType . ', ' . ($this->c->getDatabasePlatform() instanceof OraclePlatform ? 'CONSTRAINT "employee_pk" ' : '') . 'PRIMARY KEY ("id"))'));
-        foreach ([
+        $this->createMigrator($model)->create();
+
+        $model->import([
             ['id' => 1, 'name' => 'Oliver', 'surname' => 'Smith', 'retired' => false],
             ['id' => 2, 'name' => 'Jack', 'surname' => 'Williams', 'retired' => true],
             ['id' => 3, 'name' => 'Harry', 'surname' => 'Taylor', 'retired' => true],
             ['id' => 4, 'name' => 'Charlie', 'surname' => 'Lee', 'retired' => false],
-        ] as $row) {
-            $this->c->connection()->executeQuery($fixIdentifiersFunc('INSERT INTO "employee" (' . implode(', ', array_map(function ($v) {
-                return '"' . $v . '"';
-            }, array_keys($row))) . ') VALUES(' . implode(', ', array_map(function ($v) {
-                if (is_bool($v)) {
-                    if ($this->c->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-                        return $v ? 'true' : 'false';
-                    }
-
-                    return $v ? 1 : 0;
-                } elseif (is_int($v)) {
-                    return $v;
-                }
-
-                return '\'' . $v . '\'';
-            }, $row)) . ')'));
-        }
-    }
-
-    protected function tearDown(): void
-    {
-        $this->dropDbIfExists();
-
-        $this->c = null; // @phpstan-ignore-line
-
-        parent::tearDown();
+        ]);
     }
 
     /**

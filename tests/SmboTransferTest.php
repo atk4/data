@@ -17,12 +17,12 @@ class SmboTransferTest extends TestCase
     {
         parent::setUp();
 
-        $this->createMigrator()->table('account')->dropIfExists()
+        $this->createMigrator()->table('account')
             ->id()
             ->field('name')
             ->create();
 
-        $this->createMigrator()->table('document')->dropIfExists()
+        $this->createMigrator()->table('document')
             ->id()
             ->field('reference')
             ->field('contact_from_id')
@@ -31,7 +31,7 @@ class SmboTransferTest extends TestCase
             ->field('amount', ['type' => 'float'])
             ->create();
 
-        $this->createMigrator()->table('payment')->dropIfExists()
+        $this->createMigrator()->table('payment')
             ->id()
             ->field('document_id', ['type' => 'integer'])
             ->field('account_id', ['type' => 'integer'])

@@ -15,7 +15,6 @@ class ModelTest extends TestCase
      */
     public function testSetModelCreate(): void
     {
-        $this->dropTableIfExists('user');
         $user = new TestUser($this->db);
 
         $this->createMigrator($user)->create();
@@ -30,8 +29,6 @@ class ModelTest extends TestCase
 
         return; // TODO enable once import to Model is supported using DBAL
         // @phpstan-ignore-next-line
-        $this->dropTableIfExists('user');
-
         $migrator = $this->createMigrator();
 
         $migrator->table('user')->id()
@@ -83,7 +80,6 @@ class ModelTest extends TestCase
      */
     public function testMigrateTable(): void
     {
-        $this->dropTableIfExists('user');
         $migrator = $this->createMigrator();
         $migrator->table('user')->id()
             ->field('foo')
@@ -105,8 +101,6 @@ class ModelTest extends TestCase
 
         return; // TODO enable once create from Model is supported using DBAL
         // @phpstan-ignore-next-line
-        $this->dropTableIfExists('user');
-
         $this->createMigrator(new TestUser($this->db))->create();
 
         $user_model = $this->createMigrator()->createModel($this->db, 'user');
@@ -131,7 +125,7 @@ class ModelTest extends TestCase
         $model = new Model($this->db, ['table' => 'user']);
         $model->addField('v', ['type' => $type]);
 
-        $this->createMigrator($model)->dropIfExists()->create();
+        $this->createMigrator($model)->create();
 
         $model->import([['v' => 'mixedcase'], ['v' => 'MIXEDCASE'], ['v' => 'MixedCase']]);
 
@@ -204,7 +198,7 @@ class ModelTest extends TestCase
         $model = new Model($this->db, ['table' => 'user']);
         $model->addField('v', ['type' => $type]);
 
-        $this->createMigrator($model)->dropIfExists()->create();
+        $this->createMigrator($model)->create();
 
         $model->import([['v' => $str . ($isBinary ? "\0" : '.')]]);
         $model->import([['v' => $str]]);

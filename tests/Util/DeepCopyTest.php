@@ -145,11 +145,11 @@ class DeepCopyTest extends TestCase
         parent::setUp();
 
         // populate database for our three models
-        $this->createMigrator(new DcClient($this->db))->dropIfExists()->create();
-        $this->createMigrator(new DcInvoice($this->db))->dropIfExists()->create();
-        $this->createMigrator(new DcQuote($this->db))->dropIfExists()->create();
-        $this->createMigrator(new DcInvoiceLine($this->db))->dropIfExists()->create();
-        $this->createMigrator(new DcPayment($this->db))->dropIfExists()->create();
+        $this->createMigrator(new DcClient($this->db))->create();
+        $this->createMigrator(new DcInvoice($this->db))->create();
+        $this->createMigrator(new DcQuote($this->db))->create();
+        $this->createMigrator(new DcInvoiceLine($this->db))->create();
+        $this->createMigrator(new DcPayment($this->db))->create();
     }
 
     public function testBasic(): void
