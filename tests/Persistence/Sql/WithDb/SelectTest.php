@@ -318,7 +318,7 @@ class SelectTest extends TestCase
             )
                 ->where('❤', 'žlutý_😀') // as param
                 ->group('🚀.❤')
-                ->having('❤ = \'žlutý_😀\'') // as string literal (mapped to N'xxx' with MSSQL platform)
+                ->having($this->e('{}', ['❤'])->render() . ' = \'žlutý_😀\'') // as string literal (mapped to N'xxx' with MSSQL platform)
                 ->getRow()
         );
     }
