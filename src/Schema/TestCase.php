@@ -32,7 +32,7 @@ class TestCase extends BaseTestCase
 
         $this->db = Persistence::connect($_ENV['DB_DSN'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
 
-        if ($this->db->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MySQLPlatform) {
+        if ($this->db->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->db->connection->expr(
                 'SET SESSION auto_increment_increment = 1, SESSION auto_increment_offset = 1'
             )->execute();

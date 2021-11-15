@@ -22,7 +22,6 @@ class GenericPlatform extends Platforms\AbstractPlatform
                 \Doctrine\DBAL\DBALException::notSupported('SQL');
                 \Doctrine\DBAL\DBALException::notSupported('SQL');
                 \Doctrine\DBAL\DBALException::notSupported('SQL');
-                \Doctrine\DBAL\DBALException::notSupported('SQL');
             }
 
             return \Doctrine\DBAL\DBALException::notSupported('SQL');
