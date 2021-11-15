@@ -506,30 +506,9 @@ class Query extends Expression
             throw new Exception('Array input as OR conditions is no longer supported');
         }
 
-        // first argument is string containing more than just a field name and no more than 2
-        // arguments means that we either have a string expression or embedded condition.
-        if ($numArgs === 2 && is_string($field) && !preg_match('~^[.\w]*$~', $field)) {
-            preg_match(
-                '~^([^ <>!=]*)([><!=]*|( *(not|is|in|like))*) *$~i',
-                $field,
-                $matches
-            );
-
-            $field = $matches[1];
-            $value = $cond;
-            ++$numArgs;
-
-            // if we couldn't clearly identify the condition, we might be dealing with
-            // a more complex expression. If expression is followed by another argument
-            // we need to add equation sign  where('now()', 123).
-            if (!$matches[2]) {
-                $field = $this->expr($field);
-                $cond = '=';
-            } else {
-                $cond = $matches[2];
-            }
-
-            return $this->where($field, $cond, $value, $kind, $numArgs);
+        if (is_string($field) && preg_match('~([><!=]|(<!\w)(not|is|in|like))\s*$~i', $field)) {
+            throw (new Exception('Field condition must be passed separately'))
+                ->addMoreInfo('field', $field);
         }
 
         if ($numArgs === 1) {

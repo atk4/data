@@ -720,20 +720,6 @@ class QueryTest extends TestCase
             $this->q('[where]')->where('id', $this->q()->table('user'))->render()
         );
 
-        // two parameters - more_than_just_a_field, value
-        $this->assertSame(
-            'where "id" = :a',
-            $this->q('[where]')->where('id=', 1)->render()
-        );
-        $this->assertSame(
-            'where "id" != :a',
-            $this->q('[where]')->where('id!=', 1)->render()
-        );
-        $this->assertSame(
-            'where "id" <> :a',
-            $this->q('[where]')->where('id<>', 1)->render()
-        );
-
         // field name with special symbols - not escape
         $this->assertSame(
             'where now() = :a',
@@ -759,6 +745,12 @@ class QueryTest extends TestCase
             'where (a = 5 or b = 6) and (c = 3 or d = 1)',
             $this->q('[where]')->where('a = 5 or b = 6')->where('c = 3 or d = 1')->render()
         );
+    }
+
+    public function testWhereIncompatibleFieldWithCondition(): void
+    {
+        $this->expectException(Exception::class);
+        $this->q('[where]')->where('id=', 1)->render();
     }
 
     /**
@@ -886,35 +878,6 @@ class QueryTest extends TestCase
             'where "name" not like :a',
             $this->q('[where]')->where('name', 'not like', 'foo')->render()
         );
-
-        // two parameters - more_than_just_a_field, value
-        // is | is not
-        $this->assertSame(
-            'where "id" is null',
-            $this->q('[where]')->where('id=', null)->render()
-        );
-        $this->assertSame(
-            'where "id" is not null',
-            $this->q('[where]')->where('id!=', null)->render()
-        );
-        $this->assertSame(
-            'where "id" is not null',
-            $this->q('[where]')->where('id<>', null)->render()
-        );
-
-        // in | not in
-        $this->assertSame(
-            'where "id" in (:a, :b)',
-            $this->q('[where]')->where('id=', [1, 2])->render()
-        );
-        $this->assertSame(
-            'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id!=', [1, 2])->render()
-        );
-        $this->assertSame(
-            'where "id" not in (:a, :b)',
-            $this->q('[where]')->where('id<>', [1, 2])->render()
-        );
     }
 
     /**
@@ -935,7 +898,7 @@ class QueryTest extends TestCase
         );
         $this->assertSame(
             'where "id" = :a having "id" > :b',
-            $this->q('[where][having]')->where('id', 1)->having('id>', 1)->render()
+            $this->q('[where][having]')->where('id', 1)->having('id', '>', 1)->render()
         );
     }
 
