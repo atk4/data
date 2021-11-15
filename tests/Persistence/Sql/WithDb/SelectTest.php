@@ -306,6 +306,10 @@ class SelectTest extends TestCase
 
     public function testUtf8mb4Support(): void
     {
+        if (str_contains($_ENV['DB_DSN'], 'mariadb')) {
+            $this->markTestSkipped('TODO MariaDB has some issue with utf8mb4 identifier');
+        }
+
         $this->assertSame(
             ['❤' => 'žlutý_😀'],
             $this->q(
