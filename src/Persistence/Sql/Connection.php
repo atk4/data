@@ -132,22 +132,22 @@ abstract class Connection
         // If it's already PDO or DbalConnection object, then we simply use it
         if ($dsn instanceof \PDO) {
             $connectionClass = self::resolveConnectionClass($dsn->getAttribute(\PDO::ATTR_DRIVER_NAME));
-            $connectionArg = $connectionClass::connectDbalConnection(['pdo' => $dsn]);
+            $dbalConnection = $connectionClass::connectDbalConnection(['pdo' => $dsn]);
         } elseif ($dsn instanceof DbalConnection) {
             /** @var \PDO */
             $pdo = self::isComposerDbal2x()
                 ? $dsn->getWrappedConnection()
                 : $dsn->getWrappedConnection()->getWrappedConnection();
             $connectionClass = self::resolveConnectionClass($pdo->getAttribute(\PDO::ATTR_DRIVER_NAME));
-            $connectionArg = $dsn;
+            $dbalConnection = $dsn;
         } else {
             $dsn = static::normalizeDsn($dsn, $user, $password);
             $connectionClass = self::resolveConnectionClass($dsn['driverSchema']);
-            $connectionArg = $connectionClass::connectDbalConnection($dsn);
+            $dbalConnection = $connectionClass::connectDbalConnection($dsn);
         }
 
         return new $connectionClass(array_merge([
-            'connection' => $connectionArg,
+            'connection' => $dbalConnection,
         ], $args));
     }
 
@@ -241,8 +241,13 @@ abstract class Connection
             \Closure::bind(function () use ($pdoConnection, $pdo): void {
                 $pdoConnection->connection = $pdo;
             }, null, \Doctrine\DBAL\Driver\PDO\Connection::class)();
+            $pdoAttrDriverName = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+            if ($pdoAttrDriverName === 'sqlsrv') {
+                $pdoConnection = new \Doctrine\DBAL\Driver\PDO\SQLSrv\Connection($pdoConnection);
+            }
+
             $dbalConnection = DriverManager::getConnection([
-                'driver' => 'pdo_' . $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME),
+                'driver' => 'pdo_' . $pdoAttrDriverName,
             ], null, (static::class)::createDbalEventManager());
             \Closure::bind(function () use ($dbalConnection, $pdoConnection): void {
                 $dbalConnection->_conn = $pdoConnection;
