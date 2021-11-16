@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\WarnDynamicPropertyTrait;
+use Atk4\Data\Persistence\Sql as SqlPersistence;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;
@@ -528,6 +529,14 @@ class Expression implements Expressionable, \ArrayAccess
                         $type = ParameterType::STRING;
                     } elseif (is_string($val)) {
                         $type = ParameterType::STRING;
+
+                        if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+                            $dummySqlPersistence = new SqlPersistence($this->connection);
+                            if (\Closure::bind(fn () => $dummySqlPersistence->binaryTypeValueIsEncoded($val), null, SqlPersistence::class)()) {
+                                $val = \Closure::bind(fn () => $dummySqlPersistence->binaryTypeValueDecode($val), null, SqlPersistence::class)();
+                                $type = ParameterType::BINARY;
+                            }
+                        }
                     } elseif (is_resource($val)) {
                         throw new Exception('Resource type is not supported, set value as string instead');
                     } else {

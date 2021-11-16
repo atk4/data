@@ -47,7 +47,9 @@ trait BinaryTypeCompatibilityTypecastTrait
 
     private function binaryTypeIsEncodeNeeded(Type $type): bool
     {
-        // TODO PostgreSQL tests fail without binary compatibility typecast
+        // values for PostgreSQL are stored natively, but we need to encode first
+        // to hold the binary type info for PDO parameter type binding
+
         $platform = $this->getDatabasePlatform();
         if ($platform instanceof PostgreSQL94Platform
             || $platform instanceof SQLServer2012Platform
@@ -76,7 +78,10 @@ trait BinaryTypeCompatibilityTypecastTrait
         $value = parent::typecastLoadField($field, $value);
 
         if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
-            $value = $this->binaryTypeValueDecode($value);
+            if (!$this->getDatabasePlatform() instanceof PostgreSQL94Platform
+                || $this->binaryTypeValueIsEncoded($value)) {
+                $value = $this->binaryTypeValueDecode($value);
+            }
         }
 
         return $value;
