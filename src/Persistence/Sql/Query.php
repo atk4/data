@@ -816,7 +816,7 @@ class Query extends Expression
         $ret = [];
 
         if ($this->args['set']) {
-            foreach ($this->args['set'] as [$field/*, $value*/]) {
+            foreach ($this->args['set'] as [$field/*, $value*/ ]) {
                 $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
 
                 $ret[] = $field;
