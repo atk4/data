@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Schema;
 
-use Atk4\Core\Exception;
+use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\FieldSqlExpression;
 use Atk4\Data\Model;
@@ -98,7 +98,9 @@ class Migration
 
     public function drop(): self
     {
-        $this->getSchemaManager()->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
+        $this->getSchemaManager()
+            ->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
+
         $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
 
         return $this;
@@ -109,6 +111,19 @@ class Migration
         try {
             $this->drop();
         } catch (\Doctrine\DBAL\Exception|\Doctrine\DBAL\DBALException $e) {
+        }
+
+        $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
+
+        // OracleSchemaManager::dropTable() called in self::drop() above tries to drop AI,
+        // but if AI trigger is not present, AI sequence is not dropped
+        // https://github.com/doctrine/dbal/issues/4997
+        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $dropTriggerSql = $this->getDatabasePlatform()->getDropAutoincrementSql($this->table->getName())[1];
+            try {
+                $this->connection->expr($dropTriggerSql)->execute();
+            } catch (Exception $e) {
+            }
         }
 
         return $this;
@@ -152,6 +167,7 @@ class Migration
         $options = [
             'type' => 'integer',
             'ref_type' => self::REF_TYPE_PRIMARY,
+            'mandatory' => true,
         ];
 
         $this->field($name, $options);
