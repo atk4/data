@@ -6,19 +6,6 @@ namespace Atk4\Data\Persistence\Sql\Mssql;
 
 trait PlatformTrait
 {
-    // SQL Server database requires explicit conversion when using binary column,
-    // workaround by using a standard non-binary column with custom encoding/typecast
-
-    protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
-    {
-        return $this->getVarcharTypeDeclarationSQLSnippet($length, $fixed);
-    }
-
-    public function getBlobTypeDeclarationSQL(array $column)
-    {
-        return $this->getClobTypeDeclarationSQL($column);
-    }
-
     // remove once https://github.com/doctrine/dbal/pull/4987 is fixed
     // and also $this->markDoctrineTypeCommented('text') below
     public function getClobTypeDeclarationSQL(array $column)
@@ -32,8 +19,6 @@ trait PlatformTrait
     {
         parent::initializeCommentedDoctrineTypes();
 
-        $this->markDoctrineTypeCommented('binary');
-        $this->markDoctrineTypeCommented('blob');
         $this->markDoctrineTypeCommented('text');
     }
 

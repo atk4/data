@@ -42,12 +42,19 @@ trait BinaryTypeCompatibilityTypecastTrait
             throw new Exception('Unexpected binary value crc');
         }
 
-        return hex2bin($hex);
+        $res = hex2bin($hex);
+        if ($this->binaryTypeValueIsEncoded($res)) {
+            throw new Exception('Unexpected double encoded binary value');
+        }
+
+        return $res;
     }
 
     private function binaryTypeIsEncodeNeeded(Type $type): bool
     {
-        // TODO PostgreSQL tests fail without binary compatibility typecast
+        // binary values for PostgreSQL and MSSQL databases are stored natively, but we need
+        // to encode first to hold the binary type info for PDO parameter type binding
+
         $platform = $this->getDatabasePlatform();
         if ($platform instanceof PostgreSQL94Platform
             || $platform instanceof SQLServer2012Platform
@@ -76,7 +83,11 @@ trait BinaryTypeCompatibilityTypecastTrait
         $value = parent::typecastLoadField($field, $value);
 
         if ($value !== null && $this->binaryTypeIsEncodeNeeded($field->getTypeObject())) {
-            $value = $this->binaryTypeValueDecode($value);
+            // always decode for Oracle platform to assert the value is always encoded,
+            // on other platforms, binary values are stored natively
+            if ($this->getDatabasePlatform() instanceof OraclePlatform || $this->binaryTypeValueIsEncoded($value)) {
+                $value = $this->binaryTypeValueDecode($value);
+            }
         }
 
         return $value;
