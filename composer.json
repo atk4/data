@@ -38,7 +38,7 @@
         "ext-intl": "*",
         "ext-pdo": "*",
         "atk4/core": "dev-develop",
-        "doctrine/dbal": "^2.13.3 || ^3.0",
+        "doctrine/dbal": "^2.13.5 || ^3.0",
         "mvorisek/atk4-hintable": "~1.7.1"
     },
     "require-release": {
