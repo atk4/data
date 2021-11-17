@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests\Schema;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class ModelTest extends TestCase
 {
@@ -186,7 +187,7 @@ class ModelTest extends TestCase
     public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $lengthBytes): void
     {
         if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $lengthBytes = min($lengthBytes, 500);
+            $lengthBytes = min($lengthBytes, $type === 'binary' ? 100 : 500);
         }
 
         $str = $this->makePseudoRandomString($isBinary, $lengthBytes);
@@ -200,7 +201,11 @@ class ModelTest extends TestCase
 
         $this->createMigrator($model)->create();
 
-        $model->import([['v' => $str . ($isBinary ? "\0" : '.')]]);
+        $model->import([['v' => $str . (
+            // MSSQL database ignores trailing \0 characters even with binary comparison
+            // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
+            $isBinary ? $this->getDatabasePlatform() instanceof SQLServer2012Platform ? ' ' : "\0" : '.'
+        )]]);
         $model->import([['v' => $str]]);
 
         $model->addCondition('v', $str);
@@ -218,7 +223,7 @@ class ModelTest extends TestCase
     {
         return [
             ['string', false, 250],
-            ['binary', true, 100],
+            ['binary', true, 250],
             ['text', false, 256 * 1024],
             ['blob', true, 256 * 1024],
         ];

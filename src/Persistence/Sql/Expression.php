@@ -11,6 +11,7 @@ use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Doctrine\DBAL\Result as DbalResult;
 
 /**
@@ -530,7 +531,8 @@ class Expression implements Expressionable, \ArrayAccess
                     } elseif (is_string($val)) {
                         $type = ParameterType::STRING;
 
-                        if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+                        if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform
+                            || $this->connection->getDatabasePlatform() instanceof SQLServer2012Platform) {
                             $dummySqlPersistence = new SqlPersistence($this->connection);
                             if (\Closure::bind(fn () => $dummySqlPersistence->binaryTypeValueIsEncoded($val), null, SqlPersistence::class)()) {
                                 $val = \Closure::bind(fn () => $dummySqlPersistence->binaryTypeValueDecode($val), null, SqlPersistence::class)();
