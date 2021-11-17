@@ -234,6 +234,10 @@ abstract class Connection
             $dbalConnection = DriverManager::getConnection([
                 'pdo' => $pdo,
             ], null, (static::class)::createDbalEventManager());
+
+            if ($pdo->getAttribute(\PDO::ATTR_DRIVER_NAME) === 'sqlsrv') {
+                $pdo->setAttribute(\PDO::ATTR_STATEMENT_CLASS, [\Doctrine\DBAL\Driver\PDO\SQLSrv\Statement::class, []]);
+            }
         } else {
             $pdoConnection = (new \ReflectionClass(\Doctrine\DBAL\Driver\PDO\Connection::class))
                 ->newInstanceWithoutConstructor();
