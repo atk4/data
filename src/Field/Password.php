@@ -14,17 +14,35 @@ use function password_verify;
 class Password extends Field
 {
     /** @var int */
-    public $minLength = 6;
+    public $minLength = 8;
+
+    public function normalizePassword(string $password, bool $forVerifyOnly): string
+    {
+        $password = (new Field(['type' => 'string']))->normalize($password);
+
+        if ($this->hashPasswordIsHashed($password) || !preg_match('~^\P{C}+$~u', $password)) {
+            throw new Exception('Invalid password');
+        } elseif (!$forVerifyOnly && mb_strlen($password) < $this->minLength) {
+            throw new Exception('At least ' . $this->minLength . ' characters are required');
+        }
+
+        return $password;
+    }
 
     public function hashPassword(string $password): string
     {
-        if ($this->hashPasswordIsHashed($password) || !preg_match('~^\P{C}+$~u', $password) || mb_strlen($password) < $this->minLength) {
-            throw new Exception('Invalid password');
-        }
+        $password = $this->normalizePassword($password, false);
 
         $hash = password_hash($password, \PASSWORD_BCRYPT, ['cost' => 8]);
-        if (!$this->hashPasswordIsHashed($hash) || !$this->hashPasswordVerify($hash, $password)) {
-            throw new Exception('Unexpected password hashing error');
+        $e = false;
+        try {
+            if (!$this->hashPasswordIsHashed($hash) || !$this->hashPasswordVerify($hash, $password)) {
+                $e = null;
+            }
+        } catch (\Exception $e) {
+        }
+        if ($e !== false) {
+            throw new Exception('Unexpected error when hashing password', 0, $e);
         }
 
         return $hash;
@@ -32,22 +50,31 @@ class Password extends Field
 
     public function hashPasswordVerify(string $hash, string $password): bool
     {
+        $hash = $this->normalize($hash);
+        $password = $this->normalizePassword($password, true);
+
         return password_verify($password, $hash);
     }
 
     public function hashPasswordIsHashed(string $value): bool
     {
+        try {
+            $value = parent::normalize($value) ?? '';
+        } catch (\Exception $e) {
+        }
+
         return password_get_info($value)['algo'] === \PASSWORD_BCRYPT;
     }
 
-    public function normalize($value)
+    public function normalize($hash): ?string
     {
-        $value = parent::normalize($value);
-        if ($value !== null && ($value === '' || !$this->hashPasswordIsHashed($value))) {
+        $hash = parent::normalize($hash);
+
+        if ($hash !== null && ($hash === '' || !$this->hashPasswordIsHashed($hash))) {
             throw new Exception('Invalid password hash');
         }
 
-        return $value;
+        return $hash;
     }
 
     public function setPassword(Model $entity, string $password): self
@@ -71,7 +98,7 @@ class Password extends Field
         return $this->hashPasswordVerify($v, $password);
     }
 
-    public function generatePassword(int $length = 8): string
+    public function generatePassword(int $length = null): string
     {
         $charsAll = array_diff(array_merge(
             range('0', '9'),
@@ -80,11 +107,11 @@ class Password extends Field
         ), ['0', 'o', 'O', '1', 'l', 'i', 'I']);
 
         $resArr = [];
-        for ($i = 0; $i < $length; ++$i) {
+        for ($i = 0; $i < max(8, $length ?? $this->minLength); ++$i) {
             $chars = array_values(array_diff($charsAll, array_slice($resArr, -4)));
             $resArr[] = $chars[random_int(0, count($chars) - 1)];
         }
 
-        return implode('', $resArr);
+        return $this->normalizePassword(implode('', $resArr), false);
     }
 }
