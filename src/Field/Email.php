@@ -8,78 +8,51 @@ use Atk4\Data\Field;
 use Atk4\Data\ValidationException;
 
 /**
- * Stores valid email(s) as per configuration.
+ * Stores valid email as per configuration.
  *
  * Usage:
  *  $user->addField('email', [Field\Email::class]);
  *  $user->addField('email_mx_check', [Field\Email::class, 'dns_check' => true]);
- *  $user->addField('email_with_name', [Field\Email::class, 'include_names' => true]);
- *  $user->addField('emails', [Field\Email::class, 'allow_multiple' => true, 'separator' => [',',';']]);
+ *  $user->addField('email_with_name', [Field\Email::class, 'allow_name' => true]);
  */
 class Email extends Field
 {
-    /**
-     * @var bool Enable lookup for MX record for email addresses stored
-     */
+    /** @var bool Enable lookup for MX record for email addresses stored */
     public $dns_check = false;
 
-    /**
-     * @var bool Permit entry of multiple email addresses, separated with comma (and extra spaces)
-     */
-    public $allow_multiple = false;
-
-    /**
-     * @var bool Also allow entry of names in format "Romans <me@example.com>"
-     */
-    public $include_names = false;
-
-    /**
-     * @var array Array of allowed separators
-     */
-    public $separator = [','];
+    /** @var bool Allow display name as per RFC2822, eg. format like "Romans <me@example.com>" */
+    public $allow_name = false;
 
     public function normalize($value)
     {
+        $value = parent::normalize($value);
         if ($value === null) {
             return $value;
         }
 
-        // split value by any number of separator characters
-        $emails = preg_split('/[' . implode('', array_map('preg_quote', $this->separator)) . ']+/', $value, -1, \PREG_SPLIT_NO_EMPTY);
-
-        if (!$this->allow_multiple && count($emails) > 1) {
-            throw new ValidationException([$this->name => 'Only a single email can be entered'], $this->getOwner());
+        $email = trim($value);
+        if ($this->allow_name) {
+            $email = preg_replace('/^[^<]*<([^>]*)>/', '\1', $email);
         }
 
-        // now normalize each email
-        $emails = array_map(function ($email) {
-            $email = trim($email);
+        if (strpos($email, '@') === false) {
+            throw new ValidationException([$this->name => 'Email address does not have domain'], $this->getOwner());
+        }
 
-            if ($this->include_names) {
-                $email = preg_replace('/^[^<]*<([^>]*)>/', '\1', $email);
+        [$user, $domain] = explode('@', $email, 2);
+        $domain = idn_to_ascii($domain, \IDNA_DEFAULT, \INTL_IDNA_VARIANT_UTS46); // always convert domain to ASCII
+
+        if (!filter_var($user . '@' . $domain, \FILTER_VALIDATE_EMAIL)) {
+            throw new ValidationException([$this->name => 'Email address format is invalid'], $this->getOwner());
+        }
+
+        if ($this->dns_check) {
+            if (!$this->hasAnyDnsRecord($domain)) {
+                throw new ValidationException([$this->name => 'Email address domain does not exist'], $this->getOwner());
             }
+        }
 
-            if (strpos($email, '@') === false) {
-                throw new ValidationException([$this->name => 'Email address does not have domain'], $this->getOwner());
-            }
-
-            [$user, $domain] = explode('@', $email, 2);
-            $domain = idn_to_ascii($domain, \IDNA_DEFAULT, \INTL_IDNA_VARIANT_UTS46); // always convert domain to ASCII
-
-            if (!filter_var($user . '@' . $domain, \FILTER_VALIDATE_EMAIL)) {
-                throw new ValidationException([$this->name => 'Email address format is invalid'], $this->getOwner());
-            }
-
-            if ($this->dns_check) {
-                if (!$this->hasAnyDnsRecord($domain)) {
-                    throw new ValidationException([$this->name => 'Email address domain does not exist'], $this->getOwner());
-                }
-            }
-
-            return $email;
-        }, $emails);
-
-        return parent::normalize(implode(', ', $emails));
+        return parent::normalize($value);
     }
 
     private function hasAnyDnsRecord(string $domain, array $types = ['MX', 'A', 'AAAA', 'CNAME']): bool

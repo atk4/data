@@ -10,18 +10,24 @@ use Atk4\Data\Schema\TestCase;
 
 class PasswordTest extends TestCase
 {
-    public function testPasswordField(): void
+    public function testPasswordFieldBasic(): void
     {
         $m = new Model();
         $m->addField('p', [Password::class]);
         $passwordField = Password::assertInstanceOf($m->getField('p'));
         $entity = $m->createEntity();
 
+        $this->assertNull($entity->get('p'));
+
         $passwordField->setPassword($entity, 'mypass');
+        $this->assertIsString($entity->get('p'));
         $this->assertNotSame('mypass', $entity->get('p'));
         $this->assertFalse($passwordField->verifyPassword($entity, 'badpass'));
         $this->assertTrue($passwordField->verifyPassword($entity, 'mypass'));
         $this->assertFalse($passwordField->verifyPassword($entity, 'mypass' . ' '));
+
+        $passwordField->set($entity, null);
+        $this->assertNull($entity->get('p'));
     }
 
     public function testSetUnhashedException(): void
