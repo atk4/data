@@ -19,7 +19,7 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 
-class Migration
+class Migrator
 {
     public const REF_TYPE_NONE = 0;
     public const REF_TYPE_LINK = 1;
@@ -35,8 +35,6 @@ class Migration
     private $createdTableNames = [];
 
     /**
-     * Create new migration.
-     *
      * @param Connection|Persistence|Model $source
      */
     public function __construct($source)

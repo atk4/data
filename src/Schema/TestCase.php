@@ -21,7 +21,7 @@ class TestCase extends BaseTestCase
     /** @var bool If true, SQL queries are dumped. */
     public $debug = false;
 
-    /** @var Migration[] */
+    /** @var Migrator[] */
     private $createdMigrators = [];
 
     /**
@@ -118,9 +118,9 @@ class TestCase extends BaseTestCase
         $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
-    public function createMigrator(Model $model = null): Migration
+    public function createMigrator(Model $model = null): Migrator
     {
-        $migrator = new Migration($model ?: $this->db);
+        $migrator = new Migrator($model ?: $this->db);
         $this->createdMigrators[] = $migrator;
 
         return $migrator;
