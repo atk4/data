@@ -18,7 +18,7 @@ expressions, joins etc:
 
  - addField - :php:class:`FieldSql` (field can be used as part of DSQL Expression)
  - hasOne - :php:class:`Reference\HasOneSql` (allow importing fields)
- - addExpression - :php:class:`Field\SqlExpression` (define expression through DSQL)
+ - addExpression - :php:class:`SqlExpressionField` (define expression through DSQL)
  - join - :php:class:`Join\Sql` (join tables query-time)
 
 
@@ -134,7 +134,7 @@ SQL Reference
 Expressions
 -----------
 
-.. php:class:: Field\SqlExpression
+.. php:class:: SqlExpressionField
 
     Extends :php:class:`FieldSql`
 
@@ -212,7 +212,7 @@ field expressions will be automatically substituted. Here is long / short format
 
     $q = $m->expr('[age] + [birth_year']);
 
-This method is automatically used by :php:class:`Field\SqlExpression`.
+This method is automatically used by :php:class:`SqlExpressionField`.
 
 
 Actions

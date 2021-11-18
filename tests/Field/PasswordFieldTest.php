@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Field;
 
 use Atk4\Data\Exception;
-use Atk4\Data\Field\Password;
+use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 
-class PasswordTest extends TestCase
+class PasswordFieldTest extends TestCase
 {
     public function testPasswordFieldBasic(): void
     {
         $m = new Model();
-        $m->addField('p', [Password::class]);
-        $field = Password::assertInstanceOf($m->getField('p'));
+        $m->addField('p', [PasswordField::class]);
+        $field = PasswordField::assertInstanceOf($m->getField('p'));
         $entity = $m->createEntity();
 
         $this->assertNull($entity->get('p'));
@@ -36,7 +36,7 @@ class PasswordTest extends TestCase
 
     public function testInvalidPasswordAlreadyHashed(): void
     {
-        $field = new Password();
+        $field = new PasswordField();
         $hash = $field->hashPassword('myPassword');
 
         $this->expectException(Exception::class);
@@ -45,7 +45,7 @@ class PasswordTest extends TestCase
 
     public function testInvalidPasswordTooShortDefault(): void
     {
-        $field = new Password();
+        $field = new PasswordField();
         $pwd = 'žlutý__';
         $this->assertTrue(mb_strlen($pwd) < $field->minLength);
         $this->assertTrue(strlen($pwd) >= $field->minLength);
@@ -56,7 +56,7 @@ class PasswordTest extends TestCase
 
     public function testInvalidPasswordTooShortCustomized(): void
     {
-        $field = new Password();
+        $field = new PasswordField();
         $pwd = 'myPassword';
         $this->assertFalse($field->hashPasswordIsHashed($pwd));
         $hash = $field->hashPassword($pwd);
@@ -74,7 +74,7 @@ class PasswordTest extends TestCase
 
     public function testInvalidPasswordCntrlChar(): void
     {
-        $field = new Password();
+        $field = new PasswordField();
 
         $this->expectException(Exception::class);
         $field->hashPassword('myPassword' . "\t" . 'x');
@@ -83,8 +83,8 @@ class PasswordTest extends TestCase
     public function testSetUnhashedException(): void
     {
         $m = new Model();
-        $m->addField('p', [Password::class]);
-        $field = Password::assertInstanceOf($m->getField('p'));
+        $m->addField('p', [PasswordField::class]);
+        $field = PasswordField::assertInstanceOf($m->getField('p'));
         $entity = $m->createEntity();
 
         $this->expectException(Exception::class);
@@ -94,8 +94,8 @@ class PasswordTest extends TestCase
     public function testEmptyCompareException(): void
     {
         $m = new Model();
-        $m->addField('p', [Password::class]);
-        $field = Password::assertInstanceOf($m->getField('p'));
+        $m->addField('p', [PasswordField::class]);
+        $field = PasswordField::assertInstanceOf($m->getField('p'));
         $entity = $m->createEntity();
 
         $this->expectException(Exception::class);
@@ -104,7 +104,7 @@ class PasswordTest extends TestCase
 
     public function testGeneratePassword(): void
     {
-        $field = new Password();
+        $field = new PasswordField();
 
         $pwd = $field->generatePassword();
         $this->assertIsString($pwd);

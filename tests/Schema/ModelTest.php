@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Tests\Schema;
 
-use Atk4\Data\Field\Password;
+use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -240,7 +240,7 @@ class TestUser extends \Atk4\Data\Model
         parent::init();
 
         $this->addField('name');
-        $this->addField('password', [Password::class]);
+        $this->addField('password', [PasswordField::class]);
         $this->addField('is_admin', ['type' => 'boolean']);
         $this->addField('notes', ['type' => 'text']);
 

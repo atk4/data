@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Reference;
 
 use Atk4\Data\Field;
+use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 
 class HasOneSql extends HasOne
@@ -12,7 +13,7 @@ class HasOneSql extends HasOne
     /**
      * Creates expression which sub-selects a field inside related model.
      */
-    public function addField(string $ourFieldName, string $theirFieldName = null, array $defaults = []): Field\SqlExpression
+    public function addField(string $ourFieldName, string $theirFieldName = null, array $defaults = []): SqlExpressionField
     {
         if ($theirFieldName === null) {
             $theirFieldName = $ourFieldName;
@@ -146,7 +147,7 @@ class HasOneSql extends HasOne
      *
      * This method returns newly created expression field.
      */
-    public function addTitle(array $defaults = []): Field\SqlExpression
+    public function addTitle(array $defaults = []): SqlExpressionField
     {
         $ourModel = $this->getOurModel(null);
 

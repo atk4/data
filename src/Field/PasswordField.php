@@ -11,7 +11,7 @@ use function password_get_info;
 use function password_hash;
 use function password_verify;
 
-class Password extends Field
+class PasswordField extends Field
 {
     /** @var int */
     public $minLength = 8;

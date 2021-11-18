@@ -6,6 +6,7 @@ namespace Atk4\Data\Schema;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
+use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
@@ -179,7 +180,7 @@ class Migration
         $this->table($model->table);
 
         foreach ($model->getFields() as $field) {
-            if ($field->never_persist || $field instanceof Field\SqlExpression) {
+            if ($field->never_persist || $field instanceof SqlExpressionField) {
                 continue;
             }
 

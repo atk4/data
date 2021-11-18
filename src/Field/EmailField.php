@@ -11,11 +11,11 @@ use Atk4\Data\ValidationException;
  * Stores valid email as per configuration.
  *
  * Usage:
- *  $user->addField('email', [Field\Email::class]);
- *  $user->addField('email_mx_check', [Field\Email::class, 'dns_check' => true]);
- *  $user->addField('email_with_name', [Field\Email::class, 'allow_name' => true]);
+ *  $user->addField('email', [EmailField::class]);
+ *  $user->addField('email_mx_check', [EmailField::class, 'dns_check' => true]);
+ *  $user->addField('email_with_name', [EmailField::class, 'allow_name' => true]);
  */
-class Email extends Field
+class EmailField extends Field
 {
     /** @var bool Enable lookup for MX record for email addresses stored */
     public $dns_check = false;

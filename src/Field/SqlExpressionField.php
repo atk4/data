@@ -10,7 +10,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Reference;
 
-class SqlExpression extends Field
+class SqlExpressionField extends Field
 {
     use InitializerTrait {
         init as private _init;
