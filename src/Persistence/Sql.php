@@ -6,7 +6,6 @@ namespace Atk4\Data\Persistence;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
-use Atk4\Data\FieldSqlExpression;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
@@ -68,7 +67,7 @@ class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_addExpression = [FieldSqlExpression::class];
+    public $_default_seed_addExpression = [Field\SqlExpression::class];
 
     /**
      * Default class when adding join.
@@ -453,7 +452,7 @@ class Sql extends Persistence
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($field, $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
+                } elseif ($field instanceof Field\SqlExpression) {
                     $query->reset('field')->field($field, $field->short_name);
                 } else {
                     $query->reset('field')->field($field);
@@ -488,7 +487,7 @@ class Sql extends Persistence
 
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
+                } elseif ($field instanceof Field\SqlExpression) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->short_name);
                 } else {
                     $query->reset('field')->field($query->expr($expr, [$field]));

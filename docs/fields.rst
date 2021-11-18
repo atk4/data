@@ -167,7 +167,7 @@ Example::
 .. php:attr:: read_only
 
 Modifying field that is read-only through set() methods (or array access) will
-result in exception. :php:class:`FieldSqlExpression` is read-only by default.
+result in exception. :php:class:`Field\SqlExpression` is read-only by default.
 
 .. php:attr:: actual
 

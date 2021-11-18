@@ -382,7 +382,7 @@ Each persistence implements actions differently. SQL is probably the most full-f
 
 ### Introducing Expressions
 
-Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `FieldSqlExpression` and `Field_Expression` can define field through custom SQL or PHP code:
+Smart Fields in Agile Toolkit are represented as objects. Because of inheritance, Fields can be quite diverse at what they do. For example `Field\SqlExpression` can define field through custom SQL or PHP code:
 
 ![GitHub release](docs/images/expression.gif)
 

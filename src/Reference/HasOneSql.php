@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Reference;
 
-use Atk4\Data\FieldSqlExpression;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 
 class HasOneSql extends HasOne
@@ -12,7 +12,7 @@ class HasOneSql extends HasOne
     /**
      * Creates expression which sub-selects a field inside related model.
      */
-    public function addField(string $ourFieldName, string $theirFieldName = null, array $defaults = []): FieldSqlExpression
+    public function addField(string $ourFieldName, string $theirFieldName = null, array $defaults = []): Field\SqlExpression
     {
         if ($theirFieldName === null) {
             $theirFieldName = $ourFieldName;
@@ -28,7 +28,7 @@ class HasOneSql extends HasOne
         $defaults['caption'] ??= $refModelField->caption;
         $defaults['ui'] ??= $refModelField->ui;
 
-        /** @var FieldSqlExpression $fieldExpression */
+        /** @var Field\SqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
             [
                 function (Model $ourModel) use ($theirFieldName) {
@@ -147,13 +147,13 @@ class HasOneSql extends HasOne
      *
      * This method returns newly created expression field.
      */
-    public function addTitle(array $defaults = []): FieldSqlExpression
+    public function addTitle(array $defaults = []): Field\SqlExpression
     {
         $ourModel = $this->getOurModel(null);
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
 
-        /** @var FieldSqlExpression $fieldExpression */
+        /** @var Field\SqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($fieldName, array_replace_recursive(
             [
                 function (Model $ourModel) {
