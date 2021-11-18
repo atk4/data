@@ -6,14 +6,14 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Schema\TestCase;
 
 class SerializeTest extends TestCase
 {
     public function testBasicSerialize(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'job']);
 
         $f = $m->addField('data', ['type' => 'object']);
@@ -52,7 +52,7 @@ class SerializeTest extends TestCase
 
     public function testSerializeErrorJson(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'job']);
 
         $f = $m->addField('data', ['type' => 'json']);
@@ -63,7 +63,7 @@ class SerializeTest extends TestCase
 
     public function testSerializeErrorJson2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'job']);
 
         $f = $m->addField('data', ['type' => 'json']);
@@ -78,7 +78,7 @@ class SerializeTest extends TestCase
 
     public function testSerializeErrorSerialize(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'job']);
 
         $this->expectException(Exception::class);

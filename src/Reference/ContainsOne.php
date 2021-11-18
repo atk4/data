@@ -6,6 +6,7 @@ namespace Atk4\Data\Reference;
 
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\ArrayPersistence;
 use Atk4\Data\Reference;
 
 /**
@@ -79,7 +80,7 @@ class ContainsOne extends Reference
     {
         $ourModel = $this->getOurModelPassedToRefXxx();
 
-        return new Persistence\Array_([
+        return new ArrayPersistence([
             $this->table_alias => $ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null ? [1 => $this->getOurFieldValue($ourModel)] : [],
         ]);
     }
@@ -98,7 +99,7 @@ class ContainsOne extends Reference
 
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) use ($ourModel) {
-                /** @var Persistence\Array_ */
+                /** @var ArrayPersistence */
                 $persistence = $theirModel->persistence;
                 $row = $persistence->getRawDataByTable($theirModel, $this->table_alias);
                 $row = $row ? array_shift($row) : null; // get first and only one record from array persistence

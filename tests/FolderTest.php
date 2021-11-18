@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Schema\TestCase;
 
 class Folder extends Model
@@ -45,7 +45,7 @@ class FolderTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $f = new Folder($db);
         $f = $f->load(4);
 

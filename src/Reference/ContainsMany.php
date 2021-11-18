@@ -6,6 +6,7 @@ namespace Atk4\Data\Reference;
 
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\ArrayPersistence;
 
 /**
  * ContainsMany reference.
@@ -18,7 +19,7 @@ class ContainsMany extends ContainsOne
     {
         $ourModel = $this->getOurModelPassedToRefXxx();
 
-        return new Persistence\Array_([
+        return new ArrayPersistence([
             $this->table_alias => $ourModel->isEntity() && $this->getOurFieldValue($ourModel) !== null ? $this->getOurFieldValue($ourModel) : [],
         ]);
     }
@@ -39,7 +40,7 @@ class ContainsMany extends ContainsOne
         // set some hooks for ref_model
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) use ($ourModel) {
-                /** @var Persistence\Array_ */
+                /** @var ArrayPersistence */
                 $persistence = $theirModel->persistence;
                 $rows = $persistence->getRawDataByTable($theirModel, $this->table_alias);
                 $this->getOurModel($ourModel)->save([

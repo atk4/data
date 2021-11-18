@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\SqlPersistence;
 
 /**
- * @property Persistence\Sql $persistence
+ * @property SqlPersistence $persistence
  */
 class Join extends Model\Join
 {
@@ -42,7 +42,7 @@ class Join extends Model\Join
             $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
-        $this->onHookToOwnerBoth(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
+        $this->onHookToOwnerBoth(SqlPersistence::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
 
         // add necessary hooks
         if ($this->reverse) {

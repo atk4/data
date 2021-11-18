@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Schema\TestCase;
 
 class TransactionTest extends TestCase
 {
     public function testAtomicOperations(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -51,7 +51,7 @@ class TransactionTest extends TestCase
 
     public function testBeforeSaveHook(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -78,7 +78,7 @@ class TransactionTest extends TestCase
 
     public function testAfterSaveHook(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -105,7 +105,7 @@ class TransactionTest extends TestCase
 
     public function testOnRollbackHook(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],

@@ -171,7 +171,7 @@ Persistence object. It is commonly used to declare fields, conditions, relations
 
 You may safely rely on `$this->persistence` property to make choices::
 
-   if ($this->persistence instanceof \Atk4\Data\Persistence\Sql) {
+   if ($this->persistence instanceof \Atk4\Data\Persistence\SqlPersistence) {
 
       // Calculating on SQL server is more efficient!!
       $this->addExpression('total', '[amount] + [vat]');
@@ -435,7 +435,7 @@ explicitly associate model with persistence like this::
 Multiple models can be associated with the same persistence. Here are also some examples
 of static persistence::
 
-   $m = new Model(new Persistence\Static_(['john', 'peter', 'steve']);
+   $m = new Model(new StaticPersistence(['john', 'peter', 'steve']);
 
    $m = $m->load(1);
    echo $m->get('name');  // peter

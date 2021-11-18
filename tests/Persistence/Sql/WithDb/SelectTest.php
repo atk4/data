@@ -9,6 +9,7 @@ use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
+use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -289,8 +290,8 @@ class SelectTest extends TestCase
 
     public function testImportAndAutoincrement(): void
     {
-        $p = new \Atk4\Data\Persistence\Sql($this->c);
-        $m = new \Atk4\Data\Model($p, ['table' => 'test']);
+        $p = new SqlPersistence($this->c);
+        $m = new Model($p, ['table' => 'test']);
         $m->getField('id')->actual = 'myid';
         $m->setOrder('id');
         $m->addField('f1');

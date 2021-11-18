@@ -1,14 +1,14 @@
 
-.. _Persistence\Csv:
+.. _CSV:
 
 ============================
 Loading and Saving CSV Files
 ============================
 
-.. php:class:: Persistence\Csv
+.. php:class:: CsvPersistence
 
 Agile Data can operate with CSV files for data loading, or saving. The capabilities
-of Persistence\Csv are limited to the following actions:
+of CsvPersistence are limited to the following actions:
 
 - open any CSV file, use column mapping
 - identify which column is corresponding for respective field
@@ -25,7 +25,7 @@ the file that might be stored either on a local system or
 use a remote file scheme (ftp://...). The file will not be
 actually opened unless you perform load/save operation::
 
-    $p = new Persistence\Csv('myfile.csv');
+    $p = new CsvPersistence('myfile.csv');
 
     $u = new Model_User($p);
     $u = $u->tryLoadAny();   // actually opens file and finds first record
@@ -37,8 +37,8 @@ You can take a model that is loaded from other persistence and save
 it into CSV like this. The next example demonstrates a basic functionality
 of SQL database export to CSV file::
 
-    $db = new Persistence\Sql($pdo);
-    $csv = new Persistence\Csv('dump.csv');
+    $db = new SqlPersistence($pdo);
+    $csv = new CsvPersistence('dump.csv');
 
     $m = new Model_User($db);
 

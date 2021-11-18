@@ -10,6 +10,7 @@ use Atk4\Core\TrackableTrait;
 use Atk4\Data\Model\Scope;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
+use Atk4\Data\Persistence\SqlPersistence;
 use Doctrine\DBAL\Types\Type;
 
 /**
@@ -485,7 +486,7 @@ class Field implements Expressionable
      */
     public function getDsqlExpression(Expression $expression): Expression
     {
-        if (!$this->getOwner()->persistence || !$this->getOwner()->persistence instanceof Persistence\Sql) {
+        if (!$this->getOwner()->persistence || !$this->getOwner()->persistence instanceof SqlPersistence) {
             throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
                 ->addMoreInfo('persistence', $this->getOwner()->persistence ?? null);
         }

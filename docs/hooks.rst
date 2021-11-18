@@ -193,7 +193,7 @@ and your update() may not actually update anything. This does not normally
 generate an error, however if you want to actually make sure that update() was
 effective, you can implement this through a hook::
 
-    $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, function($m, $update, $st) {
+    $m->onHook(SqlPersistence::HOOK_AFTER_UPDATE_QUERY, function($m, $update, $st) {
         if (!$st->rowCount()) {
             throw (new \Atk4\Core\Exception('Update didn\'t affect any records'))
                 ->addMoreInfo('query', $update->getDebugQuery())
@@ -265,7 +265,7 @@ Persistence Hooks
 Persistence has a few spots which it actually executes through $model->hook(),
 so depending on where you save the data, there are some more hooks available.
 
-Persistence\Sql
+SqlPersistence
 ---------------
 
 Those hooks can be used to affect queries before they are executed.

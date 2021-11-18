@@ -8,7 +8,7 @@ use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\ArrayPersistence;
 use Atk4\Data\Tests\Model\Client;
 use Atk4\Data\Tests\Model\User;
 
@@ -125,7 +125,7 @@ class BusinessModelTest extends TestCase
 
     public function testDefaultInit(): void
     {
-        $p = new Persistence\Array_();
+        $p = new ArrayPersistence();
         $m = new Model($p);
         $m = $m->createEntity();
 
@@ -210,7 +210,7 @@ class BusinessModelTest extends TestCase
 
     public function testClass1(): void
     {
-        $p = new Persistence\Array_();
+        $p = new ArrayPersistence();
         $c = new Client($p);
         $c = $c->createEntity();
         $this->assertEquals(10, $c->get('order'));

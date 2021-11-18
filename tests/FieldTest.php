@@ -7,7 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\ValidationException;
 
@@ -91,7 +91,7 @@ class FieldTest extends TestCase
 
     public function testMandatory2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -107,7 +107,7 @@ class FieldTest extends TestCase
 
     public function testRequired2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -123,7 +123,7 @@ class FieldTest extends TestCase
 
     public function testMandatory3(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -140,7 +140,7 @@ class FieldTest extends TestCase
 
     public function testMandatory4(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -304,7 +304,7 @@ class FieldTest extends TestCase
 
     public function testNeverPersist(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb($dbData = [
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -361,7 +361,7 @@ class FieldTest extends TestCase
 
     public function testTitle(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith', 'category_id' => 2],
@@ -412,7 +412,7 @@ class FieldTest extends TestCase
 
     public function testActual(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'surname' => 'Smith'],
@@ -450,7 +450,7 @@ class FieldTest extends TestCase
 
     public function testCalculatedField(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'invoice' => [
                 1 => ['id' => 1, 'net' => 100, 'vat' => 21],

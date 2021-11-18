@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -15,7 +15,7 @@ class ExpressionSqlTest extends TestCase
 {
     public function testNakedExpression(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => false]);
         $m->addExpression('x', '2+3');
         $m = $m->loadOne();
@@ -31,7 +31,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
@@ -72,7 +72,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', function ($i, $q) {
             return '[total_net]+[total_vat]';
@@ -103,7 +103,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('sum_net', $i->action('fx', ['sum', 'total_net']));
 
@@ -136,7 +136,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
         $m->addFields(['name', 'surname', 'cached_name']);
 
@@ -181,7 +181,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'math']);
         $m->addFields(['a', 'b']);
 
@@ -212,7 +212,7 @@ class ExpressionSqlTest extends TestCase
 
     public function testExpressionActionAlias(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => false]);
         $m->addExpression('x', '2+3');
 
@@ -246,7 +246,7 @@ class ExpressionSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $i = new Model($db, ['table' => 'invoice']);
 
         $i->addExpression('zero_basic', [$i->expr('0'), 'type' => 'integer', 'system' => true]);

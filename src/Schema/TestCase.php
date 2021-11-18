@@ -8,6 +8,7 @@ use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
+use Atk4\Data\Persistence\SqlPersistence;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
@@ -15,7 +16,7 @@ use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 class TestCase extends BaseTestCase
 {
-    /** @var Persistence|Persistence\Sql */
+    /** @var Persistence|SqlPersistence */
     public $db;
 
     /** @var bool If true, SQL queries are dumped. */

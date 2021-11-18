@@ -8,7 +8,8 @@ use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\SqlPersistence;
+use Atk4\Data\Persistence\StaticPersistence;
 use Atk4\Data\Schema\TestCase;
 
 class Model_Rate extends Model
@@ -80,7 +81,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model_Rate($db);
 
         $this->assertEquals(2, $m->action('count')->getOne());
@@ -94,7 +95,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
         $m->addFields(['name', 'salary' => ['default' => 10]]);
 
@@ -120,7 +121,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
         $m->addFields(['name', 'login'], ['default' => 'unknown']);
 
@@ -144,7 +145,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
         $m->addFields(['name'], ['default' => 'anonymous']);
         $m->addFields([
@@ -171,7 +172,7 @@ class RandomTest extends TestCase
 
     public function testSameTable(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
@@ -190,7 +191,7 @@ class RandomTest extends TestCase
 
     public function testSameTable2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -214,7 +215,7 @@ class RandomTest extends TestCase
 
     public function testSameTable3(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'age' => 18],
@@ -241,7 +242,7 @@ class RandomTest extends TestCase
 
     public function testDirty2(): void
     {
-        $p = new Persistence\Static_([1 => 'hello', 'world']);
+        $p = new StaticPersistence([1 => 'hello', 'world']);
 
         // default title field
         $m = new Model($p);
@@ -256,7 +257,7 @@ class RandomTest extends TestCase
 
     public function testUpdateCondition(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -269,7 +270,7 @@ class RandomTest extends TestCase
         $m->addField('name');
         $m = $m->load(2);
 
-        $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, static function ($m, $update, $st) {
+        $m->onHook(SqlPersistence::HOOK_AFTER_UPDATE_QUERY, static function ($m, $update, $st) {
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
@@ -303,7 +304,7 @@ class RandomTest extends TestCase
 
     public function testHookBreakers(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -342,7 +343,7 @@ class RandomTest extends TestCase
 
     public function testIssue220(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model_Item($db);
 
         $this->expectException(CoreException::class);
@@ -352,7 +353,7 @@ class RandomTest extends TestCase
 
     public function testModelCaption(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
 
         // caption is not set, so generate it from class name Model
@@ -365,7 +366,7 @@ class RandomTest extends TestCase
 
     public function testGetTitle(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
@@ -494,7 +495,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model_Rate($db);
 
         $m->load(1)->duplicate()->save();

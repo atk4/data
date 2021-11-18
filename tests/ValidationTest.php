@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\ArrayPersistence;
 use Atk4\Data\ValidationException;
 
 class MyValidationModel extends Model
@@ -57,7 +57,7 @@ class ValidationTest extends TestCase
     {
         parent::setUp();
 
-        $p = new Persistence\Array_();
+        $p = new ArrayPersistence();
         $this->m = new MyValidationModel($p);
     }
 
@@ -106,7 +106,7 @@ class ValidationTest extends TestCase
 
     public function testValidate5(): void
     {
-        $p = new Persistence\Array_();
+        $p = new ArrayPersistence();
         $m = new BadValidationModel($p);
         $m = $m->createEntity();
 

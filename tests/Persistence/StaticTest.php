@@ -6,13 +6,13 @@ namespace Atk4\Data\Tests\Persistence;
 
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\StaticPersistence;
 
 class StaticTest extends TestCase
 {
     public function testBasicStatic(): void
     {
-        $p = new Persistence\Static_([1 => 'hello', 'world']);
+        $p = new StaticPersistence([1 => 'hello', 'world']);
 
         // default title field
         $m = new Model($p);
@@ -27,7 +27,7 @@ class StaticTest extends TestCase
 
     public function testArrayOfArrays(): void
     {
-        $p = new Persistence\Static_([1 => ['hello', 'xx', true], ['world', 'xy', false]]);
+        $p = new StaticPersistence([1 => ['hello', 'xx', true], ['world', 'xy', false]]);
         $m = new Model($p);
 
         $m = $m->load(2);
@@ -39,7 +39,7 @@ class StaticTest extends TestCase
 
     public function testArrayOfHashes(): void
     {
-        $p = new Persistence\Static_([1 => ['foo' => 'hello'], ['foo' => 'world']]);
+        $p = new StaticPersistence([1 => ['foo' => 'hello'], ['foo' => 'world']]);
         $m = new Model($p);
 
         $m = $m->load(2);
@@ -49,7 +49,7 @@ class StaticTest extends TestCase
 
     public function testIdArg(): void
     {
-        $p = new Persistence\Static_([['id' => 20, 'foo' => 'hello'], ['id' => 21, 'foo' => 'world']]);
+        $p = new StaticPersistence([['id' => 20, 'foo' => 'hello'], ['id' => 21, 'foo' => 'world']]);
         $m = new Model($p);
 
         $m = $m->load(21);
@@ -59,7 +59,7 @@ class StaticTest extends TestCase
 
     public function testIdKey(): void
     {
-        $p = new Persistence\Static_([20 => ['foo' => 'hello'], 21 => ['foo' => 'world']]);
+        $p = new StaticPersistence([20 => ['foo' => 'hello'], 21 => ['foo' => 'world']]);
         $m = new Model($p);
 
         $m = $m->load(21);
@@ -69,7 +69,7 @@ class StaticTest extends TestCase
 
     public function testZeroIdAllowed(): void
     {
-        $p = new Persistence\Static_(['hello', 'world']);
+        $p = new StaticPersistence(['hello', 'world']);
         $m = new class($p) extends Model {
             protected function init(): void
             {
@@ -86,7 +86,7 @@ class StaticTest extends TestCase
 
     public function testZeroIdNotAllowed(): void
     {
-        $p = new Persistence\Static_(['hello', 'world']);
+        $p = new StaticPersistence(['hello', 'world']);
 
         $this->expectException(\Atk4\Data\Exception::class);
         $this->expectExceptionMessage('Must not be a zero');
@@ -95,7 +95,7 @@ class StaticTest extends TestCase
 
     public function testEmpty(): void
     {
-        $p = new Persistence\Static_([]);
+        $p = new StaticPersistence([]);
         $m = new Model($p);
 
         $m = $m->tryLoadAny();
@@ -105,34 +105,34 @@ class StaticTest extends TestCase
 
     public function testCustomField(): void
     {
-        $p = new Persistence\Static_([1 => ['foo' => 'hello'], ['foo' => 'world']]);
-        $m = new StaticPersistenceModel($p);
+        $p = new StaticPersistence([1 => ['foo' => 'hello'], ['foo' => 'world']]);
+        $m = new StaticTestModel($p);
 
         $this->assertSame('custom field', $m->getField('foo')->caption);
 
-        $p = new Persistence\Static_([1 => ['foo' => 'hello', 'bar' => 'world']]);
-        $m = new StaticPersistenceModel($p);
+        $p = new StaticPersistence([1 => ['foo' => 'hello', 'bar' => 'world']]);
+        $m = new StaticTestModel($p);
         $this->assertSame('foo', $m->title_field);
     }
 
     public function testTitleOrName(): void
     {
-        $p = new Persistence\Static_([1 => ['foo' => 'hello', 'bar' => 'world']]);
+        $p = new StaticPersistence([1 => ['foo' => 'hello', 'bar' => 'world']]);
         $m = new Model($p);
         $this->assertSame('foo', $m->title_field);
 
-        $p = new Persistence\Static_([1 => ['foo' => 'hello', 'name' => 'x']]);
+        $p = new StaticPersistence([1 => ['foo' => 'hello', 'name' => 'x']]);
         $m = new Model($p);
         $this->assertSame('name', $m->title_field);
 
-        $p = new Persistence\Static_([1 => ['foo' => 'hello', 'title' => 'x']]);
+        $p = new StaticPersistence([1 => ['foo' => 'hello', 'title' => 'x']]);
         $m = new Model($p);
         $this->assertSame('title', $m->title_field);
     }
 
     public function testFieldTypes(): void
     {
-        $p = new Persistence\Static_([1 => [
+        $p = new StaticPersistence([1 => [
             'name' => 'hello',
             'test_int' => 123,
             'test_float' => 123.45,
@@ -161,7 +161,7 @@ class StaticTest extends TestCase
 
     public function testFieldTypesBasicInteger(): void
     {
-        $p = new Persistence\Static_([1 => 'hello', 'world']);
+        $p = new StaticPersistence([1 => 'hello', 'world']);
         $m = new Model($p);
 
         $this->assertSame('integer', $m->getField('id')->type);
@@ -170,7 +170,7 @@ class StaticTest extends TestCase
 
     public function testFieldTypesBasicString(): void
     {
-        $p = new Persistence\Static_(['test' => 'hello', 10 => 'world']);
+        $p = new StaticPersistence(['test' => 'hello', 10 => 'world']);
         $m = new Model($p);
 
         $this->assertSame('string', $m->getField('id')->type);
@@ -178,7 +178,7 @@ class StaticTest extends TestCase
     }
 }
 
-class StaticPersistenceModel extends Model
+class StaticTestModel extends Model
 {
     public $title_field = 'foo';
 

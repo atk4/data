@@ -12,6 +12,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Reference;
 
 /**
@@ -42,7 +43,7 @@ class Join
      * If $persistence is set, then it's used for loading
      * and storing the values, instead $owner->persistence.
      *
-     * @var Persistence|Persistence\Sql|null
+     * @var Persistence|SqlPersistence|null
      */
     protected $persistence;
 

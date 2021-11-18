@@ -5,9 +5,9 @@
 Static Persistence
 ==================
 
-.. php:class:: Persistence\Static_
+.. php:class:: StaticPersistence
 
-Static Persistence extends :php:class:`Persistence\\Array_` to implement
+Static Persistence extends :php:class:`ArrayPersistence` to implement
 a user-friendly way of specifying data through an array.
 
 Usage
@@ -16,7 +16,7 @@ Usage
 This is most useful when working with "sample" code, where you want to see your
 results quick::
 
-    $htmltable->setModel(new Model(new Persistence\Static_([
+    $htmltable->setModel(new Model(new StaticPersistence([
         ['VAT_rate' => '12.0%', 'VAT' => '36.00', 'Net' => '300.00'],
         ['VAT_rate' => '10.0%', 'VAT' => '52.00', 'Net' => '520.00'],
     ])));
@@ -41,7 +41,7 @@ Alternative it will check key "title".
 
 If neither are present you can still manually specify title field for your model.
 
-Finally, static persistence (unlike :php:class:Persistence\Array_) will automatically
+Finally, static persistence (unlike :php:class:ArrayPersistence) will automatically
 populate fields for the model and will even attempt to deduce field types.
 
 Currently it recognizes integer, date, boolean, float, array and object types.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\WarnDynamicPropertyTrait;
-use Atk4\Data\Persistence\Sql as SqlPersistence;
+use Atk4\Data\Persistence\SqlPersistence;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;

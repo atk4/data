@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
@@ -28,7 +28,7 @@ class WithTest extends TestCase
                 3 => ['id' => 3, 'net' => 100, 'user_id' => 20],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
 
         // setup models
         $m_user = new Model($db, ['table' => 'user']);

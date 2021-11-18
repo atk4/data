@@ -7,7 +7,7 @@ namespace Atk4\Data\Tests;
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\ArrayPersistence;
 
 class ReferenceTest extends TestCase
 {
@@ -66,7 +66,7 @@ class ReferenceTest extends TestCase
 
     public function testModelProperty(): void
     {
-        $db = new Persistence\Array_();
+        $db = new ArrayPersistence();
         $user = new Model($db, ['table' => 'user']);
         $user = $user->createEntity();
         $user->setId(1);
@@ -98,7 +98,7 @@ class ReferenceTest extends TestCase
 
     public function testRefName3(): void
     {
-        $db = new Persistence\Array_();
+        $db = new ArrayPersistence();
         $order = new Model($db, ['table' => 'order']);
         $order->addRef('archive', ['model' => function ($m) {
             return new $m(null, ['table' => $m->table . '_archive']);
@@ -111,7 +111,7 @@ class ReferenceTest extends TestCase
 
     public function testCustomRef(): void
     {
-        $p = new Persistence\Array_();
+        $p = new ArrayPersistence();
 
         $m = new Model($p, ['table' => 'user']);
         $m->addRef('archive', ['model' => function ($m) {

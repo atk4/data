@@ -14,6 +14,7 @@ use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Data\Field\CallbackField;
 use Atk4\Data\Field\SqlExpressionField;
+use Atk4\Data\Persistence\SqlPersistence;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
@@ -148,7 +149,7 @@ class Model implements \IteratorAggregate
     public $table_alias;
 
     /**
-     * @var Persistence|Persistence\Sql|null
+     * @var Persistence|SqlPersistence|null
      */
     public $persistence;
 

@@ -5,7 +5,7 @@
 SQL Extensions
 ==============
 
-Databases that support SQL language can use :php:class:`Persistence\Sql`.
+Databases that support SQL language can use :php:class:`SqlPersistence`.
 This driver will format queries to the database using SQL language.
 
 In addition to normal operations you can extend and customize various queries.
@@ -13,7 +13,7 @@ In addition to normal operations you can extend and customize various queries.
 Default Model Classes
 =====================
 
-When using Persistence\Sql model building will use different classes for fields,
+When using SqlPersistence model building will use different classes for fields,
 expressions, joins etc:
 
  - addField - :php:class:`FieldSql` (field can be used as part of DSQL Expression)
@@ -29,7 +29,7 @@ SQL Field
 
 .. php:attr:: actual
 
-    :php:class:`Persistence\Sql` supports field name mapping. Your field could
+    :php:class:`SqlPersistence` supports field name mapping. Your field could
     have different column name in your schema::
 
         $this->addField('name', ['actual' => 'first_name']);
@@ -159,7 +159,7 @@ as default behavior, see :php:attr:`Model::reload_after_save`.
 Transactions
 ============
 
-.. php:class:: Persistence\Sql
+.. php:class:: SqlPersistence
 
 .. php:method:: atomic
 
@@ -193,7 +193,7 @@ Custom Expressions
 .. php:method:: expr
 
     This method is also injected into the model, that is associated with
-    Persistence\Sql so the most convenient way to use this method is by calling
+    SqlPersistence so the most convenient way to use this method is by calling
     `$model->expr('foo')`.
 
 This method is quite similar to \Atk4\Data\Persistence\Sql\Query::expr() method explained here:
@@ -329,7 +329,7 @@ will loose ability to use the same model with non-sql persistencies.
 
 Sometimes you can fence the code like this::
 
-    if ($this->persistence instanceof \Atk4\Data\Persistence\Sql) {
+    if ($this->persistence instanceof \Atk4\Data\Persistence\SqlPersistence) {
         .. sql code ..
     }
 
@@ -429,7 +429,7 @@ as an Action
 
 .. important:: Not all SQL vendors may support this approach.
 
-Method :php:meth:`Persistence\\Sql::action` and :php:meth:`Model::action`
+Method :php:meth:`SqlPersistence::action` and :php:meth:`Model::action`
 generates queries for most of model operations.  By re-defining this method,
 you can significantly affect the query building of an SQL model::
 

@@ -10,6 +10,7 @@ use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
+use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Reference\HasOne;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -45,16 +46,16 @@ class Migrator
 
         if ($source instanceof Connection) {
             $this->connection = $source;
-        } elseif ($source instanceof Persistence\Sql) {
+        } elseif ($source instanceof SqlPersistence) {
             $this->connection = $source->connection;
-        } elseif ($source instanceof Model && $source->persistence instanceof Persistence\Sql) {
+        } elseif ($source instanceof Model && $source->persistence instanceof SqlPersistence) {
             $this->connection = $source->persistence->connection;
         } else {
             throw (new Exception('Source is specified incorrectly. Must be Connection, Persistence or initialized Model'))
                 ->addMoreInfo('source', $source);
         }
 
-        if ($source instanceof Model && $source->persistence instanceof Persistence\Sql) {
+        if ($source instanceof Model && $source->persistence instanceof SqlPersistence) {
             $this->setModel($source);
         }
     }
@@ -221,7 +222,7 @@ class Migrator
             $modelSeed = is_array($reference->model)
                 ? $reference->model
                 : [get_class($reference->model)];
-            $referenceModel = Model::fromSeed($modelSeed, [new Persistence\Sql($this->connection)]);
+            $referenceModel = Model::fromSeed($modelSeed, [new SqlPersistence($this->connection)]);
 
             return $referenceModel->getField($referenceField);
         }

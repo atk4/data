@@ -7,7 +7,7 @@ namespace Atk4\Data\Tests\Persistence;
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\CsvPersistence;
 use Atk4\Data\Tests\Model\Person;
 
 class CsvTest extends TestCase
@@ -38,9 +38,9 @@ class CsvTest extends TestCase
     /**
      * @param resource $fileHandle
      */
-    protected function makeCsvPersistence($fileHandle, array $defaults = []): Persistence\Csv
+    protected function makeCsvPersistence($fileHandle, array $defaults = []): CsvPersistence
     {
-        return new class($fileHandle, $defaults) extends Persistence\Csv {
+        return new class($fileHandle, $defaults) extends CsvPersistence {
             /** @var resource */
             private $handleUnloaded;
 
@@ -179,7 +179,7 @@ class CsvTest extends TestCase
         $m2 = $m->withPersistence($p2);
 
         // TODO should be not needed after https://github.com/atk4/data/pull/690 is merged
-        // Exception: CSV Persistence does not support other than LOAD ANY mode
+        // Exception: CsvPersistence does not support other than LOAD ANY mode
         $m2->reload_after_save = false;
 
         foreach ($m as $row) {

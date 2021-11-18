@@ -6,14 +6,14 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Schema\TestCase;
 
 class JoinSqlTest extends TestCase
 {
     public function testDirection(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
 
         $j = $m->join('contact');
@@ -40,7 +40,7 @@ class JoinSqlTest extends TestCase
 
     public function testDirectionException(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
@@ -49,7 +49,7 @@ class JoinSqlTest extends TestCase
 
     public function testJoinSaving1(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $this->setDb([
             'user' => [
@@ -93,7 +93,7 @@ class JoinSqlTest extends TestCase
 
     public function testJoinSaving2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $this->setDb([
             'user' => [
@@ -151,7 +151,7 @@ class JoinSqlTest extends TestCase
 
     public function testJoinSaving3(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $this->setDb([
             'user' => [
@@ -190,7 +190,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
         $j = $m_u->join('contact');
@@ -225,7 +225,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -326,7 +326,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -353,7 +353,7 @@ class JoinSqlTest extends TestCase
 
     public function testDoubleSaveHook(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $this->setDb([
             'user' => [
@@ -401,7 +401,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -465,7 +465,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
@@ -503,7 +503,7 @@ class JoinSqlTest extends TestCase
      */
     public function testJoinHasOneHasMany(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 10],
@@ -584,7 +584,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_user = new Model($db, ['table' => 'user']);
         $m_user->addField('name');
         $j = $m_user->join('detail.my_user_id', [
@@ -660,7 +660,7 @@ class JoinSqlTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
+        $db = new SqlPersistence($this->db->connection);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id', ['actual' => 'cid']);
         $m_u->addField('name', ['actual' => 'first_name']);

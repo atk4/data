@@ -8,10 +8,11 @@ use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\ArrayPersistence;
 
 class JoinArrayTest extends TestCase
 {
-    private function getInternalPersistenceData(Persistence\Array_ $db): array
+    private function getInternalPersistenceData(ArrayPersistence $db): array
     {
         $data = [];
         /** @var Persistence\Array_\Db\Table $table */
@@ -29,7 +30,7 @@ class JoinArrayTest extends TestCase
 
     public function testDirection(): void
     {
-        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
+        $db = new ArrayPersistence(['user' => [], 'contact' => []]);
         $m = new Model($db, ['table' => 'user']);
 
         $j = $m->join('contact');
@@ -56,7 +57,7 @@ class JoinArrayTest extends TestCase
 
     public function testJoinException(): void
     {
-        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
+        $db = new ArrayPersistence(['user' => [], 'contact' => []]);
         $m = new Model($db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
@@ -65,7 +66,7 @@ class JoinArrayTest extends TestCase
 
     public function testJoinSaving1(): void
     {
-        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
+        $db = new ArrayPersistence(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('contact_id', ['type' => 'integer']);
         $m_u->addField('name');
@@ -117,7 +118,7 @@ class JoinArrayTest extends TestCase
 
     public function testJoinSaving2(): void
     {
-        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
+        $db = new ArrayPersistence(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
         $j = $m_u->join('contact.test_id');
@@ -171,7 +172,7 @@ class JoinArrayTest extends TestCase
 
     public function testJoinSaving3(): void
     {
-        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
+        $db = new ArrayPersistence(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
         $m_u->addField('test_id', ['type' => 'integer']);
@@ -192,7 +193,7 @@ class JoinArrayTest extends TestCase
 
     /*public function testJoinSaving4(): void
     {
-        $db = new Persistence\Array_(['user' => [], 'contact' => []]);
+        $db = new ArrayPersistence(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
         $m_u->addField('code');
@@ -214,7 +215,7 @@ class JoinArrayTest extends TestCase
 
     public function testJoinLoading(): void
     {
-        $db = new Persistence\Array_([
+        $db = new ArrayPersistence([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
@@ -248,7 +249,7 @@ class JoinArrayTest extends TestCase
 
     public function testJoinUpdate(): void
     {
-        $db = new Persistence\Array_([
+        $db = new ArrayPersistence([
             'user' => [
                 1 => ['name' => 'John', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
@@ -317,7 +318,7 @@ class JoinArrayTest extends TestCase
 
     public function testJoinDelete(): void
     {
-        $db = new Persistence\Array_([
+        $db = new ArrayPersistence([
             'user' => [
                 1 => ['name' => 'John 2', 'contact_id' => 1],
                 2 => ['name' => 'Peter', 'contact_id' => 1],
@@ -352,7 +353,7 @@ class JoinArrayTest extends TestCase
 
     public function testLoadMissing(): void
     {
-        $db = new Persistence\Array_([
+        $db = new ArrayPersistence([
             'user' => [
                 2 => ['name' => 'Peter', 'contact_id' => 1],
                 3 => ['name' => 'XX', 'contact_id' => 2],
@@ -374,7 +375,7 @@ class JoinArrayTest extends TestCase
     /*
     public function testTrickyCases(): void
     {
-        $db = new Persistence\Array_();
+        $db = new ArrayPersistence();
         $m = new Model($db);
 
         // tricky cases to testt

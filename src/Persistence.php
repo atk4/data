@@ -10,6 +10,7 @@ use Atk4\Core\DynamicMethodTrait;
 use Atk4\Core\Factory;
 use Atk4\Core\HookTrait;
 use Atk4\Core\NameTrait;
+use Atk4\Data\Persistence\SqlPersistence;
 use Doctrine\DBAL\Platforms;
 
 abstract class Persistence
@@ -50,9 +51,9 @@ abstract class Persistence
             case 'pgsql':
             case 'sqlsrv':
             case 'oci':
-                $db = new \Atk4\Data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
+                $persistence = new SqlPersistence($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
 
-                return $db;
+                return $persistence;
             default:
                 throw (new Exception('Unable to determine persistence driver type from DSN'))
                     ->addMoreInfo('dsn', $dsn['dsn']);
