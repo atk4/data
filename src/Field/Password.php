@@ -7,12 +7,27 @@ namespace Atk4\Data\Field;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
+use function password_get_info;
+use function password_hash;
+use function password_verify;
 
 class Password extends Field
 {
+    /** @var int */
+    public $minLength = 6;
+
     public function hashPassword(string $password): string
     {
-        return password_hash($password, \PASSWORD_BCRYPT, ['cost' => 8]);
+        if ($this->hashPasswordIsHashed($password) || !preg_match('~^\P{C}+$~u', $password) || mb_strlen($password) < $this->minLength) {
+            throw new Exception('Invalid password');
+        }
+
+        $hash = password_hash($password, \PASSWORD_BCRYPT, ['cost' => 8]);
+        if (!$this->hashPasswordIsHashed($hash) || !$this->hashPasswordVerify($hash, $password)) {
+            throw new Exception('Unexpected password hashing error');
+        }
+
+        return $hash;
     }
 
     public function hashPasswordVerify(string $hash, string $password): bool
@@ -20,15 +35,9 @@ class Password extends Field
         return password_verify($password, $hash);
     }
 
-    /**
-     * @internal valid password can be a valid password hash, never use to this method
-     *           to distinguish if a password is already hashed
-     */
-    protected function hashPasswordIsHashed(string $value): bool
+    public function hashPasswordIsHashed(string $value): bool
     {
-        $info = password_get_info($value);
-
-        return $info['algo'] !== null;
+        return password_get_info($value)['algo'] === \PASSWORD_BCRYPT;
     }
 
     public function normalize($value)

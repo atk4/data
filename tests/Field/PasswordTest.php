@@ -30,6 +30,31 @@ class PasswordTest extends TestCase
         $this->assertNull($entity->get('p'));
     }
 
+    public function testInvalidPasswordAlreadyHashed(): void
+    {
+        $hash = (new Password())->hashPassword('mypass');
+        $this->expectException(\Atk4\Data\Exception::class);
+        (new Password())->hashPassword($hash);
+    }
+
+    public function testInvalidPasswordTooShortDefault(): void
+    {
+        $this->expectException(\Atk4\Data\Exception::class);
+        (new Password())->hashPassword('žlutý');
+    }
+
+    public function testInvalidPasswordTooShortCustomized(): void
+    {
+        $this->expectException(\Atk4\Data\Exception::class);
+        (new Password(['minLength' => 50]))->hashPassword(str_repeat('x', 49));
+    }
+
+    public function testInvalidPasswordCntrlChar(): void
+    {
+        $this->expectException(\Atk4\Data\Exception::class);
+        (new Password())->hashPassword('mypass' . "\t" . 'x');
+    }
+
     public function testSetUnhashedException(): void
     {
         $m = new Model();
