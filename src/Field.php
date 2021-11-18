@@ -95,8 +95,9 @@ class Field implements Expressionable
      */
     private function normalizeUsingTypecast($value)
     {
-        $persistence = $this->getOwner()->persistence
-            ?? new class() extends Persistence {
+        $persistence = $this->issetOwner() && $this->getOwner()->persistence !== null
+            ? $this->getOwner()->persistence
+            : new class() extends Persistence {
                 public function __construct()
                 {
                 }
@@ -132,7 +133,7 @@ class Field implements Expressionable
         $this->getTypeObject(); // assert type exists
 
         try {
-            if ($this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
+            if ($this->issetOwner() && $this->getOwner()->hook(Model::HOOK_NORMALIZE, [$this, $value]) === false) {
                 return $value;
             }
 

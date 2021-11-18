@@ -488,6 +488,10 @@ class FieldTest extends TestCase
 
     public function testNormalize(): void
     {
+        // normalize must work even without model
+        $this->assertSame('test', (new Field(['type' => 'string']))->normalize('test'));
+        $this->assertSame('test', (new Field(['type' => 'string']))->normalize('test '));
+
         $m = new Model();
 
         $m->addField('string', ['type' => 'string']);
