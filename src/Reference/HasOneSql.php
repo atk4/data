@@ -28,7 +28,6 @@ class HasOneSql extends HasOne
         $defaults['caption'] ??= $refModelField->caption;
         $defaults['ui'] ??= $refModelField->ui;
 
-        /** @var Field\SqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
             [
                 function (Model $ourModel) use ($theirFieldName) {
@@ -153,7 +152,6 @@ class HasOneSql extends HasOne
 
         $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
 
-        /** @var Field\SqlExpression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($fieldName, array_replace_recursive(
             [
                 function (Model $ourModel) {

@@ -158,7 +158,6 @@ class Scope extends Scope\AbstractScope
             return $this;
         }
 
-        /** @var Scope\AbstractScope $component */
         $component = reset($this->elements);
 
         return $component->simplify();

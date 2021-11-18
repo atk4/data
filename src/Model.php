@@ -1943,7 +1943,7 @@ class Model implements \IteratorAggregate
      *
      * @param string|array|Persistence\Sql\Expressionable|\Closure $expression
      *
-     * @return Field\Callback
+     * @return Field\Callback|Field\SqlExpression
      */
     public function addExpression(string $name, $expression)
     {
@@ -1954,7 +1954,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        /** @var Field\Callback */
+        /** @var Field\Callback|Field\SqlExpression */
         $field = Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);
