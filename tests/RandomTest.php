@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
@@ -149,7 +150,7 @@ class RandomTest extends TestCase
         $m->addFields([
             'last_name',
             'login' => ['default' => 'unknown'],
-            'salary' => ['type' => 'atk4_money', CustomField::class, 'default' => 100],
+            'salary' => [CustomField::class, 'type' => 'atk4_money', 'default' => 100],
             'tax' => [CustomField::class, 'type' => 'atk4_money', 'default' => 20],
             'vat' => new CustomField(['type' => 'atk4_money', 'default' => 15]),
         ]);
@@ -165,6 +166,7 @@ class RandomTest extends TestCase
         $this->assertTrue(is_float($m->get('salary')));
         $this->assertTrue(is_float($m->get('tax')));
         $this->assertTrue(is_float($m->get('vat')));
+        $this->assertInstanceOf(CustomField::class, $m->getField('salary'));
     }
 
     public function testSameTable(): void
@@ -346,25 +348,6 @@ class RandomTest extends TestCase
         $this->expectException(CoreException::class);
         $m->hasOne('foo', ['model' => [Model_Item::class]])
             ->addTitle(); // field foo already exists, so we can't add title with same name
-    }
-
-    public function testNonSqlFieldClass(): void
-    {
-        $db = new Persistence\Sql($this->db->connection);
-        $this->setDb([
-            'rate' => [
-                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
-            ],
-        ]);
-
-        $m = new Model_Rate($db);
-        $m->addField('x1', new \Atk4\Data\FieldSql());
-        $m->addField('x2', new \Atk4\Data\Field());
-        $m = $m->load(1);
-
-        $this->assertEquals(3.4, $m->get('bid'));
-        $this->assertSame('y1', $m->get('x1'));
-        $this->assertSame('y2', $m->get('x2'));
     }
 
     public function testModelCaption(): void
@@ -550,6 +533,6 @@ class RandomTest extends TestCase
     }
 }
 
-class CustomField extends \Atk4\Data\Field
+class CustomField extends Field
 {
 }

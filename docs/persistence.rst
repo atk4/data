@@ -843,7 +843,7 @@ SQL Actions on Linked Records
 -----------------------------
 
 In conjunction with Model::refLink() you can produce expressions for creating
-sub-selects. The functionality is nicely wrapped inside FieldSql_Many::addField()::
+sub-selects. The functionality is nicely wrapped inside HasMany::addField()::
 
     $client->hasMany('Invoice')
         ->addField('total_gross', ['aggregate' => 'sum', 'field' => 'gross']);

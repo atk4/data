@@ -47,7 +47,7 @@ class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_addField = [\Atk4\Data\FieldSql::class];
+    public $_default_seed_addField; // no custom seed needed
 
     /**
      * Default class when adding hasOne field.
@@ -61,7 +61,7 @@ class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_hasMany; // [\Atk4\Data\Reference\HasMany::class];
+    public $_default_seed_hasMany; // no custom seed needed
 
     /**
      * Default class when adding Expression field.

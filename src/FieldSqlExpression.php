@@ -7,7 +7,7 @@ namespace Atk4\Data;
 use Atk4\Core\InitializerTrait;
 use Atk4\Data\Persistence\Sql\Expression;
 
-class FieldSqlExpression extends FieldSql
+class FieldSqlExpression extends Field
 {
     use InitializerTrait {
         init as private _init;

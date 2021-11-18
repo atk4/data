@@ -817,13 +817,15 @@ class Model implements \IteratorAggregate
 
         $f = $this->getField($field);
 
-        try {
-            $value = $f->normalize($value);
-        } catch (Exception $e) {
-            $e->addMoreInfo('field', $f);
-            $e->addMoreInfo('value', $value);
+        if (!$value instanceof Persistence\Sql\Expressionable) {
+            try {
+                $value = $f->normalize($value);
+            } catch (Exception $e) {
+                $e->addMoreInfo('field', $f);
+                $e->addMoreInfo('value', $value);
 
-            throw $e;
+                throw $e;
+            }
         }
 
         // do nothing when value has not changed
@@ -832,7 +834,7 @@ class Model implements \IteratorAggregate
         $currentValue = array_key_exists($field, $dataRef)
             ? $dataRef[$field]
             : (array_key_exists($field, $dirtyRef) ? $dirtyRef[$field] : $f->default);
-        if (!$value instanceof Persistence\Sql\Expression && $f->compare($value, $currentValue)) {
+        if (!$value instanceof Persistence\Sql\Expressionable && $f->compare($value, $currentValue)) {
             return $this;
         }
 
@@ -1939,7 +1941,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|\Atk4\Data\Persistence\Sql\Expression|\Closure $expression
+     * @param string|array|Persistence\Sql\Expressionable|\Closure $expression
      *
      * @return Field\Callback
      */

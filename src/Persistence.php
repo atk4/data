@@ -198,17 +198,17 @@ abstract class Persistence
      */
     public function typecastSaveField(Field $field, $value)
     {
+        // SQL Expression cannot be converted
+        if ($value instanceof Persistence\Sql\Expressionable) {
+            return $value;
+        }
+
         if (!$this->typecastSaveSkipNormalize) {
             $value = $field->normalize($value);
         }
 
         if ($value === null) {
             return null;
-        }
-
-        // SQL Expression cannot be converted
-        if ($value instanceof Persistence\Sql\Expressionable) {
-            return $value;
         }
 
         try {
