@@ -626,17 +626,22 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function getRows(): array
     {
+        // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
+        // https://github.com/doctrine/dbal/issues/5002
         if (Connection::isComposerDbal2x()) {
-            $rows = $this->execute()->fetchAll();
+            $result = $this->execute();
         } else {
-            $rows = $this->execute()->fetchAllAssociative();
+            $result = $this->execute();
         }
 
-        return array_map(function ($row) {
-            return array_map(function ($v) {
+        $rows = [];
+        while (($row = Connection::isComposerDbal2x() ? $result->fetchAssociative() : $result->fetch()) !== false) {
+            $rows[] = array_map(function ($v) {
                 return $this->getCastValue($v);
             }, $row);
-        }, $rows);
+        }
+
+        return $rows;
     }
 
     /**
