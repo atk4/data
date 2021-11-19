@@ -6,7 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 
 class IteratorTest extends TestCase
@@ -92,8 +91,7 @@ class IteratorTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -136,8 +134,7 @@ class IteratorTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -180,8 +177,7 @@ class IteratorTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');

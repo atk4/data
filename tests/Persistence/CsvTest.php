@@ -179,7 +179,7 @@ class CsvTest extends TestCase
         $m2 = $m->withPersistence($p2);
 
         // TODO should be not needed after https://github.com/atk4/data/pull/690 is merged
-        // Exception: CSV Persistence does not support other than LOAD ANY mode
+        // Exception: Csv persistence does not support other than LOAD ANY mode
         $m2->reload_after_save = false;
 
         foreach ($m as $row) {

@@ -50,9 +50,9 @@ abstract class Persistence
             case 'pgsql':
             case 'sqlsrv':
             case 'oci':
-                $db = new \Atk4\Data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
+                $persistence = new Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
 
-                return $db;
+                return $persistence;
             default:
                 throw (new Exception('Unable to determine persistence driver type from DSN'))
                     ->addMoreInfo('dsn', $dsn['dsn']);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\Static_ as Persistence_Static;
+use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 
 trait UaReminder
@@ -46,14 +46,14 @@ class UaClient extends Model
 
 class UserActionTest extends TestCase
 {
-    /** @var Persistence_Static */
+    /** @var Persistence\Static_ */
     public $pers;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->pers = new Persistence_Static([
+        $this->pers = new Persistence\Static_([
             1 => ['name' => 'John'],
             2 => ['name' => 'Peter'],
         ]);

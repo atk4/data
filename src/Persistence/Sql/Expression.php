@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\WarnDynamicPropertyTrait;
-use Atk4\Data\Persistence\Sql as SqlPersistence;
+use Atk4\Data\Persistence;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;
@@ -533,9 +533,9 @@ class Expression implements Expressionable, \ArrayAccess
 
                         if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform
                             || $this->connection->getDatabasePlatform() instanceof SQLServer2012Platform) {
-                            $dummySqlPersistence = new SqlPersistence($this->connection);
-                            if (\Closure::bind(fn () => $dummySqlPersistence->binaryTypeValueIsEncoded($val), null, SqlPersistence::class)()) {
-                                $val = \Closure::bind(fn () => $dummySqlPersistence->binaryTypeValueDecode($val), null, SqlPersistence::class)();
+                            $dummyPersistence = new Persistence\Sql($this->connection);
+                            if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
+                                $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
                                 $type = ParameterType::BINARY;
                             }
                         }
