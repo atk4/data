@@ -18,7 +18,7 @@ use Atk4\Data\Persistence\Array_\Db\Table;
  * from array. This basic driver only offers the load/save support based
  * around ID, you can't use conditions, order or limit.
  */
-class ArrayPersistence extends Persistence
+class Array_ extends Persistence
 {
     /** @var array */
     private $seedData;

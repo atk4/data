@@ -232,12 +232,12 @@ using Agile UI::
 Class `\\Atk4\\Ui\\Table` here is designed to work with persistencies and models -
 it will populate columns of correct type, fetch data, calculate totals if needed.
 But what if you have your data inside an array?
-You can use :php:class:`StaticPersistence` for that::
+You can use :php:class:`Persistence\Static_` for that::
 
     $htmltable = new \Atk4\Ui\Table();
     $htmltable->invokeInit();
 
-    $htmltable->setModel(new User(new StaticPersistence([
+    $htmltable->setModel(new User(new Persistence\Static_([
         ['name' => 'John', 'is_admin' => false, 'salary' => 34400.00],
         ['name' => 'Peter', 'is_admin' => false, 'salary' => 42720.00],
     ])));
@@ -250,7 +250,7 @@ model class to display VAT breakdown table::
     $htmltable = new \Atk4\Ui\Table();
     $htmltable->invokeInit();
 
-    $htmltable->setModel(new Model(new StaticPersistence([
+    $htmltable->setModel(new Model(new Persistence\Static_([
         ['VAT_rate' => '12.0%', 'VAT' => '36.00', 'Net' => '300.00'],
         ['VAT_rate' => '10.0%', 'VAT' => '52.00', 'Net' => '520.00'],
     ])));
@@ -262,7 +262,7 @@ It can be made even simpler::
     $htmltable = new \Atk4\Ui\Table();
     $htmltable->invokeInit();
 
-    $htmltable->setModel(new Model(new StaticPersistence([
+    $htmltable->setModel(new Model(new Persistence\Static_([
         'John',
         'Peter'
     ])));

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\StaticPersistence;
+use Atk4\Data\Persistence\Static_ as StaticPersistence;
 use Atk4\Data\Schema\TestCase;
 
 trait UaReminder

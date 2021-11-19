@@ -46,7 +46,7 @@ Console is using `Psysh <http://psysh.org>`_ to help you interact with objects
 like this::
 
     > $db
-    => Atk4\Data\Persistence\SqlPersistence {...}
+    => Atk4\Data\Persistence\Sql {...}
 
     > exit
 
@@ -390,7 +390,7 @@ For some persistence classes, you should use constructor directly::
     $array[1] = ['name' => 'John'];
     $array[2] = ['name' => 'Peter'];
 
-    $db = new \Atk4\Data\Persistence\ArrayPersistence($array);
+    $db = new \Atk4\Data\Persistence\Array_($array);
     $m = new \Atk4\Data\Model($db);
     $m->addField('name');
     $m = $m->load(2);
@@ -400,7 +400,7 @@ There are several Persistence classes that deal with different data sources.
 Lets load up our console and try out a different persistence::
 
     $a=['user' => [],'contact_info' => []];
-    $ar = new \Atk4\Data\Persistence\ArrayPersistence($a);
+    $ar = new \Atk4\Data\Persistence\Array_($a);
     $m = new Model_User($ar);
     $m->set('username', 'test');
     $m->set('address_1', 'street');

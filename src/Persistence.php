@@ -10,7 +10,7 @@ use Atk4\Core\DynamicMethodTrait;
 use Atk4\Core\Factory;
 use Atk4\Core\HookTrait;
 use Atk4\Core\NameTrait;
-use Atk4\Data\Persistence\SqlPersistence;
+use Atk4\Data\Persistence\Sql as SqlPersistence;
 use Doctrine\DBAL\Platforms;
 
 abstract class Persistence

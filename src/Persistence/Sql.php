@@ -18,7 +18,7 @@ use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
-class SqlPersistence extends Persistence
+class Sql extends Persistence
 {
     use Sql\BinaryTypeCompatibilityTypecastTrait;
 
@@ -711,7 +711,7 @@ class SqlPersistence extends Persistence
             ];
         }
 
-        // If our Model has expr() method (inherited from SqlPersistence) then use it
+        // If our Model has expr() method (inherited from Persistence\Sql) then use it
         if ($field->getOwner()->hasMethod('expr')) {
             return $field->getOwner()->expr($mask, $prop);
         }

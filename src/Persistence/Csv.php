@@ -14,18 +14,18 @@ use Atk4\Data\Persistence;
  * id-specific operations. You can only use a single persistence object with
  * a single file.
  *
- * $p = new CsvPersistence('file.csv');
+ * $p = new Persistence\Csv('file.csv');
  * $m = new MyModel($p);
  * $data = $m->export();
  *
  * Alternatively you can write into a file. First operation you perform on
  * the persistence will determine the mode.
  *
- * $p = new CsvPersistence('file.csv');
+ * $p = new Persistence\Csv('file.csv');
  * $m = new MyModel($p);
  * $m->import($data);
  */
-class CsvPersistence extends Persistence
+class Csv extends Persistence
 {
     /**
      * Name of the file.

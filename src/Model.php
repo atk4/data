@@ -14,7 +14,7 @@ use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Data\Field\CallbackField;
 use Atk4\Data\Field\SqlExpressionField;
-use Atk4\Data\Persistence\SqlPersistence;
+use Atk4\Data\Persistence\Sql as SqlPersistence;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**

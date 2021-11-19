@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests\Persistence;
 
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\StaticPersistence;
+use Atk4\Data\Persistence\Static_ as StaticPersistence;
 
 class StaticTest extends TestCase
 {

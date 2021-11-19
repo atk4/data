@@ -86,7 +86,7 @@ class Action
 
             break;
             default:
-                throw (new Exception('ArrayPersistence driver action unsupported format'))
+                throw (new Exception('Array persistence driver action unsupported format'))
                     ->addMoreInfo('action', $fx);
         }
 
@@ -118,7 +118,7 @@ class Action
             }
 
             if (!is_a($field, Field::class)) {
-                throw (new Exception('ArrayPersistence driver condition unsupported format'))
+                throw (new Exception('Array persistence driver condition unsupported format'))
                     ->addMoreInfo('reason', 'Unsupported object instance ' . get_class($field))
                     ->addMoreInfo('condition', $condition);
             }

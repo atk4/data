@@ -8,9 +8,9 @@ use Atk4\Core\DiContainerTrait;
 use Atk4\Core\ReadableCaptionTrait;
 use Atk4\Core\TrackableTrait;
 use Atk4\Data\Model\Scope;
+use Atk4\Data\Persistence\Sql as SqlPersistence;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Expressionable;
-use Atk4\Data\Persistence\SqlPersistence;
 use Doctrine\DBAL\Types\Type;
 
 /**

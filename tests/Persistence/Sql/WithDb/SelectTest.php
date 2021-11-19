@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 
 use Atk4\Data\Model;
+use Atk4\Data\Persistence\Sql as SqlPersistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
-use Atk4\Data\Persistence\SqlPersistence;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;

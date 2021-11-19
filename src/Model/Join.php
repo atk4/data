@@ -12,7 +12,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Persistence\SqlPersistence;
+use Atk4\Data\Persistence\Sql as SqlPersistence;
 use Atk4\Data\Reference;
 
 /**

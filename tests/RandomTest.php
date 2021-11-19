@@ -8,8 +8,8 @@ use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\SqlPersistence;
-use Atk4\Data\Persistence\StaticPersistence;
+use Atk4\Data\Persistence\Sql as SqlPersistence;
+use Atk4\Data\Persistence\Static_ as StaticPersistence;
 use Atk4\Data\Schema\TestCase;
 
 class Model_Rate extends Model

@@ -6,7 +6,7 @@ namespace Atk4\Data\Persistence\Array_;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\ArrayPersistence;
+use Atk4\Data\Persistence\Array_ as ArrayPersistence;
 
 /**
  * @property ArrayPersistence|null $persistence

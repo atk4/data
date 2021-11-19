@@ -715,7 +715,7 @@ you can implement it like this::
         $_SESSION['ad'] = []; // initialize
     }
 
-    $sess = new \Atk4\Data\Persistence\ArrayPersistence($_SESSION['ad']);
+    $sess = new \Atk4\Data\Persistence\Array_($_SESSION['ad']);
     $logged_user = new User($sess);
     $logged_user = $logged_user->load('active_user');
 

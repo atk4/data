@@ -9,12 +9,12 @@ use Atk4\Data\Model;
 /**
  * Implements a very basic array-access pattern:.
  *
- * $m = new Model(StaticPersistence(['hello', 'world']));
+ * $m = new Model(Persistence\Static_(['hello', 'world']));
  * $m->load(1);
  *
  * echo $m->get('name'); // world
  */
-class StaticPersistence extends ArrayPersistence
+class Static_ extends Array_
 {
     /**
      * This will be the title field for the model.
@@ -153,7 +153,7 @@ class StaticPersistence extends ArrayPersistence
                         unset($this->data[$model->table]);
                     }
                 }
-            }, $this, ArrayPersistence::class)();
+            }, $this, Array_::class)();
             $model->persistence = null;
 
             if (isset($this->fieldsForModel[$model->id_field])) {

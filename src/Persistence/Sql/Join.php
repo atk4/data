@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\SqlPersistence;
+use Atk4\Data\Persistence\Sql as SqlPersistence;
 
 /**
  * @property SqlPersistence $persistence

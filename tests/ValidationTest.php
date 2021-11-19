@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence\ArrayPersistence;
+use Atk4\Data\Persistence\Array_ as ArrayPersistence;
 use Atk4\Data\ValidationException;
 
 class MyValidationModel extends Model

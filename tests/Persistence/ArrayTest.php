@@ -8,7 +8,7 @@ use Atk4\Core\Phpunit\TestCase;
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
-use Atk4\Data\Persistence\ArrayPersistence;
+use Atk4\Data\Persistence\Array_ as ArrayPersistence;
 use Atk4\Data\Tests\Model\Female as Female;
 use Atk4\Data\Tests\Model\Male as Male;
 
