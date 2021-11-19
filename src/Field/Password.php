@@ -20,7 +20,7 @@ class Password extends Field
     {
         $password = (new Field(['type' => 'string']))->normalize($password);
 
-        if ($this->hashPasswordIsHashed($password) || !preg_match('~^\P{C}+$~u', $password)) {
+        if (!preg_match('~^\P{C}+$~u', $password) || $this->hashPasswordIsHashed($password)) {
             throw new Exception('Invalid password');
         } elseif (!$forVerifyOnly && mb_strlen($password) < $this->minLength) {
             throw new Exception('At least ' . $this->minLength . ' characters are required');
