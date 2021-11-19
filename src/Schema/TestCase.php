@@ -7,6 +7,7 @@ namespace Atk4\Data\Schema;
 use Atk4\Core\Phpunit\TestCase as BaseTestCase;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
+use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
@@ -87,9 +88,13 @@ class TestCase extends BaseTestCase
         return $this->db->connection->getDatabasePlatform();
     }
 
-    protected function getSchemaManager(): AbstractSchemaManager
+    protected function createSchemaManager(): AbstractSchemaManager
     {
-        return $this->db->connection->connection()->getSchemaManager();
+        if (Connection::isComposerDbal2x()) {
+            return $this->db->connection->connection()->getSchemaManager();
+        }
+
+        return $this->db->connection->connection()->createSchemaManager();
     }
 
     private function convertSqlFromSqlite(string $sql): string

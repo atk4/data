@@ -11,6 +11,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Reference\HasOne;
+use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -65,9 +66,13 @@ class Migration
         return $this->connection->getDatabasePlatform();
     }
 
-    protected function getSchemaManager(): AbstractSchemaManager
+    protected function createSchemaManager(): AbstractSchemaManager
     {
-        return $this->connection->connection()->getSchemaManager();
+        if (Connection::isComposerDbal2x()) {
+            return $this->connection->connection()->getSchemaManager();
+        }
+
+        return $this->connection->connection()->createSchemaManager();
     }
 
     public function table(string $tableName): self
@@ -90,7 +95,7 @@ class Migration
 
     public function create(): self
     {
-        $this->getSchemaManager()->createTable($this->table);
+        $this->createSchemaManager()->createTable($this->table);
         $this->createdTableNames[] = $this->table->getName();
 
         return $this;
@@ -98,7 +103,7 @@ class Migration
 
     public function drop(): self
     {
-        $this->getSchemaManager()
+        $this->createSchemaManager()
             ->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
 
         $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
@@ -110,7 +115,7 @@ class Migration
     {
         try {
             $this->drop();
-        } catch (\Doctrine\DBAL\Exception|\Doctrine\DBAL\DBALException $e) {
+        } catch (DbalException $e) {
         }
 
         $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);

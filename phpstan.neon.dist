@@ -25,13 +25,18 @@ parameters:
     ignoreErrors:
         - '~^Unsafe usage of new static\(\)\.$~'
 
+        -
+            message: '~^Call to deprecated method getRawDataByTable\(\) of class Atk4\\Data\\Persistence\\Array_:~'
+            path: '*'
+            count: 2
+
         # for Doctrine DBAL 2.x, remove the support once Doctrine ORM 2.10 is released
         # see https://github.com/doctrine/orm/issues/8526
         -
-            message: '~^(Call to an undefined method Doctrine\\DBAL\\Driver\\Connection::getWrappedConnection\(\)\.|Caught class Doctrine\\DBAL\\DBALException not found\.|Call to static method notSupported\(\) on an unknown class Doctrine\\DBAL\\DBALException\.|Access to an undefined property Doctrine\\DBAL\\Driver\\PDO\\Connection::\$connection\.|Parameter #1 \$dsn of class Doctrine\\DBAL\\Driver\\PDO\\SQLSrv\\Connection constructor expects string, Doctrine\\DBAL\\Driver\\PDO\\Connection given\.|Method Atk4\\Data\\Persistence\\Sql\\Expression::execute\(\) should return Doctrine\\DBAL\\Result\|PDOStatement but returns bool\.|Class Doctrine\\DBAL\\Platforms\\MySqlPlatform referenced with incorrect case: Doctrine\\DBAL\\Platforms\\MySQLPlatform\.)$~'
+            message: '~^(Call to an undefined method Doctrine\\DBAL\\Driver\\Connection::getWrappedConnection\(\)\.|Call to an undefined method Doctrine\\DBAL\\Connection::createSchemaManager\(\)\.|Call to an undefined static method Doctrine\\DBAL\\Exception::invalidPdoInstance\(\)\.|Call to deprecated method fetch(|All)\(\) of class Doctrine\\DBAL\\Result:\n.+|Call to deprecated method getSchemaManager\(\) of class Doctrine\\DBAL\\Connection:\n.+|Access to an undefined property Doctrine\\DBAL\\Driver\\PDO\\Connection::\$connection\.|Parameter #1 \$dsn of class Doctrine\\DBAL\\Driver\\PDO\\SQLSrv\\Connection constructor expects string, Doctrine\\DBAL\\Driver\\PDO\\Connection given\.|Method Atk4\\Data\\Persistence\\Sql\\Expression::execute\(\) should return Doctrine\\DBAL\\Result\|PDOStatement but returns bool\.|Class Doctrine\\DBAL\\Platforms\\MySqlPlatform referenced with incorrect case: Doctrine\\DBAL\\Platforms\\MySQLPlatform\.)$~'
             path: '*'
             # count for DBAL 3.x matched in "src/Persistence/GenericPlatform.php" file
-            count: 12
+            count: 13
 
         # TODO these rules are generated, this ignores should be fixed in the code
         # for src/Schema/TestCase.php
