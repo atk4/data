@@ -74,7 +74,7 @@ class Query extends BaseQuery
             && in_array($field->getTypeObject()->getName(), ['text', 'blob'], true)) {
             $value = $this->castStringToClobExpr($value);
 
-            if ($field->getTypeObject()->getName() !== 'blob') {
+            if ($field->getTypeObject()->getName() === 'text') {
                 $field = $this->expr('LOWER([])', [$field]);
                 $value = $this->expr('LOWER([])', [$value]);
             }
