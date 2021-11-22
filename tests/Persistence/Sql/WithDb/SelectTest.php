@@ -269,20 +269,24 @@ class SelectTest extends TestCase
 
     public function testUtf8mb4Support(): void
     {
+        // MariaDB has no support of utf8mb4 identifiers
         // remove once https://jira.mariadb.org/browse/MDEV-27050 is fixed
+        $columnAlias = '❤';
+        $tableAlias = '🚀';
         if (str_contains($_ENV['DB_DSN'], 'mariadb')) {
-            $this->markTestSkipped('MariaDB has broken support of utf8mb4 identifiers');
+            $columnAlias = '仮';
+            $tableAlias = '名';
         }
 
         $this->assertSame(
-            ['❤' => 'žlutý_😀'],
+            [$columnAlias => 'žlutý_😀'],
             $this->q(
-                $this->q()->field($this->e('\'žlutý_😀\''), '❤'),
-                '🚀'
+                $this->q()->field($this->e('\'žlutý_😀\''), $columnAlias),
+                $tableAlias
             )
-                ->where('❤', 'žlutý_😀') // as param
-                ->group('🚀.❤')
-                ->having($this->e('{}', ['❤'])->render() . ' = \'žlutý_😀\'') // as string literal (mapped to N'xxx' with MSSQL platform)
+                ->where($columnAlias, 'žlutý_😀') // as param
+                ->group($tableAlias . '.' . $columnAlias)
+                ->having($this->e('{}', [$columnAlias])->render() . ' = \'žlutý_😀\'') // as string literal (mapped to N'xxx' with MSSQL platform)
                 ->getRow()
         );
     }
