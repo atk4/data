@@ -193,11 +193,21 @@ class ModelTest extends TestCase
             $lengthBytes = min($lengthBytes, 8190);
         }
 
-        $str = $this->makePseudoRandomString($isBinary, $lengthBytes - 1);
-        if (!$isBinary) {
-            $str = preg_replace('~[\x00-\x1f]~', '-', $str);
+        if ($lengthBytes === 0) {
+            $str = '';
+
+            // TODO Oracle converts empty string to NULL
+            // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle
+            if ($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['string', 'text'], true)) {
+                $str = 'x';
+            }
+        } else {
+            $str = $this->makePseudoRandomString($isBinary, $lengthBytes - 1);
+            if (!$isBinary) {
+                $str = preg_replace('~[\x00-\x1f]~', '-', $str);
+            }
+            $this->assertSame($lengthBytes - 1, strlen($str));
         }
-        $this->assertSame($lengthBytes - 1, strlen($str));
 
         $model = new Model($this->db, ['table' => 'user']);
         $model->addField('v', ['type' => $type]);
@@ -225,6 +235,10 @@ class ModelTest extends TestCase
     public function providerCharacterTypeFieldLongData(): array
     {
         return [
+            ['string', false, 0],
+            ['binary', true, 0],
+            ['text', false, 0],
+            ['blob', true, 0],
             ['string', false, 255],
             ['binary', true, 255],
             ['text', false, 255],
