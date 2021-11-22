@@ -103,7 +103,7 @@ class RandomTest extends TestCase
         );
 
         $this->_groupConcatTest(
-            'select "age", listagg("name", :a) within group (order by "name") from "people" group by "age"',
+            'select "age", listagg("name", :xxaaaa) within group (order by "name") from "people" group by "age"',
             new Oracle\Query()
         );
     }

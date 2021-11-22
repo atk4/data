@@ -533,13 +533,10 @@ class Expression implements Expressionable, \ArrayAccess
                         $type = ParameterType::STRING;
 
                         if ($platform instanceof PostgreSQL94Platform
-                            || $platform instanceof SQLServer2012Platform
-                            || $platform instanceof OraclePlatform) {
+                            || $platform instanceof SQLServer2012Platform) {
                             $dummyPersistence = new Persistence\Sql($this->connection);
                             if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
-                                if (!$platform instanceof OraclePlatform) {
-                                    $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
-                                }
+                                $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
                                 $type = ParameterType::BINARY;
                             }
                         }
@@ -552,8 +549,7 @@ class Expression implements Expressionable, \ArrayAccess
                             ->addMoreInfo('type', gettype($val));
                     }
 
-                    if (is_string($val) && $platform instanceof OraclePlatform
-                        && ($type === ParameterType::BINARY || strlen($val) > 2000)) {
+                    if (is_string($val) && $platform instanceof OraclePlatform && strlen($val) > 2000) {
                         $valRef = $val;
                         $bind = $statement->bindParam($key, $valRef, ParameterType::STRING, strlen($val));
                         unset($valRef);

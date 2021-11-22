@@ -131,7 +131,7 @@ class ModelTest extends TestCase
         $model->import([['v' => 'mixedcase'], ['v' => 'MIXEDCASE'], ['v' => 'MixedCase']]);
 
         $model->addCondition('v', 'MixedCase');
-        $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform ? 'id' : 'v');
+        $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['text', 'blob'], true) ? 'id' : 'v');
 
         $this->assertSame($isBinary ? [['id' => 3]] : [['id' => 1], ['id' => 2], ['id' => 3]], $model->export(['id']));
     }
@@ -193,16 +193,11 @@ class ModelTest extends TestCase
             $lengthBytes = min($lengthBytes, 8190);
         }
 
-        // TODO https://github.com/atk4/data/issues/918
-        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'blob') {
-            $lengthBytes = min($lengthBytes, 20_000);
-        }
-
-        $str = $this->makePseudoRandomString($isBinary, $lengthBytes);
+        $str = $this->makePseudoRandomString($isBinary, $lengthBytes - 1);
         if (!$isBinary) {
             $str = preg_replace('~[\x00-\x1f]~', '-', $str);
         }
-        $this->assertSame($lengthBytes, strlen($str));
+        $this->assertSame($lengthBytes - 1, strlen($str));
 
         $model = new Model($this->db, ['table' => 'user']);
         $model->addField('v', ['type' => $type]);
@@ -230,8 +225,10 @@ class ModelTest extends TestCase
     public function providerCharacterTypeFieldLongData(): array
     {
         return [
-            ['string', false, 250],
-            ['binary', true, 250],
+            ['string', false, 255],
+            ['binary', true, 255],
+            ['text', false, 255],
+            ['blob', true, 255],
             ['text', false, 256 * 1024],
             ['blob', true, 256 * 1024],
         ];

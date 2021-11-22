@@ -1687,7 +1687,7 @@ class QueryTest extends TestCase
 
         $q = new Oracle\Query();
         $this->assertSame(
-            'select case when exists(select * from "contacts" where "first_name" = :a) then 1 else 0 end from "DUAL"',
+            'select case when exists(select * from "contacts" where "first_name" = :xxaaaa) then 1 else 0 end from "DUAL"',
             $q->table('contacts')->where('first_name', 'John')->exists()->render()
         );
 

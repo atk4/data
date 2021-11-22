@@ -11,6 +11,8 @@ use Atk4\Data\Persistence\Sql\Query as BaseQuery;
 
 class Query extends BaseQuery
 {
+    protected $paramBase = 'xxaaaa';
+
     public function render(): string
     {
         if ($this->mode === 'select' && $this->main_table === null) {
@@ -36,15 +38,17 @@ class Query extends BaseQuery
             return 'TO_CLOB([])';
         };
 
-        // Oracle SQL string literal is limited to 1332 utf8mb4 characters
-        $lengthBytes = strlen($value);
-        $startBytes = 0;
+        // Oracle SQL string literal is limited to 1332 bytes
         $parts = [];
-        do {
-            $part = mb_strcut($value, $startBytes, 1000);
-            $startBytes += strlen($part);
-            $parts[] = $part;
-        } while ($startBytes < $lengthBytes);
+        foreach (mb_str_split($value, 10_000) as $shorterValue) {
+            $lengthBytes = strlen($shorterValue);
+            $startBytes = 0;
+            do {
+                $part = mb_strcut($shorterValue, $startBytes, 1000);
+                $startBytes += strlen($part);
+                $parts[] = $part;
+            } while ($startBytes < $lengthBytes);
+        }
 
         $expr = $buildConcatExprFx($parts);
 

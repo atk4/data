@@ -14,7 +14,7 @@ trait PlatformTrait
 
     protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
     {
-        return $this->getVarcharTypeDeclarationSQLSnippet($length, $fixed);
+        return $this->getVarcharTypeDeclarationSQLSnippet($length * 2 + strlen('atk__binary__u5f8mzx4vsm8g2c9__' . hash('crc32b', '')), $fixed);
     }
 
     public function getBlobTypeDeclarationSQL(array $column)
