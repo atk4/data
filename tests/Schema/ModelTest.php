@@ -131,7 +131,7 @@ class ModelTest extends TestCase
         $model->import([['v' => 'mixedcase'], ['v' => 'MIXEDCASE'], ['v' => 'MixedCase']]);
 
         $model->addCondition('v', 'MixedCase');
-        $model->setOrder('v');
+        $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform ? 'id' : 'v');
 
         $this->assertSame($isBinary ? [['id' => 3]] : [['id' => 1], ['id' => 2], ['id' => 3]], $model->export(['id']));
     }
@@ -191,6 +191,11 @@ class ModelTest extends TestCase
         // https://github.com/php/php-src/pull/5233
         if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'text') {
             $lengthBytes = min($lengthBytes, 8190);
+        }
+
+        // TODO https://github.com/atk4/data/issues/918
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'blob') {
+            $lengthBytes = min($lengthBytes, 20_000);
         }
 
         $str = $this->makePseudoRandomString($isBinary, $lengthBytes);

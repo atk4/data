@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence\Sql\Oracle;
 
-use Atk4\Data\Exception;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\Sequence;
 
@@ -18,35 +17,9 @@ trait PlatformTrait
         return $this->getVarcharTypeDeclarationSQLSnippet($length, $fixed);
     }
 
-    // Oracle CLOB/BLOB has limited SQL support, see:
-    // https://stackoverflow.com/questions/12980038/ora-00932-inconsistent-datatypes-expected-got-clob#12980560
-    // fix this Oracle inconsistency by using VARCHAR/VARBINARY instead (but limited to 4000 bytes)
-
-    private function forwardTypeDeclarationSQL(string $targetMethodName, array $column): string
-    {
-        $backtrace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS);
-        foreach ($backtrace as $frame) {
-            if ($this === ($frame['object'] ?? null)
-                && $targetMethodName === ($frame['function'] ?? null)) {
-                throw new Exception('Long CLOB/TEXT (4000+ bytes) is not supported for Oracle');
-            }
-        }
-
-        return $this->{$targetMethodName}($column);
-    }
-
-    public function getClobTypeDeclarationSQL(array $column)
-    {
-        $column['length'] = $this->getVarcharMaxLength();
-
-        return $this->forwardTypeDeclarationSQL('getVarcharTypeDeclarationSQL', $column);
-    }
-
     public function getBlobTypeDeclarationSQL(array $column)
     {
-        $column['length'] = $this->getBinaryMaxLength();
-
-        return $this->forwardTypeDeclarationSQL('getBinaryTypeDeclarationSQL', $column);
+        return $this->getClobTypeDeclarationSQL($column);
     }
 
     protected function initializeCommentedDoctrineTypes()
@@ -54,7 +27,6 @@ trait PlatformTrait
         parent::initializeCommentedDoctrineTypes();
 
         $this->markDoctrineTypeCommented('binary');
-        $this->markDoctrineTypeCommented('text');
         $this->markDoctrineTypeCommented('blob');
     }
 
