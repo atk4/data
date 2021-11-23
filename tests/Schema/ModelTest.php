@@ -147,47 +147,37 @@ class ModelTest extends TestCase
         ];
     }
 
-    private function makePseudoRandomString(bool $isBinary, int $lengthBytes): string
+    private function makePseudoRandomString(bool $isBinary, int $length): string
     {
         $baseChars = [];
         if ($isBinary) {
             for ($i = 0; $i <= 0xFF; ++$i) {
-                $baseChars[crc32($lengthBytes . '_' . $i)] = chr($i);
+                $baseChars[crc32($length . '_' . $i)] = chr($i);
             }
         } else {
             for ($i = 0; $i <= 0x10FFFF; $i = $i * 1.001 + 1) {
                 $iInt = (int) $i;
                 if ($iInt < 0xD800 || $iInt > 0xDFFF) {
-                    $baseChars[crc32($lengthBytes . '_' . $i)] = mb_chr($iInt);
+                    $baseChars[crc32($length . '_' . $i)] = mb_chr($iInt);
                 }
             }
         }
         ksort($baseChars);
 
-        $res = str_repeat(implode('', $baseChars), intdiv($lengthBytes, count($baseChars)) + 1);
+        $res = str_repeat(implode('', $baseChars), intdiv($length, count($baseChars)) + 1);
         if ($isBinary) {
-            return substr($res, 0, $lengthBytes);
+            return substr($res, 0, $length);
         }
 
-        $res = mb_strcut($res, 0, $lengthBytes);
-        $padLength = $lengthBytes - strlen($res);
-        foreach ($baseChars as $ch) {
-            if (strlen($ch) === $padLength) {
-                $res .= $ch;
-
-                break;
-            }
-        }
-
-        return $res;
+        return mb_substr($res, 0, $length);
     }
 
     /**
      * @dataProvider providerCharacterTypeFieldLongData
      */
-    public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $lengthBytes): void
+    public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $length): void
     {
-        if ($lengthBytes === 0) {
+        if ($length === 0) {
             $str = '';
 
             // TODO Oracle converts empty string to NULL
@@ -196,11 +186,11 @@ class ModelTest extends TestCase
                 $str = 'x';
             }
         } else {
-            $str = $this->makePseudoRandomString($isBinary, $lengthBytes - 1);
+            $str = $this->makePseudoRandomString($isBinary, $length - 1);
             if (!$isBinary) {
                 $str = preg_replace('~[\x00-\x1f]~', '-', $str);
             }
-            $this->assertSame($lengthBytes - 1, strlen($str));
+            $this->assertSame($length - 1, $isBinary ? strlen($str) : mb_strlen($str));
         }
 
         $model = new Model($this->db, ['table' => 'user']);
