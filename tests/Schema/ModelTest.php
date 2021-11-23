@@ -132,7 +132,7 @@ class ModelTest extends TestCase
         $model->import([['v' => 'mixedcase'], ['v' => 'MIXEDCASE'], ['v' => 'MixedCase']]);
 
         $model->addCondition('v', 'MixedCase');
-        $model->setOrder('v');
+        $model->setOrder($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['text', 'blob'], true) ? 'id' : 'v');
 
         $this->assertSame($isBinary ? [['id' => 3]] : [['id' => 1], ['id' => 2], ['id' => 3]], $model->export(['id']));
     }
@@ -187,15 +187,28 @@ class ModelTest extends TestCase
      */
     public function testCharacterTypeFieldLong(string $type, bool $isBinary, int $lengthBytes): void
     {
-        if ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $lengthBytes = min($lengthBytes, $type === 'binary' ? 100 : 500);
+        // remove once long multibyte Oracle CLOB stream read support is fixed in php-src/pdo_oci
+        // https://bugs.php.net/bug.php?id=60994
+        // https://github.com/php/php-src/pull/5233
+        if ($this->getDatabasePlatform() instanceof OraclePlatform && $type === 'text') {
+            $lengthBytes = min($lengthBytes, 8190);
         }
 
-        $str = $this->makePseudoRandomString($isBinary, $lengthBytes);
-        if (!$isBinary) {
-            $str = preg_replace('~[\x00-\x1f]~', '-', $str);
+        if ($lengthBytes === 0) {
+            $str = '';
+
+            // TODO Oracle converts empty string to NULL
+            // https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle
+            if ($this->getDatabasePlatform() instanceof OraclePlatform && in_array($type, ['string', 'text'], true)) {
+                $str = 'x';
+            }
+        } else {
+            $str = $this->makePseudoRandomString($isBinary, $lengthBytes - 1);
+            if (!$isBinary) {
+                $str = preg_replace('~[\x00-\x1f]~', '-', $str);
+            }
+            $this->assertSame($lengthBytes - 1, strlen($str));
         }
-        $this->assertSame($lengthBytes, strlen($str));
 
         $model = new Model($this->db, ['table' => 'user']);
         $model->addField('v', ['type' => $type]);
@@ -223,8 +236,14 @@ class ModelTest extends TestCase
     public function providerCharacterTypeFieldLongData(): array
     {
         return [
-            ['string', false, 250],
-            ['binary', true, 250],
+            ['string', false, 0],
+            ['binary', true, 0],
+            ['text', false, 0],
+            ['blob', true, 0],
+            ['string', false, 255],
+            ['binary', true, 255],
+            ['text', false, 255],
+            ['blob', true, 255],
             ['text', false, 256 * 1024],
             ['blob', true, 256 * 1024],
         ];

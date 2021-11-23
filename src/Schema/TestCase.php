@@ -11,6 +11,7 @@ use Atk4\Data\Persistence\Sql\Connection;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 class TestCase extends BaseTestCase
@@ -99,15 +100,21 @@ class TestCase extends BaseTestCase
 
     private function convertSqlFromSqlite(string $sql): string
     {
+        $platform = $this->getDatabasePlatform();
+
         return preg_replace_callback(
-            '~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"~s',
-            function ($matches) {
-                $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
-                if (substr($matches[0], 0, 1) === '"') {
-                    return $this->getDatabasePlatform()->quoteSingleIdentifier($str);
+            '~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"|:(\w+)~s',
+            function ($matches) use ($platform) {
+                if (isset($matches[1])) {
+                    return ':' . ($platform instanceof OraclePlatform ? 'xxaaa' : '') . $matches[1];
                 }
 
-                return $this->getDatabasePlatform()->quoteStringLiteral($str);
+                $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
+                if (substr($matches[0], 0, 1) === '"') {
+                    return $platform->quoteSingleIdentifier($str);
+                }
+
+                return $platform->quoteStringLiteral($str);
             },
             $sql
         );
