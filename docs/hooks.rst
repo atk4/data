@@ -244,10 +244,10 @@ Save information into auditLog about failure:
 
 Upgrade schema:
 
-    use Atk4\Data\Persistence\Sql\Exception as DsqlException;
+    use Atk4\Data\Persistence\Sql\Exception as SqlException;
 
     $m->onHook(Model::HOOK_ROLLBACK, function($m, $exception) {
-        if ($exception instanceof DsqlException) {
+        if ($exception instanceof SqlException) {
             $m->schema->upgrade();
             $m->breakHook(false); // exception will not be thrown
         }
