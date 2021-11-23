@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atk4\Data\Persistence\Sql;
 
 use Atk4\Core\WarnDynamicPropertyTrait;
-use Atk4\Data\Persistence\Sql as SqlPersistence;
+use Atk4\Data\Persistence;
 use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;
@@ -510,6 +510,7 @@ class Expression implements Expressionable, \ArrayAccess
         if ($connection instanceof DbalConnection) {
             $query = $this->render();
 
+            $platform = $this->connection->getDatabasePlatform();
             try {
                 $statement = $connection->prepare($query);
 
@@ -517,7 +518,7 @@ class Expression implements Expressionable, \ArrayAccess
                     if (is_int($val)) {
                         $type = ParameterType::INTEGER;
                     } elseif (is_bool($val)) {
-                        if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+                        if ($platform instanceof PostgreSQL94Platform) {
                             $type = ParameterType::STRING;
                             $val = $val ? '1' : '0';
                         } else {
@@ -531,11 +532,11 @@ class Expression implements Expressionable, \ArrayAccess
                     } elseif (is_string($val)) {
                         $type = ParameterType::STRING;
 
-                        if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform
-                            || $this->connection->getDatabasePlatform() instanceof SQLServer2012Platform) {
-                            $dummySqlPersistence = new SqlPersistence($this->connection);
-                            if (\Closure::bind(fn () => $dummySqlPersistence->binaryTypeValueIsEncoded($val), null, SqlPersistence::class)()) {
-                                $val = \Closure::bind(fn () => $dummySqlPersistence->binaryTypeValueDecode($val), null, SqlPersistence::class)();
+                        if ($platform instanceof PostgreSQL94Platform
+                            || $platform instanceof SQLServer2012Platform) {
+                            $dummyPersistence = new Persistence\Sql($this->connection);
+                            if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
+                                $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
                                 $type = ParameterType::BINARY;
                             }
                         }
@@ -548,7 +549,13 @@ class Expression implements Expressionable, \ArrayAccess
                             ->addMoreInfo('type', gettype($val));
                     }
 
-                    $bind = $statement->bindValue($key, $val, $type);
+                    if (is_string($val) && $platform instanceof OraclePlatform && strlen($val) > 2000) {
+                        $valRef = $val;
+                        $bind = $statement->bindParam($key, $valRef, ParameterType::STRING, strlen($val));
+                        unset($valRef);
+                    } else {
+                        $bind = $statement->bindValue($key, $val, $type);
+                    }
                     if ($bind === false) {
                         throw (new Exception('Unable to bind parameter'))
                             ->addMoreInfo('param', $key)
@@ -626,17 +633,22 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function getRows(): array
     {
+        // DbalResult::fetchAllAssociative() is broken with streams with Oracle database
+        // https://github.com/doctrine/dbal/issues/5002
         if (Connection::isComposerDbal2x()) {
-            $rows = $this->execute()->fetchAll();
+            $result = $this->execute();
         } else {
-            $rows = $this->execute()->fetchAllAssociative();
+            $result = $this->execute();
         }
 
-        return array_map(function ($row) {
-            return array_map(function ($v) {
+        $rows = [];
+        while (($row = Connection::isComposerDbal2x() ? $result->fetchAssociative() : $result->fetch()) !== false) {
+            $rows[] = array_map(function ($v) {
                 return $this->getCastValue($v);
             }, $row);
-        }, $rows);
+        }
+
+        return $rows;
     }
 
     /**
