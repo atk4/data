@@ -481,7 +481,7 @@ class ExpressionTest extends TestCase
     /**
      * Test IteratorAggregate implementation.
      *
-     * @covers ::getIterator
+     * @covers ::getRowsIterator
      *
      * @doesNotPerformAssertions
      */

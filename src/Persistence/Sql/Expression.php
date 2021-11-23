@@ -588,26 +588,12 @@ class Expression implements Expressionable, \ArrayAccess
         return $connection->execute($this);
     }
 
-    /**
-     * TODO drop method once we support DBAL 3.x only.
-     *
-     * @return \Traversable<array<mixed>>
-     */
-    public function getIterator(): \Traversable
-    {
-        if (Connection::isComposerDbal2x()) {
-            return $this->execute();
-        }
-
-        return $this->execute()->iterateAssociative();
-    }
-
     // {{{ Result Querying
 
     /**
      * @param string|int|float|bool|null $v
      */
-    private function getCastValue($v): ?string
+    private function castGetValue($v): ?string
     {
         if (is_int($v) || is_float($v)) {
             return (string) $v;
@@ -624,6 +610,26 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         return $v; // throw a type error if not null nor string
+    }
+
+    /**
+     * @return \Traversable<array<mixed>>
+     */
+    public function getRowsIterator(): \Traversable
+    {
+        // DbalResult::iterateAssociative() is broken with streams with Oracle database
+        // https://github.com/doctrine/dbal/issues/5002
+        if (Connection::isComposerDbal2x()) {
+            $iterator = $this->execute();
+        } else {
+            $iterator = $this->execute()->iterateAssociative();
+        }
+
+        foreach ($iterator as $row) {
+            yield array_map(function ($v) {
+                return $this->castGetValue($v);
+            }, $row);
+        }
     }
 
     /**
@@ -644,7 +650,7 @@ class Expression implements Expressionable, \ArrayAccess
         $rows = [];
         while (($row = Connection::isComposerDbal2x() ? $result->fetchAssociative() : $result->fetch()) !== false) {
             $rows[] = array_map(function ($v) {
-                return $this->getCastValue($v);
+                return $this->castGetValue($v);
             }, $row);
         }
 
@@ -669,7 +675,7 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         return array_map(function ($v) {
-            return $this->getCastValue($v);
+            return $this->castGetValue($v);
         }, $row);
     }
 

@@ -91,7 +91,7 @@ class SelectTest extends TestCase
         );
 
         $names = [];
-        foreach ($this->q('employee')->where('retired', false)->getIterator() as $row) {
+        foreach ($this->q('employee')->where('retired', false)->getRowsIterator() as $row) {
             $names[] = $row['name'];
         }
 

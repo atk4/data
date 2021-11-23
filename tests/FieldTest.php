@@ -807,6 +807,8 @@ class FieldTest extends TestCase
         $entityFooField = new Model\EntityFieldPair($entity, 'foo');
         $entityBarField = new Model\EntityFieldPair($entity, 'bar');
 
+        $this->assertSame($m, $entityFooField->getModel());
+        $this->assertSame($m, $entityBarField->getModel());
         $this->assertSame($entity, $entityFooField->getEntity());
         $this->assertSame($entity, $entityBarField->getEntity());
         $this->assertSame('foo', $entityFooField->getFieldName());

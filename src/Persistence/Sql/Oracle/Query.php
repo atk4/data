@@ -125,9 +125,9 @@ class Query extends BaseQuery
             max((int) ($this->args['limit']['cnt'] + $this->args['limit']['shift']), (int) $this->args['limit']['cnt']);
     }
 
-    public function getIterator(): \Traversable
+    public function getRowsIterator(): \Traversable
     {
-        foreach (parent::getIterator() as $row) {
+        foreach (parent::getRowsIterator() as $row) {
             unset($row['__dsql_rownum']);
 
             yield $row;
