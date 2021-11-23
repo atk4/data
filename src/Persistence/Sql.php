@@ -228,13 +228,13 @@ class Sql extends Persistence
      */
     public function initQuery(Model $model): Query
     {
-        $query = $model->persistence_data['dsql'] = $this->dsql();
+        $query = $this->dsql();
 
         if ($model->table) {
             $query->table($model->table, $model->table_alias ?? null);
         }
 
-        // add With cursors
+        // add WITH cursors
         $this->initWithCursors($model, $query);
 
         return $query;
@@ -265,7 +265,7 @@ class Sql extends Persistence
             // as result system fields will not be added if they are not requested
             $subQuery = $withModel->action('select', [$fieldsFrom]);
 
-            // add With cursor
+            // add WITH cursor
             $query->with($subQuery, $alias, $fieldsTo ?: null, $recursive);
         }
     }
@@ -686,7 +686,14 @@ class Sql extends Persistence
 
     public function getFieldSqlExpression(Field $field, Expression $expression): Expression
     {
-        if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {
+        $useTablePrefix = isset($field->getOwner()->persistence_data['use_table_prefixes']);
+        // ugly table dealiasing fix for update queries that do not support table alias
+        if ($expression instanceof Query && str_contains(\Closure::bind(fn () => $expression->template, null, Query::class)(), '[table_noalias]')
+            && $field->getOwner()->table_alias === \Closure::bind(fn () => $expression->main_table, null, Query::class)()) {
+            $useTablePrefix = false;
+        }
+
+        if ($useTablePrefix) {
             $mask = '{{}}.{}';
             $prop = [
                 $field->hasJoin()
