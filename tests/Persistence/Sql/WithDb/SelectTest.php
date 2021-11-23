@@ -293,8 +293,7 @@ class SelectTest extends TestCase
 
     public function testImportAndAutoincrement(): void
     {
-        $p = new \Atk4\Data\Persistence\Sql($this->c);
-        $m = new \Atk4\Data\Model($p, ['table' => 'test']);
+        $m = new Model($this->db, ['table' => 'test']);
         $m->getField('id')->actual = 'myid';
         $m->setOrder('id');
         $m->addField('f1');

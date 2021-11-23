@@ -564,13 +564,13 @@ class Expression implements Expressionable, \ArrayAccess
                     }
                 }
 
-                $result = $statement->execute();
+                $result = $statement->execute(); // @phpstan-ignore-line
                 if (Connection::isComposerDbal2x()) {
                     return $statement; // @phpstan-ignore-line
                 }
 
                 return $result;
-            } catch (DbalException|\Doctrine\DBAL\DBALException $e) {
+            } catch (DbalException $e) {
                 $firstException = $e;
                 while ($firstException->getPrevious() !== null) {
                     $firstException = $firstException->getPrevious();

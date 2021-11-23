@@ -6,7 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 
@@ -29,8 +28,7 @@ class ModelWithoutIdTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $this->m = new Model($db, ['table' => 'user', 'id_field' => false]);
+        $this->m = new Model($this->db, ['table' => 'user', 'id_field' => false]);
 
         $this->m->addFields(['name', 'gender']);
     }

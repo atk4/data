@@ -13,12 +13,12 @@ In addition to normal operations you can extend and customize various queries.
 Default Model Classes
 =====================
 
-When using Persistence\Sql model building will use different classes for fields,
+When using `Persistence\Sql` model building will use different classes for fields,
 expressions, joins etc:
 
  - addField - :php:class:`FieldSql` (field can be used as part of DSQL Expression)
  - hasOne - :php:class:`Reference\HasOneSql` (allow importing fields)
- - addExpression - :php:class:`FieldSqlExpression` (define expression through DSQL)
+ - addExpression - :php:class:`SqlExpressionField` (define expression through DSQL)
  - join - :php:class:`Join\Sql` (join tables query-time)
 
 
@@ -134,7 +134,7 @@ SQL Reference
 Expressions
 -----------
 
-.. php:class:: FieldSqlExpression
+.. php:class:: SqlExpressionField
 
     Extends :php:class:`FieldSql`
 
@@ -193,7 +193,7 @@ Custom Expressions
 .. php:method:: expr
 
     This method is also injected into the model, that is associated with
-    Persistence\Sql so the most convenient way to use this method is by calling
+    `Persistence\Sql` so the most convenient way to use this method is by calling
     `$model->expr('foo')`.
 
 This method is quite similar to \Atk4\Data\Persistence\Sql\Query::expr() method explained here:
@@ -212,7 +212,7 @@ field expressions will be automatically substituted. Here is long / short format
 
     $q = $m->expr('[age] + [birth_year']);
 
-This method is automatically used by :php:class:`FieldSqlExpression`.
+This method is automatically used by :php:class:`SqlExpressionField`.
 
 
 Actions
@@ -429,7 +429,7 @@ as an Action
 
 .. important:: Not all SQL vendors may support this approach.
 
-Method :php:meth:`Persistence\\Sql::action` and :php:meth:`Model::action`
+Method :php:meth:`Persistence\Sql::action` and :php:meth:`Model::action`
 generates queries for most of model operations.  By re-defining this method,
 you can significantly affect the query building of an SQL model::
 

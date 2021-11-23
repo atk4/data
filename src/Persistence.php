@@ -50,9 +50,9 @@ abstract class Persistence
             case 'pgsql':
             case 'sqlsrv':
             case 'oci':
-                $db = new \Atk4\Data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
+                $persistence = new Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
 
-                return $db;
+                return $persistence;
             default:
                 throw (new Exception('Unable to determine persistence driver type from DSN'))
                     ->addMoreInfo('dsn', $dsn['dsn']);
@@ -198,17 +198,17 @@ abstract class Persistence
      */
     public function typecastSaveField(Field $field, $value)
     {
+        // SQL Expression cannot be converted
+        if ($value instanceof Persistence\Sql\Expressionable) {
+            return $value;
+        }
+
         if (!$this->typecastSaveSkipNormalize) {
             $value = $field->normalize($value);
         }
 
         if ($value === null) {
             return null;
-        }
-
-        // SQL Expression cannot be converted
-        if ($value instanceof Persistence\Sql\Expressionable) {
-            return $value;
         }
 
         try {

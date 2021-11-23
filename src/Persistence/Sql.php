@@ -6,7 +6,7 @@ namespace Atk4\Data\Persistence;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
-use Atk4\Data\FieldSqlExpression;
+use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
@@ -38,7 +38,7 @@ class Sql extends Persistence
     /**
      * Connection object.
      *
-     * @var \Atk4\Data\Persistence\Sql\Connection
+     * @var Connection
      */
     public $connection;
 
@@ -47,7 +47,7 @@ class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_addField = [\Atk4\Data\FieldSql::class];
+    public $_default_seed_addField; // no custom seed needed
 
     /**
      * Default class when adding hasOne field.
@@ -61,14 +61,14 @@ class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_hasMany; // [\Atk4\Data\Reference\HasMany::class];
+    public $_default_seed_hasMany; // no custom seed needed
 
     /**
      * Default class when adding Expression field.
      *
      * @var array
      */
-    public $_default_seed_addExpression = [FieldSqlExpression::class];
+    public $_default_seed_addExpression = [SqlExpressionField::class];
 
     /**
      * Default class when adding join.
@@ -87,19 +87,14 @@ class Sql extends Persistence
      */
     public function __construct($connection, $user = null, $password = null, $args = [])
     {
-        if ($connection instanceof \Atk4\Data\Persistence\Sql\Connection) {
-            $this->connection = $connection;
+        if (is_object($connection)) {
+            $this->connection = Connection::assertInstanceOf($connection);
 
             return;
         }
 
-        if (is_object($connection)) {
-            throw (new Exception('You can only use Persistance_SQL with Connection class from Atk4\Data\Persistence\Sql'))
-                ->addMoreInfo('connection', $connection);
-        }
-
         // attempt to connect.
-        $this->connection = \Atk4\Data\Persistence\Sql\Connection::connect(
+        $this->connection = Connection::connect(
             $connection,
             $user,
             $password,
@@ -453,7 +448,7 @@ class Sql extends Persistence
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($field, $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
+                } elseif ($field instanceof SqlExpressionField) {
                     $query->reset('field')->field($field, $field->short_name);
                 } else {
                     $query->reset('field')->field($field);
@@ -488,7 +483,7 @@ class Sql extends Persistence
 
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
+                } elseif ($field instanceof SqlExpressionField) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->short_name);
                 } else {
                     $query->reset('field')->field($query->expr($expr, [$field]));

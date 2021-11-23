@@ -6,7 +6,6 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Model;
-use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
@@ -28,14 +27,13 @@ class WithTest extends TestCase
                 3 => ['id' => 3, 'net' => 100, 'user_id' => 20],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
         // setup models
-        $m_user = new Model($db, ['table' => 'user']);
+        $m_user = new Model($this->db, ['table' => 'user']);
         $m_user->addField('name');
         $m_user->addField('salary', ['type' => 'atk4_money']);
 
-        $m_invoice = new Model($db, ['table' => 'invoice']);
+        $m_invoice = new Model($this->db, ['table' => 'invoice']);
         $m_invoice->addField('net', ['type' => 'atk4_money']);
         $m_invoice->hasOne('user_id', ['model' => $m_user]);
         $m_invoice->addCondition('net', '>', 100);

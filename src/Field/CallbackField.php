@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Atk4\Data\Field;
 
 use Atk4\Core\InitializerTrait;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 
 /**
  * Evaluate php expression after load.
  */
-class Callback extends \Atk4\Data\Field
+class CallbackField extends Field
 {
     use InitializerTrait {
         init as private _init;

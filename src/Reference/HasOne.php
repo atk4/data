@@ -31,7 +31,6 @@ class HasOne extends Reference
 
         $this->referenceLink = $this->link; // named differently than in Model\FieldPropertiesTrait
 
-        /** @var \ReflectionProperty[] */
         $fieldPropsRefl = (new \ReflectionClass(Model\FieldPropertiesTrait::class))->getProperties();
         $fieldPropsRefl[] = (new \ReflectionClass(Model\JoinLinkTrait::class))->getProperty('joinName');
 

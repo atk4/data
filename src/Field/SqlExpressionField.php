@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Atk4\Data;
+namespace Atk4\Data\Field;
 
 use Atk4\Core\InitializerTrait;
+use Atk4\Data\Field;
+use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Reference;
 
-class FieldSqlExpression extends FieldSql
+class SqlExpressionField extends Field
 {
     use InitializerTrait {
         init as private _init;

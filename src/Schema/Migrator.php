@@ -6,11 +6,12 @@ namespace Atk4\Data\Schema;
 
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
-use Atk4\Data\FieldSqlExpression;
+use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Reference\HasOne;
+use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -18,7 +19,7 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 
-class Migration
+class Migrator
 {
     public const REF_TYPE_NONE = 0;
     public const REF_TYPE_LINK = 1;
@@ -34,8 +35,6 @@ class Migration
     private $createdTableNames = [];
 
     /**
-     * Create new migration.
-     *
      * @param Connection|Persistence|Model $source
      */
     public function __construct($source)
@@ -65,9 +64,13 @@ class Migration
         return $this->connection->getDatabasePlatform();
     }
 
-    protected function getSchemaManager(): AbstractSchemaManager
+    protected function createSchemaManager(): AbstractSchemaManager
     {
-        return $this->connection->connection()->getSchemaManager();
+        if (Connection::isComposerDbal2x()) {
+            return $this->connection->connection()->getSchemaManager();
+        }
+
+        return $this->connection->connection()->createSchemaManager();
     }
 
     public function table(string $tableName): self
@@ -90,7 +93,7 @@ class Migration
 
     public function create(): self
     {
-        $this->getSchemaManager()->createTable($this->table);
+        $this->createSchemaManager()->createTable($this->table);
         $this->createdTableNames[] = $this->table->getName();
 
         return $this;
@@ -98,7 +101,7 @@ class Migration
 
     public function drop(): self
     {
-        $this->getSchemaManager()
+        $this->createSchemaManager()
             ->dropTable($this->getDatabasePlatform()->quoteSingleIdentifier($this->table->getName()));
 
         $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
@@ -110,7 +113,7 @@ class Migration
     {
         try {
             $this->drop();
-        } catch (\Doctrine\DBAL\Exception|\Doctrine\DBAL\DBALException $e) {
+        } catch (DbalException $e) {
         }
 
         $this->createdTableNames = array_diff($this->createdTableNames, [$this->table->getName()]);
@@ -180,7 +183,7 @@ class Migration
         $this->table($model->table);
 
         foreach ($model->getFields() as $field) {
-            if ($field->never_persist || $field instanceof FieldSqlExpression) {
+            if ($field->never_persist || $field instanceof SqlExpressionField) {
                 continue;
             }
 

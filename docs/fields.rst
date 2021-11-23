@@ -81,7 +81,7 @@ Conversions between types is what we call :ref:`Typecasting` and there is a
 documentation section dedicated to it.
 
 Finally, because Field is a class, it can be further extended. For some
-interesting examples, check out :php:class:`Field\\Password`. I'll explain how to
+interesting examples, check out :php:class:`PasswordField`. I'll explain how to
 create your own field classes and where they can be beneficial.
 
 Valid types are: string, integer, boolean, datetime, date, time.
@@ -167,7 +167,7 @@ Example::
 .. php:attr:: read_only
 
 Modifying field that is read-only through set() methods (or array access) will
-result in exception. :php:class:`FieldSqlExpression` is read-only by default.
+result in exception. :php:class:`SqlExpressionField` is read-only by default.
 
 .. php:attr:: actual
 

@@ -8,7 +8,7 @@ Loading and Saving CSV Files
 .. php:class:: Persistence\Csv
 
 Agile Data can operate with CSV files for data loading, or saving. The capabilities
-of Persistence\Csv are limited to the following actions:
+of `Persistence\Csv` are limited to the following actions:
 
 - open any CSV file, use column mapping
 - identify which column is corresponding for respective field

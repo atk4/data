@@ -12,6 +12,8 @@ use Atk4\Core\Factory;
 use Atk4\Core\HookTrait;
 use Atk4\Core\InitializerTrait;
 use Atk4\Core\ReadableCaptionTrait;
+use Atk4\Data\Field\CallbackField;
+use Atk4\Data\Field\SqlExpressionField;
 use Mvorisek\Atk4\Hintable\Data\HintableModelTrait;
 
 /**
@@ -122,7 +124,7 @@ class Model implements \IteratorAggregate
      *
      * @var string|array
      */
-    public $_default_seed_addExpression = [Field\Callback::class];
+    public $_default_seed_addExpression = [CallbackField::class];
 
     /**
      * @var array<string, Field>
@@ -817,13 +819,15 @@ class Model implements \IteratorAggregate
 
         $f = $this->getField($field);
 
-        try {
-            $value = $f->normalize($value);
-        } catch (Exception $e) {
-            $e->addMoreInfo('field', $f);
-            $e->addMoreInfo('value', $value);
+        if (!$value instanceof Persistence\Sql\Expressionable) {
+            try {
+                $value = $f->normalize($value);
+            } catch (Exception $e) {
+                $e->addMoreInfo('field', $f);
+                $e->addMoreInfo('value', $value);
 
-            throw $e;
+                throw $e;
+            }
         }
 
         // do nothing when value has not changed
@@ -832,7 +836,7 @@ class Model implements \IteratorAggregate
         $currentValue = array_key_exists($field, $dataRef)
             ? $dataRef[$field]
             : (array_key_exists($field, $dirtyRef) ? $dirtyRef[$field] : $f->default);
-        if (!$value instanceof Persistence\Sql\Expression && $f->compare($value, $currentValue)) {
+        if (!$value instanceof Persistence\Sql\Expressionable && $f->compare($value, $currentValue)) {
             return $this;
         }
 
@@ -1939,9 +1943,9 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|\Atk4\Data\Persistence\Sql\Expression|\Closure $expression
+     * @param string|array|Persistence\Sql\Expressionable|\Closure $expression
      *
-     * @return Field\Callback
+     * @return CallbackField|SqlExpressionField
      */
     public function addExpression(string $name, $expression)
     {
@@ -1952,7 +1956,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        /** @var Field\Callback */
+        /** @var CallbackField|SqlExpressionField */
         $field = Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);
@@ -1965,7 +1969,7 @@ class Model implements \IteratorAggregate
      *
      * @param string|array|\Closure $expression
      *
-     * @return Field\Callback
+     * @return CallbackField
      */
     public function addCalculatedField(string $name, $expression)
     {
@@ -1976,7 +1980,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        $field = new Field\Callback($expression);
+        $field = new CallbackField($expression);
 
         $this->addField($name, $field);
 

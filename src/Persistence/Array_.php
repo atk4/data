@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Persistence;
 
-use Atk4\Data\Action\RenameColumnIterator;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Array_\Action;
+use Atk4\Data\Persistence\Array_\Action\RenameColumnIterator;
 use Atk4\Data\Persistence\Array_\Db\Row;
 use Atk4\Data\Persistence\Array_\Db\Table;
 

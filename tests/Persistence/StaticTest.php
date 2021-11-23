@@ -106,12 +106,12 @@ class StaticTest extends TestCase
     public function testCustomField(): void
     {
         $p = new Persistence\Static_([1 => ['foo' => 'hello'], ['foo' => 'world']]);
-        $m = new StaticPersistenceModel($p);
+        $m = new StaticTestModel($p);
 
         $this->assertSame('custom field', $m->getField('foo')->caption);
 
         $p = new Persistence\Static_([1 => ['foo' => 'hello', 'bar' => 'world']]);
-        $m = new StaticPersistenceModel($p);
+        $m = new StaticTestModel($p);
         $this->assertSame('foo', $m->title_field);
     }
 
@@ -178,7 +178,7 @@ class StaticTest extends TestCase
     }
 }
 
-class StaticPersistenceModel extends Model
+class StaticTestModel extends Model
 {
     public $title_field = 'foo';
 

@@ -6,6 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Core\Exception as CoreException;
 use Atk4\Data\Exception;
+use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Schema\TestCase;
@@ -79,8 +80,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model_Rate($db);
+        $m = new Model_Rate($this->db);
 
         $this->assertEquals(2, $m->action('count')->getOne());
     }
@@ -93,8 +93,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'salary' => ['default' => 10]]);
 
         $m->import([['name' => 'Peter'], ['name' => 'Steve', 'salary' => 30]]);
@@ -119,8 +118,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'login'], ['default' => 'unknown']);
 
         $m->insert(['name' => 'Peter']);
@@ -143,13 +141,12 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name'], ['default' => 'anonymous']);
         $m->addFields([
             'last_name',
             'login' => ['default' => 'unknown'],
-            'salary' => ['type' => 'atk4_money', CustomField::class, 'default' => 100],
+            'salary' => [CustomField::class, 'type' => 'atk4_money', 'default' => 100],
             'tax' => [CustomField::class, 'type' => 'atk4_money', 'default' => 20],
             'vat' => new CustomField(['type' => 'atk4_money', 'default' => 15]),
         ]);
@@ -165,11 +162,11 @@ class RandomTest extends TestCase
         $this->assertTrue(is_float($m->get('salary')));
         $this->assertTrue(is_float($m->get('tax')));
         $this->assertTrue(is_float($m->get('vat')));
+        $this->assertInstanceOf(CustomField::class, $m->getField('salary'));
     }
 
     public function testSameTable(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
@@ -178,7 +175,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model_Item($db, ['table' => 'item']);
+        $m = new Model_Item($this->db, ['table' => 'item']);
 
         $this->assertSame(
             ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
@@ -188,7 +185,6 @@ class RandomTest extends TestCase
 
     public function testSameTable2(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John'],
@@ -202,7 +198,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model_Item2($db, ['table' => 'item']);
+        $m = new Model_Item2($this->db, ['table' => 'item']);
 
         $this->assertSame(
             ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
@@ -212,7 +208,6 @@ class RandomTest extends TestCase
 
     public function testSameTable3(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'age' => 18],
@@ -226,7 +221,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model_Item3($db, ['table' => 'item']);
+        $m = new Model_Item3($this->db, ['table' => 'item']);
 
         $this->assertEquals(
             ['id' => '2', 'name' => 'Sue', 'parent_item_id' => 1, 'parent_item' => 'John', 'age' => '20', 'child_age' => 24],
@@ -254,7 +249,6 @@ class RandomTest extends TestCase
 
     public function testUpdateCondition(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -263,7 +257,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'item']);
+        $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $m = $m->load(2);
 
@@ -301,7 +295,6 @@ class RandomTest extends TestCase
 
     public function testHookBreakers(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -310,7 +303,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'never_used']);
+        $m = new Model($this->db, ['table' => 'never_used']);
         $m->addField('name');
 
         $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
@@ -340,37 +333,16 @@ class RandomTest extends TestCase
 
     public function testIssue220(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model_Item($db);
+        $m = new Model_Item($this->db);
 
         $this->expectException(CoreException::class);
         $m->hasOne('foo', ['model' => [Model_Item::class]])
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 
-    public function testNonSqlFieldClass(): void
-    {
-        $db = new Persistence\Sql($this->db->connection);
-        $this->setDb([
-            'rate' => [
-                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
-            ],
-        ]);
-
-        $m = new Model_Rate($db);
-        $m->addField('x1', new \Atk4\Data\FieldSql());
-        $m->addField('x2', new \Atk4\Data\Field());
-        $m = $m->load(1);
-
-        $this->assertEquals(3.4, $m->get('bid'));
-        $this->assertSame('y1', $m->get('x1'));
-        $this->assertSame('y2', $m->get('x2'));
-    }
-
     public function testModelCaption(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
 
         // caption is not set, so generate it from class name Model
         $this->assertSame('Atk 4 Data Model', $m->getModelCaption());
@@ -382,7 +354,6 @@ class RandomTest extends TestCase
 
     public function testGetTitle(): void
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 1 => ['id' => 1, 'name' => 'John', 'parent_item_id' => 1],
@@ -390,7 +361,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $m = new Model_Item($db, ['table' => 'item']);
+        $m = new Model_Item($this->db, ['table' => 'item']);
 
         $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
@@ -511,8 +482,7 @@ class RandomTest extends TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model_Rate($db);
+        $m = new Model_Rate($this->db);
 
         $m->load(1)->duplicate()->save();
 
@@ -550,6 +520,6 @@ class RandomTest extends TestCase
     }
 }
 
-class CustomField extends \Atk4\Data\Field
+class CustomField extends Field
 {
 }
