@@ -13,7 +13,7 @@ use Atk4\Data\Model;
  */
 class EntityFieldPair
 {
-    /** @var Model */
+    /** @var TModel */
     private $entity;
     /** @var string */
     private $fieldName;
@@ -55,7 +55,9 @@ class EntityFieldPair
      */
     public function getField(): Field
     {
-        return $this->getModel()->getField($this->getFieldName());
+        $field = $this->getModel()->getField($this->getFieldName());
+
+        return $field; // @phpstan-ignore-line
     }
 
     /**
