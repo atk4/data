@@ -95,7 +95,7 @@ class IteratorTest extends TestCase
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
-        $i->onlyFields(['total_net']);
+        $i->setOnlyFields(['total_net']);
 
         $data = [];
         foreach ($i as $row) {
@@ -138,7 +138,7 @@ class IteratorTest extends TestCase
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
-        $i->onlyFields(['total_net']);
+        $i->setOnlyFields(['total_net']);
 
         $data = [];
         foreach ($i->getRawIterator() as $row) {
@@ -181,7 +181,7 @@ class IteratorTest extends TestCase
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
-        $i->onlyFields(['total_net']);
+        $i->setOnlyFields(['total_net']);
 
         $data = [];
         foreach ($i as $id => $item) {

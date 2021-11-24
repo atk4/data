@@ -254,7 +254,7 @@ some other parameters such as:
 
  - order
  - limit
- - only_fields
+ - onlyFields
 
 You can also define your own parameters like this::
 

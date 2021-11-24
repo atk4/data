@@ -51,7 +51,7 @@ which fields you would like to see in the CSV::
 
     foreach (new Model_User($db) as $m) {
         $m->withPersistence($csv)
-            ->onlyFields(['id', 'name', 'password'])
+            ->setOnlyFields(['id', 'name', 'password'])
             ->save();
     }
 
@@ -59,7 +59,7 @@ Additionally if you want to use a different column titles, you can::
 
     foreach (new Model_User($db) as $m) {
         $m_csv = $m->withPersistence($csv);
-        $m_csv->onlyFields(['id', 'name', 'password'])
+        $m_csv->setOnlyFields(['id', 'name', 'password'])
         $m_csv->getField('name')->actual = 'First Name';
         $m_csv->save();
     }
@@ -73,7 +73,7 @@ iterations::
 
     $m = new Model_User($db);
     $m_csv = $m->withPersistence($csv);
-    $m_csv->onlyFields(['id', 'name', 'password'])
+    $m_csv->setOnlyFields(['id', 'name', 'password'])
     $m_csv->getField('name')->actual = 'First Name';
 
     foreach ($m as $m_csv) {
@@ -84,7 +84,7 @@ This code can be further simplified if you use import() method::
 
     $m = new Model_User($db);
     $m_csv = $m->withPersistence($csv);
-    $m_csv->onlyFields(['id', 'name', 'password'])
+    $m_csv->setOnlyFields(['id', 'name', 'password'])
     $m_csv->getField('name')->actual = 'First Name';
     $m_csv->import($m);
 
@@ -92,7 +92,7 @@ Naturally you can also move data in the other direction::
 
     $m = new Model_User($db);
     $m_csv = $m->withPersistence($csv);
-    $m_csv->onlyFields(['id', 'name', 'password'])
+    $m_csv->setOnlyFields(['id', 'name', 'password'])
     $m_csv->getField('name')->actual = 'First Name';
 
     $m->import($m_csv);

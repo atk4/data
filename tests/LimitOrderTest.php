@@ -26,7 +26,7 @@ class LimitOrderTest extends TestCase
         $i->id_field = null;
 
         $i->setOrder('total_net');
-        $i->onlyFields(['total_net']);
+        $i->setOnlyFields(['total_net']);
         $this->assertEquals([
             ['total_net' => 10],
             ['total_net' => 15],
@@ -51,7 +51,7 @@ class LimitOrderTest extends TestCase
 
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross' => 'desc']);
-        $i->onlyFields(['total_net', 'total_gross']);
+        $i->setOnlyFields(['total_net', 'total_gross']);
         $this->assertEquals([
             ['total_net' => 15, 'total_gross' => 19],
             ['total_net' => 10, 'total_gross' => 15],
@@ -60,7 +60,7 @@ class LimitOrderTest extends TestCase
 
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross']);
-        $i->onlyFields(['total_net', 'total_gross']);
+        $i->setOnlyFields(['total_net', 'total_gross']);
         $this->assertEquals([
             ['total_net' => 15, 'total_gross' => 19],
             ['total_net' => 10, 'total_gross' => 14],
@@ -69,7 +69,7 @@ class LimitOrderTest extends TestCase
 
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross']);
-        $i->onlyFields(['total_net', 'total_vat']);
+        $i->setOnlyFields(['total_net', 'total_vat']);
         $this->assertEquals([
             ['total_net' => 15, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 4],
@@ -78,7 +78,7 @@ class LimitOrderTest extends TestCase
 
         $i = clone $ii;
         $i->setOrder(['total_gross' => 'desc', 'total_net']);
-        $i->onlyFields(['total_net', 'total_vat']);
+        $i->setOnlyFields(['total_net', 'total_vat']);
         $this->assertEquals([
             ['total_net' => 15, 'total_vat' => 4],
             ['total_net' => 10, 'total_vat' => 5],
@@ -103,7 +103,7 @@ class LimitOrderTest extends TestCase
         // pass parameters as array elements [field, order]
         $i = clone $ii;
         $i->setOrder([['net', 'desc'], ['vat']]);
-        $i->onlyFields(['net', 'vat']);
+        $i->setOnlyFields(['net', 'vat']);
         $this->assertEquals([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
@@ -113,7 +113,7 @@ class LimitOrderTest extends TestCase
         // pass parameters as array elements [field => order]
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat' => 'asc']);
-        $i->onlyFields(['net', 'vat']);
+        $i->setOnlyFields(['net', 'vat']);
         $this->assertEquals([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
@@ -123,7 +123,7 @@ class LimitOrderTest extends TestCase
         // pass parameters as array elements [field => order], same as above but use 'desc' instead of true
         $i = clone $ii;
         $i->setOrder(['net' => 'desc', 'vat']); // and you can even mix them (see 'vat' is a value not a key here)
-        $i->onlyFields(['net', 'vat']);
+        $i->setOnlyFields(['net', 'vat']);
         $this->assertEquals([
             ['net' => 15, 'vat' => 4],
             ['net' => 10, 'vat' => 4],
@@ -148,7 +148,7 @@ class LimitOrderTest extends TestCase
         $i->id_field = null;
 
         $i->setOrder('gross');
-        $i->onlyFields(['gross']);
+        $i->setOnlyFields(['gross']);
         $this->assertEquals([
             ['gross' => 14],
             ['gross' => 15],
@@ -158,7 +158,7 @@ class LimitOrderTest extends TestCase
         // order by expression not defined as separate expression field in model
         $i->order = []; // reset
         $i->setOrder($i->expr('[net]*[vat]'));
-        $i->onlyFields(['code']);
+        $i->setOnlyFields(['code']);
         $this->assertSame([
             ['code' => 'B'], // 10 * 4 = 40
             ['code' => 'A'], // 10 * 5 = 50
@@ -168,7 +168,7 @@ class LimitOrderTest extends TestCase
         // "desc" as part of expression string
         $i->order = []; // reset
         $i->setOrder($i->expr('[net]*[vat] desc'));
-        $i->onlyFields(['code']);
+        $i->setOnlyFields(['code']);
         $this->assertSame([
             ['code' => 'C'], // 15 * 4 = 60
             ['code' => 'A'], // 10 * 5 = 50
@@ -178,7 +178,7 @@ class LimitOrderTest extends TestCase
         // "desc" as 2nd parameter
         $i->order = []; // reset
         $i->setOrder($i->expr('[net]*[vat]'), 'desc');
-        $i->onlyFields(['code']);
+        $i->setOnlyFields(['code']);
         $this->assertSame([
             ['code' => 'C'], // 15 * 4 = 60
             ['code' => 'A'], // 10 * 5 = 50
@@ -188,7 +188,7 @@ class LimitOrderTest extends TestCase
         // order by mixed array of expressions and field names
         $i->order = []; // reset
         $i->setOrder(['vat', $i->expr('[net]*[vat]')]);
-        $i->onlyFields(['code']);
+        $i->setOnlyFields(['code']);
         $this->assertSame([
             ['code' => 'B'], // 4, 10 * 4 = 40
             ['code' => 'C'], // 4, 15 * 4 = 60
@@ -229,7 +229,7 @@ class LimitOrderTest extends TestCase
         $i->id_field = null;
 
         $i->setOrder('total_net');
-        $i->onlyFields(['total_net']);
+        $i->setOnlyFields(['total_net']);
         $this->assertEquals([
             ['total_net' => 10],
             ['total_net' => 15],

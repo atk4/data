@@ -89,7 +89,7 @@ class Model implements \IteratorAggregate
     public const HOOK_NORMALIZE = self::class . '@normalize';
     /** @const string Executed when self::validate() method is called. */
     public const HOOK_VALIDATE = self::class . '@validate';
-    /** @const string Executed when self::onlyFields() method is called. */
+    /** @const string Executed when self::setOnlyFields() method is called. */
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
     /** @const string */
@@ -252,10 +252,10 @@ class Model implements \IteratorAggregate
     public $caption;
 
     /**
-     * When using onlyFields() this property will contain list of desired
+     * When using setOnlyFields() this property will contain list of desired
      * fields.
      *
-     * If you set onlyFields() before loading the data for this model, then
+     * If you set setOnlyFields() before loading the data for this model, then
      * only that set of fields will be available. Attempt to access any other
      * field will result in exception. This is to ensure that you do not
      * accidentally access field that you have explicitly excluded.
@@ -263,11 +263,11 @@ class Model implements \IteratorAggregate
      * The default behavior is to return NULL and allow you to set new
      * fields even if addField() was not used to set the field.
      *
-     * onlyFields() always allows to access fields with system = true.
+     * setOnlyFields() always allows to access fields with system = true.
      *
-     * @var false|array
+     * @var array|null
      */
-    public $only_fields = false;
+    public $onlyFields;
 
     /**
      * When set to true, loading model from database will also
@@ -706,45 +706,57 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Sets which fields we will select.
+     * @deprecated will be removed in v4.0
      *
      * @return $this
      */
     public function onlyFields(array $fields = [])
     {
-        $this->assertIsModel();
+        'trigger_error'('Method is deprecated. Use setOnlyFields() instead', \E_USER_DEPRECATED);
 
-        $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
-        $this->only_fields = $fields;
-
-        return $this;
+        return $this->setOnlyFields($fields);
     }
 
     /**
-     * Sets that we should select all available fields.
+     * @deprecated will be removed in v4.0
      *
      * @return $this
      */
     public function allFields()
     {
+        'trigger_error'('Method is deprecated. Use setOnlyFields(null) instead', \E_USER_DEPRECATED);
+
+        return $this->setOnlyFields(null);
+    }
+
+    /**
+     * Sets which fields we will select.
+     *
+     * @param array<string>|null $fields
+     *
+     * @return $this
+     */
+    public function setOnlyFields(?array $fields)
+    {
         $this->assertIsModel();
 
-        $this->only_fields = false;
+        $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
+        $this->onlyFields = $fields;
 
         return $this;
     }
 
-    private function assertOnlyFieldsField(string $field): void
+    private function assertOnlyField(string $field): void
     {
         $this->assertIsModel();
 
         $this->getField($field); // assert field exists
 
-        if ($this->only_fields) {
-            if (!in_array($field, $this->only_fields, true) && !$this->getField($field)->system) {
-                throw (new Exception('Attempt to use field outside of those set by onlyFields'))
+        if ($this->onlyFields !== null) {
+            if (!in_array($field, $this->onlyFields, true) && !$this->getField($field)->system) {
+                throw (new Exception('Attempt to use field outside of those set by setOnlyFields'))
                     ->addMoreInfo('field', $field)
-                    ->addMoreInfo('only_fields', $this->only_fields);
+                    ->addMoreInfo('onlyFields', $this->onlyFields);
             }
         }
     }
@@ -754,7 +766,7 @@ class Model implements \IteratorAggregate
      */
     public function isDirty(string $field): bool
     {
-        $this->getModel()->assertOnlyFieldsField($field);
+        $this->getModel()->assertOnlyField($field);
 
         $dirtyRef = &$this->getDirtyRef();
         if (array_key_exists($field, $dirtyRef)) {
@@ -784,8 +796,8 @@ class Model implements \IteratorAggregate
         }
 
         return array_filter($this->fields, function (Field $field, $name) use ($filter) {
-            // do not return fields outside of "only_fields" scope
-            if ($this->only_fields && !in_array($name, $this->only_fields, true)) { // TODO also without filter?
+            // do not return fields outside of "onlyFields" scope
+            if ($this->onlyFields !== null && !in_array($name, $this->onlyFields, true)) { // TODO also without filter?
                 return false;
             }
             foreach ($filter as $f) {
@@ -815,7 +827,7 @@ class Model implements \IteratorAggregate
      */
     public function set(string $field, $value)
     {
-        $this->getModel()->assertOnlyFieldsField($field);
+        $this->getModel()->assertOnlyField($field);
 
         $f = $this->getField($field);
 
@@ -902,14 +914,14 @@ class Model implements \IteratorAggregate
             $this->assertIsEntity();
 
             $data = [];
-            foreach ($this->only_fields ?: array_keys($this->getFields()) as $field) {
+            foreach ($this->onlyFields ?? array_keys($this->getFields()) as $field) {
                 $data[$field] = $this->get($field);
             }
 
             return $data;
         }
 
-        $this->getModel()->assertOnlyFieldsField($field);
+        $this->getModel()->assertOnlyField($field);
 
         $dataRef = &$this->getDataRef();
         if (array_key_exists($field, $dataRef)) {
@@ -1010,7 +1022,7 @@ class Model implements \IteratorAggregate
      */
     public function _isset(string $name): bool
     {
-        $this->getModel()->assertOnlyFieldsField($name);
+        $this->getModel()->assertOnlyField($name);
 
         $dirtyRef = &$this->getDirtyRef();
 
@@ -1024,7 +1036,7 @@ class Model implements \IteratorAggregate
      */
     public function _unset(string $name)
     {
-        $this->getModel()->assertOnlyFieldsField($name);
+        $this->getModel()->assertOnlyField($name);
 
         $dataRef = &$this->getDataRef();
         $dirtyRef = &$this->getDirtyRef();
@@ -1747,9 +1759,9 @@ class Model implements \IteratorAggregate
         if ($fields === null) {
             $fields = [];
 
-            if ($this->only_fields) {
+            if ($this->onlyFields !== null) {
                 // Add requested fields first
-                foreach ($this->only_fields as $field) {
+                foreach ($this->onlyFields as $field) {
                     $f_object = $this->getField($field);
                     if ($f_object->never_persist) {
                         continue;

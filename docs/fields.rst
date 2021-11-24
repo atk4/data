@@ -182,8 +182,8 @@ with a joined table row.
 
 System flag is intended for fields that are important to have inside hooks
 or some core logic of a model. System fields will always be appended to
-:php:attr:`Model::onlyFields`, however by default they will not appear on forms
-or grids (see :php:meth:`Model::isVisible`, :php:meth:`Model::isEditable`).
+:php:attr:`Model::setOnlyFields`, however by default they will not appear on forms
+or grids (see :php:meth:`Field::isVisible`, :php:meth:`Field::isEditable`).
 
 Adding condition on a field will also make it system.
 
