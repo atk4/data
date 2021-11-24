@@ -106,7 +106,7 @@ SQL Reference
     implements deep traversal::
 
         $country_model = $customer_model->addCondition('is_vip', true)
-            ->ref('country_id');           // $model was not loaded!
+            ->ref('country_id'); // $model was not loaded!
 
 .. php:method:: refLink
 
@@ -364,9 +364,7 @@ the data::
         }
 
         function getReportData($arg) {
-            if (!$this->loaded()) {
-                throw new Exception('Client must be loaded');
-            }
+            $this->assertIsLoaded();
 
             return $this->expr("call get_client_report_data([client_id, arg])", [
                 'arg' => $arg,
@@ -383,9 +381,7 @@ Here is another example using PHP generator::
         }
 
         function fetchReportData($arg) {
-            if (!$this->loaded()) {
-                throw new Exception('Client must be loaded');
-            }
+            $this->assertIsLoaded();
 
             foreach ($this->expr("call get_client_report_data([client_id, arg])", [
                 'arg' => $arg,

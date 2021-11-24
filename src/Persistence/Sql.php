@@ -456,7 +456,7 @@ class Sql extends Persistence
                 $this->initQueryConditions($model, $query);
                 $this->setLimitOrder($model, $query);
 
-                if ($model->isEntity() && $model->loaded()) {
+                if ($model->isEntity() && $model->isLoaded()) {
                     $query->where($model->getField($model->id_field), $model->getId());
                 }
 

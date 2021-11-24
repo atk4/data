@@ -408,7 +408,7 @@ class JoinSqlTest extends TestCase
         $m_u2->save();
 
         $m_u2 = $m_u->tryLoad(40);
-        $this->assertFalse($m_u2->loaded());
+        $this->assertFalse($m_u2->isLoaded());
 
         $this->assertSame($m_u2->getModel()->getField('country_id')->getJoin(), $m_u2->getModel()->getField('contact_phone')->getJoin());
 
@@ -583,19 +583,19 @@ class JoinSqlTest extends TestCase
 
         // try load one record
         $m = $m_user->tryLoad(20);
-        $this->assertTrue($m->loaded());
+        $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 20, 'name' => 'Peter', 'notes' => 'second note'], $m->get());
 
         // try to update loaded record
         $m->save(['name' => 'Mark', 'notes' => '2nd note']);
         $m = $m_user->tryLoad(20);
-        $this->assertTrue($m->loaded());
+        $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
 
         // insert new record
         $m = $m_user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
         $m = $m_user->tryLoad(21);
-        $this->assertTrue($m->loaded());
+        $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
 
         // now test reverse join defined differently
@@ -610,7 +610,7 @@ class JoinSqlTest extends TestCase
         // insert new record
         $m = $m_user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
         $m = $m_user->tryLoad(22);
-        $this->assertTrue($m->loaded());
+        $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
 
         // now test reverse join with table_alias and foreign_alias
@@ -626,7 +626,7 @@ class JoinSqlTest extends TestCase
         // insert new record
         $m = $m_user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
         $m = $m_user->tryLoad(23);
-        $this->assertTrue($m->loaded());
+        $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
 

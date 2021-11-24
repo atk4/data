@@ -227,7 +227,7 @@ You can load / unload records like this::
     $m->set('email', 'test@example.com');
     $m->save();
 
-You can call `$m->loaded()` to see if there is active record and `$m->getId()` will
+You can call `$m->isLoaded()` to see if there is active record and `$m->getId()` will
 store the ID of active record. You can also un-load the record with `$m->unload()`.
 
 By default no records are loaded and if you modify some field and attempt
@@ -453,7 +453,7 @@ Your Active Record was user john and after traversal you get a model with DataSe
 corresponding to all Systems that belong to user john. You can use the following
 to see number of records in DataSet or export DataSet::
 
-    $s->loaded();
+    $s->isLoaded();
     $s->action('count')->getOne();
     $s->export();
     $s->action('count')->getDebugQuery();
@@ -470,7 +470,7 @@ This will create a Model_Client instance with a DataSet corresponding to all
 the Clients that are contained in all of the Systems that belong to user john.
 You can examine the this model further::
 
-    $c->loaded();
+    $c->isLoaded();
     $c->action('count')->getOne();
     $c->export();
     $c->action('count')->getDebugQuery();
@@ -490,7 +490,7 @@ The third and final reference traversal type is "Active Record to Active Record"
 This results in an instance of Model_Country with Active Record set to the
 country of user john::
 
-    $cc->loaded();
+    $cc->isLoaded();
     $cc->getId();
     $cc->get();
 

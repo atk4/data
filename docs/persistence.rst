@@ -483,7 +483,7 @@ Start by creating a beforeSave handler for Order::
                     ->addCondition('client_id', $this->get('client_id'))  // same client
                     ->addCondition($this->id_field, '!=', $this->getId()) // has another order
                     ->tryLoadBy('ref', $this->get('ref'))                 // with same ref
-                    ->loaded()
+                    ->isLoaded()
             ) {
                 throw (new Exception('Order with ref already exists for this client'))
                     ->addMoreInfo('client', $this->get('client_id'))
@@ -581,7 +581,7 @@ application::
         // first, try to load it from MemCache
         $m = $this->mdb->add(clone $class)->tryLoad($id);
 
-        if (!$m->loaded()) {
+        if (!$m->isLoaded()) {
 
             // fall-back to load from SQL
             $m = $this->sql->add(clone $class)->load($id);
@@ -619,7 +619,7 @@ use a string). It will first be associated with the MemCache DB persistence and
 we will attempt to load a corresponding ID. Next, if no record is found in the
 cache::
 
-    if (!$m->loaded()) {
+    if (!$m->isLoaded()) {
 
         // fall-back to load from SQL
         $m = $this->sql->add(clone $class)->load($id);

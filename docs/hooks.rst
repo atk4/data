@@ -101,7 +101,7 @@ Insert/Update Hooks
 -------------------
 
 Insert/Update are triggered from inside save() method but are based on current
-state of :php:meth:`Model::loaded`:
+state of :php:meth:`Model::isLoaded`:
 
  - beforeInsert($m, &$data) (creating new records only)
  - afterInsert($m, $id)

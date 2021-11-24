@@ -83,7 +83,7 @@ class ContainsOneTest extends TestCase
 
         // check do we have address set
         $a = $i->addr;
-        $this->assertFalse($a->loaded());
+        $this->assertFalse($a->isLoaded());
 
         // now store some address
         $a->setMulti($row = [
@@ -153,12 +153,12 @@ class ContainsOneTest extends TestCase
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
         $this->assertNull($i->addr->get($i->addr->fieldName()->door_code));
-        $this->assertFalse($i->addr->door_code->loaded());
+        $this->assertFalse($i->addr->door_code->isLoaded());
 
         // and now delete address
         $i->addr->delete();
         $this->assertNull($i->get($i->fieldName()->addr));
-        $this->assertFalse($i->addr->loaded());
+        $this->assertFalse($i->addr->isLoaded());
 
         //var_dump($i->export(), $i->export(null, null, false));
     }
