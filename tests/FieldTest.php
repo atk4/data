@@ -473,7 +473,7 @@ class FieldTest extends TestCase
         $this->assertFalse($m->getField('foo')->isEditable());
         $this->assertFalse($m->getField('foo')->isVisible());
 
-        $m->onlyFields(['bar']);
+        $m->setOnlyFields(['bar']);
         // TODO: build a query and see if the field is there
     }
 
@@ -717,12 +717,12 @@ class FieldTest extends TestCase
         $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields('visible')));
         $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(['editable', 'visible'])));
 
-        $model->getModel()->onlyFields(['system', 'visible', 'not_editable']);
+        $model->getModel()->setOnlyFields(['system', 'visible', 'not_editable']);
 
-        // getFields() is unaffected by only_fields, will always return all fields
+        // getFields() is unaffected by onlyFields, will always return all fields
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
 
-        // only return subset of only_fields
+        // only return subset of onlyFields
         $this->assertSame(['visible', 'not_editable'], array_keys($model->getFields('visible')));
 
         $this->expectExceptionMessage('not supported');

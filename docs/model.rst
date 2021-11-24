@@ -504,18 +504,14 @@ When you normally work with your model then all fields are available and will be
 loaded / saved. You may, however, specify that you wish to load only a sub-set
 of fields.
 
-(In ATK4.3 we call those fields "Actual Fields")
-
-.. php:method:: onlyFields($fields)
+.. php:method:: setOnlyFields($fields)
 
     Specify array of fields. Only those fields will be accessible and will be
     loaded / saved. Attempt to access any other field will result in exception.
 
-.. php:method:: allFields()
+    Null restore to full set of fields. This will also unload active record.
 
-    Restore to full set of fields. This will also unload active record.
-
-.. php:attr:: only_fields
+.. php:attr:: onlyFields
 
     Contains list of fields to be loaded / accessed.
 

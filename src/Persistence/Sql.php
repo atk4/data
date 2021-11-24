@@ -258,7 +258,7 @@ class Sql extends Persistence
 
             // prepare sub-query
             if ($fieldsFrom) {
-                $withModel->onlyFields($fieldsFrom);
+                $withModel->setOnlyFields($fieldsFrom);
             }
             // 2nd parameter here strictly define which fields should be selected
             // as result system fields will not be added if they are not requested
@@ -296,11 +296,11 @@ class Sql extends Persistence
             foreach ($fields as $fieldName) {
                 $this->initField($query, $model->getField($fieldName));
             }
-        } elseif ($model->only_fields) {
+        } elseif ($model->onlyFields !== null) {
             $addedFields = [];
 
             // Add requested fields first
-            foreach ($model->only_fields as $fieldName) {
+            foreach ($model->onlyFields as $fieldName) {
                 $field = $model->getField($fieldName);
                 if ($field->never_persist) {
                     continue;

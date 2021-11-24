@@ -75,7 +75,7 @@ Will fetch and output array of hashes which will represent entirety of data-set.
 Similarly to other methods, this will have the data mapped into your fields for
 you and server-side expressions executed that are embedded in the query.
 
-By default - 'only_fields' will be presented as well as system fields.
+By default - `onlyFields` will be presented as well as system fields.
 
 Fetching data through action
 ----------------------------
