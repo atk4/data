@@ -1227,11 +1227,28 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Is model loaded?
+     * @deprecated will be removed in v4.0
      */
     public function loaded(): bool
     {
+        'trigger_error'('Method is deprecated. Use isLoaded() instead', \E_USER_DEPRECATED);
+
+        return $this->isLoaded();
+    }
+
+    /**
+     * Is entity loaded?
+     */
+    public function isLoaded(): bool
+    {
         return $this->id_field && $this->getId() !== null && $this->_entityId !== null;
+    }
+
+    public function assertIsLoaded(): void
+    {
+        if (!$this->isLoaded()) {
+            throw new Exception('Expected loaded entity');
+        }
     }
 
     /**
@@ -1280,7 +1297,7 @@ class Model implements \IteratorAggregate
     private function _loadThis(bool $isTryLoad, $id)
     {
         $this->assertIsEntity();
-        if ($this->loaded()) {
+        if ($this->isLoaded()) {
             throw new Exception('Entity must be unloaded');
         }
 
@@ -1567,7 +1584,7 @@ class Model implements \IteratorAggregate
             if (($errors = $this->validate('save')) !== []) {
                 throw new ValidationException($errors, $this);
             }
-            $is_update = $this->loaded();
+            $is_update = $this->isLoaded();
             if ($this->hook(self::HOOK_BEFORE_SAVE, [$is_update]) === false) {
                 return $this;
             }
@@ -1643,7 +1660,7 @@ class Model implements \IteratorAggregate
                 }
             }
 
-            if ($this->loaded()) {
+            if ($this->isLoaded()) {
                 $dirtyRef = $this->dirtyAfterReload;
             }
 
@@ -1888,12 +1905,10 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        $this->assertIsEntity();
+        $this->assertIsLoaded();
 
         if ($this->read_only) {
             throw new Exception('Model is read-only and cannot be deleted');
-        } elseif (!$this->loaded()) {
-            throw new Exception('No active record is set, unable to delete.');
         }
 
         $this->atomic(function () {

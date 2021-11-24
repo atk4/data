@@ -141,14 +141,14 @@ class UserAction
         // Verify some records scope cases
         switch ($this->appliesTo) {
             case self::APPLIES_TO_NO_RECORDS:
-                if ($this->getEntity()->loaded()) {
+                if ($this->getEntity()->isLoaded()) {
                     throw (new Exception('This user action can be executed on non-existing record only.'))
                         ->addMoreInfo('id', $this->getEntity()->getId());
                 }
 
                 break;
             case self::APPLIES_TO_SINGLE_RECORD:
-                if (!$this->getEntity()->loaded()) {
+                if (!$this->getEntity()->isLoaded()) {
                     throw new Exception('This user action requires you to load existing record first.');
                 }
 

@@ -158,7 +158,7 @@ which I want to define like this::
         $this->getOwner()->addField('created_dts', ['type' => 'datetime', 'default' => new \DateTime()]);
 
         $this->getOwner()->hasOne('created_by_user_id', 'User');
-        if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
+        if(isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
             $this->getOwner()->getField('created_by_user_id')->default = $this->getApp()->user->getId();
         }
 
@@ -167,7 +167,7 @@ which I want to define like this::
         $this->getOwner()->addField('updated_dts', ['type' => 'datetime']);
 
         $this->getOwner()->onHook(Model::HOOK_BEFORE_UPDATE, function($m, $data) {
-            if(isset($this->getApp()->user) && $this->getApp()->user->loaded()) {
+            if(isset($this->getApp()->user) && $this->getApp()->user->isLoaded()) {
                 $data['updated_by'] = $this->getApp()->user->getId();
             }
             $data['updated_dts'] = new \DateTime();
@@ -238,10 +238,8 @@ Start by creating a class::
             }
         }
 
-        function softDelete($m) {
-            if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
-            }
+        function softDelete(Model $m) {
+            $m->assertIsLoaded();
 
             $id = $m->getId();
             if ($m->hook('beforeSoftDelete') === false) {
@@ -257,10 +255,8 @@ Start by creating a class::
             return $m;
         }
 
-        function restore($m) {
-            if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception(['Model must be loaded before restoring'))->addMoreInfo('model', $m);
-            }
+        function restore(Model $m) {
+            $m->assertIsLoaded();
 
             $id = $m->getId();
             if ($m->hook('beforeRestore') === false) {
@@ -348,9 +344,7 @@ before and just slightly modifying it::
         }
 
         function softDelete(Model $m) {
-            if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
-            }
+            $m->assertIsLoaded();
 
             $id = $m->getId();
 
@@ -364,10 +358,8 @@ before and just slightly modifying it::
             $m->breakHook(false); // this will cancel original delete()
         }
 
-        function restore($m) {
-            if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception('Model must be loaded before restoring'))->addMoreInfo('model', $m);
-            }
+        function restore(Model $m) {
+            $m->assertIsLoaded();
 
             $id = $m->getId();
             if ($m->hook('beforeRestore') === false) {
@@ -436,7 +428,7 @@ inside your model are unique::
                     $mm->addCondition($mm->id_field != $this->id);
                     $mm = $mm->tryLoadBy($field, $m->get($field));
 
-                    if ($mm->loaded()) {
+                    if ($mm->isLoaded()) {
                         throw (new \Atk4\Core\Exception('Duplicate record exists'))
                             ->addMoreInfo('field', $field)
                             ->addMoreInfo('value', $m->get($field));
@@ -572,12 +564,12 @@ payment towards a most suitable invoice::
             // See if any invoices match by 'reference';
             $invoices = $invoices->tryLoadBy('reference', $this->get('reference'));
 
-            if (!$invoices->loaded()) {
+            if (!$invoices->isLoaded()) {
 
                 // otherwise load any unpaid invoice
                 $invoices = $invoices->tryLoadAny();
 
-                if(!$invoices->loaded()) {
+                if(!$invoices->isLoaded()) {
 
                     // couldn't load any invoice.
                     return;

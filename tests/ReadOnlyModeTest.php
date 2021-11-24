@@ -53,7 +53,7 @@ class ReadOnlyModeTest extends TestCase
     public function testLoad(): void
     {
         $m = $this->m->load(1);
-        $this->assertTrue($m->loaded());
+        $this->assertTrue($m->isLoaded());
     }
 
     /**

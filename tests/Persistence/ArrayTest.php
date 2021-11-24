@@ -45,10 +45,10 @@ class ArrayTest extends TestCase
         $this->assertSame('John', $mm->get('name'));
 
         $mm->unload();
-        $this->assertFalse($mm->loaded());
+        $this->assertFalse($mm->isLoaded());
 
         $mm = $m->tryLoadAny();
-        $this->assertTrue($mm->loaded());
+        $this->assertTrue($mm->isLoaded());
 
         $mm = $m->load(2);
         $this->assertSame('Jones', $mm->get('surname'));
@@ -73,14 +73,14 @@ class ArrayTest extends TestCase
         $m = new Male($p, ['table' => 'user']);
 
         $m = $m->load(1);
-        $this->assertTrue($m->loaded());
+        $this->assertTrue($m->isLoaded());
         $m->set('gender', 'F');
         $m->saveAndUnload();
-        $this->assertFalse($m->loaded());
+        $this->assertFalse($m->isLoaded());
 
         $m = new Female($p, ['table' => 'user']);
         $m = $m->load(1);
-        $this->assertTrue($m->loaded());
+        $this->assertTrue($m->isLoaded());
 
         $this->assertSame([
             'user' => [
@@ -882,7 +882,7 @@ class ArrayTest extends TestCase
         $m->addField('name');
         $m->addField('surname');
         $m = $m->tryLoadAny();
-        $this->assertFalse($m->loaded());
+        $this->assertFalse($m->isLoaded());
     }
 
     public function testTryLoadAnyReturnsFirstRecord(): void

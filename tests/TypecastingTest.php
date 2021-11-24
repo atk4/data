@@ -354,16 +354,16 @@ class TypecastingTest extends TestCase
         $m->addField('date', ['type' => 'date']);
 
         $m2 = $m->loadOne();
-        $this->assertTrue($m2->loaded());
+        $this->assertTrue($m2->isLoaded());
         $d = $m2->get('date');
         $m2->unload();
 
         $m2 = $m->loadBy('date', $d);
-        $this->assertTrue($m2->loaded());
+        $this->assertTrue($m2->isLoaded());
         $m2->unload();
 
         $m2 = $m->addCondition('date', $d)->loadOne();
-        $this->assertTrue($m2->loaded());
+        $this->assertTrue($m2->isLoaded());
     }
 
     public function testTypecastTimezone(): void

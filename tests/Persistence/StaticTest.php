@@ -100,7 +100,7 @@ class StaticTest extends TestCase
 
         $m = $m->tryLoadAny();
 
-        $this->assertFalse($m->loaded());
+        $this->assertFalse($m->isLoaded());
     }
 
     public function testCustomField(): void
