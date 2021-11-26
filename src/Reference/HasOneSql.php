@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atk4\Data\Reference;
 
-use Atk4\Data\Field;
 use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 
@@ -13,10 +12,10 @@ class HasOneSql extends HasOne
     /**
      * Creates expression which sub-selects a field inside related model.
      */
-    public function addField(string $ourFieldName, string $theirFieldName = null, array $defaults = []): SqlExpressionField
+    public function addField(string $fieldName, string $theirFieldName = null, array $defaults = []): SqlExpressionField
     {
         if ($theirFieldName === null) {
-            $theirFieldName = $ourFieldName;
+            $theirFieldName = $fieldName;
         }
 
         $ourModel = $this->getOurModel(null);
@@ -29,7 +28,7 @@ class HasOneSql extends HasOne
         $defaults['caption'] ??= $refModelField->caption;
         $defaults['ui'] ??= $refModelField->ui;
 
-        $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
+        $fieldExpression = $ourModel->addExpression($fieldName, array_merge(
             [
                 function (Model $ourModel) use ($theirFieldName) {
                     // remove order if we just select one field from hasOne model
@@ -47,17 +46,17 @@ class HasOneSql extends HasOne
         ));
 
         // Will try to execute last
-        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($ourFieldName, $theirFieldName) {
-            // if title field is changed, but reference ID field (our_field)
+        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName, $theirFieldName) {
+            // if field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($ourFieldName) && !$ourModel->isDirty($this->our_field)) {
+            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
                 $theirModel = $this->createTheirModel();
 
-                $theirModel->addCondition($theirFieldName, $ourModel->get($ourFieldName));
+                $theirModel->addCondition($theirFieldName, $ourModel->get($fieldName));
                 $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->id_field]));
-                $ourModel->_unset($ourFieldName);
+                $ourModel->_unset($fieldName);
             }
-        }, [], 21);
+        }, [], 20);
 
         return $fieldExpression;
     }

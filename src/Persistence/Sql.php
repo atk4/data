@@ -10,7 +10,7 @@ use Atk4\Data\Field\SqlExpressionField;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
-use Atk4\Data\Persistence\Sql\Exception as DsqlException;
+use Atk4\Data\Persistence\Sql\Exception as SqlException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -529,10 +529,8 @@ class Sql extends Persistence
                     ->addMoreInfo('id', $noId ? null : $id);
             }
             $data = $this->typecastLoadRow($model, $rowsRaw[0]);
-        } catch (DsqlException $e) {
+        } catch (SqlException $e) {
             throw (new Exception('Unable to load due to query error', 0, $e))
-                ->addMoreInfo('query', $query->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
@@ -565,10 +563,8 @@ class Sql extends Persistence
         try {
             $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
             $st = $insert->execute();
-        } catch (DsqlException $e) {
+        } catch (SqlException $e) {
             throw (new Exception('Unable to execute insert query', 0, $e))
-                ->addMoreInfo('query', $insert->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
@@ -606,10 +602,8 @@ class Sql extends Persistence
 
         try {
             return $export->getRowsIterator();
-        } catch (DsqlException $e) {
+        } catch (SqlException $e) {
             throw (new Exception('Unable to execute iteration query', 0, $e))
-                ->addMoreInfo('query', $export->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
@@ -639,10 +633,8 @@ class Sql extends Persistence
             if ($data) {
                 $st = $update->execute();
             }
-        } catch (DsqlException $e) {
+        } catch (SqlException $e) {
             throw (new Exception('Unable to update due to query error', 0, $e))
-                ->addMoreInfo('query', $update->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
@@ -684,10 +676,8 @@ class Sql extends Persistence
 
         try {
             $delete->execute();
-        } catch (DsqlException $e) {
+        } catch (SqlException $e) {
             throw (new Exception('Unable to delete due to query error', 0, $e))
-                ->addMoreInfo('query', $delete->getDebugQuery())
-                ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)
                 ->addMoreInfo('scope', $model->getModel(true)->scope()->toWords());
         }
