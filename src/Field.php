@@ -485,7 +485,8 @@ class Field implements Expressionable
      */
     public function getDsqlExpression(Expression $expression): Expression
     {
-        if (!$this->getOwner()->persistence || !$this->getOwner()->persistence instanceof Persistence\Sql) {
+        $this->getOwner()->assertHasPersistence();
+        if (!$this->getOwner()->persistence instanceof Persistence\Sql) {
             throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
                 ->addMoreInfo('persistence', $this->getOwner()->persistence ?? null);
         }

@@ -200,7 +200,7 @@ class Reference
                 $theirModel = ($this->model)($this->getOurModel(null), $this, $defaults);
             } else {
                 // if model is set, then use clone of this model
-                $theirModel = clone $this->model;
+                $theirModel = Factory::factory(clone $this->model, $defaults);
             }
         } else {
             // add model from seed

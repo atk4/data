@@ -110,7 +110,7 @@ class SelectTest extends TestCase
          * But CAST(.. AS int) does not work in mysql. So we use two different tests..
          * (CAST(.. AS int) will work on mariaDB, whereas mysql needs it to be CAST(.. AS signed))
          */
-        if ($this->c->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->assertSame(
                 [['now' => '6']],
                 $this->q()->field(new Expression('CAST([] AS int)+CAST([] AS int)', [3, 3]), 'now')->getRows()
@@ -136,12 +136,12 @@ class SelectTest extends TestCase
          * But using CAST(.. AS CHAR) will return one single character on postgresql, but the
          * entire string on mysql.
          */
-        if ($this->c->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->c->getDatabasePlatform() instanceof SQLServer2012Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform) {
             $this->assertSame(
                 'foo',
                 $this->e('select CAST([] AS VARCHAR)', ['foo'])->getOne()
             );
-        } elseif ($this->c->getDatabasePlatform() instanceof OraclePlatform) {
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->assertSame(
                 'foo',
                 $this->e('select CAST([] AS VARCHAR2(100)) FROM DUAL', ['foo'])->getOne()
@@ -186,7 +186,7 @@ class SelectTest extends TestCase
         );
 
         // replace
-        if ($this->c->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->c->getDatabasePlatform() instanceof SQLServer2012Platform || $this->c->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->q('employee')
                 ->setMulti(['name' => 'Peter', 'surname' => 'Doe', 'retired' => true])
                 ->where('id', 1)
@@ -253,14 +253,14 @@ class SelectTest extends TestCase
                 'postgresql' => 7, // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
                 'mssql' => 208,    // SQLSTATE[42S02]: Invalid object name 'non_existing_table'
                 'oracle' => 942,   // SQLSTATE[HY000]: ORA-00942: table or view does not exist
-            ][$this->c->getDatabasePlatform()->getName()];
+            ][$this->getDatabasePlatform()->getName()];
             $this->assertSame($unknownFieldErrorCode, $e->getCode());
 
             // test debug query
             $expectedQuery = [
                 'mysql' => 'select `non_existing_field` from `non_existing_table`',
                 'mssql' => 'select [non_existing_field] from [non_existing_table]',
-            ][$this->c->getDatabasePlatform()->getName()] ?? 'select "non_existing_field" from "non_existing_table"';
+            ][$this->getDatabasePlatform()->getName()] ?? 'select "non_existing_field" from "non_existing_table"';
             $this->assertSame(preg_replace('~\s+~', '', $expectedQuery), preg_replace('~\s+~', '', $e->getDebugQuery()));
 
             throw $e;
@@ -303,15 +303,15 @@ class SelectTest extends TestCase
             $table = 'test';
             $pk = 'myid';
             $maxIdExpr = $this->c->dsql()->table($table)->field($this->c->expr('max({})', [$pk]));
-            if ($this->c->getDatabasePlatform() instanceof MySQLPlatform) {
+            if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
                 $query = $this->c->dsql()->table('INFORMATION_SCHEMA.TABLES')
                     ->field($this->c->expr('greatest({} - 1, (' . $maxIdExpr->render() . '))', ['AUTO_INCREMENT']))
                     ->where('TABLE_NAME', $table);
-            } elseif ($this->c->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+            } elseif ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
                 $query = $this->c->dsql()->field($this->c->expr('currval(pg_get_serial_sequence([], []))', [$table, $pk]));
-            } elseif ($this->c->getDatabasePlatform() instanceof SQLServer2012Platform) {
+            } elseif ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
                 $query = $this->c->dsql()->field($this->c->expr('IDENT_CURRENT([])', [$table]));
-            } elseif ($this->c->getDatabasePlatform() instanceof OraclePlatform) {
+            } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
                 $query = $this->c->dsql()->field($this->c->expr('{}.CURRVAL', [$table . '_SEQ']));
             } else {
                 $query = $this->c->dsql()->table('sqlite_sequence')->field('seq')->where('name', $table);

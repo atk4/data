@@ -315,12 +315,14 @@ class Query extends Expression
             $s .= 'as ' . $this->consume($cursor, self::ESCAPE_IDENTIFIER_SOFT);
 
             // is at least one recursive ?
-            $isRecursive = $isRecursive || $recursive;
+            if ($recursive) {
+                $isRecursive = true;
+            }
 
             $ret[] = $s;
         }
 
-        return 'with ' . ($isRecursive ? 'recursive ' : '') . implode(', ', $ret) . ' ';
+        return 'with ' . ($isRecursive ? 'recursive ' : '') . implode(',' . "\n", $ret) . "\n";
     }
 
     /// }}}
@@ -445,11 +447,10 @@ class Query extends Expression
             if (isset($j['expr'])) {
                 $jj .= $this->consume($j['expr']);
             } else {
-                $jj .=
-                    $this->escapeIdentifier($j['fa'] ?: $j['f1']) . '.' .
-                    $this->escapeIdentifier($j['f2']) . ' = ' .
-                    ($j['m1'] === null ? '' : $this->escapeIdentifier($j['m1']) . '.') .
-                    $this->escapeIdentifier($j['m2']);
+                $jj .= $this->escapeIdentifier($j['fa'] ?: $j['f1']) . '.'
+                    . $this->escapeIdentifier($j['f2']) . ' = '
+                    . ($j['m1'] === null ? '' : $this->escapeIdentifier($j['m1']) . '.')
+                    . $this->escapeIdentifier($j['m2']);
             }
             $joins[] = $jj;
         }
@@ -967,10 +968,8 @@ class Query extends Expression
             return null;
         }
 
-        return ' limit ' .
-            (int) $this->args['limit']['shift'] .
-            ', ' .
-            (int) $this->args['limit']['cnt'];
+        return ' limit ' . (int) $this->args['limit']['shift']
+            . ', ' . (int) $this->args['limit']['cnt'];
     }
 
     // }}}

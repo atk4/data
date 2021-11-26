@@ -1140,22 +1140,22 @@ class QueryTest extends TestCase
             $this->q('[join]')->table('user', 'u')->join('address.user_id a')->render()
         );
         $this->assertSame(
-            'left join "address" "a" on "a"."user_id" = "u"."id" ' .
-            'left join "bank" "b" on "b"."id" = "u"."bank_id"',
+            'left join "address" "a" on "a"."user_id" = "u"."id" '
+            . 'left join "bank" "b" on "b"."id" = "u"."bank_id"',
             $this->q('[join]')->table('user', 'u')
                 ->join('address.user_id', null, null, 'a')->join('bank', null, null, 'b')
                 ->render()
         );
         $this->assertSame(
-            'left join "address" on "address"."user_id" = "u"."id" ' .
-            'left join "bank" on "bank"."id" = "u"."bank_id"',
+            'left join "address" on "address"."user_id" = "u"."id" '
+            . 'left join "bank" on "bank"."id" = "u"."bank_id"',
             $this->q('[join]')->table('user', 'u')
                 ->join('address.user_id')->join('bank')->render()
         );
         $this->assertSame(
-            'left join "address" "a" on "a"."user_id" = "u"."id" ' .
-            'left join "bank" "b" on "b"."id" = "u"."bank_id" ' .
-            'left join "bank_details" on "bank_details"."id" = "bank"."details_id"',
+            'left join "address" "a" on "a"."user_id" = "u"."id" '
+            . 'left join "bank" "b" on "b"."id" = "u"."bank_id" '
+            . 'left join "bank_details" on "bank_details"."id" = "bank"."details_id"',
             $this->q('[join]')->table('user', 'u')
                 ->join('address.user_id', null, null, 'a')->join('bank', null, null, 'b')
                 ->join('bank_details', 'bank.details_id')->render()
@@ -1631,19 +1631,22 @@ class QueryTest extends TestCase
         $q2 = $this->q()
             ->with($q1, 'q1')
             ->table('q1');
-        $this->assertSame('with "q1" as (select "salary" from "salaries") select * from "q1"', $q2->render());
+        $this->assertSame('with "q1" as (select "salary" from "salaries")' . "\n"
+            . 'select * from "q1"', $q2->render());
 
         $q2 = $this->q()
             ->with($q1, 'q1', null, true)
             ->table('q1');
-        $this->assertSame('with recursive "q1" as (select "salary" from "salaries") select * from "q1"', $q2->render());
+        $this->assertSame('with recursive "q1" as (select "salary" from "salaries")' . "\n"
+            . 'select * from "q1"', $q2->render());
 
         $q2 = $this->q()
             ->with($q1, 'q11', ['foo', 'qwe"ry'])
             ->with($q1, 'q12', ['bar', 'baz'], true) // this one is recursive
             ->table('q11')
             ->table('q12');
-        $this->assertSame('with recursive "q11" ("foo", "qwe""ry") as (select "salary" from "salaries"), "q12" ("bar", "baz") as (select "salary" from "salaries") select * from "q11", "q12"', $q2->render());
+        $this->assertSame('with recursive "q11" ("foo", "qwe""ry") as (select "salary" from "salaries"),' . "\n"
+            . '"q12" ("bar", "baz") as (select "salary" from "salaries")' . "\n" . 'select * from "q11", "q12"', $q2->render());
 
         // now test some more useful reql life query
         $quotes = $this->q()
@@ -1667,13 +1670,13 @@ class QueryTest extends TestCase
             ->field('q.quoted')
             ->field('i.invoiced');
         $this->assertSame(
-            'with ' .
-                '"q" ("emp", "quoted") as (select "emp_id", sum(:a) from "quotes" group by "emp_id"), ' .
-                '"i" ("emp", "invoiced") as (select "emp_id", sum(:b) from "invoices" group by "emp_id") ' .
-            'select "name", "salary", "q"."quoted", "i"."invoiced" ' .
-            'from "employees" ' .
-                'left join "q" on "q"."emp" = "employees"."id" ' .
-                'left join "i" on "i"."emp" = "employees"."id"',
+            'with '
+                . '"q" ("emp", "quoted") as (select "emp_id", sum(:a) from "quotes" group by "emp_id"),' . "\n"
+                . '"i" ("emp", "invoiced") as (select "emp_id", sum(:b) from "invoices" group by "emp_id")' . "\n"
+            . 'select "name", "salary", "q"."quoted", "i"."invoiced" '
+            . 'from "employees" '
+                . 'left join "q" on "q"."emp" = "employees"."id" '
+                . 'left join "i" on "i"."emp" = "employees"."id"',
             $q->render()
         );
     }
