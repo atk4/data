@@ -1140,22 +1140,22 @@ class QueryTest extends TestCase
             $this->q('[join]')->table('user', 'u')->join('address.user_id a')->render()
         );
         $this->assertSame(
-            'left join "address" "a" on "a"."user_id" = "u"."id" ' .
-            'left join "bank" "b" on "b"."id" = "u"."bank_id"',
+            'left join "address" "a" on "a"."user_id" = "u"."id" '
+            . 'left join "bank" "b" on "b"."id" = "u"."bank_id"',
             $this->q('[join]')->table('user', 'u')
                 ->join('address.user_id', null, null, 'a')->join('bank', null, null, 'b')
                 ->render()
         );
         $this->assertSame(
-            'left join "address" on "address"."user_id" = "u"."id" ' .
-            'left join "bank" on "bank"."id" = "u"."bank_id"',
+            'left join "address" on "address"."user_id" = "u"."id" '
+            . 'left join "bank" on "bank"."id" = "u"."bank_id"',
             $this->q('[join]')->table('user', 'u')
                 ->join('address.user_id')->join('bank')->render()
         );
         $this->assertSame(
-            'left join "address" "a" on "a"."user_id" = "u"."id" ' .
-            'left join "bank" "b" on "b"."id" = "u"."bank_id" ' .
-            'left join "bank_details" on "bank_details"."id" = "bank"."details_id"',
+            'left join "address" "a" on "a"."user_id" = "u"."id" '
+            . 'left join "bank" "b" on "b"."id" = "u"."bank_id" '
+            . 'left join "bank_details" on "bank_details"."id" = "bank"."details_id"',
             $this->q('[join]')->table('user', 'u')
                 ->join('address.user_id', null, null, 'a')->join('bank', null, null, 'b')
                 ->join('bank_details', 'bank.details_id')->render()

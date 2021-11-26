@@ -447,11 +447,10 @@ class Query extends Expression
             if (isset($j['expr'])) {
                 $jj .= $this->consume($j['expr']);
             } else {
-                $jj .=
-                    $this->escapeIdentifier($j['fa'] ?: $j['f1']) . '.' .
-                    $this->escapeIdentifier($j['f2']) . ' = ' .
-                    ($j['m1'] === null ? '' : $this->escapeIdentifier($j['m1']) . '.') .
-                    $this->escapeIdentifier($j['m2']);
+                $jj .= $this->escapeIdentifier($j['fa'] ?: $j['f1']) . '.'
+                    . $this->escapeIdentifier($j['f2']) . ' = '
+                    . ($j['m1'] === null ? '' : $this->escapeIdentifier($j['m1']) . '.')
+                    . $this->escapeIdentifier($j['m2']);
             }
             $joins[] = $jj;
         }
@@ -969,10 +968,8 @@ class Query extends Expression
             return null;
         }
 
-        return ' limit ' .
-            (int) $this->args['limit']['shift'] .
-            ', ' .
-            (int) $this->args['limit']['cnt'];
+        return ' limit ' . (int) $this->args['limit']['shift']
+            . ', ' . (int) $this->args['limit']['cnt'];
     }
 
     // }}}

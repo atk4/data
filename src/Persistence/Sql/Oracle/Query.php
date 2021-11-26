@@ -120,8 +120,8 @@ class Query extends BaseQuery
             return '';
         }
 
-        return ' and "__dsql_rownum" <= ' .
-            max((int) ($this->args['limit']['cnt'] + $this->args['limit']['shift']), (int) $this->args['limit']['cnt']);
+        return ' and "__dsql_rownum" <= '
+            . max((int) ($this->args['limit']['cnt'] + $this->args['limit']['shift']), (int) $this->args['limit']['cnt']);
     }
 
     public function getRowsIterator(): \Traversable

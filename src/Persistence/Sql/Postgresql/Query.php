@@ -18,10 +18,8 @@ class Query extends BaseQuery
             return null;
         }
 
-        return ' limit ' .
-            (int) $this->args['limit']['cnt'] .
-            ' offset ' .
-            (int) $this->args['limit']['shift'];
+        return ' limit ' . (int) $this->args['limit']['cnt']
+            . ' offset ' . (int) $this->args['limit']['shift'];
     }
 
     public function groupConcat($field, string $delimiter = ','): Expression
