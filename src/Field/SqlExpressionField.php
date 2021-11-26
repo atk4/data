@@ -8,6 +8,7 @@ use Atk4\Core\InitializerTrait;
 use Atk4\Data\Field;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Reference;
 
 class SqlExpressionField extends Field
@@ -19,7 +20,7 @@ class SqlExpressionField extends Field
     /**
      * Used expression.
      *
-     * @var \Closure|string|Expression
+     * @var \Closure|string|Expressionable
      */
     public $expr;
 
@@ -109,6 +110,8 @@ class SqlExpressionField extends Field
 
             // Otherwise call it from expression itself
             return $expression->expr('([])', [$expression->expr($expr)]);
+        } elseif ($expr instanceof Expressionable && !$expr instanceof Expression) {
+            return $expression->expr('[]', [$expr]);
         }
 
         return $expr;

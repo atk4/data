@@ -12,6 +12,7 @@ use Atk4\Data\Persistence;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception as SqlException;
 use Atk4\Data\Persistence\Sql\Expression;
+use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -346,7 +347,7 @@ class Sql extends Persistence
             foreach ($model->order as $order) {
                 $isDesc = strtolower($order[1]) === 'desc';
 
-                if ($order[0] instanceof Expression) {
+                if ($order[0] instanceof Expressionable) {
                     $query->order($order[0], $isDesc);
                 } elseif (is_string($order[0])) {
                     $query->order($model->getField($order[0]), $isDesc);

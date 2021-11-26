@@ -16,7 +16,7 @@ class Join extends Model\Join
      * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
      *
-     * @var \Atk4\Data\Persistence\Sql\Expression|string|null
+     * @var Expressionable|string|null
      */
     protected $on;
 
@@ -90,7 +90,7 @@ class Join extends Model\Join
         if ($this->on) {
             $query->join(
                 $this->foreign_table,
-                $this->on instanceof \Atk4\Data\Persistence\Sql\Expression ? $this->on : $this->getOwner()->expr($this->on),
+                $this->on instanceof Expressionable ? $this->on : $this->getOwner()->expr($this->on),
                 $this->kind,
                 $this->foreign_alias
             );

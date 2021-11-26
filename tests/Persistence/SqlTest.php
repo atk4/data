@@ -213,9 +213,6 @@ class SqlTest extends TestCase
         $this->assertSame('Smith', $m2->get('surname'));
     }
 
-    /**
-     * Test export.
-     */
     public function testExport(): void
     {
         $this->setDb([
