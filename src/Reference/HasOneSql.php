@@ -28,6 +28,8 @@ class HasOneSql extends HasOne
         $defaults['caption'] ??= $refModelField->caption;
         $defaults['ui'] ??= $refModelField->ui;
 
+        $defaults['ui'] = array_merge($defaults['ui'], ['editable' => false]);
+
         $fieldExpression = $ourModel->addExpression($fieldName, array_merge(
             [
                 'expr' => function (Model $ourModel) use ($theirFieldName) {
