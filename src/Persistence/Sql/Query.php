@@ -315,12 +315,14 @@ class Query extends Expression
             $s .= 'as ' . $this->consume($cursor, self::ESCAPE_IDENTIFIER_SOFT);
 
             // is at least one recursive ?
-            $isRecursive = $isRecursive || $recursive;
+            if ($recursive) {
+                $isRecursive = true;
+            }
 
             $ret[] = $s;
         }
 
-        return 'with ' . ($isRecursive ? 'recursive ' : '') . implode(', ', $ret) . ' ';
+        return 'with ' . ($isRecursive ? 'recursive ' : '') . implode(',' . "\n", $ret) . "\n";
     }
 
     /// }}}
