@@ -8,7 +8,7 @@ use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Atk4\Data\Util\DeepCopy;
 use Atk4\Data\Util\DeepCopyException;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class DcClient extends Model
 {
@@ -247,7 +247,7 @@ class DeepCopyTest extends TestCase
         $this->assertEquals(1, $client3->ref('Quotes')->action('count')->getOne());
         $this->assertEquals(1, $client3->ref('Payments')->action('count')->getOne());
 
-        if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
+        if ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->markTestIncomplete('TODO MSSQL: Cannot perform an aggregate function on an expression containing an aggregate or a subquery.');
         }
 

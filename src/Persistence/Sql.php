@@ -17,7 +17,7 @@ use Atk4\Data\Persistence\Sql\Query;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class Sql extends Persistence
 {
@@ -370,7 +370,7 @@ class Sql extends Persistence
         // add entity ID to scope to allow easy traversal
         if ($model->isEntity() && $model->id_field && $model->getId() !== null) {
             $query->group($model->getField($model->id_field));
-            if ($this->getDatabasePlatform() instanceof SQLServer2012Platform
+            if ($this->getDatabasePlatform() instanceof SQLServerPlatform
                 || $this->getDatabasePlatform() instanceof OraclePlatform) {
                 foreach ($query->args['field'] as $alias => $field) {
                     $query->group(is_int($alias) ? $field : $alias);

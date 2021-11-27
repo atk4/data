@@ -8,7 +8,7 @@ use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Types\Type;
 
 trait BinaryTypeCompatibilityTypecastTrait
@@ -57,7 +57,7 @@ trait BinaryTypeCompatibilityTypecastTrait
 
         $platform = $this->getDatabasePlatform();
         if ($platform instanceof PostgreSQLPlatform
-            || $platform instanceof SQLServer2012Platform
+            || $platform instanceof SQLServerPlatform
             || $platform instanceof OraclePlatform) {
             if (in_array($type->getName(), ['binary', 'blob'], true)) {
                 return true;

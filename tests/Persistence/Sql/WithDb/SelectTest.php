@@ -13,7 +13,7 @@ use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class SelectTest extends TestCase
 {
@@ -136,7 +136,7 @@ class SelectTest extends TestCase
          * But using CAST(.. AS CHAR) will return one single character on postgresql, but the
          * entire string on mysql.
          */
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServer2012Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->assertSame(
                 'foo',
                 $this->e('select CAST([] AS VARCHAR)', ['foo'])->getOne()
@@ -186,7 +186,7 @@ class SelectTest extends TestCase
         );
 
         // replace
-        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->q('employee')
                 ->setMulti(['name' => 'Peter', 'surname' => 'Doe', 'retired' => true])
                 ->where('id', 1)
@@ -309,7 +309,7 @@ class SelectTest extends TestCase
                     ->where('TABLE_NAME', $table);
             } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
                 $query = $this->c->dsql()->field($this->c->expr('currval(pg_get_serial_sequence([], []))', [$table, $pk]));
-            } elseif ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
+            } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
                 $query = $this->c->dsql()->field($this->c->expr('IDENT_CURRENT([])', [$table]));
             } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
                 $query = $this->c->dsql()->field($this->c->expr('{}.CURRVAL', [$table . '_SEQ']));

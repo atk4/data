@@ -13,7 +13,7 @@ use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 
 /**
@@ -275,10 +275,10 @@ abstract class Connection
                 'Doctrine\DBAL\Platforms\SQLServerPlatform' . 'ForPhpstan',
                 'Doctrine\DBAL\Platforms\SQLServer2005Platform' . 'ForPhpstan',
                 'Doctrine\DBAL\Platforms\SQLServer2008Platform' . 'ForPhpstan',
-            ], true) && !($dbalConnection->getDatabasePlatform() instanceof SQLServer2012Platform)
+            ], true) && !($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform)
         ) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new SQLServer2012Platform();
+                $dbalConnection->platform = new SQLServerPlatform();
             }, null, DbalConnection::class)();
         } elseif (
             in_array(get_class($dbalConnection->getDatabasePlatform()) . 'ForPhpstan', [
@@ -300,9 +300,9 @@ abstract class Connection
             }, null, DbalConnection::class)();
         }
 
-        if ($dbalConnection->getDatabasePlatform() instanceof SQLServer2012Platform) {
+        if ($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends SQLServer2012Platform {
+                $dbalConnection->platform = new class() extends SQLServerPlatform {
                     use Mssql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();
