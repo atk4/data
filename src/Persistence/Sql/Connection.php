@@ -266,32 +266,6 @@ abstract class Connection
             );
         }
 
-        // DBAL 3.x removed some old platforms, to support instanceof reliably,
-        // make sure that DBAL 2.x platform is always supported in DBAL 3.x, see:
-        // https://github.com/doctrine/dbal/pull/3912
-        // TODO drop once DBAL 2.x support is dropped
-        if (
-            in_array(get_class($dbalConnection->getDatabasePlatform()) . 'ForPhpstan', [
-                'Doctrine\DBAL\Platforms\SQLServerPlatform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\SQLServer2005Platform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\SQLServer2008Platform' . 'ForPhpstan',
-            ], true) && !($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform)
-        ) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new SQLServerPlatform();
-            }, null, DbalConnection::class)();
-        } elseif (
-            in_array(get_class($dbalConnection->getDatabasePlatform()) . 'ForPhpstan', [
-                'Doctrine\DBAL\Platforms\PostgreSqlPlatform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\PostgreSQL91Platform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\PostgreSQL92Platform' . 'ForPhpstan',
-            ], true) && !($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform)
-        ) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new PostgreSQLPlatform();
-            }, null, DbalConnection::class)();
-        }
-
         if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
                 $dbalConnection->platform = new class() extends PostgreSQLPlatform {
