@@ -14,6 +14,7 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
+use Atk4\Data\Persistence\Sql\ExecuteException;
 
 class SelectTest extends TestCase
 {
@@ -241,27 +242,34 @@ class SelectTest extends TestCase
 
     public function testExecuteException(): void
     {
-        $this->expectException(\Atk4\Data\Persistence\Sql\ExecuteException::class);
+        $this->expectException(ExecuteException::class);
 
         try {
             $this->q('non_existing_table')->field('non_existing_field')->getOne();
-        } catch (\Atk4\Data\Persistence\Sql\ExecuteException $e) {
-            // test error code
-            $unknownFieldErrorCode = [
-                'sqlite' => 1,     // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
-                'mysql' => 1146,   // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
-                'postgresql' => 7, // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
-                'mssql' => 208,    // SQLSTATE[42S02]: Invalid object name 'non_existing_table'
-                'oracle' => 942,   // SQLSTATE[HY000]: ORA-00942: table or view does not exist
-            ][$this->getDatabasePlatform()->getName()];
-            $this->assertSame($unknownFieldErrorCode, $e->getCode());
+        } catch (ExecuteException $e) {
+            if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+                $expectedErrorCode = 1146; // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
+            } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+                $expectedErrorCode = 7; // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
+            } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+                $expectedErrorCode = 208; // SQLSTATE[42S02]: Invalid object name 'non_existing_table'
+            } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+                $expectedErrorCode = 942; // SQLSTATE[HY000]: ORA-00942: table or view does not exist
+            } else {
+                $expectedErrorCode = 1; // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
+            }
 
-            // test debug query
-            $expectedQuery = [
-                'mysql' => 'select `non_existing_field` from `non_existing_table`',
-                'mssql' => 'select [non_existing_field] from [non_existing_table]',
-            ][$this->getDatabasePlatform()->getName()] ?? 'select "non_existing_field" from "non_existing_table"';
-            $this->assertSame(preg_replace('~\s+~', '', $expectedQuery), preg_replace('~\s+~', '', $e->getDebugQuery()));
+//            if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+//                $expectedQuery = 'select `non_existing_field` from `non_existing_table`';
+//            } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+//                $expectedQuery = 'select [non_existing_field] from [non_existing_table]';
+//            } else {
+//                $expectedQuery = 'select "non_existing_field" from "non_existing_table"';
+//            }
+
+            $this->assertSame($expectedErrorCode, $e->getCode());
+//            $this->assertSame(preg_replace('~\s+~', '', $expectedQuery), preg_replace('~\s+~', '', $e->getDebugQuery()));
+            $this->assertSameSql('select "non_existing_field" from "non_existing_table"', $e->getDebugQuery());
 
             throw $e;
         }
