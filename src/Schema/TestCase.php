@@ -41,7 +41,7 @@ class TestCase extends BaseTestCase
         }
 
         $this->db->connection->connection()->getConfiguration()->setSQLLogger(
-            new class($this) implements SQLLogger { // @phpstan-ignore-line
+            null ?? new class($this) implements SQLLogger { // @phpstan-ignore-line
                 /** @var \WeakReference<TestCase> */
                 private $testCaseWeakRef;
 

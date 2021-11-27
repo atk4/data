@@ -78,6 +78,7 @@ jobs:
         run: |
           composer require "doctrine/dbal:^2.10" --ansi --prefer-dist --no-interaction --no-progress --optimize-autoloader
           echo '<?php require_once __DIR__ . "/MySqlPlatform.php";' > vendor/doctrine/dbal/lib/Doctrine/DBAL/Platforms/MySQLPlatform.php
+          echo '<?php require_once __DIR__ . "/PostgreSqlPlatform.php";' > vendor/doctrine/dbal/lib/Doctrine/DBAL/Platforms/PostgreSQLPlatform.php
           vendor/bin/phpstan analyse
 
   unit-test:
