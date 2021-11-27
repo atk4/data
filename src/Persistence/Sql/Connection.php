@@ -251,7 +251,7 @@ abstract class Connection
 
         if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends PostgreSQLPlatform {
+                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\PostgreSQL94Platform { // @phpstan-ignore-line
                     use Postgresql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();
@@ -259,7 +259,7 @@ abstract class Connection
 
         if ($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends SQLServerPlatform {
+                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\SQLServer2012Platform {
                     use Mssql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();

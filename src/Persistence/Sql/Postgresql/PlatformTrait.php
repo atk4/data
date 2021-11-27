@@ -112,7 +112,7 @@ trait PlatformTrait
     {
         $sqls = array_merge(
             $this->getCreateCaseInsensitiveDomainsSql(),
-            parent::getCreateTableSQL($table, $createFlags)
+            parent::getCreateTableSQL($table, $createFlags) // @phpstan-ignore-line
         );
 
         $pkColumn = $this->getPrimaryKeyColumn($table);
