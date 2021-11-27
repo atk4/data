@@ -7,7 +7,7 @@ namespace Atk4\Data\Persistence\Sql;
 use Atk4\Data\Exception;
 use Atk4\Data\Field;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Doctrine\DBAL\Types\Type;
 
@@ -56,7 +56,7 @@ trait BinaryTypeCompatibilityTypecastTrait
         // to encode first to hold the binary type info for PDO parameter type binding
 
         $platform = $this->getDatabasePlatform();
-        if ($platform instanceof PostgreSQL94Platform
+        if ($platform instanceof PostgreSQLPlatform
             || $platform instanceof SQLServer2012Platform
             || $platform instanceof OraclePlatform) {
             if (in_array($type->getName(), ['binary', 'blob'], true)) {

@@ -6,7 +6,7 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 /**
@@ -315,7 +315,7 @@ class ReferenceSqlTest extends TestCase
         };
 
         $buildSumWithIntegerCastSqlFx = function (string $v): string {
-            if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform
+            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform
                 || $this->getDatabasePlatform() instanceof SQLServer2012Platform) {
                 $v = 'CAST(' . $v . ' AS INT)';
             }

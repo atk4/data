@@ -12,7 +12,7 @@ use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class SelectTest extends TestCase
@@ -110,7 +110,7 @@ class SelectTest extends TestCase
          * But CAST(.. AS int) does not work in mysql. So we use two different tests..
          * (CAST(.. AS int) will work on mariaDB, whereas mysql needs it to be CAST(.. AS signed))
          */
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $this->assertSame(
                 [['now' => '6']],
                 $this->q()->field(new Expression('CAST([] AS int)+CAST([] AS int)', [3, 3]), 'now')->getRows()
@@ -136,7 +136,7 @@ class SelectTest extends TestCase
          * But using CAST(.. AS CHAR) will return one single character on postgresql, but the
          * entire string on mysql.
          */
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServer2012Platform) {
             $this->assertSame(
                 'foo',
                 $this->e('select CAST([] AS VARCHAR)', ['foo'])->getOne()
@@ -186,7 +186,7 @@ class SelectTest extends TestCase
         );
 
         // replace
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->q('employee')
                 ->setMulti(['name' => 'Peter', 'surname' => 'Doe', 'retired' => true])
                 ->where('id', 1)
@@ -307,7 +307,7 @@ class SelectTest extends TestCase
                 $query = $this->c->dsql()->table('INFORMATION_SCHEMA.TABLES')
                     ->field($this->c->expr('greatest({} - 1, (' . $maxIdExpr->render() . '))', ['AUTO_INCREMENT']))
                     ->where('TABLE_NAME', $table);
-            } elseif ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+            } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
                 $query = $this->c->dsql()->field($this->c->expr('currval(pg_get_serial_sequence([], []))', [$table, $pk]));
             } elseif ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
                 $query = $this->c->dsql()->field($this->c->expr('IDENT_CURRENT([])', [$table]));

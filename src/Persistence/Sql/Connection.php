@@ -12,7 +12,7 @@ use Doctrine\DBAL\Event\ConnectionEventArgs;
 use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Doctrine\DBAL\Result as DbalResult;
 
@@ -285,16 +285,16 @@ abstract class Connection
                 'Doctrine\DBAL\Platforms\PostgreSqlPlatform' . 'ForPhpstan',
                 'Doctrine\DBAL\Platforms\PostgreSQL91Platform' . 'ForPhpstan',
                 'Doctrine\DBAL\Platforms\PostgreSQL92Platform' . 'ForPhpstan',
-            ], true) && !($dbalConnection->getDatabasePlatform() instanceof PostgreSQL94Platform)
+            ], true) && !($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform)
         ) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new PostgreSQL94Platform();
+                $dbalConnection->platform = new PostgreSQLPlatform();
             }, null, DbalConnection::class)();
         }
 
-        if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+        if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends PostgreSQL94Platform {
+                $dbalConnection->platform = new class() extends PostgreSQLPlatform {
                     use Postgresql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();

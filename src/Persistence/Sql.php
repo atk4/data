@@ -16,7 +16,7 @@ use Atk4\Data\Persistence\Sql\Expressionable;
 use Atk4\Data\Persistence\Sql\Query;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 
 class Sql extends Persistence
@@ -716,7 +716,7 @@ class Sql extends Persistence
         // PostgreSQL and Oracle DBAL platforms use sequence internally for PK autoincrement,
         // use default name if not set explicitly
         $sequenceName = null;
-        if ($this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+        if ($this->connection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $sequenceName = $this->connection->getDatabasePlatform()->getIdentitySequenceName(
                 $model->table,
                 $model->getField($model->id_field)->getPersistenceName()
