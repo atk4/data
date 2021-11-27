@@ -1652,12 +1652,12 @@ class QueryTest extends TestCase
         $quotes = $this->q()
             ->table('quotes')
             ->field('emp_id')
-            ->field($this->q()->expr('sum([])', ['total_net']))
+            ->field($this->q()->expr('sum({})', ['total_net']))
             ->group('emp_id');
         $invoices = $this->q()
             ->table('invoices')
             ->field('emp_id')
-            ->field($this->q()->expr('sum([])', ['total_net']))
+            ->field($this->q()->expr('sum({})', ['total_net']))
             ->group('emp_id');
         $q = $this->q()
             ->with($quotes, 'q', ['emp', 'quoted'])
@@ -1671,8 +1671,8 @@ class QueryTest extends TestCase
             ->field('i.invoiced');
         $this->assertSame(
             'with '
-                . '"q" ("emp", "quoted") as (select "emp_id", sum(:a) from "quotes" group by "emp_id"),' . "\n"
-                . '"i" ("emp", "invoiced") as (select "emp_id", sum(:b) from "invoices" group by "emp_id")' . "\n"
+                . '"q" ("emp", "quoted") as (select "emp_id", sum("total_net") from "quotes" group by "emp_id"),' . "\n"
+                . '"i" ("emp", "invoiced") as (select "emp_id", sum("total_net") from "invoices" group by "emp_id")' . "\n"
             . 'select "name", "salary", "q"."quoted", "i"."invoiced" '
             . 'from "employees" '
                 . 'left join "q" on "q"."emp" = "employees"."id" '
