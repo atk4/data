@@ -7,13 +7,14 @@ namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
+use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class SelectTest extends TestCase
 {
@@ -110,7 +111,7 @@ class SelectTest extends TestCase
          * But CAST(.. AS int) does not work in mysql. So we use two different tests..
          * (CAST(.. AS int) will work on mariaDB, whereas mysql needs it to be CAST(.. AS signed))
          */
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             $this->assertSame(
                 [['now' => '6']],
                 $this->q()->field(new Expression('CAST([] AS int)+CAST([] AS int)', [3, 3]), 'now')->getRows()
@@ -136,7 +137,7 @@ class SelectTest extends TestCase
          * But using CAST(.. AS CHAR) will return one single character on postgresql, but the
          * entire string on mysql.
          */
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform) {
             $this->assertSame(
                 'foo',
                 $this->e('select CAST([] AS VARCHAR)', ['foo'])->getOne()
@@ -186,7 +187,7 @@ class SelectTest extends TestCase
         );
 
         // replace
-        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
+        if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform || $this->getDatabasePlatform() instanceof SQLServerPlatform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->q('employee')
                 ->setMulti(['name' => 'Peter', 'surname' => 'Doe', 'retired' => true])
                 ->where('id', 1)
@@ -241,27 +242,28 @@ class SelectTest extends TestCase
 
     public function testExecuteException(): void
     {
-        $this->expectException(\Atk4\Data\Persistence\Sql\ExecuteException::class);
+        $this->expectException(ExecuteException::class);
 
         try {
             $this->q('non_existing_table')->field('non_existing_field')->getOne();
-        } catch (\Atk4\Data\Persistence\Sql\ExecuteException $e) {
-            // test error code
-            $unknownFieldErrorCode = [
-                'sqlite' => 1,     // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
-                'mysql' => 1146,   // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
-                'postgresql' => 7, // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
-                'mssql' => 208,    // SQLSTATE[42S02]: Invalid object name 'non_existing_table'
-                'oracle' => 942,   // SQLSTATE[HY000]: ORA-00942: table or view does not exist
-            ][$this->getDatabasePlatform()->getName()];
-            $this->assertSame($unknownFieldErrorCode, $e->getCode());
+        } catch (ExecuteException $e) {
+            if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
+                $expectedErrorCode = 1146; // SQLSTATE[42S02]: Base table or view not found: 1146 Table 'non_existing_table' doesn't exist
+            } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+                $expectedErrorCode = 7; // SQLSTATE[42P01]: Undefined table: 7 ERROR: relation "non_existing_table" does not exist
+            } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
+                $expectedErrorCode = 208; // SQLSTATE[42S02]: Invalid object name 'non_existing_table'
+            } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+                $expectedErrorCode = 942; // SQLSTATE[HY000]: ORA-00942: table or view does not exist
+            } else {
+                $expectedErrorCode = 1; // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
+            }
 
-            // test debug query
-            $expectedQuery = [
-                'mysql' => 'select `non_existing_field` from `non_existing_table`',
-                'mssql' => 'select [non_existing_field] from [non_existing_table]',
-            ][$this->getDatabasePlatform()->getName()] ?? 'select "non_existing_field" from "non_existing_table"';
-            $this->assertSame(preg_replace('~\s+~', '', $expectedQuery), preg_replace('~\s+~', '', $e->getDebugQuery()));
+            $this->assertSame($expectedErrorCode, $e->getCode());
+            $this->assertSameSql(
+                preg_replace('~\s+~', '', 'select "non_existing_field" from "non_existing_table"'),
+                preg_replace('~\s+~', '', $e->getDebugQuery())
+            );
 
             throw $e;
         }
@@ -307,9 +309,9 @@ class SelectTest extends TestCase
                 $query = $this->c->dsql()->table('INFORMATION_SCHEMA.TABLES')
                     ->field($this->c->expr('greatest({} - 1, (' . $maxIdExpr->render() . '))', ['AUTO_INCREMENT']))
                     ->where('TABLE_NAME', $table);
-            } elseif ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+            } elseif ($this->getDatabasePlatform() instanceof PostgreSQLPlatform) {
                 $query = $this->c->dsql()->field($this->c->expr('currval(pg_get_serial_sequence([], []))', [$table, $pk]));
-            } elseif ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
+            } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
                 $query = $this->c->dsql()->field($this->c->expr('IDENT_CURRENT([])', [$table]));
             } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
                 $query = $this->c->dsql()->field($this->c->expr('{}.CURRVAL', [$table . '_SEQ']));

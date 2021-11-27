@@ -12,8 +12,8 @@ use Doctrine\DBAL\Event\ConnectionEventArgs;
 use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 
 /**
@@ -155,27 +155,10 @@ abstract class Connection
      * Adds connection class to the registry for resolving in Connection::resolve method.
      *
      * Can be used as:
-     *
-     * Connection::registerConnection(MySQL\Connection::class, 'mysql'), or
-     * MySQL\Connection::registerConnectionClass()
-     *
-     * CustomDriver\Connection must be descendant of Connection class.
-     *
-     * @param string $connectionClass
-     * @param string $driverSchema
+     *   Connection::registerConnection(MySQL\Connection::class, 'mysql')
      */
-    public static function registerConnectionClass($connectionClass = null, $driverSchema = null): void
+    public static function registerConnectionClass(string $connectionClass, string $driverSchema): void
     {
-        if ($connectionClass === null) {
-            $connectionClass = static::class;
-        }
-
-        if ($driverSchema === null) {
-            /** @var static $c */
-            $c = (new \ReflectionClass($connectionClass))->newInstanceWithoutConstructor();
-            $driverSchema = $c->getDatabasePlatform()->getName();
-        }
-
         self::$connectionClassRegistry[$driverSchema] = $connectionClass;
     }
 
@@ -266,43 +249,17 @@ abstract class Connection
             );
         }
 
-        // DBAL 3.x removed some old platforms, to support instanceof reliably,
-        // make sure that DBAL 2.x platform is always supported in DBAL 3.x, see:
-        // https://github.com/doctrine/dbal/pull/3912
-        // TODO drop once DBAL 2.x support is dropped
-        if (
-            in_array(get_class($dbalConnection->getDatabasePlatform()) . 'ForPhpstan', [
-                'Doctrine\DBAL\Platforms\SQLServerPlatform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\SQLServer2005Platform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\SQLServer2008Platform' . 'ForPhpstan',
-            ], true) && !($dbalConnection->getDatabasePlatform() instanceof SQLServer2012Platform)
-        ) {
+        if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new SQLServer2012Platform();
-            }, null, DbalConnection::class)();
-        } elseif (
-            in_array(get_class($dbalConnection->getDatabasePlatform()) . 'ForPhpstan', [
-                'Doctrine\DBAL\Platforms\PostgreSqlPlatform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\PostgreSQL91Platform' . 'ForPhpstan',
-                'Doctrine\DBAL\Platforms\PostgreSQL92Platform' . 'ForPhpstan',
-            ], true) && !($dbalConnection->getDatabasePlatform() instanceof PostgreSQL94Platform)
-        ) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new PostgreSQL94Platform();
-            }, null, DbalConnection::class)();
-        }
-
-        if ($dbalConnection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
-            \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends PostgreSQL94Platform {
+                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\PostgreSQL94Platform {
                     use Postgresql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();
         }
 
-        if ($dbalConnection->getDatabasePlatform() instanceof SQLServer2012Platform) {
+        if ($dbalConnection->getDatabasePlatform() instanceof SQLServerPlatform) {
             \Closure::bind(function () use ($dbalConnection) {
-                $dbalConnection->platform = new class() extends SQLServer2012Platform {
+                $dbalConnection->platform = new class() extends \Doctrine\DBAL\Platforms\SQLServer2012Platform {
                     use Mssql\PlatformTrait;
                 };
             }, null, DbalConnection::class)();

@@ -6,8 +6,8 @@ namespace Atk4\Data\Tests;
 
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 /**
  * Tests that condition is applied when traversing hasMany
@@ -311,12 +311,12 @@ class ReferenceSqlTest extends TestCase
         ]);
 
         $buildLengthSqlFx = function (string $v): string {
-            return ($this->getDatabasePlatform() instanceof SQLServer2012Platform ? 'LEN' : 'LENGTH') . '(' . $v . ')';
+            return ($this->getDatabasePlatform() instanceof SQLServerPlatform ? 'LEN' : 'LENGTH') . '(' . $v . ')';
         };
 
         $buildSumWithIntegerCastSqlFx = function (string $v): string {
-            if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform
-                || $this->getDatabasePlatform() instanceof SQLServer2012Platform) {
+            if ($this->getDatabasePlatform() instanceof PostgreSQLPlatform
+                || $this->getDatabasePlatform() instanceof SQLServerPlatform) {
                 $v = 'CAST(' . $v . ' AS INT)';
             }
 

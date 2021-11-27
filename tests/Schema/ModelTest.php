@@ -8,7 +8,7 @@ use Atk4\Data\Field\PasswordField;
 use Atk4\Data\Model;
 use Atk4\Data\Schema\TestCase;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 
 class ModelTest extends TestCase
 {
@@ -218,7 +218,7 @@ class ModelTest extends TestCase
         $model->import([['v' => $str . (
             // MSSQL database ignores trailing \0 characters even with binary comparison
             // https://dba.stackexchange.com/questions/48660/comparing-binary-0x-and-0x00-turns-out-to-be-equal-on-sql-server
-            $isBinary ? $this->getDatabasePlatform() instanceof SQLServer2012Platform ? ' ' : "\0" : '.'
+            $isBinary ? $this->getDatabasePlatform() instanceof SQLServerPlatform ? ' ' : "\0" : '.'
         )]]);
         $model->import([['v' => $str]]);
 

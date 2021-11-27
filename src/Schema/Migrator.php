@@ -64,6 +64,9 @@ class Migrator
         return $this->connection->getDatabasePlatform();
     }
 
+    /**
+     * @phpstan-return AbstractSchemaManager<AbstractPlatform>
+     */
     protected function createSchemaManager(): AbstractSchemaManager
     {
         if (Connection::isComposerDbal2x()) {

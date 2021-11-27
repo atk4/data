@@ -10,8 +10,8 @@ use Doctrine\DBAL\Connection as DbalConnection;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\OraclePlatform;
-use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
-use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Result as DbalResult;
 
 /**
@@ -518,7 +518,7 @@ class Expression implements Expressionable, \ArrayAccess
                     if (is_int($val)) {
                         $type = ParameterType::INTEGER;
                     } elseif (is_bool($val)) {
-                        if ($platform instanceof PostgreSQL94Platform) {
+                        if ($platform instanceof PostgreSQLPlatform) {
                             $type = ParameterType::STRING;
                             $val = $val ? '1' : '0';
                         } else {
@@ -532,8 +532,8 @@ class Expression implements Expressionable, \ArrayAccess
                     } elseif (is_string($val)) {
                         $type = ParameterType::STRING;
 
-                        if ($platform instanceof PostgreSQL94Platform
-                            || $platform instanceof SQLServer2012Platform) {
+                        if ($platform instanceof PostgreSQLPlatform
+                            || $platform instanceof SQLServerPlatform) {
                             $dummyPersistence = new Persistence\Sql($this->connection);
                             if (\Closure::bind(fn () => $dummyPersistence->binaryTypeValueIsEncoded($val), null, Persistence\Sql::class)()) {
                                 $val = \Closure::bind(fn () => $dummyPersistence->binaryTypeValueDecode($val), null, Persistence\Sql::class)();
@@ -603,7 +603,7 @@ class Expression implements Expressionable, \ArrayAccess
 
         // for PostgreSQL/Oracle CLOB/BLOB datatypes and PDO driver
         if (is_resource($v) && get_resource_type($v) === 'stream' && (
-            $this->connection->getDatabasePlatform() instanceof PostgreSQL94Platform
+            $this->connection->getDatabasePlatform() instanceof PostgreSQLPlatform
             || $this->connection->getDatabasePlatform() instanceof OraclePlatform
         )) {
             $v = stream_get_contents($v);

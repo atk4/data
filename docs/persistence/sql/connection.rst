@@ -79,7 +79,7 @@ if you connect to vendor that does not use PDO.
     :param Expression  $expr: Expression (or query) to execute
     :returns: `Doctrine\DBAL\Result`
 
-.. php:method:: registerConnectionClass($connectionClass = null, $connectionType = null)
+.. php:method:: registerConnectionClass($connectionClass, $connectionType)
 
     Adds connection class to the registry for resolving in Connection::resolveConnectionClass method.
 
@@ -88,8 +88,7 @@ if you connect to vendor that does not use PDO.
 
 Developers can register custom classes to handle driver types using the `Connecion::registerConnectionClass` method::
 
-   Connection::registerConnectionClass(Custom\MySQL\Connection::class, 'mysql'); // or directly using the class
-   Custom\MySQL\Connection::registerConnectionClass();
+   Connection::registerConnectionClass(Custom\MySQL\Connection::class, 'mysql');
 
 .. php:method:: connectDbalConnection(array $dsn)
 
