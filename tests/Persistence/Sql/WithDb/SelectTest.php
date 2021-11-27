@@ -7,6 +7,7 @@ namespace Atk4\Data\Tests\Persistence\Sql\WithDb;
 use Atk4\Data\Model;
 use Atk4\Data\Persistence\Sql\Connection;
 use Atk4\Data\Persistence\Sql\Exception;
+use Atk4\Data\Persistence\Sql\ExecuteException;
 use Atk4\Data\Persistence\Sql\Expression;
 use Atk4\Data\Persistence\Sql\Query;
 use Atk4\Data\Schema\TestCase;
@@ -14,7 +15,6 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
-use Atk4\Data\Persistence\Sql\ExecuteException;
 
 class SelectTest extends TestCase
 {
@@ -259,17 +259,11 @@ class SelectTest extends TestCase
                 $expectedErrorCode = 1; // SQLSTATE[HY000]: General error: 1 no such table: non_existing_table
             }
 
-//            if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-//                $expectedQuery = 'select `non_existing_field` from `non_existing_table`';
-//            } elseif ($this->getDatabasePlatform() instanceof SQLServerPlatform) {
-//                $expectedQuery = 'select [non_existing_field] from [non_existing_table]';
-//            } else {
-//                $expectedQuery = 'select "non_existing_field" from "non_existing_table"';
-//            }
-
             $this->assertSame($expectedErrorCode, $e->getCode());
-//            $this->assertSame(preg_replace('~\s+~', '', $expectedQuery), preg_replace('~\s+~', '', $e->getDebugQuery()));
-            $this->assertSameSql('select "non_existing_field" from "non_existing_table"', $e->getDebugQuery());
+            $this->assertSameSql(
+                preg_replace('~\s+~', '', 'select "non_existing_field" from "non_existing_table"'),
+                preg_replace('~\s+~', '', $e->getDebugQuery())
+            );
 
             throw $e;
         }
