@@ -41,7 +41,7 @@ class TestCase extends BaseTestCase
         }
 
         $this->db->connection->connection()->getConfiguration()->setSQLLogger(
-            new class($this) implements SQLLogger {
+            new class($this) implements SQLLogger { // @phpstan-ignore-line
                 /** @var \WeakReference<TestCase> */
                 private $testCaseWeakRef;
 
@@ -89,6 +89,9 @@ class TestCase extends BaseTestCase
         return $this->db->connection->getDatabasePlatform();
     }
 
+    /**
+     * @phpstan-return AbstractSchemaManager<AbstractPlatform>
+     */
     protected function createSchemaManager(): AbstractSchemaManager
     {
         if (Connection::isComposerDbal2x()) {

@@ -155,27 +155,10 @@ abstract class Connection
      * Adds connection class to the registry for resolving in Connection::resolve method.
      *
      * Can be used as:
-     *
-     * Connection::registerConnection(MySQL\Connection::class, 'mysql'), or
-     * MySQL\Connection::registerConnectionClass()
-     *
-     * CustomDriver\Connection must be descendant of Connection class.
-     *
-     * @param string $connectionClass
-     * @param string $driverSchema
+     *   Connection::registerConnection(MySQL\Connection::class, 'mysql')
      */
-    public static function registerConnectionClass($connectionClass = null, $driverSchema = null): void
+    public static function registerConnectionClass(string $connectionClass, string $driverSchema): void
     {
-        if ($connectionClass === null) {
-            $connectionClass = static::class;
-        }
-
-        if ($driverSchema === null) {
-            /** @var static $c */
-            $c = (new \ReflectionClass($connectionClass))->newInstanceWithoutConstructor();
-            $driverSchema = $c->getDatabasePlatform()->getName();
-        }
-
         self::$connectionClassRegistry[$driverSchema] = $connectionClass;
     }
 

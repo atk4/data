@@ -35,32 +35,6 @@ class DummyConnection2 extends Connection
     }
 }
 
-class DummyConnection3 extends Connection
-{
-    public function getDatabasePlatform(): AbstractPlatform
-    {
-        return new class() extends SqlitePlatform {
-            public function getName()
-            {
-                return 'dummy3';
-            }
-        };
-    }
-}
-
-class DummyConnection4 extends Connection
-{
-    public function getDatabasePlatform(): AbstractPlatform
-    {
-        return new class() extends SqlitePlatform {
-            public function getName()
-            {
-                return 'dummy4';
-            }
-        };
-    }
-}
-
 /**
  * @coversDefaultClass \Atk4\Data\Persistence\Sql\Connection
  */
@@ -118,20 +92,23 @@ class ConnectionTest extends TestCase
 
     public function testConnectionRegistry(): void
     {
-        DummyConnection::registerConnectionClass();
+        $registryBackup = \Closure::bind(fn () => Connection::$connectionClassRegistry, null, Connection::class)();
+        try {
+            Connection::registerConnectionClass(DummyConnection::class, 'dummy');
+            $this->assertSame(DummyConnection::class, Connection::resolveConnectionClass('dummy'));
+            try {
+                Connection::resolveConnectionClass('dummy2');
+                $this->assertFalse(true);
+            } catch (\Exception $e) {
+            }
 
-        $this->assertSame(DummyConnection::class, Connection::resolveConnectionClass('dummy'));
+            Connection::registerConnectionClass(DummyConnection2::class, 'dummy2');
+            $this->assertSame(DummyConnection2::class, Connection::resolveConnectionClass('dummy2'));
 
-        Connection::registerConnectionClass(DummyConnection2::class);
-        Connection::registerConnectionClass(DummyConnection3::class);
-
-        $this->assertSame(DummyConnection2::class, Connection::resolveConnectionClass('dummy2'));
-
-        $this->assertSame(DummyConnection3::class, Connection::resolveConnectionClass('dummy3'));
-
-        Connection::registerConnectionClass(DummyConnection4::class);
-
-        $this->assertSame(DummyConnection4::class, Connection::resolveConnectionClass('dummy4'));
+            $this->assertNotSame($registryBackup, \Closure::bind(fn () => Connection::$connectionClassRegistry, null, Connection::class)());
+        } finally {
+            \Closure::bind(fn () => Connection::$connectionClassRegistry = $registryBackup, null, Connection::class)();
+        }
     }
 
     public function testMysqlFail(): void
