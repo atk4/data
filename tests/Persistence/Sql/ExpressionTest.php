@@ -130,12 +130,12 @@ class ExpressionTest extends TestCase
     public function testConstructor3(): void
     {
         $e = $this->e('hello, [who]', ['who' => 'world']);
-        [$renderQuery, $renderParams] = $e->renderWithParams();
+        [$renderQuery, $renderParams] = $e->render();
         $this->assertSame('hello, :a', $renderQuery);
         $this->assertSame([':a' => 'world'], $renderParams);
 
         $e = $this->e('hello, {who}', ['who' => 'world']);
-        [$renderQuery, $renderParams] = $e->renderWithParams();
+        [$renderQuery, $renderParams] = $e->render();
         $this->assertSame('hello, "world"', $renderQuery);
         $this->assertSame([], $renderParams);
     }
@@ -378,7 +378,7 @@ class ExpressionTest extends TestCase
     public function testParam(): void
     {
         $e = new Expression('hello, [who]', ['who' => 'world']);
-        [$renderQuery, $renderParams] = $e->renderWithParams();
+        [$renderQuery, $renderParams] = $e->render();
         $this->assertSame('hello, :a', $renderQuery);
         $this->assertSame([':a' => 'world'], $renderParams);
     }
@@ -495,7 +495,7 @@ class ExpressionTest extends TestCase
     {
         $e = new JsonExpression('hello, [who]', ['who' => 'world']);
 
-        [$sql, $params] = $e->renderWithParams();
+        [$sql, $params] = $e->render();
         $this->assertSame('hello, "world"', $sql);
         $this->assertSame([], $params);
     }

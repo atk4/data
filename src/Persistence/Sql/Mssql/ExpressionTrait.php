@@ -21,9 +21,9 @@ trait ExpressionTrait
         return preg_replace('~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K\]([^\[\]\'"(){}]*?)\]~s', '[$1]', $v);
     }
 
-    public function renderWithParams(): array
+    public function render(): array
     {
-        [$sql, $params] = parent::renderWithParams();
+        [$sql, $params] = parent::render();
 
         // convert all SQL strings to NVARCHAR, eg 'text' to N'text'
         $sql = preg_replace_callback('~(^|.)(\'(?:\'\'|\\\\\'|[^\'])*\')~s', function ($matches) {
@@ -35,7 +35,7 @@ trait ExpressionTrait
         $calledFromExecute = false;
         foreach ($trace as $frame) {
             if (($frame['object'] ?? null) === $this) {
-                if (($frame['function'] ?? null) === 'renderWithParams') {
+                if (($frame['function'] ?? null) === 'render') {
                     continue;
                 } elseif (($frame['function'] ?? null) === 'execute') {
                     $calledFromExecute = true;

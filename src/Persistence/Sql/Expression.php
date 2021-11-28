@@ -226,43 +226,43 @@ class Expression implements Expressionable, \ArrayAccess
     /**
      * Recursively renders sub-query or expression, combining parameters.
      *
-     * @param string|Expressionable $expression
+     * @param string|Expressionable $expr
      * @param string                $escapeMode Fall-back escaping mode - using one of the Expression::ESCAPE_* constants
      *
      * @return string Quoted expression
      */
-    protected function consume($expression, string $escapeMode = self::ESCAPE_PARAM)
+    protected function consume($expr, string $escapeMode = self::ESCAPE_PARAM)
     {
-        if (!is_object($expression)) {
+        if (!is_object($expr)) {
             switch ($escapeMode) {
                 case self::ESCAPE_PARAM:
-                    return $this->escapeParam($expression);
+                    return $this->escapeParam($expr);
                 case self::ESCAPE_IDENTIFIER:
-                    return $this->escapeIdentifier($expression);
+                    return $this->escapeIdentifier($expr);
                 case self::ESCAPE_IDENTIFIER_SOFT:
-                    return $this->escapeIdentifierSoft($expression);
+                    return $this->escapeIdentifierSoft($expr);
                 case self::ESCAPE_NONE:
-                    return $expression;
+                    return $expr;
             }
 
             throw (new Exception('$escapeMode value is incorrect'))
                 ->addMoreInfo('escapeMode', $escapeMode);
         }
 
-        if ($expression instanceof Expressionable) {
-            $expression = $expression->getDsqlExpression($this);
+        if ($expr instanceof Expressionable) {
+            $expr = $expr->getDsqlExpression($this);
         }
 
-        if (!$expression instanceof self) {
-            throw (new Exception('Only Expressionable object type may be used in Expression'))
-                ->addMoreInfo('object', $expression);
+        if (!$expr instanceof self) {
+            throw (new Exception('Only Expressionable object can be used in Expression'))
+                ->addMoreInfo('object', $expr);
         }
 
-        // at this point $sql_code is instance of Expression
-        $paramBaseBackup = $expression->paramBase;
+        // render given expression into params of the current expression
+        $expressionParamBaseBackup = $expr->paramBase;
         try {
-            $expression->paramBase = $this->_paramBase;
-            [$ret, $params] = $expression->renderWithParams();
+            $expr->paramBase = $this->_paramBase;
+            [$sql, $params] = $expr->render();
             foreach ($params as $k => $v) {
                 $this->params[$k] = $v;
                 do {
@@ -270,15 +270,15 @@ class Expression implements Expressionable, \ArrayAccess
                 } while ($this->_paramBase === $k);
             }
         } finally {
-            $expression->paramBase = $paramBaseBackup;
+            $expr->paramBase = $expressionParamBaseBackup;
         }
 
-        // Wrap in parentheses if expression requires so
-        if ($expression->wrapInParentheses === true) {
-            $ret = '(' . $ret . ')';
+        // wrap in parentheses if expression requires so
+        if ($expr->wrapInParentheses === true) {
+            $sql = '(' . $sql . ')';
         }
 
-        return $ret;
+        return $sql;
     }
 
     /**
@@ -366,7 +366,7 @@ class Expression implements Expressionable, \ArrayAccess
                 || strpos($value, $this->escape_char) !== false;
     }
 
-    private function _render(): string
+    private function _render(): array
     {
         if ($this->template === null) {
             throw new Exception('Template is not defined for Expression');
@@ -429,7 +429,7 @@ class Expression implements Expressionable, \ArrayAccess
             $this->template
         );
 
-        return trim($res);
+        return [trim($res), $this->params];
     }
 
     /**
@@ -439,37 +439,15 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function render(): array
     {
-        $keepParams = $this->_paramBase !== null; // for renderWithParams(), TODO, render should always return an array
-        if (!$keepParams) {
+        try {
             $this->_paramBase = $this->paramBase;
-            $paramBackup = $this->params;
-        }
-
-        try {
             $res = $this->_render();
-        } finally {
-            if (!$keepParams) {
-                $this->_paramBase = null;
-                $this->params = $paramBackup;
-            }
-        }
-
-        return [trim($res), $this->params];
-    }
-
-    /**
-     * @return array{string, array}
-     */
-    public function renderWithParams(): array
-    {
-        try {
-            $this->_paramBase = $this->paramBase; // hack to keep params from render()
-
-            return [$this->render()[0], $this->params];
         } finally {
             $this->_paramBase = null;
             $this->params = [];
         }
+
+        return $res;
     }
 
     /**
@@ -477,13 +455,9 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function getDebugQuery(): string
     {
-        [$result, $params] = $this->renderWithParams();
+        [$result, $params] = $this->render();
 
         foreach (array_reverse($params) as $key => $val) {
-            if (is_int($key)) {
-                continue;
-            }
-
             if ($val === null) {
                 $replacement = 'NULL';
             } elseif (is_bool($val)) {
@@ -538,7 +512,7 @@ class Expression implements Expressionable, \ArrayAccess
 
         // If it's a DBAL connection, we're cool
         if ($connection instanceof DbalConnection) {
-            [$query, $params] = $this->renderWithParams();
+            [$query, $params] = $this->render();
 
             $platform = $this->connection->getDatabasePlatform();
             try {
