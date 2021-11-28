@@ -140,7 +140,7 @@ class ScopeTest extends TestCase
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
 
-            $this->assertEquals('Name is equal to expression \'"user"."surname"\'', $condition->toWords($user));
+            $this->assertEquals('Name is equal to expression \'"surname"\'', $condition->toWords($user));
         }
 
         $condition = new Condition('country_id', null);
