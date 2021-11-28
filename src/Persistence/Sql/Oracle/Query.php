@@ -16,7 +16,13 @@ class Query extends BaseQuery
     public function render(): array
     {
         if ($this->mode === 'select' && count($this->args['table'] ?? []) === 0) {
-            $this->table('DUAL');
+            try {
+                $this->table('DUAL');
+
+                return parent::render();
+            } finally {
+                unset($this->args['table']);
+            }
         }
 
         return parent::render();

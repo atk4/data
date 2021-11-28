@@ -1094,12 +1094,21 @@ class Query extends Expression
     // {{{ Miscelanious
 
     /**
-     * Renders query template. If the template is not explicitly set will use "select" mode.
+     * Renders query template. If the template is not explicitly use "select" mode.
      */
     public function render(): array
     {
-        if (!$this->template) {
-            $this->mode('select');
+        if ($this->template === null) {
+            $modeBackup = $this->mode;
+            $templateBackup = $this->template;
+            try {
+                $this->mode('select');
+
+                return parent::render();
+            } finally {
+                $this->mode = $modeBackup;
+                $this->template = $templateBackup;
+            }
         }
 
         return parent::render();
@@ -1227,7 +1236,7 @@ class Query extends Expression
         $q = $this->dsql(['template' => '[case]']);
 
         if ($operand !== null) {
-            $q->args['case_operand'] = $operand;
+            $q->args['case_operand'] = [$operand];
         }
 
         return $q;
@@ -1257,7 +1266,7 @@ class Query extends Expression
      */
     public function caseElse($else)
     {
-        $this->args['case_else'] = $else;
+        $this->args['case_else'] = [$else];
 
         return $this;
     }
@@ -1272,7 +1281,7 @@ class Query extends Expression
 
         // operand
         if ($short_form = isset($this->args['case_operand'])) {
-            $ret .= ' ' . $this->consume($this->args['case_operand'], self::ESCAPE_IDENTIFIER_SOFT);
+            $ret .= ' ' . $this->consume($this->args['case_operand'][0], self::ESCAPE_IDENTIFIER_SOFT);
         }
 
         // when, then
@@ -1300,7 +1309,7 @@ class Query extends Expression
 
         // else
         if (array_key_exists('case_else', $this->args)) {
-            $ret .= ' else ' . $this->consume($this->args['case_else'], self::ESCAPE_PARAM);
+            $ret .= ' else ' . $this->consume($this->args['case_else'][0], self::ESCAPE_PARAM);
         }
 
         return ' case' . $ret . ' end';
