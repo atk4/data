@@ -363,21 +363,9 @@ class Expression implements Expressionable, \ArrayAccess
                 || strpos($value, $this->escape_char) !== false;
     }
 
-    /**
-     * Render expression and return it as string.
-     */
-    public function render(): string
+
+    private function _render(): string
     {
-        $hadUnderscoreParamBase = $this->_paramBase !== null;
-        if (!$hadUnderscoreParamBase) {
-            $hadUnderscoreParamBase = false;
-            $this->_paramBase = $this->paramBase;
-        }
-
-        if ($this->template === null) {
-            throw new Exception('Template is not defined for Expression');
-        }
-
         $nameless_count = 0;
 
         // - [xxx] = param
@@ -435,8 +423,29 @@ class Expression implements Expressionable, \ArrayAccess
             $this->template
         );
 
-        if (!$hadUnderscoreParamBase) {
-            $this->_paramBase = null;
+        return trim($res);
+    }
+
+    /**
+     * Render expression and return it as string.
+     */
+    public function render(): string
+    {
+        if ($this->template === null) {
+            throw new Exception('Template is not defined for Expression');
+        }
+
+        $fromConsume = $this->_paramBase !== null;
+        if (!$fromConsume) {
+            $this->_paramBase = $this->paramBase;
+        }
+
+        try {
+            $res = $this->_render();
+        } finally {
+            if (!$fromConsume) {
+                $this->_paramBase = null;
+            }
         }
 
         return trim($res);
