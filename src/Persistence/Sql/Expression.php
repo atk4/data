@@ -64,7 +64,7 @@ class Expression implements Expressionable, \ArrayAccess
     private $_paramBase;
 
     /** @var array Populated with actual values by escapeParam() */
-    public $params = [];
+    protected $params = []; // TODO make it private
 
     /** @var Connection|null */
     public $connection;
@@ -259,15 +259,18 @@ class Expression implements Expressionable, \ArrayAccess
         }
 
         // at this point $sql_code is instance of Expression
-        $expression->params = $this->params;
-        $expression->_paramBase = $this->_paramBase;
+        $paramBaseBackup = $expression->paramBase;
         try {
-            $ret = $expression->render();
-            $this->params = $expression->params;
-            $this->_paramBase = $expression->_paramBase;
+            $expression->paramBase = $this->_paramBase;
+            [$ret, $params] = $expression->renderWithParams();
+            foreach ($params as $k => $v) {
+                $this->params[$k] = $v;
+                do {
+                    ++$this->_paramBase;
+                } while ($this->_paramBase === $k);
+            }
         } finally {
-            $expression->params = [];
-            $expression->_paramBase = null;
+            $expression->paramBase = $paramBaseBackup;
         }
 
         // Wrap in parentheses if expression requires so
@@ -363,9 +366,12 @@ class Expression implements Expressionable, \ArrayAccess
                 || strpos($value, $this->escape_char) !== false;
     }
 
-
     private function _render(): string
     {
+        if ($this->template === null) {
+            throw new Exception('Template is not defined for Expression');
+        }
+
         $nameless_count = 0;
 
         // - [xxx] = param
@@ -431,20 +437,18 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function render(): string
     {
-        if ($this->template === null) {
-            throw new Exception('Template is not defined for Expression');
-        }
-
-        $fromConsume = $this->_paramBase !== null;
-        if (!$fromConsume) {
+        $keepParams = $this->_paramBase !== null; // for renderWithParams(), TODO, render should always return an array
+        if (!$keepParams) {
             $this->_paramBase = $this->paramBase;
+            $paramBackup = $this->params;
         }
 
         try {
             $res = $this->_render();
         } finally {
-            if (!$fromConsume) {
+            if (!$keepParams) {
                 $this->_paramBase = null;
+                $this->params = $paramBackup;
             }
         }
 
@@ -452,13 +456,28 @@ class Expression implements Expressionable, \ArrayAccess
     }
 
     /**
+     * @return array{string, array}
+     */
+    public function renderWithParams(): array
+    {
+        try {
+            $this->_paramBase = $this->paramBase; // hack to keep params from render()
+
+            return [$this->render(), $this->params];
+        } finally {
+            $this->_paramBase = null;
+            $this->params = [];
+        }
+    }
+
+    /**
      * Return formatted debug SQL query.
      */
     public function getDebugQuery(): string
     {
-        $result = $this->render();
+        [$result, $params] = $this->renderWithParams();
 
-        foreach (array_reverse($this->params) as $key => $val) {
+        foreach (array_reverse($params) as $key => $val) {
             if (is_int($key)) {
                 continue;
             }
@@ -490,7 +509,7 @@ class Expression implements Expressionable, \ArrayAccess
         $arr = [
             'R' => false,
             'template' => $this->template,
-            'params' => $this->params,
+            'params' => $this->params, // available only after render
             // 'connection' => $this->connection,
             'args' => $this->args,
         ];
@@ -517,13 +536,13 @@ class Expression implements Expressionable, \ArrayAccess
 
         // If it's a DBAL connection, we're cool
         if ($connection instanceof DbalConnection) {
-            $query = $this->render();
+            [$query, $params] = $this->renderWithParams();
 
             $platform = $this->connection->getDatabasePlatform();
             try {
                 $statement = $connection->prepare($query);
 
-                foreach ($this->params as $key => $val) {
+                foreach ($params as $key => $val) {
                     if (is_int($val)) {
                         $type = ParameterType::INTEGER;
                     } elseif (is_bool($val)) {

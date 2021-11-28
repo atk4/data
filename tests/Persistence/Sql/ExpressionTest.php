@@ -131,12 +131,14 @@ class ExpressionTest extends TestCase
     public function testConstructor3(): void
     {
         $e = $this->e('hello, [who]', ['who' => 'world']);
-        $this->assertSame('hello, :a', $e->render());
-        $this->assertSame('world', $e->params[':a']);
+        [$renderQuery, $renderParams] = $e->renderWithParams();
+        $this->assertSame('hello, :a', $renderQuery);
+        $this->assertSame([':a' => 'world'], $renderParams);
 
         $e = $this->e('hello, {who}', ['who' => 'world']);
-        $this->assertSame('hello, "world"', $e->render());
-        $this->assertSame([], $e->params);
+        [$renderQuery, $renderParams] = $e->renderWithParams();
+        $this->assertSame('hello, "world"', $renderQuery);
+        $this->assertSame([], $renderParams);
     }
 
     /**
@@ -377,14 +379,9 @@ class ExpressionTest extends TestCase
     public function testParam(): void
     {
         $e = new Expression('hello, [who]', ['who' => 'world']);
-        $this->assertSame(
-            'hello, :a',
-            $e->render()
-        );
-        $this->assertSame(
-            [':a' => 'world'],
-            $e->params
-        );
+        [$renderQuery, $renderParams] = $e->renderWithParams();
+        $this->assertSame('hello, :a', $renderQuery);
+        $this->assertSame([':a' => 'world'], $renderParams);
     }
 
     /**
