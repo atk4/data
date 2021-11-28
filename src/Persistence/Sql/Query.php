@@ -51,16 +51,6 @@ class Query extends Expression
     /** @var string */
     protected $template_truncate = 'truncate table [table_noalias]';
 
-    /**
-     * Name or alias of base table to use when using default join().
-     *
-     * This is set by table(). If you are using multiple tables,
-     * then $main_table is set to false as it is irrelevant.
-     *
-     * @var false|string|null
-     */
-    protected $main_table;
-
     // {{{ Field specification and rendering
 
     /**
@@ -184,16 +174,35 @@ class Query extends Expression
             $alias = $table;
         }
 
-        // main_table will be set only if table() is called once.
-        // it's used as "default table" when joining with other tables, see join().
-        // on multiple calls, main_table will be false and we won't
-        // be able to join easily anymore.
-        $this->main_table = ($this->main_table === null && $alias !== null ? $alias : false);
-
         // save table in args
         $this->_set_args('table', $alias, $table);
 
         return $this;
+    }
+
+    /**
+     * Name or alias of base table to use when using default join().
+     *
+     * It is set by table(). If you are using multiple tables,
+     * then false is returned as it is irrelevant.
+     *
+     * @return string|false|null
+     */
+    protected function getMainTable()
+    {
+        $c = count($this->args['table'] ?? []);
+        if ($c === 0) {
+            return null;
+        } elseif ($c !== 1) {
+            return false;
+        }
+
+        $alias = array_key_first($this->args['table']);
+        if (!is_int($alias)) {
+            return $alias;
+        }
+
+        return $this->args['table'][$alias];
     }
 
     /**
@@ -330,7 +339,7 @@ class Query extends Expression
     // {{{ join()
 
     /**
-     * Joins your query with another table. Join will use $main_table
+     * Joins your query with another table. Join will use $this->getMainTable()
      * to reference the main table, unless you specify it explicitly.
      *
      * Examples:
@@ -397,7 +406,7 @@ class Query extends Expression
                 $m1 = null;
             }
             if ($m1 === null) {
-                $m1 = $this->main_table;
+                $m1 = $this->getMainTable();
             }
 
             // Identify fields we use for joins

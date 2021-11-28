@@ -15,7 +15,7 @@ class Query extends BaseQuery
 
     public function render(): array
     {
-        if ($this->mode === 'select' && $this->main_table === null) {
+        if ($this->mode === 'select' && count($this->args['table'] ?? []) === 0) {
             $this->table('DUAL');
         }
 
