@@ -397,7 +397,7 @@ class ExpressionTest extends TestCase
         );
         $this->assertSame(
             ':x',
-            $this->callProtected($this->e(['_paramBase' => 'x']), 'consume', 123, $constants['ESCAPE_PARAM'])
+            $this->callProtected($this->e(['renderParamBase' => 'x']), 'consume', 123, $constants['ESCAPE_PARAM'])
         );
         $this->assertSame(
             123,

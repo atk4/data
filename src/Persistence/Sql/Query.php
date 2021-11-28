@@ -1065,19 +1065,18 @@ class Query extends Expression
     public function __debugInfo(): array
     {
         $arr = [
-            'R' => false,
-            'mode' => $this->mode,
+            //'mode' => $this->mode,
+            'R' => 'n/a',
+            'R_params' => 'n/a',
             //'template' => $this->template,
-            //'params' => $this->params, // available only after render
-            //'connection' => $this->connection,
-            //'main_table' => $this->main_table,
-            //'args' => $this->args,
+            //'templateArgs' => $this->args,
         ];
 
         try {
             $arr['R'] = $this->getDebugQuery();
+            $arr['R_params'] = $this->render()[1];
         } catch (\Exception $e) {
-            $arr['R'] = $e->getMessage();
+            $arr['R'] = get_class($e) . ': ' . $e->getMessage();
         }
 
         return $arr;

@@ -41,7 +41,7 @@ class Expression implements Expressionable, \ArrayAccess
      * This property is made public to ease customization and make it accessible
      * from Connection class for example.
      *
-     * @var array<int|string, mixed>
+     * @var array<array<mixed>>
      */
     public $args = ['custom' => []];
 
@@ -60,11 +60,10 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected $escape_char = '"';
 
-    /** @var string|null used for linking */
-    private $_paramBase;
-
-    /** @var array Populated with actual values by escapeParam() */
-    protected $params = []; // TODO make it private
+    /** @var string|null */
+    private $renderParamBase;
+    /** @var array|null */
+    private $renderParams;
 
     /** @var Connection|null */
     public $connection;
@@ -261,13 +260,13 @@ class Expression implements Expressionable, \ArrayAccess
         // render given expression into params of the current expression
         $expressionParamBaseBackup = $expr->paramBase;
         try {
-            $expr->paramBase = $this->_paramBase;
+            $expr->paramBase = $this->renderParamBase;
             [$sql, $params] = $expr->render();
             foreach ($params as $k => $v) {
-                $this->params[$k] = $v;
+                $this->renderParams[$k] = $v;
                 do {
-                    ++$this->_paramBase;
-                } while ($this->_paramBase === $k);
+                    ++$this->renderParamBase;
+                } while ($this->renderParamBase === $k);
             }
         } finally {
             $expr->paramBase = $expressionParamBaseBackup;
@@ -307,9 +306,9 @@ class Expression implements Expressionable, \ArrayAccess
      */
     protected function escapeParam($value): string
     {
-        $name = ':' . $this->_paramBase;
-        ++$this->_paramBase;
-        $this->params[$name] = $value;
+        $name = ':' . $this->renderParamBase;
+        ++$this->renderParamBase;
+        $this->renderParams[$name] = $value;
 
         return $name;
     }
@@ -368,15 +367,10 @@ class Expression implements Expressionable, \ArrayAccess
 
     private function _render(): array
     {
-        if ($this->template === null) {
-            throw new Exception('Template is not defined for Expression');
-        }
-
-        $nameless_count = 0;
-
         // - [xxx] = param
         // - {xxx} = escape
         // - {{xxx}} = escapeSoft
+        $nameless_count = 0;
         $res = preg_replace_callback(
             <<<'EOF'
                 ~
@@ -429,7 +423,7 @@ class Expression implements Expressionable, \ArrayAccess
             $this->template
         );
 
-        return [trim($res), $this->params];
+        return [trim($res), $this->renderParams];
     }
 
     /**
@@ -439,15 +433,19 @@ class Expression implements Expressionable, \ArrayAccess
      */
     public function render(): array
     {
-        try {
-            $this->_paramBase = $this->paramBase;
-            $res = $this->_render();
-        } finally {
-            $this->_paramBase = null;
-            $this->params = [];
+        if ($this->template === null) {
+            throw new Exception('Template is not defined for Expression');
         }
 
-        return $res;
+        try {
+            $this->renderParamBase = $this->paramBase;
+            $this->renderParams = [];
+
+            return $this->_render();
+        } finally {
+            $this->renderParamBase = null;
+            $this->renderParams = null;
+        }
     }
 
     /**
@@ -483,17 +481,17 @@ class Expression implements Expressionable, \ArrayAccess
     public function __debugInfo(): array
     {
         $arr = [
-            'R' => false,
+            'R' => 'n/a',
+            'R_params' => 'n/a',
             'template' => $this->template,
-            'params' => $this->params, // available only after render
-            // 'connection' => $this->connection,
-            'args' => $this->args,
+            'templateArgs' => $this->args,
         ];
 
         try {
             $arr['R'] = $this->getDebugQuery();
+            $arr['R_params'] = $this->render()[1];
         } catch (\Exception $e) {
-            $arr['R'] = $e->getMessage();
+            $arr['R'] = get_class($e) . ': ' . $e->getMessage();
         }
 
         return $arr;
