@@ -224,7 +224,7 @@ class ReferenceSqlTest extends TestCase
         $i->addExpression('total_net', $i->refLink('line')->action('fx', ['sum', 'total_net']));
 
         $this->assertSameSql(
-            'select "invoice"."id", "invoice"."ref_no", (select sum("total_net") from "invoice_line" "_l_6438c669e0d0" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
+            'select "id", "ref_no", (select sum("total_net") from "invoice_line" "_l_6438c669e0d0" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
             $i->action('select')->render()
         );
     }
